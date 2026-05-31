@@ -68,7 +68,9 @@ class PartitionSubstitutionParameterState:
 
     partition_name: str
     kappa: float | None = None
-    exchangeabilities: Mapping[tuple[str, str], float] | Mapping[str, float] | Sequence[float] | None = None
+    exchangeabilities: (
+        Mapping[tuple[str, str], float] | Mapping[str, float] | Sequence[float] | None
+    ) = None
     base_frequencies: Mapping[str, float] | Sequence[float] | None = None
     gamma_alpha: float | None = None
     invariant_proportion: float | None = None
@@ -230,7 +232,8 @@ def build_partition_parameter_linkage_plan(
             )
             continue
         target_partition_groups[target_name] = {
-            partition_name: partition_name for partition_name in validated_partition_names
+            partition_name: partition_name
+            for partition_name in validated_partition_names
         }
     return PartitionParameterLinkagePlan(
         partition_names=validated_partition_names,
@@ -339,7 +342,9 @@ def evaluate_partition_model_log_prior(
                     group_name=group_name,
                     partition_names=grouped_names,
                     partition_model_names={
-                        partition_name: partition_model_by_name[partition_name].model_name
+                        partition_name: partition_model_by_name[
+                            partition_name
+                        ].model_name
                         for partition_name in grouped_names
                     },
                     family=target_row.family,
@@ -625,8 +630,18 @@ def _validate_linked_target_values(
 
 def _target_value_signature(*, target_name: str, value: object) -> object:
     if target_name == "kappa":
-        assert isinstance(value, float)
-        return float(format(validate_positive_kappa(value, model_name="partition prior"), ".15g"))
+        if not isinstance(value, float):
+            raise PhylogeneticsError(
+                "partition prior target 'kappa' requires a float realized value",
+                code="partition_model_prior_target_value_invalid",
+                details={
+                    "target_name": target_name,
+                    "value_type": type(value).__name__,
+                },
+            )
+        return float(
+            format(validate_positive_kappa(value, model_name="partition prior"), ".15g")
+        )
     if target_name == "exchangeabilities":
         normalized = normalize_dna_exchangeabilities_by_anchor(
             value,
@@ -644,7 +659,15 @@ def _target_value_signature(*, target_name: str, value: object) -> object:
             float(format(component_value, ".15g")) for component_value in normalized
         )
     if target_name == "gamma-alpha":
-        assert isinstance(value, float)
+        if not isinstance(value, float):
+            raise PhylogeneticsError(
+                "partition prior target 'gamma-alpha' requires a float realized value",
+                code="partition_model_prior_target_value_invalid",
+                details={
+                    "target_name": target_name,
+                    "value_type": type(value).__name__,
+                },
+            )
         return float(
             format(
                 validate_discrete_gamma_alpha(value),
@@ -652,7 +675,15 @@ def _target_value_signature(*, target_name: str, value: object) -> object:
             )
         )
     if target_name == "invariant-proportion":
-        assert isinstance(value, float)
+        if not isinstance(value, float):
+            raise PhylogeneticsError(
+                "partition prior target 'invariant-proportion' requires a float realized value",
+                code="partition_model_prior_target_value_invalid",
+                details={
+                    "target_name": target_name,
+                    "value_type": type(value).__name__,
+                },
+            )
         return float(
             format(
                 validate_invariant_proportion(
@@ -672,7 +703,15 @@ def _evaluate_target_group(
     realized_value: object,
 ) -> object:
     if target_name == "kappa":
-        assert isinstance(realized_value, float)
+        if not isinstance(realized_value, float):
+            raise PhylogeneticsError(
+                "partition prior evaluation target 'kappa' requires a float realized value",
+                code="partition_model_prior_target_value_invalid",
+                details={
+                    "target_name": target_name,
+                    "value_type": type(realized_value).__name__,
+                },
+            )
         return evaluate_substitution_parameter_log_prior(
             prior_bundle=target_prior_bundle,
             kappa=realized_value,
@@ -688,13 +727,29 @@ def _evaluate_target_group(
             base_frequencies=realized_value,
         )
     if target_name == "gamma-alpha":
-        assert isinstance(realized_value, float)
+        if not isinstance(realized_value, float):
+            raise PhylogeneticsError(
+                "partition prior evaluation target 'gamma-alpha' requires a float realized value",
+                code="partition_model_prior_target_value_invalid",
+                details={
+                    "target_name": target_name,
+                    "value_type": type(realized_value).__name__,
+                },
+            )
         return evaluate_substitution_parameter_log_prior(
             prior_bundle=target_prior_bundle,
             gamma_alpha=realized_value,
         )
     if target_name == "invariant-proportion":
-        assert isinstance(realized_value, float)
+        if not isinstance(realized_value, float):
+            raise PhylogeneticsError(
+                "partition prior evaluation target 'invariant-proportion' requires a float realized value",
+                code="partition_model_prior_target_value_invalid",
+                details={
+                    "target_name": target_name,
+                    "value_type": type(realized_value).__name__,
+                },
+            )
         return evaluate_substitution_parameter_log_prior(
             prior_bundle=target_prior_bundle,
             invariant_proportion=realized_value,

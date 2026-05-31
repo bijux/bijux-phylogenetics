@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
+from bijux_phylogenetics.bayesian.required_values import require_present
 from bijux_phylogenetics.comparative.evolutionary_modes import (
     ContinuousEvolutionaryModeFitReport,
 )
@@ -305,15 +306,27 @@ def evaluate_continuous_trait_scalar_log_prior(
         allow_zero=allow_zero,
     )
     if prior_model.family == "exponential":
-        assert prior_model.rate is not None
-        return math.log(prior_model.rate) - (prior_model.rate * validated_value)
+        rate = require_present(
+            prior_model.rate,
+            owner_name="continuous-trait scalar prior evaluation",
+            field_name="rate",
+        )
+        return math.log(rate) - (rate * validated_value)
     if prior_model.family == "gamma":
-        assert prior_model.shape is not None
-        assert prior_model.scale is not None
+        shape = require_present(
+            prior_model.shape,
+            owner_name="continuous-trait scalar prior evaluation",
+            field_name="shape",
+        )
+        scale = require_present(
+            prior_model.scale,
+            owner_name="continuous-trait scalar prior evaluation",
+            field_name="scale",
+        )
         return _gamma_log_density(
             validated_value,
-            shape=prior_model.shape,
-            scale=prior_model.scale,
+            shape=shape,
+            scale=scale,
             parameter_name=parameter_name,
             allow_zero=allow_zero,
         )
@@ -324,23 +337,39 @@ def evaluate_continuous_trait_scalar_log_prior(
                 code="continuous_trait_scalar_prior_zero_lognormal",
                 details={"parameter_name": parameter_name},
             )
-        assert prior_model.log_mean is not None
-        assert prior_model.log_standard_deviation is not None
+        log_mean = require_present(
+            prior_model.log_mean,
+            owner_name="continuous-trait scalar prior evaluation",
+            field_name="log_mean",
+        )
+        log_standard_deviation = require_present(
+            prior_model.log_standard_deviation,
+            owner_name="continuous-trait scalar prior evaluation",
+            field_name="log_standard_deviation",
+        )
         return _lognormal_log_density(
             validated_value,
-            log_mean=prior_model.log_mean,
-            log_standard_deviation=prior_model.log_standard_deviation,
+            log_mean=log_mean,
+            log_standard_deviation=log_standard_deviation,
         )
     if prior_model.family == "fixed":
-        assert prior_model.fixed_value is not None
-        assert prior_model.fixed_tolerance is not None
+        fixed_value = require_present(
+            prior_model.fixed_value,
+            owner_name="continuous-trait scalar prior evaluation",
+            field_name="fixed_value",
+        )
+        fixed_tolerance = require_present(
+            prior_model.fixed_tolerance,
+            owner_name="continuous-trait scalar prior evaluation",
+            field_name="fixed_tolerance",
+        )
         return (
             0.0
             if math.isclose(
                 validated_value,
-                prior_model.fixed_value,
+                fixed_value,
                 rel_tol=0.0,
-                abs_tol=prior_model.fixed_tolerance,
+                abs_tol=fixed_tolerance,
             )
             else -math.inf
         )
@@ -367,24 +396,40 @@ def evaluate_continuous_trait_probability_log_prior(
         owner_name="continuous-trait probability prior evaluation",
     )
     if prior_model.family == "beta":
-        assert prior_model.alpha is not None
-        assert prior_model.beta is not None
+        alpha = require_present(
+            prior_model.alpha,
+            owner_name="continuous-trait probability prior evaluation",
+            field_name="alpha",
+        )
+        beta = require_present(
+            prior_model.beta,
+            owner_name="continuous-trait probability prior evaluation",
+            field_name="beta",
+        )
         return _beta_log_density(
             validated_value,
-            alpha=prior_model.alpha,
-            beta=prior_model.beta,
+            alpha=alpha,
+            beta=beta,
             parameter_name=parameter_name,
         )
     if prior_model.family == "fixed":
-        assert prior_model.fixed_value is not None
-        assert prior_model.fixed_tolerance is not None
+        fixed_value = require_present(
+            prior_model.fixed_value,
+            owner_name="continuous-trait probability prior evaluation",
+            field_name="fixed_value",
+        )
+        fixed_tolerance = require_present(
+            prior_model.fixed_tolerance,
+            owner_name="continuous-trait probability prior evaluation",
+            field_name="fixed_tolerance",
+        )
         return (
             0.0
             if math.isclose(
                 validated_value,
-                prior_model.fixed_value,
+                fixed_value,
                 rel_tol=0.0,
-                abs_tol=prior_model.fixed_tolerance,
+                abs_tol=fixed_tolerance,
             )
             else -math.inf
         )
@@ -435,7 +480,10 @@ def _resolve_mode_parameter_rows(
 ) -> list[ContinuousTraitModelPriorRow]:
     target_name = _MODE_PARAMETER_TARGETS[mode]
     if target_name is None:
-        if fit_report.parameter_name is not None or fit_report.parameter_value is not None:
+        if (
+            fit_report.parameter_name is not None
+            or fit_report.parameter_value is not None
+        ):
             raise PhylogeneticsError(
                 "non-parameterized continuous-trait modes must not carry an auxiliary parameter value",
                 code="continuous_trait_prior_unexpected_mode_parameter",
@@ -467,7 +515,12 @@ def _resolve_mode_parameter_rows(
             parameter_name=target_name,
         )
     else:
-        assert isinstance(prior_model, ContinuousTraitScalarPriorModel)
+        if not isinstance(prior_model, ContinuousTraitScalarPriorModel):
+            raise PhylogeneticsError(
+                "continuous-trait prior bundle target requires a scalar prior model",
+                code="continuous_trait_scalar_prior_model_invalid",
+                details={"target_name": target_name},
+            )
         log_prior = evaluate_continuous_trait_scalar_log_prior(
             parameter_value=fit_report.parameter_value,
             prior_model=prior_model,
@@ -567,9 +620,7 @@ def _beta_log_density(
     beta: float,
     parameter_name: str,
 ) -> float:
-    normalization = (
-        math.lgamma(alpha + beta) - math.lgamma(alpha) - math.lgamma(beta)
-    )
+    normalization = math.lgamma(alpha + beta) - math.lgamma(alpha) - math.lgamma(beta)
     if parameter_value == 0.0:
         if alpha < 1.0:
             raise PhylogeneticsError(
@@ -577,7 +628,11 @@ def _beta_log_density(
                 code="continuous_trait_probability_prior_zero_beta_singular",
                 details={"parameter_name": parameter_name, "alpha": alpha},
             )
-        return normalization if math.isclose(alpha, 1.0, rel_tol=0.0, abs_tol=1e-12) else -math.inf
+        return (
+            normalization
+            if math.isclose(alpha, 1.0, rel_tol=0.0, abs_tol=1e-12)
+            else -math.inf
+        )
     if parameter_value == 1.0:
         if beta < 1.0:
             raise PhylogeneticsError(
@@ -585,7 +640,11 @@ def _beta_log_density(
                 code="continuous_trait_probability_prior_one_beta_singular",
                 details={"parameter_name": parameter_name, "beta": beta},
             )
-        return normalization if math.isclose(beta, 1.0, rel_tol=0.0, abs_tol=1e-12) else -math.inf
+        return (
+            normalization
+            if math.isclose(beta, 1.0, rel_tol=0.0, abs_tol=1e-12)
+            else -math.inf
+        )
     return (
         normalization
         + ((alpha - 1.0) * math.log(parameter_value))

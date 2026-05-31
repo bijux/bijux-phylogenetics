@@ -32,6 +32,7 @@ from bijux_phylogenetics.bayesian.partition_model_state import (
     resolve_partition_parameter_states_from_model_parameters,
     strip_partition_model_parameter_state,
 )
+from bijux_phylogenetics.bayesian.required_values import require_present
 from bijux_phylogenetics.bayesian.state import (
     BayesianModelParameterState,
     BayesianPhylogeneticState,
@@ -80,9 +81,7 @@ _SUPPORTED_PARTITION_PARAMETER_TARGETS = frozenset(
     {"base-frequencies", "exchangeabilities", "kappa"}
 )
 _DEFAULT_INITIAL_KAPPA = 2.0
-_DEFAULT_INITIAL_EXCHANGEABILITIES = {
-    component_name: 1.0 for component_name in DNA_EXCHANGEABILITY_LABELS
-}
+_DEFAULT_INITIAL_EXCHANGEABILITIES = dict.fromkeys(DNA_EXCHANGEABILITY_LABELS, 1.0)
 _MINIMUM_SIMPLEX_COMPONENT = 1e-6
 
 
@@ -303,10 +302,12 @@ def build_fixed_topology_partitioned_dna_proposal_schedule(
         field_name="linkage_move_weight",
         owner_name="fixed-topology partitioned DNA proposal schedule",
     )
-    validated_kappa_log_scale_standard_deviation = _validate_optional_positive_finite_float(
-        value=kappa_log_scale_standard_deviation,
-        field_name="kappa_log_scale_standard_deviation",
-        owner_name="fixed-topology partitioned DNA proposal schedule",
+    validated_kappa_log_scale_standard_deviation = (
+        _validate_optional_positive_finite_float(
+            value=kappa_log_scale_standard_deviation,
+            field_name="kappa_log_scale_standard_deviation",
+            owner_name="fixed-topology partitioned DNA proposal schedule",
+        )
     )
     validated_base_frequency_coordinate_standard_deviation = (
         _validate_optional_positive_finite_float(
@@ -340,7 +341,10 @@ def build_fixed_topology_partitioned_dna_proposal_schedule(
         move_weight=validated_exchangeability_move_weight,
         standard_deviation=validated_exchangeability_coordinate_standard_deviation,
     )
-    if validated_linkage_move_weight > 0.0 and not model_definition.linkage_eligible_targets:
+    if (
+        validated_linkage_move_weight > 0.0
+        and not model_definition.linkage_eligible_targets
+    ):
         raise PhylogeneticsError(
             "fixed-topology partitioned DNA proposal schedule can activate linkage moves only when at least one supported target is shared by more than one partition",
             code="fixed_topology_partitioned_dna_linkage_move_weight_invalid",
@@ -386,9 +390,7 @@ def run_fixed_topology_partitioned_dna_metropolis_hastings(
             "fixed-topology partitioned DNA posterior runner requires one FixedTopologyPartitionedDnaModelDefinition",
             code="fixed_topology_partitioned_dna_model_definition_type_invalid",
         )
-    if not isinstance(
-        proposal_schedule, FixedTopologyPartitionedDnaProposalSchedule
-    ):
+    if not isinstance(proposal_schedule, FixedTopologyPartitionedDnaProposalSchedule):
         raise PhylogeneticsError(
             "fixed-topology partitioned DNA posterior runner requires one FixedTopologyPartitionedDnaProposalSchedule",
             code="fixed_topology_partitioned_dna_proposal_schedule_type_invalid",
@@ -416,39 +418,49 @@ def run_fixed_topology_partitioned_dna_metropolis_hastings(
     initial_state = score_bayesian_phylogenetic_state(
         tree=fixed_tree,
         model_parameters=initial_model_parameters,
-        update_prior_components=lambda state: _build_fixed_topology_partitioned_dna_prior_components(
-            state=state,
-            model_definition=model_definition,
-            fixed_topology_id=None,
+        update_prior_components=lambda state: (
+            _build_fixed_topology_partitioned_dna_prior_components(
+                state=state,
+                model_definition=model_definition,
+                fixed_topology_id=None,
+            )
         ),
-        update_log_likelihood=lambda state: _evaluate_fixed_topology_partitioned_dna_log_likelihood(
-            state=state,
-            model_definition=model_definition,
-            fixed_topology_id=None,
-            partition_records_by_name=partition_records_by_name,
-            observation_policy=validated_observation_policy,
+        update_log_likelihood=lambda state: (
+            _evaluate_fixed_topology_partitioned_dna_log_likelihood(
+                state=state,
+                model_definition=model_definition,
+                fixed_topology_id=None,
+                partition_records_by_name=partition_records_by_name,
+                observation_policy=validated_observation_policy,
+            )
         ),
     )
     fixed_topology_id = initial_state.tree.topology_id
     chain_report = run_metropolis_hastings_sampler(
         initial_state=initial_state,
-        propose_state=lambda current_state, rng: _propose_fixed_topology_partitioned_dna_state(
-            current_state=current_state,
-            rng=rng,
-            model_definition=model_definition,
-            proposal_schedule=proposal_schedule,
+        propose_state=lambda current_state, rng: (
+            _propose_fixed_topology_partitioned_dna_state(
+                current_state=current_state,
+                rng=rng,
+                model_definition=model_definition,
+                proposal_schedule=proposal_schedule,
+            )
         ),
-        update_prior_components=lambda state: _build_fixed_topology_partitioned_dna_prior_components(
-            state=state,
-            model_definition=model_definition,
-            fixed_topology_id=fixed_topology_id,
+        update_prior_components=lambda state: (
+            _build_fixed_topology_partitioned_dna_prior_components(
+                state=state,
+                model_definition=model_definition,
+                fixed_topology_id=fixed_topology_id,
+            )
         ),
-        update_log_likelihood=lambda state: _evaluate_fixed_topology_partitioned_dna_log_likelihood(
-            state=state,
-            model_definition=model_definition,
-            fixed_topology_id=fixed_topology_id,
-            partition_records_by_name=partition_records_by_name,
-            observation_policy=validated_observation_policy,
+        update_log_likelihood=lambda state: (
+            _evaluate_fixed_topology_partitioned_dna_log_likelihood(
+                state=state,
+                model_definition=model_definition,
+                fixed_topology_id=fixed_topology_id,
+                partition_records_by_name=partition_records_by_name,
+                observation_policy=validated_observation_policy,
+            )
         ),
         iteration_count=iteration_count,
         sample_every=sample_every,
@@ -609,7 +621,9 @@ def _coerce_partition_states_to_linkage_representatives(
         grouped_partition_names: dict[str, list[str]] = defaultdict(list)
         target_groups = linkage_plan.groups_for_target(target_name)
         for partition_name in required_partition_names:
-            grouped_partition_names[target_groups[partition_name]].append(partition_name)
+            grouped_partition_names[target_groups[partition_name]].append(
+                partition_name
+            )
         for grouped_names in grouped_partition_names.values():
             representative_payload = partition_state_payloads[grouped_names[0]]
             representative_value = _partition_target_value_from_payload(
@@ -623,7 +637,9 @@ def _coerce_partition_states_to_linkage_representatives(
                     target_value=representative_value,
                 )
     return tuple(
-        PartitionSubstitutionParameterState(**partition_state_payloads[state.partition_name])
+        PartitionSubstitutionParameterState(
+            **partition_state_payloads[state.partition_name]
+        )
         for state in partition_parameter_states
         if state.partition_name in state_by_partition_name
     )
@@ -679,8 +695,7 @@ def _build_fixed_topology_partitioned_dna_prior_components(
         )
     ]
     prior_components.extend(
-        _build_partition_prior_component(row)
-        for row in partition_prior_report.rows
+        _build_partition_prior_component(row) for row in partition_prior_report.rows
     )
     return prior_components
 
@@ -807,7 +822,9 @@ def _evaluate_partition_log_likelihood(
             base_frequencies=partition_state.base_frequencies,
             observation_policy=observation_policy,
         ).log_likelihood
-    raise AssertionError(f"unsupported fixed-topology partitioned DNA model {model_name}")
+    raise AssertionError(
+        f"unsupported fixed-topology partitioned DNA model {model_name}"
+    )
 
 
 def _propose_fixed_topology_partitioned_dna_state(
@@ -830,7 +847,11 @@ def _propose_fixed_topology_partitioned_dna_state(
         )
     ]
     if proposal_schedule.kappa_move_weight > 0.0:
-        assert proposal_schedule.kappa_log_scale_standard_deviation is not None
+        kappa_log_scale_standard_deviation = require_present(
+            proposal_schedule.kappa_log_scale_standard_deviation,
+            owner_name="fixed-topology partitioned DNA proposal schedule",
+            field_name="kappa_log_scale_standard_deviation",
+        )
         weighted_moves.append(
             (
                 proposal_schedule.kappa_move_weight,
@@ -838,14 +859,16 @@ def _propose_fixed_topology_partitioned_dna_state(
                     current_state=current_state,
                     rng=rng,
                     partition_models=model_definition.partition_models,
-                    log_scale_standard_deviation=(
-                        proposal_schedule.kappa_log_scale_standard_deviation
-                    ),
+                    log_scale_standard_deviation=kappa_log_scale_standard_deviation,
                 ),
             )
         )
     if proposal_schedule.base_frequency_move_weight > 0.0:
-        assert proposal_schedule.base_frequency_coordinate_standard_deviation is not None
+        base_frequency_coordinate_standard_deviation = require_present(
+            proposal_schedule.base_frequency_coordinate_standard_deviation,
+            owner_name="fixed-topology partitioned DNA proposal schedule",
+            field_name="base_frequency_coordinate_standard_deviation",
+        )
         weighted_moves.append(
             (
                 proposal_schedule.base_frequency_move_weight,
@@ -854,13 +877,17 @@ def _propose_fixed_topology_partitioned_dna_state(
                     rng=rng,
                     partition_models=model_definition.partition_models,
                     unconstrained_coordinate_standard_deviation=(
-                        proposal_schedule.base_frequency_coordinate_standard_deviation
+                        base_frequency_coordinate_standard_deviation
                     ),
                 ),
             )
         )
     if proposal_schedule.exchangeability_move_weight > 0.0:
-        assert proposal_schedule.exchangeability_coordinate_standard_deviation is not None
+        exchangeability_coordinate_standard_deviation = require_present(
+            proposal_schedule.exchangeability_coordinate_standard_deviation,
+            owner_name="fixed-topology partitioned DNA proposal schedule",
+            field_name="exchangeability_coordinate_standard_deviation",
+        )
         weighted_moves.append(
             (
                 proposal_schedule.exchangeability_move_weight,
@@ -869,7 +896,7 @@ def _propose_fixed_topology_partitioned_dna_state(
                     rng=rng,
                     partition_models=model_definition.partition_models,
                     unconstrained_coordinate_standard_deviation=(
-                        proposal_schedule.exchangeability_coordinate_standard_deviation
+                        exchangeability_coordinate_standard_deviation
                     ),
                 ),
             )
@@ -1055,11 +1082,13 @@ def _propose_partition_base_frequency_move(
         group_name=selected_group_name,
         target_value=proposed_parameterization.constrained_mapping(),
     )
-    proposal_density = _log_group_selection_density(
-        group_count=prepared["group_count"]
-    ) - math.log(len(current_unconstrained_values)) + _gaussian_random_walk_density(
-        coordinate_change=proposed_coordinate_value - current_coordinate_value,
-        standard_deviation=validated_coordinate_standard_deviation,
+    proposal_density = (
+        _log_group_selection_density(group_count=prepared["group_count"])
+        - math.log(len(current_unconstrained_values))
+        + _gaussian_random_walk_density(
+            coordinate_change=proposed_coordinate_value - current_coordinate_value,
+            standard_deviation=validated_coordinate_standard_deviation,
+        )
     )
     return build_metropolis_hastings_proposal(
         changed_fields=(changed_field,),
@@ -1137,11 +1166,13 @@ def _propose_partition_exchangeability_move(
         group_name=selected_group_name,
         target_value=proposed_parameterization.constrained_mapping(),
     )
-    proposal_density = _log_group_selection_density(
-        group_count=prepared["group_count"]
-    ) - math.log(len(current_unconstrained_values)) + _gaussian_random_walk_density(
-        coordinate_change=proposed_coordinate_value - current_coordinate_value,
-        standard_deviation=validated_coordinate_standard_deviation,
+    proposal_density = (
+        _log_group_selection_density(group_count=prepared["group_count"])
+        - math.log(len(current_unconstrained_values))
+        + _gaussian_random_walk_density(
+            coordinate_change=proposed_coordinate_value - current_coordinate_value,
+            standard_deviation=validated_coordinate_standard_deviation,
+        )
     )
     return build_metropolis_hastings_proposal(
         changed_fields=(changed_field,),
@@ -1175,7 +1206,9 @@ def _select_partition_target_group(
     selected_group_name = group_names[rng.randrange(len(group_names))]
     representative_partition_name = grouped_partition_names[selected_group_name][0]
     current_value = _partition_state_value_for_target(
-        partition_state=prepared["partition_state_by_name"][representative_partition_name],
+        partition_state=prepared["partition_state_by_name"][
+            representative_partition_name
+        ],
         target_name=target_name,
     )
     prepared["grouped_partition_names"] = grouped_partition_names
@@ -1195,10 +1228,12 @@ def _prepare_partition_parameter_surface(
         model_parameters=current_state.model_parameters,
         partition_names=partition_names,
     )
-    partition_parameter_states = resolve_partition_parameter_states_from_model_parameters(
-        model_parameters=current_state.model_parameters,
-        partition_models=partition_models,
-        linkage_plan=linkage_plan,
+    partition_parameter_states = (
+        resolve_partition_parameter_states_from_model_parameters(
+            model_parameters=current_state.model_parameters,
+            partition_models=partition_models,
+            linkage_plan=linkage_plan,
+        )
     )
     partition_state_by_name = {
         partition_state.partition_name: partition_state
@@ -1276,8 +1311,12 @@ def _rebuild_partition_model_parameters_with_group_value(
         preserved_categorical_parameters=prepared[
             "stripped_model_parameters"
         ].categorical_parameters,
-        preserved_scalar_parameters=prepared["stripped_model_parameters"].scalar_parameters,
-        preserved_vector_parameters=prepared["stripped_model_parameters"].vector_parameters,
+        preserved_scalar_parameters=prepared[
+            "stripped_model_parameters"
+        ].scalar_parameters,
+        preserved_vector_parameters=prepared[
+            "stripped_model_parameters"
+        ].vector_parameters,
     )
 
 
@@ -1473,10 +1512,12 @@ def _require_fixed_topology_partitioned_dna_state_consistency(
             for partition_model in model_definition.partition_models
         ),
     )
-    partition_parameter_states = resolve_partition_parameter_states_from_model_parameters(
-        model_parameters=state.model_parameters,
-        partition_models=model_definition.partition_models,
-        linkage_plan=linkage_plan,
+    partition_parameter_states = (
+        resolve_partition_parameter_states_from_model_parameters(
+            model_parameters=state.model_parameters,
+            partition_models=model_definition.partition_models,
+            linkage_plan=linkage_plan,
+        )
     )
     return linkage_plan, partition_parameter_states
 
@@ -1551,7 +1592,10 @@ def _validate_locus_partitions(
                 "fixed-topology partitioned DNA posterior model requires every locus partition to be one LocusPartition",
                 code="fixed_topology_partitioned_dna_locus_partition_type_invalid",
             )
-        if normalize_partition_data_type(locus_partition.data_type) not in {None, "DNA"}:
+        if normalize_partition_data_type(locus_partition.data_type) not in {
+            None,
+            "DNA",
+        }:
             raise PhylogeneticsError(
                 "fixed-topology partitioned DNA posterior model supports DNA locus partitions only",
                 code="fixed_topology_partitioned_dna_locus_partition_data_type_invalid",
@@ -1567,7 +1611,9 @@ def _validate_locus_partitions(
         raise PhylogeneticsError(
             "fixed-topology partitioned DNA posterior model requires unique locus partition names",
             code="fixed_topology_partitioned_dna_locus_partition_names_duplicated",
-            details={"duplicate_partition_names": sorted(set(duplicate_partition_names))},
+            details={
+                "duplicate_partition_names": sorted(set(duplicate_partition_names))
+            },
         )
     observed_partition_names = tuple(partition_by_name)
     if set(observed_partition_names) != set(expected_partition_names):
@@ -1579,7 +1625,9 @@ def _validate_locus_partitions(
                 "observed_partition_names": sorted(observed_partition_names),
             },
         )
-    return tuple(partition_by_name[partition_name] for partition_name in expected_partition_names)
+    return tuple(
+        partition_by_name[partition_name] for partition_name in expected_partition_names
+    )
 
 
 def _validate_supported_partition_models(
@@ -1625,7 +1673,8 @@ def _validate_supported_partition_prior_families(
     unsupported_prior_targets = [
         target_name
         for target_name, prior_model in prior_models
-        if prior_model is not None and target_name not in _SUPPORTED_PARTITION_PARAMETER_TARGETS
+        if prior_model is not None
+        and target_name not in _SUPPORTED_PARTITION_PARAMETER_TARGETS
     ]
     if unsupported_prior_targets:
         raise PhylogeneticsError(
@@ -1652,7 +1701,9 @@ def _validate_initial_partition_parameter_states(
     partition_prior_bundle: PartitionModelPriorBundle,
     initial_partition_parameter_states: Sequence[PartitionSubstitutionParameterState],
 ) -> tuple[PartitionSubstitutionParameterState, ...]:
-    validated_initial_partition_parameter_states = tuple(initial_partition_parameter_states)
+    validated_initial_partition_parameter_states = tuple(
+        initial_partition_parameter_states
+    )
     build_partition_model_parameter_state(
         partition_models=partition_models,
         linkage_plan=partition_prior_bundle.linkage_plan,

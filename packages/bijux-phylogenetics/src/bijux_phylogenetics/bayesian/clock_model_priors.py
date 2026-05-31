@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
+from bijux_phylogenetics.bayesian.required_values import require_present
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 CLOCK_MODEL_SCALAR_PRIOR_FAMILIES = (
@@ -138,39 +139,67 @@ def evaluate_clock_model_scalar_log_prior(
         owner_name="clock-model scalar prior evaluation",
     )
     if prior_model.family == "exponential":
-        assert prior_model.rate is not None
-        return math.log(prior_model.rate) - (prior_model.rate * validated_value)
+        rate = require_present(
+            prior_model.rate,
+            owner_name="clock-model scalar prior evaluation",
+            field_name="rate",
+        )
+        return math.log(rate) - (rate * validated_value)
     if prior_model.family == "gamma":
-        assert prior_model.shape is not None
-        assert prior_model.scale is not None
+        shape = require_present(
+            prior_model.shape,
+            owner_name="clock-model scalar prior evaluation",
+            field_name="shape",
+        )
+        scale = require_present(
+            prior_model.scale,
+            owner_name="clock-model scalar prior evaluation",
+            field_name="scale",
+        )
         return (
-            ((prior_model.shape - 1.0) * math.log(validated_value))
-            - (validated_value / prior_model.scale)
-            - math.lgamma(prior_model.shape)
-            - (prior_model.shape * math.log(prior_model.scale))
+            ((shape - 1.0) * math.log(validated_value))
+            - (validated_value / scale)
+            - math.lgamma(shape)
+            - (shape * math.log(scale))
         )
     if prior_model.family == "lognormal":
-        assert prior_model.log_mean is not None
-        assert prior_model.log_standard_deviation is not None
+        log_mean = require_present(
+            prior_model.log_mean,
+            owner_name="clock-model scalar prior evaluation",
+            field_name="log_mean",
+        )
+        log_standard_deviation = require_present(
+            prior_model.log_standard_deviation,
+            owner_name="clock-model scalar prior evaluation",
+            field_name="log_standard_deviation",
+        )
         return (
             -math.log(validated_value)
-            - math.log(prior_model.log_standard_deviation)
+            - math.log(log_standard_deviation)
             - (0.5 * math.log(2.0 * math.pi))
             - (
-                ((math.log(validated_value) - prior_model.log_mean) ** 2)
-                / (2.0 * (prior_model.log_standard_deviation**2))
+                ((math.log(validated_value) - log_mean) ** 2)
+                / (2.0 * (log_standard_deviation**2))
             )
         )
     if prior_model.family == "fixed":
-        assert prior_model.fixed_value is not None
-        assert prior_model.fixed_tolerance is not None
+        fixed_value = require_present(
+            prior_model.fixed_value,
+            owner_name="clock-model scalar prior evaluation",
+            field_name="fixed_value",
+        )
+        fixed_tolerance = require_present(
+            prior_model.fixed_tolerance,
+            owner_name="clock-model scalar prior evaluation",
+            field_name="fixed_tolerance",
+        )
         return (
             0.0
             if math.isclose(
                 validated_value,
-                prior_model.fixed_value,
+                fixed_value,
                 rel_tol=0.0,
-                abs_tol=prior_model.fixed_tolerance,
+                abs_tol=fixed_tolerance,
             )
             else -math.inf
         )

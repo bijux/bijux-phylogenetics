@@ -17,6 +17,7 @@ from bijux_phylogenetics.bayesian.metropolis_hastings import (
     run_metropolis_hastings_sampler,
     score_bayesian_phylogenetic_state,
 )
+from bijux_phylogenetics.bayesian.required_values import require_present
 from bijux_phylogenetics.bayesian.state import (
     BayesianPhylogeneticState,
     BayesianPriorComponentState,
@@ -56,9 +57,7 @@ _ACTIVE_PARAMETER_TARGETS_BY_MODEL = {
     "GTR": ("base-frequencies", "exchangeabilities"),
 }
 _DEFAULT_INITIAL_KAPPA = 2.0
-_DEFAULT_INITIAL_EXCHANGEABILITIES = {
-    component_name: 1.0 for component_name in DNA_EXCHANGEABILITY_LABELS
-}
+_DEFAULT_INITIAL_EXCHANGEABILITIES = dict.fromkeys(DNA_EXCHANGEABILITY_LABELS, 1.0)
 _MINIMUM_SIMPLEX_COMPONENT = 1e-6
 
 
@@ -189,7 +188,9 @@ def build_fixed_topology_dna_model_definition(
         if initial_exchangeabilities is not None
         else None
     )
-    active_targets = _ACTIVE_PARAMETER_TARGETS_BY_MODEL[validated_substitution_model_name]
+    active_targets = _ACTIVE_PARAMETER_TARGETS_BY_MODEL[
+        validated_substitution_model_name
+    ]
     if "kappa" not in active_targets and resolved_initial_kappa is not None:
         raise PhylogeneticsError(
             "fixed-topology DNA posterior model received one initial kappa value for a substitution model that does not use kappa",
@@ -252,10 +253,12 @@ def build_fixed_topology_dna_proposal_schedule(
             "fixed-topology DNA proposal schedule requires 'branch_length_move_weight' to be greater than zero",
             code="fixed_topology_dna_branch_length_move_weight_invalid",
         )
-    validated_branch_length_log_scale_standard_deviation = _validate_positive_finite_float(
-        value=branch_length_log_scale_standard_deviation,
-        field_name="branch_length_log_scale_standard_deviation",
-        owner_name="fixed-topology DNA proposal schedule",
+    validated_branch_length_log_scale_standard_deviation = (
+        _validate_positive_finite_float(
+            value=branch_length_log_scale_standard_deviation,
+            field_name="branch_length_log_scale_standard_deviation",
+            owner_name="fixed-topology DNA proposal schedule",
+        )
     )
     validated_kappa_move_weight = _validate_nonnegative_finite_float(
         value=kappa_move_weight,
@@ -273,20 +276,26 @@ def build_fixed_topology_dna_proposal_schedule(
         owner_name="fixed-topology DNA proposal schedule",
     )
     active_targets = set(model_definition.active_parameter_targets)
-    validated_kappa_log_scale_standard_deviation = _validate_optional_positive_finite_float(
-        value=kappa_log_scale_standard_deviation,
-        field_name="kappa_log_scale_standard_deviation",
-        owner_name="fixed-topology DNA proposal schedule",
+    validated_kappa_log_scale_standard_deviation = (
+        _validate_optional_positive_finite_float(
+            value=kappa_log_scale_standard_deviation,
+            field_name="kappa_log_scale_standard_deviation",
+            owner_name="fixed-topology DNA proposal schedule",
+        )
     )
-    validated_base_frequency_coordinate_standard_deviation = _validate_optional_positive_finite_float(
-        value=base_frequency_coordinate_standard_deviation,
-        field_name="base_frequency_coordinate_standard_deviation",
-        owner_name="fixed-topology DNA proposal schedule",
+    validated_base_frequency_coordinate_standard_deviation = (
+        _validate_optional_positive_finite_float(
+            value=base_frequency_coordinate_standard_deviation,
+            field_name="base_frequency_coordinate_standard_deviation",
+            owner_name="fixed-topology DNA proposal schedule",
+        )
     )
-    validated_exchangeability_coordinate_standard_deviation = _validate_optional_positive_finite_float(
-        value=exchangeability_coordinate_standard_deviation,
-        field_name="exchangeability_coordinate_standard_deviation",
-        owner_name="fixed-topology DNA proposal schedule",
+    validated_exchangeability_coordinate_standard_deviation = (
+        _validate_optional_positive_finite_float(
+            value=exchangeability_coordinate_standard_deviation,
+            field_name="exchangeability_coordinate_standard_deviation",
+            owner_name="fixed-topology DNA proposal schedule",
+        )
     )
     _validate_parameter_move_activation(
         target_name="kappa",
@@ -383,10 +392,12 @@ def run_fixed_topology_dna_metropolis_hastings(
     initial_state = score_bayesian_phylogenetic_state(
         tree=fixed_tree,
         model_parameters=initial_model_parameters,
-        update_prior_components=lambda state: _build_fixed_topology_dna_prior_components(
-            state=state,
-            model_definition=model_definition,
-            fixed_topology_id=None,
+        update_prior_components=lambda state: (
+            _build_fixed_topology_dna_prior_components(
+                state=state,
+                model_definition=model_definition,
+                fixed_topology_id=None,
+            )
         ),
         update_log_likelihood=lambda state: _evaluate_fixed_topology_dna_log_likelihood(
             state=state,
@@ -404,10 +415,12 @@ def run_fixed_topology_dna_metropolis_hastings(
             rng=rng,
             proposal_schedule=proposal_schedule,
         ),
-        update_prior_components=lambda state: _build_fixed_topology_dna_prior_components(
-            state=state,
-            model_definition=model_definition,
-            fixed_topology_id=fixed_topology_id,
+        update_prior_components=lambda state: (
+            _build_fixed_topology_dna_prior_components(
+                state=state,
+                model_definition=model_definition,
+                fixed_topology_id=fixed_topology_id,
+            )
         ),
         update_log_likelihood=lambda state: _evaluate_fixed_topology_dna_log_likelihood(
             state=state,
@@ -548,7 +561,9 @@ def _evaluate_fixed_topology_dna_log_likelihood(
             tree,
             records,
             kappa=state.model_parameters.scalar_parameters["kappa"],
-            base_frequencies=state.model_parameters.vector_parameters["base-frequencies"],
+            base_frequencies=state.model_parameters.vector_parameters[
+                "base-frequencies"
+            ],
             observation_policy=observation_policy,
         ).log_likelihood
     if model_name == "GTR":
@@ -558,7 +573,9 @@ def _evaluate_fixed_topology_dna_log_likelihood(
             exchangeabilities=state.model_parameters.vector_parameters[
                 "exchangeabilities"
             ],
-            base_frequencies=state.model_parameters.vector_parameters["base-frequencies"],
+            base_frequencies=state.model_parameters.vector_parameters[
+                "base-frequencies"
+            ],
             observation_policy=observation_policy,
         ).log_likelihood
     raise AssertionError(f"unsupported fixed-topology DNA model {model_name}")
@@ -583,21 +600,27 @@ def _propose_fixed_topology_dna_state(
         )
     ]
     if proposal_schedule.kappa_move_weight > 0.0:
-        assert proposal_schedule.kappa_log_scale_standard_deviation is not None
+        kappa_log_scale_standard_deviation = require_present(
+            proposal_schedule.kappa_log_scale_standard_deviation,
+            owner_name="fixed-topology DNA proposal schedule",
+            field_name="kappa_log_scale_standard_deviation",
+        )
         weighted_moves.append(
             (
                 proposal_schedule.kappa_move_weight,
                 lambda: propose_kappa_move(
                     current_state,
                     rng,
-                    log_scale_standard_deviation=(
-                        proposal_schedule.kappa_log_scale_standard_deviation
-                    ),
+                    log_scale_standard_deviation=kappa_log_scale_standard_deviation,
                 ),
             )
         )
     if proposal_schedule.base_frequency_move_weight > 0.0:
-        assert proposal_schedule.base_frequency_coordinate_standard_deviation is not None
+        base_frequency_coordinate_standard_deviation = require_present(
+            proposal_schedule.base_frequency_coordinate_standard_deviation,
+            owner_name="fixed-topology DNA proposal schedule",
+            field_name="base_frequency_coordinate_standard_deviation",
+        )
         weighted_moves.append(
             (
                 proposal_schedule.base_frequency_move_weight,
@@ -605,13 +628,17 @@ def _propose_fixed_topology_dna_state(
                     current_state,
                     rng,
                     unconstrained_coordinate_standard_deviation=(
-                        proposal_schedule.base_frequency_coordinate_standard_deviation
+                        base_frequency_coordinate_standard_deviation
                     ),
                 ),
             )
         )
     if proposal_schedule.exchangeability_move_weight > 0.0:
-        assert proposal_schedule.exchangeability_coordinate_standard_deviation is not None
+        exchangeability_coordinate_standard_deviation = require_present(
+            proposal_schedule.exchangeability_coordinate_standard_deviation,
+            owner_name="fixed-topology DNA proposal schedule",
+            field_name="exchangeability_coordinate_standard_deviation",
+        )
         weighted_moves.append(
             (
                 proposal_schedule.exchangeability_move_weight,
@@ -619,7 +646,7 @@ def _propose_fixed_topology_dna_state(
                     current_state,
                     rng,
                     unconstrained_coordinate_standard_deviation=(
-                        proposal_schedule.exchangeability_coordinate_standard_deviation
+                        exchangeability_coordinate_standard_deviation
                     ),
                 ),
             )
@@ -695,10 +722,7 @@ def _require_fixed_topology_dna_state_consistency(
                 "observed_model_name": model_name,
             },
         )
-    if (
-        fixed_topology_id is not None
-        and state.tree.topology_id != fixed_topology_id
-    ):
+    if fixed_topology_id is not None and state.tree.topology_id != fixed_topology_id:
         raise PhylogeneticsError(
             "fixed-topology DNA posterior model requires topology to remain unchanged across sampled states",
             code="fixed_topology_dna_state_topology_changed",

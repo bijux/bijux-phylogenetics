@@ -6,6 +6,7 @@ from pathlib import Path
 
 from bijux_phylogenetics.bayesian.beast import validate_fossil_calibration_table
 from bijux_phylogenetics.bayesian.beast.models import ValidatedCalibration
+from bijux_phylogenetics.bayesian.required_values import require_present
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
@@ -158,7 +159,8 @@ def load_calibration_prior_definitions(
         prior_definitions.append(
             _build_calibration_prior_definition(
                 calibration=calibration,
-                node_id=node_by_calibration_id[calibration.calibration_id].node_id or "",
+                node_id=node_by_calibration_id[calibration.calibration_id].node_id
+                or "",
                 node_kind=node_kind_by_calibration_id[calibration.calibration_id],
             )
         )
@@ -298,8 +300,8 @@ def _build_calibration_prior_definition(
             )
         if requested_distribution == "normal":
             mean_age = (minimum_age + maximum_age) / 2.0
-            standard_deviation = (
-                (maximum_age - minimum_age) / (2.0 * _NORMAL_QUANTILE_97_5)
+            standard_deviation = (maximum_age - minimum_age) / (
+                2.0 * _NORMAL_QUANTILE_97_5
             )
             return CalibrationPriorDefinition(
                 calibration_id=calibration.calibration_id,
@@ -329,9 +331,8 @@ def _build_calibration_prior_definition(
                     },
                 )
             log_mean = (math.log(minimum_age) + math.log(maximum_age)) / 2.0
-            log_standard_deviation = (
-                (math.log(maximum_age) - math.log(minimum_age))
-                / (2.0 * _NORMAL_QUANTILE_97_5)
+            log_standard_deviation = (math.log(maximum_age) - math.log(minimum_age)) / (
+                2.0 * _NORMAL_QUANTILE_97_5
             )
             return CalibrationPriorDefinition(
                 calibration_id=calibration.calibration_id,
@@ -347,9 +348,7 @@ def _build_calibration_prior_definition(
                 translated=False,
                 translation_note=None,
                 log_mean=float(format(log_mean, ".15g")),
-                log_standard_deviation=float(
-                    format(log_standard_deviation, ".15g")
-                ),
+                log_standard_deviation=float(format(log_standard_deviation, ".15g")),
             )
         raise PhylogeneticsError(
             "bounded calibration priors require one supported distribution",
@@ -433,16 +432,20 @@ def _require_feasible_calibration_age_constraints(
     node_by_id: dict[str, TreeNode] = {}
     calibration_ids_by_node_id: dict[str, list[str]] = {}
     for calibration, node in resolved_calibrations:
-        assert node.node_id is not None
-        node_by_id[node.node_id] = node
-        calibration_ids_by_node_id.setdefault(node.node_id, []).append(
+        node_id = require_present(
+            node.node_id,
+            owner_name="calibration prior age-constraint resolution",
+            field_name="node_id",
+        )
+        node_by_id[node_id] = node
+        calibration_ids_by_node_id.setdefault(node_id, []).append(
             calibration.calibration_id
         )
-        existing_bounds = merged_bounds_by_node_id.get(node.node_id)
+        existing_bounds = merged_bounds_by_node_id.get(node_id)
         minimum_age = calibration.minimum_age
         maximum_age = calibration.maximum_age
         if existing_bounds is None:
-            merged_bounds_by_node_id[node.node_id] = (minimum_age, maximum_age)
+            merged_bounds_by_node_id[node_id] = (minimum_age, maximum_age)
             continue
         existing_minimum_age, existing_maximum_age = existing_bounds
         merged_minimum_age = (
@@ -476,7 +479,10 @@ def _require_feasible_calibration_age_constraints(
                     "calibration_ids": calibration_ids_by_node_id[node.node_id],
                 },
             )
-        merged_bounds_by_node_id[node.node_id] = (merged_minimum_age, merged_maximum_age)
+        merged_bounds_by_node_id[node_id] = (
+            merged_minimum_age,
+            merged_maximum_age,
+        )
 
     for ancestor_node_id, ancestor_bounds in merged_bounds_by_node_id.items():
         ancestor_minimum_age, ancestor_maximum_age = ancestor_bounds
@@ -518,14 +524,30 @@ def _compute_node_age_by_id(
 ) -> dict[str, float]:
     depth_by_node_id: dict[str, float] = {}
     root = tree.root
-    assert root.node_id is not None
-    depth_by_node_id[root.node_id] = 0.0
+    root_node_id = require_present(
+        root.node_id,
+        owner_name="calibration prior node-age computation",
+        field_name="root.node_id",
+    )
+    depth_by_node_id[root_node_id] = 0.0
     for parent, child in tree.iter_edges():
-        assert parent.node_id is not None
-        assert child.node_id is not None
-        assert child.branch_length is not None
-        depth_by_node_id[child.node_id] = depth_by_node_id[parent.node_id] + float(
-            child.branch_length
+        parent_node_id = require_present(
+            parent.node_id,
+            owner_name="calibration prior node-age computation",
+            field_name="parent.node_id",
+        )
+        child_node_id = require_present(
+            child.node_id,
+            owner_name="calibration prior node-age computation",
+            field_name="child.node_id",
+        )
+        child_branch_length = require_present(
+            child.branch_length,
+            owner_name="calibration prior node-age computation",
+            field_name="child.branch_length",
+        )
+        depth_by_node_id[child_node_id] = depth_by_node_id[parent_node_id] + float(
+            child_branch_length
         )
     ultrametric_summary = summarize_ultrametric_tip_depths(
         {
@@ -559,65 +581,133 @@ def _evaluate_calibration_log_prior(
     prior_definition: CalibrationPriorDefinition,
 ) -> float:
     if prior_definition.family == "fixed":
-        assert prior_definition.fixed_age is not None
-        assert prior_definition.fixed_tolerance is not None
+        fixed_age = require_present(
+            prior_definition.fixed_age,
+            owner_name="calibration prior evaluation",
+            field_name="fixed_age",
+        )
+        fixed_tolerance = require_present(
+            prior_definition.fixed_tolerance,
+            owner_name="calibration prior evaluation",
+            field_name="fixed_tolerance",
+        )
         return (
             0.0
             if math.isclose(
                 node_age,
-                prior_definition.fixed_age,
+                fixed_age,
                 rel_tol=0.0,
-                abs_tol=prior_definition.fixed_tolerance,
+                abs_tol=fixed_tolerance,
             )
             else -math.inf
         )
     if prior_definition.family == "uniform":
-        assert prior_definition.minimum_age is not None
-        assert prior_definition.maximum_age is not None
-        if not (prior_definition.minimum_age <= node_age <= prior_definition.maximum_age):
+        minimum_age = require_present(
+            prior_definition.minimum_age,
+            owner_name="calibration prior evaluation",
+            field_name="minimum_age",
+        )
+        maximum_age = require_present(
+            prior_definition.maximum_age,
+            owner_name="calibration prior evaluation",
+            field_name="maximum_age",
+        )
+        if not (minimum_age <= node_age <= maximum_age):
             return -math.inf
-        return -math.log(prior_definition.maximum_age - prior_definition.minimum_age)
+        return -math.log(maximum_age - minimum_age)
     if prior_definition.family == "normal":
-        assert prior_definition.minimum_age is not None
-        assert prior_definition.maximum_age is not None
-        assert prior_definition.mean_age is not None
-        assert prior_definition.standard_deviation is not None
+        minimum_age = require_present(
+            prior_definition.minimum_age,
+            owner_name="calibration prior evaluation",
+            field_name="minimum_age",
+        )
+        maximum_age = require_present(
+            prior_definition.maximum_age,
+            owner_name="calibration prior evaluation",
+            field_name="maximum_age",
+        )
+        mean_age = require_present(
+            prior_definition.mean_age,
+            owner_name="calibration prior evaluation",
+            field_name="mean_age",
+        )
+        standard_deviation = require_present(
+            prior_definition.standard_deviation,
+            owner_name="calibration prior evaluation",
+            field_name="standard_deviation",
+        )
         return _truncated_normal_log_density(
             value=node_age,
-            mean=prior_definition.mean_age,
-            standard_deviation=prior_definition.standard_deviation,
-            lower_bound=prior_definition.minimum_age,
-            upper_bound=prior_definition.maximum_age,
+            mean=mean_age,
+            standard_deviation=standard_deviation,
+            lower_bound=minimum_age,
+            upper_bound=maximum_age,
         )
     if prior_definition.family == "lognormal":
-        assert prior_definition.minimum_age is not None
-        assert prior_definition.maximum_age is not None
-        assert prior_definition.log_mean is not None
-        assert prior_definition.log_standard_deviation is not None
+        minimum_age = require_present(
+            prior_definition.minimum_age,
+            owner_name="calibration prior evaluation",
+            field_name="minimum_age",
+        )
+        maximum_age = require_present(
+            prior_definition.maximum_age,
+            owner_name="calibration prior evaluation",
+            field_name="maximum_age",
+        )
+        log_mean = require_present(
+            prior_definition.log_mean,
+            owner_name="calibration prior evaluation",
+            field_name="log_mean",
+        )
+        log_standard_deviation = require_present(
+            prior_definition.log_standard_deviation,
+            owner_name="calibration prior evaluation",
+            field_name="log_standard_deviation",
+        )
         return _truncated_lognormal_log_density(
             value=node_age,
-            log_mean=prior_definition.log_mean,
-            log_standard_deviation=prior_definition.log_standard_deviation,
-            lower_bound=prior_definition.minimum_age,
-            upper_bound=prior_definition.maximum_age,
+            log_mean=log_mean,
+            log_standard_deviation=log_standard_deviation,
+            lower_bound=minimum_age,
+            upper_bound=maximum_age,
         )
     if prior_definition.family == "offset-exponential":
-        assert prior_definition.offset_age is not None
-        assert prior_definition.exponential_mean is not None
+        offset_age = require_present(
+            prior_definition.offset_age,
+            owner_name="calibration prior evaluation",
+            field_name="offset_age",
+        )
+        exponential_mean = require_present(
+            prior_definition.exponential_mean,
+            owner_name="calibration prior evaluation",
+            field_name="exponential_mean",
+        )
         return _offset_exponential_log_density(
             value=node_age,
-            offset_age=prior_definition.offset_age,
-            exponential_mean=prior_definition.exponential_mean,
+            offset_age=offset_age,
+            exponential_mean=exponential_mean,
         )
     if prior_definition.family == "offset-lognormal":
-        assert prior_definition.offset_age is not None
-        assert prior_definition.log_mean is not None
-        assert prior_definition.log_standard_deviation is not None
+        offset_age = require_present(
+            prior_definition.offset_age,
+            owner_name="calibration prior evaluation",
+            field_name="offset_age",
+        )
+        log_mean = require_present(
+            prior_definition.log_mean,
+            owner_name="calibration prior evaluation",
+            field_name="log_mean",
+        )
+        log_standard_deviation = require_present(
+            prior_definition.log_standard_deviation,
+            owner_name="calibration prior evaluation",
+            field_name="log_standard_deviation",
+        )
         return _offset_lognormal_log_density(
             value=node_age,
-            offset_age=prior_definition.offset_age,
-            log_mean=prior_definition.log_mean,
-            log_standard_deviation=prior_definition.log_standard_deviation,
+            offset_age=offset_age,
+            log_mean=log_mean,
+            log_standard_deviation=log_standard_deviation,
         )
     raise PhylogeneticsError(
         "calibration prior family is unsupported",
@@ -639,7 +729,9 @@ def _truncated_normal_log_density(
 ) -> float:
     if value < lower_bound or value > upper_bound:
         return -math.inf
-    normalization_mass = _normal_cdf(upper_bound, mean, standard_deviation) - _normal_cdf(
+    normalization_mass = _normal_cdf(
+        upper_bound, mean, standard_deviation
+    ) - _normal_cdf(
         lower_bound,
         mean,
         standard_deviation,

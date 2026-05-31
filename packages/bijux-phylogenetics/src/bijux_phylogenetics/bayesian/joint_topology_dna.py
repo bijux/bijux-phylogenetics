@@ -23,6 +23,7 @@ from bijux_phylogenetics.bayesian.metropolis_hastings import (
     run_metropolis_hastings_sampler,
     score_bayesian_phylogenetic_state,
 )
+from bijux_phylogenetics.bayesian.required_values import require_present
 from bijux_phylogenetics.bayesian.state import (
     BayesianPhylogeneticState,
     BayesianPriorComponentState,
@@ -235,15 +236,19 @@ def run_joint_topology_dna_metropolis_hastings(
         initial_state=score_bayesian_phylogenetic_state(
             tree=working_tree,
             model_parameters=initial_model_parameters,
-            update_prior_components=lambda state: _build_joint_topology_dna_prior_components(
-                state=state,
-                model_definition=model_definition,
+            update_prior_components=lambda state: (
+                _build_joint_topology_dna_prior_components(
+                    state=state,
+                    model_definition=model_definition,
+                )
             ),
-            update_log_likelihood=lambda state: _evaluate_joint_topology_dna_log_likelihood(
-                state=state,
-                records=normalized_records,
-                model_definition=model_definition,
-                observation_policy=validated_observation_policy,
+            update_log_likelihood=lambda state: (
+                _evaluate_joint_topology_dna_log_likelihood(
+                    state=state,
+                    records=normalized_records,
+                    model_definition=model_definition,
+                    observation_policy=validated_observation_policy,
+                )
             ),
         ),
         propose_state=lambda current_state, rng: _propose_joint_topology_dna_state(
@@ -251,9 +256,11 @@ def run_joint_topology_dna_metropolis_hastings(
             rng=rng,
             proposal_schedule=proposal_schedule,
         ),
-        update_prior_components=lambda state: _build_joint_topology_dna_prior_components(
-            state=state,
-            model_definition=model_definition,
+        update_prior_components=lambda state: (
+            _build_joint_topology_dna_prior_components(
+                state=state,
+                model_definition=model_definition,
+            )
         ),
         update_log_likelihood=lambda state: _evaluate_joint_topology_dna_log_likelihood(
             state=state,
@@ -363,23 +370,26 @@ def _propose_joint_topology_dna_state(
         )
     )
     if sequence_proposal_schedule.kappa_move_weight > 0.0:
-        assert sequence_proposal_schedule.kappa_log_scale_standard_deviation is not None
+        kappa_log_scale_standard_deviation = require_present(
+            sequence_proposal_schedule.kappa_log_scale_standard_deviation,
+            owner_name="joint-topology DNA sequence proposal schedule",
+            field_name="kappa_log_scale_standard_deviation",
+        )
         weighted_moves.append(
             (
                 sequence_proposal_schedule.kappa_move_weight,
                 lambda: propose_kappa_move(
                     current_state,
                     rng,
-                    log_scale_standard_deviation=(
-                        sequence_proposal_schedule.kappa_log_scale_standard_deviation
-                    ),
+                    log_scale_standard_deviation=kappa_log_scale_standard_deviation,
                 ),
             )
         )
     if sequence_proposal_schedule.base_frequency_move_weight > 0.0:
-        assert (
-            sequence_proposal_schedule.base_frequency_coordinate_standard_deviation
-            is not None
+        base_frequency_coordinate_standard_deviation = require_present(
+            sequence_proposal_schedule.base_frequency_coordinate_standard_deviation,
+            owner_name="joint-topology DNA sequence proposal schedule",
+            field_name="base_frequency_coordinate_standard_deviation",
         )
         weighted_moves.append(
             (
@@ -388,15 +398,16 @@ def _propose_joint_topology_dna_state(
                     current_state,
                     rng,
                     unconstrained_coordinate_standard_deviation=(
-                        sequence_proposal_schedule.base_frequency_coordinate_standard_deviation
+                        base_frequency_coordinate_standard_deviation
                     ),
                 ),
             )
         )
     if sequence_proposal_schedule.exchangeability_move_weight > 0.0:
-        assert (
-            sequence_proposal_schedule.exchangeability_coordinate_standard_deviation
-            is not None
+        exchangeability_coordinate_standard_deviation = require_present(
+            sequence_proposal_schedule.exchangeability_coordinate_standard_deviation,
+            owner_name="joint-topology DNA sequence proposal schedule",
+            field_name="exchangeability_coordinate_standard_deviation",
         )
         weighted_moves.append(
             (
@@ -405,7 +416,7 @@ def _propose_joint_topology_dna_state(
                     current_state,
                     rng,
                     unconstrained_coordinate_standard_deviation=(
-                        sequence_proposal_schedule.exchangeability_coordinate_standard_deviation
+                        exchangeability_coordinate_standard_deviation
                     ),
                 ),
             )

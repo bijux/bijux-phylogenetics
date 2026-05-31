@@ -6,6 +6,7 @@ import math
 
 import numpy
 
+from bijux_phylogenetics.bayesian.required_values import require_present
 from bijux_phylogenetics.phylo.likelihood.dna_simplex_coordinates import (
     DNA_EXCHANGEABILITY_LABELS,
     parameterize_dna_base_frequency_simplex,
@@ -354,7 +355,8 @@ def build_substitution_parameter_prior_bundle(
     exchangeability_prior: SimplexSubstitutionParameterPriorModel | None = None,
     base_frequency_prior: SimplexSubstitutionParameterPriorModel | None = None,
     gamma_alpha_prior: PositiveSubstitutionParameterPriorModel | None = None,
-    invariant_proportion_prior: ProbabilitySubstitutionParameterPriorModel | None = None,
+    invariant_proportion_prior: ProbabilitySubstitutionParameterPriorModel
+    | None = None,
 ) -> SubstitutionParameterPriorBundle:
     """Build one explicit prior bundle over supported substitution parameters."""
     if exchangeability_prior is not None:
@@ -556,30 +558,58 @@ def _evaluate_positive_log_prior(
     prior_model: PositiveSubstitutionParameterPriorModel,
 ) -> float:
     if prior_model.family == "exponential":
-        assert prior_model.rate is not None
-        return math.log(prior_model.rate) - (prior_model.rate * value)
+        rate = require_present(
+            prior_model.rate,
+            owner_name="positive substitution-parameter prior evaluation",
+            field_name="rate",
+        )
+        return math.log(rate) - (rate * value)
     if prior_model.family == "gamma":
-        assert prior_model.shape is not None
-        assert prior_model.scale is not None
-        return _gamma_log_density(value, shape=prior_model.shape, scale=prior_model.scale)
+        shape = require_present(
+            prior_model.shape,
+            owner_name="positive substitution-parameter prior evaluation",
+            field_name="shape",
+        )
+        scale = require_present(
+            prior_model.scale,
+            owner_name="positive substitution-parameter prior evaluation",
+            field_name="scale",
+        )
+        return _gamma_log_density(value, shape=shape, scale=scale)
     if prior_model.family == "lognormal":
-        assert prior_model.log_mean is not None
-        assert prior_model.log_standard_deviation is not None
+        log_mean = require_present(
+            prior_model.log_mean,
+            owner_name="positive substitution-parameter prior evaluation",
+            field_name="log_mean",
+        )
+        log_standard_deviation = require_present(
+            prior_model.log_standard_deviation,
+            owner_name="positive substitution-parameter prior evaluation",
+            field_name="log_standard_deviation",
+        )
         return _lognormal_log_density(
             value,
-            log_mean=prior_model.log_mean,
-            log_standard_deviation=prior_model.log_standard_deviation,
+            log_mean=log_mean,
+            log_standard_deviation=log_standard_deviation,
         )
     if prior_model.family == "fixed":
-        assert prior_model.fixed_value is not None
-        assert prior_model.fixed_tolerance is not None
+        fixed_value = require_present(
+            prior_model.fixed_value,
+            owner_name="positive substitution-parameter prior evaluation",
+            field_name="fixed_value",
+        )
+        fixed_tolerance = require_present(
+            prior_model.fixed_tolerance,
+            owner_name="positive substitution-parameter prior evaluation",
+            field_name="fixed_tolerance",
+        )
         return (
             0.0
             if math.isclose(
                 value,
-                prior_model.fixed_value,
+                fixed_value,
                 rel_tol=0.0,
-                abs_tol=prior_model.fixed_tolerance,
+                abs_tol=fixed_tolerance,
             )
             else -math.inf
         )
@@ -599,19 +629,35 @@ def _evaluate_probability_log_prior(
     prior_model: ProbabilitySubstitutionParameterPriorModel,
 ) -> float:
     if prior_model.family == "beta":
-        assert prior_model.alpha is not None
-        assert prior_model.beta is not None
-        return _beta_log_density(value, alpha=prior_model.alpha, beta=prior_model.beta)
+        alpha = require_present(
+            prior_model.alpha,
+            owner_name="probability substitution-parameter prior evaluation",
+            field_name="alpha",
+        )
+        beta = require_present(
+            prior_model.beta,
+            owner_name="probability substitution-parameter prior evaluation",
+            field_name="beta",
+        )
+        return _beta_log_density(value, alpha=alpha, beta=beta)
     if prior_model.family == "fixed":
-        assert prior_model.fixed_value is not None
-        assert prior_model.fixed_tolerance is not None
+        fixed_value = require_present(
+            prior_model.fixed_value,
+            owner_name="probability substitution-parameter prior evaluation",
+            field_name="fixed_value",
+        )
+        fixed_tolerance = require_present(
+            prior_model.fixed_tolerance,
+            owner_name="probability substitution-parameter prior evaluation",
+            field_name="fixed_tolerance",
+        )
         return (
             0.0
             if math.isclose(
                 value,
-                prior_model.fixed_value,
+                fixed_value,
                 rel_tol=0.0,
-                abs_tol=prior_model.fixed_tolerance,
+                abs_tol=fixed_tolerance,
             )
             else -math.inf
         )
@@ -637,14 +683,26 @@ def _evaluate_simplex_log_prior(
         owner_name="substitution-parameter prior evaluation",
     )
     if prior_model.family == "dirichlet":
-        assert prior_model.concentration_parameters is not None
+        concentration_parameters = require_present(
+            prior_model.concentration_parameters,
+            owner_name="simplex substitution-parameter prior evaluation",
+            field_name="concentration_parameters",
+        )
         return _dirichlet_log_density(
             values=ordered_realized_values,
-            concentration_parameters=prior_model.concentration_parameters,
+            concentration_parameters=concentration_parameters,
         )
     if prior_model.family == "fixed":
-        assert prior_model.fixed_values is not None
-        assert prior_model.fixed_tolerance is not None
+        fixed_values = require_present(
+            prior_model.fixed_values,
+            owner_name="simplex substitution-parameter prior evaluation",
+            field_name="fixed_values",
+        )
+        fixed_tolerance = require_present(
+            prior_model.fixed_tolerance,
+            owner_name="simplex substitution-parameter prior evaluation",
+            field_name="fixed_tolerance",
+        )
         return (
             0.0
             if all(
@@ -652,11 +710,11 @@ def _evaluate_simplex_log_prior(
                     observed_value,
                     expected_value,
                     rel_tol=0.0,
-                    abs_tol=prior_model.fixed_tolerance,
+                    abs_tol=fixed_tolerance,
                 )
                 for observed_value, expected_value in zip(
                     ordered_realized_values,
-                    prior_model.fixed_values,
+                    fixed_values,
                     strict=True,
                 )
             )
@@ -720,10 +778,14 @@ def _resolve_named_component_values(
                 code="substitution_parameter_prior_component_names_invalid",
                 details={
                     "expected_component_names": list(component_names),
-                    "observed_component_names": sorted(str(name) for name in raw_values),
+                    "observed_component_names": sorted(
+                        str(name) for name in raw_values
+                    ),
                 },
             )
-        return tuple(float(raw_values[component_name]) for component_name in component_names)
+        return tuple(
+            float(raw_values[component_name]) for component_name in component_names
+        )
     resolved_values = tuple(float(value) for value in raw_values)
     if len(resolved_values) != len(component_names):
         raise PhylogeneticsError(
@@ -780,8 +842,7 @@ def _lognormal_log_density(
         -math.log(value)
         - math.log(log_standard_deviation)
         - 0.5 * math.log(2.0 * math.pi)
-        - ((math.log(value) - log_mean) ** 2)
-        / (2.0 * (log_standard_deviation**2))
+        - ((math.log(value) - log_mean) ** 2) / (2.0 * (log_standard_deviation**2))
     )
 
 

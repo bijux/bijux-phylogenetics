@@ -4,13 +4,14 @@ import csv
 from dataclasses import dataclass
 from pathlib import Path
 
+from bijux_phylogenetics.bayesian.partition_model_priors import (
+    PartitionSubstitutionModelDefinition,
+)
 from bijux_phylogenetics.bayesian.partition_model_state import (
     resolve_partition_parameter_linkage_plan_from_model_parameters,
     resolve_partition_parameter_states_from_model_parameters,
 )
-from bijux_phylogenetics.bayesian.partition_model_priors import (
-    PartitionSubstitutionModelDefinition,
-)
+from bijux_phylogenetics.bayesian.required_values import require_present
 from bijux_phylogenetics.bayesian.state import BayesianPhylogeneticState
 from bijux_phylogenetics.io.fasta import write_fasta_alignment
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
@@ -171,7 +172,8 @@ def build_posterior_ancestral_sequence_definition(
 
 
 def summarize_nucleotide_posterior_ancestral_sequences(
-    sampled_states: list[BayesianPhylogeneticState] | tuple[BayesianPhylogeneticState, ...],
+    sampled_states: list[BayesianPhylogeneticState]
+    | tuple[BayesianPhylogeneticState, ...],
     *,
     definition: PosteriorAncestralSequenceDefinition,
 ) -> PosteriorAncestralSequenceReport:
@@ -413,7 +415,9 @@ def _validate_optional_partition_surface(
             code="posterior_ancestral_sequence_partition_coverage_incomplete",
             details={"unassigned_site_count": unassigned_site_count},
         )
-    locus_partition_names = tuple(partition.name for partition in validated_locus_partitions)
+    locus_partition_names = tuple(
+        partition.name for partition in validated_locus_partitions
+    )
     partition_model_names = tuple(
         partition_model.partition_name for partition_model in validated_partition_models
     )
@@ -430,7 +434,8 @@ def _validate_optional_partition_surface(
 
 
 def _validate_sampled_states(
-    sampled_states: list[BayesianPhylogeneticState] | tuple[BayesianPhylogeneticState, ...],
+    sampled_states: list[BayesianPhylogeneticState]
+    | tuple[BayesianPhylogeneticState, ...],
 ) -> tuple[BayesianPhylogeneticState, ...]:
     validated_sampled_states = tuple(sampled_states)
     if not validated_sampled_states:
@@ -454,7 +459,10 @@ def _evaluate_posterior_sample_ancestral_probabilities(
     sampled_state: BayesianPhylogeneticState,
     definition: PosteriorAncestralSequenceDefinition,
 ) -> _PosteriorSampleModelEvaluation:
-    if definition.partition_models is not None and definition.locus_partitions is not None:
+    if (
+        definition.partition_models is not None
+        and definition.locus_partitions is not None
+    ):
         return _evaluate_partitioned_posterior_sample_ancestral_probabilities(
             sampled_state=sampled_state,
             definition=definition,
@@ -526,11 +534,18 @@ def _evaluate_partitioned_posterior_sample_ancestral_probabilities(
                 "observed_model_name": model_name,
             },
         )
-    assert definition.partition_models is not None
-    assert definition.locus_partitions is not None
+    partition_models = require_present(
+        definition.partition_models,
+        owner_name="posterior ancestral sequence partitioned evaluation",
+        field_name="partition_models",
+    )
+    require_present(
+        definition.locus_partitions,
+        owner_name="posterior ancestral sequence partitioned evaluation",
+        field_name="locus_partitions",
+    )
     partition_names = tuple(
-        partition_model.partition_name
-        for partition_model in definition.partition_models
+        partition_model.partition_name for partition_model in partition_models
     )
     linkage_plan = resolve_partition_parameter_linkage_plan_from_model_parameters(
         model_parameters=sampled_state.model_parameters,
@@ -538,7 +553,7 @@ def _evaluate_partitioned_posterior_sample_ancestral_probabilities(
     )
     partition_states = resolve_partition_parameter_states_from_model_parameters(
         model_parameters=sampled_state.model_parameters,
-        partition_models=definition.partition_models,
+        partition_models=partition_models,
         linkage_plan=linkage_plan,
     )
     partition_state_by_name = {
@@ -646,7 +661,9 @@ def _build_state_probability_rows(
         clade_probability = float(
             format(supporting_sample_count / sample_count, ".15g")
         )
-        for site_position in range(1, _infer_site_count(state_probability_sum_by_key, clade_id) + 1):
+        for site_position in range(
+            1, _infer_site_count(state_probability_sum_by_key, clade_id) + 1
+        ):
             for state in _DNA_STATES:
                 posterior_sum = state_probability_sum_by_key.get(
                     (clade_id, site_position, state),
@@ -683,7 +700,9 @@ def _build_site_summary_rows(
     state_probability_rows: list[PosteriorAncestralStateProbabilityRow],
     definition: PosteriorAncestralSequenceDefinition,
 ) -> list[PosteriorAncestralSiteSummaryRow]:
-    grouped_rows: dict[tuple[str, int], dict[str, PosteriorAncestralStateProbabilityRow]] = {}
+    grouped_rows: dict[
+        tuple[str, int], dict[str, PosteriorAncestralStateProbabilityRow]
+    ] = {}
     for row in state_probability_rows:
         grouped_rows.setdefault((row.clade_id, row.site_position), {})[row.state] = row
     summary_rows: list[PosteriorAncestralSiteSummaryRow] = []

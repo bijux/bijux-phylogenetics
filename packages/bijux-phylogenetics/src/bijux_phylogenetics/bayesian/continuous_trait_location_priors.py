@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
+from bijux_phylogenetics.bayesian.required_values import require_present
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 CONTINUOUS_TRAIT_LOCATION_PRIOR_FAMILIES = ("fixed", "normal")
@@ -87,23 +88,39 @@ def evaluate_continuous_trait_location_log_prior(
         owner_name="continuous-trait location prior evaluation",
     )
     if prior_model.family == "normal":
-        assert prior_model.mean is not None
-        assert prior_model.standard_deviation is not None
+        mean = require_present(
+            prior_model.mean,
+            owner_name="continuous-trait location prior evaluation",
+            field_name="mean",
+        )
+        standard_deviation = require_present(
+            prior_model.standard_deviation,
+            owner_name="continuous-trait location prior evaluation",
+            field_name="standard_deviation",
+        )
         return _normal_log_density(
             validated_value,
-            mean=prior_model.mean,
-            standard_deviation=prior_model.standard_deviation,
+            mean=mean,
+            standard_deviation=standard_deviation,
         )
     if prior_model.family == "fixed":
-        assert prior_model.fixed_value is not None
-        assert prior_model.fixed_tolerance is not None
+        fixed_value = require_present(
+            prior_model.fixed_value,
+            owner_name="continuous-trait location prior evaluation",
+            field_name="fixed_value",
+        )
+        fixed_tolerance = require_present(
+            prior_model.fixed_tolerance,
+            owner_name="continuous-trait location prior evaluation",
+            field_name="fixed_tolerance",
+        )
         return (
             0.0
             if math.isclose(
                 validated_value,
-                prior_model.fixed_value,
+                fixed_value,
                 rel_tol=0.0,
-                abs_tol=prior_model.fixed_tolerance,
+                abs_tol=fixed_tolerance,
             )
             else -math.inf
         )

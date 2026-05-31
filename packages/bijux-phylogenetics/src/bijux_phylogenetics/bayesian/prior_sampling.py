@@ -9,6 +9,7 @@ from bijux_phylogenetics.bayesian.branch_length_priors import (
     BranchLengthPriorModel,
     evaluate_tree_branch_length_log_prior,
 )
+from bijux_phylogenetics.bayesian.required_values import require_present
 from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
     PositiveSubstitutionParameterPriorModel,
     ProbabilitySubstitutionParameterPriorModel,
@@ -150,7 +151,9 @@ def _sample_prior_only_phylogenetic_state(
         prior_model=branch_length_prior,
         rng=rng,
     )
-    topology_report = evaluate_tree_topology_log_prior(sampled_tree, tree_topology_prior)
+    topology_report = evaluate_tree_topology_log_prior(
+        sampled_tree, tree_topology_prior
+    )
     branch_length_report = evaluate_tree_branch_length_log_prior(
         sampled_tree,
         branch_length_prior,
@@ -309,22 +312,45 @@ def _sample_branch_length_value(
     rng: random.Random,
 ) -> float:
     if prior_model.family == "exponential":
-        assert prior_model.rate is not None
-        return rng.expovariate(prior_model.rate)
+        rate = require_present(
+            prior_model.rate,
+            owner_name="prior-only branch-length sampling",
+            field_name="rate",
+        )
+        return rng.expovariate(rate)
     if prior_model.family == "gamma":
-        assert prior_model.shape is not None
-        assert prior_model.scale is not None
-        return rng.gammavariate(prior_model.shape, prior_model.scale)
+        shape = require_present(
+            prior_model.shape,
+            owner_name="prior-only branch-length sampling",
+            field_name="shape",
+        )
+        scale = require_present(
+            prior_model.scale,
+            owner_name="prior-only branch-length sampling",
+            field_name="scale",
+        )
+        return rng.gammavariate(shape, scale)
     if prior_model.family == "lognormal":
-        assert prior_model.log_mean is not None
-        assert prior_model.log_standard_deviation is not None
-        return rng.lognormvariate(
+        log_mean = require_present(
             prior_model.log_mean,
+            owner_name="prior-only branch-length sampling",
+            field_name="log_mean",
+        )
+        log_standard_deviation = require_present(
             prior_model.log_standard_deviation,
+            owner_name="prior-only branch-length sampling",
+            field_name="log_standard_deviation",
+        )
+        return rng.lognormvariate(
+            log_mean,
+            log_standard_deviation,
         )
     if prior_model.family == "fixed":
-        assert prior_model.fixed_value is not None
-        return prior_model.fixed_value
+        return require_present(
+            prior_model.fixed_value,
+            owner_name="prior-only branch-length sampling",
+            field_name="fixed_value",
+        )
     raise PhylogeneticsError(
         "prior-only simulation does not support the configured branch-length prior family",
         code="prior_only_branch_length_prior_family_invalid",
@@ -338,22 +364,45 @@ def _sample_positive_prior_value(
     rng: random.Random,
 ) -> float:
     if prior_model.family == "exponential":
-        assert prior_model.rate is not None
-        return rng.expovariate(prior_model.rate)
+        rate = require_present(
+            prior_model.rate,
+            owner_name="prior-only positive substitution-parameter sampling",
+            field_name="rate",
+        )
+        return rng.expovariate(rate)
     if prior_model.family == "gamma":
-        assert prior_model.shape is not None
-        assert prior_model.scale is not None
-        return rng.gammavariate(prior_model.shape, prior_model.scale)
+        shape = require_present(
+            prior_model.shape,
+            owner_name="prior-only positive substitution-parameter sampling",
+            field_name="shape",
+        )
+        scale = require_present(
+            prior_model.scale,
+            owner_name="prior-only positive substitution-parameter sampling",
+            field_name="scale",
+        )
+        return rng.gammavariate(shape, scale)
     if prior_model.family == "lognormal":
-        assert prior_model.log_mean is not None
-        assert prior_model.log_standard_deviation is not None
-        return rng.lognormvariate(
+        log_mean = require_present(
             prior_model.log_mean,
+            owner_name="prior-only positive substitution-parameter sampling",
+            field_name="log_mean",
+        )
+        log_standard_deviation = require_present(
             prior_model.log_standard_deviation,
+            owner_name="prior-only positive substitution-parameter sampling",
+            field_name="log_standard_deviation",
+        )
+        return rng.lognormvariate(
+            log_mean,
+            log_standard_deviation,
         )
     if prior_model.family == "fixed":
-        assert prior_model.fixed_value is not None
-        return prior_model.fixed_value
+        return require_present(
+            prior_model.fixed_value,
+            owner_name="prior-only positive substitution-parameter sampling",
+            field_name="fixed_value",
+        )
     raise PhylogeneticsError(
         "prior-only simulation does not support the configured positive substitution-parameter prior family",
         code="prior_only_positive_substitution_parameter_prior_family_invalid",
@@ -367,10 +416,18 @@ def _sample_probability_prior_value(
     rng: random.Random,
 ) -> float:
     if prior_model.family == "beta":
-        assert prior_model.alpha is not None
-        assert prior_model.beta is not None
-        numerator = rng.gammavariate(prior_model.alpha, 1.0)
-        denominator_remainder = rng.gammavariate(prior_model.beta, 1.0)
+        alpha = require_present(
+            prior_model.alpha,
+            owner_name="prior-only probability substitution-parameter sampling",
+            field_name="alpha",
+        )
+        beta = require_present(
+            prior_model.beta,
+            owner_name="prior-only probability substitution-parameter sampling",
+            field_name="beta",
+        )
+        numerator = rng.gammavariate(alpha, 1.0)
+        denominator_remainder = rng.gammavariate(beta, 1.0)
         denominator = numerator + denominator_remainder
         if denominator <= 0.0:
             raise PhylogeneticsError(
@@ -379,8 +436,11 @@ def _sample_probability_prior_value(
             )
         return numerator / denominator
     if prior_model.family == "fixed":
-        assert prior_model.fixed_value is not None
-        return prior_model.fixed_value
+        return require_present(
+            prior_model.fixed_value,
+            owner_name="prior-only probability substitution-parameter sampling",
+            field_name="fixed_value",
+        )
     raise PhylogeneticsError(
         "prior-only simulation does not support the configured probability substitution-parameter prior family",
         code="prior_only_probability_substitution_parameter_prior_family_invalid",
@@ -394,20 +454,28 @@ def _sample_simplex_prior_values(
     rng: random.Random,
 ) -> dict[str, float]:
     if prior_model.family == "fixed":
-        assert prior_model.fixed_values is not None
+        fixed_values = require_present(
+            prior_model.fixed_values,
+            owner_name="prior-only simplex substitution-parameter sampling",
+            field_name="fixed_values",
+        )
         return {
             component_name: _round_float(component_value)
             for component_name, component_value in zip(
                 prior_model.component_names,
-                prior_model.fixed_values,
+                fixed_values,
                 strict=True,
             )
         }
     if prior_model.family == "dirichlet":
-        assert prior_model.concentration_parameters is not None
+        concentration_parameters = require_present(
+            prior_model.concentration_parameters,
+            owner_name="prior-only simplex substitution-parameter sampling",
+            field_name="concentration_parameters",
+        )
         gamma_draws = [
             rng.gammavariate(concentration_parameter, 1.0)
-            for concentration_parameter in prior_model.concentration_parameters
+            for concentration_parameter in concentration_parameters
         ]
         total = math.fsum(gamma_draws)
         if total <= 0.0:

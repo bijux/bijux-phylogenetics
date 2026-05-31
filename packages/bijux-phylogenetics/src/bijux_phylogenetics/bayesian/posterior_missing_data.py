@@ -10,6 +10,7 @@ import numpy
 from bijux_phylogenetics.ancestral.discrete.likelihood.likelihood_math import (
     branch_length as discrete_trait_branch_length,
 )
+from bijux_phylogenetics.bayesian.required_values import require_present
 from bijux_phylogenetics.comparative._math import invert_matrix, stable_covariance
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.alignment.partitions import (
@@ -23,15 +24,19 @@ from bijux_phylogenetics.phylo.likelihood.dna import (
 )
 from bijux_phylogenetics.phylo.likelihood.f81 import f81_transition_probability_matrix
 from bijux_phylogenetics.phylo.likelihood.gtr import gtr_transition_probability_matrix
-from bijux_phylogenetics.phylo.likelihood.hky85 import hky85_transition_probability_matrix
+from bijux_phylogenetics.phylo.likelihood.hky85 import (
+    hky85_transition_probability_matrix,
+)
 from bijux_phylogenetics.phylo.likelihood.jc69 import jc69_transition_probability_matrix
 from bijux_phylogenetics.phylo.likelihood.k80 import k80_transition_probability_matrix
 from bijux_phylogenetics.phylo.likelihood.posteriors import (
     compute_marginal_state_posteriors,
 )
+from bijux_phylogenetics.phylo.likelihood.pruning import (
+    build_transition_matrix_evaluator,
+)
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
-from .fixed_topology_dna import FixedTopologyDnaRunReport
 from .brownian_continuous_trait import BrownianContinuousTraitRunReport
 from .discrete_trait_mk import (
     DiscreteTraitMkModelDefinition,
@@ -43,6 +48,7 @@ from .discrete_trait_mk import (
     _validate_nonblank_state_name,
 )
 from .discrete_trait_rate_parameters import resolve_discrete_trait_rate_rows
+from .fixed_topology_dna import FixedTopologyDnaRunReport
 from .fixed_topology_partitioned_dna import FixedTopologyPartitionedDnaRunReport
 from .joint_topology_dna import JointTopologyDnaRunReport
 from .ornstein_uhlenbeck_continuous_trait import (
@@ -53,13 +59,6 @@ from .partition_model_state import (
     resolve_partition_parameter_linkage_plan_from_model_parameters,
     resolve_partition_parameter_states_from_model_parameters,
 )
-from .posterior_ancestral_traits import (
-    _build_continuous_mixture_draws,
-    _build_tree_depth_index,
-    _evaluate_brownian_covariance,
-    _evaluate_ou_covariance,
-)
-from .posterior_sets.diagnostics import highest_posterior_density_interval
 from .posterior_ancestral_sequences import (
     _validate_alignment_records,
     _validate_low_confidence_state_symbol,
@@ -67,10 +66,14 @@ from .posterior_ancestral_sequences import (
     _validate_probability_threshold,
     _validate_sampled_states,
 )
-from .state import BayesianPhylogeneticState
-from bijux_phylogenetics.phylo.likelihood.pruning import (
-    build_transition_matrix_evaluator,
+from .posterior_ancestral_traits import (
+    _build_continuous_mixture_draws,
+    _build_tree_depth_index,
+    _evaluate_brownian_covariance,
+    _evaluate_ou_covariance,
 )
+from .posterior_sets.diagnostics import highest_posterior_density_interval
+from .state import BayesianPhylogeneticState
 
 _DNA_STATES = ("A", "C", "G", "T")
 
@@ -418,7 +421,8 @@ def summarize_fixed_topology_partitioned_dna_posterior_missing_states(
 
 def summarize_nucleotide_posterior_missing_states(
     *,
-    sampled_states: list[BayesianPhylogeneticState] | tuple[BayesianPhylogeneticState, ...],
+    sampled_states: list[BayesianPhylogeneticState]
+    | tuple[BayesianPhylogeneticState, ...],
     definition: PosteriorMissingNucleotideDefinition,
 ) -> PosteriorMissingNucleotideReport:
     """Summarize masked nucleotide observations across posterior sampled states."""
@@ -443,10 +447,12 @@ def summarize_nucleotide_posterior_missing_states(
         sampled_state.tree.topology_id for sampled_state in validated_sampled_states
     }
     for sampled_state in validated_sampled_states:
-        sample_probabilities, model_label = _evaluate_posterior_sample_missing_nucleotides(
-            sampled_state=sampled_state,
-            definition=definition,
-            masked_symbols_by_taxon_site=masked_symbols_by_taxon_site,
+        sample_probabilities, model_label = (
+            _evaluate_posterior_sample_missing_nucleotides(
+                sampled_state=sampled_state,
+                definition=definition,
+                masked_symbols_by_taxon_site=masked_symbols_by_taxon_site,
+            )
         )
         sampled_substitution_models.add(model_label)
         for taxon, site_position, state, posterior_probability in sample_probabilities:
@@ -544,13 +550,15 @@ def summarize_discrete_trait_mk_posterior_missing_states(
             state_counts=state_counts,
             model_definition=run_report.model_definition,
         )
-        posterior_by_node = _estimate_marginal_discrete_state_probabilities_with_missing_tips(
-            tree=sampled_state.tree.to_tree(),
-            observed_tip_states=definition.observed_tip_states,
-            missing_taxa=definition.missing_taxa,
-            state_order=run_report.state_order,
-            rate_matrix=rate_matrix,
-            root_prior=root_prior,
+        posterior_by_node = (
+            _estimate_marginal_discrete_state_probabilities_with_missing_tips(
+                tree=sampled_state.tree.to_tree(),
+                observed_tip_states=definition.observed_tip_states,
+                missing_taxa=definition.missing_taxa,
+                state_order=run_report.state_order,
+                rate_matrix=rate_matrix,
+                root_prior=root_prior,
+            )
         )
         for taxon in definition.missing_taxa:
             for state in run_report.state_order:
@@ -652,7 +660,9 @@ def summarize_continuous_trait_posterior_missing_values(
 def _validate_missing_state_symbols(
     missing_state_symbols: tuple[str, ...] | list[str],
 ) -> tuple[str, ...]:
-    validated_symbols = tuple(symbol.strip().upper() for symbol in missing_state_symbols)
+    validated_symbols = tuple(
+        symbol.strip().upper() for symbol in missing_state_symbols
+    )
     if not validated_symbols:
         raise PhylogeneticsError(
             "posterior missing-nucleotide definition requires at least one missing-state symbol",
@@ -712,7 +722,10 @@ def _evaluate_posterior_sample_missing_nucleotides(
     definition: PosteriorMissingNucleotideDefinition,
     masked_symbols_by_taxon_site: dict[tuple[str, int], str],
 ) -> tuple[list[tuple[str, int, str, float]], str]:
-    if definition.partition_models is not None and definition.locus_partitions is not None:
+    if (
+        definition.partition_models is not None
+        and definition.locus_partitions is not None
+    ):
         return _evaluate_partitioned_posterior_sample_missing_nucleotides(
             sampled_state=sampled_state,
             definition=definition,
@@ -767,11 +780,18 @@ def _evaluate_partitioned_posterior_sample_missing_nucleotides(
             code="posterior_missing_nucleotide_partitioned_model_name_invalid",
             details={"observed_model_name": model_name},
         )
-    assert definition.partition_models is not None
-    assert definition.locus_partitions is not None
+    partition_models = require_present(
+        definition.partition_models,
+        owner_name="posterior missing-nucleotide partitioned evaluation",
+        field_name="partition_models",
+    )
+    require_present(
+        definition.locus_partitions,
+        owner_name="posterior missing-nucleotide partitioned evaluation",
+        field_name="locus_partitions",
+    )
     partition_names = tuple(
-        partition_model.partition_name
-        for partition_model in definition.partition_models
+        partition_model.partition_name for partition_model in partition_models
     )
     linkage_plan = resolve_partition_parameter_linkage_plan_from_model_parameters(
         model_parameters=sampled_state.model_parameters,
@@ -779,7 +799,7 @@ def _evaluate_partitioned_posterior_sample_missing_nucleotides(
     )
     partition_states = resolve_partition_parameter_states_from_model_parameters(
         model_parameters=sampled_state.model_parameters,
-        partition_models=definition.partition_models,
+        partition_models=partition_models,
         linkage_plan=linkage_plan,
     )
     partition_state_by_name = {
@@ -822,27 +842,32 @@ def _evaluate_partitioned_posterior_sample_missing_nucleotides(
             )
             for record in definition.records
         )
-        partition_probabilities = _evaluate_missing_nucleotide_probabilities_for_records(
-            tree=sampled_state.tree.to_tree(),
-            records=partition_records,
-            missing_state_symbols=definition.missing_state_symbols,
-            model_name=partition_model.base_model_name,
-            scalar_parameters={"kappa": partition_state.kappa}
-            if partition_state.kappa is not None
-            else {},
-            vector_parameters={
-                key: value
-                for key, value in (
-                    ("base-frequencies", partition_state.base_frequencies),
-                    ("exchangeabilities", partition_state.exchangeabilities),
-                )
-                if value is not None
-            },
-            masked_symbols_by_taxon_site=partition_masked_symbols_by_taxon_site,
+        partition_probabilities = (
+            _evaluate_missing_nucleotide_probabilities_for_records(
+                tree=sampled_state.tree.to_tree(),
+                records=partition_records,
+                missing_state_symbols=definition.missing_state_symbols,
+                model_name=partition_model.base_model_name,
+                scalar_parameters={"kappa": partition_state.kappa}
+                if partition_state.kappa is not None
+                else {},
+                vector_parameters={
+                    key: value
+                    for key, value in (
+                        ("base-frequencies", partition_state.base_frequencies),
+                        ("exchangeabilities", partition_state.exchangeabilities),
+                    )
+                    if value is not None
+                },
+                masked_symbols_by_taxon_site=partition_masked_symbols_by_taxon_site,
+            )
         )
-        for taxon, local_site_position, state, posterior_probability in (
-            partition_probabilities
-        ):
+        for (
+            taxon,
+            local_site_position,
+            state,
+            posterior_probability,
+        ) in partition_probabilities:
             probabilities.append(
                 (
                     taxon,
@@ -883,7 +908,9 @@ def _evaluate_missing_nucleotide_probabilities_for_records(
         scalar_parameters=scalar_parameters,
         vector_parameters=vector_parameters,
     )
-    tip_lookup = {node.name: node for node in tree.iter_leaves() if node.name is not None}
+    tip_lookup = {
+        node.name: node for node in tree.iter_leaves() if node.name is not None
+    }
     symbols_by_taxon = {
         record.identifier: record.sequence.upper() for record in records
     }
@@ -899,11 +926,13 @@ def _evaluate_missing_nucleotide_probabilities_for_records(
         posterior_pass = compute_marginal_state_posteriors(
             tree,
             state_count=len(DNA_STATE_ORDER),
-            leaf_likelihood=lambda node, site_position=site_position: _dna_leaf_likelihood_vector(
-                taxon=node.name,
-                symbols_by_taxon=symbols_by_taxon,
-                site_position=site_position,
-                missing_state_symbols=missing_state_symbols,
+            leaf_likelihood=lambda node, site_position=site_position: (
+                _dna_leaf_likelihood_vector(
+                    taxon=node.name,
+                    symbols_by_taxon=symbols_by_taxon,
+                    site_position=site_position,
+                    missing_state_symbols=missing_state_symbols,
+                )
             ),
             transition_matrix_for_child=lambda child: transition_by_child_id[
                 child.node_id or ""
@@ -1082,9 +1111,7 @@ def _build_missing_nucleotide_site_summary_rows(
                 observed_symbol=masked_symbols_by_taxon_site[(taxon, site_position)],
                 consensus_state=consensus_state,
                 exported_state=(
-                    low_confidence_state_symbol
-                    if low_confidence
-                    else consensus_state
+                    low_confidence_state_symbol if low_confidence else consensus_state
                 ),
                 max_posterior_probability=max_posterior_probability,
                 low_confidence=low_confidence,
@@ -1262,7 +1289,9 @@ def _estimate_marginal_discrete_state_probabilities_with_missing_tips(
         ),
         root_prior=root_prior,
     )
-    tip_lookup = {node.name: node for node in tree.iter_leaves() if node.name is not None}
+    tip_lookup = {
+        node.name: node for node in tree.iter_leaves() if node.name is not None
+    }
     return {
         taxon: {
             state: float(format(probability, ".15g"))
@@ -1329,7 +1358,9 @@ def _build_missing_discrete_trait_taxon_summary_rows(
     state_probability_rows: list[PosteriorMissingDiscreteTraitStateProbabilityRow],
     state_order: list[str],
 ) -> list[PosteriorMissingDiscreteTraitTaxonSummaryRow]:
-    rows_by_taxon: dict[str, dict[str, PosteriorMissingDiscreteTraitStateProbabilityRow]] = {}
+    rows_by_taxon: dict[
+        str, dict[str, PosteriorMissingDiscreteTraitStateProbabilityRow]
+    ] = {}
     for row in state_probability_rows:
         rows_by_taxon.setdefault(row.taxon, {})[row.state] = row
     summary_rows: list[PosteriorMissingDiscreteTraitTaxonSummaryRow] = []
@@ -1362,7 +1393,8 @@ def _build_missing_discrete_trait_taxon_summary_rows(
 
 def _summarize_continuous_trait_posterior_missing_values(
     *,
-    sampled_states: list[BayesianPhylogeneticState] | tuple[BayesianPhylogeneticState, ...],
+    sampled_states: list[BayesianPhylogeneticState]
+    | tuple[BayesianPhylogeneticState, ...],
     taxa: list[str],
     definition: PosteriorMissingContinuousTraitDefinition,
     sampled_trait_models: list[str],
@@ -1442,11 +1474,13 @@ def _evaluate_ou_missing_tip_distributions(
         missing_taxa=missing_taxa,
         location=float(sampled_state.model_parameters.scalar_parameters["optimum"]),
         scale=float(sampled_state.model_parameters.scalar_parameters["sigma-squared"]),
-        covariance_evaluator=lambda left_node, right_node, depth_index: _evaluate_ou_covariance(
-            left_node=left_node,
-            right_node=right_node,
-            depth_index=depth_index,
-            alpha=alpha,
+        covariance_evaluator=lambda left_node, right_node, depth_index: (
+            _evaluate_ou_covariance(
+                left_node=left_node,
+                right_node=right_node,
+                depth_index=depth_index,
+                alpha=alpha,
+            )
         ),
     )
 
@@ -1476,7 +1510,9 @@ def _evaluate_continuous_missing_tip_distributions(
                 "definition_taxa": sorted(expected_taxa),
             },
         )
-    tip_lookup = {node.name: node for node in sampled_tree.iter_leaves() if node.name is not None}
+    tip_lookup = {
+        node.name: node for node in sampled_tree.iter_leaves() if node.name is not None
+    }
     ordered_missing_taxa = list(missing_taxa)
     ordered_missing_nodes = [tip_lookup[taxon] for taxon in ordered_missing_taxa]
     ordered_observed_taxa = sorted(observed_tip_values)
@@ -1538,7 +1574,9 @@ def _evaluate_continuous_missing_tip_distributions(
             conditional_mean=float(format(conditional_means[index], ".15g")),
             conditional_standard_deviation=float(
                 format(
-                    math.sqrt(max(float(conditional_covariance[index][index]), 0.0) * scale),
+                    math.sqrt(
+                        max(float(conditional_covariance[index][index]), 0.0) * scale
+                    ),
                     ".15g",
                 )
             ),
@@ -1549,7 +1587,9 @@ def _evaluate_continuous_missing_tip_distributions(
 
 def _build_missing_continuous_trait_taxon_summary_rows(
     *,
-    distributions_by_taxon: dict[str, list[_PosteriorMissingContinuousTraitDistribution]],
+    distributions_by_taxon: dict[
+        str, list[_PosteriorMissingContinuousTraitDistribution]
+    ],
     sample_count: int,
 ) -> list[PosteriorMissingContinuousTraitTaxonSummaryRow]:
     summary_rows: list[PosteriorMissingContinuousTraitTaxonSummaryRow] = []
@@ -1561,7 +1601,13 @@ def _build_missing_continuous_trait_taxon_summary_rows(
             PosteriorMissingContinuousTraitTaxonSummaryRow(
                 taxon=taxon,
                 posterior_mean=float(
-                    format(mean(distribution.conditional_mean for distribution in distributions), ".15g")
+                    format(
+                        mean(
+                            distribution.conditional_mean
+                            for distribution in distributions
+                        ),
+                        ".15g",
+                    )
                 ),
                 posterior_median=float(format(median(mixture_draws), ".15g")),
                 posterior_hpd_95_lower=float(format(hpd_95_lower, ".15g")),

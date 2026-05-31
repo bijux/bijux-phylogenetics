@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
+from bijux_phylogenetics.bayesian.required_values import require_present
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import (
@@ -157,34 +158,62 @@ def evaluate_branch_length_log_prior(
     """Evaluate one branch-length log prior density."""
     validated_branch_length = _validate_branch_length(branch_length)
     if prior_model.family == "exponential":
-        assert prior_model.rate is not None
-        return math.log(prior_model.rate) - (prior_model.rate * validated_branch_length)
+        rate = require_present(
+            prior_model.rate,
+            owner_name="branch-length prior evaluation",
+            field_name="rate",
+        )
+        return math.log(rate) - (rate * validated_branch_length)
     if prior_model.family == "gamma":
-        assert prior_model.shape is not None
-        assert prior_model.scale is not None
+        shape = require_present(
+            prior_model.shape,
+            owner_name="branch-length prior evaluation",
+            field_name="shape",
+        )
+        scale = require_present(
+            prior_model.scale,
+            owner_name="branch-length prior evaluation",
+            field_name="scale",
+        )
         return _gamma_log_density(
             validated_branch_length,
-            shape=prior_model.shape,
-            scale=prior_model.scale,
+            shape=shape,
+            scale=scale,
         )
     if prior_model.family == "lognormal":
-        assert prior_model.log_mean is not None
-        assert prior_model.log_standard_deviation is not None
+        log_mean = require_present(
+            prior_model.log_mean,
+            owner_name="branch-length prior evaluation",
+            field_name="log_mean",
+        )
+        log_standard_deviation = require_present(
+            prior_model.log_standard_deviation,
+            owner_name="branch-length prior evaluation",
+            field_name="log_standard_deviation",
+        )
         return _lognormal_log_density(
             validated_branch_length,
-            log_mean=prior_model.log_mean,
-            log_standard_deviation=prior_model.log_standard_deviation,
+            log_mean=log_mean,
+            log_standard_deviation=log_standard_deviation,
         )
     if prior_model.family == "fixed":
-        assert prior_model.fixed_value is not None
-        assert prior_model.fixed_tolerance is not None
+        fixed_value = require_present(
+            prior_model.fixed_value,
+            owner_name="branch-length prior evaluation",
+            field_name="fixed_value",
+        )
+        fixed_tolerance = require_present(
+            prior_model.fixed_tolerance,
+            owner_name="branch-length prior evaluation",
+            field_name="fixed_tolerance",
+        )
         return (
             0.0
             if math.isclose(
                 validated_branch_length,
-                prior_model.fixed_value,
+                fixed_value,
                 rel_tol=0.0,
-                abs_tol=prior_model.fixed_tolerance,
+                abs_tol=fixed_tolerance,
             )
             else -math.inf
         )
@@ -267,7 +296,8 @@ def _lognormal_log_density(
         - math.log(log_standard_deviation)
         - (0.5 * math.log(2.0 * math.pi))
         - (
-            centered_log_length * centered_log_length
+            centered_log_length
+            * centered_log_length
             / (2.0 * log_standard_deviation * log_standard_deviation)
         )
     )

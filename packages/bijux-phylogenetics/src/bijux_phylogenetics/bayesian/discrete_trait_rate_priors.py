@@ -9,6 +9,7 @@ from bijux_phylogenetics.bayesian.discrete_trait_rate_parameters import (
     DISCRETE_TRAIT_RATE_PARAMETER_MODELS,
     parameterize_discrete_trait_rate_rows,
 )
+from bijux_phylogenetics.bayesian.required_values import require_present
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 DISCRETE_TRAIT_RATE_PRIOR_FAMILIES = (
@@ -136,23 +137,43 @@ def evaluate_discrete_trait_rate_value_log_prior(
         owner_name="discrete-trait rate prior evaluation",
     )
     if prior_model.family == "exponential":
-        assert prior_model.rate is not None
-        return math.log(prior_model.rate) - (prior_model.rate * validated_rate_value)
+        rate = require_present(
+            prior_model.rate,
+            owner_name="discrete-trait rate prior evaluation",
+            field_name="rate",
+        )
+        return math.log(rate) - (rate * validated_rate_value)
     if prior_model.family == "gamma":
-        assert prior_model.shape is not None
-        assert prior_model.scale is not None
+        shape = require_present(
+            prior_model.shape,
+            owner_name="discrete-trait rate prior evaluation",
+            field_name="shape",
+        )
+        scale = require_present(
+            prior_model.scale,
+            owner_name="discrete-trait rate prior evaluation",
+            field_name="scale",
+        )
         return _gamma_log_density(
             validated_rate_value,
-            shape=prior_model.shape,
-            scale=prior_model.scale,
+            shape=shape,
+            scale=scale,
         )
     if prior_model.family == "lognormal":
-        assert prior_model.log_mean is not None
-        assert prior_model.log_standard_deviation is not None
+        log_mean = require_present(
+            prior_model.log_mean,
+            owner_name="discrete-trait rate prior evaluation",
+            field_name="log_mean",
+        )
+        log_standard_deviation = require_present(
+            prior_model.log_standard_deviation,
+            owner_name="discrete-trait rate prior evaluation",
+            field_name="log_standard_deviation",
+        )
         return _lognormal_log_density(
             validated_rate_value,
-            log_mean=prior_model.log_mean,
-            log_standard_deviation=prior_model.log_standard_deviation,
+            log_mean=log_mean,
+            log_standard_deviation=log_standard_deviation,
         )
     raise PhylogeneticsError(
         "discrete-trait rate prior family is unsupported",
@@ -235,6 +256,8 @@ def _lognormal_log_density(
             / (2.0 * (log_standard_deviation**2))
         )
     )
+
+
 def _validate_positive_finite_value(
     *,
     parameter_name: str,
