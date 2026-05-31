@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import csv
 from dataclasses import dataclass
+import json
 from pathlib import Path
 
-from bijux_phylogenetics.io.newick import dumps_newick
+from bijux_phylogenetics.io.newick import dumps_newick, loads_newick, write_newick_tree_set
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.models import (
     NucleotideLikelihoodStartingTreePoolReport,
@@ -243,3 +245,112 @@ def _score_prepared_starting_tree(
         ),
         tree_newick=dumps_newick(prepared_tree.tree),
     )
+
+
+def write_nucleotide_likelihood_starting_tree_score_table(
+    path: Path,
+    report: NucleotideLikelihoodStartingTreePoolReport,
+) -> Path:
+    """Write one deterministic starting-tree score ledger for one scored pool."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "model_name",
+                "tree_id",
+                "source_strategy",
+                "generation_seed",
+                "starting_log_likelihood",
+                "topology_hash",
+                "substitution_parameter_policy",
+                "substitution_parameter_values",
+                "substitution_parameter_warnings",
+                "tree_newick",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        for row in report.starting_tree_summaries:
+            writer.writerow(
+                {
+                    "model_name": report.model_name,
+                    "tree_id": row.tree_id,
+                    "source_strategy": row.source_strategy,
+                    "generation_seed": ""
+                    if row.generation_seed is None
+                    else str(row.generation_seed),
+                    "starting_log_likelihood": repr(row.starting_log_likelihood),
+                    "topology_hash": row.topology_hash,
+                    "substitution_parameter_policy": row.substitution_parameter_policy,
+                    "substitution_parameter_values": json.dumps(
+                        row.substitution_parameter_values,
+                        sort_keys=True,
+                    ),
+                    "substitution_parameter_warnings": "|".join(
+                        row.substitution_parameter_warnings
+                    ),
+                    "tree_newick": row.tree_newick,
+                }
+            )
+    return path
+
+
+def write_nucleotide_likelihood_starting_tree_pool_run_json(
+    path: Path,
+    report: NucleotideLikelihoodStartingTreePoolReport,
+) -> Path:
+    """Write one machine-readable starting-tree pool payload."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "algorithm": report.algorithm,
+        "model_name": report.model_name,
+        "tree_path": report.tree_path,
+        "alignment_path": report.alignment_path,
+        "taxon_count": report.taxon_count,
+        "site_count": report.site_count,
+        "pattern_count": report.pattern_count,
+        "random_start_tree_count": report.random_start_tree_count,
+        "random_start_tree_seed": report.random_start_tree_seed,
+        "starting_tree_summaries": [
+            {
+                "tree_id": row.tree_id,
+                "source_strategy": row.source_strategy,
+                "generation_seed": row.generation_seed,
+                "topology_hash": row.topology_hash,
+                "starting_log_likelihood": row.starting_log_likelihood,
+                "substitution_parameter_policy": row.substitution_parameter_policy,
+                "substitution_parameter_values": row.substitution_parameter_values,
+                "substitution_parameter_warnings": row.substitution_parameter_warnings,
+                "tree_newick": row.tree_newick,
+            }
+            for row in report.starting_tree_summaries
+        ],
+    }
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def write_nucleotide_likelihood_starting_tree_pool_artifacts(
+    out_dir: Path,
+    report: NucleotideLikelihoodStartingTreePoolReport,
+) -> dict[str, Path]:
+    """Write the governed artifact family for one scored starting-tree pool."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    start_tree_path = write_newick_tree_set(
+        out_dir / "starting_trees.nwk",
+        [loads_newick(row.tree_newick) for row in report.starting_tree_summaries],
+    )
+    score_table_path = write_nucleotide_likelihood_starting_tree_score_table(
+        out_dir / "starting_trees.tsv",
+        report,
+    )
+    run_json_path = write_nucleotide_likelihood_starting_tree_pool_run_json(
+        out_dir / "run.json",
+        report,
+    )
+    return {
+        "start_tree_path": start_tree_path,
+        "score_table_path": score_table_path,
+        "run_json_path": run_json_path,
+    }
