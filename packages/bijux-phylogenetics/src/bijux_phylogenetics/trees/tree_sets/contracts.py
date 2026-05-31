@@ -131,6 +131,29 @@ class TreeSetCredibleCladeSetReport:
 
 
 @dataclass(frozen=True, slots=True)
+class PosteriorBranchLengthSummaryRow:
+    clade: str
+    matched_tree_count: int
+    posterior_tree_count: int
+    clade_frequency: float
+    mean_branch_length: float
+    median_branch_length: float
+    hpd_95_lower: float
+    hpd_95_upper: float
+    effective_sample_size: float | None
+
+
+@dataclass(slots=True)
+class PosteriorBranchLengthSummaryReport:
+    path: Path
+    tree_count: int
+    processing: TreeSetProcessingSummary
+    shared_taxa: list[str]
+    hpd_mass: float
+    rows: list[PosteriorBranchLengthSummaryRow]
+
+
+@dataclass(frozen=True, slots=True)
 class CladeCompatibilityNodeRow:
     clade: str
     tree_count: int
