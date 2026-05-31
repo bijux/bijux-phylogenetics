@@ -5,7 +5,6 @@ from pathlib import Path
 import pytest
 
 from bijux_phylogenetics.engines import run_fast_tree_inference
-from bijux_phylogenetics.runtime.errors import EngineWorkflowError
 
 pytestmark = pytest.mark.engine_contract
 
@@ -38,20 +37,22 @@ print("((A:0.1,B:0.1)0.98:0.3,(C:0.1,D:0.1):0.3);")
     )
 
 
-def test_run_fast_tree_inference_requires_complete_support_annotations(
+def test_run_fast_tree_inference_preserves_partial_support_annotations_in_report(
     tmp_path: Path,
 ) -> None:
     executable = _fake_fasttree_partial_support_labels(
         tmp_path / "fasttree-partial-support"
     )
 
-    with pytest.raises(EngineWorkflowError) as error:
-        run_fast_tree_inference(
-            fixture("alignments/example_alignment.fasta"),
-            tmp_path / "fasttree.nwk",
-            executable=executable,
-        )
+    report = run_fast_tree_inference(
+        fixture("alignments/example_alignment.fasta"),
+        tmp_path / "fasttree.nwk",
+        executable=executable,
+    )
 
-    assert error.value.code == "engine_support_values_incomplete"
-    assert error.value.details["workflow"] == "fast-approximate-tree"
-    assert error.value.details["support_kind"] == "FastTree local support"
+    assert report.fasttree_support_summary is not None
+    assert report.fasttree_support_summary.annotated_node_count == 1
+    assert any(
+        "did not expose parsable FastTree local support labels" in warning
+        for warning in report.fasttree_support_summary.warnings
+    )

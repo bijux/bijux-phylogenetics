@@ -36,7 +36,6 @@ from .state import (
     _resume_existing_workflow,
     _resume_has_fasttree_review_outputs,
     _sidecar,
-    _validate_complete_support_coverage,
     _validate_support_value_count,
     _validate_tree_output,
 )
@@ -128,15 +127,6 @@ def run_fast_tree_inference(
             output_name="tree",
             artifact_kind="fast-approximate-tree",
             support_value_count=fasttree_support_summary.annotated_node_count,
-            support_kind="FastTree local support",
-        )
-        _validate_complete_support_coverage(
-            engine_name="FastTree",
-            workflow="fast-approximate-tree",
-            path=out_path,
-            output_name="tree",
-            artifact_kind="fast-approximate-tree",
-            annotated_branch_count=fasttree_support_summary.annotated_node_count,
             support_kind="FastTree local support",
         )
     except PhylogeneticsError as error:
