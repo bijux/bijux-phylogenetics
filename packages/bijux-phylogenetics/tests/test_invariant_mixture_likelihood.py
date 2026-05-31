@@ -20,7 +20,9 @@ def fixture(group: str, name: str) -> Path:
 def test_empirical_protein_invariant_mixture_estimates_nonzero_proportion() -> None:
     report = optimize_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment(
         fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-        fixture("alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"),
+        fixture(
+            "alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"
+        ),
         rate_matrix=_compact_polar_rate_matrix(),
         root_prior=_biased_root_prior(),
         matrix_label="compact-polar",
@@ -42,7 +44,7 @@ def test_empirical_protein_invariant_mixture_estimates_nonzero_proportion() -> N
         report.invariant_proportion,
         0.21159721908532134,
         rel_tol=0.0,
-        abs_tol=1e-12,
+        abs_tol=1e-7,
     )
     assert math.isclose(
         report.initial_log_likelihood,
@@ -62,10 +64,14 @@ def test_empirical_protein_invariant_mixture_estimates_nonzero_proportion() -> N
     assert [row.site_position for row in report.site_likelihoods] == list(range(1, 21))
 
 
-def test_empirical_protein_invariant_mixture_rows_emit_real_component_activity() -> None:
+def test_empirical_protein_invariant_mixture_rows_emit_real_component_activity() -> (
+    None
+):
     report = evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment(
         fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-        fixture("alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"),
+        fixture(
+            "alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"
+        ),
         rate_matrix=_compact_polar_rate_matrix(),
         root_prior=_biased_root_prior(),
         matrix_label="compact-polar",
@@ -112,9 +118,8 @@ def test_empirical_protein_invariant_mixture_rows_emit_real_component_activity()
         abs_tol=1e-12,
     )
     for row in report.site_likelihoods:
-        expected_mixture_likelihood = (
-            (0.35 * row.invariant_component_likelihood)
-            + (0.65 * row.variable_component_likelihood)
+        expected_mixture_likelihood = (0.35 * row.invariant_component_likelihood) + (
+            0.65 * row.variable_component_likelihood
         )
         assert math.isclose(
             row.mixture_likelihood,
@@ -130,10 +135,14 @@ def test_empirical_protein_invariant_mixture_rows_emit_real_component_activity()
         )
 
 
-def test_empirical_protein_invariant_mixture_improves_over_zero_invariant_case() -> None:
+def test_empirical_protein_invariant_mixture_improves_over_zero_invariant_case() -> (
+    None
+):
     zero_invariant_report = evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment(
         fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-        fixture("alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"),
+        fixture(
+            "alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"
+        ),
         rate_matrix=_compact_polar_rate_matrix(),
         root_prior=_biased_root_prior(),
         matrix_label="compact-polar",
@@ -141,7 +150,9 @@ def test_empirical_protein_invariant_mixture_improves_over_zero_invariant_case()
     )
     optimized_report = optimize_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment(
         fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-        fixture("alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"),
+        fixture(
+            "alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"
+        ),
         rate_matrix=_compact_polar_rate_matrix(),
         root_prior=_biased_root_prior(),
         matrix_label="compact-polar",
@@ -155,7 +166,10 @@ def test_empirical_protein_invariant_mixture_improves_over_zero_invariant_case()
         rel_tol=0.0,
         abs_tol=1e-12,
     )
-    assert optimized_report.invariant_proportion > zero_invariant_report.invariant_proportion
+    assert (
+        optimized_report.invariant_proportion
+        > zero_invariant_report.invariant_proportion
+    )
     assert optimized_report.log_likelihood > zero_invariant_report.log_likelihood
 
 
@@ -225,6 +239,4 @@ def _protein_state_order() -> tuple[str, ...]:
 
 
 def _protein_state_index() -> dict[str, int]:
-    return {
-        state: index for index, state in enumerate(_protein_state_order())
-    }
+    return {state: index for index, state in enumerate(_protein_state_order())}

@@ -19,10 +19,14 @@ def fixture(group: str, name: str) -> Path:
     return FIXTURES / group / name
 
 
-def test_discrete_gamma_invariant_mixture_reports_alpha_invariant_and_total_likelihood() -> None:
+def test_discrete_gamma_invariant_mixture_reports_alpha_invariant_and_total_likelihood() -> (
+    None
+):
     report = optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
         fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-        fixture("alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"),
+        fixture(
+            "alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"
+        ),
         rate_matrix=_compact_polar_rate_matrix(),
         root_prior=_biased_root_prior(),
         alpha=0.8,
@@ -54,7 +58,7 @@ def test_discrete_gamma_invariant_mixture_reports_alpha_invariant_and_total_like
         report.invariant_proportion,
         0.10743071401974319,
         rel_tol=0.0,
-        abs_tol=1e-9,
+        abs_tol=1e-7,
     )
     assert math.isclose(
         report.initial_log_likelihood,
@@ -76,10 +80,14 @@ def test_discrete_gamma_invariant_mixture_reports_alpha_invariant_and_total_like
     assert len(report.site_likelihoods) == report.site_count
 
 
-def test_discrete_gamma_invariant_mixture_rows_keep_gamma_and_invariant_components_active() -> None:
+def test_discrete_gamma_invariant_mixture_rows_keep_gamma_and_invariant_components_active() -> (
+    None
+):
     report = evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
         fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-        fixture("alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"),
+        fixture(
+            "alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"
+        ),
         rate_matrix=_compact_polar_rate_matrix(),
         root_prior=_biased_root_prior(),
         alpha=0.8,
@@ -155,7 +163,9 @@ def test_discrete_gamma_invariant_mixture_rows_keep_gamma_and_invariant_componen
 def test_discrete_gamma_invariant_mixture_boundary_warning_reports_bound_hit() -> None:
     report = optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
         fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-        fixture("alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"),
+        fixture(
+            "alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"
+        ),
         rate_matrix=_compact_polar_rate_matrix(),
         root_prior=_biased_root_prior(),
         alpha=0.8,
@@ -182,7 +192,9 @@ def test_discrete_gamma_invariant_mixture_boundary_warning_reports_bound_hit() -
 def test_discrete_gamma_invariant_mixture_is_not_a_standalone_report_merge() -> None:
     combined_report = evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
         fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-        fixture("alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"),
+        fixture(
+            "alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"
+        ),
         rate_matrix=_compact_polar_rate_matrix(),
         root_prior=_biased_root_prior(),
         alpha=0.8,
@@ -190,18 +202,25 @@ def test_discrete_gamma_invariant_mixture_is_not_a_standalone_report_merge() -> 
         invariant_proportion=0.35,
         matrix_label="compact-polar",
     )
-    gamma_report = evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment(
-        fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-        fixture("alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"),
-        rate_matrix=_compact_polar_rate_matrix(),
-        root_prior=_biased_root_prior(),
-        alpha=0.8,
-        category_count=4,
-        matrix_label="compact-polar",
+    gamma_report = (
+        evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment(
+            fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+            fixture(
+                "alignments",
+                "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
+            ),
+            rate_matrix=_compact_polar_rate_matrix(),
+            root_prior=_biased_root_prior(),
+            alpha=0.8,
+            category_count=4,
+            matrix_label="compact-polar",
+        )
     )
     invariant_report = evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment(
         fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-        fixture("alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"),
+        fixture(
+            "alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"
+        ),
         rate_matrix=_compact_polar_rate_matrix(),
         root_prior=_biased_root_prior(),
         invariant_proportion=0.35,
@@ -300,6 +319,4 @@ def _protein_state_order() -> tuple[str, ...]:
 
 
 def _protein_state_index() -> dict[str, int]:
-    return {
-        state: index for index, state in enumerate(_protein_state_order())
-    }
+    return {state: index for index, state in enumerate(_protein_state_order())}

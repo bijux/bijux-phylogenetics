@@ -14,10 +14,13 @@ from bijux_phylogenetics.phylo.likelihood.gamma import (
 )
 from bijux_phylogenetics.phylo.likelihood.invariant import (
     invariant_component_site_likelihood,
-    invariant_mixture_site_likelihood,
     invariant_proportion_boundary_warnings,
     validate_invariant_proportion,
     validate_invariant_proportion_bounds,
+)
+from bijux_phylogenetics.phylo.likelihood.logspace import (
+    log_weighted_sum_exp,
+    logsumexp,
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
     BranchLengthOptimizationRow,
@@ -93,7 +96,9 @@ def evaluate_empirical_protein_tree_likelihood(
         gap_policy=gap_policy,
         missing_policy=missing_policy,
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     if root_prior is None:
         validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
         root_prior_source = "uniform"
@@ -176,7 +181,9 @@ def optimize_empirical_protein_branch_lengths(
         gap_policy=gap_policy,
         missing_policy=missing_policy,
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     if root_prior is None:
         validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
         root_prior_source = "uniform"
@@ -190,11 +197,13 @@ def optimize_empirical_protein_branch_lengths(
         rate_matrix,
         model_name="empirical protein branch optimization",
     )
-    validated_alpha, validated_invariant_proportion = _validate_empirical_branch_optimization_parameters(
-        likelihood_model=validated_likelihood_model,
-        alpha=alpha,
-        invariant_proportion=invariant_proportion,
-        category_count=category_count,
+    validated_alpha, validated_invariant_proportion = (
+        _validate_empirical_branch_optimization_parameters(
+            likelihood_model=validated_likelihood_model,
+            alpha=alpha,
+            invariant_proportion=invariant_proportion,
+            category_count=category_count,
+        )
     )
     categories = None
     if validated_alpha is not None:
@@ -350,7 +359,9 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma(
         gap_policy=gap_policy,
         missing_policy=missing_policy,
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     if root_prior is None:
         validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
         root_prior_source = "uniform"
@@ -360,17 +371,19 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma(
             model_name="empirical protein matrix +G",
         )
         root_prior_source = "provided"
-    return _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_patterns(
-        tree,
-        compressed_patterns,
-        rate_matrix=rate_matrix,
-        alpha=alpha,
-        category_count=category_count,
-        root_prior=validated_root_prior,
-        root_prior_source=root_prior_source,
-        matrix_label=matrix_label,
-        gap_policy=gap_policy,
-        missing_policy=missing_policy,
+    return (
+        _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_patterns(
+            tree,
+            compressed_patterns,
+            rate_matrix=rate_matrix,
+            alpha=alpha,
+            category_count=category_count,
+            root_prior=validated_root_prior,
+            root_prior_source=root_prior_source,
+            matrix_label=matrix_label,
+            gap_policy=gap_policy,
+            missing_policy=missing_policy,
+        )
     )
 
 
@@ -422,7 +435,9 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         gap_policy=gap_policy,
         missing_policy=missing_policy,
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     if root_prior is None:
         validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
         root_prior_source = "uniform"
@@ -587,7 +602,9 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         gap_policy=gap_policy,
         missing_policy=missing_policy,
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     if root_prior is None:
         validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
         root_prior_source = "uniform"
@@ -678,7 +695,9 @@ def optimize_empirical_protein_tree_likelihood_with_invariant_mixture(
         gap_policy=gap_policy,
         missing_policy=missing_policy,
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     if root_prior is None:
         validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
         root_prior_source = "uniform"
@@ -809,7 +828,9 @@ def evaluate_empirical_protein_tree_likelihood_with_invariant_mixture(
         gap_policy=gap_policy,
         missing_policy=missing_policy,
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     if root_prior is None:
         validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
         root_prior_source = "uniform"
@@ -898,20 +919,24 @@ def _evaluate_empirical_protein_tree_likelihood_from_patterns(
         )
         for _parent, child in tree.iter_edges()
     }
-    site_log_likelihoods, log_likelihood = expanded_site_log_likelihood_rows_from_patterns(
-        compressed_patterns,
-        site_log_likelihood=lambda states: evaluate_fixed_topology_protein_site_log_likelihood(
-            tree,
-            states,
-            taxon_order=compressed_patterns.taxon_order,
-            model_name="empirical protein matrix",
-            root_prior=root_prior,
-            transition_matrix_for_child=lambda child: transition_by_node_id[
-                child.node_id or ""
-            ],
-            gap_policy=gap_policy,
-            missing_policy=missing_policy,
-        ),
+    site_log_likelihoods, log_likelihood = (
+        expanded_site_log_likelihood_rows_from_patterns(
+            compressed_patterns,
+            site_log_likelihood=lambda states: (
+                evaluate_fixed_topology_protein_site_log_likelihood(
+                    tree,
+                    states,
+                    taxon_order=compressed_patterns.taxon_order,
+                    model_name="empirical protein matrix",
+                    root_prior=root_prior,
+                    transition_matrix_for_child=lambda child: transition_by_node_id[
+                        child.node_id or ""
+                    ],
+                    gap_policy=gap_policy,
+                    missing_policy=missing_policy,
+                )
+            ),
+        )
     )
     return ProteinEmpiricalMatrixTreeLikelihoodReport(
         taxa=compressed_patterns.taxon_order,
@@ -959,9 +984,7 @@ def _validate_empirical_branch_optimization_parameters(
         )
         validated_alpha = float(alpha)
     elif alpha is not None:
-        raise ValueError(
-            f"likelihood_model '{likelihood_model}' does not accept alpha"
-        )
+        raise ValueError(f"likelihood_model '{likelihood_model}' does not accept alpha")
     if likelihood_model in {"invariant", "discrete-gamma-invariant"}:
         if invariant_proportion is None:
             raise ValueError(
@@ -1042,7 +1065,9 @@ def _evaluate_empirical_protein_branch_optimization_objective(
         ).log_likelihood
     if likelihood_model == "discrete-gamma-invariant":
         if alpha is None or invariant_proportion is None or categories is None:
-            raise ValueError("discrete-gamma-invariant objective requires alpha and invariant proportion")
+            raise ValueError(
+                "discrete-gamma-invariant objective requires alpha and invariant proportion"
+            )
         return _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns(
             tree,
             compressed_patterns,
@@ -1062,7 +1087,9 @@ def _evaluate_empirical_protein_branch_optimization_objective(
             converged=True,
             emit_boundary_warnings=False,
         ).log_likelihood
-    raise ValueError(f"unsupported empirical branch optimization model '{likelihood_model}'")
+    raise ValueError(
+        f"unsupported empirical branch optimization model '{likelihood_model}'"
+    )
 
 
 def _empirical_transition_by_node_id(
@@ -1080,7 +1107,7 @@ def _empirical_transition_by_node_id(
     }
 
 
-def _empirical_protein_site_likelihood(
+def _empirical_protein_site_log_likelihood(
     tree: PhyloTree,
     pattern_states: tuple[str, ...],
     *,
@@ -1091,7 +1118,7 @@ def _empirical_protein_site_likelihood(
     gap_policy: str,
     missing_policy: str,
 ) -> float:
-    site_log_likelihood = evaluate_fixed_topology_protein_site_log_likelihood(
+    return evaluate_fixed_topology_protein_site_log_likelihood(
         tree,
         pattern_states,
         taxon_order=taxon_order,
@@ -1103,10 +1130,9 @@ def _empirical_protein_site_likelihood(
         gap_policy=gap_policy,
         missing_policy=missing_policy,
     )
-    return math.exp(site_log_likelihood)
 
 
-def _empirical_protein_discrete_gamma_category_likelihoods(
+def _empirical_protein_discrete_gamma_category_log_likelihoods(
     tree: PhyloTree,
     pattern_states: tuple[str, ...],
     *,
@@ -1118,15 +1144,15 @@ def _empirical_protein_discrete_gamma_category_likelihoods(
     gap_policy: str,
     missing_policy: str,
 ) -> list[float]:
-    category_likelihoods: list[float] = []
+    category_log_likelihoods: list[float] = []
     for category in categories:
         transition_by_node_id = _empirical_transition_by_node_id(
             tree,
             validated_rate_matrix,
             rate_scale=category.rate,
         )
-        category_likelihoods.append(
-            _empirical_protein_site_likelihood(
+        category_log_likelihoods.append(
+            _empirical_protein_site_log_likelihood(
                 tree,
                 pattern_states,
                 taxon_order=taxon_order,
@@ -1137,19 +1163,51 @@ def _empirical_protein_discrete_gamma_category_likelihoods(
                 missing_policy=missing_policy,
             )
         )
-    return category_likelihoods
+    return category_log_likelihoods
 
 
-def _discrete_gamma_mixture_likelihood(
+def _discrete_gamma_mixture_log_likelihood(
     categories: list[DiscreteGammaRateCategory],
-    category_likelihoods: list[float],
+    category_log_likelihoods: list[float],
 ) -> float:
-    return sum(
-        category.weight * category_likelihood
-        for category, category_likelihood in zip(
-            categories,
-            category_likelihoods,
-            strict=True,
+    return log_weighted_sum_exp(
+        category_log_likelihoods,
+        weights=[
+            category.weight
+            for category in categories
+        ],
+    )
+
+
+def _linear_likelihoods_from_log_values(log_values: list[float]) -> list[float]:
+    return [math.exp(log_value) for log_value in log_values]
+
+
+def _linear_likelihood_from_log_value(log_value: float) -> float:
+    return math.exp(log_value)
+
+
+def _invariant_mixture_log_likelihood(
+    *,
+    invariant_proportion: float,
+    invariant_component_likelihood: float,
+    variable_component_log_likelihood: float,
+) -> float:
+    if invariant_proportion <= 0.0:
+        return variable_component_log_likelihood
+    if invariant_proportion >= 1.0:
+        if invariant_component_likelihood <= 0.0:
+            return float("-inf")
+        return math.log(invariant_component_likelihood)
+    invariant_log_likelihood = (
+        float("-inf")
+        if invariant_component_likelihood <= 0.0
+        else math.log(invariant_component_likelihood)
+    )
+    return logsumexp(
+        (
+            math.log(invariant_proportion) + invariant_log_likelihood,
+            math.log(1.0 - invariant_proportion) + variable_component_log_likelihood,
         )
     )
 
@@ -1178,22 +1236,27 @@ def _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_pattern
     site_likelihoods: list[DiscreteGammaSiteLikelihood] = []
     total_log_likelihood = 0.0
     for pattern in compressed_patterns.patterns:
-        category_likelihoods = _empirical_protein_discrete_gamma_category_likelihoods(
-            tree,
-            pattern.states,
-            taxon_order=compressed_patterns.taxon_order,
-            validated_rate_matrix=validated_rate_matrix,
-            categories=categories,
-            model_name="empirical protein matrix +G",
-            root_prior=root_prior,
-            gap_policy=gap_policy,
-            missing_policy=missing_policy,
+        category_log_likelihoods = (
+            _empirical_protein_discrete_gamma_category_log_likelihoods(
+                tree,
+                pattern.states,
+                taxon_order=compressed_patterns.taxon_order,
+                validated_rate_matrix=validated_rate_matrix,
+                categories=categories,
+                model_name="empirical protein matrix +G",
+                root_prior=root_prior,
+                gap_policy=gap_policy,
+                missing_policy=missing_policy,
+            )
         )
-        mixture_likelihood = _discrete_gamma_mixture_likelihood(
+        pattern_log_likelihood = _discrete_gamma_mixture_log_likelihood(
             categories,
-            category_likelihoods,
+            category_log_likelihoods,
         )
-        pattern_log_likelihood = math.log(mixture_likelihood)
+        category_likelihoods = _linear_likelihoods_from_log_values(
+            category_log_likelihoods
+        )
+        mixture_likelihood = _linear_likelihood_from_log_value(pattern_log_likelihood)
         for site_position in pattern.site_positions:
             site_likelihoods.append(
                 DiscreteGammaSiteLikelihood(
@@ -1249,20 +1312,25 @@ def _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invarian
     site_likelihoods: list[DiscreteGammaInvariantMixtureSiteLikelihood] = []
     total_log_likelihood = 0.0
     for pattern in compressed_patterns.patterns:
-        category_likelihoods = _empirical_protein_discrete_gamma_category_likelihoods(
-            tree,
-            pattern.states,
-            taxon_order=compressed_patterns.taxon_order,
-            validated_rate_matrix=validated_rate_matrix,
-            categories=categories,
-            model_name="empirical protein matrix +G+I",
-            root_prior=root_prior,
-            gap_policy=gap_policy,
-            missing_policy=missing_policy,
+        category_log_likelihoods = (
+            _empirical_protein_discrete_gamma_category_log_likelihoods(
+                tree,
+                pattern.states,
+                taxon_order=compressed_patterns.taxon_order,
+                validated_rate_matrix=validated_rate_matrix,
+                categories=categories,
+                model_name="empirical protein matrix +G+I",
+                root_prior=root_prior,
+                gap_policy=gap_policy,
+                missing_policy=missing_policy,
+            )
         )
-        variable_component_likelihood = _discrete_gamma_mixture_likelihood(
+        variable_component_log_likelihood = _discrete_gamma_mixture_log_likelihood(
             categories,
-            category_likelihoods,
+            category_log_likelihoods,
+        )
+        variable_component_likelihood = _linear_likelihood_from_log_value(
+            variable_component_log_likelihood
         )
         invariant_component_likelihood = invariant_component_site_likelihood(
             pattern.states,
@@ -1271,13 +1339,15 @@ def _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invarian
             gap_policy=gap_policy,
             missing_policy=missing_policy,
         )
-        mixture_likelihood = invariant_mixture_site_likelihood(
+        pattern_log_likelihood = _invariant_mixture_log_likelihood(
             invariant_proportion=invariant_proportion,
             invariant_component_likelihood=invariant_component_likelihood,
-            variable_component_likelihood=variable_component_likelihood,
-            model_name="empirical protein matrix +G+I",
+            variable_component_log_likelihood=variable_component_log_likelihood,
         )
-        pattern_log_likelihood = math.log(mixture_likelihood)
+        mixture_likelihood = _linear_likelihood_from_log_value(pattern_log_likelihood)
+        category_likelihoods = _linear_likelihoods_from_log_values(
+            category_log_likelihoods
+        )
         for site_position in pattern.site_positions:
             site_likelihoods.append(
                 DiscreteGammaInvariantMixtureSiteLikelihood(
@@ -1356,7 +1426,7 @@ def _evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_patt
     site_likelihoods: list[InvariantMixtureSiteLikelihood] = []
     total_log_likelihood = 0.0
     for pattern in compressed_patterns.patterns:
-        variable_component_likelihood = _empirical_protein_site_likelihood(
+        variable_component_log_likelihood = _empirical_protein_site_log_likelihood(
             tree,
             pattern.states,
             taxon_order=compressed_patterns.taxon_order,
@@ -1366,6 +1436,9 @@ def _evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_patt
             gap_policy=gap_policy,
             missing_policy=missing_policy,
         )
+        variable_component_likelihood = _linear_likelihood_from_log_value(
+            variable_component_log_likelihood
+        )
         invariant_component_likelihood = invariant_component_site_likelihood(
             pattern.states,
             root_prior=root_prior,
@@ -1373,13 +1446,12 @@ def _evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_patt
             gap_policy=gap_policy,
             missing_policy=missing_policy,
         )
-        mixture_likelihood = invariant_mixture_site_likelihood(
+        pattern_log_likelihood = _invariant_mixture_log_likelihood(
             invariant_proportion=invariant_proportion,
             invariant_component_likelihood=invariant_component_likelihood,
-            variable_component_likelihood=variable_component_likelihood,
-            model_name="empirical protein matrix +I",
+            variable_component_log_likelihood=variable_component_log_likelihood,
         )
-        pattern_log_likelihood = math.log(mixture_likelihood)
+        mixture_likelihood = _linear_likelihood_from_log_value(pattern_log_likelihood)
         for site_position in pattern.site_positions:
             site_likelihoods.append(
                 InvariantMixtureSiteLikelihood(
