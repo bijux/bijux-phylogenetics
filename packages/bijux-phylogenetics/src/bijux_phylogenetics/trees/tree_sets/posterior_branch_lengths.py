@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import csv
-import math
 from pathlib import Path
 from statistics import median
 
@@ -10,53 +9,13 @@ from .contracts import (
     PosteriorBranchLengthSummaryRow,
 )
 from .inventory import _analyze_tree_set, _require_exact_taxa
+from .posterior_statistics import (
+    effective_sample_size,
+    highest_posterior_density_interval,
+)
 from .topology import _format_clade
 
 _POSTERIOR_BRANCH_LENGTH_HPD_MASS = 0.95
-
-
-def _highest_posterior_density_interval(
-    values: list[float],
-    *,
-    mass: float,
-) -> tuple[float, float]:
-    ordered = sorted(values)
-    if len(ordered) == 1:
-        return ordered[0], ordered[0]
-    window_width = max(1, math.ceil(mass * len(ordered)))
-    best_start = 0
-    best_width = ordered[window_width - 1] - ordered[0]
-    for start in range(1, len(ordered) - window_width + 1):
-        width = ordered[start + window_width - 1] - ordered[start]
-        if width < best_width:
-            best_width = width
-            best_start = start
-    return ordered[best_start], ordered[best_start + window_width - 1]
-
-
-def _effective_sample_size(values: list[float]) -> float | None:
-    count = len(values)
-    if count == 0:
-        return None
-    if count == 1:
-        return 1.0
-    mean = sum(values) / count
-    centered = [value - mean for value in values]
-    variance = sum(value * value for value in centered) / count
-    if variance <= 0.0:
-        return float(count)
-    autocorrelation_sum = 0.0
-    for lag in range(1, count):
-        numerator = sum(
-            centered[index] * centered[index + lag] for index in range(count - lag)
-        )
-        denominator = (count - lag) * variance
-        rho = numerator / denominator if denominator > 0.0 else 0.0
-        if rho <= 0.0:
-            break
-        autocorrelation_sum += rho
-    tau = 1.0 + (2.0 * autocorrelation_sum)
-    return round(max(1.0, min(float(count), count / tau)), 15)
 
 
 def summarize_posterior_branch_lengths(
@@ -70,7 +29,7 @@ def summarize_posterior_branch_lengths(
         analysis.clade_branch_lengths.items(),
         key=lambda item: (-len(item[1]), _format_clade(item[0])),
     ):
-        lower_hpd, upper_hpd = _highest_posterior_density_interval(
+        lower_hpd, upper_hpd = highest_posterior_density_interval(
             branch_lengths,
             mass=_POSTERIOR_BRANCH_LENGTH_HPD_MASS,
         )
@@ -85,7 +44,7 @@ def summarize_posterior_branch_lengths(
                 median_branch_length=round(float(median(branch_lengths)), 15),
                 hpd_95_lower=round(lower_hpd, 15),
                 hpd_95_upper=round(upper_hpd, 15),
-                effective_sample_size=_effective_sample_size(branch_lengths),
+                effective_sample_size=effective_sample_size(branch_lengths),
             )
         )
     return PosteriorBranchLengthSummaryReport(
