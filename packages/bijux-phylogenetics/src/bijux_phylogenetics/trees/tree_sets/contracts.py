@@ -154,6 +154,30 @@ class PosteriorBranchLengthSummaryReport:
 
 
 @dataclass(frozen=True, slots=True)
+class PosteriorNodeAgeSummaryRow:
+    clade: str
+    node_kind: str
+    matched_tree_count: int
+    posterior_tree_count: int
+    clade_frequency: float
+    mean_node_age: float
+    median_node_age: float
+    hpd_95_lower: float
+    hpd_95_upper: float
+    effective_sample_size: float | None
+
+
+@dataclass(slots=True)
+class PosteriorNodeAgeSummaryReport:
+    path: Path
+    tree_count: int
+    processing: TreeSetProcessingSummary
+    shared_taxa: list[str]
+    hpd_mass: float
+    rows: list[PosteriorNodeAgeSummaryRow]
+
+
+@dataclass(frozen=True, slots=True)
 class CladeCompatibilityNodeRow:
     clade: str
     tree_count: int
