@@ -148,6 +148,8 @@ from bijux_phylogenetics.bayesian import (
     PosteriorModelAveragingReport,
     PosteriorModelEstimateRow,
     PosteriorModelSupportRow,
+    BayesianPosteriorTreeSample,
+    BayesianPosteriorTreeSampleArchive,
     BAYESIAN_BURNIN_POLICY_NAMES,
     BayesianRunBurninPolicy,
     BayesianRunManifest,
@@ -186,6 +188,8 @@ from bijux_phylogenetics.bayesian import (
     build_adaptive_tuning_report,
     build_adaptive_tuning_window_row,
     build_bayesian_evidence_package,
+    build_bayesian_posterior_tree_sample,
+    build_bayesian_posterior_tree_sample_archive,
     build_brownian_continuous_trait_model_definition,
     build_brownian_continuous_trait_proposal_schedule,
     build_ornstein_uhlenbeck_continuous_trait_model_definition,
@@ -245,6 +249,7 @@ from bijux_phylogenetics.bayesian import (
     build_bayesian_phylogenetic_state_from_prior_only_sample,
     build_bayesian_prior_component_state,
     build_bayesian_tree_state,
+    build_metropolis_hastings_posterior_tree_sample_archive,
     build_metropolis_hastings_proposal,
     build_local_clock_rate_model,
     build_relaxed_lognormal_clock_model,
@@ -325,7 +330,9 @@ from bijux_phylogenetics.bayesian import (
     build_bayesian_run_burnin_policy,
     build_bayesian_run_manifest,
     build_fixed_topology_dna_run_manifest,
+    infer_bayesian_model_id,
     list_metropolis_hastings_retained_sample_ids,
+    load_bayesian_posterior_tree_sample_archive,
     load_bayesian_run_manifest,
     replay_fixed_topology_dna_run_manifest,
     summarize_metropolis_hastings_model_averaged_estimates,
@@ -354,6 +361,7 @@ from bijux_phylogenetics.bayesian import (
     write_mrbayes_parameter_summary_table,
     write_posterior_ancestral_sequence_fasta,
     write_posterior_ancestral_state_probability_table,
+    write_bayesian_posterior_tree_sample_archive,
     write_bayesian_run_manifest,
     write_posterior_tree_subsample,
     write_supplementary_bayesian_diagnostics_table,
@@ -1483,6 +1491,11 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bayesian_api.PosteriorModelAveragingReport is PosteriorModelAveragingReport
     assert bayesian_api.PosteriorModelEstimateRow is PosteriorModelEstimateRow
     assert bayesian_api.PosteriorModelSupportRow is PosteriorModelSupportRow
+    assert bayesian_api.BayesianPosteriorTreeSample is BayesianPosteriorTreeSample
+    assert (
+        bayesian_api.BayesianPosteriorTreeSampleArchive
+        is BayesianPosteriorTreeSampleArchive
+    )
     assert bayesian_api.BayesianRunBurninPolicy is BayesianRunBurninPolicy
     assert bayesian_api.BayesianRunManifest is BayesianRunManifest
     assert (
@@ -1576,6 +1589,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bayesian_api.assess_mrbayes_convergence is assess_mrbayes_convergence
     assert (
         bayesian_api.build_bayesian_evidence_package is build_bayesian_evidence_package
+    )
+    assert (
+        bayesian_api.build_bayesian_posterior_tree_sample
+        is build_bayesian_posterior_tree_sample
+    )
+    assert (
+        bayesian_api.build_bayesian_posterior_tree_sample_archive
+        is build_bayesian_posterior_tree_sample_archive
     )
     assert (
         bayesian_api.build_brownian_continuous_trait_model_definition
@@ -2004,13 +2025,26 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is build_fixed_topology_dna_run_manifest
     )
     assert (
+        bayesian_api.build_metropolis_hastings_posterior_tree_sample_archive
+        is build_metropolis_hastings_posterior_tree_sample_archive
+    )
+    assert bayesian_api.infer_bayesian_model_id is infer_bayesian_model_id
+    assert (
         bayesian_api.list_metropolis_hastings_retained_sample_ids
         is list_metropolis_hastings_retained_sample_ids
+    )
+    assert (
+        bayesian_api.load_bayesian_posterior_tree_sample_archive
+        is load_bayesian_posterior_tree_sample_archive
     )
     assert bayesian_api.load_bayesian_run_manifest is load_bayesian_run_manifest
     assert (
         bayesian_api.replay_fixed_topology_dna_run_manifest
         is replay_fixed_topology_dna_run_manifest
+    )
+    assert (
+        bayesian_api.write_bayesian_posterior_tree_sample_archive
+        is write_bayesian_posterior_tree_sample_archive
     )
     assert bayesian_api.write_bayesian_run_manifest is write_bayesian_run_manifest
     assert (
