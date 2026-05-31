@@ -9,6 +9,11 @@ from bijux_phylogenetics.datasets.study_inputs import (
     load_taxon_table,
     write_taxon_rows,
 )
+from bijux_phylogenetics.phylo.likelihood.discrete_observation_policies import (
+    is_missing_discrete_observation_token,
+    normalize_discrete_observation_token,
+    parse_discrete_ambiguity_token,
+)
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
@@ -195,7 +200,16 @@ def load_discrete_dataset(
     states_by_taxon: dict[str, str] = {}
     for row in alignment.rows:
         taxon = row[table.taxon_column]
-        state = row[trait].strip()
+        state = normalize_discrete_observation_token(row[trait])
+        if is_missing_discrete_observation_token(state):
+            raise AncestralReconstructionError(
+                f"discrete ancestral reconstruction requires resolved observed states; taxon '{taxon}' uses missing token '{state or '<blank>'}' for trait '{trait}'"
+            )
+        ambiguous_states = parse_discrete_ambiguity_token(state)
+        if ambiguous_states is not None:
+            raise AncestralReconstructionError(
+                f"discrete ancestral reconstruction requires resolved observed states; taxon '{taxon}' uses ambiguous token '{state}' for trait '{trait}'"
+            )
         states_by_taxon[taxon] = state
     observed_states = sorted(set(states_by_taxon.values()))
     if len(alignment.report.aligned_taxa) < 2:
