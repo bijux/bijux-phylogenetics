@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
+import math
 from pathlib import Path
 
 import numpy
@@ -29,8 +30,13 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
 from bijux_phylogenetics.phylo.likelihood.site_log_likelihoods import (
     evaluate_selected_dna_site_log_likelihoods_from_patterns,
 )
+from bijux_phylogenetics.phylo.topology import rooted_topology_fingerprint
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError, TreeParseError
+
+_CANDIDATE_TREE_COMPARISON_CAUTION_LABEL = (
+    "all candidate trees are rescored under one shared alignment/model surface; prior per-tree fitted-model differences are not preserved in this comparison"
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -110,8 +116,10 @@ def evaluate_nucleotide_candidate_tree_site_likelihood_matrix(
             CandidateTreeSiteLikelihoodSummary(
                 candidate_tree_id=candidate.candidate_tree_id,
                 candidate_tree_label=candidate.candidate_tree_label,
+                topology_fingerprint=rooted_topology_fingerprint(candidate.tree),
                 tree_newick=tree_report.tree_newick,
                 log_likelihood=tree_report.log_likelihood,
+                observed_delta_log_likelihood=0.0,
             )
         )
         matrix_rows.extend(
@@ -127,6 +135,20 @@ def evaluate_nucleotide_candidate_tree_site_likelihood_matrix(
             )
             for row in tree_report.site_log_likelihoods
         )
+    observed_best_candidate = select_observed_best_candidate_tree_summary(candidate_trees)
+    candidate_trees = [
+        CandidateTreeSiteLikelihoodSummary(
+            candidate_tree_id=row.candidate_tree_id,
+            candidate_tree_label=row.candidate_tree_label,
+            topology_fingerprint=row.topology_fingerprint,
+            tree_newick=row.tree_newick,
+            log_likelihood=row.log_likelihood,
+            observed_delta_log_likelihood=(
+                observed_best_candidate.log_likelihood - row.log_likelihood
+            ),
+        )
+        for row in candidate_trees
+    ]
     return CandidateTreeSiteLikelihoodMatrixReport(
         model_name=specification.model_name,
         tree_set_path=None if resolved_tree_set_path is None else str(resolved_tree_set_path),
@@ -139,6 +161,7 @@ def evaluate_nucleotide_candidate_tree_site_likelihood_matrix(
         pattern_count=compressed_patterns.pattern_count,
         compression_used=True,
         expansion_policy="candidate-tree-expanded-site-rows",
+        comparison_caution_label=_CANDIDATE_TREE_COMPARISON_CAUTION_LABEL,
         parameter_values=specification.parameter_values,
         candidate_trees=candidate_trees,
         matrix_rows=matrix_rows,
@@ -218,8 +241,10 @@ def write_candidate_tree_likelihood_summary_table(
     columns = [
         "candidate_tree_id",
         "candidate_tree_label",
+        "topology_fingerprint",
         "tree_newick",
         "log_likelihood",
+        "observed_delta_log_likelihood",
     ]
     rows = ["\t".join(columns)]
     for row in report.candidate_trees:
@@ -228,8 +253,10 @@ def write_candidate_tree_likelihood_summary_table(
                 [
                     row.candidate_tree_id,
                     row.candidate_tree_label,
+                    row.topology_fingerprint,
                     row.tree_newick,
                     repr(row.log_likelihood),
+                    repr(row.observed_delta_log_likelihood),
                 ]
             )
         )
@@ -292,13 +319,16 @@ def write_candidate_tree_site_likelihood_matrix_run_json(
         "pattern_count": report.pattern_count,
         "compression_used": report.compression_used,
         "expansion_policy": report.expansion_policy,
+        "comparison_caution_label": report.comparison_caution_label,
         "parameter_values": report.parameter_values,
         "candidate_trees": [
             {
                 "candidate_tree_id": row.candidate_tree_id,
                 "candidate_tree_label": row.candidate_tree_label,
+                "topology_fingerprint": row.topology_fingerprint,
                 "tree_newick": row.tree_newick,
                 "log_likelihood": row.log_likelihood,
+                "observed_delta_log_likelihood": row.observed_delta_log_likelihood,
             }
             for row in report.candidate_trees
         ],
@@ -318,6 +348,45 @@ def write_candidate_tree_site_likelihood_matrix_run_json(
     }
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
+
+
+def select_observed_best_candidate_tree_summary(
+    candidates: list[CandidateTreeSiteLikelihoodSummary],
+) -> CandidateTreeSiteLikelihoodSummary:
+    """Choose the observed best candidate summary with deterministic tie breaks."""
+    if not candidates:
+        raise ValueError("candidate tree site likelihood matrix requires at least one candidate")
+    best_candidate = candidates[0]
+    for candidate in candidates[1:]:
+        if prefer_higher_likelihood_candidate_tree_summary(candidate, best_candidate):
+            best_candidate = candidate
+    return best_candidate
+
+
+def prefer_higher_likelihood_candidate_tree_summary(
+    left: CandidateTreeSiteLikelihoodSummary,
+    right: CandidateTreeSiteLikelihoodSummary,
+) -> bool:
+    """Prefer higher likelihoods, then topology identity, across candidate trees."""
+    if left.log_likelihood > right.log_likelihood and not math.isclose(
+        left.log_likelihood,
+        right.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    ):
+        return True
+    if right.log_likelihood > left.log_likelihood and not math.isclose(
+        left.log_likelihood,
+        right.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    ):
+        return False
+    if left.topology_fingerprint != right.topology_fingerprint:
+        return left.topology_fingerprint < right.topology_fingerprint
+    if left.tree_newick != right.tree_newick:
+        return left.tree_newick < right.tree_newick
+    return left.candidate_tree_id < right.candidate_tree_id
 
 
 def write_candidate_tree_site_likelihood_matrix_artifacts(
