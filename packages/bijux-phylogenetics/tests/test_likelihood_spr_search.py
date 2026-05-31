@@ -245,7 +245,7 @@ def test_write_nucleotide_likelihood_spr_artifacts_materializes_governed_output_
         "run_json_path",
     }
     assert outputs["trace_path"].read_text(encoding="utf-8").startswith(
-        "event_index\tevent_kind\titeration\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\ttree_before_newick\ttree_after_newick\tpruned_clade_id\tregraft_target_branch_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\taffected_branch_clade_ids\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tstopping_reason\n"
+        "event_index\tevent_kind\titeration\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\ttree_before_newick\ttree_after_newick\tpruned_clade_id\tregraft_target_branch_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\taffected_branch_clade_ids\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tstopping_reason\n"
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "nucleotide-likelihood-spr-search"
@@ -256,3 +256,4 @@ def test_write_nucleotide_likelihood_spr_artifacts_materializes_governed_output_
     assert payload["trace_rows"][1]["branch_reoptimization_scope"] == "all-branches"
     assert payload["trace_rows"][1]["affected_branch_clade_ids"] == ["A", "A|B", "A|D", "B"]
     assert payload["trace_rows"][1]["optimized_branch_count"] == 8
+    assert payload["trace_rows"][1]["branch_reoptimization_converged"] is True
