@@ -132,6 +132,17 @@ from bijux_phylogenetics.bayesian import (
     PosteriorDiscreteTraitNodeSummaryRow,
     PosteriorDiscreteTraitReport,
     PosteriorDiscreteTraitStateProbabilityRow,
+    POSTERIOR_PREDICTIVE_SAMPLE_SELECTION_POLICIES,
+    PosteriorPredictiveAlignmentReplicate,
+    PosteriorPredictiveAlignmentSimulationReport,
+    PosteriorPredictiveContinuousTraitReplicate,
+    PosteriorPredictiveContinuousTraitSimulationReport,
+    PosteriorPredictiveDiscreteTraitReplicate,
+    PosteriorPredictiveDiscreteTraitSimulationReport,
+    PosteriorPredictiveObservedStatisticRow,
+    PosteriorPredictiveReplicateStatisticRow,
+    PosteriorPredictiveSimulationDefinition,
+    PosteriorPredictiveStatisticSummaryRow,
     MetropolisHastingsProposal,
     MetropolisHastingsRunReport,
     MetropolisHastingsStepRow,
@@ -201,6 +212,7 @@ from bijux_phylogenetics.bayesian import (
     build_partition_model_parameter_state,
     build_partition_parameter_linkage_plan,
     build_posterior_ancestral_sequence_definition,
+    build_posterior_predictive_simulation_definition,
     build_partition_substitution_model_definition,
     build_bayesian_model_parameter_state,
     build_bayesian_phylogenetic_state,
@@ -278,6 +290,12 @@ from bijux_phylogenetics.bayesian import (
     score_bayesian_phylogenetic_state,
     serialize_bayesian_phylogenetic_state,
     serialize_bayesian_phylogenetic_state_json,
+    simulate_brownian_continuous_trait_posterior_predictive,
+    simulate_discrete_trait_mk_posterior_predictive,
+    simulate_fixed_topology_dna_posterior_predictive,
+    simulate_fixed_topology_partitioned_dna_posterior_predictive,
+    simulate_joint_topology_dna_posterior_predictive,
+    simulate_ornstein_uhlenbeck_continuous_trait_posterior_predictive,
     simulate_prior_only_phylogenetic_states,
     strip_partition_model_parameter_state,
     summarize_beast_log,
@@ -1369,6 +1387,46 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.PosteriorDiscreteTraitStateProbabilityRow
         is PosteriorDiscreteTraitStateProbabilityRow
     )
+    assert (
+        bayesian_api.PosteriorPredictiveSimulationDefinition
+        is PosteriorPredictiveSimulationDefinition
+    )
+    assert (
+        bayesian_api.PosteriorPredictiveObservedStatisticRow
+        is PosteriorPredictiveObservedStatisticRow
+    )
+    assert (
+        bayesian_api.PosteriorPredictiveReplicateStatisticRow
+        is PosteriorPredictiveReplicateStatisticRow
+    )
+    assert (
+        bayesian_api.PosteriorPredictiveStatisticSummaryRow
+        is PosteriorPredictiveStatisticSummaryRow
+    )
+    assert (
+        bayesian_api.PosteriorPredictiveAlignmentReplicate
+        is PosteriorPredictiveAlignmentReplicate
+    )
+    assert (
+        bayesian_api.PosteriorPredictiveDiscreteTraitReplicate
+        is PosteriorPredictiveDiscreteTraitReplicate
+    )
+    assert (
+        bayesian_api.PosteriorPredictiveContinuousTraitReplicate
+        is PosteriorPredictiveContinuousTraitReplicate
+    )
+    assert (
+        bayesian_api.PosteriorPredictiveAlignmentSimulationReport
+        is PosteriorPredictiveAlignmentSimulationReport
+    )
+    assert (
+        bayesian_api.PosteriorPredictiveDiscreteTraitSimulationReport
+        is PosteriorPredictiveDiscreteTraitSimulationReport
+    )
+    assert (
+        bayesian_api.PosteriorPredictiveContinuousTraitSimulationReport
+        is PosteriorPredictiveContinuousTraitSimulationReport
+    )
     assert bayesian_api.BayesianStateBranchRow is BayesianStateBranchRow
     assert bayesian_api.BayesianTreeState is BayesianTreeState
     assert bayesian_api.BayesianModelParameterState is BayesianModelParameterState
@@ -1648,6 +1706,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is build_posterior_ancestral_sequence_definition
     )
     assert (
+        bayesian_api.build_posterior_predictive_simulation_definition
+        is build_posterior_predictive_simulation_definition
+    )
+    assert (
         bayesian_api.build_partition_substitution_model_definition
         is build_partition_substitution_model_definition
     )
@@ -1779,6 +1841,30 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is run_joint_topology_dna_metropolis_hastings
     )
     assert (
+        bayesian_api.simulate_brownian_continuous_trait_posterior_predictive
+        is simulate_brownian_continuous_trait_posterior_predictive
+    )
+    assert (
+        bayesian_api.simulate_discrete_trait_mk_posterior_predictive
+        is simulate_discrete_trait_mk_posterior_predictive
+    )
+    assert (
+        bayesian_api.simulate_fixed_topology_dna_posterior_predictive
+        is simulate_fixed_topology_dna_posterior_predictive
+    )
+    assert (
+        bayesian_api.simulate_fixed_topology_partitioned_dna_posterior_predictive
+        is simulate_fixed_topology_partitioned_dna_posterior_predictive
+    )
+    assert (
+        bayesian_api.simulate_joint_topology_dna_posterior_predictive
+        is simulate_joint_topology_dna_posterior_predictive
+    )
+    assert (
+        bayesian_api.simulate_ornstein_uhlenbeck_continuous_trait_posterior_predictive
+        is simulate_ornstein_uhlenbeck_continuous_trait_posterior_predictive
+    )
+    assert (
         bayesian_api.summarize_brownian_continuous_trait_posterior_ancestral_states
         is summarize_brownian_continuous_trait_posterior_ancestral_states
     )
@@ -1873,6 +1959,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.JOINT_TOPOLOGY_DNA_TOPOLOGY_MOVE_KINDS
         is JOINT_TOPOLOGY_DNA_TOPOLOGY_MOVE_KINDS
+    )
+    assert (
+        bayesian_api.POSTERIOR_PREDICTIVE_SAMPLE_SELECTION_POLICIES
+        is POSTERIOR_PREDICTIVE_SAMPLE_SELECTION_POLICIES
     )
     assert (
         bayesian_api.evaluate_constant_population_coalescent_tree_log_prior
