@@ -71,6 +71,55 @@ def test_empirical_protein_invariant_zero_matches_fixed_rate_surface() -> None:
     )
 
 
+def test_empirical_protein_gamma_invariant_zero_matches_gamma_surface() -> None:
+    gamma_report = evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment(
+        fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+        fixture(
+            "alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"
+        ),
+        rate_matrix=_compact_polar_rate_matrix(),
+        root_prior=_biased_root_prior(),
+        matrix_label="compact-polar",
+        alpha=0.8,
+        category_count=4,
+    )
+    gamma_invariant_report = (
+        evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
+            fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+            fixture(
+                "alignments",
+                "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
+            ),
+            rate_matrix=_compact_polar_rate_matrix(),
+            root_prior=_biased_root_prior(),
+            matrix_label="compact-polar",
+            alpha=0.8,
+            category_count=4,
+            invariant_proportion=0.0,
+        )
+    )
+
+    assert gamma_invariant_report.invariant_proportion == 0.0
+    assert math.isclose(
+        gamma_invariant_report.log_likelihood,
+        gamma_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert [row.category_likelihoods for row in gamma_invariant_report.site_likelihoods] == [
+        row.category_likelihoods for row in gamma_report.site_likelihoods
+    ]
+    assert all(
+        math.isclose(
+            row.variable_component_likelihood,
+            row.mixture_likelihood,
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        )
+        for row in gamma_invariant_report.site_likelihoods
+    )
+
+
 def _compact_polar_rate_matrix() -> numpy.ndarray:
     return _build_empirical_rate_matrix(
         boosted_pairs={
