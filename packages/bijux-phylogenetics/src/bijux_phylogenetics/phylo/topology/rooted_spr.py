@@ -18,6 +18,10 @@ from bijux_phylogenetics.phylo.topology.models import (
 )
 
 from .affected_subtrees import summarize_affected_subtrees
+from .neighborhood_summary import (
+    summarize_topology_neighborhood,
+    write_topology_neighborhood_summary_table,
+)
 from .tree import PhyloTree, TreeNode, descendant_taxa
 
 _ROOT_REGRAFT_BRANCH_ID = "root"
@@ -79,7 +83,7 @@ def iter_rooted_spr_move_candidates(
     budget: RootedSprEnumerationBudget | None = None,
 ):
     """Yield deterministic rooted SPR candidates for one rooted tree."""
-    candidates, _skipped_pruned, _skipped_regraft_targets = (
+    candidates, _skipped_pruned, _skipped_regraft_targets, _skipped_budget_candidates = (
         _collect_rooted_spr_move_candidates(tree, budget=budget)
     )
     yield from candidates
@@ -89,7 +93,7 @@ def _collect_rooted_spr_move_candidates(
     tree: PhyloTree,
     *,
     budget: RootedSprEnumerationBudget | None,
-) -> tuple[list[RootedSprMoveCandidate], int, int]:
+) -> tuple[list[RootedSprMoveCandidate], int, int, int]:
     normalized_budget = validate_rooted_spr_enumeration_budget(budget)
     seen_candidates: set[tuple[str, str]] = set()
     sorted_prune_nodes = sorted(
@@ -103,9 +107,10 @@ def _collect_rooted_spr_move_candidates(
             : normalized_budget.max_pruned_clade_count
         ]
     skipped_pruned_clade_count = len(sorted_prune_nodes) - len(limited_prune_nodes)
+    skipped_budget_move_candidate_count = 0
     skipped_regraft_target_count = 0
     candidates: list[RootedSprMoveCandidate] = []
-    for prune_node in limited_prune_nodes:
+    for prune_node in sorted_prune_nodes:
         pruned_clade_id = rooted_spr_clade_id(prune_node)
         remainder_tree, _pruned_subtree = prune_rooted_spr_subtree(
             tree,
@@ -124,11 +129,18 @@ def _collect_rooted_spr_move_candidates(
                 )
             ],
         ]
+        if prune_node not in limited_prune_nodes:
+            skipped_budget_move_candidate_count += len(regraft_targets)
+            continue
         if normalized_budget.max_regraft_target_count_per_pruned_clade is not None:
             regraft_target_limit = (
                 normalized_budget.max_regraft_target_count_per_pruned_clade
             )
             skipped_regraft_target_count += max(
+                0,
+                len(regraft_targets) - regraft_target_limit,
+            )
+            skipped_budget_move_candidate_count += max(
                 0,
                 len(regraft_targets) - regraft_target_limit,
             )
@@ -147,7 +159,12 @@ def _collect_rooted_spr_move_candidates(
                     regraft_target_descendant_taxa=regraft_target_descendant_taxa,
                 )
             )
-    return candidates, skipped_pruned_clade_count, skipped_regraft_target_count
+    return (
+        candidates,
+        skipped_pruned_clade_count,
+        skipped_regraft_target_count,
+        skipped_budget_move_candidate_count,
+    )
 
 
 def apply_rooted_spr_move(
@@ -371,6 +388,7 @@ def enumerate_rooted_spr_neighbors(
         move_candidates,
         skipped_pruned_clade_count,
         skipped_regraft_target_count,
+        skipped_budget_move_candidate_count,
     ) = _collect_rooted_spr_move_candidates(resolved_tree, budget=normalized_budget)
     for candidate in move_candidates:
         generated_move_candidate_count += 1
@@ -433,6 +451,7 @@ def enumerate_rooted_spr_neighbors(
         ),
         skipped_pruned_clade_count=skipped_pruned_clade_count,
         skipped_regraft_target_count=skipped_regraft_target_count,
+        skipped_budget_move_candidate_count=skipped_budget_move_candidate_count,
         generated_move_candidate_count=generated_move_candidate_count,
         identity_move_candidate_count=identity_move_candidate_count,
         self_regraft_candidate_count=self_regraft_candidate_count,
@@ -599,6 +618,7 @@ def write_rooted_spr_run_json(
         ),
         "skipped_pruned_clade_count": report.skipped_pruned_clade_count,
         "skipped_regraft_target_count": report.skipped_regraft_target_count,
+        "skipped_budget_move_candidate_count": report.skipped_budget_move_candidate_count,
         "generated_move_candidate_count": report.generated_move_candidate_count,
         "identity_move_candidate_count": report.identity_move_candidate_count,
         "self_regraft_candidate_count": report.self_regraft_candidate_count,
@@ -646,10 +666,15 @@ def write_rooted_spr_artifacts(
         loads_newick(report.input_tree_newick),
     )
     neighbors_path = write_rooted_spr_neighbor_table(out_dir / "neighbors.tsv", report)
+    summary_path = write_topology_neighborhood_summary_table(
+        out_dir / "summary.tsv",
+        [summarize_topology_neighborhood(report)],
+    )
     run_json_path = write_rooted_spr_run_json(out_dir / "run.json", report)
     return {
         "input_tree_path": input_tree_path,
         "neighbors_path": neighbors_path,
+        "summary_path": summary_path,
         "run_json_path": run_json_path,
     }
 

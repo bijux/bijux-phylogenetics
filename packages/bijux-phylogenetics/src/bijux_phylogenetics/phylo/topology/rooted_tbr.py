@@ -17,6 +17,10 @@ from bijux_phylogenetics.phylo.topology.models import (
 )
 
 from .affected_subtrees import summarize_affected_subtrees
+from .neighborhood_summary import (
+    summarize_topology_neighborhood,
+    write_topology_neighborhood_summary_table,
+)
 from .tree import PhyloTree, TreeNode, descendant_taxa
 
 ROOTED_TBR_INTERFACE_BRANCH_ID = "interface"
@@ -675,10 +679,15 @@ def write_rooted_tbr_artifacts(
         loads_newick(report.input_tree_newick),
     )
     neighbors_path = write_rooted_tbr_neighbor_table(out_dir / "neighbors.tsv", report)
+    summary_path = write_topology_neighborhood_summary_table(
+        out_dir / "summary.tsv",
+        [summarize_topology_neighborhood(report)],
+    )
     run_json_path = write_rooted_tbr_run_json(out_dir / "run.json", report)
     return {
         "input_tree_path": input_tree_path,
         "neighbors_path": neighbors_path,
+        "summary_path": summary_path,
         "run_json_path": run_json_path,
     }
 
