@@ -233,6 +233,46 @@ class PosteriorCladeCorrelationReport:
 
 
 @dataclass(frozen=True, slots=True)
+class PosteriorTreeDistanceDiagnosticRow:
+    source_tree_index: int
+    rooted_topology_id: str
+    mcc_outlier_rank: int
+    consensus_outlier_rank: int
+    mcc_robinson_foulds_distance: int
+    mcc_normalized_robinson_foulds: float
+    mcc_branch_score_distance: float | None
+    consensus_robinson_foulds_distance: int
+    consensus_normalized_robinson_foulds: float
+    consensus_branch_score_distance: float | None
+
+
+@dataclass(frozen=True, slots=True)
+class PosteriorTreeDistanceDistributionRow:
+    reference_tree_kind: str
+    distance_metric: str
+    observed_value: float
+    tree_count: int
+    frequency: float
+
+
+@dataclass(slots=True)
+class PosteriorTreeDistanceDiagnosticsReport:
+    path: Path
+    tree_count: int
+    processing: TreeSetProcessingSummary
+    shared_taxa: list[str]
+    maximum_clade_credibility_tree_index: int
+    maximum_clade_credibility_rooted_topology_id: str
+    maximum_clade_credibility_newick: str
+    consensus_method: str
+    consensus_newick: str
+    row_count: int
+    distribution_row_count: int
+    rows: list[PosteriorTreeDistanceDiagnosticRow]
+    distributions: list[PosteriorTreeDistanceDistributionRow]
+
+
+@dataclass(frozen=True, slots=True)
 class CladeCompatibilityNodeRow:
     clade: str
     tree_count: int
