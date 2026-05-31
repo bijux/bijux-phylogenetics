@@ -5,6 +5,7 @@ import math
 from pathlib import Path
 
 import bijux_phylogenetics.phylo.likelihood as likelihood_api
+from bijux_phylogenetics.io.newick import load_newick_tree_set
 from bijux_phylogenetics.phylo.likelihood import (
     search_nucleotide_likelihood_tbr_from_alignment,
     write_nucleotide_likelihood_tbr_artifacts,
@@ -91,17 +92,25 @@ def test_write_nucleotide_likelihood_tbr_artifacts_materializes_governed_output_
         "input_tree_path",
         "start_tree_path",
         "final_tree_path",
+        "best_tree_path",
         "trace_path",
         "run_json_path",
     }
+    assert outputs["best_tree_path"].name == "best_trees.nwk"
+    assert len(load_newick_tree_set(outputs["best_tree_path"])) == 1
     assert outputs["trace_path"].read_text(encoding="utf-8").startswith(
-        "event_index\tevent_kind\titeration\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\ttree_before_newick\ttree_after_newick\tcut_edge_id\tleft_attachment_branch_id\tright_attachment_branch_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\tstopping_reason\n"
+        "event_index\tevent_kind\titeration\tmove_type\tcandidate_topology_fingerprint\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\taccepted_move\ttrace_reason\ttree_before_newick\ttree_after_newick\tcut_edge_id\tleft_attachment_branch_id\tright_attachment_branch_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\tstopping_reason\n"
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "nucleotide-likelihood-tbr-search"
     assert payload["accepted_move_count"] == 1
     assert payload["evaluated_neighbor_count"] == 20
     assert payload["stopping_reason"] == "no-improving-neighbor"
+    assert payload["trace_rows"][0]["move_type"] == "tbr"
+    assert payload["trace_rows"][0]["accepted_move"] is False
+    assert payload["trace_rows"][1]["accepted_move"] is True
+    assert payload["trace_rows"][1]["trace_reason"] == "accepted-improving-move"
+    assert payload["trace_rows"][-1]["trace_reason"] == "no-improving-neighbor"
     assert payload["trace_rows"][1]["cut_edge_id"] == "A|B|C|D"
     assert payload["trace_rows"][1]["left_attachment_branch_id"] == "D"
     assert payload["trace_rows"][1]["right_attachment_branch_id"] == "interface"
