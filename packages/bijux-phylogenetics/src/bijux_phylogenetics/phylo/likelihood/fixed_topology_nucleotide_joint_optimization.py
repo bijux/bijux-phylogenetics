@@ -24,6 +24,8 @@ from bijux_phylogenetics.phylo.likelihood.k80 import (
 from bijux_phylogenetics.phylo.likelihood.models import (
     BranchLengthOptimizationRow,
     FixedTopologyNucleotideJointOptimizationReport,
+    FixedTopologyNucleotideJointOptimizationRestartReport,
+    JointNucleotideOptimizationRestartAttemptRow,
     JointNucleotideOptimizationUpdateRow,
     SubstitutionParameterOptimizationRow,
 )
@@ -33,7 +35,29 @@ from bijux_phylogenetics.phylo.likelihood.substitution_parameters import (
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 _SUPPORTED_FIXED_TOPOLOGY_JOINT_MODELS = frozenset({"k80", "hky85", "gtr"})
+_SUPPORTED_FIXED_TOPOLOGY_JOINT_RESTART_POLICIES = frozenset(
+    {"none", "restart-on-nonconvergence-or-boundary"}
+)
 _BOUNDARY_TOLERANCE = 1e-9
+_DEFAULT_GTR_EXCHANGEABILITY_RESTART_PROFILES = (
+    (
+        "balanced-exchangeabilities",
+        {"AC": 1.0, "AG": 1.0, "AT": 1.0, "CG": 1.0, "CT": 1.0, "GT": 1.0},
+    ),
+    (
+        "transition-weighted-exchangeabilities",
+        {"AC": 1.0, "AG": 8.0, "AT": 0.5, "CG": 0.5, "CT": 6.0, "GT": 0.5},
+    ),
+    (
+        "transversion-weighted-exchangeabilities",
+        {"AC": 1.0, "AG": 0.5, "AT": 4.0, "CG": 4.0, "CT": 0.5, "GT": 4.0},
+    ),
+    (
+        "mixed-exchangeabilities",
+        {"AC": 1.0, "AG": 3.0, "AT": 2.0, "CG": 0.7, "CT": 1.8, "GT": 2.5},
+    ),
+)
+_DEFAULT_KAPPA_RESTART_VALUES = (1.0, 0.2, 10.0, 3.0)
 
 
 def validate_fixed_topology_nucleotide_joint_optimization_model(model_name: str) -> str:
@@ -45,6 +69,208 @@ def validate_fixed_topology_nucleotide_joint_optimization_model(model_name: str)
             + ", ".join(sorted(_SUPPORTED_FIXED_TOPOLOGY_JOINT_MODELS))
         )
     return normalized_model_name
+
+
+def validate_fixed_topology_nucleotide_joint_restart_policy(policy: str) -> str:
+    """Validate one restart policy around the joint fixed-topology nucleotide optimizer."""
+    normalized_policy = policy.strip().lower()
+    if normalized_policy not in _SUPPORTED_FIXED_TOPOLOGY_JOINT_RESTART_POLICIES:
+        raise ValueError(
+            "fixed-topology nucleotide joint restart policy must be one of "
+            + ", ".join(sorted(_SUPPORTED_FIXED_TOPOLOGY_JOINT_RESTART_POLICIES))
+        )
+    return normalized_policy
+
+
+def optimize_fixed_topology_nucleotide_branches_and_model_with_restarts(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    model_name: str,
+    restart_policy: str = "restart-on-nonconvergence-or-boundary",
+    max_restart_count: int = 3,
+    base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    initial_kappa: float | None = None,
+    lower_kappa_bound: float | None = None,
+    upper_kappa_bound: float | None = None,
+    initial_exchangeabilities: (
+        dict[tuple[str, str], float]
+        | dict[str, float]
+        | numpy.ndarray
+        | list[float]
+        | tuple[float, ...]
+        | None
+    ) = None,
+    lower_exchangeability_bound: float | None = None,
+    upper_exchangeability_bound: float | None = None,
+    lower_branch_length_bound: float = 0.0,
+    upper_branch_length_bound: float = 5.0,
+    improvement_tolerance: float = 1e-9,
+    max_joint_passes: int = 8,
+    max_branch_coordinate_passes: int = 12,
+    max_model_coordinate_passes: int = 24,
+) -> FixedTopologyNucleotideJointOptimizationRestartReport:
+    """Apply one controlled restart policy around joint branch-and-model optimization."""
+    normalized_model_name = validate_fixed_topology_nucleotide_joint_optimization_model(
+        model_name
+    )
+    normalized_restart_policy = validate_fixed_topology_nucleotide_joint_restart_policy(
+        restart_policy
+    )
+    if max_restart_count < 0:
+        raise ValueError(
+            "fixed-topology nucleotide joint optimization restart count must be nonnegative"
+        )
+
+    attempt_inputs = _build_joint_restart_attempt_inputs(
+        model_name=normalized_model_name,
+        max_restart_count=max_restart_count,
+        initial_kappa=initial_kappa,
+        lower_kappa_bound=lower_kappa_bound,
+        upper_kappa_bound=upper_kappa_bound,
+        initial_exchangeabilities=initial_exchangeabilities,
+    )
+    attempt_rows: list[JointNucleotideOptimizationRestartAttemptRow] = []
+    attempt_reports: list[FixedTopologyNucleotideJointOptimizationReport] = []
+    next_trigger_reason = "initial-attempt"
+
+    for attempt_index, attempt_input in enumerate(attempt_inputs, start=1):
+        report = optimize_fixed_topology_nucleotide_branches_and_model(
+            tree,
+            records,
+            model_name=normalized_model_name,
+            base_frequencies=base_frequencies,
+            initial_kappa=attempt_input["initial_kappa"],
+            lower_kappa_bound=lower_kappa_bound,
+            upper_kappa_bound=upper_kappa_bound,
+            initial_exchangeabilities=attempt_input["initial_exchangeabilities"],
+            lower_exchangeability_bound=lower_exchangeability_bound,
+            upper_exchangeability_bound=upper_exchangeability_bound,
+            lower_branch_length_bound=lower_branch_length_bound,
+            upper_branch_length_bound=upper_branch_length_bound,
+            improvement_tolerance=improvement_tolerance,
+            max_joint_passes=max_joint_passes,
+            max_branch_coordinate_passes=max_branch_coordinate_passes,
+            max_model_coordinate_passes=max_model_coordinate_passes,
+        )
+        attempt_reports.append(report)
+        parameter_boundary_count = sum(
+            1
+            for row in report.parameter_rows
+            if row.hit_lower_bound or row.hit_upper_bound
+        )
+        branch_boundary_count = sum(
+            1
+            for row in report.branch_rows
+            if math.isclose(
+                row.optimized_branch_length,
+                lower_branch_length_bound,
+                rel_tol=0.0,
+                abs_tol=_BOUNDARY_TOLERANCE,
+            )
+            or math.isclose(
+                row.optimized_branch_length,
+                upper_branch_length_bound,
+                rel_tol=0.0,
+                abs_tol=_BOUNDARY_TOLERANCE,
+            )
+        )
+        attempt_rows.append(
+            JointNucleotideOptimizationRestartAttemptRow(
+                attempt_index=attempt_index,
+                trigger_reason=next_trigger_reason,
+                initial_kappa=attempt_input["initial_kappa"],
+                initial_exchangeability_profile_name=attempt_input["profile_name"],
+                optimized_log_likelihood=report.optimized_log_likelihood,
+                converged=report.converged,
+                convergence_reason=report.convergence_reason,
+                boundary_warning_count=parameter_boundary_count,
+                branch_boundary_count=branch_boundary_count,
+                warning_count=len(report.warnings),
+                selected_best=False,
+            )
+        )
+        if (
+            normalized_restart_policy == "none"
+            or not _joint_restart_needed(
+                report,
+                parameter_boundary_count=parameter_boundary_count,
+                branch_boundary_count=branch_boundary_count,
+            )
+        ):
+            break
+        next_trigger_reason = (
+            "restart-after-boundary-warning"
+            if parameter_boundary_count > 0 or branch_boundary_count > 0
+            else "restart-after-nonconvergence"
+        )
+
+    selected_attempt_index, selected_solution_reason = _select_joint_restart_attempt(
+        attempt_reports,
+        attempt_rows,
+    )
+    selected_report = attempt_reports[selected_attempt_index - 1]
+    attempt_rows[selected_attempt_index - 1].selected_best = True
+    return FixedTopologyNucleotideJointOptimizationRestartReport(
+        model_name=selected_report.model_name,
+        restart_policy=normalized_restart_policy,
+        attempt_count=len(attempt_rows),
+        selected_attempt_index=selected_attempt_index,
+        selected_solution_reason=selected_solution_reason,
+        selected_report=selected_report,
+        attempt_rows=attempt_rows,
+    )
+
+
+def optimize_fixed_topology_nucleotide_branches_and_model_with_restarts_from_alignment(
+    tree_path: Path,
+    alignment_path: Path,
+    *,
+    model_name: str,
+    restart_policy: str = "restart-on-nonconvergence-or-boundary",
+    max_restart_count: int = 3,
+    base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    initial_kappa: float | None = None,
+    lower_kappa_bound: float | None = None,
+    upper_kappa_bound: float | None = None,
+    initial_exchangeabilities: (
+        dict[tuple[str, str], float]
+        | dict[str, float]
+        | numpy.ndarray
+        | list[float]
+        | tuple[float, ...]
+        | None
+    ) = None,
+    lower_exchangeability_bound: float | None = None,
+    upper_exchangeability_bound: float | None = None,
+    lower_branch_length_bound: float = 0.0,
+    upper_branch_length_bound: float = 5.0,
+    improvement_tolerance: float = 1e-9,
+    max_joint_passes: int = 8,
+    max_branch_coordinate_passes: int = 12,
+    max_model_coordinate_passes: int = 24,
+) -> FixedTopologyNucleotideJointOptimizationRestartReport:
+    """Apply one restart policy around joint optimization from tree and alignment paths."""
+    return optimize_fixed_topology_nucleotide_branches_and_model_with_restarts(
+        load_tree(tree_path),
+        load_fasta_alignment(alignment_path),
+        model_name=model_name,
+        restart_policy=restart_policy,
+        max_restart_count=max_restart_count,
+        base_frequencies=base_frequencies,
+        initial_kappa=initial_kappa,
+        lower_kappa_bound=lower_kappa_bound,
+        upper_kappa_bound=upper_kappa_bound,
+        initial_exchangeabilities=initial_exchangeabilities,
+        lower_exchangeability_bound=lower_exchangeability_bound,
+        upper_exchangeability_bound=upper_exchangeability_bound,
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
+        improvement_tolerance=improvement_tolerance,
+        max_joint_passes=max_joint_passes,
+        max_branch_coordinate_passes=max_branch_coordinate_passes,
+        max_model_coordinate_passes=max_model_coordinate_passes,
+    )
 
 
 def optimize_fixed_topology_nucleotide_branches_and_model(
@@ -571,5 +797,205 @@ def _build_parameter_row(
             upper_bound,
             rel_tol=0.0,
             abs_tol=_BOUNDARY_TOLERANCE,
+        ),
+    )
+
+
+def _build_joint_restart_attempt_inputs(
+    *,
+    model_name: str,
+    max_restart_count: int,
+    initial_kappa: float | None,
+    lower_kappa_bound: float | None,
+    upper_kappa_bound: float | None,
+    initial_exchangeabilities: (
+        dict[tuple[str, str], float]
+        | dict[str, float]
+        | numpy.ndarray
+        | list[float]
+        | tuple[float, ...]
+        | None
+    ),
+) -> list[dict[str, object]]:
+    if model_name in {"k80", "hky85"}:
+        return _build_kappa_restart_attempt_inputs(
+            max_restart_count=max_restart_count,
+            initial_kappa=initial_kappa,
+            lower_kappa_bound=lower_kappa_bound,
+            upper_kappa_bound=upper_kappa_bound,
+        )
+    return _build_gtr_restart_attempt_inputs(
+        max_restart_count=max_restart_count,
+        initial_exchangeabilities=initial_exchangeabilities,
+    )
+
+
+def _build_kappa_restart_attempt_inputs(
+    *,
+    max_restart_count: int,
+    initial_kappa: float | None,
+    lower_kappa_bound: float | None,
+    upper_kappa_bound: float | None,
+) -> list[dict[str, object]]:
+    lower_bound = 0.05 if lower_kappa_bound is None else float(lower_kappa_bound)
+    upper_bound = 20.0 if upper_kappa_bound is None else float(upper_kappa_bound)
+    candidate_values = []
+    if initial_kappa is not None:
+        candidate_values.append(float(initial_kappa))
+    candidate_values.extend(_DEFAULT_KAPPA_RESTART_VALUES)
+    candidate_values.extend(
+        (
+            lower_bound + ((upper_bound - lower_bound) * 0.25),
+            math.sqrt(lower_bound * upper_bound),
+            lower_bound + ((upper_bound - lower_bound) * 0.75),
+        )
+    )
+    normalized_values: list[float] = []
+    for candidate_value in candidate_values:
+        clipped = min(max(float(candidate_value), lower_bound), upper_bound)
+        if any(
+            math.isclose(clipped, existing, rel_tol=0.0, abs_tol=1e-12)
+            for existing in normalized_values
+        ):
+            continue
+        normalized_values.append(clipped)
+    return [
+        {
+            "initial_kappa": value,
+            "initial_exchangeabilities": None,
+            "profile_name": f"kappa-start-{index}",
+        }
+        for index, value in enumerate(
+            normalized_values[: max_restart_count + 1],
+            start=1,
+        )
+    ]
+
+
+def _build_gtr_restart_attempt_inputs(
+    *,
+    max_restart_count: int,
+    initial_exchangeabilities: (
+        dict[tuple[str, str], float]
+        | dict[str, float]
+        | numpy.ndarray
+        | list[float]
+        | tuple[float, ...]
+        | None
+    ),
+) -> list[dict[str, object]]:
+    attempt_inputs: list[dict[str, object]] = []
+    if initial_exchangeabilities is not None:
+        attempt_inputs.append(
+            {
+                "initial_kappa": None,
+                "initial_exchangeabilities": initial_exchangeabilities,
+                "profile_name": "input-exchangeabilities",
+            }
+        )
+    for profile_name, profile in _DEFAULT_GTR_EXCHANGEABILITY_RESTART_PROFILES:
+        if len(attempt_inputs) >= max_restart_count + 1:
+            break
+        if initial_exchangeabilities is not None and _exchangeabilities_match(
+            initial_exchangeabilities,
+            profile,
+        ):
+            continue
+        attempt_inputs.append(
+            {
+                "initial_kappa": None,
+                "initial_exchangeabilities": profile,
+                "profile_name": profile_name,
+            }
+        )
+    return attempt_inputs
+
+
+def _exchangeabilities_match(
+    left: (
+        dict[tuple[str, str], float]
+        | dict[str, float]
+        | numpy.ndarray
+        | list[float]
+        | tuple[float, ...]
+    ),
+    right: dict[str, float],
+) -> bool:
+    normalized_left = _normalize_initial_exchangeabilities(left)
+    normalized_right = _normalize_initial_exchangeabilities(right)
+    return all(
+        math.isclose(
+            normalized_left[label],
+            normalized_right[label],
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        )
+        for label in ("AG", "AT", "CG", "CT", "GT")
+    )
+
+
+def _joint_restart_needed(
+    report: FixedTopologyNucleotideJointOptimizationReport,
+    *,
+    parameter_boundary_count: int,
+    branch_boundary_count: int,
+) -> bool:
+    return (
+        not report.converged
+        or parameter_boundary_count > 0
+        or branch_boundary_count > 0
+    )
+
+
+def _select_joint_restart_attempt(
+    attempt_reports: list[FixedTopologyNucleotideJointOptimizationReport],
+    attempt_rows: list[JointNucleotideOptimizationRestartAttemptRow],
+) -> tuple[int, str]:
+    nonboundary_converged_candidates = [
+        row.attempt_index
+        for row in attempt_rows
+        if row.converged
+        and row.boundary_warning_count == 0
+        and row.branch_boundary_count == 0
+    ]
+    if nonboundary_converged_candidates:
+        return (
+            _best_attempt_index_by_likelihood(
+                attempt_reports,
+                nonboundary_converged_candidates,
+            ),
+            "best-nonboundary-converged-attempt",
+        )
+    converged_candidates = [
+        row.attempt_index
+        for row in attempt_rows
+        if row.converged
+    ]
+    if converged_candidates:
+        return (
+            _best_attempt_index_by_likelihood(
+                attempt_reports,
+                converged_candidates,
+            ),
+            "best-converged-attempt",
+        )
+    return (
+        _best_attempt_index_by_likelihood(
+            attempt_reports,
+            [row.attempt_index for row in attempt_rows],
+        ),
+        "best-available-attempt",
+    )
+
+
+def _best_attempt_index_by_likelihood(
+    attempt_reports: list[FixedTopologyNucleotideJointOptimizationReport],
+    candidate_indices: list[int],
+) -> int:
+    return min(
+        candidate_indices,
+        key=lambda attempt_index: (
+            -attempt_reports[attempt_index - 1].optimized_log_likelihood,
+            attempt_index,
         ),
     )
