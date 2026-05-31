@@ -17,6 +17,7 @@ from bijux_phylogenetics.phylo.topology.models import (
     RootedSprNeighborhoodReport,
 )
 
+from .affected_subtrees import summarize_affected_subtrees
 from .tree import PhyloTree, TreeNode, descendant_taxa
 
 _ROOT_REGRAFT_BRANCH_ID = "root"
@@ -278,6 +279,10 @@ def summarize_rooted_spr_move_application(
         missing_tip_taxa=sorted(input_tip_taxa - moved_tip_taxa),
         unexpected_tip_taxa=sorted(moved_tip_taxa - input_tip_taxa),
         moved_validation_errors=moved_tree.validation_errors(),
+        affected_subtree_report=summarize_affected_subtrees(
+            resolved_tree,
+            moved_tree,
+        ),
         affected_clade_ids=affected_clade_ids,
         pruned_edge_id=selected_candidate.pruned_clade_id,
         regraft_edge_id=selected_candidate.regraft_target_branch_id,
@@ -685,6 +690,26 @@ def write_rooted_spr_move_run_json(
         "missing_tip_taxa": report.missing_tip_taxa,
         "unexpected_tip_taxa": report.unexpected_tip_taxa,
         "moved_validation_errors": report.moved_validation_errors,
+        "affected_subtrees": {
+            "original_branch_clade_ids": (
+                report.affected_subtree_report.original_branch_clade_ids
+            ),
+            "moved_branch_clade_ids": (
+                report.affected_subtree_report.moved_branch_clade_ids
+            ),
+            "retired_branch_clade_ids": (
+                report.affected_subtree_report.retired_branch_clade_ids
+            ),
+            "introduced_branch_clade_ids": (
+                report.affected_subtree_report.introduced_branch_clade_ids
+            ),
+            "affected_branch_clade_ids": (
+                report.affected_subtree_report.affected_branch_clade_ids
+            ),
+            "unaffected_branch_clade_ids": (
+                report.affected_subtree_report.unaffected_branch_clade_ids
+            ),
+        },
         "affected_clade_ids": report.affected_clade_ids,
         "pruned_edge_id": report.pruned_edge_id,
         "regraft_edge_id": report.regraft_edge_id,

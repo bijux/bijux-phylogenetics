@@ -16,6 +16,7 @@ from bijux_phylogenetics.phylo.topology.models import (
     RootedTbrNeighborhoodReport,
 )
 
+from .affected_subtrees import summarize_affected_subtrees
 from .tree import PhyloTree, TreeNode, descendant_taxa
 
 ROOTED_TBR_INTERFACE_BRANCH_ID = "interface"
@@ -402,6 +403,10 @@ def summarize_rooted_tbr_move_application(
         missing_tip_taxa=sorted(input_tip_taxa - moved_tip_taxa),
         unexpected_tip_taxa=sorted(moved_tip_taxa - input_tip_taxa),
         moved_validation_errors=moved_tree.validation_errors(),
+        affected_subtree_report=summarize_affected_subtrees(
+            resolved_tree,
+            moved_tree,
+        ),
     )
     _validate_rooted_tbr_move_application_report(report)
     return report
@@ -728,6 +733,26 @@ def write_rooted_tbr_move_run_json(
         "missing_tip_taxa": report.missing_tip_taxa,
         "unexpected_tip_taxa": report.unexpected_tip_taxa,
         "moved_validation_errors": report.moved_validation_errors,
+        "affected_subtrees": {
+            "original_branch_clade_ids": (
+                report.affected_subtree_report.original_branch_clade_ids
+            ),
+            "moved_branch_clade_ids": (
+                report.affected_subtree_report.moved_branch_clade_ids
+            ),
+            "retired_branch_clade_ids": (
+                report.affected_subtree_report.retired_branch_clade_ids
+            ),
+            "introduced_branch_clade_ids": (
+                report.affected_subtree_report.introduced_branch_clade_ids
+            ),
+            "affected_branch_clade_ids": (
+                report.affected_subtree_report.affected_branch_clade_ids
+            ),
+            "unaffected_branch_clade_ids": (
+                report.affected_subtree_report.unaffected_branch_clade_ids
+            ),
+        },
     }
     path.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n",

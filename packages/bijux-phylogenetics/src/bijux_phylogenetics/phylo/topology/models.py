@@ -335,6 +335,7 @@ class RootedSprMoveApplicationReport:
     missing_tip_taxa: list[str]
     unexpected_tip_taxa: list[str]
     moved_validation_errors: list[str]
+    affected_subtree_report: AffectedSubtreeReport
     affected_clade_ids: list[str]
     pruned_edge_id: str
     regraft_edge_id: str
@@ -416,6 +417,7 @@ class RootedTbrMoveApplicationReport:
     missing_tip_taxa: list[str]
     unexpected_tip_taxa: list[str]
     moved_validation_errors: list[str]
+    affected_subtree_report: AffectedSubtreeReport
 
 
 @dataclass(slots=True)
