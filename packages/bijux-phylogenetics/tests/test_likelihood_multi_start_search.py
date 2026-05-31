@@ -150,7 +150,7 @@ def test_write_nucleotide_likelihood_multi_start_artifacts_materializes_governed
         "run_json_path",
     }
     assert outputs["summary_path"].read_text(encoding="utf-8").startswith(
-        "start_tree_source_kind\tstart_tree_source_label\tstart_tree_generation_seed\tsearch_algorithm\tstart_log_likelihood\tfinal_log_likelihood\tfinal_topology_fingerprint\taccepted_move_count\tevaluated_neighbor_count\tbranch_reoptimization_policy\tsubstitution_parameter_policy\tstopping_reason\tbest_run\tstart_tree_newick\tfinal_tree_newick\n"
+        "start_tree_source_kind\tstart_tree_source_label\tstart_tree_generation_seed\tsearch_algorithm\tstart_log_likelihood\tfinal_log_likelihood\tfinal_likelihood_rank\tfinal_topology_fingerprint\tsearch_iteration_count\taccepted_move_count\tevaluated_neighbor_count\tbranch_reoptimization_policy\tsubstitution_parameter_policy\tstopping_reason\tbest_run\tstart_tree_newick\tfinal_tree_newick\n"
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "nucleotide-likelihood-multi-start-search"
