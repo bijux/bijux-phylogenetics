@@ -9,6 +9,7 @@ from bijux_phylogenetics.io.newick import dumps_newick, loads_newick, write_newi
 from bijux_phylogenetics.phylo.topology.clades import canonical_clade_id
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.models import (
+    NucleotideLikelihoodNniCandidateRow,
     NucleotideLikelihoodNniSearchReport,
     NucleotideLikelihoodNniTraceRow,
 )
@@ -134,13 +135,18 @@ def search_nucleotide_likelihood_nni(
     ]
     accepted_move_count = 0
     evaluated_neighbor_count = 0
+    candidate_rows: list[NucleotideLikelihoodNniCandidateRow] = []
     total_branch_optimization_pass_count = start_result.optimization_pass_count
     total_branch_function_evaluation_count = start_result.function_evaluation_count
     while True:
         improving_candidate = None
         improving_result: BranchReoptimizationResult | None = None
         improving_newick: str | None = None
-        for candidate in iter_rooted_nni_move_candidates(current_tree):
+        iteration_candidate_rows: list[NucleotideLikelihoodNniCandidateRow] = []
+        for candidate_order, candidate in enumerate(
+            iter_rooted_nni_move_candidates(current_tree),
+            start=1,
+        ):
             neighbor_tree = apply_rooted_nni_move(current_tree, candidate)
             if validated_branch_reoptimization_policy == "coordinate-branch-lengths":
                 neighbor_result = reoptimize_nucleotide_topology_tree(
@@ -176,6 +182,35 @@ def search_nucleotide_likelihood_nni(
             total_branch_function_evaluation_count += (
                 neighbor_result.function_evaluation_count
             )
+            log_likelihood_delta = neighbor_result.log_likelihood - current_log_likelihood
+            iteration_candidate_rows.append(
+                NucleotideLikelihoodNniCandidateRow(
+                    iteration=accepted_move_count + 1,
+                    candidate_order=candidate_order,
+                    pivot_branch_id=candidate.pivot_branch_id,
+                    sibling_clade_id=candidate.sibling_clade_id,
+                    exchanged_clade_id=candidate.exchanged_clade_id,
+                    candidate_tree_newick=neighbor_newick,
+                    log_likelihood=neighbor_result.log_likelihood,
+                    log_likelihood_delta=log_likelihood_delta,
+                    improving_move=log_likelihood_delta > 0.0,
+                    selected_best_move=False,
+                    branch_reoptimization_scope=resolve_nni_branch_reoptimization_scope(
+                        validated_branch_reoptimization_policy
+                    ),
+                    optimized_branch_count=len(neighbor_result.optimized_branch_ids),
+                    optimized_branch_clade_ids=resolve_reoptimized_branch_clade_ids(
+                        neighbor_result.optimized_tree,
+                        neighbor_result.optimized_branch_ids,
+                    ),
+                    branch_reoptimization_converged=bool(neighbor_result.converged),
+                    branch_optimization_pass_count=neighbor_result.optimization_pass_count,
+                    branch_function_evaluation_count=neighbor_result.function_evaluation_count,
+                    boundary_warning_messages=list(
+                        neighbor_result.boundary_warning_messages
+                    ),
+                )
+            )
             if neighbor_result.log_likelihood <= current_log_likelihood:
                 continue
             if (
@@ -191,6 +226,17 @@ def search_nucleotide_likelihood_nni(
                 improving_candidate = candidate
                 improving_result = neighbor_result
                 improving_newick = neighbor_newick
+        if improving_candidate is not None:
+            for row in iteration_candidate_rows:
+                if (
+                    row.pivot_branch_id == improving_candidate.pivot_branch_id
+                    and row.sibling_clade_id == improving_candidate.sibling_clade_id
+                    and row.exchanged_clade_id == improving_candidate.exchanged_clade_id
+                    and row.candidate_tree_newick == improving_newick
+                ):
+                    row.selected_best_move = True
+                    break
+        candidate_rows.extend(iteration_candidate_rows)
         if improving_candidate is None or improving_result is None or improving_newick is None:
             stopping_reason = "no-improving-neighbor"
             break
@@ -277,6 +323,7 @@ def search_nucleotide_likelihood_nni(
         total_branch_function_evaluation_count=total_branch_function_evaluation_count,
         stopping_reason=stopping_reason,
         trace_rows=trace_rows,
+        candidate_rows=candidate_rows,
     )
 
 
@@ -542,8 +589,88 @@ def write_nucleotide_likelihood_nni_run_json(
             }
             for row in report.trace_rows
         ],
+        "candidate_rows": [
+            {
+                "iteration": row.iteration,
+                "candidate_order": row.candidate_order,
+                "pivot_branch_id": row.pivot_branch_id,
+                "sibling_clade_id": row.sibling_clade_id,
+                "exchanged_clade_id": row.exchanged_clade_id,
+                "candidate_tree_newick": row.candidate_tree_newick,
+                "log_likelihood": row.log_likelihood,
+                "log_likelihood_delta": row.log_likelihood_delta,
+                "improving_move": row.improving_move,
+                "selected_best_move": row.selected_best_move,
+                "branch_reoptimization_scope": row.branch_reoptimization_scope,
+                "optimized_branch_count": row.optimized_branch_count,
+                "optimized_branch_clade_ids": row.optimized_branch_clade_ids,
+                "branch_reoptimization_converged": row.branch_reoptimization_converged,
+                "branch_optimization_pass_count": row.branch_optimization_pass_count,
+                "branch_function_evaluation_count": row.branch_function_evaluation_count,
+                "boundary_warning_messages": row.boundary_warning_messages,
+            }
+            for row in report.candidate_rows
+        ],
     }
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def write_nucleotide_likelihood_nni_candidate_table(
+    path: Path,
+    report: NucleotideLikelihoodNniSearchReport,
+) -> Path:
+    """Write one deterministic rooted likelihood NNI candidate table."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    columns = [
+        "iteration",
+        "candidate_order",
+        "pivot_branch_id",
+        "sibling_clade_id",
+        "exchanged_clade_id",
+        "candidate_tree_newick",
+        "log_likelihood",
+        "log_likelihood_delta",
+        "improving_move",
+        "selected_best_move",
+        "branch_reoptimization_scope",
+        "optimized_branch_count",
+        "optimized_branch_clade_ids",
+        "branch_reoptimization_converged",
+        "branch_optimization_pass_count",
+        "branch_function_evaluation_count",
+        "boundary_warning_messages",
+    ]
+    rows = ["\t".join(columns)]
+    for row in report.candidate_rows:
+        payload = [
+            row.iteration,
+            row.candidate_order,
+            row.pivot_branch_id,
+            row.sibling_clade_id,
+            row.exchanged_clade_id,
+            row.candidate_tree_newick,
+            row.log_likelihood,
+            row.log_likelihood_delta,
+            str(row.improving_move).lower(),
+            str(row.selected_best_move).lower(),
+            row.branch_reoptimization_scope,
+            row.optimized_branch_count,
+            ",".join(row.optimized_branch_clade_ids),
+            str(row.branch_reoptimization_converged).lower(),
+            row.branch_optimization_pass_count,
+            row.branch_function_evaluation_count,
+            ",".join(row.boundary_warning_messages),
+        ]
+        rows.append(
+            "\t".join(
+                format(value, ".15g")
+                if isinstance(value, float)
+                else str(value)
+                for value in payload
+            )
+        )
+    path.write_text("\n".join(rows) + "\n", encoding="utf-8")
     return path
 
 
@@ -569,6 +696,10 @@ def write_nucleotide_likelihood_nni_artifacts(
         out_dir / "search_trace.tsv",
         report,
     )
+    candidate_table_path = write_nucleotide_likelihood_nni_candidate_table(
+        out_dir / "candidate_table.tsv",
+        report,
+    )
     run_json_path = write_nucleotide_likelihood_nni_run_json(
         out_dir / "run.json",
         report,
@@ -578,5 +709,6 @@ def write_nucleotide_likelihood_nni_artifacts(
         "start_tree_path": start_tree_path,
         "final_tree_path": final_tree_path,
         "trace_path": trace_path,
+        "candidate_table_path": candidate_table_path,
         "run_json_path": run_json_path,
     }
