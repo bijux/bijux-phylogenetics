@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 
 import numpy
@@ -10,6 +11,7 @@ from bijux_phylogenetics.phylo.topology.affected_subtrees import summarize_affec
 from bijux_phylogenetics.phylo.topology.clades import canonical_clade_id
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.models import (
+    NucleotideLikelihoodSprSearchBudget,
     NucleotideLikelihoodSprSearchReport,
     NucleotideLikelihoodSprTraceRow,
 )
@@ -44,6 +46,10 @@ def search_nucleotide_likelihood_spr(
     model_name: str,
     branch_reoptimization_policy: str = "coordinate-branch-lengths",
     evaluation_budget: int | None = None,
+    max_candidate_count: int | None = None,
+    max_iteration_count: int | None = None,
+    max_elapsed_seconds: float | None = None,
+    max_accepted_move_count: int | None = None,
     kappa: float | None = None,
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
     exchangeabilities: (
@@ -70,8 +76,12 @@ def search_nucleotide_likelihood_spr(
     validated_branch_reoptimization_policy = validate_nucleotide_likelihood_spr_branch_reoptimization_policy(
         branch_reoptimization_policy
     )
-    validated_evaluation_budget = validate_likelihood_spr_evaluation_budget(
-        evaluation_budget
+    validated_search_budget = validate_nucleotide_likelihood_spr_search_budget(
+        evaluation_budget=evaluation_budget,
+        max_candidate_count=max_candidate_count,
+        max_iteration_count=max_iteration_count,
+        max_elapsed_seconds=max_elapsed_seconds,
+        max_accepted_move_count=max_accepted_move_count,
     )
     validate_nucleotide_topology_search_tree(
         resolved_tree,
@@ -134,25 +144,41 @@ def search_nucleotide_likelihood_spr(
                 *start_result.boundary_warning_messages,
             ],
             stopping_reason=None,
+            unsearched_candidate_count=None,
         )
     ]
+    search_started_at = time.monotonic()
     accepted_move_count = 0
+    iteration_count = 0
     evaluated_neighbor_count = 0
+    unsearched_candidate_count = 0
     total_branch_optimization_pass_count = start_result.optimization_pass_count
     total_branch_function_evaluation_count = start_result.function_evaluation_count
     stopping_reason = "no-improving-neighbor"
     while True:
+        budget_stop_reason = resolve_spr_search_pre_iteration_budget_stop_reason(
+            search_budget=validated_search_budget,
+            search_started_at=search_started_at,
+            accepted_move_count=accepted_move_count,
+            iteration_count=iteration_count,
+        )
+        if budget_stop_reason is not None:
+            stopping_reason = budget_stop_reason
+            unsearched_candidate_count = count_unsearched_spr_candidates(current_tree, set())
+            break
+        iteration_count += 1
         improving_candidate: RootedSprMoveCandidate | None = None
         improving_result: BranchReoptimizationResult | None = None
         improving_newick: str | None = None
-        budget_exhausted = False
+        budget_stop_reason = None
         seen_neighbor_newicks: set[str] = set()
         for candidate in iter_rooted_spr_move_candidates(current_tree):
-            if (
-                validated_evaluation_budget is not None
-                and evaluated_neighbor_count >= validated_evaluation_budget
-            ):
-                budget_exhausted = True
+            budget_stop_reason = resolve_spr_search_in_iteration_budget_stop_reason(
+                search_budget=validated_search_budget,
+                search_started_at=search_started_at,
+                evaluated_neighbor_count=evaluated_neighbor_count,
+            )
+            if budget_stop_reason is not None:
                 break
             neighbor_tree = apply_rooted_spr_move(current_tree, candidate)
             neighbor_newick = dumps_newick(neighbor_tree)
@@ -213,11 +239,15 @@ def search_nucleotide_likelihood_spr(
                 improving_result = neighbor_result
                 improving_newick = optimized_neighbor_newick
         if improving_candidate is None or improving_result is None or improving_newick is None:
-            stopping_reason = (
-                "evaluation-budget-exhausted"
-                if budget_exhausted
-                else "no-improving-neighbor"
-            )
+            if budget_stop_reason is not None:
+                stopping_reason = budget_stop_reason
+                unsearched_candidate_count = count_unsearched_spr_candidates(
+                    current_tree,
+                    seen_neighbor_newicks,
+                )
+                break
+            stopping_reason = "no-improving-neighbor"
+            unsearched_candidate_count = 0
             break
         accepted_move_count += 1
         log_likelihood_before = current_log_likelihood
@@ -256,10 +286,15 @@ def search_nucleotide_likelihood_spr(
                 branch_function_evaluation_count=improving_result.function_evaluation_count,
                 boundary_warning_messages=list(improving_result.boundary_warning_messages),
                 stopping_reason=None,
+                unsearched_candidate_count=None,
             )
         )
-        if budget_exhausted:
-            stopping_reason = "evaluation-budget-exhausted"
+        if budget_stop_reason is not None:
+            stopping_reason = budget_stop_reason
+            unsearched_candidate_count = count_unsearched_spr_candidates(
+                tree_before,
+                seen_neighbor_newicks,
+            )
             break
     trace_rows.append(
         NucleotideLikelihoodSprTraceRow(
@@ -283,6 +318,7 @@ def search_nucleotide_likelihood_spr(
             branch_function_evaluation_count=0,
             boundary_warning_messages=[],
             stopping_reason=stopping_reason,
+            unsearched_candidate_count=unsearched_candidate_count,
         )
     )
     return NucleotideLikelihoodSprSearchReport(
@@ -301,8 +337,11 @@ def search_nucleotide_likelihood_spr(
         final_tree_newick=dumps_newick(current_tree),
         final_log_likelihood=current_log_likelihood,
         accepted_move_count=accepted_move_count,
+        iteration_count=iteration_count,
         evaluated_neighbor_count=evaluated_neighbor_count,
-        evaluation_budget=validated_evaluation_budget,
+        evaluation_budget=validated_search_budget.max_candidate_count,
+        search_budget=validated_search_budget,
+        unsearched_candidate_count=unsearched_candidate_count,
         branch_reoptimization_policy=validated_branch_reoptimization_policy,
         substitution_parameter_policy=resolved_surface.substitution_parameter_policy,
         substitution_parameter_values=resolved_surface.substitution_parameter_values,
@@ -321,6 +360,10 @@ def search_nucleotide_likelihood_spr_from_alignment(
     model_name: str,
     branch_reoptimization_policy: str = "coordinate-branch-lengths",
     evaluation_budget: int | None = None,
+    max_candidate_count: int | None = None,
+    max_iteration_count: int | None = None,
+    max_elapsed_seconds: float | None = None,
+    max_accepted_move_count: int | None = None,
     kappa: float | None = None,
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
     exchangeabilities: (
@@ -346,6 +389,10 @@ def search_nucleotide_likelihood_spr_from_alignment(
         model_name=model_name,
         branch_reoptimization_policy=branch_reoptimization_policy,
         evaluation_budget=evaluation_budget,
+        max_candidate_count=max_candidate_count,
+        max_iteration_count=max_iteration_count,
+        max_elapsed_seconds=max_elapsed_seconds,
+        max_accepted_move_count=max_accepted_move_count,
         kappa=kappa,
         base_frequencies=base_frequencies,
         exchangeabilities=exchangeabilities,
@@ -438,6 +485,7 @@ def write_nucleotide_likelihood_spr_trace_table(
         "branch_function_evaluation_count",
         "boundary_warning_messages",
         "stopping_reason",
+        "unsearched_candidate_count",
     ]
     rows = ["\t".join(columns)]
     for row in report.trace_rows:
@@ -462,6 +510,7 @@ def write_nucleotide_likelihood_spr_trace_table(
             row.branch_function_evaluation_count,
             ",".join(row.boundary_warning_messages),
             row.stopping_reason,
+            row.unsearched_candidate_count,
         ]
         rows.append(
             "\t".join(
@@ -497,8 +546,16 @@ def write_nucleotide_likelihood_spr_run_json(
         "final_tree_newick": report.final_tree_newick,
         "final_log_likelihood": report.final_log_likelihood,
         "accepted_move_count": report.accepted_move_count,
+        "iteration_count": report.iteration_count,
         "evaluated_neighbor_count": report.evaluated_neighbor_count,
         "evaluation_budget": report.evaluation_budget,
+        "search_budget": {
+            "max_candidate_count": report.search_budget.max_candidate_count,
+            "max_iteration_count": report.search_budget.max_iteration_count,
+            "max_elapsed_seconds": report.search_budget.max_elapsed_seconds,
+            "max_accepted_move_count": report.search_budget.max_accepted_move_count,
+        },
+        "unsearched_candidate_count": report.unsearched_candidate_count,
         "branch_reoptimization_policy": report.branch_reoptimization_policy,
         "substitution_parameter_policy": report.substitution_parameter_policy,
         "substitution_parameter_values": report.substitution_parameter_values,
@@ -528,6 +585,7 @@ def write_nucleotide_likelihood_spr_run_json(
                 "branch_function_evaluation_count": row.branch_function_evaluation_count,
                 "boundary_warning_messages": row.boundary_warning_messages,
                 "stopping_reason": row.stopping_reason,
+                "unsearched_candidate_count": row.unsearched_candidate_count,
             }
             for row in report.trace_rows
         ],
@@ -575,8 +633,136 @@ def validate_likelihood_spr_evaluation_budget(
     evaluation_budget: int | None,
 ) -> int | None:
     """Validate the optional rooted SPR evaluation budget."""
-    if evaluation_budget is None:
+    return validate_optional_positive_spr_budget_integer(
+        evaluation_budget,
+        parameter_name="evaluation_budget",
+    )
+
+
+def validate_nucleotide_likelihood_spr_search_budget(
+    *,
+    evaluation_budget: int | None = None,
+    max_candidate_count: int | None = None,
+    max_iteration_count: int | None = None,
+    max_elapsed_seconds: float | None = None,
+    max_accepted_move_count: int | None = None,
+) -> NucleotideLikelihoodSprSearchBudget:
+    """Validate one normalized rooted likelihood SPR search budget policy."""
+    validated_evaluation_budget = validate_likelihood_spr_evaluation_budget(
+        evaluation_budget
+    )
+    validated_max_candidate_count = validate_optional_positive_spr_budget_integer(
+        max_candidate_count,
+        parameter_name="max_candidate_count",
+    )
+    if (
+        validated_evaluation_budget is not None
+        and validated_max_candidate_count is not None
+        and validated_evaluation_budget != validated_max_candidate_count
+    ):
+        raise ValueError(
+            "evaluation_budget must match max_candidate_count when both are provided"
+        )
+    resolved_max_candidate_count = validated_max_candidate_count
+    if resolved_max_candidate_count is None:
+        resolved_max_candidate_count = validated_evaluation_budget
+    return NucleotideLikelihoodSprSearchBudget(
+        max_candidate_count=resolved_max_candidate_count,
+        max_iteration_count=validate_optional_positive_spr_budget_integer(
+            max_iteration_count,
+            parameter_name="max_iteration_count",
+        ),
+        max_elapsed_seconds=validate_optional_positive_spr_budget_seconds(
+            max_elapsed_seconds
+        ),
+        max_accepted_move_count=validate_optional_positive_spr_budget_integer(
+            max_accepted_move_count,
+            parameter_name="max_accepted_move_count",
+        ),
+    )
+
+
+def validate_optional_positive_spr_budget_integer(
+    value: int | None,
+    *,
+    parameter_name: str,
+) -> int | None:
+    """Validate one optional positive rooted SPR integer budget value."""
+    if value is None:
         return None
-    if evaluation_budget < 1:
-        raise ValueError("evaluation_budget must be at least one when provided")
-    return evaluation_budget
+    if value < 1:
+        raise ValueError(f"{parameter_name} must be at least one when provided")
+    return value
+
+
+def validate_optional_positive_spr_budget_seconds(
+    max_elapsed_seconds: float | None,
+) -> float | None:
+    """Validate one optional positive rooted SPR elapsed-time budget."""
+    if max_elapsed_seconds is None:
+        return None
+    if max_elapsed_seconds <= 0.0:
+        raise ValueError("max_elapsed_seconds must be greater than zero when provided")
+    return float(max_elapsed_seconds)
+
+
+def resolve_spr_search_pre_iteration_budget_stop_reason(
+    *,
+    search_budget: NucleotideLikelihoodSprSearchBudget,
+    search_started_at: float,
+    accepted_move_count: int,
+    iteration_count: int,
+) -> str | None:
+    """Resolve any rooted SPR budget stop reason before a new iteration begins."""
+    if (
+        search_budget.max_accepted_move_count is not None
+        and accepted_move_count >= search_budget.max_accepted_move_count
+    ):
+        return "accepted-move-budget-exhausted"
+    if (
+        search_budget.max_iteration_count is not None
+        and iteration_count >= search_budget.max_iteration_count
+    ):
+        return "iteration-budget-exhausted"
+    if (
+        search_budget.max_elapsed_seconds is not None
+        and time.monotonic() - search_started_at >= search_budget.max_elapsed_seconds
+    ):
+        return "time-budget-exhausted"
+    return None
+
+
+def resolve_spr_search_in_iteration_budget_stop_reason(
+    *,
+    search_budget: NucleotideLikelihoodSprSearchBudget,
+    search_started_at: float,
+    evaluated_neighbor_count: int,
+) -> str | None:
+    """Resolve any rooted SPR budget stop reason while scanning a neighborhood."""
+    if (
+        search_budget.max_elapsed_seconds is not None
+        and time.monotonic() - search_started_at >= search_budget.max_elapsed_seconds
+    ):
+        return "time-budget-exhausted"
+    if (
+        search_budget.max_candidate_count is not None
+        and evaluated_neighbor_count >= search_budget.max_candidate_count
+    ):
+        return "candidate-budget-exhausted"
+    return None
+
+
+def count_unsearched_spr_candidates(
+    tree: PhyloTree,
+    searched_neighbor_newicks: set[str],
+) -> int:
+    """Count remaining unique rooted SPR neighbors that were not yet evaluated."""
+    seen_neighbor_newicks = set(searched_neighbor_newicks)
+    unsearched_candidate_count = 0
+    for candidate in iter_rooted_spr_move_candidates(tree):
+        neighbor_newick = dumps_newick(apply_rooted_spr_move(tree, candidate))
+        if neighbor_newick in seen_neighbor_newicks:
+            continue
+        seen_neighbor_newicks.add(neighbor_newick)
+        unsearched_candidate_count += 1
+    return unsearched_candidate_count

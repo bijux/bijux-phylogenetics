@@ -520,6 +520,16 @@ class NucleotideLikelihoodNniSearchReport:
 
 
 @dataclass(slots=True)
+class NucleotideLikelihoodSprSearchBudget:
+    """Normalized rooted likelihood SPR search budget settings."""
+
+    max_candidate_count: int | None
+    max_iteration_count: int | None
+    max_elapsed_seconds: float | None
+    max_accepted_move_count: int | None
+
+
+@dataclass(slots=True)
 class NucleotideLikelihoodSprTraceRow:
     """One deterministic event row in a rooted nucleotide likelihood SPR search trace."""
 
@@ -543,6 +553,7 @@ class NucleotideLikelihoodSprTraceRow:
     branch_function_evaluation_count: int
     boundary_warning_messages: list[str]
     stopping_reason: str | None
+    unsearched_candidate_count: int | None
 
 
 @dataclass(slots=True)
@@ -562,8 +573,11 @@ class NucleotideLikelihoodSprSearchReport:
     final_tree_newick: str
     final_log_likelihood: float
     accepted_move_count: int
+    iteration_count: int
     evaluated_neighbor_count: int
     evaluation_budget: int | None
+    search_budget: NucleotideLikelihoodSprSearchBudget
+    unsearched_candidate_count: int
     branch_reoptimization_policy: str
     substitution_parameter_policy: str
     substitution_parameter_values: dict[str, float]
