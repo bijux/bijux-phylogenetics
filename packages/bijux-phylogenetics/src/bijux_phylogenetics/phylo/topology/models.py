@@ -417,6 +417,18 @@ class RootedTbrMoveApplicationReport:
     moved_validation_errors: list[str]
 
 
+@dataclass(slots=True)
+class AffectedSubtreeReport:
+    """Explicit rooted branch-subtree comparison for one topology move."""
+
+    original_branch_clade_ids: list[str]
+    moved_branch_clade_ids: list[str]
+    retired_branch_clade_ids: list[str]
+    introduced_branch_clade_ids: list[str]
+    affected_branch_clade_ids: list[str]
+    unaffected_branch_clade_ids: list[str]
+
+
 @dataclass(frozen=True, slots=True)
 class StepwiseAdditionCandidateScore:
     """One evaluated insertion edge for one greedy stepwise-addition step."""

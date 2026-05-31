@@ -5,6 +5,7 @@ from typing import Any
 
 _EXPORTS = {
     "RobinsonFouldsMetrics": "clades",
+    "AffectedSubtreeReport": "models",
     "canonical_bipartition": "clades",
     "canonical_clade_id": "clades",
     "informative_rooted_clade_nodes": "clades",
@@ -45,6 +46,7 @@ _EXPORTS = {
     "_order_tree": "ordering",
     "_rotate_all_nodes": "ordering",
     "_rotate_named_node": "ordering",
+    "summarize_affected_subtrees": "affected_subtrees",
     "generate_random_bifurcating_tree": "random_bifurcating",
     "ladderize_tree": "ordering",
     "rotate_all_internal_nodes": "ordering",
