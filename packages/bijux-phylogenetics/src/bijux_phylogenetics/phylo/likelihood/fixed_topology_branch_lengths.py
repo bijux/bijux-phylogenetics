@@ -83,6 +83,16 @@ def optimize_fixed_topology_nucleotide_branch_lengths(
     normalized_model_name = validate_fixed_topology_nucleotide_branch_length_model(
         model_name
     )
+    if lower_branch_length_bound < 0.0:
+        raise InvalidBranchLengthError(
+            "fixed-topology nucleotide branch-length lower bound must be nonnegative"
+        )
+    if upper_branch_length_bound <= lower_branch_length_bound:
+        raise InvalidBranchLengthError(
+            "fixed-topology nucleotide branch-length bounds must be strictly increasing"
+        )
+    if max_coordinate_passes < 1:
+        raise ValueError("max_coordinate_passes must be at least one")
     normalized_observation_policy = observation_policy.strip().lower()
     normalized_records = normalize_dna_likelihood_records(
         records,
@@ -103,6 +113,14 @@ def optimize_fixed_topology_nucleotide_branch_lengths(
         fixed_root_state=fixed_root_state,
     )
     starting_tree = tree.copy().refresh()
+    for _parent, child in starting_tree.iter_edges():
+        branch_length = float(child.branch_length or 0.0)
+        if not (
+            lower_branch_length_bound <= branch_length <= upper_branch_length_bound
+        ):
+            raise InvalidBranchLengthError(
+                "fixed-topology nucleotide branch optimization requires every starting branch length to lie within the declared bounds"
+            )
     initial_tree_newick = dumps_newick(starting_tree)
     initial_log_likelihood = evaluate_selected_nucleotide_log_likelihood_from_patterns(
         starting_tree,
