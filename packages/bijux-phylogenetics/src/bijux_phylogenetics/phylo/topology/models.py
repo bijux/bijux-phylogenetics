@@ -296,6 +296,7 @@ class RootedSprNeighborhoodReport:
     max_regraft_target_count_per_pruned_clade: int | None
     skipped_pruned_clade_count: int
     skipped_regraft_target_count: int
+    skipped_budget_move_candidate_count: int
     generated_move_candidate_count: int
     identity_move_candidate_count: int
     self_regraft_candidate_count: int
@@ -418,6 +419,20 @@ class RootedTbrMoveApplicationReport:
     unexpected_tip_taxa: list[str]
     moved_validation_errors: list[str]
     affected_subtree_report: AffectedSubtreeReport
+
+
+@dataclass(slots=True)
+class TopologyNeighborhoodSummaryReport:
+    """Comparable summary row for one rooted topology-neighborhood workflow."""
+
+    neighborhood_family: str
+    algorithm: str
+    candidate_count: int
+    valid_count: int
+    duplicate_count: int
+    skipped_count: int
+    skipped_reason: str
+    budget_reason: str
 
 
 @dataclass(slots=True)
