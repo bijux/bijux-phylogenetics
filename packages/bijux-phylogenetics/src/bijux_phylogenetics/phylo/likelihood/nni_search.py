@@ -8,6 +8,13 @@ import numpy
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick, write_newick
 from bijux_phylogenetics.phylo.topology.clades import canonical_clade_id
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.equal_best_topologies import (
+    build_nucleotide_likelihood_equal_best_tree_report,
+    initialize_nucleotide_likelihood_equal_best_topology_accumulator,
+    record_nucleotide_likelihood_equal_best_topology,
+    validate_nucleotide_likelihood_equal_best_likelihood_tolerance,
+    validate_nucleotide_likelihood_equal_best_tree_cap,
+)
 from bijux_phylogenetics.phylo.likelihood.search_convergence import (
     resolve_nucleotide_likelihood_search_convergence_decision,
     validate_nucleotide_likelihood_search_improvement_tolerance,
@@ -70,6 +77,8 @@ def search_nucleotide_likelihood_nni(
     upper_branch_length_bound: float = 5.0,
     improvement_tolerance: float = 1e-9,
     search_improvement_tolerance: float = 0.0,
+    equal_best_likelihood_tolerance: float = 0.0,
+    equal_best_tree_cap: int = 1,
     max_coordinate_passes: int = 12,
 ) -> NucleotideLikelihoodNniSearchReport:
     """Search one rooted binary nucleotide tree by likelihood-improving rooted NNI moves."""
@@ -87,6 +96,14 @@ def search_nucleotide_likelihood_nni(
         validate_nucleotide_likelihood_search_improvement_tolerance(
             search_improvement_tolerance
         )
+    )
+    validated_equal_best_likelihood_tolerance = (
+        validate_nucleotide_likelihood_equal_best_likelihood_tolerance(
+            equal_best_likelihood_tolerance
+        )
+    )
+    validated_equal_best_tree_cap = validate_nucleotide_likelihood_equal_best_tree_cap(
+        equal_best_tree_cap
     )
     validate_nucleotide_topology_search_tree(
         resolved_tree,
@@ -121,6 +138,13 @@ def search_nucleotide_likelihood_nni(
     current_tree = start_result.optimized_tree.copy().refresh()
     current_log_likelihood = start_result.log_likelihood
     start_tree_newick = dumps_newick(current_tree)
+    equal_best_accumulator = initialize_nucleotide_likelihood_equal_best_topology_accumulator()
+    record_nucleotide_likelihood_equal_best_topology(
+        equal_best_accumulator,
+        tree_newick=start_tree_newick,
+        log_likelihood=start_result.log_likelihood,
+        likelihood_tolerance=validated_equal_best_likelihood_tolerance,
+    )
     trace_rows = [
         NucleotideLikelihoodNniTraceRow(
             event_index=1,
@@ -207,6 +231,12 @@ def search_nucleotide_likelihood_nni(
             neighbor_newick = dumps_newick(neighbor_result.optimized_tree)
             neighbor_topology_fingerprint = rooted_topology_fingerprint(
                 neighbor_result.optimized_tree
+            )
+            record_nucleotide_likelihood_equal_best_topology(
+                equal_best_accumulator,
+                tree_newick=neighbor_newick,
+                log_likelihood=neighbor_result.log_likelihood,
+                likelihood_tolerance=validated_equal_best_likelihood_tolerance,
             )
             total_branch_optimization_pass_count += (
                 neighbor_result.optimization_pass_count
@@ -381,6 +411,11 @@ def search_nucleotide_likelihood_nni(
         total_branch_optimization_pass_count=total_branch_optimization_pass_count,
         total_branch_function_evaluation_count=total_branch_function_evaluation_count,
         stopping_reason=stopping_reason,
+        equal_best_tree_report=build_nucleotide_likelihood_equal_best_tree_report(
+            equal_best_accumulator,
+            likelihood_tolerance=validated_equal_best_likelihood_tolerance,
+            retention_cap=validated_equal_best_tree_cap,
+        ),
         trace_rows=trace_rows,
         candidate_rows=candidate_rows,
     )
@@ -410,6 +445,8 @@ def search_nucleotide_likelihood_nni_from_alignment(
     upper_branch_length_bound: float = 5.0,
     improvement_tolerance: float = 1e-9,
     search_improvement_tolerance: float = 0.0,
+    equal_best_likelihood_tolerance: float = 0.0,
+    equal_best_tree_cap: int = 1,
     max_coordinate_passes: int = 12,
 ) -> NucleotideLikelihoodNniSearchReport:
     """Search one rooted binary nucleotide tree path by likelihood-improving rooted NNI moves."""
@@ -429,6 +466,8 @@ def search_nucleotide_likelihood_nni_from_alignment(
         upper_branch_length_bound=upper_branch_length_bound,
         improvement_tolerance=improvement_tolerance,
         search_improvement_tolerance=search_improvement_tolerance,
+        equal_best_likelihood_tolerance=equal_best_likelihood_tolerance,
+        equal_best_tree_cap=equal_best_tree_cap,
         max_coordinate_passes=max_coordinate_passes,
     )
 
@@ -639,6 +678,24 @@ def write_nucleotide_likelihood_nni_run_json(
         "total_branch_optimization_pass_count": report.total_branch_optimization_pass_count,
         "total_branch_function_evaluation_count": report.total_branch_function_evaluation_count,
         "stopping_reason": report.stopping_reason,
+        "equal_best_tree_report": {
+            "likelihood_tolerance": report.equal_best_tree_report.likelihood_tolerance,
+            "retention_cap": report.equal_best_tree_report.retention_cap,
+            "retained_tree_count": report.equal_best_tree_report.retained_tree_count,
+            "omitted_tree_count": report.equal_best_tree_report.omitted_tree_count,
+            "best_log_likelihood": report.equal_best_tree_report.best_log_likelihood,
+            "consensus_method": report.equal_best_tree_report.consensus_method,
+            "consensus_newick": report.equal_best_tree_report.consensus_newick,
+            "rows": [
+                {
+                    "retained_rank": row.retained_rank,
+                    "topology_fingerprint": row.topology_fingerprint,
+                    "tree_newick": row.tree_newick,
+                    "log_likelihood": row.log_likelihood,
+                }
+                for row in report.equal_best_tree_report.rows
+            ],
+        },
         "trace_rows": [
             {
                 "event_index": row.event_index,
