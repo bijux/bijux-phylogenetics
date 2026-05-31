@@ -575,6 +575,37 @@ class NucleotideLikelihoodMultiStartSearchReport:
 
 
 @dataclass(slots=True)
+class NucleotideLikelihoodStartingTreeSummary:
+    """One scored starting tree inside a native likelihood start-tree pool."""
+
+    tree_id: str
+    source_strategy: str
+    generation_seed: int | None
+    topology_hash: str
+    starting_log_likelihood: float
+    substitution_parameter_policy: str
+    substitution_parameter_values: dict[str, float]
+    substitution_parameter_warnings: list[str]
+    tree_newick: str
+
+
+@dataclass(slots=True)
+class NucleotideLikelihoodStartingTreePoolReport:
+    """Scored pool of distinct likelihood starting trees for one alignment."""
+
+    algorithm: str
+    model_name: str
+    tree_path: str | None
+    alignment_path: str | None
+    taxon_count: int
+    site_count: int
+    pattern_count: int
+    random_start_tree_count: int
+    random_start_tree_seed: int
+    starting_tree_summaries: list[NucleotideLikelihoodStartingTreeSummary]
+
+
+@dataclass(slots=True)
 class CandidateTreeSiteLikelihoodSummary:
     """One candidate-tree summary inside a shared site-likelihood matrix workflow."""
 
