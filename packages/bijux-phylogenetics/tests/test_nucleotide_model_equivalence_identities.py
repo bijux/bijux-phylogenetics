@@ -6,6 +6,7 @@ from pathlib import Path
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.likelihood import (
+    evaluate_hky85_tree_likelihood,
     evaluate_jc69_tree_likelihood,
     evaluate_k80_tree_likelihood,
 )
@@ -50,3 +51,31 @@ def test_k80_with_nonunit_kappa_diverges_from_jc69() -> None:
     k80 = evaluate_k80_tree_likelihood(tree, records, kappa=4.0)
 
     _assert_likelihood_mismatch(k80.log_likelihood, jc69.log_likelihood)
+
+
+def test_hky85_with_uniform_frequencies_and_unit_kappa_matches_jc69() -> None:
+    tree, records = _load_reference_fixture()
+
+    jc69 = evaluate_jc69_tree_likelihood(tree, records)
+    hky85 = evaluate_hky85_tree_likelihood(
+        tree,
+        records,
+        kappa=1.0,
+        base_frequencies=_UNIFORM_BASE_FREQUENCIES,
+    )
+
+    _assert_likelihood_match(hky85.log_likelihood, jc69.log_likelihood)
+
+
+def test_hky85_with_nonunit_parameters_diverges_from_jc69() -> None:
+    tree, records = _load_reference_fixture()
+
+    jc69 = evaluate_jc69_tree_likelihood(tree, records)
+    hky85 = evaluate_hky85_tree_likelihood(
+        tree,
+        records,
+        kappa=4.0,
+        base_frequencies={"A": 0.4, "C": 0.1, "G": 0.2, "T": 0.3},
+    )
+
+    _assert_likelihood_mismatch(hky85.log_likelihood, jc69.log_likelihood)
