@@ -248,6 +248,7 @@ class RootedNniMoveApplicationReport:
     unexpected_tip_taxa: list[str]
     moved_validation_errors: list[str]
     reversed_validation_errors: list[str]
+    affected_subtree_report: AffectedSubtreeReport
     node_names_preserved: bool
     node_metadata_preserved: bool
     edge_metadata_preserved: bool

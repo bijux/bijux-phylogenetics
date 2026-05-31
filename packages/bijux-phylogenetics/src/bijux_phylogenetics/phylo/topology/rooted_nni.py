@@ -16,6 +16,7 @@ from bijux_phylogenetics.phylo.topology.models import (
     RootedNniNeighborhoodReport,
 )
 
+from .affected_subtrees import summarize_affected_subtrees
 from .tree import PhyloTree, TreeNode, descendant_taxa
 
 
@@ -226,6 +227,10 @@ def summarize_rooted_nni_move_application(
         unexpected_tip_taxa=sorted(moved_tip_taxa - input_tip_taxa),
         moved_validation_errors=moved_tree.validation_errors(),
         reversed_validation_errors=reversed_tree.validation_errors(),
+        affected_subtree_report=summarize_affected_subtrees(
+            resolved_tree,
+            moved_tree,
+        ),
         node_names_preserved=_rooted_nni_node_name_multiset(resolved_tree)
         == _rooted_nni_node_name_multiset(moved_tree)
         == _rooted_nni_node_name_multiset(reversed_tree),
@@ -594,6 +599,26 @@ def write_rooted_nni_move_run_json(
         "unexpected_tip_taxa": report.unexpected_tip_taxa,
         "moved_validation_errors": report.moved_validation_errors,
         "reversed_validation_errors": report.reversed_validation_errors,
+        "affected_subtrees": {
+            "original_branch_clade_ids": (
+                report.affected_subtree_report.original_branch_clade_ids
+            ),
+            "moved_branch_clade_ids": (
+                report.affected_subtree_report.moved_branch_clade_ids
+            ),
+            "retired_branch_clade_ids": (
+                report.affected_subtree_report.retired_branch_clade_ids
+            ),
+            "introduced_branch_clade_ids": (
+                report.affected_subtree_report.introduced_branch_clade_ids
+            ),
+            "affected_branch_clade_ids": (
+                report.affected_subtree_report.affected_branch_clade_ids
+            ),
+            "unaffected_branch_clade_ids": (
+                report.affected_subtree_report.unaffected_branch_clade_ids
+            ),
+        },
         "node_names_preserved": report.node_names_preserved,
         "node_metadata_preserved": report.node_metadata_preserved,
         "edge_metadata_preserved": report.edge_metadata_preserved,
