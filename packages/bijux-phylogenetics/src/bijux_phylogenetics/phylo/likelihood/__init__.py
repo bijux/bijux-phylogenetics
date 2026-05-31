@@ -288,6 +288,8 @@ __all__ = [
     "summarize_likelihood_wrapper_correspondence",
     "sum_alignment_site_log_likelihoods",
     "sum_compressed_site_pattern_log_likelihoods",
+    "sum_site_log_likelihood_rows",
+    "sum_weighted_site_pattern_log_likelihood_rows",
     "summarize_fixed_tree_branch_likelihood_diagnostics",
     "transition_probability_matrix",
     "ValidatedCtmcRateMatrix",

@@ -4,6 +4,7 @@ from collections.abc import Callable
 import csv
 import math
 from pathlib import Path
+from typing import Protocol
 
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 
@@ -36,16 +37,26 @@ SequenceSiteLogLikelihoodReport = (
 )
 
 
+class PatternedSiteLogLikelihoodRow(Protocol):
+    """Duck-typed site-likelihood row contract shared across sequence reports."""
+
+    pattern_id: str
+    pattern_weight: int
+    site_position: int
+    site_states: tuple[str, ...]
+    log_likelihood: float
+
+
 def sum_alignment_site_log_likelihoods(
     records: list[AlignmentRecord],
     *,
     site_log_likelihood: Callable[[tuple[str, ...]], float],
 ) -> float:
     """Sum one per-site log likelihood across every uncompressed alignment column."""
-    total = 0.0
-    for states in iter_uncompressed_alignment_sites(records):
-        total += _validated_site_log_likelihood(site_log_likelihood(states))
-    return total
+    return math.fsum(
+        _validated_site_log_likelihood(site_log_likelihood(states))
+        for states in iter_uncompressed_alignment_sites(records)
+    )
 
 
 def sum_compressed_site_pattern_log_likelihoods(
@@ -54,12 +65,11 @@ def sum_compressed_site_pattern_log_likelihoods(
     site_log_likelihood: Callable[[tuple[str, ...]], float],
 ) -> float:
     """Sum one per-pattern log likelihood using each pattern's integer weight."""
-    total = 0.0
-    for pattern in compressed_patterns.patterns:
-        total += pattern.weight * _validated_site_log_likelihood(
-            site_log_likelihood(pattern.states)
-        )
-    return total
+    return math.fsum(
+        pattern.weight
+        * _validated_site_log_likelihood(site_log_likelihood(pattern.states))
+        for pattern in compressed_patterns.patterns
+    )
 
 
 def expanded_site_log_likelihood_rows_from_patterns(
@@ -69,13 +79,13 @@ def expanded_site_log_likelihood_rows_from_patterns(
 ) -> tuple[list[SiteLogLikelihoodRow], float]:
     """Expand compressed-pattern log likelihoods back to one stable row per site."""
     log_likelihood_by_pattern_id: dict[str, float] = {}
-    total = 0.0
+    weighted_pattern_terms: list[float] = []
     for pattern in compressed_patterns.patterns:
         log_likelihood = _validated_site_log_likelihood(
             site_log_likelihood(pattern.states)
         )
         log_likelihood_by_pattern_id[pattern.pattern_id] = log_likelihood
-        total += pattern.weight * log_likelihood
+        weighted_pattern_terms.append(pattern.weight * log_likelihood)
 
     rows: list[SiteLogLikelihoodRow] = []
     for site_position, pattern in iter_pattern_sites_in_alignment_order(
@@ -90,7 +100,76 @@ def expanded_site_log_likelihood_rows_from_patterns(
                 log_likelihood=log_likelihood_by_pattern_id[pattern.pattern_id],
             )
         )
-    return rows, total
+    return rows, math.fsum(weighted_pattern_terms)
+
+
+def sum_site_log_likelihood_rows(
+    rows: list[PatternedSiteLogLikelihoodRow],
+) -> float:
+    """Sum expanded site rows exactly once per emitted site."""
+    return math.fsum(_validated_site_log_likelihood(row.log_likelihood) for row in rows)
+
+
+def sum_weighted_site_pattern_log_likelihood_rows(
+    rows: list[PatternedSiteLogLikelihoodRow],
+) -> float:
+    """Sum one weighted term per unique pattern after validating repeated rows."""
+    pattern_terms: dict[str, tuple[int, tuple[str, ...], float]] = {}
+    for row in rows:
+        log_likelihood = _validated_site_log_likelihood(row.log_likelihood)
+        prior = pattern_terms.get(row.pattern_id)
+        current = (row.pattern_weight, row.site_states, log_likelihood)
+        if prior is None:
+            pattern_terms[row.pattern_id] = current
+            continue
+        if prior != current:
+            raise ValueError(
+                "site log-likelihood rows require stable pattern weights, states, and log likelihoods"
+            )
+    return math.fsum(
+        pattern_weight * log_likelihood
+        for pattern_weight, _states, log_likelihood in pattern_terms.values()
+    )
+
+
+def validate_site_log_likelihood_reconstruction(
+    rows: list[PatternedSiteLogLikelihoodRow],
+    *,
+    expected_total_log_likelihood: float,
+    expected_site_count: int,
+    expected_pattern_count: int,
+    owner_name: str,
+) -> None:
+    """Reject emitted site rows that do not reconstruct their declared total."""
+    if len(rows) != expected_site_count:
+        raise ValueError(
+            f"{owner_name} emitted {len(rows)} site rows for {expected_site_count} declared sites"
+        )
+    unique_pattern_count = len({row.pattern_id for row in rows})
+    if unique_pattern_count != expected_pattern_count:
+        raise ValueError(
+            f"{owner_name} emitted {unique_pattern_count} patterns for {expected_pattern_count} declared patterns"
+        )
+    expanded_total = sum_site_log_likelihood_rows(rows)
+    weighted_pattern_total = sum_weighted_site_pattern_log_likelihood_rows(rows)
+    if not math.isclose(
+        expanded_total,
+        expected_total_log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    ):
+        raise ValueError(
+            f"{owner_name} expanded site rows did not reconstruct the declared total likelihood"
+        )
+    if not math.isclose(
+        weighted_pattern_total,
+        expected_total_log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    ):
+        raise ValueError(
+            f"{owner_name} weighted pattern rows did not reconstruct the declared total likelihood"
+        )
 
 
 def write_site_log_likelihood_table(
