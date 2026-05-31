@@ -561,7 +561,9 @@ class NucleotideLikelihoodMultiStartSearchReport:
     pattern_count: int
     input_tree_newick: str
     start_tree_source_policy: str
+    starting_tree_selection_policy: str | None
     input_tree_included: bool
+    available_start_tree_count: int
     generated_start_tree_count: int
     start_tree_count: int
     start_tree_seed: int

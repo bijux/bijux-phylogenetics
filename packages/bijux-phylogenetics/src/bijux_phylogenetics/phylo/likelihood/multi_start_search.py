@@ -23,6 +23,16 @@ from bijux_phylogenetics.phylo.likelihood.models import (
 from bijux_phylogenetics.phylo.likelihood.nni_search import (
     search_nucleotide_likelihood_nni,
 )
+from bijux_phylogenetics.phylo.likelihood.starting_tree_pool import (
+    build_nucleotide_likelihood_starting_tree_pool,
+)
+from bijux_phylogenetics.phylo.likelihood.starting_tree_generation import (
+    build_random_likelihood_start_tree,
+)
+from bijux_phylogenetics.phylo.likelihood.starting_tree_selection import (
+    select_nucleotide_likelihood_starting_tree_pool,
+    validate_nucleotide_likelihood_starting_tree_selection_policy,
+)
 from bijux_phylogenetics.phylo.likelihood.starting_tree_validation import (
     validate_nucleotide_likelihood_starting_tree,
 )
@@ -36,9 +46,6 @@ from bijux_phylogenetics.phylo.likelihood.topology_search import (
     validate_branch_reoptimization_policy,
 )
 from bijux_phylogenetics.phylo.topology import rooted_topology_fingerprint
-from bijux_phylogenetics.phylo.topology.random_bifurcating import (
-    generate_random_bifurcating_tree,
-)
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 _SUPPORTED_LIKELIHOOD_MULTI_START_METHODS = frozenset({"nni", "spr"})
@@ -64,6 +71,10 @@ def search_nucleotide_likelihood_multi_start(
     local_search_method: str = "nni",
     start_tree_count: int = 4,
     start_tree_source_policy: str = "input-tree-plus-random-tree",
+    starting_tree_selection_policy: str | None = None,
+    selected_start_tree_count: int | None = None,
+    starting_tree_selection_seed: int = 1,
+    starting_tree_strategy_priority: tuple[str, ...] | list[str] | None = None,
     start_tree_seed: int = 1,
     branch_reoptimization_policy: str = "coordinate-branch-lengths",
     evaluation_budget: int | None = None,
@@ -96,6 +107,13 @@ def search_nucleotide_likelihood_multi_start(
     validated_start_tree_source_policy = validate_likelihood_multi_start_source_policy(
         start_tree_source_policy
     )
+    validated_starting_tree_selection_policy = (
+        None
+        if starting_tree_selection_policy is None
+        else validate_nucleotide_likelihood_starting_tree_selection_policy(
+            starting_tree_selection_policy
+        )
+    )
     validated_branch_reoptimization_policy = validate_branch_reoptimization_policy(
         branch_reoptimization_policy
     )
@@ -113,12 +131,43 @@ def search_nucleotide_likelihood_multi_start(
         model_name=model_name,
         workflow_name="nucleotide likelihood multi-start search",
     )
-    start_tree_candidates = build_likelihood_multi_start_candidates(
-        resolved_tree,
-        start_tree_count=validated_start_tree_count,
-        start_tree_source_policy=validated_start_tree_source_policy,
-        start_tree_seed=start_tree_seed,
-    )
+    if validated_starting_tree_selection_policy is None:
+        start_tree_candidates = build_likelihood_multi_start_candidates(
+            resolved_tree,
+            start_tree_count=validated_start_tree_count,
+            start_tree_source_policy=validated_start_tree_source_policy,
+            start_tree_seed=start_tree_seed,
+        )
+        available_start_tree_count = len(start_tree_candidates)
+        report_start_tree_source_policy = validated_start_tree_source_policy
+    else:
+        starting_tree_pool_report = _build_scored_starting_tree_pool_for_multi_start_search(
+            resolved_tree,
+            resolved_records,
+            model_name=model_name,
+            random_start_tree_count=max(1, validated_start_tree_count - 2),
+            random_start_tree_seed=start_tree_seed,
+        )
+        selected_start_trees = select_nucleotide_likelihood_starting_tree_pool(
+            starting_tree_pool_report,
+            starting_tree_selection_policy=validated_starting_tree_selection_policy,
+            selected_start_tree_count=selected_start_tree_count,
+            selection_seed=starting_tree_selection_seed,
+            strategy_priority=starting_tree_strategy_priority,
+        )
+        start_tree_candidates = [
+            _StartTreeCandidate(
+                source_kind=row.source_strategy,
+                source_label=row.tree_id,
+                generation_seed=row.generation_seed,
+                tree=loads_newick(row.tree_newick),
+            )
+            for row in selected_start_trees
+        ]
+        available_start_tree_count = len(
+            starting_tree_pool_report.starting_tree_summaries
+        )
+        report_start_tree_source_policy = "scored-starting-tree-pool"
     run_summaries: list[NucleotideLikelihoodMultiStartRunSummary] = []
     local_reports: list[
         NucleotideLikelihoodNniSearchReport | NucleotideLikelihoodSprSearchReport
@@ -189,10 +238,16 @@ def search_nucleotide_likelihood_multi_start(
         site_count=compressed_patterns.alignment_length,
         pattern_count=compressed_patterns.pattern_count,
         input_tree_newick=dumps_newick(resolved_tree),
-        start_tree_source_policy=validated_start_tree_source_policy,
-        input_tree_included=True,
-        generated_start_tree_count=validated_start_tree_count - 1,
-        start_tree_count=validated_start_tree_count,
+        start_tree_source_policy=report_start_tree_source_policy,
+        starting_tree_selection_policy=validated_starting_tree_selection_policy,
+        input_tree_included=any(
+            row.start_tree_source_kind == "input-tree" for row in run_summaries
+        ),
+        available_start_tree_count=available_start_tree_count,
+        generated_start_tree_count=sum(
+            1 for row in run_summaries if row.start_tree_source_kind != "input-tree"
+        ),
+        start_tree_count=len(run_summaries),
         start_tree_seed=start_tree_seed,
         evaluation_budget=validated_evaluation_budget,
         branch_reoptimization_policy=validated_branch_reoptimization_policy,
@@ -212,6 +267,10 @@ def search_nucleotide_likelihood_multi_start_from_alignment(
     local_search_method: str = "nni",
     start_tree_count: int = 4,
     start_tree_source_policy: str = "input-tree-plus-random-tree",
+    starting_tree_selection_policy: str | None = None,
+    selected_start_tree_count: int | None = None,
+    starting_tree_selection_seed: int = 1,
+    starting_tree_strategy_priority: tuple[str, ...] | list[str] | None = None,
     start_tree_seed: int = 1,
     branch_reoptimization_policy: str = "coordinate-branch-lengths",
     evaluation_budget: int | None = None,
@@ -238,6 +297,10 @@ def search_nucleotide_likelihood_multi_start_from_alignment(
         local_search_method=local_search_method,
         start_tree_count=start_tree_count,
         start_tree_source_policy=start_tree_source_policy,
+        starting_tree_selection_policy=starting_tree_selection_policy,
+        selected_start_tree_count=selected_start_tree_count,
+        starting_tree_selection_seed=starting_tree_selection_seed,
+        starting_tree_strategy_priority=starting_tree_strategy_priority,
         start_tree_seed=start_tree_seed,
         branch_reoptimization_policy=branch_reoptimization_policy,
         evaluation_budget=evaluation_budget,
@@ -349,20 +412,6 @@ def build_likelihood_multi_start_candidates(
     return candidates
 
 
-def build_random_likelihood_start_tree(
-    ordered_taxa: list[str],
-    *,
-    seed: int,
-) -> PhyloTree:
-    """Generate one rooted random start tree and relabel its tips to the target taxa."""
-    random_tree, _report = generate_random_bifurcating_tree(
-        ordered_taxa,
-        seed=seed,
-        branch_length_policy="uniform",
-    )
-    return random_tree
-
-
 def select_best_likelihood_multi_start_run(
     run_summaries: list[NucleotideLikelihoodMultiStartRunSummary],
 ) -> int:
@@ -376,6 +425,33 @@ def select_best_likelihood_multi_start_run(
             best_index = index
             best_run = candidate
     return best_index
+
+
+def _build_scored_starting_tree_pool_for_multi_start_search(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    model_name: str,
+    random_start_tree_count: int,
+    random_start_tree_seed: int,
+):
+    candidate_seed = random_start_tree_seed
+    for _attempt in range(_MAX_RANDOM_START_ATTEMPTS):
+        try:
+            return build_nucleotide_likelihood_starting_tree_pool(
+                tree,
+                records,
+                model_name=model_name,
+                random_start_tree_count=random_start_tree_count,
+                random_start_tree_seed=candidate_seed,
+            )
+        except ValueError as error:
+            if "duplicate topology hash" not in str(error):
+                raise
+            candidate_seed += 1
+    raise ValueError(
+        "could not build enough distinct scored start trees for multi-start search"
+    )
 
 
 def rooted_topology_fingerprint_from_newick(tree_newick: str) -> str:
@@ -523,7 +599,9 @@ def write_nucleotide_likelihood_multi_start_run_json(
         "pattern_count": report.pattern_count,
         "input_tree_newick": report.input_tree_newick,
         "start_tree_source_policy": report.start_tree_source_policy,
+        "starting_tree_selection_policy": report.starting_tree_selection_policy,
         "input_tree_included": report.input_tree_included,
+        "available_start_tree_count": report.available_start_tree_count,
         "generated_start_tree_count": report.generated_start_tree_count,
         "start_tree_count": report.start_tree_count,
         "start_tree_seed": report.start_tree_seed,

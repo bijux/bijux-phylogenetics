@@ -17,7 +17,7 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
 from bijux_phylogenetics.phylo.topology import rooted_topology_fingerprint
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
-from .multi_start_search import build_random_likelihood_start_tree
+from .starting_tree_generation import build_random_likelihood_start_tree
 from .stepwise_addition import build_likelihood_stepwise_addition_tree
 from .starting_tree_validation import (
     validate_nucleotide_likelihood_starting_tree,
