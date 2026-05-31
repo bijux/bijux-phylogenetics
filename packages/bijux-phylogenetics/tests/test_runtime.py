@@ -151,10 +151,18 @@ from bijux_phylogenetics.bayesian import (
     BayesianPosteriorTreeSample,
     BayesianPosteriorTreeSampleArchive,
     BAYESIAN_BURNIN_POLICY_NAMES,
+    METROPOLIS_HASTINGS_BURNIN_POLICY_NAMES,
     BayesianRunBurninPolicy,
     BayesianRunManifest,
     BayesianRunManifestReplayReport,
     BayesianRunPriorRow,
+    BurninSampleRow,
+    IndependentMetropolisHastingsBurninReport,
+    IndependentMetropolisHastingsChainBurninReport,
+    MetropolisHastingsBurninDiagnosticCandidate,
+    MetropolisHastingsBurninDiagnosticReport,
+    MetropolisHastingsBurninPolicy,
+    MetropolisHastingsBurninReport,
     POSTERIOR_PREDICTIVE_SAMPLE_SELECTION_POLICIES,
     PosteriorPredictiveAlignmentReplicate,
     PosteriorPredictiveAlignmentSimulationReport,
@@ -188,6 +196,7 @@ from bijux_phylogenetics.bayesian import (
     build_adaptive_tuning_report,
     build_adaptive_tuning_window_row,
     build_bayesian_evidence_package,
+    build_metropolis_hastings_burnin_policy,
     build_bayesian_posterior_tree_sample,
     build_bayesian_posterior_tree_sample_archive,
     build_brownian_continuous_trait_model_definition,
@@ -261,6 +270,7 @@ from bijux_phylogenetics.bayesian import (
     compare_log_probabilities,
     compute_mrbayes_effective_sample_sizes,
     count_rooted_labeled_bifurcating_topologies,
+    diagnose_metropolis_hastings_burnin,
     evaluate_constant_population_coalescent_tree_log_prior,
     evaluate_calibration_tree_log_prior,
     evaluate_birth_death_tree_log_prior,
@@ -313,6 +323,8 @@ from bijux_phylogenetics.bayesian import (
     propose_partition_linking_move,
     propose_spr_topology_move,
     propose_tbr_topology_move,
+    apply_independent_metropolis_hastings_burnin_policy,
+    apply_metropolis_hastings_burnin_policy,
     resolve_partition_parameter_linkage_plan_from_model_parameters,
     resolve_partition_parameter_states_from_model_parameters,
     run_adaptive_tuned_metropolis_hastings_sampler,
@@ -327,8 +339,8 @@ from bijux_phylogenetics.bayesian import (
     simulate_fixed_topology_partitioned_dna_posterior_predictive,
     simulate_joint_topology_dna_posterior_predictive,
     simulate_ornstein_uhlenbeck_continuous_trait_posterior_predictive,
-    build_bayesian_run_burnin_policy,
     build_bayesian_run_manifest,
+    build_bayesian_run_burnin_policy,
     build_fixed_topology_dna_run_manifest,
     infer_bayesian_model_id,
     list_metropolis_hastings_retained_sample_ids,
@@ -2196,6 +2208,45 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.summarize_posterior_model_averaged_estimates
         is summarize_posterior_model_averaged_estimates
+    )
+    assert (
+        bayesian_api.METROPOLIS_HASTINGS_BURNIN_POLICY_NAMES
+        == METROPOLIS_HASTINGS_BURNIN_POLICY_NAMES
+    )
+    assert bayesian_api.BurninSampleRow is BurninSampleRow
+    assert (
+        bayesian_api.IndependentMetropolisHastingsBurninReport
+        is IndependentMetropolisHastingsBurninReport
+    )
+    assert (
+        bayesian_api.IndependentMetropolisHastingsChainBurninReport
+        is IndependentMetropolisHastingsChainBurninReport
+    )
+    assert (
+        bayesian_api.MetropolisHastingsBurninDiagnosticCandidate
+        is MetropolisHastingsBurninDiagnosticCandidate
+    )
+    assert (
+        bayesian_api.MetropolisHastingsBurninDiagnosticReport
+        is MetropolisHastingsBurninDiagnosticReport
+    )
+    assert bayesian_api.MetropolisHastingsBurninPolicy is MetropolisHastingsBurninPolicy
+    assert bayesian_api.MetropolisHastingsBurninReport is MetropolisHastingsBurninReport
+    assert (
+        bayesian_api.apply_independent_metropolis_hastings_burnin_policy
+        is apply_independent_metropolis_hastings_burnin_policy
+    )
+    assert (
+        bayesian_api.apply_metropolis_hastings_burnin_policy
+        is apply_metropolis_hastings_burnin_policy
+    )
+    assert (
+        bayesian_api.build_metropolis_hastings_burnin_policy
+        is build_metropolis_hastings_burnin_policy
+    )
+    assert (
+        bayesian_api.diagnose_metropolis_hastings_burnin
+        is diagnose_metropolis_hastings_burnin
     )
     assert bayesian_api.BAYESIAN_BURNIN_POLICY_NAMES == BAYESIAN_BURNIN_POLICY_NAMES
     assert (
