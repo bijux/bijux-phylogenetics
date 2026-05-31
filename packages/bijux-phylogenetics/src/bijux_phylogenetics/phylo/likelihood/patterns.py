@@ -86,6 +86,34 @@ def iter_uncompressed_alignment_sites(
     yield from alignment_site_columns(records)
 
 
+def iter_pattern_sites_in_alignment_order(
+    compressed_patterns: CompressedAlignmentSitePatterns,
+) -> Iterable[tuple[int, AlignmentSitePattern]]:
+    """Yield each compressed site back in original alignment order exactly once."""
+    indexed_sites: list[tuple[int, AlignmentSitePattern]] = []
+    for pattern in compressed_patterns.patterns:
+        if pattern.weight != len(pattern.site_positions):
+            raise InvalidAlignmentError(
+                "site-pattern compression requires each pattern weight to match its site-position count"
+            )
+        for site_position in pattern.site_positions:
+            indexed_sites.append((site_position, pattern))
+    indexed_sites.sort(key=lambda item: item[0])
+    for expected_position, (site_position, pattern) in enumerate(
+        indexed_sites,
+        start=1,
+    ):
+        if site_position != expected_position:
+            raise InvalidAlignmentError(
+                "site-pattern compression requires site positions to cover the alignment exactly once"
+            )
+        yield site_position, pattern
+    if len(indexed_sites) != compressed_patterns.alignment_length:
+        raise InvalidAlignmentError(
+            "site-pattern compression requires site positions to match the declared alignment length"
+        )
+
+
 def _validated_alignment_length(records: list[AlignmentRecord]) -> int:
     if not records:
         raise InvalidAlignmentError(

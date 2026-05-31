@@ -18,7 +18,11 @@ from .models import (
     SiteLogLikelihoodRow,
     StrictClockLikelihoodReport,
 )
-from .patterns import CompressedAlignmentSitePatterns, iter_uncompressed_alignment_sites
+from .patterns import (
+    CompressedAlignmentSitePatterns,
+    iter_pattern_sites_in_alignment_order,
+    iter_uncompressed_alignment_sites,
+)
 
 SequenceSiteLogLikelihoodReport = (
     FixedTopologySiteLogLikelihoodReport
@@ -64,23 +68,28 @@ def expanded_site_log_likelihood_rows_from_patterns(
     site_log_likelihood: Callable[[tuple[str, ...]], float],
 ) -> tuple[list[SiteLogLikelihoodRow], float]:
     """Expand compressed-pattern log likelihoods back to one stable row per site."""
-    rows: list[SiteLogLikelihoodRow] = []
+    log_likelihood_by_pattern_id: dict[str, float] = {}
     total = 0.0
     for pattern in compressed_patterns.patterns:
         log_likelihood = _validated_site_log_likelihood(
             site_log_likelihood(pattern.states)
         )
+        log_likelihood_by_pattern_id[pattern.pattern_id] = log_likelihood
         total += pattern.weight * log_likelihood
-        for site_position in pattern.site_positions:
-            rows.append(
-                SiteLogLikelihoodRow(
-                    pattern_id=pattern.pattern_id,
-                    pattern_weight=pattern.weight,
-                    site_position=site_position,
-                    site_states=pattern.states,
-                    log_likelihood=log_likelihood,
-                )
+
+    rows: list[SiteLogLikelihoodRow] = []
+    for site_position, pattern in iter_pattern_sites_in_alignment_order(
+        compressed_patterns
+    ):
+        rows.append(
+            SiteLogLikelihoodRow(
+                pattern_id=pattern.pattern_id,
+                pattern_weight=pattern.weight,
+                site_position=site_position,
+                site_states=pattern.states,
+                log_likelihood=log_likelihood_by_pattern_id[pattern.pattern_id],
             )
+        )
     return rows, total
 
 
