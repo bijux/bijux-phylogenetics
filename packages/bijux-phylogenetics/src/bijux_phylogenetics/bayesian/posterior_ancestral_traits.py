@@ -387,6 +387,25 @@ def summarize_ornstein_uhlenbeck_continuous_trait_posterior_ancestral_states(
     )
 
 
+def summarize_continuous_trait_posterior_ancestral_states(
+    run_report: BrownianContinuousTraitRunReport
+    | OrnsteinUhlenbeckContinuousTraitRunReport,
+) -> PosteriorContinuousTraitReport:
+    """Summarize posterior ancestral continuous traits from one supported chain."""
+    if isinstance(run_report, BrownianContinuousTraitRunReport):
+        return summarize_brownian_continuous_trait_posterior_ancestral_states(
+            run_report
+        )
+    if isinstance(run_report, OrnsteinUhlenbeckContinuousTraitRunReport):
+        return summarize_ornstein_uhlenbeck_continuous_trait_posterior_ancestral_states(
+            run_report
+        )
+    raise PhylogeneticsError(
+        "posterior ancestral continuous-trait summary requires one BrownianContinuousTraitRunReport or OrnsteinUhlenbeckContinuousTraitRunReport",
+        code="posterior_ancestral_continuous_trait_run_report_type_invalid",
+    )
+
+
 def _summarize_continuous_trait_posterior_states(
     *,
     sampled_states,
