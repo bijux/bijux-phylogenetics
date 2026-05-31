@@ -225,6 +225,35 @@ def optimize_selected_nucleotide_branch_lengths(
     max_coordinate_passes: int = 12,
 ) -> BranchReoptimizationResult:
     """Reoptimize one fixed-topology nucleotide tree under one resolved likelihood surface."""
+    working_tree = tree.copy().refresh()
+    optimized_branch_ids = [
+        child.node_id or ""
+        for _parent, child in working_tree.iter_edges()
+    ]
+    return optimize_selected_nucleotide_branch_length_subset(
+        working_tree,
+        compressed_patterns,
+        specification=specification,
+        optimized_branch_ids=optimized_branch_ids,
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
+        improvement_tolerance=improvement_tolerance,
+        max_coordinate_passes=max_coordinate_passes,
+    )
+
+
+def optimize_selected_nucleotide_branch_length_subset(
+    tree: PhyloTree,
+    compressed_patterns: CompressedAlignmentSitePatterns,
+    *,
+    specification: SelectedNucleotideLikelihoodSpecification,
+    optimized_branch_ids: list[str],
+    lower_branch_length_bound: float = 0.0,
+    upper_branch_length_bound: float = 5.0,
+    improvement_tolerance: float = 1e-9,
+    max_coordinate_passes: int = 12,
+) -> BranchReoptimizationResult:
+    """Reoptimize one declared subset of branch lengths under one nucleotide surface."""
     if lower_branch_length_bound < 0.0:
         raise InvalidBranchLengthError(
             "nucleotide likelihood branch-length lower bound must be nonnegative"
@@ -243,29 +272,34 @@ def optimize_selected_nucleotide_branch_lengths(
         compressed_patterns,
         model_name=specification.model_name,
     )
-    edge_nodes = [child for _parent, child in working_tree.iter_edges()]
-    initial_values: dict[str, float] = {}
-    bounds_by_name: dict[str, tuple[float, float]] = {}
-    for node in edge_nodes:
-        if node.node_id is None:
-            raise ValueError("tree node is missing a stable node_id")
-        branch_length = float(node.branch_length or 0.0)
-        if not (
-            lower_branch_length_bound <= branch_length <= upper_branch_length_bound
-        ):
+    initial_branch_lengths = _collect_branch_lengths_by_id(working_tree)
+    target_branch_ids = _validate_target_branch_ids(
+        initial_branch_lengths,
+        optimized_branch_ids=optimized_branch_ids,
+    )
+    for branch_length in initial_branch_lengths.values():
+        if not (lower_branch_length_bound <= branch_length <= upper_branch_length_bound):
             raise InvalidBranchLengthError(
                 "every starting branch length must lie within the declared optimization bounds"
             )
-        initial_values[node.node_id] = branch_length
-        bounds_by_name[node.node_id] = (
+    initial_values = {
+        branch_id: initial_branch_lengths[branch_id]
+        for branch_id in target_branch_ids
+    }
+    bounds_by_name = {
+        branch_id: (
             lower_branch_length_bound,
             upper_branch_length_bound,
         )
+        for branch_id in target_branch_ids
+    }
 
     def evaluate_candidate(
         branch_lengths_by_id: dict[str, float],
     ) -> tuple[float, float]:
-        assign_branch_lengths(working_tree, branch_lengths_by_id)
+        candidate_branch_lengths = dict(initial_branch_lengths)
+        candidate_branch_lengths.update(branch_lengths_by_id)
+        assign_branch_lengths(working_tree, candidate_branch_lengths)
         log_likelihood = evaluate_selected_nucleotide_log_likelihood_from_patterns(
             working_tree,
             compressed_patterns,
@@ -280,7 +314,9 @@ def optimize_selected_nucleotide_branch_lengths(
         improvement_tolerance=improvement_tolerance,
         max_coordinate_passes=max_coordinate_passes,
     )
-    assign_branch_lengths(working_tree, search_result.parameter_values)
+    optimized_branch_lengths = dict(initial_branch_lengths)
+    optimized_branch_lengths.update(search_result.parameter_values)
+    assign_branch_lengths(working_tree, optimized_branch_lengths)
     return BranchReoptimizationResult(
         optimized_tree=working_tree.refresh(),
         log_likelihood=float(search_result.objective_value),
@@ -336,3 +372,22 @@ def _collect_branch_lengths_by_id(tree: PhyloTree) -> dict[str, float]:
             raise ValueError("tree node is missing a stable node_id")
         branch_lengths[child.node_id] = float(child.branch_length or 0.0)
     return branch_lengths
+
+
+def _validate_target_branch_ids(
+    available_branch_lengths: dict[str, float],
+    *,
+    optimized_branch_ids: list[str],
+) -> list[str]:
+    if not optimized_branch_ids:
+        raise ValueError("optimized_branch_ids must contain at least one branch")
+    seen_branch_ids: set[str] = set()
+    validated_branch_ids: list[str] = []
+    for branch_id in optimized_branch_ids:
+        if branch_id not in available_branch_lengths:
+            raise ValueError(f"tree does not contain branch_id '{branch_id}'")
+        if branch_id in seen_branch_ids:
+            raise ValueError(f"optimized_branch_ids contains duplicate branch_id '{branch_id}'")
+        seen_branch_ids.add(branch_id)
+        validated_branch_ids.append(branch_id)
+    return validated_branch_ids
