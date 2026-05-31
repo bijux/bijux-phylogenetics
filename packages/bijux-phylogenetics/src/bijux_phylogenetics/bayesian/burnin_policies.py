@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from bijux_phylogenetics.bayesian.metropolis_hastings import MetropolisHastingsRunReport
+from bijux_phylogenetics.bayesian.state import BayesianPhylogeneticState
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 METROPOLIS_HASTINGS_BURNIN_POLICY_NAMES = (
@@ -21,6 +23,29 @@ class MetropolisHastingsBurninPolicy:
     discarded_fraction: float | None = None
     mean_shift_threshold: float | None = None
     minimum_retained_sample_count: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class BurninSampleRow:
+    """One sampled state row retained or discarded by one burn-in policy."""
+
+    sample_index: int
+    iteration_index: int
+    posterior_log_score: float
+    state: BayesianPhylogeneticState
+
+
+@dataclass(frozen=True, slots=True)
+class MetropolisHastingsBurninReport:
+    """One applied burn-in policy over one native Metropolis-Hastings trace."""
+
+    policy: MetropolisHastingsBurninPolicy
+    sample_every: int
+    total_sample_count: int
+    discarded_sample_count: int
+    retained_sample_count: int
+    discarded_rows: list[BurninSampleRow]
+    retained_rows: list[BurninSampleRow]
 
 
 def build_metropolis_hastings_burnin_policy(
@@ -123,6 +148,53 @@ def build_metropolis_hastings_burnin_policy(
     )
 
 
+def apply_metropolis_hastings_burnin_policy(
+    *,
+    chain_report: MetropolisHastingsRunReport,
+    policy: MetropolisHastingsBurninPolicy,
+) -> MetropolisHastingsBurninReport:
+    """Apply one validated burn-in policy over one native Metropolis-Hastings run."""
+    if not isinstance(chain_report, MetropolisHastingsRunReport):
+        raise PhylogeneticsError(
+            "metropolis-hastings burn-in policy application requires one MetropolisHastingsRunReport",
+            code="metropolis_hastings_burnin_chain_report_type_invalid",
+        )
+    if not isinstance(policy, MetropolisHastingsBurninPolicy):
+        raise PhylogeneticsError(
+            "metropolis-hastings burn-in policy application requires one MetropolisHastingsBurninPolicy",
+            code="metropolis_hastings_burnin_policy_type_invalid",
+        )
+    sample_rows = _build_sample_rows(chain_report)
+    if policy.policy_name == "none":
+        discarded_sample_count = 0
+    elif policy.policy_name == "fixed-count":
+        discarded_sample_count = policy.discarded_sample_count or 0
+    elif policy.policy_name == "fixed-fraction":
+        discarded_sample_count = int(
+            len(sample_rows) * (policy.discarded_fraction or 0.0)
+        )
+    else:
+        raise PhylogeneticsError(
+            "diagnostic-suggested burn-in policy requires diagnostic suggestion support",
+            code="metropolis_hastings_burnin_policy_diagnostic_support_missing",
+        )
+    _validate_retained_sample_count(
+        total_sample_count=len(sample_rows),
+        discarded_sample_count=discarded_sample_count,
+    )
+    discarded_rows = sample_rows[:discarded_sample_count]
+    retained_rows = sample_rows[discarded_sample_count:]
+    return MetropolisHastingsBurninReport(
+        policy=policy,
+        sample_every=chain_report.sample_every,
+        total_sample_count=len(sample_rows),
+        discarded_sample_count=discarded_sample_count,
+        retained_sample_count=len(retained_rows),
+        discarded_rows=discarded_rows,
+        retained_rows=retained_rows,
+    )
+
+
 def _reject_unexpected_fixed_count_fields(
     *,
     discarded_sample_count: int | None,
@@ -165,6 +237,40 @@ def _validate_policy_name(value: str) -> str:
             },
         )
     return validated_value
+
+
+def _build_sample_rows(chain_report: MetropolisHastingsRunReport) -> list[BurninSampleRow]:
+    sample_rows = [
+        BurninSampleRow(
+            sample_index=sample_index,
+            iteration_index=sample_index * chain_report.sample_every,
+            posterior_log_score=sampled_state.posterior_log_score,
+            state=sampled_state,
+        )
+        for sample_index, sampled_state in enumerate(chain_report.sampled_states)
+    ]
+    if not sample_rows:
+        raise PhylogeneticsError(
+            "metropolis-hastings burn-in policy application requires at least one sampled state",
+            code="metropolis_hastings_burnin_sample_rows_empty",
+        )
+    return sample_rows
+
+
+def _validate_retained_sample_count(
+    *,
+    total_sample_count: int,
+    discarded_sample_count: int,
+) -> None:
+    if discarded_sample_count >= total_sample_count:
+        raise PhylogeneticsError(
+            "metropolis-hastings burn-in policy must retain at least one sampled state",
+            code="metropolis_hastings_burnin_retained_sample_count_empty",
+            details={
+                "total_sample_count": total_sample_count,
+                "discarded_sample_count": discarded_sample_count,
+            },
+        )
 
 
 def _validate_nonblank_string(value: str, *, field_name: str) -> str:
