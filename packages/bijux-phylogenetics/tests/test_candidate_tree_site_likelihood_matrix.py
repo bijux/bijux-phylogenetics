@@ -13,6 +13,7 @@ from bijux_phylogenetics.phylo.likelihood import (
     resolve_candidate_tree_records,
     write_candidate_tree_site_likelihood_matrix_artifacts,
 )
+from bijux_phylogenetics.phylo.topology import rooted_topology_fingerprint
 from bijux_phylogenetics.runtime.errors import TreeParseError
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -63,11 +64,20 @@ def test_candidate_tree_site_likelihood_matrix_reports_tree_by_site_rows_and_tot
     assert report.pattern_count == 6
     assert report.compression_used is True
     assert report.expansion_policy == "candidate-tree-expanded-site-rows"
+    assert report.comparison_caution_label == (
+        "all candidate trees are rescored under one shared alignment/model surface; prior per-tree fitted-model differences are not preserved in this comparison"
+    )
     assert report.parameter_values == {}
     assert [row.candidate_tree_id for row in report.candidate_trees] == [
         "candidate-tree-1",
         "candidate-tree-2",
     ]
+    assert report.candidate_trees[0].topology_fingerprint == rooted_topology_fingerprint(
+        loads_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);")
+    )
+    assert report.candidate_trees[1].topology_fingerprint == rooted_topology_fingerprint(
+        loads_newick("(((A:0.1,B:0.1):0.1,C:0.1):0.1,D:0.1);")
+    )
     assert len(report.matrix_rows) == 20
 
     totals_by_tree_id: dict[str, float] = {}
@@ -84,6 +94,21 @@ def test_candidate_tree_site_likelihood_matrix_reports_tree_by_site_rows_and_tot
             rel_tol=0.0,
             abs_tol=1e-12,
         )
+
+    best_log_likelihood = max(row.log_likelihood for row in report.candidate_trees)
+    for summary in report.candidate_trees:
+        assert math.isclose(
+            summary.observed_delta_log_likelihood,
+            best_log_likelihood - summary.log_likelihood,
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        )
+    assert math.isclose(
+        min(row.observed_delta_log_likelihood for row in report.candidate_trees),
+        0.0,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
 
     first_tree_total = evaluate_jc69_tree_likelihood(
         loads_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);"),
@@ -160,6 +185,9 @@ def test_write_candidate_tree_site_likelihood_matrix_artifacts_materializes_gove
         "matrix_path",
         "run_json_path",
     }
+    assert outputs["summary_path"].read_text(encoding="utf-8").startswith(
+        "candidate_tree_id\tcandidate_tree_label\ttopology_fingerprint\ttree_newick\tlog_likelihood\tobserved_delta_log_likelihood\n"
+    )
     assert outputs["matrix_path"].read_text(encoding="utf-8").startswith(
         "model_name\tcandidate_tree_id\tcandidate_tree_label\ttaxon_order\tpattern_id\tpattern_weight\tsite_position\tsite_states\tlog_likelihood\n"
     )
@@ -167,5 +195,19 @@ def test_write_candidate_tree_site_likelihood_matrix_artifacts_materializes_gove
     assert payload["model_name"] == "JC69"
     assert payload["tree_count"] == 2
     assert payload["site_count"] == 10
+    assert payload["comparison_caution_label"] == (
+        "all candidate trees are rescored under one shared alignment/model surface; prior per-tree fitted-model differences are not preserved in this comparison"
+    )
     assert len(payload["candidate_trees"]) == 2
+    assert {
+        key
+        for key in payload["candidate_trees"][0]
+    } == {
+        "candidate_tree_id",
+        "candidate_tree_label",
+        "topology_fingerprint",
+        "tree_newick",
+        "log_likelihood",
+        "observed_delta_log_likelihood",
+    }
     assert len(payload["matrix_rows"]) == 20
