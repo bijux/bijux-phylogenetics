@@ -13,6 +13,7 @@ from bijux_phylogenetics.trees import (
     compute_clade_compatibility_graph,
     compute_clade_frequency_table,
     compute_consensus_tree,
+    compute_credible_clade_set,
     compute_gene_tree_quartet_concordance_factors,
     compute_majority_rule_extended_consensus,
     compute_maximum_clade_credibility_tree,
@@ -28,6 +29,7 @@ from bijux_phylogenetics.trees import (
     write_clade_frequency_table,
     write_clade_table,
     write_consensus_tree,
+    write_credible_clade_set_artifacts,
     write_gene_tree_quartet_concordance_table,
     write_majority_rule_extended_consensus_artifacts,
     write_maximum_clade_credibility_artifacts,
@@ -115,6 +117,23 @@ def add_tree_set_summary_commands(tree_set_subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the maximum-clade-credibility report as JSON."
     )
     _add_manifest_argument(tree_set_maximum_clade_credibility)
+
+    tree_set_credible_clade_set = tree_set_subparsers.add_parser(
+        "credible-clade-set",
+        help="Select clades by descending posterior frequency until a credible-threshold cutoff is reached, and emit included plus excluded ledgers.",
+    )
+    tree_set_credible_clade_set.add_argument("tree_set", type=Path)
+    tree_set_credible_clade_set.add_argument("--out-dir", required=True, type=Path)
+    tree_set_credible_clade_set.add_argument(
+        "--credible-threshold",
+        type=float,
+        default=0.95,
+        help="Posterior clade-frequency mass that the included clade set must reach or exceed.",
+    )
+    tree_set_credible_clade_set.add_argument(
+        "--json", action="store_true", help="Emit the credible-clade-set report as JSON."
+    )
+    _add_manifest_argument(tree_set_credible_clade_set)
 
     tree_set_support_map = tree_set_subparsers.add_parser(
         "support-map",
@@ -446,6 +465,44 @@ def run_tree_set_summary_command(args: Any) -> int | None:
                     "rooted_topology_count": report.rooted_topology_count,
                     "selected_tree_index": report.selected_tree_index,
                     "clade_credibility_score": report.clade_credibility_score,
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.tree_set_command == "credible-clade-set":
+        report = compute_credible_clade_set(
+            args.tree_set,
+            credible_threshold=args.credible_threshold,
+        )
+        output_paths = write_credible_clade_set_artifacts(args.out_dir, report)
+        outputs = _finalize_outputs(
+            args,
+            command="tree-set",
+            inputs=[args.tree_set],
+            outputs=list(output_paths.values()),
+        )
+        _print_result(
+            build_command_result(
+                command="tree-set",
+                inputs=[args.tree_set],
+                outputs=outputs,
+                metrics={
+                    "tree_count": report.tree_count,
+                    "runtime_seconds": report.processing.runtime_seconds,
+                    "peak_memory_bytes": report.processing.peak_memory_bytes,
+                    "skipped_malformed_tree_count": (
+                        report.processing.skipped_malformed_tree_count
+                    ),
+                    "shared_taxon_count": len(report.shared_taxa),
+                    "credible_threshold": report.credible_threshold,
+                    "included_clade_count": report.included_clade_count,
+                    "excluded_clade_count": report.excluded_clade_count,
+                    "included_cumulative_frequency": (
+                        report.included_cumulative_frequency
+                    ),
                 },
                 data=report,
             ),
