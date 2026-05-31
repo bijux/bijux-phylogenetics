@@ -13,6 +13,7 @@ def _workflows_by_name(report):
     return {workflow.workflow: workflow for workflow in report.workflows}
 
 
+@pytest.mark.slow
 def test_benchmark_large_alignment_scaling_reports_all_review_workflows() -> None:
     report = benchmark_large_alignment_scaling(
         replicates=1,
@@ -53,6 +54,7 @@ def test_benchmark_large_alignment_scaling_rejects_invalid_size_classes() -> Non
         )
 
 
+@pytest.mark.slow
 def test_cli_benchmark_large_alignment_scaling_reports_workflow_and_size_metrics(
     capsys: pytest.CaptureFixture[str],
 ) -> None:

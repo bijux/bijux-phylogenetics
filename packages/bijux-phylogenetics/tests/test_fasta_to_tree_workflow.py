@@ -651,6 +651,7 @@ def test_run_fasta_to_tree_workflow_reruns_only_support_stage_when_replicates_ch
     )
 
 
+@pytest.mark.slow
 def test_run_fasta_to_tree_workflow_input_change_invalidates_downstream_stages(
     tmp_path: Path,
 ) -> None:

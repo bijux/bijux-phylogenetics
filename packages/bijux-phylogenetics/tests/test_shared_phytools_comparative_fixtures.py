@@ -344,6 +344,7 @@ def test_shared_phytools_comparative_fixture_catalog_supports_fitmk_er_cases() -
     assert len(multistate_report.transition_rate_rows) == 6
 
 
+@pytest.mark.slow
 def test_shared_phytools_comparative_fixture_catalog_supports_fitmk_sym_cases() -> None:
     multistate_fixture = get_shared_phytools_comparative_fixture(
         "phytools_discrete_multistate_twenty_four_taxa"

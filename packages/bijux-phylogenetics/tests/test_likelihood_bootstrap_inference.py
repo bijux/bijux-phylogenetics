@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.io.newick import load_newick_tree_set
 from bijux_phylogenetics.phylo.likelihood import (
     bootstrap_nucleotide_likelihood_tree_inference_from_alignment,
@@ -10,6 +12,7 @@ from bijux_phylogenetics.phylo.likelihood import (
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
+pytestmark = pytest.mark.slow
 
 
 def fixture(group: str, name: str) -> Path:

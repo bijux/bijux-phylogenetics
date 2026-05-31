@@ -1103,6 +1103,7 @@ def test_summarize_discrete_stochastic_map_density_keeps_multistate_branch_proba
     )
 
 
+@pytest.mark.slow
 def test_simulate_discrete_stochastic_maps_from_fit_report_matches_path_surface() -> (
     None
 ):

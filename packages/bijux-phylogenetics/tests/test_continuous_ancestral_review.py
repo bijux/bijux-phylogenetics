@@ -130,6 +130,7 @@ def test_summarize_continuous_ancestral_report_tracks_anc_ml_optimizer() -> None
     assert summary.optimizer_convergence_status == "profile-solved"
 
 
+@pytest.mark.slow
 def test_reconstruct_continuous_ancestral_states_matches_primate_reference_fixture() -> (
     None
 ):

@@ -129,6 +129,7 @@ def test_build_large_tree_scaling_benchmark_dashboard_tracks_goal_221() -> None:
     )
 
 
+@pytest.mark.slow
 def test_build_large_alignment_scaling_benchmark_dashboard_tracks_goal_222() -> None:
     report = build_large_alignment_scaling_benchmark_dashboard(
         replicates=1,

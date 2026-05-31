@@ -16,7 +16,7 @@ from ..support.external_engines import (
     require_bayesian_validation_matrix_executables,
 )
 
-pytestmark = [pytest.mark.real_local, pytest.mark.engine_real]
+pytestmark = [pytest.mark.real_local, pytest.mark.engine_real, pytest.mark.slow]
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 

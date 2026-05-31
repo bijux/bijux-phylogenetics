@@ -166,6 +166,7 @@ def test_python_workflow_api_runs_alignment_trimming_inference_and_support_workf
     assert support_result.bootstrap_support_summary is not None
 
 
+@pytest.mark.slow
 def test_python_workflow_api_runs_sequence_to_tree_and_configured_workflows(
     tmp_path: Path,
 ) -> None:
