@@ -23,6 +23,7 @@ from bijux_phylogenetics.trees import (
     extract_tree_set_clades,
     load_tree_set,
     summarize_posterior_branch_lengths,
+    summarize_posterior_node_ages,
     write_candidate_tree_quartet_score_table,
     write_clade_compatibility_edge_table,
     write_clade_compatibility_graph_dot,
@@ -35,6 +36,7 @@ from bijux_phylogenetics.trees import (
     write_majority_rule_extended_consensus_artifacts,
     write_maximum_clade_credibility_artifacts,
     write_posterior_branch_length_summary_table,
+    write_posterior_node_age_summary_table,
     write_quartet_puzzling_artifacts,
     write_reference_tree_clade_support_table,
     write_reference_tree_quartet_support_table,
@@ -153,6 +155,23 @@ def add_tree_set_summary_commands(tree_set_subparsers: Any) -> None:
         help="Emit the posterior branch-length summary report as JSON.",
     )
     _add_manifest_argument(tree_set_posterior_branch_lengths)
+
+    tree_set_posterior_node_ages = tree_set_subparsers.add_parser(
+        "posterior-node-ages",
+        help="Summarize posterior node ages by rooted clade identity across one dated tree set.",
+    )
+    tree_set_posterior_node_ages.add_argument("tree_set", type=Path)
+    tree_set_posterior_node_ages.add_argument(
+        "--out",
+        type=Path,
+        help="Write the posterior node-age summary table as TSV.",
+    )
+    tree_set_posterior_node_ages.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the posterior node-age summary report as JSON.",
+    )
+    _add_manifest_argument(tree_set_posterior_node_ages)
 
     tree_set_support_map = tree_set_subparsers.add_parser(
         "support-map",
@@ -555,6 +574,39 @@ def run_tree_set_summary_command(args: Any) -> int | None:
                     "shared_taxon_count": len(report.shared_taxa),
                     "hpd_mass": report.hpd_mass,
                     "branch_summary_count": len(report.rows),
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.tree_set_command == "posterior-node-ages":
+        report = summarize_posterior_node_ages(args.tree_set)
+        outputs: list[Path] = []
+        if args.out is not None:
+            outputs.append(write_posterior_node_age_summary_table(args.out, report))
+        outputs = _finalize_outputs(
+            args,
+            command="tree-set",
+            inputs=[args.tree_set],
+            outputs=outputs,
+        )
+        _print_result(
+            build_command_result(
+                command="tree-set",
+                inputs=[args.tree_set],
+                outputs=outputs,
+                metrics={
+                    "tree_count": report.tree_count,
+                    "runtime_seconds": report.processing.runtime_seconds,
+                    "peak_memory_bytes": report.processing.peak_memory_bytes,
+                    "skipped_malformed_tree_count": (
+                        report.processing.skipped_malformed_tree_count
+                    ),
+                    "shared_taxon_count": len(report.shared_taxa),
+                    "hpd_mass": report.hpd_mass,
+                    "node_age_summary_count": len(report.rows),
                 },
                 data=report,
             ),
