@@ -205,6 +205,34 @@ class PosteriorAgreementSubtreeReport:
 
 
 @dataclass(frozen=True, slots=True)
+class PosteriorCladeCorrelationRow:
+    left_clade: str
+    right_clade: str
+    compatibility_relation: str
+    compatibility_reason: str
+    left_tree_count: int
+    right_tree_count: int
+    left_frequency: float
+    right_frequency: float
+    cooccurrence_tree_count: int
+    cooccurrence_frequency: float
+    expected_cooccurrence_frequency: float
+    binary_correlation: float | None
+
+
+@dataclass(slots=True)
+class PosteriorCladeCorrelationReport:
+    path: Path
+    tree_count: int
+    processing: TreeSetProcessingSummary
+    shared_taxa: list[str]
+    clade_count: int
+    pair_count: int
+    clade_order: list[str]
+    rows: list[PosteriorCladeCorrelationRow]
+
+
+@dataclass(frozen=True, slots=True)
 class CladeCompatibilityNodeRow:
     clade: str
     tree_count: int
