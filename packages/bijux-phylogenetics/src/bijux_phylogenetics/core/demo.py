@@ -4,13 +4,6 @@ from dataclasses import dataclass
 from pathlib import Path
 import shutil
 
-from bijux_phylogenetics.compare.presentation import build_tree_comparison_report
-from bijux_phylogenetics.reports.service import (
-    render_dataset_report,
-    render_phylo_inputs_report,
-    render_tree_report,
-)
-
 
 @dataclass(slots=True)
 class DemoRunResult:
@@ -71,6 +64,13 @@ def _write_capability_summary(path: Path, result: DemoRunResult) -> Path:
 
 def run_capability_demo(output_root: Path) -> DemoRunResult:
     """Generate a public capability demo from the repository sample inputs."""
+    from bijux_phylogenetics.compare.presentation import build_tree_comparison_report
+    from bijux_phylogenetics.reports.service import (
+        render_dataset_report,
+        render_phylo_inputs_report,
+        render_tree_report,
+    )
+
     if output_root.exists():
         shutil.rmtree(output_root)
     input_root = output_root / "inputs"
