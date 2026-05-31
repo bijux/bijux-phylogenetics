@@ -12,7 +12,7 @@ from .contracts import (
     TreeSetMaximumCladeCredibilityCandidateRow,
     TreeSetMaximumCladeCredibilityReport,
 )
-from .inventory import _analyze_tree_set, _require_exact_taxa
+from .inventory import _TreeSetAnalysis, _analyze_tree_set, _require_exact_taxa
 
 
 def _score_candidate_tree(
@@ -31,11 +31,9 @@ def _score_candidate_tree(
     )
 
 
-def compute_maximum_clade_credibility_tree(
-    path: Path,
+def _compute_maximum_clade_credibility_from_analysis(
+    analysis: _TreeSetAnalysis,
 ) -> tuple[PhyloTree, TreeSetMaximumCladeCredibilityReport]:
-    """Select the sampled tree with the highest summed posterior clade credibility."""
-    analysis = _analyze_tree_set(path)
     exact_taxa = _require_exact_taxa(analysis)
     clade_counts = analysis.clade_counts or {}
     tree_count = len(analysis.trees)
@@ -102,6 +100,13 @@ def compute_maximum_clade_credibility_tree(
         rows=rows,
     )
     return selected_tree, report
+
+
+def compute_maximum_clade_credibility_tree(
+    path: Path,
+) -> tuple[PhyloTree, TreeSetMaximumCladeCredibilityReport]:
+    """Select the sampled tree with the highest summed posterior clade credibility."""
+    return _compute_maximum_clade_credibility_from_analysis(_analyze_tree_set(path))
 
 
 def write_maximum_clade_credibility_score_table(
