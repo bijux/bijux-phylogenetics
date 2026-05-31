@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 import bijux_phylogenetics.datasets.macroevolution_recovery_suite as macroevolution_recovery_suite_api
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets.macroevolution_recovery_suite import (
@@ -92,6 +94,7 @@ def test_public_runtime_exports_include_macroevolution_recovery_suite() -> None:
     )
 
 
+@pytest.mark.slow
 def test_write_macroevolution_recovery_suite_workflow_bundle_matches_packaged_expected_outputs(
     tmp_path: Path,
 ) -> None:
