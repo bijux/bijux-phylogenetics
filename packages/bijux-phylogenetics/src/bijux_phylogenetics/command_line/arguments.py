@@ -4,10 +4,7 @@ import argparse
 from pathlib import Path
 from typing import Any
 
-from bijux_phylogenetics.biogeography import TimeBinDefinition
-from bijux_phylogenetics.render.tree_svg import AnnotationStrip
 from bijux_phylogenetics.runtime.errors import MetadataJoinError
-from bijux_phylogenetics.simulation import DiscreteHistoryRateRow
 
 
 def _split_csv_values(raw: str | None) -> list[str]:
@@ -57,6 +54,8 @@ def _parse_transition_pairs(raw: str | None) -> list[tuple[str, str]]:
 
 
 def _parse_rate_rows(raw_rows: list[str]) -> list[DiscreteHistoryRateRow]:
+    from bijux_phylogenetics.simulation import DiscreteHistoryRateRow
+
     rows: list[DiscreteHistoryRateRow] = []
     for raw in raw_rows:
         if "=" not in raw or "->" not in raw:
@@ -115,6 +114,8 @@ def _parse_labelled_run(raw: str) -> tuple[str, Path]:
 
 
 def _parse_time_bin_definition(raw: str) -> TimeBinDefinition:
+    from bijux_phylogenetics.biogeography import TimeBinDefinition
+
     parts = [part.strip() for part in raw.split(":", 2)]
     if len(parts) != 3:
         raise ValueError(f"time bin must be in LABEL:START:END form, got '{raw}'")
@@ -150,6 +151,8 @@ def _validate_ancestral_discrete_model_arguments(
 
 
 def _build_annotation_strips(table, columns: list[str]) -> list[AnnotationStrip]:
+    from bijux_phylogenetics.render.tree_svg import AnnotationStrip
+
     missing_columns = [column for column in columns if column not in table.columns]
     if missing_columns:
         raise MetadataJoinError(
