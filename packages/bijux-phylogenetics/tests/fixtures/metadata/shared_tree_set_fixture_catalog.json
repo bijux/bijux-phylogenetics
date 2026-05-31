@@ -71,6 +71,16 @@
       "notes": "Four rooted ultrametric five-taxon trees where repeated clades move across different dated topologies so posterior node-age summaries must match ages by descendant-tip set rather than node index."
     },
     {
+      "fixture_id": "posterior_agreement_subtree_tree_set",
+      "relative_path": "trees/posterior_agreement_subtree_tree_set.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 3,
+      "shared_taxa": ["A", "B", "C", "D", "E"],
+      "feature_tags": ["multiple-trees", "branch-lengths", "shared-taxon-set", "posterior-like", "agreement-subtree"],
+      "notes": "Three rooted five-taxon posterior-style trees where removing one unstable taxon yields one exact shared rooted topology across the full tree set."
+    },
+    {
       "fixture_id": "prop_clades_duplicate_conflict_tree_set",
       "relative_path": "trees/example_tree_set_left.nwk",
       "source_format": "newick",
