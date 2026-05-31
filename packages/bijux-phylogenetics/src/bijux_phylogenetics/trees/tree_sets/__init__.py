@@ -44,6 +44,8 @@ from .contracts import (
     MajorityRuleExtendedRejectedCladeRow,
     PosteriorAgreementSubtreeCandidateRow,
     PosteriorAgreementSubtreeReport,
+    PosteriorCladeCorrelationReport,
+    PosteriorCladeCorrelationRow,
     PosteriorBranchLengthSummaryReport,
     PosteriorBranchLengthSummaryRow,
     PosteriorNodeAgeSummaryReport,
@@ -93,6 +95,12 @@ from .posterior_agreement_subtree import (
     write_posterior_agreement_subtree_search_table,
     write_posterior_agreement_subtree_summary_table,
 )
+from .posterior_clade_correlation_matrix import (
+    compute_posterior_clade_correlation_matrix,
+    write_posterior_clade_correlation_artifacts,
+    write_posterior_clade_correlation_matrix_table,
+    write_posterior_clade_correlation_pair_table,
+)
 from .posterior_node_ages import (
     summarize_posterior_node_ages,
     write_posterior_node_age_summary_table,
@@ -136,6 +144,8 @@ __all__ = [
     "MajorityRuleExtendedRejectedCladeRow",
     "PosteriorAgreementSubtreeCandidateRow",
     "PosteriorAgreementSubtreeReport",
+    "PosteriorCladeCorrelationReport",
+    "PosteriorCladeCorrelationRow",
     "PosteriorBranchLengthSummaryReport",
     "PosteriorBranchLengthSummaryRow",
     "PosteriorNodeAgeSummaryReport",
@@ -170,6 +180,7 @@ __all__ = [
     "compute_gene_tree_quartet_concordance_factors",
     "compute_majority_rule_extended_consensus",
     "compute_maximum_clade_credibility_tree",
+    "compute_posterior_clade_correlation_matrix",
     "compute_consensus_tree_with_threshold",
     "compute_reference_tree_clade_support",
     "compute_reference_tree_quartet_support",
@@ -200,6 +211,9 @@ __all__ = [
     "write_posterior_agreement_subtree_removed_taxa_table",
     "write_posterior_agreement_subtree_search_table",
     "write_posterior_agreement_subtree_summary_table",
+    "write_posterior_clade_correlation_artifacts",
+    "write_posterior_clade_correlation_matrix_table",
+    "write_posterior_clade_correlation_pair_table",
     "write_posterior_branch_length_summary_table",
     "write_posterior_node_age_summary_table",
     "write_quartet_puzzling_artifacts",
