@@ -131,6 +131,18 @@ class DiscreteMkTransformBaselineComparison:
 
 
 @dataclass(slots=True)
+class DiscreteMkPatternLikelihoodRow:
+    """One discrete-trait pattern likelihood row for total-likelihood reconstruction."""
+
+    pattern_id: str
+    pattern_weight: int
+    tip_states: tuple[str, ...]
+    raw_log_likelihood: float
+    ascertainment_conditioning_log_probability: float | None
+    log_likelihood: float
+
+
+@dataclass(slots=True)
 class DiscreteMkFitReport:
     """Discrete Mk trait-evolution fit over one rooted tree."""
 
@@ -152,6 +164,7 @@ class DiscreteMkFitReport:
     aicc: float
     likelihood_constant_policy: str
     likelihood_comparison_policy: str
+    pattern_likelihood_rows: list[DiscreteMkPatternLikelihoodRow]
     transition_rate_rows: list[DiscreteTransitionRateRow]
     allowed_transition_pairs: list[tuple[str, str]]
     optimizer_diagnostics: DiscreteOptimizerDiagnostics

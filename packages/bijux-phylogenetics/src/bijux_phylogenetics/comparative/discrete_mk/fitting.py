@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.common import (
@@ -47,6 +48,7 @@ from .models import (
     DISCRETE_MK_LIKELIHOOD_COMPARISON_POLICY,
     DiscreteMkFitReport,
     DiscreteMkInputAudit,
+    DiscreteMkPatternLikelihoodRow,
     DiscreteMkTransformBaselineComparison,
     resolve_discrete_mk_likelihood_constant_policy,
     validate_discrete_mk_ascertainment_policy,
@@ -80,6 +82,77 @@ def _normalize_transition_rate_rows(
         )
         for row in rows
     ]
+
+
+def _build_pattern_likelihood_rows(
+    dataset: AncestralDiscreteDataset,
+    *,
+    fit_tree,
+    state_order: list[str],
+    rate_matrix,
+    root_prior,
+    ascertainment_policy: str,
+) -> list[DiscreteMkPatternLikelihoodRow]:
+    raw_log_likelihood = _tree_log_likelihood(
+        fit_tree,
+        dataset.states_by_taxon,
+        state_order=state_order,
+        rate_matrix=rate_matrix,
+        root_prior=root_prior,
+        root_prior_mode="observed",
+        ascertainment_policy="none",
+    )
+    conditioning_log_probability = (
+        _variable_pattern_log_probability(
+            fit_tree,
+            taxa=list(dataset.taxa),
+            state_order=state_order,
+            rate_matrix=rate_matrix,
+            root_prior=root_prior,
+            root_prior_mode="observed",
+        )
+        if ascertainment_policy == "lewis-variable-only"
+        else None
+    )
+    row_log_likelihood = raw_log_likelihood
+    if conditioning_log_probability is not None:
+        if conditioning_log_probability == float("-inf"):
+            row_log_likelihood = float("-inf")
+        else:
+            row_log_likelihood -= conditioning_log_probability
+    return [
+        DiscreteMkPatternLikelihoodRow(
+            pattern_id="pattern-1",
+            pattern_weight=1,
+            tip_states=tuple(dataset.states_by_taxon[taxon] for taxon in dataset.taxa),
+            raw_log_likelihood=raw_log_likelihood,
+            ascertainment_conditioning_log_probability=conditioning_log_probability,
+            log_likelihood=row_log_likelihood,
+        )
+    ]
+
+
+def _validate_pattern_likelihood_reconstruction(
+    rows: list[DiscreteMkPatternLikelihoodRow],
+    *,
+    expected_total_log_likelihood: float,
+) -> None:
+    if len(rows) != 1:
+        raise ValueError(
+            "discrete Mk pattern likelihood reconstruction currently expects exactly one observed trait pattern"
+        )
+    reconstructed_total = math.fsum(
+        row.pattern_weight * row.log_likelihood for row in rows
+    )
+    if not math.isclose(
+        reconstructed_total,
+        expected_total_log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    ):
+        raise ValueError(
+            "discrete Mk pattern likelihood rows did not reconstruct the declared total likelihood"
+        )
 
 
 def fit_discrete_mk_model(
@@ -229,6 +302,18 @@ def fit_discrete_mk_model_from_dataset(
         state_ordering=state_ordering,
         allowed_transition_pairs=resolved_allowed_transition_pairs,
     )
+    pattern_likelihood_rows = _build_pattern_likelihood_rows(
+        dataset,
+        fit_tree=fit_tree,
+        state_order=state_order,
+        rate_matrix=rate_matrix,
+        root_prior=root_prior,
+        ascertainment_policy=resolved_ascertainment_policy,
+    )
+    _validate_pattern_likelihood_reconstruction(
+        pattern_likelihood_rows,
+        expected_total_log_likelihood=log_likelihood,
+    )
     aic = compute_aic(log_likelihood, parameter_count=parameter_count)
     aicc = compute_aicc(
         aic,
@@ -353,6 +438,7 @@ def fit_discrete_mk_model_from_dataset(
             resolved_ascertainment_policy
         ),
         likelihood_comparison_policy=DISCRETE_MK_LIKELIHOOD_COMPARISON_POLICY,
+        pattern_likelihood_rows=pattern_likelihood_rows,
         transition_rate_rows=_normalize_transition_rate_rows(
             _build_transition_rate_rows(
                 state_order=state_order,
