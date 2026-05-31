@@ -157,6 +157,10 @@ from bijux_phylogenetics.bayesian import (
     BayesianRunManifestReplayReport,
     BayesianRunPriorRow,
     BurninSampleRow,
+    TraceEffectiveSampleSizeRow,
+    MetropolisHastingsTraceEffectiveSampleSizeReport,
+    IndependentMetropolisHastingsChainTraceEffectiveSampleSizeReport,
+    IndependentMetropolisHastingsTraceEffectiveSampleSizeReport,
     TraceAutocorrelationLagRow,
     TraceAutocorrelationParameterReport,
     MetropolisHastingsTraceAutocorrelationReport,
@@ -203,6 +207,8 @@ from bijux_phylogenetics.bayesian import (
     build_bayesian_evidence_package,
     build_metropolis_hastings_burnin_policy,
     compute_trace_autocorrelation,
+    compute_trace_effective_sample_size,
+    compute_trace_integrated_autocorrelation_time,
     build_bayesian_posterior_tree_sample,
     build_bayesian_posterior_tree_sample_archive,
     build_brownian_continuous_trait_model_definition,
@@ -354,9 +360,11 @@ from bijux_phylogenetics.bayesian import (
     load_bayesian_run_manifest,
     replay_fixed_topology_dna_run_manifest,
     summarize_metropolis_hastings_model_averaged_estimates,
+    summarize_metropolis_hastings_trace_effective_sample_size,
     summarize_metropolis_hastings_trace_autocorrelation,
     summarize_posterior_model_averaged_estimates,
     summarize_posterior_predictive_p_values,
+    summarize_independent_metropolis_hastings_trace_effective_sample_size,
     summarize_independent_metropolis_hastings_trace_autocorrelation,
     simulate_prior_only_phylogenetic_states,
     strip_partition_model_parameter_state,
@@ -2222,6 +2230,19 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         == METROPOLIS_HASTINGS_BURNIN_POLICY_NAMES
     )
     assert bayesian_api.BurninSampleRow is BurninSampleRow
+    assert bayesian_api.TraceEffectiveSampleSizeRow is TraceEffectiveSampleSizeRow
+    assert (
+        bayesian_api.MetropolisHastingsTraceEffectiveSampleSizeReport
+        is MetropolisHastingsTraceEffectiveSampleSizeReport
+    )
+    assert (
+        bayesian_api.IndependentMetropolisHastingsChainTraceEffectiveSampleSizeReport
+        is IndependentMetropolisHastingsChainTraceEffectiveSampleSizeReport
+    )
+    assert (
+        bayesian_api.IndependentMetropolisHastingsTraceEffectiveSampleSizeReport
+        is IndependentMetropolisHastingsTraceEffectiveSampleSizeReport
+    )
     assert bayesian_api.TraceAutocorrelationLagRow is TraceAutocorrelationLagRow
     assert (
         bayesian_api.TraceAutocorrelationParameterReport
@@ -2273,12 +2294,28 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.compute_trace_autocorrelation is compute_trace_autocorrelation
     )
     assert (
+        bayesian_api.compute_trace_effective_sample_size
+        is compute_trace_effective_sample_size
+    )
+    assert (
+        bayesian_api.compute_trace_integrated_autocorrelation_time
+        is compute_trace_integrated_autocorrelation_time
+    )
+    assert (
         bayesian_api.diagnose_metropolis_hastings_burnin
         is diagnose_metropolis_hastings_burnin
     )
     assert (
+        bayesian_api.summarize_independent_metropolis_hastings_trace_effective_sample_size
+        is summarize_independent_metropolis_hastings_trace_effective_sample_size
+    )
+    assert (
         bayesian_api.summarize_independent_metropolis_hastings_trace_autocorrelation
         is summarize_independent_metropolis_hastings_trace_autocorrelation
+    )
+    assert (
+        bayesian_api.summarize_metropolis_hastings_trace_effective_sample_size
+        is summarize_metropolis_hastings_trace_effective_sample_size
     )
     assert (
         bayesian_api.summarize_metropolis_hastings_trace_autocorrelation
