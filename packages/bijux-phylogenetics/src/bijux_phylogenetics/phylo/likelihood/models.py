@@ -447,9 +447,13 @@ class NucleotideLikelihoodNniTraceRow:
     event_index: int
     event_kind: str
     iteration: int
+    move_type: str
+    candidate_topology_fingerprint: str
     log_likelihood_before: float | None
     log_likelihood_after: float
     log_likelihood_delta: float | None
+    accepted_move: bool
+    trace_reason: str
     tree_before_newick: str | None
     tree_after_newick: str
     pivot_branch_id: str | None
@@ -570,9 +574,13 @@ class NucleotideLikelihoodSprTraceRow:
     event_index: int
     event_kind: str
     iteration: int
+    move_type: str
+    candidate_topology_fingerprint: str
     log_likelihood_before: float | None
     log_likelihood_after: float
     log_likelihood_delta: float | None
+    accepted_move: bool
+    trace_reason: str
     tree_before_newick: str | None
     tree_after_newick: str
     pruned_clade_id: str | None
@@ -630,9 +638,13 @@ class NucleotideLikelihoodTbrTraceRow:
     event_index: int
     event_kind: str
     iteration: int
+    move_type: str
+    candidate_topology_fingerprint: str
     log_likelihood_before: float | None
     log_likelihood_after: float
     log_likelihood_delta: float | None
+    accepted_move: bool
+    trace_reason: str
     tree_before_newick: str | None
     tree_after_newick: str
     cut_edge_id: str | None
