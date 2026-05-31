@@ -58,8 +58,7 @@ def simulate_multispecies_coalescent_gene_tree(
     """Simulate one gene tree under a rooted ultrametric species tree."""
     if default_population_size <= 0.0:
         raise ValueError(
-            "default_population_size must be positive, "
-            f"got {default_population_size}"
+            f"default_population_size must be positive, got {default_population_size}"
         )
     species_tree = load_tree(species_tree_path)
     _validate_species_tree(species_tree, species_tree_path)
@@ -93,7 +92,9 @@ def simulate_multispecies_coalescent_gene_tree(
                     node=TreeNode(name=f"{node.name}__{sample_index}"),
                     age=0.0,
                 )
-                for sample_index in range(1, sample_count_by_species[node.name or ""] + 1)
+                for sample_index in range(
+                    1, sample_count_by_species[node.name or ""] + 1
+                )
             ]
         else:
             lineages = []
@@ -110,7 +111,9 @@ def simulate_multispecies_coalescent_gene_tree(
 
     root_lineages = visit(species_tree.root)
     if len(root_lineages) != 1:
-        raise ValueError("multispecies coalescent simulation failed to resolve one gene root")
+        raise ValueError(
+            "multispecies coalescent simulation failed to resolve one gene root"
+        )
     gene_root = root_lineages[0].node
     gene_root.branch_length = None
     gene_tree = PhyloTree(root=gene_root, source_format="newick", rooted=True)
@@ -158,8 +161,10 @@ def _simulate_gene_lineages_within_population(
     event_count_before = len(event_rows)
 
     while len(active_lineages) > 1:
-        coalescent_rate = len(active_lineages) * (len(active_lineages) - 1) / (
-            2.0 * population.population_size
+        coalescent_rate = (
+            len(active_lineages)
+            * (len(active_lineages) - 1)
+            / (2.0 * population.population_size)
         )
         waiting_time = rng.expovariate(coalescent_rate)
         event_age = current_age + waiting_time
@@ -231,13 +236,17 @@ def _validate_species_tree(tree: PhyloTree, tree_path: Path) -> None:
             "multispecies coalescent simulation requires unique species-tree tip labels"
         )
     if any(
-        len(node.children) != 2 for node in tree.iter_internal_nodes() if node is not tree.root
+        len(node.children) != 2
+        for node in tree.iter_internal_nodes()
+        if node is not tree.root
     ):
         raise ValueError(
             "multispecies coalescent simulation requires a strictly binary species tree"
         )
     if any(
-        node.branch_length is None for node in tree.iter_nodes() if node is not tree.root
+        node.branch_length is None
+        for node in tree.iter_nodes()
+        if node is not tree.root
     ):
         raise ValueError(
             "multispecies coalescent simulation requires complete species-tree branch lengths"
@@ -312,9 +321,7 @@ def _load_sample_count_by_species(
         return sample_count_by_species
     table = load_taxon_table(sample_count_table_path)
     if "sample_count" not in table.columns:
-        raise ValueError(
-            "sample count table must include a 'sample_count' column"
-        )
+        raise ValueError("sample count table must include a 'sample_count' column")
     known_species = set(species_tip_names)
     for row in table.rows:
         species_taxon = row[table.taxon_column]
@@ -379,4 +386,3 @@ def _choose_two_indices(rng: random.Random, count: int) -> tuple[int, int]:
     if right >= left:
         right += 1
     return tuple(sorted((left, right)))
-

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
+import math
 from pathlib import Path
 
 import numpy
@@ -12,12 +12,12 @@ from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.dna import (
     DNA_STATE_INDEX,
+    UNIFORM_DNA_ROOT_PRIOR,
     estimate_empirical_dna_base_frequencies,
     evaluate_fixed_topology_dna_site_log_likelihood,
     normalize_dna_exchangeabilities_by_anchor,
     normalize_unambiguous_dna_records,
     validate_positive_kappa,
-    UNIFORM_DNA_ROOT_PRIOR,
 )
 from bijux_phylogenetics.phylo.likelihood.f81 import (
     f81_transition_probability_matrix,
@@ -108,7 +108,9 @@ def compare_nucleotide_substitution_models(
         records,
         model_name="substitution model selection",
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     validate_explicit_branch_lengths(tree, model_name="substitution model selection")
     validate_tree_taxa_against_patterns(
         tree,
@@ -136,16 +138,24 @@ def compare_nucleotide_substitution_models(
         )
         for candidate_model_name in selected_candidates
     ]
-    warnings = _rank_substitution_model_selection_rows(rows, sample_size=compressed_patterns.alignment_length)
+    warnings = _rank_substitution_model_selection_rows(
+        rows, sample_size=compressed_patterns.alignment_length
+    )
     return SubstitutionModelSelectionReport(
         taxa=compressed_patterns.taxon_order,
         site_count=compressed_patterns.alignment_length,
         pattern_count=compressed_patterns.pattern_count,
         tree_newick=dumps_newick(tree),
         rows=rows,
-        best_model_aic=next((row.model_name for row in rows if row.selected_by_aic), None),
-        best_model_aicc=next((row.model_name for row in rows if row.selected_by_aicc), None),
-        best_model_bic=next((row.model_name for row in rows if row.selected_by_bic), None),
+        best_model_aic=next(
+            (row.model_name for row in rows if row.selected_by_aic), None
+        ),
+        best_model_aicc=next(
+            (row.model_name for row in rows if row.selected_by_aicc), None
+        ),
+        best_model_bic=next(
+            (row.model_name for row in rows if row.selected_by_bic), None
+        ),
         warnings=warnings,
     )
 
@@ -291,7 +301,9 @@ def _fit_rate_heterogeneous_candidate(
     parameter_values: dict[str, float] = {}
 
     if specification.base_model_name in {"F81", "HKY85", "GTR"}:
-        parameter_values.update(_base_frequency_parameter_values(empirical_base_frequencies))
+        parameter_values.update(
+            _base_frequency_parameter_values(empirical_base_frequencies)
+        )
     if specification.base_model_name in {"K80", "HKY85"}:
         initial_values["kappa"] = 1.0
         bounds_by_name["kappa"] = _DEFAULT_KAPPA_BOUNDS
@@ -416,10 +428,12 @@ def _evaluate_candidate_log_likelihood(
     parameter_values: dict[str, float],
     category_count: int,
 ) -> float:
-    root_prior, transition_matrix_for_scaled_branch_length = _resolve_candidate_transition_surface(
-        empirical_base_frequencies=empirical_base_frequencies,
-        specification=specification,
-        parameter_values=parameter_values,
+    root_prior, transition_matrix_for_scaled_branch_length = (
+        _resolve_candidate_transition_surface(
+            empirical_base_frequencies=empirical_base_frequencies,
+            specification=specification,
+            parameter_values=parameter_values,
+        )
     )
     category_rates = None
     if specification.rate_heterogeneity_model in {
@@ -511,9 +525,8 @@ def _candidate_pattern_likelihood(
         states,
         root_prior=root_prior,
     )
-    return (
-        invariant_proportion * invariant_component_likelihood
-        + ((1.0 - invariant_proportion) * variable_component_likelihood)
+    return invariant_proportion * invariant_component_likelihood + (
+        (1.0 - invariant_proportion) * variable_component_likelihood
     )
 
 
@@ -536,24 +549,31 @@ def _resolve_candidate_transition_surface(
     parameter_values: dict[str, float],
 ):
     if specification.base_model_name == "JC69":
-        return UNIFORM_DNA_ROOT_PRIOR, lambda branch_length, rate: (
-            jc69_transition_probability_matrix(branch_length * rate)
+        return (
+            UNIFORM_DNA_ROOT_PRIOR,
+            lambda branch_length, rate: jc69_transition_probability_matrix(
+                branch_length * rate
+            ),
         )
     if specification.base_model_name == "K80":
         kappa = validate_positive_kappa(
             float(parameter_values["kappa"]),
             model_name=specification.model_name,
         )
-        return UNIFORM_DNA_ROOT_PRIOR, lambda branch_length, rate: (
-            k80_transition_probability_matrix(branch_length * rate, kappa=kappa)
+        return (
+            UNIFORM_DNA_ROOT_PRIOR,
+            lambda branch_length, rate: k80_transition_probability_matrix(
+                branch_length * rate, kappa=kappa
+            ),
         )
     if specification.base_model_name == "F81":
         stationary = empirical_base_frequencies
-        return stationary, lambda branch_length, rate: (
-            f81_transition_probability_matrix(
+        return (
+            stationary,
+            lambda branch_length, rate: f81_transition_probability_matrix(
                 branch_length * rate,
                 base_frequencies=stationary,
-            )
+            ),
         )
     if specification.base_model_name == "HKY85":
         stationary = empirical_base_frequencies
@@ -561,12 +581,13 @@ def _resolve_candidate_transition_surface(
             float(parameter_values["kappa"]),
             model_name=specification.model_name,
         )
-        return stationary, lambda branch_length, rate: (
-            hky85_transition_probability_matrix(
+        return (
+            stationary,
+            lambda branch_length, rate: hky85_transition_probability_matrix(
                 branch_length * rate,
                 base_frequencies=stationary,
                 kappa=kappa,
-            )
+            ),
         )
     stationary = empirical_base_frequencies
     exchangeabilities = normalize_dna_exchangeabilities_by_anchor(
@@ -580,12 +601,10 @@ def _resolve_candidate_transition_surface(
         },
         model_name=specification.model_name,
     )
-    return stationary, lambda branch_length, rate: (
-        gtr_transition_probability_matrix(
-            branch_length * rate,
-            exchangeabilities=exchangeabilities,
-            base_frequencies=stationary,
-        )
+    return stationary, lambda branch_length, rate: gtr_transition_probability_matrix(
+        branch_length * rate,
+        exchangeabilities=exchangeabilities,
+        base_frequencies=stationary,
     )
 
 
@@ -687,7 +706,10 @@ def _rank_substitution_model_selection_rows(
         best_aic = min(row.aic for row in comparable_aic_rows if row.aic is not None)
         ranked_aic_rows = sorted(
             comparable_aic_rows,
-            key=lambda row: (row.aic if row.aic is not None else math.inf, row.model_name),
+            key=lambda row: (
+                row.aic if row.aic is not None else math.inf,
+                row.model_name,
+            ),
         )
         raw_weights = [
             math.exp(-0.5 * ((row.aic or math.inf) - best_aic))
@@ -709,7 +731,9 @@ def _rank_substitution_model_selection_rows(
             )
     comparable_aicc_rows = [row for row in successful_rows if row.aicc is not None]
     if comparable_aicc_rows:
-        best_aicc = min(row.aicc for row in comparable_aicc_rows if row.aicc is not None)
+        best_aicc = min(
+            row.aicc for row in comparable_aicc_rows if row.aicc is not None
+        )
         for row in comparable_aicc_rows:
             row.selected_by_aicc = math.isclose(
                 (row.aicc or best_aicc) - best_aicc,
@@ -718,7 +742,9 @@ def _rank_substitution_model_selection_rows(
                 abs_tol=1e-12,
             )
     else:
-        warnings.append("no finite AICc model remained available for substitution-model selection")
+        warnings.append(
+            "no finite AICc model remained available for substitution-model selection"
+        )
     comparable_bic_rows = [row for row in successful_rows if row.bic is not None]
     if comparable_bic_rows:
         best_bic = min(row.bic for row in comparable_bic_rows if row.bic is not None)

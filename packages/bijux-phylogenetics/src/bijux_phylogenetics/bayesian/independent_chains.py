@@ -161,8 +161,7 @@ def build_independent_metropolis_hastings_chain_comparison_row(
         left_chain_name=left_chain_report.chain_name,
         right_chain_name=right_chain_report.chain_name,
         identical_trace=(
-            left_chain_report.trace_fingerprint
-            == right_chain_report.trace_fingerprint
+            left_chain_report.trace_fingerprint == right_chain_report.trace_fingerprint
         ),
         identical_final_state=(
             left_chain_report.final_state_fingerprint
@@ -203,10 +202,7 @@ def build_independent_metropolis_hastings_diagnostics_report(
     ]
     if duplicate_trace_rows:
         duplicated_chain_names = sorted(
-            {
-                comparison_row.left_chain_name
-                for comparison_row in duplicate_trace_rows
-            }
+            {comparison_row.left_chain_name for comparison_row in duplicate_trace_rows}
             | {
                 comparison_row.right_chain_name
                 for comparison_row in duplicate_trace_rows
@@ -295,7 +291,9 @@ def _validate_chain_definitions(
             "independent metropolis-hastings runner requires every chain definition to be one IndependentMetropolisHastingsChainDefinition",
             code="independent_metropolis_hastings_chain_definition_type_invalid",
         )
-    chain_names = [chain_definition.chain_name for chain_definition in validated_chain_definitions]
+    chain_names = [
+        chain_definition.chain_name for chain_definition in validated_chain_definitions
+    ]
     if len(chain_names) != len(set(chain_names)):
         raise PhylogeneticsError(
             "independent metropolis-hastings runner requires unique chain names",
@@ -352,12 +350,16 @@ def _fingerprint_chain_trace(chain_report: MetropolisHastingsRunReport) -> str:
             "initial_state": serialize_bayesian_phylogenetic_state(
                 chain_report.initial_state
             ),
-            "final_state": serialize_bayesian_phylogenetic_state(chain_report.final_state),
+            "final_state": serialize_bayesian_phylogenetic_state(
+                chain_report.final_state
+            ),
             "sampled_states": [
                 serialize_bayesian_phylogenetic_state(sampled_state)
                 for sampled_state in chain_report.sampled_states
             ],
-            "step_rows": [_serialize_step_row(step_row) for step_row in chain_report.step_rows],
+            "step_rows": [
+                _serialize_step_row(step_row) for step_row in chain_report.step_rows
+            ],
         }
     )
 

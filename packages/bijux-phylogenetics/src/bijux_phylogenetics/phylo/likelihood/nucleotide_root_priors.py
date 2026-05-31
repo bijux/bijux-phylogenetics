@@ -47,7 +47,11 @@ def resolve_nucleotide_root_prior(
     owner_name: str,
     default_policy: str,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
     stationary_frequencies: numpy.ndarray | None = None,
 ) -> ResolvedNucleotideRootPrior:

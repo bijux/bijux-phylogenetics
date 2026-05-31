@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
-import math
 import json
+import math
 from pathlib import Path
 
 from bijux_phylogenetics.io.newick import loads_newick, write_newick
@@ -82,7 +82,9 @@ def iter_stepwise_addition_edge_candidates(
     )
     for node in candidate_nodes:
         if node.node_id is None:
-            raise AssertionError("stepwise addition candidates require refreshed node IDs")
+            raise AssertionError(
+                "stepwise addition candidates require refreshed node IDs"
+            )
         yield StepwiseAdditionEdgeCandidate(
             target_node_id=node.node_id,
             branch_id=canonical_clade_id(frozenset(node.descendant_taxa)),
@@ -166,7 +168,9 @@ def build_greedy_stepwise_addition_tree(
         best_score: float | None = None
         best_tree_newick: str | None = None
         for candidate in iter_stepwise_addition_edge_candidates(current_tree):
-            candidate_tree = apply_stepwise_addition_candidate(current_tree, candidate, taxon)
+            candidate_tree = apply_stepwise_addition_candidate(
+                current_tree, candidate, taxon
+            )
             candidate_score = float(score_tree(candidate_tree))
             candidate_tree_newick = candidate_tree.to_newick()
             tested_edge_rows.append(
@@ -254,7 +258,9 @@ def summarize_stepwise_addition_tree(
         rooted=tree.rooted,
         strictly_bifurcating=_tree_is_strictly_bifurcating(tree),
         all_requested_taxa_present_once=not (
-            missing_requested_taxa or duplicate_generated_taxa or unexpected_generated_taxa
+            missing_requested_taxa
+            or duplicate_generated_taxa
+            or unexpected_generated_taxa
         ),
         missing_requested_taxa=missing_requested_taxa,
         duplicate_generated_taxa=duplicate_generated_taxa,
@@ -307,7 +313,8 @@ def write_stepwise_addition_trace_table(
                             "true"
                             if tested_edge.branch_id == row.best_edge_id
                             and math.isclose(tested_edge.score, row.best_score)
-                            and tested_edge.candidate_tree_newick == row.selected_tree_newick
+                            and tested_edge.candidate_tree_newick
+                            == row.selected_tree_newick
                             else "false"
                         ),
                         tested_edge.candidate_tree_newick,
@@ -364,7 +371,9 @@ def write_stepwise_addition_run_json(
         ],
         "tree_newick": report.tree_newick,
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 

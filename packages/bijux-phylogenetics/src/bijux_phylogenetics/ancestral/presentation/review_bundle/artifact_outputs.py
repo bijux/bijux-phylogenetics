@@ -4,8 +4,10 @@ import csv
 from dataclasses import asdict
 from pathlib import Path
 
-from .contracts import AncestralContinuousChangeBranchRow
-from .contracts import AncestralContinuousChangeCountRow
+from .contracts import (
+    AncestralContinuousChangeBranchRow,
+    AncestralContinuousChangeCountRow,
+)
 
 
 def table_delimiter(path: Path) -> str:

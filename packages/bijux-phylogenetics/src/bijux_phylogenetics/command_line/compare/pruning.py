@@ -9,10 +9,10 @@ from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.compare.topology import (
     approximate_maximum_agreement_subtree,
     prune_trees_to_agreement_subtree,
+    prune_trees_to_shared_taxa,
     write_agreement_subtree_pruning_table,
     write_agreement_subtree_removed_taxa_table,
     write_agreement_subtree_search_table,
-    prune_trees_to_shared_taxa,
     write_maximum_agreement_subtree_pruning_table,
     write_maximum_agreement_subtree_removed_taxa_table,
     write_maximum_agreement_subtree_search_table,
@@ -262,9 +262,7 @@ def _run_compare_maximum_agreement_subtree_command(
                 "retained_taxa": len(report.retained_taxa),
                 "approximation_removed_taxa": len(report.approximation_removed_taxa),
                 "evaluated_candidate_count": report.evaluated_candidate_count,
-                "max_evaluated_candidate_count": (
-                    report.max_evaluated_candidate_count
-                ),
+                "max_evaluated_candidate_count": (report.max_evaluated_candidate_count),
                 "rf_mode": report.rf_mode,
                 "approximation_status": report.approximation_status,
                 "topology_equal_after_pruning": (

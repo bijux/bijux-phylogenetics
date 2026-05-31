@@ -9,7 +9,11 @@ from .agglomerative import (
 )
 from .linkage_common import (
     LinkageClusterHeightRow as AverageLinkageClusterHeightRow,
+)
+from .linkage_common import (
     LinkageMergeRow as AverageLinkageMergeRow,
+)
+from .linkage_common import (
     validate_linkage_distance_lookup,
 )
 

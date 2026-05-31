@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+from bijux_phylogenetics.diagnostics.validation import TreeInspectionReport
+from bijux_phylogenetics.io.iqtree_support import support_fraction
 from bijux_phylogenetics.render.tree_svg import SupportLabelRenderAudit
 from bijux_phylogenetics.trees import (
     BranchLengthDistributionReport,
     CladeTableReport,
 )
-from bijux_phylogenetics.io.iqtree_support import support_fraction
-from bijux_phylogenetics.diagnostics.validation import TreeInspectionReport
 
 from .contracts import TreeBranchStatisticsRow, TreeSupportRow
 

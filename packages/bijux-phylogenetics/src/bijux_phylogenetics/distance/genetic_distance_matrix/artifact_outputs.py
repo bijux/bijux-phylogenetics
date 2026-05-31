@@ -107,4 +107,3 @@ def write_genetic_distance_parameter_table(
             lines.append(f"{parameter}\t{rendered}")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path
-

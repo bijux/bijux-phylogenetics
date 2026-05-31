@@ -39,17 +39,23 @@ from bijux_phylogenetics.ancestral.presentation.visualization import (
 )
 from bijux_phylogenetics.reports.review import write_reviewer_audit_checklist
 
-from .artifact_outputs import write_continuous_change_branch_table
-from .artifact_outputs import write_continuous_change_count_table
-from .continuous_changes import summarize_continuous_change_branches
-from .continuous_changes import summarize_continuous_change_counts
+from .artifact_outputs import (
+    write_continuous_change_branch_table,
+    write_continuous_change_count_table,
+)
+from .continuous_changes import (
+    summarize_continuous_change_branches,
+    summarize_continuous_change_counts,
+)
 from .contracts import AncestralReportPackageResult
 from .presentation import write_package_html
 from .review_rows import limitations as review_limitations
-from .review_rows import node_table_rows
-from .review_rows import transition_branch_table_rows
-from .review_rows import transition_count_table_rows
-from .review_rows import uncertainty_table_rows
+from .review_rows import (
+    node_table_rows,
+    transition_branch_table_rows,
+    transition_count_table_rows,
+    uncertainty_table_rows,
+)
 
 
 def build_ancestral_report_package(

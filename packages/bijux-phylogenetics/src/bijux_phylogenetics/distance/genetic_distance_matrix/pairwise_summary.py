@@ -16,4 +16,3 @@ class _PairSummary:
     skipped_sites: int
     saturated: bool
     saturation_reason: str | None
-

@@ -32,7 +32,8 @@ def solve_dating_calibration_constraints(
     tree.rooted = True
     validation_report = validate_fossil_calibration_table(tree_path, calibration_path)
     node_by_descendant_taxa = {
-        frozenset(node.descendant_taxa): node for node in tree.iter_nodes(order="preorder")
+        frozenset(node.descendant_taxa): node
+        for node in tree.iter_nodes(order="preorder")
     }
 
     issue_rows: list[DatingCalibrationConstraintIssue] = []
@@ -71,7 +72,9 @@ def solve_dating_calibration_constraints(
             issue_rows.append(issue)
             issue_codes_by_calibration_id[calibration.calibration_id].add(issue.code)
             continue
-        node_kind = "root" if node is tree.root else ("tip" if node.is_leaf() else "internal")
+        node_kind = (
+            "root" if node is tree.root else ("tip" if node.is_leaf() else "internal")
+        )
         fixed_date = _fixed_date(
             minimum_bound=calibration.minimum_age,
             maximum_bound=calibration.maximum_age,
@@ -149,7 +152,10 @@ def solve_dating_calibration_constraints(
     for parent, child in tree.iter_edges():
         parent_node_id = parent.node_id or ""
         child_node_id = child.node_id or ""
-        if parent_node_id not in window_state_by_node_id and child_node_id not in window_state_by_node_id:
+        if (
+            parent_node_id not in window_state_by_node_id
+            and child_node_id not in window_state_by_node_id
+        ):
             continue
         parent_lower = effective_lower_by_node_id[parent_node_id]
         child_upper = effective_upper_by_node_id[child_node_id]
@@ -521,13 +527,12 @@ def _propagate_effective_upper_bounds(
         state = window_state_by_node_id.get(node_id)
         if state is not None:
             own_upper = state.maximum_bound
-        descendant_uppers = [
-            visit(child)
-            for child in node.children
-        ]
-        child_upper = min(
-            upper for upper in descendant_uppers if upper is not None
-        ) if any(upper is not None for upper in descendant_uppers) else None
+        descendant_uppers = [visit(child) for child in node.children]
+        child_upper = (
+            min(upper for upper in descendant_uppers if upper is not None)
+            if any(upper is not None for upper in descendant_uppers)
+            else None
+        )
         effective_upper = own_upper
         if child_upper is not None:
             effective_upper = (

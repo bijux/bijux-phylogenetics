@@ -155,7 +155,9 @@ def build_broken_benchmark_corpus(
 
     record_error_case(
         "duplicate_tip_tree",
-        lambda: validate_tree_path(fixture(root, "trees", "example_tree_duplicate.nwk")),
+        lambda: validate_tree_path(
+            fixture(root, "trees", "example_tree_duplicate.nwk")
+        ),
         "duplicate_taxon_error",
     )
     record_error_case(
@@ -222,12 +224,16 @@ def build_messy_benchmark_corpus(
             CorpusDatasetCase(
                 name="reordered_alignment_extra_taxa_invalid_dates_and_calibrations",
                 tree_path=fixture(root, "trees", "example_tree.nwk"),
-                metadata_path=fixture(root, "metadata", "example_metadata_reordered.tsv"),
+                metadata_path=fixture(
+                    root, "metadata", "example_metadata_reordered.tsv"
+                ),
                 traits_path=fixture(root, "metadata", "example_traits_validate.tsv"),
                 alignment_path=fixture(
                     root, "alignments", "example_alignment_extra_taxon.fasta"
                 ),
-                tip_dates_path=fixture(root, "metadata", "example_tip_dates_invalid.tsv"),
+                tip_dates_path=fixture(
+                    root, "metadata", "example_tip_dates_invalid.tsv"
+                ),
                 calibration_path=fixture(
                     root, "metadata", "example_calibrations_invalid.tsv"
                 ),

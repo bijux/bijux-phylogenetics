@@ -4,11 +4,11 @@ from pathlib import Path
 
 from bijux_phylogenetics.ancestral import build_ancestral_figure_package
 from bijux_phylogenetics.bayesian import build_time_tree_figure_package
-from bijux_phylogenetics.datasets.shared_fixtures import (
-    get_shared_beast_posterior_fixture,
-)
 from bijux_phylogenetics.biogeography.presentation import (
     build_biogeography_report_package,
+)
+from bijux_phylogenetics.datasets.shared_fixtures import (
+    get_shared_beast_posterior_fixture,
 )
 from bijux_phylogenetics.render.annotated_trait_tree_package import (
     build_annotated_trait_tree_package,
@@ -221,7 +221,9 @@ def validate_time_tree_reference_fixtures(
     """Validate time-tree publication fixtures for visible uncertainty and readiness."""
     root = default_fixtures_root() if fixtures_root is None else fixtures_root
     posterior_tree_path = (
-        get_shared_beast_posterior_fixture("strict_yule_real_posterior").posterior_trees_path
+        get_shared_beast_posterior_fixture(
+            "strict_yule_real_posterior"
+        ).posterior_trees_path
         if fixtures_root is None
         else fixture(root, "metadata", "beast2_strict_yule_posterior.trees")
     )

@@ -34,9 +34,7 @@ from bijux_phylogenetics.phylo.topology import rooted_topology_fingerprint
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError, TreeParseError
 
-_CANDIDATE_TREE_COMPARISON_CAUTION_LABEL = (
-    "all candidate trees are rescored under one shared alignment/model surface; prior per-tree fitted-model differences are not preserved in this comparison"
-)
+_CANDIDATE_TREE_COMPARISON_CAUTION_LABEL = "all candidate trees are rescored under one shared alignment/model surface; prior per-tree fitted-model differences are not preserved in this comparison"
 
 
 @dataclass(frozen=True, slots=True)
@@ -64,20 +62,28 @@ def evaluate_nucleotide_candidate_tree_site_likelihood_matrix(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> CandidateTreeSiteLikelihoodMatrixReport:
     """Evaluate one shared nucleotide likelihood model across multiple candidate trees."""
-    resolved_tree_records, resolved_tree_set_path = resolve_candidate_tree_records(trees)
-    resolved_records, resolved_alignment_path = resolve_candidate_tree_alignment_records(
-        records
+    resolved_tree_records, resolved_tree_set_path = resolve_candidate_tree_records(
+        trees
+    )
+    resolved_records, resolved_alignment_path = (
+        resolve_candidate_tree_alignment_records(records)
     )
     normalized_model_name = validate_selected_nucleotide_likelihood_model(model_name)
     normalized_records = normalize_unambiguous_dna_records(
         resolved_records,
         model_name=normalized_model_name.upper(),
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     specification = resolve_selected_nucleotide_likelihood_specification(
         normalized_records,
         model_name=normalized_model_name,
@@ -135,7 +141,9 @@ def evaluate_nucleotide_candidate_tree_site_likelihood_matrix(
             )
             for row in tree_report.site_log_likelihoods
         )
-    observed_best_candidate = select_observed_best_candidate_tree_summary(candidate_trees)
+    observed_best_candidate = select_observed_best_candidate_tree_summary(
+        candidate_trees
+    )
     candidate_trees = [
         CandidateTreeSiteLikelihoodSummary(
             candidate_tree_id=row.candidate_tree_id,
@@ -151,7 +159,9 @@ def evaluate_nucleotide_candidate_tree_site_likelihood_matrix(
     ]
     return CandidateTreeSiteLikelihoodMatrixReport(
         model_name=specification.model_name,
-        tree_set_path=None if resolved_tree_set_path is None else str(resolved_tree_set_path),
+        tree_set_path=None
+        if resolved_tree_set_path is None
+        else str(resolved_tree_set_path),
         alignment_path=None
         if resolved_alignment_path is None
         else str(resolved_alignment_path),
@@ -184,7 +194,11 @@ def evaluate_nucleotide_candidate_tree_site_likelihood_matrix_from_alignment(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> CandidateTreeSiteLikelihoodMatrixReport:
     """Evaluate a candidate-tree site-likelihood matrix from tree-set and alignment paths."""
@@ -206,7 +220,9 @@ def resolve_candidate_tree_records(
 ) -> tuple[list[_CandidateTreeRecord], Path | None]:
     """Resolve one candidate-tree set and assign stable candidate identifiers."""
     resolved_tree_set_path = trees if isinstance(trees, Path) else None
-    resolved_trees = load_newick_tree_set(trees) if isinstance(trees, Path) else list(trees)
+    resolved_trees = (
+        load_newick_tree_set(trees) if isinstance(trees, Path) else list(trees)
+    )
     if len(resolved_trees) < 2:
         raise TreeParseError(
             "candidate tree site likelihood matrix requires at least two candidate trees"
@@ -346,7 +362,9 @@ def write_candidate_tree_site_likelihood_matrix_run_json(
             for row in report.matrix_rows
         ],
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 
@@ -355,7 +373,9 @@ def select_observed_best_candidate_tree_summary(
 ) -> CandidateTreeSiteLikelihoodSummary:
     """Choose the observed best candidate summary with deterministic tie breaks."""
     if not candidates:
-        raise ValueError("candidate tree site likelihood matrix requires at least one candidate")
+        raise ValueError(
+            "candidate tree site likelihood matrix requires at least one candidate"
+        )
     best_candidate = candidates[0]
     for candidate in candidates[1:]:
         if prefer_higher_likelihood_candidate_tree_summary(candidate, best_candidate):

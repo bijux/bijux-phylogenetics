@@ -175,9 +175,9 @@ def summarize_clade_credibility_conflicts(
     }
     high_credibility = sorted(
         [
-        clade
-        for clade, frequency in frequencies.items()
-        if frequency >= credibility_threshold
+            clade
+            for clade, frequency in frequencies.items()
+            if frequency >= credibility_threshold
         ],
         key=_format_clade,
     )

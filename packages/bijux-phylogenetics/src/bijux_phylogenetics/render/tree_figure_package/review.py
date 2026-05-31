@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+from bijux_phylogenetics.render.tree_svg import TreeRenderResult
+
 from .contracts import (
     FigureCaptionDraft,
-    FigureLegibilityAudit,
     FigureLegendEntry,
+    FigureLegibilityAudit,
     TreeFigureAuditReport,
 )
-from bijux_phylogenetics.render.tree_svg import TreeRenderResult
 
 
 def build_legibility_audit(

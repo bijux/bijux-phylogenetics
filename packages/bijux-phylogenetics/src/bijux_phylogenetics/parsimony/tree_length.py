@@ -21,6 +21,8 @@ from .sankoff import score_sankoff
 from .wagner import score_wagner
 from .weights import (
     load_parsimony_character_weights as _load_parsimony_character_weights,
+)
+from .weights import (
     resolve_parsimony_character_weights,
 )
 

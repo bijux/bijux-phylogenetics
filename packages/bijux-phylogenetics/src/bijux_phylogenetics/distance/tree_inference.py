@@ -33,8 +33,8 @@ from .genetic_distance_matrix import (
 from .missing_distance_policy import apply_missing_distance_policy
 from .models import (
     AmbiguityPolicy,
-    DistanceBootstrapReport,
     DistanceBootstrapReplicateRow,
+    DistanceBootstrapReport,
     DistanceBootstrapSupportRow,
     DistanceBootstrapSupportSummary,
     DistanceMethodAssumptionReport,
@@ -51,8 +51,10 @@ from .quality import (
     inspect_distance_matrix_quality,
 )
 from .saturation import diagnose_distance_saturation_from_genetic_distance_matrix
-from .shared import _require_supported_distance_tree_method
-from .shared import _build_distance_tree_from_lookup
+from .shared import (
+    _build_distance_tree_from_lookup,
+    _require_supported_distance_tree_method,
+)
 
 
 def _block_tree_inference_on_saturated_distances(
@@ -349,9 +351,7 @@ def write_distance_bootstrap_support(
     return path
 
 
-def write_distance_bootstrap_draws(
-    path: Path, report: DistanceBootstrapReport
-) -> Path:
+def write_distance_bootstrap_draws(path: Path, report: DistanceBootstrapReport) -> Path:
     """Write one deterministic bootstrap draw ledger."""
     path.parent.mkdir(parents=True, exist_ok=True)
     lines = ["replicate_index\tsampled_site_indices\ttree_newick"]

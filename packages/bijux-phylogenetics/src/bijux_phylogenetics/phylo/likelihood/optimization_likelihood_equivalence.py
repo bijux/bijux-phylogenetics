@@ -199,9 +199,7 @@ def _resolve_optimized_parameter_values(
             FixedTopologyNucleotideSingleBranchOptimizationReport,
         ),
     ):
-        return _normalize_parameter_names(
-            optimization_report.fixed_parameter_values
-        )
+        return _normalize_parameter_names(optimization_report.fixed_parameter_values)
     parameter_values = dict(optimization_report.fixed_parameter_values)
     if optimization_report.base_frequency_source is not None:
         parameter_values.update(
@@ -223,7 +221,9 @@ def _normalize_parameter_names(
     normalized_parameter_values: dict[str, float] = {}
     for parameter_name, value in parameter_values.items():
         if parameter_name.startswith("base_frequency_"):
-            normalized_parameter_values[parameter_name.removeprefix("base_frequency_").upper()] = value
+            normalized_parameter_values[
+                parameter_name.removeprefix("base_frequency_").upper()
+            ] = value
             continue
         if parameter_name.startswith("exchangeability_"):
             normalized_parameter_values[
@@ -288,8 +288,7 @@ def _resolve_evaluator_kwargs(
         kwargs["kappa"] = parameter_values["kappa"]
     if model_name in {"F81", "HKY85", "GTR"}:
         kwargs["base_frequencies"] = {
-            state: parameter_values[state]
-            for state in ("A", "C", "G", "T")
+            state: parameter_values[state] for state in ("A", "C", "G", "T")
         }
     if model_name == "GTR":
         kwargs["exchangeabilities"] = {

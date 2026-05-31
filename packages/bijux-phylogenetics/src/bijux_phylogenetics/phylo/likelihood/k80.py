@@ -90,15 +90,9 @@ def k80_transition_probability_matrix(
     transition_decay = math.exp(
         -2.0 * (transition_rate + transversion_rate) * branch_length
     )
-    same_probability = (
-        0.25
-        + (0.25 * transversion_decay)
-        + (0.5 * transition_decay)
-    )
+    same_probability = 0.25 + (0.25 * transversion_decay) + (0.5 * transition_decay)
     transition_probability = (
-        0.25
-        + (0.25 * transversion_decay)
-        - (0.5 * transition_decay)
+        0.25 + (0.25 * transversion_decay) - (0.5 * transition_decay)
     )
     transversion_probability = 0.25 - (0.25 * transversion_decay)
     transition_matrix = numpy.zeros((4, 4), dtype=float)
@@ -122,7 +116,11 @@ def evaluate_k80_tree_likelihood(
     kappa: float,
     observation_policy: str = "reject",
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> K80TreeLikelihoodReport:
     """Evaluate one fixed-topology K80 likelihood from aligned DNA records."""
@@ -139,7 +137,9 @@ def evaluate_k80_tree_likelihood(
         if observation_policy == "fifth-state"
         else None
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     resolved_root_prior = resolve_default_dna_root_prior_for_observation_policy(
         normalized_records,
         owner_name="K80 likelihood",
@@ -167,7 +167,11 @@ def evaluate_k80_tree_likelihood_from_alignment(
     kappa: float,
     observation_policy: str = "reject",
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> K80TreeLikelihoodReport:
     """Evaluate one fixed-topology K80 likelihood from one tree path and alignment."""
@@ -211,7 +215,9 @@ def optimize_k80_kappa(
         model_name="K80",
         observation_policy="reject",
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     working_tree = tree.copy()
     validate_explicit_branch_lengths(working_tree, model_name="K80")
     initial_report = _evaluate_k80_tree_likelihood_from_patterns(
@@ -321,7 +327,9 @@ def _evaluate_k80_tree_likelihood_from_patterns(
         }
 
     def site_log_likelihood(states: tuple[str, ...]) -> float:
-        states_by_taxon = dict(zip(compressed_patterns.taxon_order, states, strict=True))
+        states_by_taxon = dict(
+            zip(compressed_patterns.taxon_order, states, strict=True)
+        )
         pruning_pass = postorder_conditional_likelihoods(
             tree,
             state_count=len(state_order),

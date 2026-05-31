@@ -263,10 +263,7 @@ def build_constant_population_coalescent_tree_prior(
     effective_population_size: float,
 ) -> ConstantPopulationCoalescentPriorModel:
     """Build one constant-population Kingman coalescent prior."""
-    if (
-        not math.isfinite(effective_population_size)
-        or effective_population_size <= 0.0
-    ):
+    if not math.isfinite(effective_population_size) or effective_population_size <= 0.0:
         raise PhylogeneticsError(
             "constant-population coalescent prior requires a strictly positive finite effective population size",
             code="constant_population_coalescent_prior_invalid_effective_population_size",
@@ -613,9 +610,7 @@ def _validate_skyline_coalescent_epochs(
             expected_younger_boundary = older_boundary_age
         validated_epochs.append(
             SkylineCoalescentEpoch(
-                younger_boundary_age=float(
-                    format(epoch.younger_boundary_age, ".15g")
-                ),
+                younger_boundary_age=float(format(epoch.younger_boundary_age, ".15g")),
                 older_boundary_age=older_boundary_age,
                 effective_population_size=float(
                     format(epoch.effective_population_size, ".15g")
@@ -717,9 +712,8 @@ def _build_yule_interval_rows(
     for interval_index, younger_boundary in enumerate(younger_boundaries, start=1):
         duration = older_boundary - younger_boundary
         event_count = events_by_age.get(younger_boundary, 0)
-        interval_log_contribution = (
-            (event_count * math.log(speciation_rate))
-            - (lineage_count * speciation_rate * duration)
+        interval_log_contribution = (event_count * math.log(speciation_rate)) - (
+            lineage_count * speciation_rate * duration
         )
         rows.append(
             YuleTreePriorIntervalRow(
@@ -798,9 +792,7 @@ def _build_birth_death_branching_rows(
                 log_branching_probability=float(
                     format(log_branching_probability, ".15g")
                 ),
-                log_crown_normalization=float(
-                    format(log_crown_normalization, ".15g")
-                ),
+                log_crown_normalization=float(format(log_crown_normalization, ".15g")),
                 log_contribution=float(
                     format(log_branching_probability - log_crown_normalization, ".15g")
                 ),
@@ -841,9 +833,7 @@ def _build_constant_population_coalescent_interval_rows(
                 math.comb(remaining_lineage_count, 2) / effective_population_size
             )
             remaining_lineage_count -= 1
-        interval_log_contribution = (
-            waiting_log_contribution + event_log_contribution
-        )
+        interval_log_contribution = waiting_log_contribution + event_log_contribution
         rows.append(
             ConstantPopulationCoalescentIntervalRow(
                 interval_index=interval.interval_index,
@@ -856,9 +846,7 @@ def _build_constant_population_coalescent_interval_rows(
                 waiting_log_contribution=float(
                     format(waiting_log_contribution, ".15g")
                 ),
-                event_log_contribution=float(
-                    format(event_log_contribution, ".15g")
-                ),
+                event_log_contribution=float(format(event_log_contribution, ".15g")),
                 interval_log_contribution=float(
                     format(interval_log_contribution, ".15g")
                 ),
@@ -888,7 +876,9 @@ def _build_skyline_coalescent_segment_rows(
                 else min(interval.older_boundary_age, epoch.older_boundary_age)
             )
             duration = epoch_end - segment_start
-            waiting_rate = math.comb(interval.lineage_count, 2) / epoch.effective_population_size
+            waiting_rate = (
+                math.comb(interval.lineage_count, 2) / epoch.effective_population_size
+            )
             waiting_log_contribution = -(waiting_rate * duration)
             ends_with_event = math.isclose(
                 epoch_end,
@@ -901,9 +891,7 @@ def _build_skyline_coalescent_segment_rows(
                 if ends_with_event
                 else 0.0
             )
-            segment_log_contribution = (
-                waiting_log_contribution + event_log_contribution
-            )
+            segment_log_contribution = waiting_log_contribution + event_log_contribution
             rows.append(
                 SkylineCoalescentSegmentRow(
                     coalescent_interval_index=interval.interval_index,
@@ -959,9 +947,10 @@ def _birth_death_p1(
     sampling_fraction: float,
 ) -> float:
     if math.isclose(speciation_rate, extinction_rate, abs_tol=1e-15):
-        return sampling_fraction / (
-            1.0 + (sampling_fraction * speciation_rate * time_before_present)
-        ) ** 2
+        return (
+            sampling_fraction
+            / (1.0 + (sampling_fraction * speciation_rate * time_before_present)) ** 2
+        )
     denominator = _birth_death_denominator(
         time_before_present,
         speciation_rate=speciation_rate,
@@ -985,9 +974,9 @@ def _birth_death_q(
     sampling_fraction: float,
 ) -> float:
     if math.isclose(speciation_rate, extinction_rate, abs_tol=1e-15):
-        return (
-            sampling_fraction * time_before_present
-        ) / (1.0 + (sampling_fraction * speciation_rate * time_before_present))
+        return (sampling_fraction * time_before_present) / (
+            1.0 + (sampling_fraction * speciation_rate * time_before_present)
+        )
     denominator = _birth_death_denominator(
         time_before_present,
         speciation_rate=speciation_rate,
@@ -1007,10 +996,6 @@ def _birth_death_denominator(
     extinction_rate: float,
     sampling_fraction: float,
 ) -> float:
-    return (
-        speciation_rate * sampling_fraction
-        + (
-            (speciation_rate * (1.0 - sampling_fraction)) - extinction_rate
-        )
-        * math.exp(-(speciation_rate - extinction_rate) * time_before_present)
-    )
+    return speciation_rate * sampling_fraction + (
+        (speciation_rate * (1.0 - sampling_fraction)) - extinction_rate
+    ) * math.exp(-(speciation_rate - extinction_rate) * time_before_present)

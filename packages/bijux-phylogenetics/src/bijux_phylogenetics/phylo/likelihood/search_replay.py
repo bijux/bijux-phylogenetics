@@ -44,7 +44,9 @@ def replay_nucleotide_likelihood_nni_search_trace(
             replayed_tree = apply_rooted_nni_move(current_tree, candidate).refresh()
             replayed_topology_fingerprint = rooted_topology_fingerprint(replayed_tree)
             if replayed_topology_fingerprint == row.candidate_topology_fingerprint:
-                matches.append((candidate, replayed_tree, replayed_topology_fingerprint))
+                matches.append(
+                    (candidate, replayed_tree, replayed_topology_fingerprint)
+                )
         step_rows.append(
             NucleotideLikelihoodSearchTraceReplayStep(
                 trace_event_index=row.event_index,
@@ -95,7 +97,9 @@ def replay_nucleotide_likelihood_spr_search_trace(
             replayed_tree = apply_rooted_spr_move(current_tree, candidate).refresh()
             replayed_topology_fingerprint = rooted_topology_fingerprint(replayed_tree)
             if replayed_topology_fingerprint == row.candidate_topology_fingerprint:
-                matches.append((candidate, replayed_tree, replayed_topology_fingerprint))
+                matches.append(
+                    (candidate, replayed_tree, replayed_topology_fingerprint)
+                )
         step_rows.append(
             NucleotideLikelihoodSearchTraceReplayStep(
                 trace_event_index=row.event_index,
@@ -141,13 +145,16 @@ def replay_nucleotide_likelihood_tbr_search_trace(
             if (
                 candidate.cut_edge_id != row.cut_edge_id
                 or candidate.left_attachment_branch_id != row.left_attachment_branch_id
-                or candidate.right_attachment_branch_id != row.right_attachment_branch_id
+                or candidate.right_attachment_branch_id
+                != row.right_attachment_branch_id
             ):
                 continue
             replayed_tree = apply_rooted_tbr_move(current_tree, candidate).refresh()
             replayed_topology_fingerprint = rooted_topology_fingerprint(replayed_tree)
             if replayed_topology_fingerprint == row.candidate_topology_fingerprint:
-                matches.append((candidate, replayed_tree, replayed_topology_fingerprint))
+                matches.append(
+                    (candidate, replayed_tree, replayed_topology_fingerprint)
+                )
         step_rows.append(
             NucleotideLikelihoodSearchTraceReplayStep(
                 trace_event_index=row.event_index,
@@ -176,6 +183,7 @@ def replay_nucleotide_likelihood_tbr_search_trace(
         failure_reason=failure_reason,
         step_rows=step_rows,
     )
+
 
 def _build_search_trace_replay_report(
     *,

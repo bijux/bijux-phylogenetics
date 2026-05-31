@@ -46,7 +46,9 @@ def analyze_distance_taxon_jackknife_from_imported_distance_matrix(
     rows: list[DistanceTaxonJackknifeRow] = []
     for removed_taxon in validation.identifiers:
         retained_taxa = [
-            identifier for identifier in validation.identifiers if identifier != removed_taxon
+            identifier
+            for identifier in validation.identifiers
+            if identifier != removed_taxon
         ]
         reduced_lookup = subset_defined_lookup(retained_taxa, defined_lookup)
         resolved_reduced_lookup = resolve_distance_lookup(
@@ -170,7 +172,9 @@ def write_distance_taxon_jackknife_run_json(
         "baseline_residual_sum_squares": report.baseline_residual_sum_squares,
         "rows": [asdict(row) for row in report.rows],
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 

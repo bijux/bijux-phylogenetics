@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+from bijux_phylogenetics.io.nexus_translate import (
+    parse_nexus_translate_map,
+    translate_nexus_tip_labels,
+)
+
 from ._shared import (
     _BEAST_TREE_PATTERN,
     _BEAST_TREE_STATE_PATTERN,
@@ -24,10 +29,6 @@ from .models import (
     BeastPosteriorTopologyDiversityReport,
     BeastPosteriorTreeSample,
     BeastPosteriorTreeSetReport,
-)
-from bijux_phylogenetics.io.nexus_translate import (
-    parse_nexus_translate_map,
-    translate_nexus_tip_labels,
 )
 
 

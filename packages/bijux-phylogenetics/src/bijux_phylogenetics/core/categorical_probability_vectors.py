@@ -22,7 +22,9 @@ class CategoricalProbabilityVector:
     normalization_tolerance: float
 
     def probability_for(self, state: str) -> float:
-        for state_label, probability in zip(self.states, self.probabilities, strict=True):
+        for state_label, probability in zip(
+            self.states, self.probabilities, strict=True
+        ):
             if state_label == state:
                 return probability
         raise KeyError(state)

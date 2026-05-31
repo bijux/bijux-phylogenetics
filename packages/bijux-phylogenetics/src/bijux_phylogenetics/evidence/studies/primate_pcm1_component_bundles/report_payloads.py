@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from .definitions import NUMERIC_COLUMNS
-from .definitions import STUDY_ID
-from .definitions import TEXT_COLUMNS
+from .definitions import NUMERIC_COLUMNS, STUDY_ID, TEXT_COLUMNS
 from .study_context import missing_counts
 
 
@@ -76,9 +74,7 @@ def build_component_report_payload(
             "evidence_id": evidence_id,
             "missing_counts_by_column": column_missing_counts,
             "columns_with_missing_values": [
-                column
-                for column, count in column_missing_counts.items()
-                if count > 0
+                column for column, count in column_missing_counts.items() if count > 0
             ],
             "rows_with_any_missing_values": sum(
                 1

@@ -117,7 +117,9 @@ def compress_codon_site_patterns_from_records(
         genetic_code=genetic_code,
     )
     codon_count = len(normalized_records[0].sequence) // 3
-    codon_sequences = [_iter_record_codons(record.sequence) for record in normalized_records]
+    codon_sequences = [
+        _iter_record_codons(record.sequence) for record in normalized_records
+    ]
     grouped_positions: OrderedDict[tuple[str, ...], list[int]] = OrderedDict()
     for site_index in range(codon_count):
         states = tuple(sequence[site_index] for sequence in codon_sequences)
@@ -240,8 +242,10 @@ def _evaluate_codon_site_log_likelihood(
             state_space=state_space,
             node_name=node.name,
         ),
-        transition_matrix_for_child=lambda child: transition_evaluator.transition_probability_matrix(
-            float(child.branch_length or 0.0)
+        transition_matrix_for_child=lambda child: (
+            transition_evaluator.transition_probability_matrix(
+                float(child.branch_length or 0.0)
+            )
         ),
     )
     return log_likelihood_from_root_prior(
@@ -268,7 +272,4 @@ def _codon_leaf_likelihood_vector(
 
 
 def _iter_record_codons(sequence: str) -> tuple[str, ...]:
-    return tuple(
-        sequence[index : index + 3]
-        for index in range(0, len(sequence), 3)
-    )
+    return tuple(sequence[index : index + 3] for index in range(0, len(sequence), 3))

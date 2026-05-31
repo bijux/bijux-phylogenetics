@@ -13,11 +13,11 @@ from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.distance import (
-    compare_distance_tree_methods_from_imported_distance_matrix,
-    analyze_distance_taxon_jackknife_from_imported_distance_matrix,
     analyze_distance_taxon_influence_from_imported_distance_matrix,
+    analyze_distance_taxon_jackknife_from_imported_distance_matrix,
     assess_imported_distance_method_assumptions,
     build_tree_from_imported_distance_matrix,
+    compare_distance_tree_methods_from_imported_distance_matrix,
     compute_patristic_residual_diagnostics_from_imported_distance_matrix,
     diagnose_imported_distance_matrix_additivity,
     diagnose_imported_distance_matrix_ultrametricity,
@@ -29,11 +29,11 @@ from bijux_phylogenetics.distance import (
     search_balanced_minimum_evolution_nni_from_imported_distance_matrix,
     validate_distance_reference_examples,
     validate_imported_distance_matrix,
+    write_balanced_minimum_evolution_nni_artifacts,
     write_distance_additivity_artifacts,
     write_distance_method_comparison_artifacts,
-    write_balanced_minimum_evolution_nni_artifacts,
-    write_distance_taxon_jackknife_artifacts,
     write_distance_taxon_influence_artifacts,
+    write_distance_taxon_jackknife_artifacts,
     write_patristic_residual_artifacts,
 )
 from bijux_phylogenetics.io.newick import write_newick
@@ -88,7 +88,9 @@ def add_distance_commands(subparsers: Any) -> None:
     distance_ultrametricity.add_argument("matrix", type=Path)
     _add_ultrametric_tolerance_argument(distance_ultrametricity)
     distance_ultrametricity.add_argument(
-        "--json", action="store_true", help="Emit the ultrametricity diagnostics as JSON."
+        "--json",
+        action="store_true",
+        help="Emit the ultrametricity diagnostics as JSON.",
     )
     _add_manifest_argument(distance_ultrametricity)
 

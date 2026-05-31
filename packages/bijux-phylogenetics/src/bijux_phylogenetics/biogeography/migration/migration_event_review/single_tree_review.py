@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import statistics
 from pathlib import Path
+import statistics
 
 from bijux_phylogenetics.ancestral.common import stable_value
 from bijux_phylogenetics.biogeography.state_models import (

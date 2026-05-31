@@ -30,7 +30,9 @@ def _fitch_margoliash_pair_weights(
     weights: dict[tuple[str, str], float] = {}
     for left_index, left_identifier in enumerate(identifiers):
         for right_identifier in identifiers[left_index + 1 :]:
-            observed_distance = float(distance_lookup[(left_identifier, right_identifier)])
+            observed_distance = float(
+                distance_lookup[(left_identifier, right_identifier)]
+            )
             if not math.isfinite(observed_distance) or observed_distance <= 0.0:
                 raise InvalidDistanceMatrixError(
                     "fitch-margoliash fitting requires strictly positive finite off-diagonal observed distances",

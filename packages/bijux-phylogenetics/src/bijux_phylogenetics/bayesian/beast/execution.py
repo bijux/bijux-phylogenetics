@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from bijux_phylogenetics.bayesian.posterior_execution import (
     run_bayesian_posterior_execution,
 )
+
 from .logs import (
     parse_beast_log,
 )
@@ -29,15 +30,16 @@ def run_beast_posterior_inference(
     incomplete_run_policy: str = "reject",
 ) -> EngineWorkflowReport:
     """Run a prepared BEAST XML analysis and validate the primary posterior outputs."""
+    from bijux_phylogenetics.engines.validation.preflight import (
+        require_external_engine_surface,
+    )
+
     from ._shared import (
         _beast_artifact_error,
         _beast_output_path,
         read_engine_version,
         resolve_engine_executable,
         validate_timeout_seconds,
-    )
-    from bijux_phylogenetics.engines.validation.preflight import (
-        require_external_engine_surface,
     )
 
     if not xml_path.exists():

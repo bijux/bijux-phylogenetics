@@ -140,9 +140,9 @@ from .state import (
     _validate_support_value_count,
     _validate_tree_output,
     _validate_tree_set_output,
+    _write_alignment_trimming_summary_table,
     _write_coding_exclusion_table,
     _write_coding_summary_table,
-    _write_alignment_trimming_summary_table,
 )
 
 _MAFFT_ALIGNMENT_MODE_ARGUMENTS: dict[str, tuple[str, ...]] = {

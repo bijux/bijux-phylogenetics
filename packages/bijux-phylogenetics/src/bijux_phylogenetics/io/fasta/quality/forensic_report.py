@@ -8,12 +8,18 @@ from ..coding import inspect_coding_alignment
 from ..records import summarise_fasta
 from .quality_report import build_alignment_quality_report
 from .readiness import summarize_alignment_readiness
-from .sequence_review import build_duplicate_sequence_policy_report
-from .sequence_review import build_sequence_quality_ranking
-from .site_diagnostics import assess_alignment_low_information
-from .site_diagnostics import build_ambiguous_alignment_column_report
-from .window_diagnostics import detect_over_aligned_regions
-from .window_diagnostics import detect_under_aligned_regions
+from .sequence_review import (
+    build_duplicate_sequence_policy_report,
+    build_sequence_quality_ranking,
+)
+from .site_diagnostics import (
+    assess_alignment_low_information,
+    build_ambiguous_alignment_column_report,
+)
+from .window_diagnostics import (
+    detect_over_aligned_regions,
+    detect_under_aligned_regions,
+)
 
 
 def build_alignment_forensic_report(path: Path) -> AlignmentForensicReport:

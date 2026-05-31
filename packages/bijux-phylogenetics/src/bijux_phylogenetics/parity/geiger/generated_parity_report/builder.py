@@ -82,9 +82,7 @@ def build_generated_geiger_parity_report(
     )
     sim_char_report = compatibility_surface._load_sim_char_summary()
     large_tree_summary = compatibility_surface._load_large_tree_benchmark_summary()
-    real_dataset_summary = (
-        compatibility_surface._load_real_dataset_benchmark_summary()
-    )
+    real_dataset_summary = compatibility_surface._load_real_dataset_benchmark_summary()
 
     return GeneratedGeigerParityReport(
         generated_at_utc=datetime.now(UTC).isoformat(),

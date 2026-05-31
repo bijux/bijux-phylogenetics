@@ -47,9 +47,7 @@ def build_machine_manifest(
         "output_paths": [str(path) for path in artifact_paths],
         "output_checksums": {str(path): sha256_file(path) for path in artifact_paths},
         "reproducibility_manifest_path": str(reproducibility_manifest_path),
-        "reproducibility_manifest_checksum": sha256_file(
-            reproducibility_manifest_path
-        ),
+        "reproducibility_manifest_checksum": sha256_file(reproducibility_manifest_path),
         "reproducibility_manifest": reproducibility_manifest,
         "layout": layout,
         "plot_row_limit": plot_row_limit,

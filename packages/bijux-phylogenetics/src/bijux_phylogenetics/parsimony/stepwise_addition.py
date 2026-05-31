@@ -29,7 +29,10 @@ def build_parsimony_stepwise_addition_tree(
     state_order: list[str] | None = None,
     cost_matrix: SankoffCostMatrix | Path | None = None,
     allow_asymmetric_costs: bool = False,
-    character_weights: ParsimonyCharacterWeights | Mapping[str, float] | Path | None = None,
+    character_weights: ParsimonyCharacterWeights
+    | Mapping[str, float]
+    | Path
+    | None = None,
 ) -> tuple[PhyloTree, StepwiseAdditionTreeReport]:
     """Build one rooted tree by greedy stepwise addition under governed parsimony scoring."""
     workflow_name = "parsimony stepwise addition"
@@ -57,7 +60,9 @@ def build_parsimony_stepwise_addition_tree(
     )
 
     def score_tree(tree: PhyloTree) -> float:
-        restricted_matrix = _restrict_matrix_to_tree_taxa(resolved_matrix, tree.tip_names)
+        restricted_matrix = _restrict_matrix_to_tree_taxa(
+            resolved_matrix, tree.tip_names
+        )
         return score_topology_search_tree(
             tree,
             restricted_matrix,
@@ -84,10 +89,7 @@ def _restrict_matrix_to_tree_taxa(
         matrix_path=matrix.matrix_path,
         taxon_column=matrix.taxon_column,
         character_ids=matrix.character_ids,
-        states_by_taxon={
-            taxon: matrix.states_by_taxon[taxon]
-            for taxon in tip_names
-        },
+        states_by_taxon={taxon: matrix.states_by_taxon[taxon] for taxon in tip_names},
     )
 
 

@@ -37,9 +37,9 @@ def summarize_gene_tree_conflicts(
     analysis = _analyze_tree_set(path)
     topology_clusters = _build_topology_cluster_report(analysis)
     reference_cluster = topology_clusters.clusters[0]
-    reference_tree = analysis.rooted_representatives[reference_cluster.rooted_topology_id][
-        2
-    ]
+    reference_tree = analysis.rooted_representatives[
+        reference_cluster.rooted_topology_id
+    ][2]
     clade_frequencies = _build_clade_frequency_report(analysis)
     quartet_report = _build_gene_tree_quartet_concordance_report(
         species_tree_path=path,

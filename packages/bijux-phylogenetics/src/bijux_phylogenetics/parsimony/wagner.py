@@ -158,11 +158,7 @@ def resolve_wagner_character_state_order(
 ) -> _CharacterStateOrder:
     if state_order is not None:
         duplicate_states = sorted(
-            {
-                state
-                for state in state_order
-                if state_order.count(state) > 1
-            }
+            {state for state in state_order if state_order.count(state) > 1}
         )
         if duplicate_states:
             raise ParsimonyAnalysisError(
@@ -229,7 +225,8 @@ def _score_character(
             }
             continue
         child_cost_vectors = [
-            node_costs[child.node_id or node_signature(child)] for child in node.children
+            node_costs[child.node_id or node_signature(child)]
+            for child in node.children
         ]
         node_costs[node_key] = {}
         for parent_state in state_order.labels:
@@ -238,9 +235,7 @@ def _score_character(
             for child_cost_vector in child_cost_vectors:
                 total_cost += min(
                     child_cost_vector[child_state]
-                    + abs(
-                        parent_coordinate - state_order.coordinates[child_state]
-                    )
+                    + abs(parent_coordinate - state_order.coordinates[child_state])
                     for child_state in state_order.labels
                 )
             node_costs[node_key][parent_state] = total_cost

@@ -178,4 +178,3 @@ class AncestralTransitionTreeSetReport:
     transition_rows: list[AncestralTransitionTreeSetCountRow]
     exclusions: list[AncestralTransitionExclusion]
     warnings: list[str]
-

@@ -12,7 +12,7 @@ from .contracts import (
     TreeSetMaximumCladeCredibilityCandidateRow,
     TreeSetMaximumCladeCredibilityReport,
 )
-from .inventory import _TreeSetAnalysis, _analyze_tree_set, _require_exact_taxa
+from .inventory import _analyze_tree_set, _require_exact_taxa, _TreeSetAnalysis
 
 
 def _score_candidate_tree(
@@ -47,7 +47,9 @@ def _compute_maximum_clade_credibility_from_analysis(
         newick = dumps_newick(tree)
         raw_tree_counts[newick] = raw_tree_counts.get(newick, 0) + 1
 
-    scored_rows: list[tuple[float, int, TreeSetMaximumCladeCredibilityCandidateRow]] = []
+    scored_rows: list[
+        tuple[float, int, TreeSetMaximumCladeCredibilityCandidateRow]
+    ] = []
     for record, tree in zip(analysis.records, analysis.trees, strict=True):
         candidate_newick = dumps_newick(tree)
         score = _score_candidate_tree(
@@ -64,7 +66,9 @@ def _compute_maximum_clade_credibility_from_analysis(
                     source_tree_index=record.index,
                     rooted_topology_id=record.rooted_topology_id,
                     raw_tree_count=raw_tree_counts[candidate_newick],
-                    raw_tree_frequency=round(raw_tree_counts[candidate_newick] / tree_count, 15),
+                    raw_tree_frequency=round(
+                        raw_tree_counts[candidate_newick] / tree_count, 15
+                    ),
                     clade_credibility_score=score,
                     candidate_newick=candidate_newick,
                 ),
@@ -74,7 +78,9 @@ def _compute_maximum_clade_credibility_from_analysis(
     ranked_rows = sorted(scored_rows, key=lambda item: (-item[0], item[1]))
     selected_score, selected_index, selected_row = ranked_rows[0]
     selected_tree = analysis.trees[selected_index - 1]
-    selected_rooted_topology_id = analysis.records[selected_index - 1].rooted_topology_id
+    selected_rooted_topology_id = analysis.records[
+        selected_index - 1
+    ].rooted_topology_id
     rows = [
         TreeSetMaximumCladeCredibilityCandidateRow(
             score_rank=rank,

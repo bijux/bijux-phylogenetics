@@ -59,7 +59,7 @@ def _validate_pair_weights(
     pair_weights: dict[tuple[str, str], float] | None,
 ) -> dict[tuple[str, str], float]:
     if pair_weights is None:
-        return {pair: 1.0 for pair in ordered_pairs}
+        return dict.fromkeys(ordered_pairs, 1.0)
     resolved_weights: dict[tuple[str, str], float] = {}
     for pair in ordered_pairs:
         if pair not in pair_weights:
@@ -104,7 +104,10 @@ def build_fixed_topology_least_squares_system(
         incidence_rows.append(
             [
                 1.0
-                if ((left_identifier in descendant_set) != (right_identifier in descendant_set))
+                if (
+                    (left_identifier in descendant_set)
+                    != (right_identifier in descendant_set)
+                )
                 else 0.0
                 for descendant_set in descendant_sets
             ]
@@ -126,7 +129,9 @@ def solve_weighted_least_squares(
     system: LeastSquaresSystem,
 ) -> tuple[numpy.ndarray, numpy.ndarray, int, list[float]]:
     """Solve one weighted least-squares system and return coefficients and fit diagnostics."""
-    weighted_incidence = system.incidence * numpy.sqrt(system.weight_vector)[:, numpy.newaxis]
+    weighted_incidence = (
+        system.incidence * numpy.sqrt(system.weight_vector)[:, numpy.newaxis]
+    )
     weighted_observed = system.observed * numpy.sqrt(system.weight_vector)
     solution, _residuals, rank, singular_values = numpy.linalg.lstsq(
         weighted_incidence,

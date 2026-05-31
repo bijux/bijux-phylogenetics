@@ -11,9 +11,9 @@ from bijux_phylogenetics.phylo.topology.clades import (
     rooted_topology_fingerprint,
 )
 from bijux_phylogenetics.phylo.topology.models import (
-    RootedNniNeighborRow,
     RootedNniMoveApplicationReport,
     RootedNniNeighborhoodReport,
+    RootedNniNeighborRow,
 )
 
 from .affected_subtrees import summarize_affected_subtrees
@@ -78,9 +78,7 @@ def iter_rooted_nni_move_candidates(tree: PhyloTree):
                     parent_node_id=require_rooted_nni_node_id(parent),
                     child_node_id=require_rooted_nni_node_id(child),
                     sibling_node_id=require_rooted_nni_node_id(sibling),
-                    exchanged_child_node_id=require_rooted_nni_node_id(
-                        exchanged_child
-                    ),
+                    exchanged_child_node_id=require_rooted_nni_node_id(exchanged_child),
                     pivot_branch_id=rooted_nni_clade_id(child),
                     sibling_clade_id=rooted_nni_clade_id(sibling),
                     exchanged_clade_id=rooted_nni_clade_id(exchanged_child),
@@ -210,8 +208,7 @@ def summarize_rooted_nni_move_application(
         selected_exchanged_clade_id=selected_candidate.exchanged_clade_id,
         moved_tree_newick=moved_tree.to_newick(),
         moved_topology_fingerprint=moved_topology_fingerprint,
-        moved_topology_changed=moved_topology_fingerprint
-        != input_topology_fingerprint,
+        moved_topology_changed=moved_topology_fingerprint != input_topology_fingerprint,
         reverse_parent_node_id=reverse_candidate.parent_node_id,
         reverse_child_node_id=reverse_candidate.child_node_id,
         reverse_sibling_node_id=reverse_candidate.sibling_node_id,
@@ -315,9 +312,7 @@ def enumerate_rooted_nni_neighbors(
             )
         )
     duplicate_neighbor_topologies = sorted(
-        fingerprint
-        for fingerprint, count in topology_counts.items()
-        if count > 1
+        fingerprint for fingerprint, count in topology_counts.items() if count > 1
     )
     report = RootedNniNeighborhoodReport(
         algorithm="rooted-nni-neighbor-enumeration",
@@ -367,7 +362,9 @@ def _validate_rooted_nni_neighbor_report(
             "rooted NNI enumeration did not generate the expected number of neighbors"
         )
     if report.duplicate_neighbor_topologies:
-        raise ValueError("rooted NNI enumeration generated duplicate neighbor topologies")
+        raise ValueError(
+            "rooted NNI enumeration generated duplicate neighbor topologies"
+        )
     if report.missing_tip_taxa or report.unexpected_tip_taxa:
         raise ValueError("rooted NNI enumeration changed the input taxon set")
     invalid_neighbor_rows = [
@@ -384,7 +381,9 @@ def _find_rooted_nni_node_by_signature(
     for node in tree.iter_nodes(order="preorder"):
         if frozenset(descendant_taxa(node)) == signature:
             return node
-    raise KeyError(f"tree does not contain descendant-taxa signature '{sorted(signature)}'")
+    raise KeyError(
+        f"tree does not contain descendant-taxa signature '{sorted(signature)}'"
+    )
 
 
 def _find_rooted_nni_direct_child_by_signature(
@@ -533,7 +532,9 @@ def write_rooted_nni_run_json(
             for row in report.neighbor_rows
         ],
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 

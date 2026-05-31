@@ -206,15 +206,13 @@ def fit_discrete_mk_model_from_dataset(
     ascertainment_conditioning_log_probability: float | None = None
     invariant_pattern_log_probability: float | None = None
     if resolved_ascertainment_policy == "lewis-variable-only":
-        ascertainment_conditioning_log_probability = (
-            _variable_pattern_log_probability(
-                fit_tree,
-                taxa=list(dataset.taxa),
-                state_order=state_order,
-                rate_matrix=rate_matrix,
-                root_prior=root_prior,
-                root_prior_mode="observed",
-            )
+        ascertainment_conditioning_log_probability = _variable_pattern_log_probability(
+            fit_tree,
+            taxa=list(dataset.taxa),
+            state_order=state_order,
+            rate_matrix=rate_matrix,
+            root_prior=root_prior,
+            root_prior_mode="observed",
         )
         invariant_pattern_log_probability = _invariant_pattern_log_probability(
             fit_tree,

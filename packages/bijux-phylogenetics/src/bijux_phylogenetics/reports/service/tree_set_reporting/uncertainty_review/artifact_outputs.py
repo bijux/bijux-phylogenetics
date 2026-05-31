@@ -133,7 +133,8 @@ def finalize_tree_uncertainty_outputs(
     html_size_bytes = out_path.stat().st_size
     manifest_size_bytes = artifact_manifest_path.stat().st_size
     linked_artifact_bytes = (
-        sum(path.stat().st_size for path in artifact_paths.values()) + manifest_size_bytes
+        sum(path.stat().st_size for path in artifact_paths.values())
+        + manifest_size_bytes
     )
     total_output_bytes = html_size_bytes + linked_artifact_bytes
     machine_manifest["linked_artifacts"]["tree_uncertainty_manifest"] = {

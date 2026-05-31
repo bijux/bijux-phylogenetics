@@ -98,9 +98,9 @@ def build_residual_covariance_diagnostics(
         condition_number = math.inf
     else:
         inverse = invert_matrix(covariance_matrix)
-        condition_number = matrix_infinity_norm(covariance_matrix) * matrix_infinity_norm(
-            inverse
-        )
+        condition_number = matrix_infinity_norm(
+            covariance_matrix
+        ) * matrix_infinity_norm(inverse)
     return MultivariateResidualCovarianceDiagnostics(
         response_count=response_count,
         matrix_rank=rank,

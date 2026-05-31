@@ -9,7 +9,7 @@ def clade_observed_state_counts(
     observed_states_by_taxon: Mapping[str, str],
 ) -> dict[str, int]:
     """Count observed tip states that support a candidate clade state."""
-    counts = {state: 0 for state in candidate_states}
+    counts = dict.fromkeys(candidate_states, 0)
     for taxon in clade_taxa:
         observed_state = observed_states_by_taxon.get(taxon)
         if observed_state in counts:

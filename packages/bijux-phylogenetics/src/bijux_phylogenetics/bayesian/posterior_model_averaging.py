@@ -87,7 +87,8 @@ def summarize_metropolis_hastings_model_averaged_estimates(
 
 def summarize_posterior_model_averaged_estimates(
     *,
-    sampled_states: list[BayesianPhylogeneticState] | tuple[BayesianPhylogeneticState, ...],
+    sampled_states: list[BayesianPhylogeneticState]
+    | tuple[BayesianPhylogeneticState, ...],
     model_family: str = _DEFAULT_MODEL_FAMILY,
 ) -> PosteriorModelAveragingReport:
     """Summarize posterior model support and model-averaged estimates."""
@@ -97,9 +98,13 @@ def summarize_posterior_model_averaged_estimates(
         raise AssertionError(
             "posterior model-averaging summary reached one unsupported family handler"
         )
-    estimate_values_by_model: dict[str, list[float]] = {model_name: [] for model_name in _NUCLEOTIDE_MODELS}
+    estimate_values_by_model: dict[str, list[float]] = {
+        model_name: [] for model_name in _NUCLEOTIDE_MODELS
+    }
     for sampled_state in validated_sampled_states:
-        model_name, estimate_value = _resolve_nucleotide_model_averaging_sample(sampled_state)
+        model_name, estimate_value = _resolve_nucleotide_model_averaging_sample(
+            sampled_state
+        )
         estimate_values_by_model[model_name].append(estimate_value)
     sample_count = len(validated_sampled_states)
     support_rows = _build_support_rows(
@@ -118,9 +123,7 @@ def summarize_posterior_model_averaged_estimates(
     return PosteriorModelAveragingReport(
         sample_count=sample_count,
         model_family=validated_model_family,
-        sampled_models=[
-            support_row.model_name for support_row in support_rows
-        ],
+        sampled_models=[support_row.model_name for support_row in support_rows],
         support_rows=support_rows,
         per_model_estimate_rows=per_model_estimate_rows,
         model_averaged_estimate_rows=model_averaged_estimate_rows,
@@ -150,7 +153,9 @@ def _resolve_nucleotide_model_averaging_sample(
             details={
                 "model_name": model_name,
                 "allowed_model_names": list(_NUCLEOTIDE_MODELS),
-                "declared_model_families": list(list_reversible_jump_model_switch_families()),
+                "declared_model_families": list(
+                    list_reversible_jump_model_switch_families()
+                ),
             },
         )
     if normalized_model_name == "JC69":
@@ -185,7 +190,8 @@ def _resolve_nucleotide_model_averaging_sample(
 
 
 def _validate_sampled_states(
-    sampled_states: list[BayesianPhylogeneticState] | tuple[BayesianPhylogeneticState, ...],
+    sampled_states: list[BayesianPhylogeneticState]
+    | tuple[BayesianPhylogeneticState, ...],
 ) -> tuple[BayesianPhylogeneticState, ...]:
     validated_sampled_states = tuple(sampled_states)
     if not validated_sampled_states:
@@ -233,9 +239,7 @@ def _build_per_model_estimate_rows(
     support_rows: list[PosteriorModelSupportRow],
     sample_count: int,
 ) -> list[PosteriorModelEstimateRow]:
-    support_by_model = {
-        row.model_name: row for row in support_rows
-    }
+    support_by_model = {row.model_name: row for row in support_rows}
     rows: list[PosteriorModelEstimateRow] = []
     for model_name in [support_row.model_name for support_row in support_rows]:
         values = estimate_values_by_model[model_name]

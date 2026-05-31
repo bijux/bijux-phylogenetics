@@ -13,8 +13,8 @@ from .matrix import load_parsimony_character_matrix
 from .models import (
     FitchCharacterMatrix,
     ParsimonyCharacterWeights,
-    SankoffCostMatrix,
     SankoffCharacterScore,
+    SankoffCostMatrix,
     SankoffNodeCost,
     SankoffNodeSelection,
     SankoffScoreReport,
@@ -205,7 +205,8 @@ def _score_character(
             }
             continue
         child_cost_vectors = [
-            node_costs[child.node_id or node_signature(child)] for child in node.children
+            node_costs[child.node_id or node_signature(child)]
+            for child in node.children
         ]
         node_costs[node_key] = {}
         for parent_state in cost_matrix.states:

@@ -24,11 +24,14 @@ from bijux_phylogenetics.phylo.likelihood.models import (
 from bijux_phylogenetics.phylo.likelihood.nni_search import (
     search_nucleotide_likelihood_nni,
 )
-from bijux_phylogenetics.phylo.likelihood.starting_tree_pool import (
-    build_nucleotide_likelihood_starting_tree_pool,
+from bijux_phylogenetics.phylo.likelihood.spr_search import (
+    search_nucleotide_likelihood_spr,
 )
 from bijux_phylogenetics.phylo.likelihood.starting_tree_generation import (
     build_random_likelihood_start_tree,
+)
+from bijux_phylogenetics.phylo.likelihood.starting_tree_pool import (
+    build_nucleotide_likelihood_starting_tree_pool,
 )
 from bijux_phylogenetics.phylo.likelihood.starting_tree_selection import (
     select_nucleotide_likelihood_starting_tree_pool,
@@ -36,9 +39,6 @@ from bijux_phylogenetics.phylo.likelihood.starting_tree_selection import (
 )
 from bijux_phylogenetics.phylo.likelihood.starting_tree_validation import (
     validate_nucleotide_likelihood_starting_tree,
-)
-from bijux_phylogenetics.phylo.likelihood.spr_search import (
-    search_nucleotide_likelihood_spr,
 )
 from bijux_phylogenetics.phylo.likelihood.topology_search import (
     normalize_nucleotide_topology_search_records,
@@ -96,8 +96,8 @@ def search_nucleotide_likelihood_multi_start(
 ) -> NucleotideLikelihoodMultiStartSearchReport:
     """Search a nucleotide likelihood surface from multiple independent rooted starts."""
     resolved_tree, resolved_tree_path = resolve_nucleotide_topology_search_tree(tree)
-    resolved_records, resolved_alignment_path = resolve_nucleotide_topology_search_records(
-        records
+    resolved_records, resolved_alignment_path = (
+        resolve_nucleotide_topology_search_records(records)
     )
     normalized_local_search_method = validate_likelihood_multi_start_method(
         local_search_method
@@ -122,9 +122,11 @@ def search_nucleotide_likelihood_multi_start(
         normalized_local_search_method,
         evaluation_budget,
     )
-    _normalized_records, compressed_patterns = normalize_nucleotide_topology_search_records(
-        resolved_records,
-        owner_name="nucleotide likelihood multi-start search",
+    _normalized_records, compressed_patterns = (
+        normalize_nucleotide_topology_search_records(
+            resolved_records,
+            owner_name="nucleotide likelihood multi-start search",
+        )
     )
     validate_nucleotide_likelihood_starting_tree(
         resolved_tree,
@@ -142,12 +144,14 @@ def search_nucleotide_likelihood_multi_start(
         available_start_tree_count = len(start_tree_candidates)
         report_start_tree_source_policy = validated_start_tree_source_policy
     else:
-        starting_tree_pool_report = _build_scored_starting_tree_pool_for_multi_start_search(
-            resolved_tree,
-            resolved_records,
-            model_name=model_name,
-            random_start_tree_count=max(1, validated_start_tree_count - 2),
-            random_start_tree_seed=start_tree_seed,
+        starting_tree_pool_report = (
+            _build_scored_starting_tree_pool_for_multi_start_search(
+                resolved_tree,
+                resolved_records,
+                model_name=model_name,
+                random_start_tree_count=max(1, validated_start_tree_count - 2),
+                random_start_tree_seed=start_tree_seed,
+            )
         )
         selected_start_trees = select_nucleotide_likelihood_starting_tree_pool(
             starting_tree_pool_report,
@@ -217,7 +221,9 @@ def search_nucleotide_likelihood_multi_start(
                 final_likelihood_rank=0,
                 branch_reoptimization_policy=local_report.branch_reoptimization_policy,
                 substitution_parameter_policy=local_report.substitution_parameter_policy,
-                substitution_parameter_values=dict(local_report.substitution_parameter_values),
+                substitution_parameter_values=dict(
+                    local_report.substitution_parameter_values
+                ),
                 substitution_parameter_warnings=list(
                     local_report.substitution_parameter_warnings
                 ),
@@ -491,14 +497,12 @@ def _prefer_multi_start_run(
     left: NucleotideLikelihoodMultiStartRunSummary,
     right: NucleotideLikelihoodMultiStartRunSummary,
 ) -> bool:
-    if (
-        left.final_log_likelihood > right.final_log_likelihood
-        and not math.isclose(left.final_log_likelihood, right.final_log_likelihood)
+    if left.final_log_likelihood > right.final_log_likelihood and not math.isclose(
+        left.final_log_likelihood, right.final_log_likelihood
     ):
         return True
-    if (
-        right.final_log_likelihood > left.final_log_likelihood
-        and not math.isclose(left.final_log_likelihood, right.final_log_likelihood)
+    if right.final_log_likelihood > left.final_log_likelihood and not math.isclose(
+        left.final_log_likelihood, right.final_log_likelihood
     ):
         return False
     if left.final_topology_fingerprint != right.final_topology_fingerprint:
@@ -520,7 +524,8 @@ def _compare_multi_start_runs(
 
 
 def resolve_multi_start_local_search_iteration_count(
-    local_report: NucleotideLikelihoodNniSearchReport | NucleotideLikelihoodSprSearchReport,
+    local_report: NucleotideLikelihoodNniSearchReport
+    | NucleotideLikelihoodSprSearchReport,
 ) -> int:
     """Resolve one comparable local-search iteration count for a multi-start run."""
     return local_report.iteration_count
@@ -625,9 +630,7 @@ def write_nucleotide_likelihood_multi_start_summary_table(
             row.start_tree_newick,
             row.final_tree_newick,
         ]
-        rows.append(
-            "\t".join("" if value is None else str(value) for value in payload)
-        )
+        rows.append("\t".join("" if value is None else str(value) for value in payload))
     path.write_text("\n".join(rows) + "\n", encoding="utf-8")
     return path
 
@@ -688,7 +691,9 @@ def write_nucleotide_likelihood_multi_start_run_json(
             for row in report.run_summaries
         ],
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 

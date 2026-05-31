@@ -109,9 +109,7 @@ def run_compare_command(args: Any, *, parser: argparse.ArgumentParser) -> int:
     dlt_result = run_compare_duplication_loss_transfer_command(args, parser=parser)
     if dlt_result is not None:
         return dlt_result
-    deep_coalescence_result = run_compare_deep_coalescence_command(
-        args, parser=parser
-    )
+    deep_coalescence_result = run_compare_deep_coalescence_command(args, parser=parser)
     if deep_coalescence_result is not None:
         return deep_coalescence_result
     pruning_result = run_compare_pruning_command(args, parser=parser)

@@ -262,4 +262,3 @@ def _distance_from_summary(
     if model == "amino-acid-p-distance":
         return _protein_p_distance(summary)
     raise ValueError(f"unsupported distance model: {model}")
-

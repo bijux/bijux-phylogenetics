@@ -13,14 +13,14 @@ from bijux_phylogenetics.phylo.alignment import (
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
 from .character_policy import (
-    _compatible_raw_sequence_types,
     _DNA_CHARACTERS,
     _EXPLICIT_MISSING_CHARACTERS,
     _GAP_CHARACTERS,
-    _observed_raw_sequence_characters,
     _PROTEIN_CHARACTERS,
     _PROTEIN_EXCLUSIVE_CHARACTERS_UPPER,
     _RNA_CHARACTERS,
+    _compatible_raw_sequence_types,
+    _observed_raw_sequence_characters,
 )
 
 
@@ -78,9 +78,7 @@ def _detect_illegal_sequence_characters(
     elif alphabet == "rna":
         allowed = _RNA_CHARACTERS | _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS
     elif alphabet == "protein":
-        allowed = (
-            _PROTEIN_CHARACTERS | _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS
-        )
+        allowed = _PROTEIN_CHARACTERS | _GAP_CHARACTERS | _EXPLICIT_MISSING_CHARACTERS
     else:
         allowed = (
             _DNA_CHARACTERS

@@ -38,7 +38,9 @@ def compute_patristic_residual_diagnostics(
     for left_index, left_identifier in enumerate(identifiers):
         for right_index in range(left_index + 1, len(identifiers)):
             right_identifier = identifiers[right_index]
-            observed_distance = float(distance_lookup[(left_identifier, right_identifier)])
+            observed_distance = float(
+                distance_lookup[(left_identifier, right_identifier)]
+            )
             fitted_distance = float(fitted_lookup[(left_identifier, right_identifier)])
             residual = round(
                 observed_distance - fitted_distance,
@@ -170,7 +172,9 @@ def write_patristic_residual_run_json(
         "max_absolute_residual": report.max_absolute_residual,
         "rows": [asdict(row) for row in report.rows],
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 

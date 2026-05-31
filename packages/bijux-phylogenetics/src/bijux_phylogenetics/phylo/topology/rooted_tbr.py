@@ -12,8 +12,8 @@ from bijux_phylogenetics.phylo.topology.clades import (
 )
 from bijux_phylogenetics.phylo.topology.models import (
     RootedTbrMoveApplicationReport,
-    RootedTbrNeighborRow,
     RootedTbrNeighborhoodReport,
+    RootedTbrNeighborRow,
 )
 
 from .affected_subtrees import summarize_affected_subtrees
@@ -80,7 +80,9 @@ class _RootedTbrGraph:
         self.node_labels[node_id] = label
         self.adjacency.setdefault(node_id, {})
 
-    def add_edge(self, left_node_id: str, right_node_id: str, length: float | None) -> None:
+    def add_edge(
+        self, left_node_id: str, right_node_id: str, length: float | None
+    ) -> None:
         self.adjacency.setdefault(left_node_id, {})[right_node_id] = length
         self.adjacency.setdefault(right_node_id, {})[left_node_id] = length
 
@@ -111,7 +113,9 @@ def rooted_tbr_clade_id(node: TreeNode) -> str:
 def require_rooted_tbr_node_id(node: TreeNode) -> str:
     """Require one refreshed stable node identifier on a rooted TBR tree."""
     if node.node_id is None:
-        raise AssertionError("rooted TBR enumeration requires refreshed node identities")
+        raise AssertionError(
+            "rooted TBR enumeration requires refreshed node identities"
+        )
     return node.node_id
 
 
@@ -176,7 +180,9 @@ def enumerate_rooted_tbr_neighbors(
                     duplicate_reconnection_counts.get(topology_fingerprint, 0) + 1
                 )
                 if topology_fingerprint in neighbor_row_by_fingerprint:
-                    representative_row = neighbor_row_by_fingerprint[topology_fingerprint]
+                    representative_row = neighbor_row_by_fingerprint[
+                        topology_fingerprint
+                    ]
                     neighbor_row_by_fingerprint[topology_fingerprint] = (
                         RootedTbrNeighborRow(
                             neighbor_index=representative_row.neighbor_index,
@@ -196,25 +202,27 @@ def enumerate_rooted_tbr_neighbors(
                         )
                     )
                     continue
-                neighbor_row_by_fingerprint[topology_fingerprint] = RootedTbrNeighborRow(
-                    neighbor_index=len(neighbor_row_by_fingerprint) + 1,
-                    representative_cut_edge_id=cut_candidate.cut_edge_id,
-                    representative_cut_descendant_taxa=list(
-                        cut_candidate.cut_descendant_taxa
-                    ),
-                    representative_left_attachment_branch_id=left_attachment.branch_id,
-                    representative_left_attachment_descendant_taxa=list(
-                        left_attachment.descendant_taxa
-                    ),
-                    representative_right_attachment_branch_id=right_attachment.branch_id,
-                    representative_right_attachment_descendant_taxa=list(
-                        right_attachment.descendant_taxa
-                    ),
-                    supporting_reconnection_count=1,
-                    neighbor_tree_newick=neighbor_tree.to_newick(),
-                    neighbor_topology_fingerprint=topology_fingerprint,
-                    tip_order=neighbor_tree.tip_names,
-                    validation_errors=neighbor_tree.validation_errors(),
+                neighbor_row_by_fingerprint[topology_fingerprint] = (
+                    RootedTbrNeighborRow(
+                        neighbor_index=len(neighbor_row_by_fingerprint) + 1,
+                        representative_cut_edge_id=cut_candidate.cut_edge_id,
+                        representative_cut_descendant_taxa=list(
+                            cut_candidate.cut_descendant_taxa
+                        ),
+                        representative_left_attachment_branch_id=left_attachment.branch_id,
+                        representative_left_attachment_descendant_taxa=list(
+                            left_attachment.descendant_taxa
+                        ),
+                        representative_right_attachment_branch_id=right_attachment.branch_id,
+                        representative_right_attachment_descendant_taxa=list(
+                            right_attachment.descendant_taxa
+                        ),
+                        supporting_reconnection_count=1,
+                        neighbor_tree_newick=neighbor_tree.to_newick(),
+                        neighbor_topology_fingerprint=topology_fingerprint,
+                        tip_order=neighbor_tree.tip_names,
+                        validation_errors=neighbor_tree.validation_errors(),
+                    )
                 )
     neighbor_rows = list(neighbor_row_by_fingerprint.values())
     report = RootedTbrNeighborhoodReport(
@@ -285,7 +293,10 @@ def iter_rooted_tbr_move_candidates(tree: PhyloTree):
                     right_attachment_descendant_taxa=right_attachment.descendant_taxa,
                 )
                 moved_tree = apply_rooted_tbr_move(tree, candidate)
-                if rooted_topology_fingerprint(moved_tree) == input_topology_fingerprint:
+                if (
+                    rooted_topology_fingerprint(moved_tree)
+                    == input_topology_fingerprint
+                ):
                     continue
                 yield candidate
 
@@ -664,7 +675,9 @@ def write_rooted_tbr_run_json(
             for row in report.neighbor_rows
         ],
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 
@@ -865,7 +878,10 @@ def _graph_edges_with_labels(
             if edge_key in seen_edges:
                 continue
             seen_edges.add(edge_key)
-            if left_node_id in graph.interface_node_ids or right_node_id in graph.interface_node_ids:
+            if (
+                left_node_id in graph.interface_node_ids
+                or right_node_id in graph.interface_node_ids
+            ):
                 yield (
                     left_node_id,
                     right_node_id,
@@ -873,13 +889,17 @@ def _graph_edges_with_labels(
                     component_tip_taxa,
                 )
                 continue
-            left_taxa = _graph_side_tip_taxa(graph, left_node_id, blocked_node_id=right_node_id)
-            right_taxa = _graph_side_tip_taxa(graph, right_node_id, blocked_node_id=left_node_id)
+            left_taxa = _graph_side_tip_taxa(
+                graph, left_node_id, blocked_node_id=right_node_id
+            )
+            right_taxa = _graph_side_tip_taxa(
+                graph, right_node_id, blocked_node_id=left_node_id
+            )
             non_empty_taxa_sides = [
                 tuple(taxa) for taxa in (left_taxa, right_taxa) if taxa
             ]
             selected_taxa = min(
-                non_empty_taxa_sides if non_empty_taxa_sides else [tuple()],
+                non_empty_taxa_sides if non_empty_taxa_sides else [()],
                 key=lambda taxa: (len(taxa), taxa),
             )
             yield (

@@ -3,14 +3,17 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
+from bijux_phylogenetics.command_line.arguments import (
+    _add_manifest_argument,
+    _add_ultrametric_tolerance_argument,
+)
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.distance import (
+    assess_distance_method_assumptions,
     diagnose_distance_additivity,
     diagnose_distance_saturation,
     diagnose_distance_ultrametricity,
-    assess_distance_method_assumptions,
     inspect_distance_matrix_quality,
     write_distance_additivity_artifacts,
 )
@@ -20,9 +23,6 @@ from .shared import (
     add_ambiguity_policy_option,
     add_distance_model_option,
     add_gap_handling_option,
-)
-from bijux_phylogenetics.command_line.arguments import (
-    _add_ultrametric_tolerance_argument,
 )
 
 
@@ -78,7 +78,9 @@ def add_distance_diagnostic_commands(alignment_subparsers: Any) -> None:
     add_ambiguity_policy_option(alignment_distance_ultrametricity)
     _add_ultrametric_tolerance_argument(alignment_distance_ultrametricity)
     alignment_distance_ultrametricity.add_argument(
-        "--json", action="store_true", help="Emit the ultrametricity diagnostics as JSON."
+        "--json",
+        action="store_true",
+        help="Emit the ultrametricity diagnostics as JSON.",
     )
     _add_manifest_argument(alignment_distance_ultrametricity)
 

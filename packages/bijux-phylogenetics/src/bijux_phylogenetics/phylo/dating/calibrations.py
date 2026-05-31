@@ -16,7 +16,9 @@ def load_fixed_dating_calibrations(
     calibration_path: Path,
 ) -> list[DatingCalibrationAnchor]:
     """Load fixed internal-node calibrations resolved onto one rooted tree."""
-    report = require_feasible_dating_calibration_constraints(tree_path, calibration_path)
+    report = require_feasible_dating_calibration_constraints(
+        tree_path, calibration_path
+    )
     anchors: list[DatingCalibrationAnchor] = []
     date_by_node_id: dict[str, float] = {}
     calibration_id_by_node_id: dict[str, str] = {}

@@ -50,7 +50,9 @@ def cross_validate_penalized_likelihood_smoothing(
     prediction_rows: list[PenalizedLikelihoodCrossValidationPredictionRow] = []
     candidate_rows: list[PenalizedLikelihoodCrossValidationCandidateRow] = []
     for smoothing_parameter in candidate_parameters:
-        candidate_predictions: list[PenalizedLikelihoodCrossValidationPredictionRow] = []
+        candidate_predictions: list[
+            PenalizedLikelihoodCrossValidationPredictionRow
+        ] = []
         for held_out in calibration_rows:
             training_node_dates = {
                 row.node_id: row.fixed_date

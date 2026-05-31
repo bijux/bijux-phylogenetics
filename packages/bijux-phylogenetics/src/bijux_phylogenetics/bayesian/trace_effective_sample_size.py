@@ -44,7 +44,9 @@ class IndependentMetropolisHastingsChainTraceEffectiveSampleSizeReport:
 class IndependentMetropolisHastingsTraceEffectiveSampleSizeReport:
     """One ESS report collection across named independent chains."""
 
-    chain_reports: list[IndependentMetropolisHastingsChainTraceEffectiveSampleSizeReport]
+    chain_reports: list[
+        IndependentMetropolisHastingsChainTraceEffectiveSampleSizeReport
+    ]
 
 
 def compute_trace_integrated_autocorrelation_time(

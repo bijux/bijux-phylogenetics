@@ -221,4 +221,3 @@ def _complete_deletion_positions(
         ):
             retained.append(position)
     return retained
-

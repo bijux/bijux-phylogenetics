@@ -104,7 +104,11 @@ def evaluate_hky85_tree_likelihood(
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
     observation_policy: str = "reject",
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> Hky85TreeLikelihoodReport:
     """Evaluate one fixed-topology HKY85 likelihood from aligned DNA records."""
@@ -113,7 +117,9 @@ def evaluate_hky85_tree_likelihood(
         model_name="HKY85",
         observation_policy=observation_policy,
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     if base_frequencies is None:
         stationary = estimate_empirical_dna_base_frequencies_from_records(
             normalized_records,
@@ -165,7 +171,11 @@ def evaluate_hky85_tree_likelihood_from_alignment(
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
     observation_policy: str = "reject",
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> Hky85TreeLikelihoodReport:
     """Evaluate one fixed-topology HKY85 likelihood from one tree path and alignment."""
@@ -211,7 +221,9 @@ def optimize_hky85_kappa(
         model_name="HKY85",
         observation_policy="reject",
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     if base_frequencies is None:
         stationary = estimate_empirical_dna_base_frequencies_from_records(
             normalized_records,
@@ -358,7 +370,9 @@ def _evaluate_hky85_tree_likelihood_from_patterns(
         }
 
     def site_log_likelihood(states: tuple[str, ...]) -> float:
-        states_by_taxon = dict(zip(compressed_patterns.taxon_order, states, strict=True))
+        states_by_taxon = dict(
+            zip(compressed_patterns.taxon_order, states, strict=True)
+        )
         pruning_pass = postorder_conditional_likelihoods(
             tree,
             state_count=len(state_order),

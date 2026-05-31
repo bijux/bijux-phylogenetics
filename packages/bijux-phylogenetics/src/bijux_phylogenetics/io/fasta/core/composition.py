@@ -10,11 +10,11 @@ from .character_policy import (
     _DNA_CANONICAL,
     _DNA_CHARACTERS,
     _NUCLEOTIDE_GC_CHARACTERS,
-    _observed_residues,
     _PROTEIN_CANONICAL,
     _PROTEIN_CHARACTERS,
     _RNA_CANONICAL,
     _RNA_CHARACTERS,
+    _observed_residues,
 )
 
 

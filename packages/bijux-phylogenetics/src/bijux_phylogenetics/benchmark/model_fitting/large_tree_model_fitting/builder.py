@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
+import tempfile
 
 from .artifact_outputs import (
     write_large_tree_model_fitting_observation_table,

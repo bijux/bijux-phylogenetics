@@ -181,7 +181,9 @@ def _lowest_common_ancestor_for_taxa(
     return best_node
 
 
-def _loss_nodes_for_gain(gain_node: TreeNode, *, derived_taxa: list[str]) -> list[TreeNode]:
+def _loss_nodes_for_gain(
+    gain_node: TreeNode, *, derived_taxa: list[str]
+) -> list[TreeNode]:
     target_taxa = set(derived_taxa)
     loss_nodes: list[TreeNode] = []
 

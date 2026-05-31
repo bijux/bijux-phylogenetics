@@ -38,19 +38,14 @@ def summarize_marginal_ancestral_sites(
             raise TypeError("posterior_by_state grouping bucket must be a dictionary")
         _validate_complete_state_set(posterior_by_state)
         most_likely_state, max_posterior_probability = max(
-            (
-                (state, float(posterior_by_state[state]))
-                for state in DNA_STATE_ORDER
-            ),
+            ((state, float(posterior_by_state[state])) for state in DNA_STATE_ORDER),
             key=lambda item: (item[1], -DNA_STATE_ORDER.index(item[0])),
         )
         summary_rows.append(
             MarginalAncestralSiteSummaryRow(
                 node_id=str(bucket["node_id"]),
                 node_name=(
-                    None
-                    if bucket["node_name"] is None
-                    else str(bucket["node_name"])
+                    None if bucket["node_name"] is None else str(bucket["node_name"])
                 ),
                 descendant_taxa=list(bucket["descendant_taxa"]),
                 pattern_id=str(bucket["pattern_id"]),
@@ -67,7 +62,9 @@ def summarize_marginal_ancestral_sites(
 
 
 def _validate_complete_state_set(posterior_by_state: dict[str, float]) -> None:
-    missing_states = [state for state in DNA_STATE_ORDER if state not in posterior_by_state]
+    missing_states = [
+        state for state in DNA_STATE_ORDER if state not in posterior_by_state
+    ]
     if missing_states:
         raise ValueError(
             "marginal ancestral posterior grouping requires complete DNA state rows; "

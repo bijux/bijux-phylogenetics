@@ -11,8 +11,8 @@ from .fitch import _leaf_taxa, _resolve_tree
 from .matrix import load_parsimony_character_matrix
 from .models import (
     FitchCharacterMatrix,
-    ParsimonyCharacterWeights,
     ParsimonyAncestralState,
+    ParsimonyCharacterWeights,
     ParsimonyReconstructionBranchChange,
     ParsimonyReconstructionCharacterScore,
     ParsimonyReconstructionNodeState,
@@ -295,7 +295,9 @@ def _possible_state_sets(
                 )
             candidate_sets[signature] = {states_by_taxon[node.name][character_id]}
             continue
-        child_sets = [set(candidate_sets[node_signature(child)]) for child in node.children]
+        child_sets = [
+            set(candidate_sets[node_signature(child)]) for child in node.children
+        ]
         candidate = child_sets[0]
         for child_set in child_sets[1:]:
             intersection = candidate & child_set
@@ -381,10 +383,7 @@ def _child_objective(
     child_steps, child_secondary = dynamic_rows[child_signature][child_state]
     branch_change = 0 if parent_state == child_state else 1
     branch_depth = node_depths[child_signature]
-    if algorithm == "acctran":
-        branch_secondary = branch_depth
-    else:
-        branch_secondary = -branch_depth
+    branch_secondary = branch_depth if algorithm == "acctran" else -branch_depth
     return (
         child_steps + branch_change,
         child_secondary + (branch_secondary if branch_change else 0),

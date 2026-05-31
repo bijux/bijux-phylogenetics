@@ -4,11 +4,8 @@ from datetime import date
 import json
 from pathlib import Path
 
-from .definitions import CLAIM_DEFINITIONS
-from .definitions import EVIDENCE_ID
-from .definitions import STUDY_ID
-from .registry import _bundle_root
-from .registry import build_primate_source_fragment_map
+from .definitions import CLAIM_DEFINITIONS, EVIDENCE_ID, STUDY_ID
+from .registry import _bundle_root, build_primate_source_fragment_map
 
 
 def build_primate_summary_bundle_claims(repo_root: Path) -> dict[str, object]:

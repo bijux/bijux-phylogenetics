@@ -7,7 +7,11 @@ from .._shared import (
     XmlElement,
     _beast_artifact_error,
 )
-from ..models import BeastAnalysisXmlIssue, BeastAnalysisXmlLogger, BeastAnalysisXmlReport
+from ..models import (
+    BeastAnalysisXmlIssue,
+    BeastAnalysisXmlLogger,
+    BeastAnalysisXmlReport,
+)
 
 
 def summarize_beast_analysis_xml(path: Path) -> BeastAnalysisXmlReport:

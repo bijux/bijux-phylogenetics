@@ -225,9 +225,7 @@ def _validate_matching_tree_taxa(
 def _count_supported_internal_branches(path: Path) -> int:
     tree = load_tree(path)
     return sum(
-        1
-        for node in tree.iter_nodes()
-        if node is not tree.root and not node.is_leaf()
+        1 for node in tree.iter_nodes() if node is not tree.root and not node.is_leaf()
     )
 
 

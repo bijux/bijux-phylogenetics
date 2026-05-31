@@ -224,9 +224,7 @@ def great_circle_km(
     delta_lambda = math.radians(right_longitude - left_longitude)
     distance_component = (
         math.sin(delta_phi / 2.0) ** 2
-        + math.cos(left_phi)
-        * math.cos(right_phi)
-        * math.sin(delta_lambda / 2.0) ** 2
+        + math.cos(left_phi) * math.cos(right_phi) * math.sin(delta_lambda / 2.0) ** 2
     )
     return stable_value(
         2.0 * _EARTH_RADIUS_KM * math.asin(math.sqrt(distance_component))

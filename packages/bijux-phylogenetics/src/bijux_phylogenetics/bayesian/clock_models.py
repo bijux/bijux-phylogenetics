@@ -575,9 +575,7 @@ def evaluate_relaxed_lognormal_clock_tree_log_prior(
                 expected_substitution_branch_length=float(
                     format(anchor_rate * matched_branch.dated_time_duration, ".15g")
                 ),
-                branch_rate_deviation=float(
-                    format(branch_rate - anchor_rate, ".15g")
-                ),
+                branch_rate_deviation=float(format(branch_rate - anchor_rate, ".15g")),
                 log_prior_contribution=log_prior_contribution,
             )
         )
@@ -685,7 +683,9 @@ def evaluate_local_clock_tree_log_prior(
                 class_clock_rate=float(format(class_clock_rate, ".15g")),
                 branch_rate=float(format(branch_rate, ".15g")),
                 expected_substitution_branch_length=float(
-                    format(class_clock_rate * matched_branch.dated_time_duration, ".15g")
+                    format(
+                        class_clock_rate * matched_branch.dated_time_duration, ".15g"
+                    )
                 ),
                 branch_rate_deviation=float(
                     format(branch_rate - class_clock_rate, ".15g")
@@ -765,9 +765,7 @@ def _require_matching_topology(
 def _branch_lookup_by_descendant_taxa(
     tree: PhyloTree,
 ) -> Mapping[tuple[str, ...], TreeNode]:
-    return {
-        tuple(child.descendant_taxa): child for _parent, child in tree.iter_edges()
-    }
+    return {tuple(child.descendant_taxa): child for _parent, child in tree.iter_edges()}
 
 
 def _validate_positive_clock_parameter(
@@ -875,7 +873,8 @@ def _resolve_local_clock_selectors(
     regime_definitions: list[LocalClockRegimeDefinition],
 ) -> list[_ResolvedLocalClockSelector]:
     node_by_descendant_taxa = {
-        frozenset(node.descendant_taxa): node for node in tree.iter_nodes(order="preorder")
+        frozenset(node.descendant_taxa): node
+        for node in tree.iter_nodes(order="preorder")
     }
     resolved_selectors: list[_ResolvedLocalClockSelector] = []
     for regime_definition in regime_definitions:

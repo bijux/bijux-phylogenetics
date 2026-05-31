@@ -95,9 +95,7 @@ def render_circular_tree_layout(
             if is_collapsed_node(node, collapsed_clade_names):
                 node_point = polar_point(center_x, center_y, radial, angle)
                 left_point = polar_point(center_x, center_y, radial + 18, angle - 0.08)
-                right_point = polar_point(
-                    center_x, center_y, radial + 18, angle + 0.08
-                )
+                right_point = polar_point(center_x, center_y, radial + 18, angle + 0.08)
                 state.overlays.append(
                     f'<polygon points="{node_point.x:.1f},{node_point.y:.1f} {left_point.x:.1f},{left_point.y:.1f} {right_point.x:.1f},{right_point.y:.1f}" fill="#cbd5e1" stroke="#475569" stroke-width="1.5" class="collapsed-clade"/>'
                 )

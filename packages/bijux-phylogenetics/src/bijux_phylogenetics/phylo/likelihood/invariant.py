@@ -53,9 +53,7 @@ def validate_invariant_proportion_bounds(
         model_name=model_name,
     )
     if not (
-        validated_lower_bound
-        <= validated_initial_proportion
-        <= validated_upper_bound
+        validated_lower_bound <= validated_initial_proportion <= validated_upper_bound
     ):
         raise ValueError(
             f"{model_name} initial invariant proportion must lie within the requested bounds"
@@ -95,7 +93,9 @@ def invariant_component_site_likelihood(
             continue
         if state == PROTEIN_GAP_CHARACTER:
             if validated_gap_policy == "reject":
-                raise ValueError(f"{model_name} invariant component gap policy rejects '-'")
+                raise ValueError(
+                    f"{model_name} invariant component gap policy rejects '-'"
+                )
             continue
         if state == PROTEIN_MISSING_CHARACTER:
             if validated_missing_policy == "reject":
@@ -108,7 +108,12 @@ def invariant_component_site_likelihood(
         )
     if not compatible_state_indices:
         return 0.0
-    return float(sum(validated_root_prior[state_index] for state_index in compatible_state_indices))
+    return float(
+        sum(
+            validated_root_prior[state_index]
+            for state_index in compatible_state_indices
+        )
+    )
 
 
 def invariant_mixture_site_likelihood(
@@ -122,9 +127,8 @@ def invariant_mixture_site_likelihood(
         invariant_proportion,
         model_name=model_name,
     )
-    return (
-        validated_invariant_proportion * invariant_component_likelihood
-        + ((1.0 - validated_invariant_proportion) * variable_component_likelihood)
+    return validated_invariant_proportion * invariant_component_likelihood + (
+        (1.0 - validated_invariant_proportion) * variable_component_likelihood
     )
 
 

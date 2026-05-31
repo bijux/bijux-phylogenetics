@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import asdict
-from pathlib import Path
 import json
+from pathlib import Path
 
 from bijux_phylogenetics.io.newick import load_newick, loads_newick, write_newick
 from bijux_phylogenetics.phylo.topology.models import TopologyMoveValidityReport
@@ -397,9 +397,7 @@ def _reject_invalid_rooted_move_tree(
             available_move_count=0,
             validity_decision="rejected",
             rejection_code="topology_move_binary_root_required",
-            rejection_reason=(
-                f"{move_family} move validation requires a binary root"
-            ),
+            rejection_reason=(f"{move_family} move validation requires a binary root"),
             evidence={"root_child_count": len(tree.root.children)},
         )
     invalid_internal_node_ids = [

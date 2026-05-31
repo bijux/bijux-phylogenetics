@@ -59,9 +59,7 @@ def _validate_clock_rate_bounds(
     upper_clock_rate_bound: float,
 ) -> None:
     if lower_clock_rate_bound <= 0.0:
-        raise InvalidBranchLengthError(
-            "strict-clock rate lower bound must be positive"
-        )
+        raise InvalidBranchLengthError("strict-clock rate lower bound must be positive")
     if upper_clock_rate_bound <= lower_clock_rate_bound:
         raise InvalidBranchLengthError(
             "strict-clock rate bounds must be strictly increasing"
@@ -142,7 +140,9 @@ def _fit_jc69_strict_clock_likelihood(
         records,
         model_name="strict-clock JC69",
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     validate_tree_taxa_against_patterns(
         time_tree,
         compressed_patterns,
@@ -205,13 +205,15 @@ def _fit_jc69_strict_clock_likelihood(
         pattern_count=compressed_patterns.pattern_count,
         model_name="JC69",
         baseline_log_likelihood=optimized_report.log_likelihood,
-        evaluate_tree_log_likelihood=lambda candidate_tree: _evaluate_jc69_tree_likelihood_from_patterns(
-            candidate_tree,
-            compressed_patterns,
-            observation_policy="reject",
-            gap_state_frequency=None,
-            root_prior=UNIFORM_DNA_ROOT_PRIOR,
-        ).log_likelihood,
+        evaluate_tree_log_likelihood=lambda candidate_tree: (
+            _evaluate_jc69_tree_likelihood_from_patterns(
+                candidate_tree,
+                compressed_patterns,
+                observation_policy="reject",
+                gap_state_frequency=None,
+                root_prior=UNIFORM_DNA_ROOT_PRIOR,
+            ).log_likelihood
+        ),
     )
     optimized_clock_rate = float(search_result.parameter_value)
     branch_rows = _build_branch_rows(
@@ -254,7 +256,9 @@ def fit_strict_clock_likelihood(
 ) -> StrictClockLikelihoodReport:
     """Fit one global strict-clock rate on one time-scaled tree and one alignment."""
     resolved_model = _resolve_strict_clock_model_name(model)
-    if resolved_model != "JC69":  # pragma: no cover - guard for future dispatch expansion
+    if (
+        resolved_model != "JC69"
+    ):  # pragma: no cover - guard for future dispatch expansion
         raise ValueError(f"unsupported strict-clock likelihood model: {resolved_model}")
     return _fit_jc69_strict_clock_likelihood(
         tree,

@@ -13,8 +13,8 @@ from bijux_phylogenetics.phylo.topology.clades import (
 from bijux_phylogenetics.phylo.topology.models import (
     RootedSprEnumerationBudget,
     RootedSprMoveApplicationReport,
-    RootedSprNeighborRow,
     RootedSprNeighborhoodReport,
+    RootedSprNeighborRow,
 )
 
 from .affected_subtrees import summarize_affected_subtrees
@@ -62,10 +62,7 @@ def validate_rooted_spr_enumeration_budget(
     """Normalize one explicit rooted SPR enumeration budget."""
     if budget is None:
         return RootedSprEnumerationBudget()
-    if (
-        budget.max_pruned_clade_count is not None
-        and budget.max_pruned_clade_count <= 0
-    ):
+    if budget.max_pruned_clade_count is not None and budget.max_pruned_clade_count <= 0:
         raise ValueError("rooted SPR prune-node budget must be positive when provided")
     if (
         budget.max_regraft_target_count_per_pruned_clade is not None
@@ -83,9 +80,12 @@ def iter_rooted_spr_move_candidates(
     budget: RootedSprEnumerationBudget | None = None,
 ):
     """Yield deterministic rooted SPR candidates for one rooted tree."""
-    candidates, _skipped_pruned, _skipped_regraft_targets, _skipped_budget_candidates = (
-        _collect_rooted_spr_move_candidates(tree, budget=budget)
-    )
+    (
+        candidates,
+        _skipped_pruned,
+        _skipped_regraft_targets,
+        _skipped_budget_candidates,
+    ) = _collect_rooted_spr_move_candidates(tree, budget=budget)
     yield from candidates
 
 
@@ -182,8 +182,8 @@ def apply_rooted_spr_move(
     if candidate.regraft_target_branch_id == _ROOT_REGRAFT_BRANCH_ID:
         if tree_has_explicit_branch_lengths:
             if remainder_tree.root.branch_length is None:
-                remainder_tree.root.branch_length = _seed_missing_rooted_spr_branch_length(
-                    pruned_subtree
+                remainder_tree.root.branch_length = (
+                    _seed_missing_rooted_spr_branch_length(pruned_subtree)
                 )
             if pruned_subtree.branch_length is None:
                 pruned_subtree.branch_length = _seed_missing_rooted_spr_branch_length(
@@ -423,7 +423,9 @@ def enumerate_rooted_spr_neighbors(
             neighbor_index=len(neighbor_row_by_fingerprint) + 1,
             representative_pruned_node_id=candidate.pruned_node_id,
             representative_pruned_clade_id=candidate.pruned_clade_id,
-            representative_pruned_descendant_taxa=list(candidate.pruned_descendant_taxa),
+            representative_pruned_descendant_taxa=list(
+                candidate.pruned_descendant_taxa
+            ),
             representative_regraft_target_branch_id=candidate.regraft_target_branch_id,
             representative_regraft_target_descendant_taxa=(
                 None
@@ -520,7 +522,9 @@ def _validate_rooted_spr_neighbor_report(
     report: RootedSprNeighborhoodReport,
 ) -> None:
     if report.self_regraft_candidate_count:
-        raise ValueError("rooted SPR enumeration generated one or more self-regraft moves")
+        raise ValueError(
+            "rooted SPR enumeration generated one or more self-regraft moves"
+        )
     if report.generated_neighbor_count != report.unique_neighbor_topology_count:
         raise ValueError(
             "rooted SPR enumeration did not collapse neighbors to unique topologies"
@@ -651,7 +655,9 @@ def write_rooted_spr_run_json(
             for row in report.neighbor_rows
         ],
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 

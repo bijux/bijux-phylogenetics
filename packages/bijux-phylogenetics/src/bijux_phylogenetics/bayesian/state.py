@@ -237,7 +237,9 @@ def build_bayesian_phylogenetic_state(
             "bayesian phylogenetic state requires at least one prior component",
             code="bayesian_phylogenetic_state_prior_components_empty",
         )
-    tree_state = tree if isinstance(tree, BayesianTreeState) else build_bayesian_tree_state(tree)
+    tree_state = (
+        tree if isinstance(tree, BayesianTreeState) else build_bayesian_tree_state(tree)
+    )
     total_log_prior = math.fsum(component.log_prior for component in prior_components)
     validated_log_likelihood = _validate_finite_float(
         parameter_name="log_likelihood",
@@ -272,7 +274,9 @@ def build_bayesian_phylogenetic_state_from_prior_only_sample(
     if sample.substitution_parameter_state.kappa is not None:
         scalar_parameters["kappa"] = sample.substitution_parameter_state.kappa
     if sample.substitution_parameter_state.gamma_alpha is not None:
-        scalar_parameters["gamma-alpha"] = sample.substitution_parameter_state.gamma_alpha
+        scalar_parameters["gamma-alpha"] = (
+            sample.substitution_parameter_state.gamma_alpha
+        )
     if sample.substitution_parameter_state.invariant_proportion is not None:
         scalar_parameters["invariant-proportion"] = (
             sample.substitution_parameter_state.invariant_proportion
@@ -355,7 +359,9 @@ def deserialize_bayesian_phylogenetic_state(
             model_parameter_payload,
             key="categorical_parameters",
         ),
-        scalar_parameters=_require_float_mapping(model_parameter_payload, key="scalar_parameters"),
+        scalar_parameters=_require_float_mapping(
+            model_parameter_payload, key="scalar_parameters"
+        ),
         vector_parameters=_require_nested_float_mapping(
             model_parameter_payload,
             key="vector_parameters",
@@ -363,7 +369,9 @@ def deserialize_bayesian_phylogenetic_state(
     )
     prior_components = [
         build_bayesian_prior_component_state(
-            component_name=_require_string(prior_component_payload, key="component_name"),
+            component_name=_require_string(
+                prior_component_payload, key="component_name"
+            ),
             family=_optional_string(prior_component_payload.get("family")),
             log_prior=_require_float(prior_component_payload, key="log_prior"),
             parameter_values=_require_float_mapping(
@@ -440,7 +448,9 @@ def _build_tree_topology_id(tree: PhyloTree) -> str:
     rooted_token = (
         "rooted"
         if tree.rooted is True
-        else "unrooted" if tree.rooted is False else "unspecified"
+        else "unrooted"
+        if tree.rooted is False
+        else "unspecified"
     )
     taxon_token = ",".join(sorted(tree.tip_names))
     clade_token = ";".join(",".join(clade) for clade in internal_clades)
@@ -524,7 +534,9 @@ def _require_float_mapping(
 ) -> dict[str, float]:
     raw_mapping = _require_mapping(payload, key=key)
     normalized_mapping: dict[str, float] = {}
-    for item_key, item_value in sorted(raw_mapping.items(), key=lambda item: str(item[0])):
+    for item_key, item_value in sorted(
+        raw_mapping.items(), key=lambda item: str(item[0])
+    ):
         if not isinstance(item_key, str):
             raise PhylogeneticsError(
                 f"bayesian state deserialization requires '{key}' mapping keys to be strings",
@@ -546,7 +558,9 @@ def _require_string_mapping(
 ) -> dict[str, str]:
     raw_mapping = _require_mapping(payload, key=key)
     normalized_mapping: dict[str, str] = {}
-    for item_key, item_value in sorted(raw_mapping.items(), key=lambda item: str(item[0])):
+    for item_key, item_value in sorted(
+        raw_mapping.items(), key=lambda item: str(item[0])
+    ):
         if not isinstance(item_key, str):
             raise PhylogeneticsError(
                 f"bayesian state deserialization requires '{key}' mapping keys to be strings",
@@ -610,7 +624,9 @@ def _require_nonblank_parameter_names(
     owner_name: str,
 ) -> None:
     blank_parameter_names = sorted(
-        parameter_name for parameter_name in parameter_names if not parameter_name.strip()
+        parameter_name
+        for parameter_name in parameter_names
+        if not parameter_name.strip()
     )
     if blank_parameter_names:
         raise PhylogeneticsError(

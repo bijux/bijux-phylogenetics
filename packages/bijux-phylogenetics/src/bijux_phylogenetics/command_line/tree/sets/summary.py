@@ -39,8 +39,8 @@ from bijux_phylogenetics.trees import (
     write_majority_rule_extended_consensus_artifacts,
     write_maximum_clade_credibility_artifacts,
     write_posterior_agreement_subtree_artifacts,
-    write_posterior_clade_correlation_artifacts,
     write_posterior_branch_length_summary_table,
+    write_posterior_clade_correlation_artifacts,
     write_posterior_node_age_summary_table,
     write_posterior_tree_distance_artifacts,
     write_quartet_puzzling_artifacts,
@@ -102,7 +102,9 @@ def add_tree_set_summary_commands(tree_set_subparsers: Any) -> None:
     tree_set_compatibility_graph.add_argument("tree_set", type=Path)
     tree_set_compatibility_graph.add_argument("--out-dir", required=True, type=Path)
     tree_set_compatibility_graph.add_argument(
-        "--json", action="store_true", help="Emit the compatibility graph report as JSON."
+        "--json",
+        action="store_true",
+        help="Emit the compatibility graph report as JSON.",
     )
     _add_manifest_argument(tree_set_compatibility_graph)
 
@@ -113,7 +115,9 @@ def add_tree_set_summary_commands(tree_set_subparsers: Any) -> None:
     tree_set_extended_consensus.add_argument("tree_set", type=Path)
     tree_set_extended_consensus.add_argument("--out-dir", required=True, type=Path)
     tree_set_extended_consensus.add_argument(
-        "--json", action="store_true", help="Emit the extended consensus report as JSON."
+        "--json",
+        action="store_true",
+        help="Emit the extended consensus report as JSON.",
     )
     _add_manifest_argument(tree_set_extended_consensus)
 
@@ -122,9 +126,13 @@ def add_tree_set_summary_commands(tree_set_subparsers: Any) -> None:
         help="Select the sampled tree with the highest summed posterior clade credibility and emit the candidate score ledger.",
     )
     tree_set_maximum_clade_credibility.add_argument("tree_set", type=Path)
-    tree_set_maximum_clade_credibility.add_argument("--out-dir", required=True, type=Path)
     tree_set_maximum_clade_credibility.add_argument(
-        "--json", action="store_true", help="Emit the maximum-clade-credibility report as JSON."
+        "--out-dir", required=True, type=Path
+    )
+    tree_set_maximum_clade_credibility.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the maximum-clade-credibility report as JSON.",
     )
     _add_manifest_argument(tree_set_maximum_clade_credibility)
 
@@ -141,7 +149,9 @@ def add_tree_set_summary_commands(tree_set_subparsers: Any) -> None:
         help="Posterior clade-frequency mass that the included clade set must reach or exceed.",
     )
     tree_set_credible_clade_set.add_argument(
-        "--json", action="store_true", help="Emit the credible-clade-set report as JSON."
+        "--json",
+        action="store_true",
+        help="Emit the credible-clade-set report as JSON.",
     )
     _add_manifest_argument(tree_set_credible_clade_set)
 
@@ -184,7 +194,9 @@ def add_tree_set_summary_commands(tree_set_subparsers: Any) -> None:
         help="Find the largest retained taxon subset whose pruned posterior trees share one rooted topology.",
     )
     tree_set_posterior_agreement_subtree.add_argument("tree_set", type=Path)
-    tree_set_posterior_agreement_subtree.add_argument("--out-dir", required=True, type=Path)
+    tree_set_posterior_agreement_subtree.add_argument(
+        "--out-dir", required=True, type=Path
+    )
     tree_set_posterior_agreement_subtree.add_argument(
         "--json",
         action="store_true",
@@ -197,7 +209,9 @@ def add_tree_set_summary_commands(tree_set_subparsers: Any) -> None:
         help="Compute informative clade co-occurrence and binary correlation across one posterior tree set.",
     )
     tree_set_posterior_clade_correlation.add_argument("tree_set", type=Path)
-    tree_set_posterior_clade_correlation.add_argument("--out-dir", required=True, type=Path)
+    tree_set_posterior_clade_correlation.add_argument(
+        "--out-dir", required=True, type=Path
+    )
     tree_set_posterior_clade_correlation.add_argument(
         "--json",
         action="store_true",
@@ -210,7 +224,9 @@ def add_tree_set_summary_commands(tree_set_subparsers: Any) -> None:
         help="Compare every posterior tree against MCC and consensus references by RF and branch-score distance.",
     )
     tree_set_posterior_tree_distances.add_argument("tree_set", type=Path)
-    tree_set_posterior_tree_distances.add_argument("--out-dir", required=True, type=Path)
+    tree_set_posterior_tree_distances.add_argument(
+        "--out-dir", required=True, type=Path
+    )
     tree_set_posterior_tree_distances.add_argument(
         "--json",
         action="store_true",
@@ -239,7 +255,9 @@ def add_tree_set_summary_commands(tree_set_subparsers: Any) -> None:
     tree_set_quartet_support.add_argument("reference_tree", type=Path)
     tree_set_quartet_support.add_argument("tree_set", type=Path)
     tree_set_quartet_support.add_argument(
-        "--out", type=Path, help="Write the reference-tree quartet support table as TSV."
+        "--out",
+        type=Path,
+        help="Write the reference-tree quartet support table as TSV.",
     )
     tree_set_quartet_support.add_argument(
         "--json", action="store_true", help="Emit the quartet-support report as JSON."
@@ -597,7 +615,9 @@ def run_tree_set_summary_command(args: Any) -> int | None:
         report = summarize_posterior_branch_lengths(args.tree_set)
         outputs: list[Path] = []
         if args.out is not None:
-            outputs.append(write_posterior_branch_length_summary_table(args.out, report))
+            outputs.append(
+                write_posterior_branch_length_summary_table(args.out, report)
+            )
         outputs = _finalize_outputs(
             args,
             command="tree-set",
@@ -687,9 +707,7 @@ def run_tree_set_summary_command(args: Any) -> int | None:
                     "shared_taxon_count": len(report.shared_taxa),
                     "evaluated_candidate_count": report.evaluated_candidate_count,
                     "retained_taxon_count": len(report.retained_taxa),
-                    "agreement_removed_taxon_count": len(
-                        report.agreement_removed_taxa
-                    ),
+                    "agreement_removed_taxon_count": len(report.agreement_removed_taxa),
                 },
                 data=report,
             ),

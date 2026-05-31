@@ -51,9 +51,6 @@ def build_partition_model_parameter_state(
     expected_partition_names = _validate_unique_partition_names(
         model.partition_name for model in validated_partition_models
     )
-    model_by_partition_name = {
-        model.partition_name: model for model in validated_partition_models
-    }
     if expected_partition_names != linkage_plan.partition_names:
         raise PhylogeneticsError(
             "partition model state encoding requires linkage coverage for the exact partition set",
@@ -80,7 +77,9 @@ def build_partition_model_parameter_state(
     scalar_parameters = dict(preserved_scalar_parameters or {})
     vector_parameters = {
         parameter_name: dict(component_values)
-        for parameter_name, component_values in (preserved_vector_parameters or {}).items()
+        for parameter_name, component_values in (
+            preserved_vector_parameters or {}
+        ).items()
     }
     _validate_reserved_parameter_collisions(
         categorical_parameters=categorical_parameters,
@@ -105,7 +104,9 @@ def build_partition_model_parameter_state(
             continue
         grouped_partition_names: dict[str, list[str]] = defaultdict(list)
         for partition_name in required_partition_names:
-            grouped_partition_names[target_groups[partition_name]].append(partition_name)
+            grouped_partition_names[target_groups[partition_name]].append(
+                partition_name
+            )
         for group_name, grouped_names in grouped_partition_names.items():
             representative_value = _extract_partition_target_value(
                 target_name=target_name,
@@ -347,9 +348,7 @@ def _partition_target_values_equal(
 def _normalize_vector_value(
     *,
     target_name: str,
-    raw_value: Mapping[tuple[str, str], float]
-    | Mapping[str, float]
-    | Sequence[float],
+    raw_value: Mapping[tuple[str, str], float] | Mapping[str, float] | Sequence[float],
 ) -> dict[str, float]:
     if isinstance(raw_value, Mapping):
         normalized = {

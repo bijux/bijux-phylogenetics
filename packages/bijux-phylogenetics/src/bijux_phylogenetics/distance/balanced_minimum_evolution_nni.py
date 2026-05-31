@@ -118,7 +118,11 @@ def search_balanced_minimum_evolution_nni(
                 improving_score = neighbor_score
                 improving_newick = neighbor_newick
                 improving_candidate = candidate
-        if improving_tree is None or improving_score is None or improving_newick is None:
+        if (
+            improving_tree is None
+            or improving_score is None
+            or improving_newick is None
+        ):
             stopping_reason = "no-improving-neighbor"
             break
         accepted_move_count += 1
@@ -233,7 +237,14 @@ def write_balanced_minimum_evolution_nni_trace_table(
             row.stopping_reason,
         ]
         rows.append(
-            "\t".join("" if value is None else format(value, ".15g") if isinstance(value, float) else str(value) for value in payload)
+            "\t".join(
+                ""
+                if value is None
+                else format(value, ".15g")
+                if isinstance(value, float)
+                else str(value)
+                for value in payload
+            )
         )
     path.write_text("\n".join(rows) + "\n", encoding="utf-8")
     return path
@@ -259,7 +270,9 @@ def write_balanced_minimum_evolution_nni_run_json(
         "stopping_reason": report.stopping_reason,
         "trace_rows": [asdict(row) for row in report.trace_rows],
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 

@@ -33,9 +33,7 @@ from .dataset_corpora import (
 from .regression_corpus import build_regression_dataset_corpus
 
 
-def build_method_accuracy_dashboard(
-    *, fixtures_root=None
-) -> MethodAccuracyDashboard:
+def build_method_accuracy_dashboard(*, fixtures_root=None) -> MethodAccuracyDashboard:
     """Summarize validation accuracy, error counts, and coverage across benchmark surfaces."""
     core = build_core_workflow_validation_report(fixtures_root=fixtures_root)
     clean = build_clean_benchmark_corpus(fixtures_root=fixtures_root)

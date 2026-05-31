@@ -34,16 +34,18 @@ from ...workflows.iqtree import (
     run_maximum_likelihood_tree_inference,
     run_model_selection,
 )
-from .artifact_outputs import write_fasta_to_tree_log
-from .artifact_outputs import write_fasta_to_tree_model_table
-from .artifact_outputs import write_fasta_to_tree_support_table
+from .artifact_outputs import (
+    write_fasta_to_tree_log,
+    write_fasta_to_tree_model_table,
+    write_fasta_to_tree_support_table,
+)
 from .contracts import FastaToTreeWorkflowReport
-from .row_builders import build_fasta_to_tree_model_rows
-from .row_builders import build_fasta_to_tree_support_rows
+from .row_builders import (
+    build_fasta_to_tree_model_rows,
+    build_fasta_to_tree_support_rows,
+)
 from .stage_fingerprints import build_stage_fingerprint
-from .workflow_layout import _artifact_prefix
-from .workflow_layout import _copy_output
-from .workflow_layout import _final_output_paths
+from .workflow_layout import _artifact_prefix, _copy_output, _final_output_paths
 
 
 def run_fasta_to_tree_workflow(

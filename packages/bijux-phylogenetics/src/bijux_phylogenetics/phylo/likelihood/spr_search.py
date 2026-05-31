@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 import json
-import time
 from pathlib import Path
+import time
 
 import numpy
 
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick, write_newick
-from bijux_phylogenetics.phylo.topology.affected_subtrees import summarize_affected_subtrees
-from bijux_phylogenetics.phylo.topology.clades import canonical_clade_id
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.equal_best_topologies import (
     build_nucleotide_likelihood_equal_best_tree_report,
@@ -16,10 +14,6 @@ from bijux_phylogenetics.phylo.likelihood.equal_best_topologies import (
     record_nucleotide_likelihood_equal_best_topology,
     validate_nucleotide_likelihood_equal_best_likelihood_tolerance,
     validate_nucleotide_likelihood_equal_best_tree_cap,
-)
-from bijux_phylogenetics.phylo.likelihood.search_convergence import (
-    resolve_nucleotide_likelihood_search_convergence_decision,
-    validate_nucleotide_likelihood_search_improvement_tolerance,
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
     NucleotideLikelihoodSprSearchBudget,
@@ -29,16 +23,20 @@ from bijux_phylogenetics.phylo.likelihood.models import (
 from bijux_phylogenetics.phylo.likelihood.search_artifacts import (
     write_nucleotide_likelihood_best_tree_set,
 )
+from bijux_phylogenetics.phylo.likelihood.search_convergence import (
+    resolve_nucleotide_likelihood_search_convergence_decision,
+    validate_nucleotide_likelihood_search_improvement_tolerance,
+)
 from bijux_phylogenetics.phylo.likelihood.topology_search import (
     BranchReoptimizationResult,
     normalize_nucleotide_topology_search_records,
     prefer_higher_likelihood,
-    reoptimize_nucleotide_topology_tree_branch_subset,
     reoptimize_nucleotide_topology_tree,
-    resolve_reoptimized_branch_clade_ids,
+    reoptimize_nucleotide_topology_tree_branch_subset,
     resolve_nucleotide_topology_search_records,
     resolve_nucleotide_topology_search_surface,
     resolve_nucleotide_topology_search_tree,
+    resolve_reoptimized_branch_clade_ids,
     validate_nucleotide_topology_search_tree,
 )
 from bijux_phylogenetics.phylo.topology import (
@@ -47,6 +45,10 @@ from bijux_phylogenetics.phylo.topology import (
     iter_rooted_spr_move_candidates,
     rooted_topology_fingerprint,
 )
+from bijux_phylogenetics.phylo.topology.affected_subtrees import (
+    summarize_affected_subtrees,
+)
+from bijux_phylogenetics.phylo.topology.clades import canonical_clade_id
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, descendant_taxa
 
 _SUPPORTED_SPR_BRANCH_REOPTIMIZATION_POLICIES = frozenset(
@@ -76,7 +78,11 @@ def search_nucleotide_likelihood_spr(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
     lower_branch_length_bound: float = 0.0,
     upper_branch_length_bound: float = 5.0,
@@ -88,11 +94,13 @@ def search_nucleotide_likelihood_spr(
 ) -> NucleotideLikelihoodSprSearchReport:
     """Search one rooted binary nucleotide tree by likelihood-improving rooted SPR moves."""
     resolved_tree, resolved_tree_path = resolve_nucleotide_topology_search_tree(tree)
-    resolved_records, resolved_alignment_path = resolve_nucleotide_topology_search_records(
-        records
+    resolved_records, resolved_alignment_path = (
+        resolve_nucleotide_topology_search_records(records)
     )
-    validated_branch_reoptimization_policy = validate_nucleotide_likelihood_spr_branch_reoptimization_policy(
-        branch_reoptimization_policy
+    validated_branch_reoptimization_policy = (
+        validate_nucleotide_likelihood_spr_branch_reoptimization_policy(
+            branch_reoptimization_policy
+        )
     )
     validated_search_budget = validate_nucleotide_likelihood_spr_search_budget(
         evaluation_budget=evaluation_budget,
@@ -118,9 +126,11 @@ def search_nucleotide_likelihood_spr(
         resolved_tree,
         workflow_name="nucleotide likelihood SPR search",
     )
-    normalized_records, compressed_patterns = normalize_nucleotide_topology_search_records(
-        resolved_records,
-        owner_name="nucleotide likelihood SPR search",
+    normalized_records, compressed_patterns = (
+        normalize_nucleotide_topology_search_records(
+            resolved_records,
+            owner_name="nucleotide likelihood SPR search",
+        )
     )
     resolved_surface = resolve_nucleotide_topology_search_surface(
         resolved_tree,
@@ -147,7 +157,9 @@ def search_nucleotide_likelihood_spr(
     current_tree = start_result.optimized_tree.copy().refresh()
     current_log_likelihood = start_result.log_likelihood
     start_tree_newick = dumps_newick(current_tree)
-    equal_best_accumulator = initialize_nucleotide_likelihood_equal_best_topology_accumulator()
+    equal_best_accumulator = (
+        initialize_nucleotide_likelihood_equal_best_topology_accumulator()
+    )
     record_nucleotide_likelihood_equal_best_topology(
         equal_best_accumulator,
         tree_newick=start_tree_newick,
@@ -207,7 +219,9 @@ def search_nucleotide_likelihood_spr(
         )
         if budget_stop_reason is not None:
             stopping_reason = budget_stop_reason
-            unsearched_candidate_count = count_unsearched_spr_candidates(current_tree, set())
+            unsearched_candidate_count = count_unsearched_spr_candidates(
+                current_tree, set()
+            )
             break
         iteration_count += 1
         improving_candidate: RootedSprMoveCandidate | None = None
@@ -242,7 +256,10 @@ def search_nucleotide_likelihood_spr(
                 candidate,
             )
             try:
-                if validated_branch_reoptimization_policy == "coordinate-branch-lengths":
+                if (
+                    validated_branch_reoptimization_policy
+                    == "coordinate-branch-lengths"
+                ):
                     neighbor_result = reoptimize_nucleotide_topology_tree(
                         neighbor_tree,
                         compressed_patterns=compressed_patterns,
@@ -287,7 +304,9 @@ def search_nucleotide_likelihood_spr(
             optimized_neighbor_topology_fingerprint = rooted_topology_fingerprint(
                 neighbor_result.optimized_tree
             )
-            log_likelihood_delta = neighbor_result.log_likelihood - current_log_likelihood
+            log_likelihood_delta = (
+                neighbor_result.log_likelihood - current_log_likelihood
+            )
             if log_likelihood_delta > 0.0 and (
                 best_positive_delta is None
                 or best_positive_newick is None
@@ -318,7 +337,11 @@ def search_nucleotide_likelihood_spr(
                 improving_result = neighbor_result
                 improving_newick = optimized_neighbor_newick
                 improving_topology_fingerprint = optimized_neighbor_topology_fingerprint
-        if improving_candidate is None or improving_result is None or improving_newick is None:
+        if (
+            improving_candidate is None
+            or improving_result is None
+            or improving_newick is None
+        ):
             convergence_decision = (
                 resolve_nucleotide_likelihood_search_convergence_decision(
                     best_improving_delta=best_positive_delta,
@@ -336,12 +359,15 @@ def search_nucleotide_likelihood_spr(
             else:
                 unsearched_candidate_count = 0
             break
-        convergence_decision = resolve_nucleotide_likelihood_search_convergence_decision(
-            best_improving_delta=improving_result.log_likelihood - current_log_likelihood,
-            improvement_tolerance=validated_search_improvement_tolerance,
-            candidate_topology_fingerprint=improving_topology_fingerprint,
-            seen_topology_fingerprints=seen_topology_fingerprints,
-            failure_detected=failure_detected,
+        convergence_decision = (
+            resolve_nucleotide_likelihood_search_convergence_decision(
+                best_improving_delta=improving_result.log_likelihood
+                - current_log_likelihood,
+                improvement_tolerance=validated_search_improvement_tolerance,
+                candidate_topology_fingerprint=improving_topology_fingerprint,
+                seen_topology_fingerprints=seen_topology_fingerprints,
+                failure_detected=failure_detected,
+            )
         )
         if convergence_decision.should_stop:
             stopping_reason = convergence_decision.stopping_reason or "search-failure"
@@ -360,7 +386,9 @@ def search_nucleotide_likelihood_spr(
                 event_kind="accepted-move",
                 iteration=accepted_move_count,
                 move_type="spr",
-                candidate_topology_fingerprint=rooted_topology_fingerprint(current_tree),
+                candidate_topology_fingerprint=rooted_topology_fingerprint(
+                    current_tree
+                ),
                 log_likelihood_before=log_likelihood_before,
                 log_likelihood_after=current_log_likelihood,
                 log_likelihood_delta=current_log_likelihood - log_likelihood_before,
@@ -387,7 +415,9 @@ def search_nucleotide_likelihood_spr(
                 branch_reoptimization_converged=improving_result.converged,
                 branch_optimization_pass_count=improving_result.optimization_pass_count,
                 branch_function_evaluation_count=improving_result.function_evaluation_count,
-                boundary_warning_messages=list(improving_result.boundary_warning_messages),
+                boundary_warning_messages=list(
+                    improving_result.boundary_warning_messages
+                ),
                 stopping_reason=None,
                 unsearched_candidate_count=None,
             )
@@ -487,7 +517,11 @@ def search_nucleotide_likelihood_spr_from_alignment(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
     lower_branch_length_bound: float = 0.0,
     upper_branch_length_bound: float = 5.0,
@@ -541,7 +575,9 @@ def resolve_spr_branch_reoptimization_scope(policy: str) -> str:
         return "all-branches"
     if policy == "spr-local-affected-branches":
         return "local-affected-branches"
-    raise ValueError(f"unsupported rooted likelihood SPR reoptimization policy '{policy}'")
+    raise ValueError(
+        f"unsupported rooted likelihood SPR reoptimization policy '{policy}'"
+    )
 
 
 def resolve_spr_affected_branch_clade_ids(
@@ -738,7 +774,9 @@ def write_nucleotide_likelihood_spr_run_json(
             for row in report.trace_rows
         ],
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 

@@ -196,7 +196,9 @@ def compare_outputs(
     }:
         key = "alignment" if "alignment" in output_paths else "trimmed_alignment"
         return [
-            compare_alignment_outputs(output_paths[key], replay_report.output_paths[key])
+            compare_alignment_outputs(
+                output_paths[key], replay_report.output_paths[key]
+            )
         ]
     if workflow == "model-selection":
         original_model = str(payload.get("selected_model"))

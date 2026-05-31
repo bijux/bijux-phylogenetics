@@ -15,12 +15,12 @@ from bijux_phylogenetics.phylo.topology import (
     validate_stepwise_addition_taxa,
 )
 
+from .fixed_topology_branch_lengths import optimize_selected_nucleotide_branch_lengths
 from .topology_search import (
     normalize_nucleotide_topology_search_records,
     resolve_nucleotide_topology_search_records,
     resolve_nucleotide_topology_search_surface,
 )
-from .fixed_topology_branch_lengths import optimize_selected_nucleotide_branch_lengths
 
 _SUPPORTED_LIKELIHOOD_STEPWISE_ADDITION_MODELS = frozenset({"jc69"})
 
@@ -58,8 +58,8 @@ def build_likelihood_stepwise_addition_tree(
     if max_coordinate_passes < 1:
         raise ValueError("max_coordinate_passes must be at least one")
 
-    resolved_records, _resolved_alignment_path = resolve_nucleotide_topology_search_records(
-        records
+    resolved_records, _resolved_alignment_path = (
+        resolve_nucleotide_topology_search_records(records)
     )
     ordered_taxa = _resolve_likelihood_stepwise_insertion_order(
         resolved_records,
@@ -73,9 +73,11 @@ def build_likelihood_stepwise_addition_tree(
         resolved_records,
         taxa=set(ordered_taxa[:2]),
     )
-    normalized_records, compressed_patterns = normalize_nucleotide_topology_search_records(
-        initial_records,
-        owner_name="likelihood stepwise addition",
+    normalized_records, compressed_patterns = (
+        normalize_nucleotide_topology_search_records(
+            initial_records,
+            owner_name="likelihood stepwise addition",
+        )
     )
     resolved_surface = resolve_nucleotide_topology_search_surface(
         current_tree,
@@ -105,9 +107,11 @@ def build_likelihood_stepwise_addition_tree(
             resolved_records,
             taxa=set(ordered_taxa[: step_index + 2]),
         )
-        _normalized_step_records, step_patterns = normalize_nucleotide_topology_search_records(
-            step_records,
-            owner_name="likelihood stepwise addition",
+        _normalized_step_records, step_patterns = (
+            normalize_nucleotide_topology_search_records(
+                step_records,
+                owner_name="likelihood stepwise addition",
+            )
         )
         tested_edge_rows: list[StepwiseAdditionCandidateScore] = []
         best_branch_id: str | None = None
@@ -116,7 +120,9 @@ def build_likelihood_stepwise_addition_tree(
         best_tree: PhyloTree | None = None
         best_tree_newick: str | None = None
         for candidate in iter_stepwise_addition_edge_candidates(current_tree):
-            candidate_tree = apply_stepwise_addition_candidate(current_tree, candidate, taxon)
+            candidate_tree = apply_stepwise_addition_candidate(
+                current_tree, candidate, taxon
+            )
             candidate_tree = _initialized_likelihood_stepwise_tree(
                 candidate_tree,
                 default_branch_length=default_branch_length,
@@ -251,7 +257,9 @@ def _resolve_likelihood_stepwise_insertion_order(
     *,
     insertion_order: list[str] | None,
 ) -> list[str]:
-    record_order = validate_stepwise_addition_taxa([record.identifier for record in records])
+    record_order = validate_stepwise_addition_taxa(
+        [record.identifier for record in records]
+    )
     if insertion_order is None:
         return record_order
     validated_insertion_order = validate_stepwise_addition_taxa(insertion_order)

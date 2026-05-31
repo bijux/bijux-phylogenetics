@@ -101,4 +101,3 @@ def _pair_summary(
         saturated=saturated,
         saturation_reason=saturation_reason,
     )
-

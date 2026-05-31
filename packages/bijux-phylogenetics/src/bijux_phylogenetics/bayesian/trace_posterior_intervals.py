@@ -257,7 +257,9 @@ def _validate_mass_fraction(value: float) -> float:
     return validated_value
 
 
-def _compute_linear_sample_quantile(values: Sequence[float], probability: float) -> float:
+def _compute_linear_sample_quantile(
+    values: Sequence[float], probability: float
+) -> float:
     ordered_values = sorted(values)
     if len(ordered_values) == 1:
         return ordered_values[0]
@@ -268,7 +270,6 @@ def _compute_linear_sample_quantile(values: Sequence[float], probability: float)
         return ordered_values[lower_index]
     upper_weight = fractional_index - lower_index
     lower_weight = 1.0 - upper_weight
-    return (
-        (ordered_values[lower_index] * lower_weight)
-        + (ordered_values[upper_index] * upper_weight)
+    return (ordered_values[lower_index] * lower_weight) + (
+        ordered_values[upper_index] * upper_weight
     )

@@ -5,7 +5,11 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.io.newick import dumps_newick, loads_newick, write_newick_tree_set
+from bijux_phylogenetics.io.newick import (
+    dumps_newick,
+    loads_newick,
+    write_newick_tree_set,
+)
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.models import (
     NucleotideLikelihoodStartingTreePoolReport,
@@ -17,14 +21,14 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
 from bijux_phylogenetics.phylo.topology import rooted_topology_fingerprint
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
-from .starting_tree_generation import build_random_likelihood_start_tree
-from .stepwise_addition import build_likelihood_stepwise_addition_tree
-from .starting_tree_validation import (
-    validate_nucleotide_likelihood_starting_tree,
-)
 from .fixed_topology_branch_lengths import (
     evaluate_selected_nucleotide_log_likelihood_from_patterns,
 )
+from .starting_tree_generation import build_random_likelihood_start_tree
+from .starting_tree_validation import (
+    validate_nucleotide_likelihood_starting_tree,
+)
+from .stepwise_addition import build_likelihood_stepwise_addition_tree
 from .topology_search import (
     normalize_nucleotide_topology_search_records,
     resolve_nucleotide_topology_search_records,
@@ -59,12 +63,14 @@ def build_nucleotide_likelihood_starting_tree_pool(
         validate_nucleotide_likelihood_random_start_tree_count(random_start_tree_count)
     )
     resolved_tree, resolved_tree_path = resolve_nucleotide_topology_search_tree(tree)
-    resolved_records, resolved_alignment_path = resolve_nucleotide_topology_search_records(
-        records
+    resolved_records, resolved_alignment_path = (
+        resolve_nucleotide_topology_search_records(records)
     )
-    normalized_records, compressed_patterns = normalize_nucleotide_topology_search_records(
-        resolved_records,
-        owner_name="nucleotide likelihood starting-tree pool",
+    normalized_records, compressed_patterns = (
+        normalize_nucleotide_topology_search_records(
+            resolved_records,
+            owner_name="nucleotide likelihood starting-tree pool",
+        )
     )
     validate_nucleotide_likelihood_starting_tree(
         resolved_tree,
@@ -329,7 +335,9 @@ def write_nucleotide_likelihood_starting_tree_pool_run_json(
             for row in report.starting_tree_summaries
         ],
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 

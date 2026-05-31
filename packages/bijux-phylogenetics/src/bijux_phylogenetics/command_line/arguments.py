@@ -2,9 +2,14 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from bijux_phylogenetics.runtime.errors import MetadataJoinError
+
+if TYPE_CHECKING:
+    from bijux_phylogenetics.biogeography import TimeBinDefinition
+    from bijux_phylogenetics.render.tree_svg import AnnotationStrip
+    from bijux_phylogenetics.simulation import DiscreteHistoryRateRow
 
 
 def _split_csv_values(raw: str | None) -> list[str]:

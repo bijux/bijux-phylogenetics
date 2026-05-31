@@ -101,7 +101,9 @@ def consistency_index(
     aggregate_consistency_index = None
     undefined_reason = None
     if observed_steps_total > 0.0:
-        aggregate_consistency_index = minimum_possible_steps_total / observed_steps_total
+        aggregate_consistency_index = (
+            minimum_possible_steps_total / observed_steps_total
+        )
     else:
         undefined_reason = "no_variable_characters"
     return ParsimonyConsistencyIndexReport(

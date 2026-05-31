@@ -167,8 +167,7 @@ def max_visible_depth(
     if node.is_leaf() or is_collapsed_node(node, collapsed_clades):
         return depth
     return max(
-        max_visible_depth(child, collapsed_clades, depth + 1)
-        for child in node.children
+        max_visible_depth(child, collapsed_clades, depth + 1) for child in node.children
     )
 
 

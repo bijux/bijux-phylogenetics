@@ -6,7 +6,11 @@ from pathlib import Path
 import random
 
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
-from bijux_phylogenetics.io.newick import loads_newick, write_newick, write_newick_tree_set
+from bijux_phylogenetics.io.newick import (
+    loads_newick,
+    write_newick,
+    write_newick_tree_set,
+)
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.models import (
     NucleotideLikelihoodBootstrapCladeSupportRow,
@@ -34,7 +38,9 @@ from bijux_phylogenetics.trees import (
 )
 
 
-def validate_nucleotide_likelihood_bootstrap_replicate_count(replicate_count: int) -> int:
+def validate_nucleotide_likelihood_bootstrap_replicate_count(
+    replicate_count: int,
+) -> int:
     """Validate the native ML bootstrap replicate count."""
     if replicate_count < 1:
         raise ValueError("replicate_count must be at least one")
@@ -208,18 +214,16 @@ def write_nucleotide_likelihood_bootstrap_replicate_draws_table(
     ]
     for row in report.replicate_rows:
         lines.append(
-            (
-                f"{row.replicate_index}\t"
-                + ",".join(str(index) for index in row.sampled_site_indices)
-                + f"\t{row.replicate_start_tree_seed}"
-                + f"\t{row.selected_model_name}"
-                + f"\t{row.best_run_source_label}"
-                + f"\t{format(row.final_log_likelihood, '.15g')}"
-                + f"\t{row.final_topology_fingerprint}"
-                + f"\t{row.accepted_move_count}"
-                + f"\t{row.search_iteration_count}"
-                + f"\t{row.final_tree_newick}"
-            )
+            f"{row.replicate_index}\t"
+            + ",".join(str(index) for index in row.sampled_site_indices)
+            + f"\t{row.replicate_start_tree_seed}"
+            + f"\t{row.selected_model_name}"
+            + f"\t{row.best_run_source_label}"
+            + f"\t{format(row.final_log_likelihood, '.15g')}"
+            + f"\t{row.final_topology_fingerprint}"
+            + f"\t{row.accepted_move_count}"
+            + f"\t{row.search_iteration_count}"
+            + f"\t{row.final_tree_newick}"
         )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path
@@ -236,14 +240,12 @@ def write_nucleotide_likelihood_bootstrap_clade_support_table(
     ]
     for row in report.clade_support_rows:
         lines.append(
-            (
-                f"{row.branch_id}\t"
-                f"{'' if row.node_label is None else row.node_label}\t"
-                + "|".join(row.descendant_taxa)
-                + f"\t{row.supporting_tree_count}"
-                + f"\t{format(row.clade_frequency, '.15g')}"
-                + f"\t{format(row.support_percent, '.15g')}"
-            )
+            f"{row.branch_id}\t"
+            f"{'' if row.node_label is None else row.node_label}\t"
+            + "|".join(row.descendant_taxa)
+            + f"\t{row.supporting_tree_count}"
+            + f"\t{format(row.clade_frequency, '.15g')}"
+            + f"\t{format(row.support_percent, '.15g')}"
         )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path

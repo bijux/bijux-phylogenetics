@@ -16,8 +16,10 @@ from ..records import (
 )
 from .quality_report import build_alignment_quality_report
 from .site_diagnostics import assess_alignment_low_information
-from .window_diagnostics import detect_over_aligned_regions
-from .window_diagnostics import detect_under_aligned_regions
+from .window_diagnostics import (
+    detect_over_aligned_regions,
+    detect_under_aligned_regions,
+)
 
 
 def summarize_alignment_readiness(path: Path) -> AlignmentReadinessReport:

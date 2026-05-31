@@ -17,8 +17,8 @@ from bijux_phylogenetics.trees.tree_sets.consensus import (
 @dataclass(slots=True)
 class _EqualBestTopologyAccumulator:
     best_log_likelihood: float | None = None
-    rows_by_topology_fingerprint: dict[str, NucleotideLikelihoodEqualBestTreeRow] = field(
-        default_factory=dict
+    rows_by_topology_fingerprint: dict[str, NucleotideLikelihoodEqualBestTreeRow] = (
+        field(default_factory=dict)
     )
 
 
@@ -55,8 +55,10 @@ def record_nucleotide_likelihood_equal_best_topology(
     likelihood_tolerance: float,
 ) -> None:
     """Record one evaluated tree into the current equal-best topology set."""
-    validated_tolerance = validate_nucleotide_likelihood_equal_best_likelihood_tolerance(
-        likelihood_tolerance
+    validated_tolerance = (
+        validate_nucleotide_likelihood_equal_best_likelihood_tolerance(
+            likelihood_tolerance
+        )
     )
     topology_fingerprint = rooted_topology_fingerprint(loads_newick(tree_newick))
     candidate_row = NucleotideLikelihoodEqualBestTreeRow(
@@ -88,15 +90,26 @@ def build_nucleotide_likelihood_equal_best_tree_report(
     retention_cap: int,
 ) -> NucleotideLikelihoodEqualBestTreeReport:
     """Build one retained equal-best tree report from one finished accumulator."""
-    validated_tolerance = validate_nucleotide_likelihood_equal_best_likelihood_tolerance(
-        likelihood_tolerance
+    validated_tolerance = (
+        validate_nucleotide_likelihood_equal_best_likelihood_tolerance(
+            likelihood_tolerance
+        )
     )
     validated_cap = validate_nucleotide_likelihood_equal_best_tree_cap(retention_cap)
-    if accumulator.best_log_likelihood is None or not accumulator.rows_by_topology_fingerprint:
-        raise ValueError("equal-best topology report requires at least one recorded tree")
+    if (
+        accumulator.best_log_likelihood is None
+        or not accumulator.rows_by_topology_fingerprint
+    ):
+        raise ValueError(
+            "equal-best topology report requires at least one recorded tree"
+        )
     sorted_rows = sorted(
         accumulator.rows_by_topology_fingerprint.values(),
-        key=lambda row: (-row.log_likelihood, row.topology_fingerprint, row.tree_newick),
+        key=lambda row: (
+            -row.log_likelihood,
+            row.topology_fingerprint,
+            row.tree_newick,
+        ),
     )
     retained_rows = [
         NucleotideLikelihoodEqualBestTreeRow(

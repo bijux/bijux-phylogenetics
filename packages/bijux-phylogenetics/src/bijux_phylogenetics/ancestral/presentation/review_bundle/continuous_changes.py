@@ -4,8 +4,10 @@ from bijux_phylogenetics.ancestral.common import node_descendant_taxa, node_sign
 from bijux_phylogenetics.ancestral.continuous import ContinuousAncestralReport
 from bijux_phylogenetics.io.newick import loads_newick
 
-from .contracts import AncestralContinuousChangeBranchRow
-from .contracts import AncestralContinuousChangeCountRow
+from .contracts import (
+    AncestralContinuousChangeBranchRow,
+    AncestralContinuousChangeCountRow,
+)
 
 
 def summarize_continuous_change_branches(

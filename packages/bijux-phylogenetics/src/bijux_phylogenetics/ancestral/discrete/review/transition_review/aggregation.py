@@ -111,4 +111,3 @@ def _empirical_quantile(values: list[float], probability: float) -> float:
     return ordered[lower_index] + (
         (ordered[upper_index] - ordered[lower_index]) * fraction
     )
-

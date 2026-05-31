@@ -10,14 +10,15 @@ from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
 
-from .contracts import CorrelatedTraitEvolutionReport
-from .contracts import CorrelatedTraitObservationRow
+from .contracts import CorrelatedTraitEvolutionReport, CorrelatedTraitObservationRow
 from .preparation import _PreparedTraitRows
-from .statistics import _aic
-from .statistics import _chi_square_survival
-from .statistics import _comparison_rows
-from .statistics import _fisher_interval
-from .statistics import _sample_covariance_and_correlation
+from .statistics import (
+    _aic,
+    _chi_square_survival,
+    _comparison_rows,
+    _fisher_interval,
+    _sample_covariance_and_correlation,
+)
 
 
 def _summarize_binary_trait_coupling(

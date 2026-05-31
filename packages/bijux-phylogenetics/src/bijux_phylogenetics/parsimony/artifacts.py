@@ -883,7 +883,9 @@ def write_parsimony_reconstruction_artifacts(
 ) -> dict[str, Path]:
     """Write the governed artifact family for one parsimony reconstruction."""
     out_dir.mkdir(parents=True, exist_ok=True)
-    steps_path = write_parsimony_reconstruction_steps_table(out_dir / "steps.tsv", report)
+    steps_path = write_parsimony_reconstruction_steps_table(
+        out_dir / "steps.tsv", report
+    )
     node_states_path = write_parsimony_reconstruction_node_state_table(
         out_dir / "resolved_states.tsv",
         report,
@@ -896,7 +898,9 @@ def write_parsimony_reconstruction_artifacts(
         out_dir / "branch_changes.tsv",
         report,
     )
-    run_json_path = write_parsimony_reconstruction_run_json(out_dir / "run.json", report)
+    run_json_path = write_parsimony_reconstruction_run_json(
+        out_dir / "run.json", report
+    )
     return {
         "steps_path": steps_path,
         "node_states_path": node_states_path,
@@ -1679,7 +1683,9 @@ def write_parsimony_equal_best_consensus_artifacts(
 ) -> dict[str, Path]:
     """Write the governed artifact family for one exact equal-best consensus run."""
     out_dir.mkdir(parents=True, exist_ok=True)
-    equal_best_trees = [loads_newick(row.tree_newick) for row in report.equal_best_tree_rows]
+    equal_best_trees = [
+        loads_newick(row.tree_newick) for row in report.equal_best_tree_rows
+    ]
     equal_best_trees_path = write_newick_tree_set(
         out_dir / "equal_best_trees.nwk",
         equal_best_trees,

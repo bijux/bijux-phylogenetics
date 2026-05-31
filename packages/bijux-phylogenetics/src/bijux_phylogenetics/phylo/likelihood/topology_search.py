@@ -13,7 +13,6 @@ from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.dna import normalize_unambiguous_dna_records
 from bijux_phylogenetics.phylo.likelihood.fixed_topology_branch_lengths import (
     BranchReoptimizationResult,
-    evaluate_selected_nucleotide_log_likelihood_from_patterns,
     optimize_selected_nucleotide_branch_length_subset,
     optimize_selected_nucleotide_branch_lengths,
 )
@@ -29,10 +28,8 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
 from bijux_phylogenetics.phylo.likelihood.substitution_parameters import (
     optimize_nucleotide_substitution_parameters,
 )
-from bijux_phylogenetics.phylo.likelihood.validation import validate_explicit_branch_lengths
 from bijux_phylogenetics.phylo.topology.clades import canonical_clade_id, split_sort_key
-from bijux_phylogenetics.phylo.topology.tree import descendant_taxa
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, descendant_taxa
 
 _SUPPORTED_BRANCH_REOPTIMIZATION_POLICIES = frozenset({"coordinate-branch-lengths"})
 
@@ -152,7 +149,11 @@ def resolve_nucleotide_topology_search_surface(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> ResolvedNucleotideTopologySearchSurface:
     """Resolve one selected nucleotide likelihood surface for topology search."""
@@ -198,18 +199,9 @@ def resolve_nucleotide_topology_search_surface(
 
     parameters_are_fully_provided = (
         (normalized_model_name == "k80" and kappa is not None)
-        or (
-            normalized_model_name == "f81"
-            and base_frequencies is not None
-        )
-        or (
-            normalized_model_name == "hky85"
-            and kappa is not None
-        )
-        or (
-            normalized_model_name == "gtr"
-            and exchangeabilities is not None
-        )
+        or (normalized_model_name == "f81" and base_frequencies is not None)
+        or (normalized_model_name == "hky85" and kappa is not None)
+        or (normalized_model_name == "gtr" and exchangeabilities is not None)
     )
     if parameters_are_fully_provided:
         specification = resolve_selected_nucleotide_likelihood_specification(
@@ -265,7 +257,9 @@ def normalize_nucleotide_topology_search_records(
     owner_name: str,
 ) -> tuple[list[AlignmentRecord], CompressedAlignmentSitePatterns]:
     """Normalize one nucleotide alignment and precompute compressed site patterns."""
-    normalized_records = normalize_unambiguous_dna_records(records, model_name=owner_name)
+    normalized_records = normalize_unambiguous_dna_records(
+        records, model_name=owner_name
+    )
     return normalized_records, compress_alignment_site_patterns_from_records(
         normalized_records
     )
@@ -286,7 +280,10 @@ def reoptimize_nucleotide_topology_tree(
     validated_branch_reoptimization_policy = validate_branch_reoptimization_policy(
         branch_reoptimization_policy
     )
-    if validated_branch_reoptimization_policy not in _SUPPORTED_BRANCH_REOPTIMIZATION_POLICIES:
+    if (
+        validated_branch_reoptimization_policy
+        not in _SUPPORTED_BRANCH_REOPTIMIZATION_POLICIES
+    ):
         raise ValueError(
             "branch_reoptimization_policy must be one of "
             + ", ".join(sorted(_SUPPORTED_BRANCH_REOPTIMIZATION_POLICIES))

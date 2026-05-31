@@ -313,4 +313,3 @@ def write_ancestral_transition_tree_set_count_table(
             for row in report.transition_rows
         ],
     )
-

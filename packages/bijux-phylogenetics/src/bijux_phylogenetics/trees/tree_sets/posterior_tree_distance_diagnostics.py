@@ -6,7 +6,9 @@ from pathlib import Path
 from bijux_phylogenetics.compare.topology.branch_lengths import (
     _compare_branch_lengths_for_trees,
 )
-from bijux_phylogenetics.compare.topology.distance import compare_topology_distance_trees
+from bijux_phylogenetics.compare.topology.distance import (
+    compare_topology_distance_trees,
+)
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
@@ -92,11 +94,7 @@ def _rank_rows(
         rows,
         key=lambda row: (
             -float(row[normalized_key]),
-            -(
-                -1.0
-                if row[branch_score_key] is None
-                else float(row[branch_score_key])
-            ),
+            -(-1.0 if row[branch_score_key] is None else float(row[branch_score_key])),
             -int(row[rf_key]),
             int(row["source_tree_index"]),
         ),
@@ -203,9 +201,7 @@ def compute_posterior_tree_distance_diagnostics(
             mcc_outlier_rank=mcc_ranks[int(row["source_tree_index"])],
             consensus_outlier_rank=consensus_ranks[int(row["source_tree_index"])],
             mcc_robinson_foulds_distance=int(row["mcc_robinson_foulds_distance"]),
-            mcc_normalized_robinson_foulds=float(
-                row["mcc_normalized_robinson_foulds"]
-            ),
+            mcc_normalized_robinson_foulds=float(row["mcc_normalized_robinson_foulds"]),
             mcc_branch_score_distance=(
                 None
                 if row["mcc_branch_score_distance"] is None
@@ -340,7 +336,9 @@ def write_posterior_tree_distance_artifacts(
     report: PosteriorTreeDistanceDiagnosticsReport,
 ) -> dict[str, Path]:
     out_dir.mkdir(parents=True, exist_ok=True)
-    mcc_tree_path = write_newick(out_dir / "maximum-clade-credibility-tree.nwk", mcc_tree)
+    mcc_tree_path = write_newick(
+        out_dir / "maximum-clade-credibility-tree.nwk", mcc_tree
+    )
     consensus_tree_path = write_newick(out_dir / "consensus-tree.nwk", consensus_tree)
     diagnostic_table_path = write_posterior_tree_distance_diagnostic_table(
         out_dir / "posterior-tree-distance-diagnostics.tsv",

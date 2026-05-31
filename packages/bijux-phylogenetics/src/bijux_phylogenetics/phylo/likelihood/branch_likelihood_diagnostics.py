@@ -81,7 +81,11 @@ def evaluate_nucleotide_branch_likelihood_diagnostics(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> FixedTreeBranchLikelihoodDiagnosticsReport:
     """Diagnose one fixed-topology nucleotide likelihood by branch-collapse replay."""
@@ -101,7 +105,9 @@ def evaluate_nucleotide_branch_likelihood_diagnostics(
         root_prior=root_prior,
         fixed_root_state=fixed_root_state,
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
 
     def evaluate_tree_log_likelihood(candidate_tree: PhyloTree) -> float:
         validate_explicit_branch_lengths(
@@ -160,7 +166,11 @@ def evaluate_nucleotide_branch_likelihood_diagnostics_from_alignment(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> FixedTreeBranchLikelihoodDiagnosticsReport:
     normalized_records = load_fasta_alignment(alignment_path)
@@ -191,7 +201,9 @@ def evaluate_protein_poisson_branch_likelihood_diagnostics(
         gap_policy=gap_policy,
         missing_policy=missing_policy,
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
 
     def evaluate_tree_log_likelihood(candidate_tree: PhyloTree) -> float:
         return _evaluate_protein_poisson_tree_likelihood_from_patterns(
@@ -257,7 +269,9 @@ def evaluate_empirical_protein_branch_likelihood_diagnostics(
         gap_policy=gap_policy,
         missing_policy=missing_policy,
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     if root_prior is None:
         validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
         root_prior_source = "uniform"

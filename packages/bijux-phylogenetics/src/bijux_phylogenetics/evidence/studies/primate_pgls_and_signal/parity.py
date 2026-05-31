@@ -504,9 +504,7 @@ def build_primate_pgls_signal_scalar_parity_table(
             family_id="phylogenetic-regression",
             fragment_id="pagel-lambda-regression",
             metric_name="fixed_reference_intercept_p_value",
-            r_value=r_results["fixed_reference_lambda_pgls"]["p_values"][
-                "intercept"
-            ],
+            r_value=r_results["fixed_reference_lambda_pgls"]["p_values"]["intercept"],
             bijux_value=python_results["fixed_reference_lambda_pgls"]["p_values"][
                 "intercept"
             ],
@@ -531,9 +529,7 @@ def build_primate_pgls_signal_scalar_parity_table(
             fragment_id="pagel-lambda-regression",
             metric_name="fixed_reference_log_likelihood",
             r_value=r_results["fixed_reference_lambda_pgls"]["log_likelihood"],
-            bijux_value=python_results["fixed_reference_lambda_pgls"][
-                "log_likelihood"
-            ],
+            bijux_value=python_results["fixed_reference_lambda_pgls"]["log_likelihood"],
             tolerance_abs_diff=5e-4,
         ),
         comparison_row_tolerance(
@@ -583,9 +579,7 @@ def build_primate_pgls_signal_scalar_parity_table(
             family_id="phylogenetic-regression",
             fragment_id="pagel-lambda-regression",
             metric_name="intercept_standard_error",
-            r_value=r_results["estimated_lambda_pgls"]["standard_errors"][
-                "intercept"
-            ],
+            r_value=r_results["estimated_lambda_pgls"]["standard_errors"]["intercept"],
             bijux_value=python_results["estimated_lambda_pgls"]["standard_errors"][
                 "intercept"
             ],
@@ -638,9 +632,7 @@ def build_primate_pgls_signal_scalar_parity_table(
             family_id="phylogenetic-regression",
             fragment_id="pagel-lambda-regression",
             metric_name="social_group_size_p_value",
-            r_value=r_results["estimated_lambda_pgls"]["p_values"][
-                "social_group_size"
-            ],
+            r_value=r_results["estimated_lambda_pgls"]["p_values"]["social_group_size"],
             bijux_value=python_results["estimated_lambda_pgls"]["p_values"][
                 "social_group_size"
             ],

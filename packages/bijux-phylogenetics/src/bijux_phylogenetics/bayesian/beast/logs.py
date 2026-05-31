@@ -391,9 +391,7 @@ def summarize_beast_posterior_decomposition(
         )
         decomposition_delta = log_posterior - (log_likelihood + log_prior)
         decomposition_valid = abs(decomposition_delta) <= identity_tolerance
-        maximum_absolute_delta = max(
-            maximum_absolute_delta, abs(decomposition_delta)
-        )
+        maximum_absolute_delta = max(maximum_absolute_delta, abs(decomposition_delta))
         verified = verified and decomposition_valid
         rows.append(
             BeastPosteriorDecompositionRow(

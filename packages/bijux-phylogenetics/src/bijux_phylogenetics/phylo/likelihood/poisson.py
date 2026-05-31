@@ -39,15 +39,21 @@ def protein_poisson_rate_matrix() -> numpy.ndarray:
     return rate_matrix
 
 
-def protein_poisson_transition_probability_matrix(branch_length: float) -> numpy.ndarray:
+def protein_poisson_transition_probability_matrix(
+    branch_length: float,
+) -> numpy.ndarray:
     """Return the native closed-form 20-state protein Poisson transition matrix."""
     state_count = len(PROTEIN_STATE_ORDER)
     if branch_length <= 0.0:
         return numpy.eye(state_count, dtype=float)
     decay = math.exp((-state_count * branch_length) / (state_count - 1))
-    same_probability = (1.0 / state_count) + (((state_count - 1.0) / state_count) * decay)
+    same_probability = (1.0 / state_count) + (
+        ((state_count - 1.0) / state_count) * decay
+    )
     different_probability = (1.0 / state_count) - ((1.0 / state_count) * decay)
-    transition = numpy.full((state_count, state_count), different_probability, dtype=float)
+    transition = numpy.full(
+        (state_count, state_count), different_probability, dtype=float
+    )
     numpy.fill_diagonal(transition, same_probability)
     return transition
 
@@ -66,7 +72,9 @@ def evaluate_protein_poisson_tree_likelihood(
         gap_policy=gap_policy,
         missing_policy=missing_policy,
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     return _evaluate_protein_poisson_tree_likelihood_from_patterns(
         tree,
         compressed_patterns,
@@ -104,20 +112,24 @@ def _evaluate_protein_poisson_tree_likelihood_from_patterns(
         )
         for _parent, child in tree.iter_edges()
     }
-    site_log_likelihoods, log_likelihood = expanded_site_log_likelihood_rows_from_patterns(
-        compressed_patterns,
-        site_log_likelihood=lambda states: evaluate_fixed_topology_protein_site_log_likelihood(
-            tree,
-            states,
-            taxon_order=compressed_patterns.taxon_order,
-            model_name="protein Poisson",
-            root_prior=UNIFORM_PROTEIN_ROOT_PRIOR,
-            transition_matrix_for_child=lambda child: transition_by_node_id[
-                child.node_id or ""
-            ],
-            gap_policy=gap_policy,
-            missing_policy=missing_policy,
-        ),
+    site_log_likelihoods, log_likelihood = (
+        expanded_site_log_likelihood_rows_from_patterns(
+            compressed_patterns,
+            site_log_likelihood=lambda states: (
+                evaluate_fixed_topology_protein_site_log_likelihood(
+                    tree,
+                    states,
+                    taxon_order=compressed_patterns.taxon_order,
+                    model_name="protein Poisson",
+                    root_prior=UNIFORM_PROTEIN_ROOT_PRIOR,
+                    transition_matrix_for_child=lambda child: transition_by_node_id[
+                        child.node_id or ""
+                    ],
+                    gap_policy=gap_policy,
+                    missing_policy=missing_policy,
+                )
+            ),
+        )
     )
     return ProteinPoissonTreeLikelihoodReport(
         taxa=compressed_patterns.taxon_order,

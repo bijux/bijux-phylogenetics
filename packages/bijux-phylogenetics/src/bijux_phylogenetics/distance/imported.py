@@ -24,8 +24,8 @@ from .models import (
     UPGMAUltrametricViolation,
 )
 from .shared import (
-    _pair_key,
     _build_distance_tree_from_lookup,
+    _pair_key,
     _require_supported_distance_tree_method,
 )
 from .ultrametricity import diagnose_imported_distance_matrix_ultrametricity
@@ -344,6 +344,7 @@ def validate_imported_distance_matrix(path: Path) -> ImportedDistanceMatrixRepor
         ),
         warnings=warnings,
     )
+
 
 def _distance_lookup_from_imported(
     report: ImportedDistanceMatrixReport,

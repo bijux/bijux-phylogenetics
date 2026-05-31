@@ -5,8 +5,7 @@ from dataclasses import dataclass
 
 import numpy
 
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-from bijux_phylogenetics.phylo.topology.tree import TreeNode
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 
 
 @dataclass(slots=True)

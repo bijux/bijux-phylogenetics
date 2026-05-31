@@ -13,12 +13,12 @@ from bijux_phylogenetics.compare.reference import (
 )
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.phylo.topology import (
+    RootedSprEnumerationBudget,
     enumerate_rooted_nni_neighbors,
     enumerate_rooted_spr_neighbors,
     enumerate_rooted_tbr_neighbors,
     reroot_tree_by_midpoint,
     root_tree_on_outgroup,
-    RootedSprEnumerationBudget,
     summarize_rooted_nni_move_application,
     summarize_rooted_spr_move_application,
     summarize_rooted_tbr_move_application,
@@ -434,7 +434,9 @@ def run_topology_command(args: Any) -> int:
             args,
             command="topology",
             inputs=[args.tree],
-            outputs=list(write_rooted_nni_move_artifacts(args.out_dir, report).values()),
+            outputs=list(
+                write_rooted_nni_move_artifacts(args.out_dir, report).values()
+            ),
         )
         _print_result(
             build_command_result(
@@ -520,7 +522,9 @@ def run_topology_command(args: Any) -> int:
             args,
             command="topology",
             inputs=[args.tree],
-            outputs=list(write_rooted_spr_move_artifacts(args.out_dir, report).values()),
+            outputs=list(
+                write_rooted_spr_move_artifacts(args.out_dir, report).values()
+            ),
         )
         _print_result(
             build_command_result(
@@ -582,7 +586,9 @@ def run_topology_command(args: Any) -> int:
             args,
             command="topology",
             inputs=[args.tree],
-            outputs=list(write_rooted_tbr_move_artifacts(args.out_dir, report).values()),
+            outputs=list(
+                write_rooted_tbr_move_artifacts(args.out_dir, report).values()
+            ),
         )
         _print_result(
             build_command_result(

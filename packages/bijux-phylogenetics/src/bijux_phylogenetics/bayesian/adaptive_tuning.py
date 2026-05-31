@@ -167,7 +167,11 @@ def build_adaptive_tuning_controller(
             "adaptive tuning controller requires 'minimum_scale' to be less than or equal to 'maximum_scale'",
             code="adaptive_tuning_scale_bounds_invalid",
         )
-    if not validated_minimum_scale <= validated_initial_scale <= validated_maximum_scale:
+    if (
+        not validated_minimum_scale
+        <= validated_initial_scale
+        <= validated_maximum_scale
+    ):
         raise PhylogeneticsError(
             "adaptive tuning controller requires 'initial_scale' to lie within the configured scale bounds",
             code="adaptive_tuning_initial_scale_out_of_bounds",
@@ -779,10 +783,9 @@ def _should_close_tuning_window(
     adaptation_window_size: int,
     window_attempted_count: int,
 ) -> bool:
-    return (
-        window_attempted_count >= adaptation_window_size
-        or iteration_index == burnin_iteration_count
-        or iteration_index == iteration_count
+    return window_attempted_count >= adaptation_window_size or iteration_index in (
+        burnin_iteration_count,
+        iteration_count,
     )
 
 

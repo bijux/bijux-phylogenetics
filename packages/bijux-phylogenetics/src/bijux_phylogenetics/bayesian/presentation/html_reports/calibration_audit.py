@@ -9,7 +9,9 @@ from bijux_phylogenetics.bayesian.beast.validation import (
     validate_fossil_calibration_table,
     validate_tip_dating_metadata,
 )
-from bijux_phylogenetics.evidence.provenance.method_tiers import bayesian_report_method_tier
+from bijux_phylogenetics.evidence.provenance.method_tiers import (
+    bayesian_report_method_tier,
+)
 from bijux_phylogenetics.render.html import write_html_report
 
 from .contracts import CalibrationAuditReportBuildResult

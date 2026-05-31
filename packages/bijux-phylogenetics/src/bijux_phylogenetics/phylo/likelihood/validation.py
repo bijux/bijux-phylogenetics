@@ -1,9 +1,13 @@
 from __future__ import annotations
 
-from bijux_phylogenetics.phylo.likelihood.patterns import CompressedAlignmentSitePatterns
+from bijux_phylogenetics.phylo.likelihood.patterns import (
+    CompressedAlignmentSitePatterns,
+)
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-from bijux_phylogenetics.runtime.errors import AlignmentTaxonMismatchError
-from bijux_phylogenetics.runtime.errors import InvalidBranchLengthError
+from bijux_phylogenetics.runtime.errors import (
+    AlignmentTaxonMismatchError,
+    InvalidBranchLengthError,
+)
 
 
 def validate_explicit_branch_lengths(

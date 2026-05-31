@@ -43,7 +43,9 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
 
-def f81_rate_matrix(base_frequencies: dict[str, float] | numpy.ndarray) -> numpy.ndarray:
+def f81_rate_matrix(
+    base_frequencies: dict[str, float] | numpy.ndarray,
+) -> numpy.ndarray:
     """Return the normalized F81 rate matrix with expected rate one."""
     stationary = validate_dna_base_frequencies(base_frequencies, model_name="F81")
     variability = _f81_variability(stationary)
@@ -83,14 +85,13 @@ def f81_transition_probability_matrix(
     for row_index in range(len(DNA_STATE_ORDER)):
         for column_index in range(len(DNA_STATE_ORDER)):
             if row_index == column_index:
-                transition_matrix[row_index, column_index] = (
-                    stationary[column_index]
-                    + ((1.0 - stationary[column_index]) * decay)
-                )
+                transition_matrix[row_index, column_index] = stationary[
+                    column_index
+                ] + ((1.0 - stationary[column_index]) * decay)
             else:
-                transition_matrix[row_index, column_index] = (
-                    stationary[column_index] * (1.0 - decay)
-                )
+                transition_matrix[row_index, column_index] = stationary[
+                    column_index
+                ] * (1.0 - decay)
     return transition_matrix
 
 
@@ -101,7 +102,11 @@ def evaluate_f81_tree_likelihood(
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
     observation_policy: str = "reject",
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> F81TreeLikelihoodReport:
     """Evaluate one fixed-topology F81 likelihood from aligned DNA records."""
@@ -110,7 +115,9 @@ def evaluate_f81_tree_likelihood(
         model_name="F81",
         observation_policy=observation_policy,
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     if base_frequencies is None:
         stationary = estimate_empirical_dna_base_frequencies_from_records(
             normalized_records,
@@ -157,7 +164,11 @@ def evaluate_f81_tree_likelihood_from_alignment(
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
     observation_policy: str = "reject",
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> F81TreeLikelihoodReport:
     """Evaluate one fixed-topology F81 likelihood from one tree path and alignment."""
@@ -221,7 +232,9 @@ def _evaluate_f81_tree_likelihood_from_patterns(
         }
 
     def site_log_likelihood(states: tuple[str, ...]) -> float:
-        states_by_taxon = dict(zip(compressed_patterns.taxon_order, states, strict=True))
+        states_by_taxon = dict(
+            zip(compressed_patterns.taxon_order, states, strict=True)
+        )
         pruning_pass = postorder_conditional_likelihoods(
             tree,
             state_count=len(state_order),

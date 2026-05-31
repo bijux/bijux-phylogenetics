@@ -112,7 +112,9 @@ def summarize_bayesian_wrapper_correspondence() -> BayesianWrapperCorrespondence
         1 for observation in observations if observation.status == "native-bug"
     )
     blocking_case_count = sum(1 for observation in observations if observation.blocking)
-    supported_case_count = sum(1 for observation in observations if observation.supported)
+    supported_case_count = sum(
+        1 for observation in observations if observation.supported
+    )
     return BayesianWrapperCorrespondenceReport(
         observations=observations,
         summary_rows=summary_rows,
@@ -174,7 +176,9 @@ def _build_beast_log_parameter_summary_observation() -> (
     )
 
 
-def _build_beast_consensus_tree_observation() -> BayesianWrapperCorrespondenceObservation:
+def _build_beast_consensus_tree_observation() -> (
+    BayesianWrapperCorrespondenceObservation
+):
     fixture = get_shared_beast_posterior_fixture(_STRICT_YULE_REAL_POSTERIOR)
     reference = fixture.load_reference()
     _consensus_tree, observed = summarize_beast_posterior_trees(
@@ -359,7 +363,9 @@ def _build_mrbayes_consensus_branch_length_semantics_observation() -> (
     )
 
 
-def _build_revbayes_unsupported_observation() -> BayesianWrapperCorrespondenceObservation:
+def _build_revbayes_unsupported_observation() -> (
+    BayesianWrapperCorrespondenceObservation
+):
     return BayesianWrapperCorrespondenceObservation(
         case_id="revbayes-governed-posterior-corpus",
         wrapper_engine="RevBayes-style",
@@ -458,7 +464,9 @@ def _package_root() -> Path:
 
 
 def _compare_tree_topology(left_tree, right_tree):
-    with tempfile.TemporaryDirectory(prefix="bijux-bayesian-wrapper-topology-") as tmp_dir:
+    with tempfile.TemporaryDirectory(
+        prefix="bijux-bayesian-wrapper-topology-"
+    ) as tmp_dir:
         tmp_root = Path(tmp_dir)
         left_path = write_newick(tmp_root / "left.nwk", left_tree)
         right_path = write_newick(tmp_root / "right.nwk", right_tree)

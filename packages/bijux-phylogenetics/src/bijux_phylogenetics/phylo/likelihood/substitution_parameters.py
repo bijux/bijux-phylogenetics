@@ -267,7 +267,9 @@ def _optimize_jc69_substitution_parameters(
         optimization_pass_count=0,
         converged=True,
         boundary_warnings=[],
-        warnings=["JC69 has no free substitution parameters; skipping parameter search"],
+        warnings=[
+            "JC69 has no free substitution parameters; skipping parameter search"
+        ],
     )
 
 
@@ -596,9 +598,11 @@ def _optimize_gtr_substitution_parameters(
     if initial_exchangeabilities is None:
         normalized_initial_exchangeabilities = numpy.ones(6, dtype=float)
     else:
-        normalized_initial_exchangeabilities = normalize_dna_exchangeabilities_by_anchor(
-            initial_exchangeabilities,
-            model_name="GTR substitution optimization",
+        normalized_initial_exchangeabilities = (
+            normalize_dna_exchangeabilities_by_anchor(
+                initial_exchangeabilities,
+                model_name="GTR substitution optimization",
+            )
         )
     optimization_report = optimize_gtr_exchangeabilities(
         tree,
@@ -619,7 +623,9 @@ def _optimize_gtr_substitution_parameters(
         "CT": optimization_report.exchangeability_ct,
         "GT": optimization_report.exchangeability_gt,
     }
-    for parameter_index, parameter_name in enumerate(("AG", "AT", "CG", "CT", "GT"), start=1):
+    for parameter_index, parameter_name in enumerate(
+        ("AG", "AT", "CG", "CT", "GT"), start=1
+    ):
         parameter_row, parameter_warnings = _parameter_row_with_boundary_warnings(
             parameter_name=parameter_name,
             initial_value=float(normalized_initial_exchangeabilities[parameter_index]),

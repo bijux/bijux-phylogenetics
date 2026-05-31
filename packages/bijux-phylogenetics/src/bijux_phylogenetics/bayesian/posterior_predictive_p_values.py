@@ -67,7 +67,9 @@ def summarize_posterior_predictive_p_values(
     )
     statistic_rows: list[PosteriorPredictivePValueRow] = []
     for observed_row in observed_statistic_rows:
-        replicate_values = replicate_values_by_statistic.get(observed_row.statistic_name)
+        replicate_values = replicate_values_by_statistic.get(
+            observed_row.statistic_name
+        )
         if replicate_values is None:
             raise PhylogeneticsError(
                 "posterior predictive p-value summary requires replicate values for every observed statistic",
@@ -122,7 +124,9 @@ def _resolve_report_kind(
         return "alignment"
     if isinstance(simulation_report, PosteriorPredictiveDiscreteTraitSimulationReport):
         return "discrete-trait"
-    if isinstance(simulation_report, PosteriorPredictiveContinuousTraitSimulationReport):
+    if isinstance(
+        simulation_report, PosteriorPredictiveContinuousTraitSimulationReport
+    ):
         return "continuous-trait"
     raise PhylogeneticsError(
         "posterior predictive p-value summary requires one native posterior predictive simulation report",

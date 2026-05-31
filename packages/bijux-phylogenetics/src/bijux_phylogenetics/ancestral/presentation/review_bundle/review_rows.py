@@ -4,11 +4,15 @@ import json
 
 from bijux_phylogenetics.ancestral.continuous import ContinuousAncestralReport
 from bijux_phylogenetics.ancestral.discrete import DiscreteAncestralReport
-from bijux_phylogenetics.ancestral.discrete.review import AncestralTransitionBranchRow
-from bijux_phylogenetics.ancestral.discrete.review import AncestralTransitionCountRow
+from bijux_phylogenetics.ancestral.discrete.review import (
+    AncestralTransitionBranchRow,
+    AncestralTransitionCountRow,
+)
 
-from .contracts import AncestralContinuousChangeBranchRow
-from .contracts import AncestralContinuousChangeCountRow
+from .contracts import (
+    AncestralContinuousChangeBranchRow,
+    AncestralContinuousChangeCountRow,
+)
 
 
 def node_table_rows(

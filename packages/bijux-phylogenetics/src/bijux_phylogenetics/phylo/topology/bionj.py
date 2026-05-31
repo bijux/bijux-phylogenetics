@@ -3,9 +3,9 @@ from __future__ import annotations
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 
 from .distance_joining import (
+    TIE_TOLERANCE,
     ActiveDistanceJoinCluster,
     ClusterKey,
-    TIE_TOLERANCE,
     build_three_taxon_join_tree,
     build_two_taxon_join_tree,
     choose_join_pair,
@@ -43,9 +43,7 @@ def _join_clusters(
         (row_sums[left_key] - row_sums[right_key]) / (2 * (active_count - 2))
     )
     right_length = pair_distance - left_length
-    active_clusters[left_key].node.branch_length = normalized_branch_length(
-        left_length
-    )
+    active_clusters[left_key].node.branch_length = normalized_branch_length(left_length)
     active_clusters[right_key].node.branch_length = normalized_branch_length(
         right_length
     )

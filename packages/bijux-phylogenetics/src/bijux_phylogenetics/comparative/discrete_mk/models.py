@@ -24,9 +24,7 @@ DISCRETE_MK_ASCERTAINMENT_POLICIES = (
 DISCRETE_MK_LIKELIHOOD_CONSTANT_POLICY = (
     "continuous-time-markov-pruning-loglikelihood-has-no-extra-normalizing-constant"
 )
-DISCRETE_MK_LIKELIHOOD_VARIABLE_ONLY_CONSTANT_POLICY = (
-    "continuous-time-markov-pruning-loglikelihood-conditions-on-variable-site-observation-under-the-declared-lewis-mk-ascertainment-policy"
-)
+DISCRETE_MK_LIKELIHOOD_VARIABLE_ONLY_CONSTANT_POLICY = "continuous-time-markov-pruning-loglikelihood-conditions-on-variable-site-observation-under-the-declared-lewis-mk-ascertainment-policy"
 DISCRETE_MK_LIKELIHOOD_COMPARISON_POLICY = "raw-loglikelihood-and-derived-aic-are-directly-comparable-when-all-candidate-mk-models-share-the-owned-pruning-likelihood-policy"
 DISCRETE_MK_MODEL_RANKING_POLICY = "relative-aic-and-aicc-ranking-is-permitted-only-when-all-candidate-discrete-mk-models-share-one-pruning-likelihood-policy"
 DISCRETE_MK_MODEL_CONFIDENCE_WEIGHT_BASIS = "AICc"
@@ -49,9 +47,7 @@ def resolve_discrete_mk_likelihood_constant_policy(
     ascertainment_policy: str,
 ) -> str:
     """Return the governed likelihood-constant policy for one Mk fit surface."""
-    validated_policy = validate_discrete_mk_ascertainment_policy(
-        ascertainment_policy
-    )
+    validated_policy = validate_discrete_mk_ascertainment_policy(ascertainment_policy)
     if validated_policy == "lewis-variable-only":
         return DISCRETE_MK_LIKELIHOOD_VARIABLE_ONLY_CONSTANT_POLICY
     return DISCRETE_MK_LIKELIHOOD_CONSTANT_POLICY

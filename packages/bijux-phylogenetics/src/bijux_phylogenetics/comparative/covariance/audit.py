@@ -631,9 +631,7 @@ def _assess_covariance_candidate(
     actual_fit_strategy = fit_strategy
     if positive_definite_before_fit and not near_singular:
         actual_fit_strategy = "exact"
-        fit_strategy_details = (
-            "raw covariance is positive definite and well-conditioned enough for direct inversion without stabilization"
-        )
+        fit_strategy_details = "raw covariance is positive definite and well-conditioned enough for direct inversion without stabilization"
     elif fit_strategy == "regularization":
         stabilized = stable_covariance(
             covariance_matrix,

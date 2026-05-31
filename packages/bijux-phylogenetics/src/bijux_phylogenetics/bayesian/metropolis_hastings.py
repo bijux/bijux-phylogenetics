@@ -209,9 +209,7 @@ class _ReversibleRootedTbrNeighbor:
     reverse_neighbor_row: object
 
 
-_REVERSIBLE_JUMP_MODEL_SWITCH_FAMILIES = (
-    "nucleotide-substitution-model",
-)
+_REVERSIBLE_JUMP_MODEL_SWITCH_FAMILIES = ("nucleotide-substitution-model",)
 
 
 def build_metropolis_hastings_proposal(
@@ -367,10 +365,7 @@ def build_metropolis_hastings_checkpoint(
             "metropolis-hastings checkpoint requires one MetropolisHastingsRandomState",
             code="metropolis_hastings_checkpoint_random_state_type_invalid",
         )
-    if (
-        validated_completed_iteration_count == 0
-        and current_state != initial_state
-    ):
+    if validated_completed_iteration_count == 0 and current_state != initial_state:
         raise PhylogeneticsError(
             "metropolis-hastings checkpoint requires zero-iteration checkpoints to preserve the initial state as the current state",
             code="metropolis_hastings_checkpoint_zero_iteration_state_invalid",
@@ -404,8 +399,12 @@ def serialize_metropolis_hastings_checkpoint(
         "seed": checkpoint.seed,
         "completed_iteration_count": checkpoint.completed_iteration_count,
         "accepted_count": checkpoint.accepted_count,
-        "initial_state": serialize_bayesian_phylogenetic_state(checkpoint.initial_state),
-        "current_state": serialize_bayesian_phylogenetic_state(checkpoint.current_state),
+        "initial_state": serialize_bayesian_phylogenetic_state(
+            checkpoint.initial_state
+        ),
+        "current_state": serialize_bayesian_phylogenetic_state(
+            checkpoint.current_state
+        ),
         "sampled_states": [
             serialize_bayesian_phylogenetic_state(sampled_state)
             for sampled_state in checkpoint.sampled_states
@@ -777,8 +776,7 @@ def propose_partition_linking_move(
     current_tree = current_state.tree.to_tree()
     current_tree.rooted = current_state.tree.rooted
     partition_names = tuple(
-        partition_model.partition_name
-        for partition_model in validated_partition_models
+        partition_model.partition_name for partition_model in validated_partition_models
     )
     try:
         current_linkage_plan = (
@@ -787,10 +785,12 @@ def propose_partition_linking_move(
                 partition_names=partition_names,
             )
         )
-        current_partition_states = resolve_partition_parameter_states_from_model_parameters(
-            model_parameters=current_state.model_parameters,
-            partition_models=validated_partition_models,
-            linkage_plan=current_linkage_plan,
+        current_partition_states = (
+            resolve_partition_parameter_states_from_model_parameters(
+                model_parameters=current_state.model_parameters,
+                partition_models=validated_partition_models,
+                linkage_plan=current_linkage_plan,
+            )
         )
     except PhylogeneticsError as error:
         return build_metropolis_hastings_proposal(
@@ -919,9 +919,7 @@ def propose_branch_length_scaling_move(
         rng.randrange(len(candidate_branch_rows))
     ]
     try:
-        scale_factor = math.exp(
-            rng.gauss(0.0, validated_log_scale_standard_deviation)
-        )
+        scale_factor = math.exp(rng.gauss(0.0, validated_log_scale_standard_deviation))
     except OverflowError:
         return build_metropolis_hastings_proposal(
             changed_fields=(f"tree.branch_length:{selected_branch_id}",),
@@ -1012,9 +1010,7 @@ def propose_global_tree_height_scaling_move(
             invalid_reason="global tree-height scaling requires strictly positive finite branch lengths on every edge",
         )
     try:
-        scale_factor = math.exp(
-            rng.gauss(0.0, validated_log_scale_standard_deviation)
-        )
+        scale_factor = math.exp(rng.gauss(0.0, validated_log_scale_standard_deviation))
     except OverflowError:
         return build_metropolis_hastings_proposal(
             changed_fields=("tree.branch_lengths",),
@@ -1140,12 +1136,11 @@ def propose_gtr_exchangeability_move(
     proposed_vector_parameters["exchangeabilities"] = (
         proposed_parameterization.constrained_mapping()
     )
-    proposal_density = (
-        -math.log(len(current_unconstrained_values))
-        + _gaussian_random_walk_density(
-            coordinate_change=proposed_coordinate_value - current_coordinate_value,
-            standard_deviation=validated_coordinate_standard_deviation,
-        )
+    proposal_density = -math.log(
+        len(current_unconstrained_values)
+    ) + _gaussian_random_walk_density(
+        coordinate_change=proposed_coordinate_value - current_coordinate_value,
+        standard_deviation=validated_coordinate_standard_deviation,
     )
     return build_metropolis_hastings_proposal(
         changed_fields=(changed_field,),
@@ -1258,12 +1253,11 @@ def propose_base_frequency_simplex_move(
     proposed_vector_parameters["base-frequencies"] = (
         proposed_parameterization.constrained_mapping()
     )
-    proposal_density = (
-        -math.log(len(current_unconstrained_values))
-        + _gaussian_random_walk_density(
-            coordinate_change=proposed_coordinate_value - current_coordinate_value,
-            standard_deviation=validated_coordinate_standard_deviation,
-        )
+    proposal_density = -math.log(
+        len(current_unconstrained_values)
+    ) + _gaussian_random_walk_density(
+        coordinate_change=proposed_coordinate_value - current_coordinate_value,
+        standard_deviation=validated_coordinate_standard_deviation,
     )
     return build_metropolis_hastings_proposal(
         changed_fields=(changed_field,),
@@ -1317,9 +1311,7 @@ def propose_gamma_alpha_move(
             invalid_reason=str(error),
         )
     try:
-        scale_factor = math.exp(
-            rng.gauss(0.0, validated_log_scale_standard_deviation)
-        )
+        scale_factor = math.exp(rng.gauss(0.0, validated_log_scale_standard_deviation))
     except OverflowError:
         return build_metropolis_hastings_proposal(
             changed_fields=("scalar_parameters.gamma-alpha",),
@@ -1404,9 +1396,7 @@ def propose_kappa_move(
             invalid_reason=str(error),
         )
     try:
-        scale_factor = math.exp(
-            rng.gauss(0.0, validated_log_scale_standard_deviation)
-        )
+        scale_factor = math.exp(rng.gauss(0.0, validated_log_scale_standard_deviation))
     except OverflowError:
         return build_metropolis_hastings_proposal(
             changed_fields=("scalar_parameters.kappa",),
@@ -1505,9 +1495,7 @@ def propose_clock_rate_move(
             invalid_reason=str(error),
         )
     try:
-        scale_factor = math.exp(
-            rng.gauss(0.0, validated_log_scale_standard_deviation)
-        )
+        scale_factor = math.exp(rng.gauss(0.0, validated_log_scale_standard_deviation))
     except OverflowError:
         return build_metropolis_hastings_proposal(
             changed_fields=(changed_field,),
@@ -1532,9 +1520,7 @@ def propose_clock_rate_move(
             invalid_reason=str(error),
         )
     proposed_scalar_parameters = dict(current_state.model_parameters.scalar_parameters)
-    proposed_scalar_parameters[validated_parameter_name] = (
-        validated_proposed_clock_rate
-    )
+    proposed_scalar_parameters[validated_parameter_name] = validated_proposed_clock_rate
     log_forward_density = _lognormal_scaling_density(
         current_branch_length=validated_current_clock_rate,
         proposed_branch_length=validated_proposed_clock_rate,
@@ -1627,9 +1613,7 @@ def propose_continuous_trait_location_move(
             invalid_reason=str(error),
         )
     proposed_scalar_parameters = dict(current_state.model_parameters.scalar_parameters)
-    proposed_scalar_parameters[validated_parameter_name] = (
-        validated_proposed_location
-    )
+    proposed_scalar_parameters[validated_parameter_name] = validated_proposed_location
     current_tree = current_state.tree.to_tree()
     current_tree.rooted = current_state.tree.rooted
     return build_metropolis_hastings_proposal(
@@ -1700,9 +1684,7 @@ def propose_discrete_trait_rate_move(
     selected_component_name = component_names[rng.randrange(len(component_names))]
     current_rate_value = validated_current_rate_parameters[selected_component_name]
     try:
-        scale_factor = math.exp(
-            rng.gauss(0.0, validated_log_scale_standard_deviation)
-        )
+        scale_factor = math.exp(rng.gauss(0.0, validated_log_scale_standard_deviation))
     except OverflowError:
         return build_metropolis_hastings_proposal(
             changed_fields=(
@@ -2010,9 +1992,9 @@ def propose_nni_topology_move(
             invalid_reason="NNI topology proposal requires at least one legal rooted NNI move",
         )
     current_topology_fingerprint = rooted_topology_fingerprint(current_tree)
-    selected_candidate, proposed_tree, proposed_topology_fingerprint = current_neighbors[
-        rng.randrange(len(current_neighbors))
-    ]
+    selected_candidate, proposed_tree, proposed_topology_fingerprint = (
+        current_neighbors[rng.randrange(len(current_neighbors))]
+    )
     if proposed_topology_fingerprint == current_topology_fingerprint:
         return build_metropolis_hastings_proposal(
             changed_fields=("tree.topology",),
@@ -2170,9 +2152,7 @@ def propose_tbr_topology_move(
     current_legal_reconnection_count = _reversible_rooted_tbr_move_count(
         reversible_neighbors
     )
-    selected_neighbor = reversible_neighbors[
-        rng.randrange(len(reversible_neighbors))
-    ]
+    selected_neighbor = reversible_neighbors[rng.randrange(len(reversible_neighbors))]
     selected_neighbor_row = selected_neighbor.neighbor_row
     proposed_tree = selected_neighbor.proposed_tree
     current_topology_fingerprint = rooted_topology_fingerprint(current_tree)
@@ -2360,7 +2340,7 @@ def resume_metropolis_hastings_sampler(
         iteration_count=validated_checkpoint.iteration_count,
         owner_name="metropolis-hastings sampler resume",
     )
-    rng = random.Random()
+    rng = random.Random()  # nosec B311
     rng.setstate(_restore_rng_state_tuple(validated_checkpoint.random_state))
     return _run_metropolis_hastings_execution(
         initial_state=validated_checkpoint.initial_state,
@@ -2405,7 +2385,9 @@ def _run_metropolis_hastings_execution(
     checkpoint_iteration_index_set = set(checkpoint_iteration_indexes)
     emitted_checkpoints: list[MetropolisHastingsCheckpoint] = []
 
-    for iteration_index in range(completed_iteration_count + 1, final_iteration_index + 1):
+    for iteration_index in range(
+        completed_iteration_count + 1, final_iteration_index + 1
+    ):
         previous_state = current_state
         proposal = _validate_metropolis_hastings_proposal(
             propose_state(current_state, rng)
@@ -2779,7 +2761,9 @@ def _validate_step_rows(
             f"{owner_name} requires the last recorded posterior score to match the current state",
             code="metropolis_hastings_step_row_current_score_mismatch",
             details={
-                "last_recorded_posterior_log_score": validated_step_rows[-1].recorded_posterior_log_score,
+                "last_recorded_posterior_log_score": validated_step_rows[
+                    -1
+                ].recorded_posterior_log_score,
                 "current_posterior_log_score": current_state.posterior_log_score,
             },
         )
@@ -3031,10 +3015,7 @@ def _lognormal_positive_draw_density(
         -math.log(proposed_value)
         - math.log(log_standard_deviation)
         - (0.5 * math.log(2.0 * math.pi))
-        - (
-            math.log(proposed_value) ** 2
-            / (2.0 * (log_standard_deviation**2))
-        )
+        - (math.log(proposed_value) ** 2 / (2.0 * (log_standard_deviation**2)))
     )
 
 
@@ -3285,28 +3266,25 @@ def _diff_model_parameter_changed_fields(
         set(current_model_parameters.categorical_parameters)
         | set(proposed_model_parameters.categorical_parameters)
     ):
-        if (
-            current_model_parameters.categorical_parameters.get(parameter_name)
-            != proposed_model_parameters.categorical_parameters.get(parameter_name)
-        ):
+        if current_model_parameters.categorical_parameters.get(
+            parameter_name
+        ) != proposed_model_parameters.categorical_parameters.get(parameter_name):
             changed_fields.append(f"categorical_parameters.{parameter_name}")
     for parameter_name in sorted(
         set(current_model_parameters.scalar_parameters)
         | set(proposed_model_parameters.scalar_parameters)
     ):
-        if (
-            current_model_parameters.scalar_parameters.get(parameter_name)
-            != proposed_model_parameters.scalar_parameters.get(parameter_name)
-        ):
+        if current_model_parameters.scalar_parameters.get(
+            parameter_name
+        ) != proposed_model_parameters.scalar_parameters.get(parameter_name):
             changed_fields.append(f"scalar_parameters.{parameter_name}")
     for parameter_name in sorted(
         set(current_model_parameters.vector_parameters)
         | set(proposed_model_parameters.vector_parameters)
     ):
-        if (
-            current_model_parameters.vector_parameters.get(parameter_name)
-            != proposed_model_parameters.vector_parameters.get(parameter_name)
-        ):
+        if current_model_parameters.vector_parameters.get(
+            parameter_name
+        ) != proposed_model_parameters.vector_parameters.get(parameter_name):
             changed_fields.append(f"vector_parameters.{parameter_name}")
     return tuple(changed_fields)
 
@@ -3503,8 +3481,7 @@ def _compute_rooted_ultrametric_node_heights(
             code="metropolis_hastings_node_height_slide_tree_not_ultrametric",
         )
     return {
-        node_id: root_age - node_depth
-        for node_id, node_depth in node_depths.items()
+        node_id: root_age - node_depth for node_id, node_depth in node_depths.items()
     }
 
 

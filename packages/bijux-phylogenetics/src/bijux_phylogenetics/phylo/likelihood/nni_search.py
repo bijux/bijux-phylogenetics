@@ -6,7 +6,6 @@ from pathlib import Path
 import numpy
 
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick, write_newick
-from bijux_phylogenetics.phylo.topology.clades import canonical_clade_id
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.equal_best_topologies import (
     build_nucleotide_likelihood_equal_best_tree_report,
@@ -14,10 +13,6 @@ from bijux_phylogenetics.phylo.likelihood.equal_best_topologies import (
     record_nucleotide_likelihood_equal_best_topology,
     validate_nucleotide_likelihood_equal_best_likelihood_tolerance,
     validate_nucleotide_likelihood_equal_best_tree_cap,
-)
-from bijux_phylogenetics.phylo.likelihood.search_convergence import (
-    resolve_nucleotide_likelihood_search_convergence_decision,
-    validate_nucleotide_likelihood_search_improvement_tolerance,
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
     NucleotideLikelihoodNniCandidateRow,
@@ -27,25 +22,30 @@ from bijux_phylogenetics.phylo.likelihood.models import (
 from bijux_phylogenetics.phylo.likelihood.search_artifacts import (
     write_nucleotide_likelihood_best_tree_set,
 )
+from bijux_phylogenetics.phylo.likelihood.search_convergence import (
+    resolve_nucleotide_likelihood_search_convergence_decision,
+    validate_nucleotide_likelihood_search_improvement_tolerance,
+)
 from bijux_phylogenetics.phylo.likelihood.topology_search import (
     BranchReoptimizationResult,
     normalize_nucleotide_topology_search_records,
     prefer_higher_likelihood,
-    reoptimize_nucleotide_topology_tree_branch_subset,
     reoptimize_nucleotide_topology_tree,
-    resolve_reoptimized_branch_clade_ids,
+    reoptimize_nucleotide_topology_tree_branch_subset,
     resolve_nucleotide_topology_search_records,
     resolve_nucleotide_topology_search_surface,
     resolve_nucleotide_topology_search_tree,
+    resolve_reoptimized_branch_clade_ids,
     validate_nucleotide_topology_search_tree,
 )
+from bijux_phylogenetics.phylo.topology import rooted_topology_fingerprint
+from bijux_phylogenetics.phylo.topology.clades import canonical_clade_id
 from bijux_phylogenetics.phylo.topology.rooted_nni import (
     apply_rooted_nni_move,
     iter_rooted_nni_move_candidates,
     require_rooted_nni_node_id,
     rooted_nni_node_sort_key,
 )
-from bijux_phylogenetics.phylo.topology import rooted_topology_fingerprint
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, descendant_taxa
 
 _SUPPORTED_NNI_BRANCH_REOPTIMIZATION_POLICIES = frozenset(
@@ -74,7 +74,11 @@ def search_nucleotide_likelihood_nni(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
     lower_branch_length_bound: float = 0.0,
     upper_branch_length_bound: float = 5.0,
@@ -86,14 +90,16 @@ def search_nucleotide_likelihood_nni(
 ) -> NucleotideLikelihoodNniSearchReport:
     """Search one rooted binary nucleotide tree by likelihood-improving rooted NNI moves."""
     resolved_tree, resolved_tree_path = resolve_nucleotide_topology_search_tree(tree)
-    resolved_records, resolved_alignment_path = resolve_nucleotide_topology_search_records(
-        records
+    resolved_records, resolved_alignment_path = (
+        resolve_nucleotide_topology_search_records(records)
     )
-    validated_branch_reoptimization_policy = validate_nucleotide_likelihood_nni_branch_reoptimization_policy(
-        branch_reoptimization_policy
+    validated_branch_reoptimization_policy = (
+        validate_nucleotide_likelihood_nni_branch_reoptimization_policy(
+            branch_reoptimization_policy
+        )
     )
-    validated_improvement_policy = validate_nucleotide_likelihood_nni_improvement_policy(
-        improvement_policy
+    validated_improvement_policy = (
+        validate_nucleotide_likelihood_nni_improvement_policy(improvement_policy)
     )
     validated_search_improvement_tolerance = (
         validate_nucleotide_likelihood_search_improvement_tolerance(
@@ -112,9 +118,11 @@ def search_nucleotide_likelihood_nni(
         resolved_tree,
         workflow_name="nucleotide likelihood NNI search",
     )
-    normalized_records, compressed_patterns = normalize_nucleotide_topology_search_records(
-        resolved_records,
-        owner_name="nucleotide likelihood NNI search",
+    normalized_records, compressed_patterns = (
+        normalize_nucleotide_topology_search_records(
+            resolved_records,
+            owner_name="nucleotide likelihood NNI search",
+        )
     )
     resolved_surface = resolve_nucleotide_topology_search_surface(
         resolved_tree,
@@ -141,7 +149,9 @@ def search_nucleotide_likelihood_nni(
     current_tree = start_result.optimized_tree.copy().refresh()
     current_log_likelihood = start_result.log_likelihood
     start_tree_newick = dumps_newick(current_tree)
-    equal_best_accumulator = initialize_nucleotide_likelihood_equal_best_topology_accumulator()
+    equal_best_accumulator = (
+        initialize_nucleotide_likelihood_equal_best_topology_accumulator()
+    )
     record_nucleotide_likelihood_equal_best_topology(
         equal_best_accumulator,
         tree_newick=start_tree_newick,
@@ -205,7 +215,10 @@ def search_nucleotide_likelihood_nni(
         ):
             try:
                 neighbor_tree = apply_rooted_nni_move(current_tree, candidate)
-                if validated_branch_reoptimization_policy == "coordinate-branch-lengths":
+                if (
+                    validated_branch_reoptimization_policy
+                    == "coordinate-branch-lengths"
+                ):
                     neighbor_result = reoptimize_nucleotide_topology_tree(
                         neighbor_tree,
                         compressed_patterns=compressed_patterns,
@@ -251,7 +264,9 @@ def search_nucleotide_likelihood_nni(
             total_branch_function_evaluation_count += (
                 neighbor_result.function_evaluation_count
             )
-            log_likelihood_delta = neighbor_result.log_likelihood - current_log_likelihood
+            log_likelihood_delta = (
+                neighbor_result.log_likelihood - current_log_likelihood
+            )
             iteration_candidate_rows.append(
                 NucleotideLikelihoodNniCandidateRow(
                     iteration=accepted_move_count + 1,
@@ -323,12 +338,14 @@ def search_nucleotide_likelihood_nni(
                     row.selected_best_move = True
                     break
         candidate_rows.extend(iteration_candidate_rows)
-        convergence_decision = resolve_nucleotide_likelihood_search_convergence_decision(
-            best_improving_delta=best_positive_delta,
-            improvement_tolerance=validated_search_improvement_tolerance,
-            candidate_topology_fingerprint=improving_topology_fingerprint,
-            seen_topology_fingerprints=seen_topology_fingerprints,
-            failure_detected=failure_detected,
+        convergence_decision = (
+            resolve_nucleotide_likelihood_search_convergence_decision(
+                best_improving_delta=best_positive_delta,
+                improvement_tolerance=validated_search_improvement_tolerance,
+                candidate_topology_fingerprint=improving_topology_fingerprint,
+                seen_topology_fingerprints=seen_topology_fingerprints,
+                failure_detected=failure_detected,
+            )
         )
         if convergence_decision.should_stop:
             stopping_reason = convergence_decision.stopping_reason or "search-failure"
@@ -345,7 +362,9 @@ def search_nucleotide_likelihood_nni(
                 event_kind="accepted-move",
                 iteration=accepted_move_count,
                 move_type="nni",
-                candidate_topology_fingerprint=rooted_topology_fingerprint(current_tree),
+                candidate_topology_fingerprint=rooted_topology_fingerprint(
+                    current_tree
+                ),
                 log_likelihood_before=score_before,
                 log_likelihood_after=current_log_likelihood,
                 log_likelihood_delta=current_log_likelihood - score_before,
@@ -368,7 +387,9 @@ def search_nucleotide_likelihood_nni(
                 branch_reoptimization_converged=improving_result.converged,
                 branch_optimization_pass_count=improving_result.optimization_pass_count,
                 branch_function_evaluation_count=improving_result.function_evaluation_count,
-                boundary_warning_messages=list(improving_result.boundary_warning_messages),
+                boundary_warning_messages=list(
+                    improving_result.boundary_warning_messages
+                ),
                 stopping_reason=None,
             )
         )
@@ -454,7 +475,11 @@ def search_nucleotide_likelihood_nni_from_alignment(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
     lower_branch_length_bound: float = 0.0,
     upper_branch_length_bound: float = 5.0,
@@ -515,7 +540,9 @@ def resolve_nni_branch_reoptimization_scope(policy: str) -> str:
         return "all-branches"
     if policy == "nni-local-affected-branches":
         return "local-nni-neighborhood"
-    raise ValueError(f"unsupported rooted likelihood NNI reoptimization policy '{policy}'")
+    raise ValueError(
+        f"unsupported rooted likelihood NNI reoptimization policy '{policy}'"
+    )
 
 
 def resolve_nni_local_branch_ids(
@@ -527,7 +554,9 @@ def resolve_nni_local_branch_ids(
     original_parent = original_tree.node_by_id(candidate.parent_node_id)
     original_child = original_tree.node_by_id(candidate.child_node_id)
     original_sibling = original_tree.node_by_id(candidate.sibling_node_id)
-    original_exchanged_child = original_tree.node_by_id(candidate.exchanged_child_node_id)
+    original_exchanged_child = original_tree.node_by_id(
+        candidate.exchanged_child_node_id
+    )
     original_remaining_child = next(
         child
         for child in original_child.children
@@ -569,10 +598,7 @@ def resolve_nni_local_branch_ids(
     ]
     if moved_parent is not None:
         candidate_nodes.append(moved_parent)
-    node_by_id = {
-        require_rooted_nni_node_id(node): node
-        for node in candidate_nodes
-    }
+    node_by_id = {require_rooted_nni_node_id(node): node for node in candidate_nodes}
     return [
         node_id
         for node_id, _node in sorted(
@@ -594,8 +620,9 @@ def _find_branch_node_by_signature(
             continue
         if frozenset(descendant_taxa(node)) == signature:
             return node
-    raise ValueError(f"tree does not contain branch clade '{canonical_clade_id(signature)}'")
-
+    raise ValueError(
+        f"tree does not contain branch clade '{canonical_clade_id(signature)}'"
+    )
 
 
 def write_nucleotide_likelihood_nni_trace_table(
@@ -771,7 +798,9 @@ def write_nucleotide_likelihood_nni_run_json(
             for row in report.candidate_rows
         ],
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 
@@ -823,9 +852,7 @@ def write_nucleotide_likelihood_nni_candidate_table(
         ]
         rows.append(
             "\t".join(
-                format(value, ".15g")
-                if isinstance(value, float)
-                else str(value)
+                format(value, ".15g") if isinstance(value, float) else str(value)
                 for value in payload
             )
         )

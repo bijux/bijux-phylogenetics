@@ -196,13 +196,10 @@ def optimize_fixed_topology_nucleotide_branches_and_model_with_restarts(
                 selected_best=False,
             )
         )
-        if (
-            normalized_restart_policy == "none"
-            or not _joint_restart_needed(
-                report,
-                parameter_boundary_count=parameter_boundary_count,
-                branch_boundary_count=branch_boundary_count,
-            )
+        if normalized_restart_policy == "none" or not _joint_restart_needed(
+            report,
+            parameter_boundary_count=parameter_boundary_count,
+            branch_boundary_count=branch_boundary_count,
         ):
             break
         next_trigger_reason = (
@@ -379,9 +376,7 @@ def optimize_fixed_topology_nucleotide_branches_and_model(
         )
         latest_branch_report = branch_report
         total_function_evaluation_count += branch_report.function_evaluation_count
-        branch_delta = (
-            branch_report.optimized_log_likelihood - current_log_likelihood
-        )
+        branch_delta = branch_report.optimized_log_likelihood - current_log_likelihood
         current_tree = loads_newick(branch_report.optimized_tree_newick).refresh()
         current_log_likelihood = branch_report.optimized_log_likelihood
         update_rows.append(
@@ -396,10 +391,7 @@ def optimize_fixed_topology_nucleotide_branches_and_model(
                 optimization_pass_count=branch_report.optimization_pass_count,
                 converged=branch_report.converged,
                 optimized_branch_count=len(branch_report.branches),
-                optimized_branch_ids=[
-                    row.branch_id
-                    for row in branch_report.branches
-                ],
+                optimized_branch_ids=[row.branch_id for row in branch_report.branches],
                 updated_parameter_names=[],
             )
         )
@@ -441,8 +433,7 @@ def optimize_fixed_topology_nucleotide_branches_and_model(
                 optimized_branch_count=0,
                 optimized_branch_ids=[],
                 updated_parameter_names=[
-                    row.parameter_name
-                    for row in model_report.parameter_rows
+                    row.parameter_name for row in model_report.parameter_rows
                 ],
             )
         )
@@ -463,7 +454,9 @@ def optimize_fixed_topology_nucleotide_branches_and_model(
             break
 
     if latest_branch_report is None or latest_model_report is None:
-        raise AssertionError("joint optimization did not execute any branch-and-model pass")
+        raise AssertionError(
+            "joint optimization did not execute any branch-and-model pass"
+        )
 
     if not schedule_converged:
         convergence_reason = "max-joint-passes-exhausted"
@@ -723,8 +716,12 @@ def _build_final_parameter_rows(
 ) -> list[SubstitutionParameterOptimizationRow]:
     if model_name in {"k80", "hky85"}:
         resolved_initial_kappa = 1.0 if initial_kappa is None else float(initial_kappa)
-        resolved_lower_bound = 0.05 if lower_kappa_bound is None else float(lower_kappa_bound)
-        resolved_upper_bound = 20.0 if upper_kappa_bound is None else float(upper_kappa_bound)
+        resolved_lower_bound = (
+            0.05 if lower_kappa_bound is None else float(lower_kappa_bound)
+        )
+        resolved_upper_bound = (
+            20.0 if upper_kappa_bound is None else float(upper_kappa_bound)
+        )
         if final_kappa is None:
             raise AssertionError("joint optimization lost final kappa")
         return [
@@ -742,10 +739,14 @@ def _build_final_parameter_rows(
         initial_exchangeabilities
     )
     resolved_lower_bound = (
-        0.05 if lower_exchangeability_bound is None else float(lower_exchangeability_bound)
+        0.05
+        if lower_exchangeability_bound is None
+        else float(lower_exchangeability_bound)
     )
     resolved_upper_bound = (
-        20.0 if upper_exchangeability_bound is None else float(upper_exchangeability_bound)
+        20.0
+        if upper_exchangeability_bound is None
+        else float(upper_exchangeability_bound)
     )
     return [
         _build_parameter_row(
@@ -1000,11 +1001,7 @@ def _select_joint_restart_attempt(
             ),
             "best-nonboundary-converged-attempt",
         )
-    converged_candidates = [
-        row.attempt_index
-        for row in attempt_rows
-        if row.converged
-    ]
+    converged_candidates = [row.attempt_index for row in attempt_rows if row.converged]
     if converged_candidates:
         return (
             _best_attempt_index_by_likelihood(

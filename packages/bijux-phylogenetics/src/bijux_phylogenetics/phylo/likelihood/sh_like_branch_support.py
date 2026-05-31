@@ -37,9 +37,7 @@ from bijux_phylogenetics.phylo.topology.rooted_nni import (
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 _SH_LIKE_BRANCH_SUPPORT_RESAMPLING_METHOD = "site-resampling-with-replacement"
-_SH_LIKE_BRANCH_SUPPORT_CAUTION_LABEL = (
-    "SH-like local branch support is an approximate site-resampled likelihood-ranking aid over local rearrangements and must not be interpreted as bootstrap support or an exact SH-aLRT p-value"
-)
+_SH_LIKE_BRANCH_SUPPORT_CAUTION_LABEL = "SH-like local branch support is an approximate site-resampled likelihood-ranking aid over local rearrangements and must not be interpreted as bootstrap support or an exact SH-aLRT p-value"
 
 
 @dataclass(frozen=True, slots=True)
@@ -83,15 +81,21 @@ def evaluate_nucleotide_sh_like_branch_support(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> NucleotideShLikeBranchSupportReport:
     """Estimate native SH-like branch support from local rooted-NNI likelihood comparisons."""
     resolved_tree, tree_path = _resolve_sh_like_support_tree(tree)
     resolved_records, alignment_path = _resolve_sh_like_support_alignment(records)
     validate_rooted_nni_tree(resolved_tree)
-    validated_replicate_count = validate_nucleotide_sh_like_branch_support_replicate_count(
-        resampling_replicate_count
+    validated_replicate_count = (
+        validate_nucleotide_sh_like_branch_support_replicate_count(
+            resampling_replicate_count
+        )
     )
     branch_candidates = _group_branch_local_nni_candidates(resolved_tree)
     if not branch_candidates:
@@ -121,7 +125,9 @@ def evaluate_nucleotide_sh_like_branch_support(
             fixed_root_state=fixed_root_state,
         )
         report_matrix = matrix_report
-        candidate_vectors = resolve_candidate_tree_site_likelihood_vectors(matrix_report)
+        candidate_vectors = resolve_candidate_tree_site_likelihood_vectors(
+            matrix_report
+        )
         observed_best = select_observed_best_candidate_tree(candidate_vectors)
         reference_vector = candidate_vectors[0]
         alternative_vectors = candidate_vectors[1:]
@@ -161,7 +167,8 @@ def evaluate_nucleotide_sh_like_branch_support(
                     reference_vector.log_likelihood - best_alternative.log_likelihood
                 ),
                 reference_is_observed_best=(
-                    reference_vector.candidate_tree_id == observed_best.candidate_tree_id
+                    reference_vector.candidate_tree_id
+                    == observed_best.candidate_tree_id
                 ),
                 support_replicate_count=support_count,
                 support_fraction=support_count / float(validated_replicate_count),
@@ -172,7 +179,9 @@ def evaluate_nucleotide_sh_like_branch_support(
             )
         )
     if report_matrix is None:
-        raise AssertionError("SH-like branch support evaluation did not score any branches")
+        raise AssertionError(
+            "SH-like branch support evaluation did not score any branches"
+        )
     return NucleotideShLikeBranchSupportReport(
         algorithm="nucleotide-sh-like-branch-support",
         tree_path=None if tree_path is None else str(tree_path),
@@ -213,7 +222,11 @@ def evaluate_nucleotide_sh_like_branch_support_from_alignment(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> NucleotideShLikeBranchSupportReport:
     """Estimate native SH-like branch support from one tree path and FASTA alignment."""
@@ -386,7 +399,7 @@ def write_nucleotide_sh_like_branch_support_artifacts(
     output_dir.mkdir(parents=True, exist_ok=True)
     reference_tree_path = output_dir / "reference_tree.nwk"
     write_newick(reference_tree_path, loads_newick(report.reference_tree_newick))
-    outputs = {
+    return {
         "reference_tree_path": reference_tree_path,
         "branch_support_path": write_nucleotide_sh_like_branch_support_table(
             output_dir / "branch_support.tsv",
@@ -405,7 +418,6 @@ def write_nucleotide_sh_like_branch_support_artifacts(
             report,
         ),
     }
-    return outputs
 
 
 def _resolve_sh_like_support_tree(
@@ -595,7 +607,9 @@ def _select_best_resampled_candidate(
     resampled_totals: dict[str, float],
 ) -> CandidateTreeSiteLikelihoodVector:
     if not candidates:
-        raise ValueError("resampled candidate selection requires at least one candidate")
+        raise ValueError(
+            "resampled candidate selection requires at least one candidate"
+        )
     best_candidate = candidates[0]
     for candidate in candidates[1:]:
         if _prefer_higher_resampled_candidate(
@@ -654,4 +668,3 @@ def _topology_fingerprint_for_id(
         if arrangement.candidate_tree_id == candidate_tree_id
     )
     return arrangement.topology_fingerprint
-

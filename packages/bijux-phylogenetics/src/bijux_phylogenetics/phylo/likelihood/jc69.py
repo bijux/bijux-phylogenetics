@@ -79,7 +79,11 @@ def evaluate_jc69_tree_likelihood(
     *,
     observation_policy: str = "reject",
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> Jc69TreeLikelihoodReport:
     """Evaluate one fixed-topology JC69 likelihood from aligned DNA records."""
@@ -96,7 +100,9 @@ def evaluate_jc69_tree_likelihood(
         if observation_policy == "fifth-state"
         else None
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     resolved_root_prior = resolve_default_dna_root_prior_for_observation_policy(
         normalized_records,
         owner_name="JC69 likelihood",
@@ -122,7 +128,11 @@ def evaluate_jc69_tree_likelihood_from_alignment(
     *,
     observation_policy: str = "reject",
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> Jc69TreeLikelihoodReport:
     """Evaluate one fixed-topology JC69 likelihood from one tree path and alignment."""
@@ -147,7 +157,9 @@ def optimize_jc69_branch_lengths(
 ) -> Jc69BranchLengthOptimizationReport:
     """Optimize one fixed topology under native JC69 branch likelihood."""
     if lower_branch_length_bound <= 0.0:
-        raise InvalidBranchLengthError("JC69 branch-length lower bound must be positive")
+        raise InvalidBranchLengthError(
+            "JC69 branch-length lower bound must be positive"
+        )
     try:
         validated_lower_bound, validated_upper_bound = (
             validate_increasing_parameter_bounds(
@@ -167,7 +179,9 @@ def optimize_jc69_branch_lengths(
         model_name="JC69",
         observation_policy="reject",
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     working_tree = tree.copy()
     validate_explicit_branch_lengths(working_tree, model_name="JC69")
     for _parent, child in working_tree.iter_edges():
@@ -336,7 +350,9 @@ def _evaluate_jc69_tree_likelihood_from_patterns(
         }
 
     def site_log_likelihood(states: tuple[str, ...]) -> float:
-        states_by_taxon = dict(zip(compressed_patterns.taxon_order, states, strict=True))
+        states_by_taxon = dict(
+            zip(compressed_patterns.taxon_order, states, strict=True)
+        )
         pruning_pass = postorder_conditional_likelihoods(
             tree,
             state_count=len(state_order),

@@ -5,7 +5,9 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.bayesian.beast.validation import assess_time_tree_readiness
-from bijux_phylogenetics.evidence.provenance.method_tiers import bayesian_report_method_tier
+from bijux_phylogenetics.evidence.provenance.method_tiers import (
+    bayesian_report_method_tier,
+)
 from bijux_phylogenetics.render.html import write_html_report
 
 from .contracts import TimeTreeReadinessReportBuildResult

@@ -257,9 +257,7 @@ def infer_nucleotide_likelihood_tree(
         random_start_tree_count=max(0, validated_start_tree_count - 1),
         start_tree_seed=start_tree_seed,
         model_selection_strategy=(
-            "model-selection"
-            if normalized_model_name == "auto"
-            else "fixed-model"
+            "model-selection" if normalized_model_name == "auto" else "fixed-model"
         ),
         model_selection_criterion=(
             normalized_model_selection_criterion
@@ -546,7 +544,8 @@ def _prepare_tree_inference_model(
     base_frequency_keys = ("a", "c", "g", "t")
     base_frequencies: dict[str, float] | None = None
     if any(
-        f"base_frequency_{state}" in row.parameter_values for state in base_frequency_keys
+        f"base_frequency_{state}" in row.parameter_values
+        for state in base_frequency_keys
     ):
         base_frequencies = {
             state.upper(): row.parameter_values[f"base_frequency_{state}"]

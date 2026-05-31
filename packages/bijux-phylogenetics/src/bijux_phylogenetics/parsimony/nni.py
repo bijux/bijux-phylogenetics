@@ -30,6 +30,8 @@ from .topology_search import (
     topology_search_prefer_score,
     validate_topology_search_tree,
 )
+
+
 @dataclass(frozen=True, slots=True)
 class _ScoredNniMove:
     candidate: RootedNniMoveCandidate
@@ -47,7 +49,10 @@ def search_parsimony_nni(
     state_order: list[str] | None = None,
     cost_matrix: SankoffCostMatrix | Path | None = None,
     allow_asymmetric_costs: bool = False,
-    character_weights: ParsimonyCharacterWeights | Mapping[str, float] | Path | None = None,
+    character_weights: ParsimonyCharacterWeights
+    | Mapping[str, float]
+    | Path
+    | None = None,
 ) -> ParsimonyNniSearchReport:
     """Search one rooted binary tree by accepting score-improving rooted NNI moves."""
     resolved_tree, resolved_tree_path = resolve_topology_search_tree(tree)

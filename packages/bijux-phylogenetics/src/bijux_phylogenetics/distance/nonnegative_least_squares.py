@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from pathlib import Path
 
 import numpy
@@ -28,7 +29,9 @@ _NNLS_TOLERANCE = 1e-10
 def _solve_active_set(
     system: LeastSquaresSystem,
 ) -> tuple[numpy.ndarray, numpy.ndarray, list[int]]:
-    weighted_incidence = system.incidence * numpy.sqrt(system.weight_vector)[:, numpy.newaxis]
+    weighted_incidence = (
+        system.incidence * numpy.sqrt(system.weight_vector)[:, numpy.newaxis]
+    )
     weighted_observed = system.observed * numpy.sqrt(system.weight_vector)
     branch_count = weighted_incidence.shape[1]
     passive: set[int] = set()
@@ -36,7 +39,11 @@ def _solve_active_set(
     solution = numpy.zeros(branch_count, dtype=float)
     dual = weighted_incidence.T @ (weighted_observed - (weighted_incidence @ solution))
 
-    while active and float(numpy.max([dual[index] for index in active], initial=0.0)) > _NNLS_TOLERANCE:
+    while (
+        active
+        and float(numpy.max([dual[index] for index in active], initial=0.0))
+        > _NNLS_TOLERANCE
+    ):
         entering = max(active, key=lambda index: float(dual[index]))
         passive.add(entering)
         active.remove(entering)
@@ -57,9 +64,7 @@ def _solve_active_set(
                 break
 
             leaving = [
-                index
-                for index in passive
-                if candidate[index] <= _NNLS_TOLERANCE
+                index for index in passive if candidate[index] <= _NNLS_TOLERANCE
             ]
             alpha = min(
                 solution[index] / (solution[index] - candidate[index])
@@ -67,16 +72,14 @@ def _solve_active_set(
                 if solution[index] - candidate[index] > 0.0
             )
             solution = solution + alpha * (candidate - solution)
-            exiting = [
-                index
-                for index in passive
-                if solution[index] <= _NNLS_TOLERANCE
-            ]
+            exiting = [index for index in passive if solution[index] <= _NNLS_TOLERANCE]
             for index in exiting:
                 solution[index] = 0.0
                 passive.remove(index)
                 active.add(index)
-        dual = weighted_incidence.T @ (weighted_observed - (weighted_incidence @ solution))
+        dual = weighted_incidence.T @ (
+            weighted_observed - (weighted_incidence @ solution)
+        )
     return solution, system.incidence @ solution, sorted(active)
 
 
@@ -97,7 +100,9 @@ def fit_nonnegative_least_squares_tree(
 
     fitted_tree = tree.copy()
     fitted_branch_nodes = [
-        node for node in fitted_tree.iter_nodes(order="preorder") if node is not fitted_tree.root
+        node
+        for node in fitted_tree.iter_nodes(order="preorder")
+        if node is not fitted_tree.root
     ]
     for node, branch_length in zip(fitted_branch_nodes, solution, strict=True):
         rounded_branch_length = round(float(branch_length), 12)

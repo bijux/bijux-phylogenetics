@@ -38,8 +38,8 @@ from .core.alignment_io import (
     load_permissive_fasta_records,
 )
 from .core.character_policy import (
-    _compatible_raw_sequence_types,
     _GAP_CHARACTERS,
+    _compatible_raw_sequence_types,
     _is_ambiguity_character,
     _is_explicit_missing,
     _is_missing_like,
@@ -56,8 +56,8 @@ from .core.input_validation import (
     _build_fasta_input_summary_from_scan,
     _build_fasta_sequence_type_report,
     _detect_sequence_length_outlier_rows,
-    detect_fasta_sequence_type,
     _robust_z_score,
+    detect_fasta_sequence_type,
 )
 from .core.raw_scan import _scan_raw_fasta
 

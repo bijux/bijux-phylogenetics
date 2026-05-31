@@ -7,7 +7,9 @@ from pathlib import Path
 from bijux_phylogenetics.bayesian.posterior_sets.comparison import (
     compare_independent_bayesian_runs,
 )
-from bijux_phylogenetics.evidence.provenance.method_tiers import bayesian_report_method_tier
+from bijux_phylogenetics.evidence.provenance.method_tiers import (
+    bayesian_report_method_tier,
+)
 from bijux_phylogenetics.render.html import write_html_report
 
 from .contracts import BayesianRunComparisonReportBuildResult

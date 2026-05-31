@@ -275,12 +275,8 @@ def _build_tree_layout(
 ) -> _PenalizedLikelihoodTreeLayout:
     all_nodes = list(tree.iter_nodes(order="preorder"))
     internal_nodes = list(tree.iter_internal_nodes(order="preorder"))
-    internal_non_root_nodes = [
-        node for node in internal_nodes if node is not tree.root
-    ]
-    node_index = {
-        node.node_id or "": index for index, node in enumerate(all_nodes)
-    }
+    internal_non_root_nodes = [node for node in internal_nodes if node is not tree.root]
+    node_index = {node.node_id or "": index for index, node in enumerate(all_nodes)}
     upper_date_by_node_id = _build_upper_date_bounds(
         tree,
         tip_dates=tip_dates,
@@ -585,17 +581,15 @@ def _build_node_dates(
         upper_date = layout.upper_date_by_node_id[node_id]
         if node_id in layout.fixed_node_dates:
             node_date = layout.fixed_node_dates[node_id]
-            if (
-                node_date <= (parent_date + _DATE_TOLERANCE)
-                or node_date >= (upper_date - _DATE_TOLERANCE)
+            if node_date <= (parent_date + _DATE_TOLERANCE) or node_date >= (
+                upper_date - _DATE_TOLERANCE
             ):
                 raise ValueError("fixed node dates are not chronological")
         else:
             alpha = float(parameter_values[layout.alpha_parameter_by_node_id[node_id]])
             node_date = parent_date + (alpha * (upper_date - parent_date))
-            if (
-                node_date <= (parent_date + _DATE_TOLERANCE)
-                or node_date >= (upper_date - _DATE_TOLERANCE)
+            if node_date <= (parent_date + _DATE_TOLERANCE) or node_date >= (
+                upper_date - _DATE_TOLERANCE
             ):
                 raise ValueError("candidate dates are not chronological")
         node_dates[node_id] = node_date
@@ -704,9 +698,10 @@ def _build_penalized_branch_rows(
         estimated_branch_rate = math.exp(fitted_log_rate)
         fitted_branch_length = duration * estimated_branch_rate
         data_score_contribution = (fitted_log_rate - observed_log_rate) ** 2
-        smoothing_penalty_contribution = smoothing_parameter * (
-            node_log_rates[parent_node_id] - node_log_rates[child_node_id]
-        ) ** 2
+        smoothing_penalty_contribution = (
+            smoothing_parameter
+            * (node_log_rates[parent_node_id] - node_log_rates[child_node_id]) ** 2
+        )
         rows.append(
             PenalizedLikelihoodDatingBranchRow(
                 branch_id=child_node_id,

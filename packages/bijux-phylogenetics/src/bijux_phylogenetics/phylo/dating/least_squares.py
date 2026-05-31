@@ -164,8 +164,7 @@ def _build_linear_system(
     internal_nodes: list[TreeNode],
 ) -> tuple[list[list[float]], list[float], dict[str, int]]:
     internal_index = {
-        node.node_id or "": index
-        for index, node in enumerate(internal_nodes, start=1)
+        node.node_id or "": index for index, node in enumerate(internal_nodes, start=1)
     }
     branch_count = sum(1 for _parent, _child in tree.iter_edges())
     coefficient_matrix = [
@@ -191,13 +190,19 @@ def _solve_linear_least_squares(
     transposed = list(zip(*coefficient_matrix, strict=False))
     normal_matrix = [
         [
-            sum(transposed[row_index][k] * coefficient_matrix[k][column_index] for k in range(len(coefficient_matrix)))
+            sum(
+                transposed[row_index][k] * coefficient_matrix[k][column_index]
+                for k in range(len(coefficient_matrix))
+            )
             for column_index in range(len(coefficient_matrix[0]))
         ]
         for row_index in range(len(coefficient_matrix[0]))
     ]
     normal_vector = [
-        sum(transposed[row_index][k] * observations[k] for k in range(len(coefficient_matrix)))
+        sum(
+            transposed[row_index][k] * observations[k]
+            for k in range(len(coefficient_matrix))
+        )
         for row_index in range(len(coefficient_matrix[0]))
     ]
     try:

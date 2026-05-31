@@ -131,12 +131,11 @@ def compute_parsimony_bremer_support(
             optimal_tree_newick = candidate_newick
         elif optimal_score is not None and math.isclose(candidate_score, optimal_score):
             optimal_tree_count += 1
-            if (
-                optimal_tree_newick is None
-                or candidate_newick < optimal_tree_newick
-            ):
+            if optimal_tree_newick is None or candidate_newick < optimal_tree_newick:
                 optimal_tree_newick = candidate_newick
-        candidate_clades = set(informative_rooted_clade_nodes(candidate_tree, matrix_taxa))
+        candidate_clades = set(
+            informative_rooted_clade_nodes(candidate_tree, matrix_taxa)
+        )
         for clade_signature, best_lacking in shortest_lacking_by_clade.items():
             if clade_signature in candidate_clades:
                 continue

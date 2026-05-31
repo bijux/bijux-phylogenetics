@@ -12,10 +12,10 @@ from bijux_phylogenetics.phylo.alignment import (
 )
 
 from .character_policy import (
+    _PROTEIN_EXCLUSIVE_CHARACTERS_UPPER,
     _compatible_raw_sequence_types,
     _observed_raw_sequence_characters,
     _ordered_sequence_types,
-    _PROTEIN_EXCLUSIVE_CHARACTERS_UPPER,
 )
 from .raw_scan import _RawFastaScan, _scan_raw_fasta
 

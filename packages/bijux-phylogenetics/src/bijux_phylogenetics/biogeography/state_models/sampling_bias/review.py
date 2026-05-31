@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.discrete_evolution import audit_discrete_state_coding
+from bijux_phylogenetics.comparative.discrete_evolution import (
+    audit_discrete_state_coding,
+)
 
 from .comparison_assembly import (
     build_exclusion_rows,

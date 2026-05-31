@@ -7,8 +7,6 @@ from bijux_phylogenetics.io.fasta import write_fasta_alignment
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.marginal_ancestral_probabilities import (
     evaluate_nucleotide_marginal_ancestral_probabilities,
-)
-from bijux_phylogenetics.phylo.likelihood.marginal_ancestral_probabilities import (
     evaluate_nucleotide_marginal_ancestral_probabilities_from_alignment,
 )
 from bijux_phylogenetics.phylo.likelihood.marginal_ancestral_sites import (
@@ -73,13 +71,15 @@ def reconstruct_nucleotide_marginal_ancestral_sequences_from_alignment(
     ) = None,
 ) -> MarginalAncestralSequenceFastaExportReport:
     """Build marginal ancestral FASTA export from file paths."""
-    posterior_report = evaluate_nucleotide_marginal_ancestral_probabilities_from_alignment(
-        tree_path,
-        alignment_path,
-        model_name=model_name,
-        kappa=kappa,
-        base_frequencies=base_frequencies,
-        exchangeabilities=exchangeabilities,
+    posterior_report = (
+        evaluate_nucleotide_marginal_ancestral_probabilities_from_alignment(
+            tree_path,
+            alignment_path,
+            model_name=model_name,
+            kappa=kappa,
+            base_frequencies=base_frequencies,
+            exchangeabilities=exchangeabilities,
+        )
     )
     return reconstruct_nucleotide_marginal_ancestral_sequences_from_report(
         posterior_report,
@@ -106,9 +106,7 @@ def reconstruct_nucleotide_marginal_ancestral_sequences_from_report(
     for row in summary_rows:
         low_confidence = row.max_posterior_probability < posterior_probability_threshold
         exported_state = (
-            validated_low_confidence_symbol
-            if low_confidence
-            else row.most_likely_state
+            validated_low_confidence_symbol if low_confidence else row.most_likely_state
         )
         sequence_by_node_id.setdefault(row.node_id, []).append(exported_state)
         record_metadata_by_node_id.setdefault(

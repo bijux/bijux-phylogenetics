@@ -3,12 +3,9 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 
-from .definitions import COMPONENT_BUNDLE_DEFINITIONS
-from .definitions import REFERENCE_BUNDLE_ROOT
-from .definitions import STUDY_ID
+from .definitions import COMPONENT_BUNDLE_DEFINITIONS, REFERENCE_BUNDLE_ROOT, STUDY_ID
 from .report_payloads import build_component_report_payload
-from .study_context import load_reference_context
-from .study_context import reference_script_locators
+from .study_context import load_reference_context, reference_script_locators
 
 
 def build_primate_pcm1_component_bundles(

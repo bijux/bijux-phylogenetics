@@ -65,7 +65,10 @@ def rescaled_consistency_index(
         ri_report.undefined_reason,
     )
     rc = None
-    if ci_report.consistency_index is not None and ri_report.retention_index is not None:
+    if (
+        ci_report.consistency_index is not None
+        and ri_report.retention_index is not None
+    ):
         rc = ci_report.consistency_index * ri_report.retention_index
     return ParsimonyRescaledConsistencyIndexReport(
         algorithm="parsimony-rescaled-consistency-index",

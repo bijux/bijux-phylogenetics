@@ -17,7 +17,9 @@ from .tree_length import tree_length
 from .weights import resolve_parsimony_character_weights
 
 
-def resolve_topology_search_tree(tree: PhyloTree | Path) -> tuple[PhyloTree, Path | None]:
+def resolve_topology_search_tree(
+    tree: PhyloTree | Path,
+) -> tuple[PhyloTree, Path | None]:
     """Resolve one search tree input and preserve its file path when present."""
     resolved_tree_path = tree if isinstance(tree, Path) else None
     resolved_tree = load_newick(tree) if isinstance(tree, Path) else tree.copy()

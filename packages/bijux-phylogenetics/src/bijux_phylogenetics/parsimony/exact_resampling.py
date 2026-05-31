@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from functools import lru_cache
+from functools import cache
 import itertools
 import math
 
@@ -133,7 +133,7 @@ def _resolve_cost_matrix(
     )
 
 
-@lru_cache(maxsize=None)
+@cache
 def enumerate_rooted_binary_trees(taxa: tuple[str, ...]) -> tuple[PhyloTree, ...]:
     if len(taxa) < 2:
         raise ValueError("rooted binary tree enumeration requires at least two taxa")
@@ -143,14 +143,14 @@ def enumerate_rooted_binary_trees(taxa: tuple[str, ...]) -> tuple[PhyloTree, ...
     )
 
 
-@lru_cache(maxsize=None)
+@cache
 def _enumerate_rooted_binary_subtrees(taxa: tuple[str, ...]) -> tuple[TreeNode, ...]:
     if len(taxa) == 1:
         return (TreeNode(name=taxa[0]),)
     anchor = taxa[0]
     trailing_taxa = taxa[1:]
     roots_by_newick: dict[str, TreeNode] = {}
-    for left_size in range(0, len(trailing_taxa)):
+    for left_size in range(len(trailing_taxa)):
         for left_subset in itertools.combinations(trailing_taxa, left_size):
             left_taxa = tuple(sorted((anchor, *left_subset)))
             right_taxa = tuple(taxon for taxon in taxa if taxon not in set(left_taxa))
@@ -158,7 +158,9 @@ def _enumerate_rooted_binary_subtrees(taxa: tuple[str, ...]) -> tuple[TreeNode, 
                 continue
             for left_root in _enumerate_rooted_binary_subtrees(left_taxa):
                 for right_root in _enumerate_rooted_binary_subtrees(right_taxa):
-                    children = _order_child_subtrees(left_root.copy(), right_root.copy())
+                    children = _order_child_subtrees(
+                        left_root.copy(), right_root.copy()
+                    )
                     root = TreeNode(children=children)
                     key = dumps_newick(
                         PhyloTree(root=root.copy(), source_format="newick", rooted=True)
@@ -221,7 +223,11 @@ def select_equal_best_trees(
         )
         score = score_report.total_score
         candidate_newick = dumps_newick(tree)
-        if best_score is None or score < best_score and not math.isclose(score, best_score):
+        if (
+            best_score is None
+            or score < best_score
+            and not math.isclose(score, best_score)
+        ):
             best_score = score
             best_trees_by_newick = {candidate_newick: tree.copy()}
             continue

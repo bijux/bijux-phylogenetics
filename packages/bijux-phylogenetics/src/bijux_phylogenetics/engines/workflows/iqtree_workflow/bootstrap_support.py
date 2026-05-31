@@ -26,7 +26,6 @@ from ...validation.audits import (
 from ...validation.preflight import require_external_engine_surface
 from ..models import EngineWorkflowReport
 from ..state import (
-    _validate_complete_support_coverage,
     _ensure_inference_ready_alignment,
     _persist_workflow_report,
     _prefix_path,
@@ -34,6 +33,7 @@ from ..state import (
     _resolve_incomplete_workflow_state,
     _resume_existing_workflow,
     _resume_has_bootstrap_review_outputs,
+    _validate_complete_support_coverage,
     _validate_iqtree_required_artifacts,
     _validate_matching_tree_taxa,
     _validate_support_value_count,

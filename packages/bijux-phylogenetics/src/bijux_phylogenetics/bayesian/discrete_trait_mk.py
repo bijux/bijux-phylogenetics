@@ -14,6 +14,7 @@ from bijux_phylogenetics.ancestral.discrete.likelihood.posterior_probabilities i
     estimate_marginal_state_probabilities,
 )
 from bijux_phylogenetics.ancestral.discrete.likelihood.rate_matrix import (
+    DiscreteTransitionRateRow,
     build_transition_rate_rows,
     rate_matrix_from_log_parameters,
 )
@@ -205,7 +206,10 @@ def run_discrete_trait_mk_metropolis_hastings(
             "bayesian discrete-trait Mk runner requires one DiscreteTraitMkProposalSchedule",
             code="discrete_trait_mk_proposal_schedule_type_invalid",
         )
-    if proposal_schedule.transition_model_name != model_definition.transition_model_name:
+    if (
+        proposal_schedule.transition_model_name
+        != model_definition.transition_model_name
+    ):
         raise PhylogeneticsError(
             "bayesian discrete-trait Mk runner requires the proposal schedule and model definition to use the same transition model",
             code="discrete_trait_mk_model_schedule_mismatch",
@@ -254,19 +258,23 @@ def run_discrete_trait_mk_metropolis_hastings(
         initial_state=score_bayesian_phylogenetic_state(
             tree=normalized_tree,
             model_parameters=initial_model_parameters,
-            update_prior_components=lambda state: _build_discrete_trait_mk_prior_components(
-                state=state,
-                model_definition=model_definition,
-                state_order=state_order,
-                allowed_transition_pairs=allowed_transition_pairs,
+            update_prior_components=lambda state: (
+                _build_discrete_trait_mk_prior_components(
+                    state=state,
+                    model_definition=model_definition,
+                    state_order=state_order,
+                    allowed_transition_pairs=allowed_transition_pairs,
+                )
             ),
-            update_log_likelihood=lambda state: _evaluate_discrete_trait_mk_log_likelihood(
-                state=state,
-                tip_states=normalized_tip_states,
-                model_definition=model_definition,
-                state_order=state_order,
-                state_counts=state_counts,
-                allowed_transition_pairs=allowed_transition_pairs,
+            update_log_likelihood=lambda state: (
+                _evaluate_discrete_trait_mk_log_likelihood(
+                    state=state,
+                    tip_states=normalized_tip_states,
+                    model_definition=model_definition,
+                    state_order=state_order,
+                    state_counts=state_counts,
+                    allowed_transition_pairs=allowed_transition_pairs,
+                )
             ),
         ),
         propose_state=lambda current_state, rng: propose_discrete_trait_rate_move(
@@ -319,7 +327,7 @@ def _build_initial_transition_rate_rows(
     state_order: list[str],
     model_definition: DiscreteTraitMkModelDefinition,
     allowed_transition_pairs: set[tuple[int, int]],
-) -> list:
+) -> list[DiscreteTransitionRateRow]:
     parameter_count = _resolve_parameter_count(
         model_name=model_definition.transition_model_name,
         state_order=state_order,
@@ -516,7 +524,7 @@ def _resolve_transition_rate_rows_from_state(
     model_definition: DiscreteTraitMkModelDefinition,
     state_order: list[str],
     allowed_transition_pairs: set[tuple[int, int]],
-) -> list:
+) -> list[DiscreteTransitionRateRow]:
     _validate_state_model_consistency(
         state=state,
         model_definition=model_definition,
@@ -563,7 +571,7 @@ def _validate_state_model_consistency(
 def _build_rate_matrix_from_transition_rows(
     *,
     state_order: list[str],
-    transition_rate_rows: list,
+    transition_rate_rows: list[DiscreteTransitionRateRow],
 ) -> numpy.ndarray:
     state_index = {state: index for index, state in enumerate(state_order)}
     rate_matrix = numpy.zeros((len(state_order), len(state_order)), dtype=float)
@@ -672,7 +680,9 @@ def _normalize_tip_states(
         )
     state_counts = {
         state_name: sum(
-            1 for candidate_state in normalized_tip_states.values() if candidate_state == state_name
+            1
+            for candidate_state in normalized_tip_states.values()
+            if candidate_state == state_name
         )
         for state_name in observed_states
     }

@@ -125,7 +125,9 @@ def _resolve_gene_to_species_tip_map(
 ) -> dict[str, str]:
     species_taxa = set(species_tree.tip_names)
     if taxon_map_path is None:
-        if any((tip_name or "") not in species_taxa for tip_name in gene_tree.tip_names):
+        if any(
+            (tip_name or "") not in species_taxa for tip_name in gene_tree.tip_names
+        ):
             raise ValueError(
                 "deep-coalescence counting requires --taxon-map when gene tips do not exactly match species-tree taxa"
             )
@@ -137,9 +139,7 @@ def _resolve_gene_to_species_tip_map(
     tip_map = {row[table.taxon_column]: row["species_taxon"] for row in table.rows}
     for gene_taxon in gene_tree.tip_names:
         if gene_taxon not in tip_map:
-            raise ValueError(
-                f"taxon map is missing gene tip '{gene_taxon}'"
-            )
+            raise ValueError(f"taxon map is missing gene tip '{gene_taxon}'")
         if tip_map[gene_taxon] not in species_taxa:
             raise ValueError(
                 f"taxon map assigns gene tip '{gene_taxon}' to unknown species '{tip_map[gene_taxon]}'"
@@ -159,9 +159,13 @@ def _validate_species_tree(tree: PhyloTree) -> None:
     if any(node.name is None for node in tree.iter_leaves()):
         raise ValueError("deep-coalescence counting requires named species-tree tips")
     if len(set(tree.tip_names)) != tree.tip_count:
-        raise ValueError("deep-coalescence counting requires unique species-tree tip labels")
+        raise ValueError(
+            "deep-coalescence counting requires unique species-tree tip labels"
+        )
     if any(len(node.children) != 2 for node in tree.iter_internal_nodes()):
-        raise ValueError("deep-coalescence counting requires a strictly binary species tree")
+        raise ValueError(
+            "deep-coalescence counting requires a strictly binary species tree"
+        )
 
 
 def _validate_gene_tree(tree: PhyloTree) -> None:
@@ -170,9 +174,13 @@ def _validate_gene_tree(tree: PhyloTree) -> None:
     if any(node.name is None for node in tree.iter_leaves()):
         raise ValueError("deep-coalescence counting requires named gene-tree tips")
     if len(set(tree.tip_names)) != tree.tip_count:
-        raise ValueError("deep-coalescence counting requires unique gene-tree tip labels")
+        raise ValueError(
+            "deep-coalescence counting requires unique gene-tree tip labels"
+        )
     if any(len(node.children) != 2 for node in tree.iter_internal_nodes()):
-        raise ValueError("deep-coalescence counting requires a strictly binary gene tree")
+        raise ValueError(
+            "deep-coalescence counting requires a strictly binary gene tree"
+        )
 
 
 def _species_descendant_sets(tree: PhyloTree) -> dict[str, set[str]]:

@@ -32,8 +32,8 @@ def _build_clade_compatibility_graph_report(
     ordered_clades = sorted(counts, key=_format_clade)
     node_rows: list[CladeCompatibilityNodeRow] = []
     edge_rows: list[CladeCompatibilityEdgeRow] = []
-    compatible_neighbor_counts = {clade: 0 for clade in ordered_clades}
-    conflict_neighbor_counts = {clade: 0 for clade in ordered_clades}
+    compatible_neighbor_counts = dict.fromkeys(ordered_clades, 0)
+    conflict_neighbor_counts = dict.fromkeys(ordered_clades, 0)
     compatible_edge_count = 0
     conflict_edge_count = 0
 
@@ -167,9 +167,11 @@ def write_clade_compatibility_graph_dot(
 ) -> Path:
     """Write one DOT graph with clade nodes and compatibility or conflict edges."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    node_ids = {row.clade: f"n{index}" for index, row in enumerate(report.nodes, start=1)}
+    node_ids = {
+        row.clade: f"n{index}" for index, row in enumerate(report.nodes, start=1)
+    }
     lines = ["graph clade_compatibility {"]
-    lines.append('  graph [overlap=false, splines=true];')
+    lines.append("  graph [overlap=false, splines=true];")
     lines.append('  node [shape=box, style="rounded"];')
     for row in report.nodes:
         label = (
@@ -180,7 +182,9 @@ def write_clade_compatibility_graph_dot(
         )
         lines.append(f'  {node_ids[row.clade]} [label="{label}"];')
     for row in report.edges:
-        color = "darkgreen" if row.compatibility_relation == "compatible" else "firebrick"
+        color = (
+            "darkgreen" if row.compatibility_relation == "compatible" else "firebrick"
+        )
         style = "solid" if row.compatibility_relation == "compatible" else "dashed"
         label = row.compatibility_reason
         lines.append(

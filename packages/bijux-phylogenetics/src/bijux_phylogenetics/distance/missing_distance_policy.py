@@ -56,7 +56,10 @@ def apply_missing_distance_policy(
             "missing-distance policy 'reject' blocks incomplete distance pairs: "
             + ", ".join(report.missing_pairs),
             code="missing_distance_policy_rejects_incomplete_pairs",
-            details={"policy": normalized_policy, "missing_pairs": report.missing_pairs},
+            details={
+                "policy": normalized_policy,
+                "missing_pairs": report.missing_pairs,
+            },
         )
 
     resolved_distances = dict(pair_distances)
@@ -177,7 +180,10 @@ def _imputed_distance(
     if policy == "mean-impute":
         defined_distances = list(pair_distances.values())
         if not defined_distances:
-            return None, "no defined pairwise distances were available for mean imputation"
+            return (
+                None,
+                "no defined pairwise distances were available for mean imputation",
+            )
         return (
             fmean(defined_distances),
             f"mean of {len(defined_distances)} defined pairwise distances",

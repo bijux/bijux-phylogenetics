@@ -3,11 +3,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .definitions import EVIDENCE_ID
-from .definitions import FAMILY_DEFINITIONS
-from .definitions import FRAGMENT_CLASSIFICATIONS
-from .definitions import SOURCE_LOCATOR
-from .definitions import STUDY_ID
+from .definitions import (
+    EVIDENCE_ID,
+    FAMILY_DEFINITIONS,
+    FRAGMENT_CLASSIFICATIONS,
+    SOURCE_LOCATOR,
+    STUDY_ID,
+)
 
 
 def build_primate_source_fragment_map(repo_root: Path) -> dict[str, object]:
@@ -140,7 +142,7 @@ def _comparison_payload(repo_root: Path) -> dict[str, object]:
 
 
 def _component_evidence_by_fragment(repo_root: Path) -> dict[str, list[str]]:
-    from .primate_pcm1_component_bundles import build_primate_pcm1_component_bundles
+    from ..primate_pcm1_component_bundles import build_primate_pcm1_component_bundles
 
     supporting_bundles: dict[str, set[str]] = {}
     for evidence_id, payload in build_primate_pcm1_component_bundles(repo_root).items():
@@ -153,7 +155,7 @@ def _component_evidence_by_fragment(repo_root: Path) -> dict[str, list[str]]:
 
 
 def _component_claim_rows(repo_root: Path) -> list[dict[str, object]]:
-    from .primate_pcm1_component_bundles import build_primate_pcm1_component_bundles
+    from ..primate_pcm1_component_bundles import build_primate_pcm1_component_bundles
 
     rows: list[dict[str, object]] = []
     for evidence_id, payload in sorted(

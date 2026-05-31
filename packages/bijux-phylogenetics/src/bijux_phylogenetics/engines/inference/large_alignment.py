@@ -33,10 +33,10 @@ from ..common import (
     write_engine_manifest,
     write_incomplete_engine_run,
 )
-from ..validation.preflight import require_external_engine_surface
 from ..validation import (
     summarize_fasttree_support_distribution,
 )
+from ..validation.preflight import require_external_engine_surface
 from ..workflows.state import (
     _resolve_incomplete_workflow_state,
     _validate_support_value_count,

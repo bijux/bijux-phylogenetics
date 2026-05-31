@@ -78,9 +78,7 @@ def diagnose_distance_saturation_from_genetic_distance_matrix(
         ),
         warning_rows=warning_rows,
         warnings=warnings,
-        blocks_tree_inference=any(
-            row.blocks_tree_inference for row in warning_rows
-        ),
+        blocks_tree_inference=any(row.blocks_tree_inference for row in warning_rows),
     )
 
 

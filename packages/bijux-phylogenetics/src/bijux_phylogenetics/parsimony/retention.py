@@ -4,7 +4,11 @@ from pathlib import Path
 
 from bijux_phylogenetics.runtime.errors import ParsimonyAnalysisError
 
-from .homoplasy import character_kind, minimum_possible_steps, unordered_maximum_possible_steps
+from .homoplasy import (
+    character_kind,
+    minimum_possible_steps,
+    unordered_maximum_possible_steps,
+)
 from .matrix import load_parsimony_character_matrix
 from .models import (
     FitchCharacterMatrix,

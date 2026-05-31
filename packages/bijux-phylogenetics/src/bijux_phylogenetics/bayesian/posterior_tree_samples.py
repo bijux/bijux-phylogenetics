@@ -95,7 +95,9 @@ def build_bayesian_posterior_tree_sample(
             code="bayesian_posterior_tree_sample_state_type_invalid",
         )
     validated_model_id = _validate_nonblank_string(
-        value=model_id if model_id is not None else infer_bayesian_model_id(state=state),
+        value=model_id
+        if model_id is not None
+        else infer_bayesian_model_id(state=state),
         field_name="model_id",
         owner_name="bayesian posterior tree sample",
     )
@@ -225,7 +227,9 @@ def load_bayesian_posterior_tree_sample_archive(
         samples=[
             build_bayesian_posterior_tree_sample(
                 sample_index=_require_integer(sample_payload, key="sample_index"),
-                iteration_index=_optional_integer(sample_payload.get("iteration_index")),
+                iteration_index=_optional_integer(
+                    sample_payload.get("iteration_index")
+                ),
                 model_id=_require_string(sample_payload, key="model_id"),
                 state=deserialize_bayesian_phylogenetic_state(
                     _require_mapping(sample_payload, key="state")

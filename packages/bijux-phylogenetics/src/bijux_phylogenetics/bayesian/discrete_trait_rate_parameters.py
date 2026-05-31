@@ -56,9 +56,7 @@ def parameterize_discrete_trait_rate_rows(
     return DiscreteTraitRateParameterization(
         model=resolved_model,
         parameter_count=len(groups),
-        parameter_values={
-            group.parameter_name: group.rate_value for group in groups
-        },
+        parameter_values={group.parameter_name: group.rate_value for group in groups},
         groups=groups,
     )
 
@@ -75,7 +73,9 @@ def resolve_discrete_trait_rate_rows(
         transition_rate_rows=transition_rate_rows,
     )
     expected_parameter_names = set(parameterization.parameter_values)
-    provided_parameter_names = {parameter_name.strip() for parameter_name in parameter_values}
+    provided_parameter_names = {
+        parameter_name.strip() for parameter_name in parameter_values
+    }
     if provided_parameter_names != expected_parameter_names:
         raise PhylogeneticsError(
             "discrete-trait rate parameter resolution requires exactly the grouped Mk parameter names",
@@ -108,7 +108,11 @@ def resolve_discrete_trait_rate_rows(
                 transition_allowed=row.transition_allowed,
                 step_distance=row.step_distance,
                 rate=(
-                    float(format(resolved_rate_by_transition_pair[transition_pair], ".15g"))
+                    float(
+                        format(
+                            resolved_rate_by_transition_pair[transition_pair], ".15g"
+                        )
+                    )
                     if row.transition_allowed
                     else row.rate
                 ),

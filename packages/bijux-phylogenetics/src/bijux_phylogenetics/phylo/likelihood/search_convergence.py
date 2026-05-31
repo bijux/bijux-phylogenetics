@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Collection
 import math
-from typing import Collection
 
 from bijux_phylogenetics.phylo.likelihood.models import (
     NucleotideLikelihoodSearchConvergenceDecision,

@@ -56,9 +56,7 @@ def _summarize_continuous_component(
 ) -> MacroevolutionRecoverySuiteComponentSummary:
     case_reports = workflow_report.recovery_report.case_reports
     selection_review_case_count = sum(
-        1
-        for case in case_reports
-        if case.selection_matches_expectation is not None
+        1 for case in case_reports if case.selection_matches_expectation is not None
     )
     selection_match_count = sum(
         1 for case in case_reports if case.selection_matches_expectation is True
@@ -66,15 +64,9 @@ def _summarize_continuous_component(
     geiger_selection_match_count = sum(
         1 for case in case_reports if case.geiger_selection_matches_expectation is True
     )
-    parameter_rows = [
-        row
-        for case in case_reports
-        for row in case.parameter_rows
-    ]
+    parameter_rows = [row for case in case_reports for row in case.parameter_rows]
     parameter_comparison_rows = [
-        row
-        for case in case_reports
-        for row in case.parameter_comparison_rows
+        row for case in case_reports for row in case.parameter_comparison_rows
     ]
     expected_warning_case_count = sum(
         1 for case in case_reports if case.scenario.expected_warning_kinds
@@ -110,9 +102,7 @@ def _summarize_discrete_component(
 ) -> MacroevolutionRecoverySuiteComponentSummary:
     case_reports = workflow_report.recovery_report.case_reports
     selection_review_case_count = sum(
-        1
-        for case in case_reports
-        if case.selection_matches_expectation is not None
+        1 for case in case_reports if case.selection_matches_expectation is not None
     )
     selection_match_count = sum(
         1 for case in case_reports if case.selection_matches_expectation is True

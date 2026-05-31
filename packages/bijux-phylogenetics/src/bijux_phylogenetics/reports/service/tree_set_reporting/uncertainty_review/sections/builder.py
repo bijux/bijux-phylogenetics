@@ -5,7 +5,7 @@ from pathlib import Path
 
 from bijux_phylogenetics.io.newick import dumps_newick
 
-from ....artifacts import preview_report_rows, section
+from ....artifacts import section
 from .instability_sections import build_instability_sections
 from .sensitivity_sections import build_sensitivity_sections
 from .shared import truncate_dataclass_rows
@@ -117,7 +117,9 @@ def build_tree_uncertainty_sections(
         truncated_sections=truncated_sections,
     )
     sections = [
-        section("methods-summary-text", methods_summary_path.read_text(encoding="utf-8")),
+        section(
+            "methods-summary-text", methods_summary_path.read_text(encoding="utf-8")
+        ),
         section("limitations", limitations),
         section("tree-set-summary", asdict(summary)),
         section(

@@ -262,38 +262,48 @@ def run_brownian_continuous_trait_metropolis_hastings(
     initial_state = score_bayesian_phylogenetic_state(
         tree=normalized_tree,
         model_parameters=initial_model_parameters,
-        update_prior_components=lambda state: _build_brownian_continuous_trait_prior_components(
-            state=state,
-            model_definition=model_definition,
-            fixed_topology_id=None,
+        update_prior_components=lambda state: (
+            _build_brownian_continuous_trait_prior_components(
+                state=state,
+                model_definition=model_definition,
+                fixed_topology_id=None,
+            )
         ),
-        update_log_likelihood=lambda state: _evaluate_brownian_continuous_trait_log_likelihood(
-            state=state,
-            fixed_topology_id=None,
-            ordered_values=ordered_values,
-            inverse_covariance=inverse_covariance,
-            covariance_log_determinant=covariance_log_determinant,
+        update_log_likelihood=lambda state: (
+            _evaluate_brownian_continuous_trait_log_likelihood(
+                state=state,
+                fixed_topology_id=None,
+                ordered_values=ordered_values,
+                inverse_covariance=inverse_covariance,
+                covariance_log_determinant=covariance_log_determinant,
+            )
         ),
     )
     fixed_topology_id = initial_state.tree.topology_id
     chain_report = run_metropolis_hastings_sampler(
         initial_state=initial_state,
-        propose_state=lambda current_state, rng: _propose_brownian_continuous_trait_state(
-            current_state=current_state,
-            rng=rng,
-            proposal_schedule=proposal_schedule,
+        propose_state=lambda current_state, rng: (
+            _propose_brownian_continuous_trait_state(
+                current_state=current_state,
+                rng=rng,
+                proposal_schedule=proposal_schedule,
+            )
         ),
-        update_prior_components=lambda state: _build_brownian_continuous_trait_prior_components(
-            state=state,
-            model_definition=model_definition,
-            fixed_topology_id=fixed_topology_id,
+        update_prior_components=lambda state: (
+            _build_brownian_continuous_trait_prior_components(
+                state=state,
+                model_definition=model_definition,
+                fixed_topology_id=fixed_topology_id,
+            )
         ),
-        update_log_likelihood=lambda state: _evaluate_brownian_continuous_trait_log_likelihood(
-            state=state,
-            fixed_topology_id=fixed_topology_id,
-            ordered_values=ordered_values,
-            inverse_covariance=inverse_covariance,
-            covariance_log_determinant=covariance_log_determinant,
+        update_log_likelihood=lambda state: (
+            _evaluate_brownian_continuous_trait_log_likelihood(
+                state=state,
+                fixed_topology_id=fixed_topology_id,
+                ordered_values=ordered_values,
+                inverse_covariance=inverse_covariance,
+                covariance_log_determinant=covariance_log_determinant,
+            )
         ),
         iteration_count=iteration_count,
         sample_every=sample_every,
@@ -413,7 +423,9 @@ def _build_brownian_continuous_trait_prior_components(
         fixed_topology_id=fixed_topology_id,
     )
     root_state = state.model_parameters.scalar_parameters[_ROOT_STATE_PARAMETER_NAME]
-    sigma_squared = state.model_parameters.scalar_parameters[_SIGMA_SQUARED_PARAMETER_NAME]
+    sigma_squared = state.model_parameters.scalar_parameters[
+        _SIGMA_SQUARED_PARAMETER_NAME
+    ]
     root_state_log_prior = evaluate_continuous_trait_location_log_prior(
         parameter_value=root_state,
         prior_model=model_definition.root_state_prior,
@@ -589,7 +601,9 @@ def _require_brownian_continuous_trait_state_consistency(
     state: BayesianPhylogeneticState,
     fixed_topology_id: str | None,
 ) -> None:
-    model_name = state.model_parameters.categorical_parameters.get(_MODEL_PARAMETER_NAME)
+    model_name = state.model_parameters.categorical_parameters.get(
+        _MODEL_PARAMETER_NAME
+    )
     if model_name != _BROWNIAN_MODEL_NAME:
         raise PhylogeneticsError(
             "bayesian Brownian continuous-trait model requires every sampled state to preserve the configured model label",
@@ -599,10 +613,7 @@ def _require_brownian_continuous_trait_state_consistency(
                 "observed_model_name": model_name,
             },
         )
-    if (
-        fixed_topology_id is not None
-        and state.tree.topology_id != fixed_topology_id
-    ):
+    if fixed_topology_id is not None and state.tree.topology_id != fixed_topology_id:
         raise PhylogeneticsError(
             "bayesian Brownian continuous-trait model requires topology to remain unchanged across sampled states",
             code="brownian_continuous_trait_state_topology_changed",

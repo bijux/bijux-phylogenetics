@@ -6,9 +6,13 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 from .average_linkage import (
     AverageLinkageBuildResult,
-    AverageLinkageClusterHeightRow as WPGMAClusterHeightRow,
-    AverageLinkageMergeRow as WPGMAMergeRow,
     build_average_linkage_tree,
+)
+from .average_linkage import (
+    AverageLinkageClusterHeightRow as WPGMAClusterHeightRow,
+)
+from .average_linkage import (
+    AverageLinkageMergeRow as WPGMAMergeRow,
 )
 
 

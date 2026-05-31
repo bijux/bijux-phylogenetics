@@ -13,9 +13,13 @@ from bijux_phylogenetics.ancestral.tree_set.preparation import (
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
 from bijux_phylogenetics.io.newick import dumps_newick
 
-from .aggregation import _summarize_transition_rows, _summarize_transition_rows_across_trees
+from .aggregation import (
+    _summarize_transition_rows,
+    _summarize_transition_rows_across_trees,
+)
 from .branch_analysis import _build_transition_branch_rows
 from .contracts import (
+    AncestralTransitionCountRow,
     AncestralTransitionExclusion,
     AncestralTransitionSummary,
     AncestralTransitionTreeRow,
@@ -85,7 +89,7 @@ def summarize_ancestral_transition_tree_set(
     ]
     tree_rows: list[AncestralTransitionTreeRow] = []
     branch_rows: list[AncestralTransitionTreeSetBranchRow] = []
-    per_tree_transition_counts: dict[str, list] = {}
+    per_tree_transition_counts: dict[str, list[AncestralTransitionCountRow]] = {}
     with tempfile.TemporaryDirectory(
         prefix="bijux-phylogenetics-ancestral-transition-tree-set-"
     ) as tmp_dir:
@@ -165,7 +169,9 @@ def summarize_ancestral_transition_tree_set(
                         certainty_class=row.certainty_class,
                     )
                 )
-            per_tree_transition_counts[str(source_tree_index)] = resolved_transition_rows
+            per_tree_transition_counts[str(source_tree_index)] = (
+                resolved_transition_rows
+            )
     transition_rows = _summarize_transition_rows_across_trees(
         tree_rows=tree_rows,
         per_tree_transition_counts=per_tree_transition_counts,
@@ -229,4 +235,3 @@ def summarize_ancestral_transition_tree_set_report(
         ),
         warning_count=len(report.warnings),
     )
-

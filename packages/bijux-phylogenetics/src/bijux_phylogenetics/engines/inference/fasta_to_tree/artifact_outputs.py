@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .contracts import FastaToTreeModelRow
-from .contracts import FastaToTreeSupportRow
-from .contracts import FastaToTreeWorkflowReport
-from .workflow_layout import _display_command
-from .workflow_layout import _display_path
-from .workflow_layout import _write_tsv
+from .contracts import (
+    FastaToTreeModelRow,
+    FastaToTreeSupportRow,
+    FastaToTreeWorkflowReport,
+)
+from .workflow_layout import _display_command, _display_path, _write_tsv
 
 
 def _serialize_support_taxa(taxa: tuple[str, ...]) -> str:

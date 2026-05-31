@@ -282,7 +282,9 @@ def write_duplication_loss_transfer_event_table(
                     "descendant_gene_tips": _pipe_join(row.descendant_gene_tips),
                     "event_type": row.event_type,
                     "mapped_species_branch": row.mapped_species_branch,
-                    "mapped_descendant_species": _pipe_join(row.mapped_descendant_species),
+                    "mapped_descendant_species": _pipe_join(
+                        row.mapped_descendant_species
+                    ),
                     "left_child_gene_node": row.left_child_gene_node or "",
                     "right_child_gene_node": row.right_child_gene_node or "",
                     "left_child_species_branch": row.left_child_species_branch or "",
@@ -698,7 +700,9 @@ def write_maximum_agreement_subtree_removed_taxa_table(
                         "tree_path": str(pruning.tree_path),
                         "taxon": removed.taxon,
                         "reason": removed.reason,
-                        "shared_taxon": str(removed.taxon in report.shared_taxa).lower(),
+                        "shared_taxon": str(
+                            removed.taxon in report.shared_taxa
+                        ).lower(),
                         "removed_for_maximum_agreement_subtree": str(
                             removed.taxon in report.approximation_removed_taxa
                         ).lower(),

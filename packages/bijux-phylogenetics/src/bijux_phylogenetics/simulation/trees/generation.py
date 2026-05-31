@@ -440,7 +440,9 @@ def _summarize_coalescent_waiting_times(
         mean_waiting_time = _mean(waiting_times)
         absolute_error = abs(mean_waiting_time - expected_waiting_time)
         relative_error = (
-            0.0 if expected_waiting_time == 0.0 else absolute_error / expected_waiting_time
+            0.0
+            if expected_waiting_time == 0.0
+            else absolute_error / expected_waiting_time
         )
         rows.append(
             CoalescentWaitingTimeSummaryRow(
@@ -477,11 +479,7 @@ def _summarize_coalescent_skyline(
                 effective_population_size_estimate=effective_population_size_estimate,
                 observation_count=row.observation_count,
                 relative_error=row.relative_error,
-                uncertainty_flag=(
-                    "low"
-                    if row.within_tolerance
-                    else "high"
-                ),
+                uncertainty_flag=("low" if row.within_tolerance else "high"),
             )
         )
     return rows
@@ -542,8 +540,7 @@ def simulate_coalescent_trees(
     _validate_tree_count(tree_count, tip_count)
     if waiting_time_tolerance < 0.0:
         raise ValueError(
-            "waiting_time_tolerance must be nonnegative, "
-            f"got {waiting_time_tolerance}"
+            f"waiting_time_tolerance must be nonnegative, got {waiting_time_tolerance}"
         )
     simulated = [
         _simulate_coalescent_tree_once(

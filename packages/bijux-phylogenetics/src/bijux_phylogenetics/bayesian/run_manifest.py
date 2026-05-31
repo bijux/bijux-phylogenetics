@@ -154,7 +154,8 @@ def list_metropolis_hastings_retained_sample_ids(
             code="bayesian_run_manifest_chain_report_type_invalid",
         )
     return [
-        _fingerprint_state(sampled_state) for sampled_state in chain_report.sampled_states
+        _fingerprint_state(sampled_state)
+        for sampled_state in chain_report.sampled_states
     ]
 
 
@@ -577,7 +578,9 @@ def _deserialize_fixed_topology_dna_proposal_schedule(
 ):
     return build_fixed_topology_dna_proposal_schedule(
         model_definition=model_definition,
-        branch_length_move_weight=_require_float(payload, key="branch_length_move_weight"),
+        branch_length_move_weight=_require_float(
+            payload, key="branch_length_move_weight"
+        ),
         branch_length_log_scale_standard_deviation=_require_float(
             payload,
             key="branch_length_log_scale_standard_deviation",
@@ -606,7 +609,9 @@ def _deserialize_fixed_topology_dna_proposal_schedule(
 def _deserialize_branch_length_prior(payload: Mapping[str, object]):
     family = _require_string(payload, key="family")
     if family == "exponential":
-        return build_exponential_branch_length_prior(rate=_require_float(payload, key="rate"))
+        return build_exponential_branch_length_prior(
+            rate=_require_float(payload, key="rate")
+        )
     if family == "gamma":
         return build_gamma_branch_length_prior(
             shape=_require_float(payload, key="shape"),
@@ -728,27 +733,25 @@ def _deserialize_optional_simplex_prior(value: object):
         )
         return build_dirichlet_simplex_substitution_parameter_prior(
             expected_component_names=component_names,
-            concentration_parameters={
-                component_name: concentration_value
-                for component_name, concentration_value in zip(
+            concentration_parameters=dict(
+                zip(
                     component_names,
                     concentration_parameters,
                     strict=True,
                 )
-            },
+            ),
         )
     if family == "fixed":
         fixed_values = _require_float_sequence(payload, key="fixed_values")
         return build_fixed_simplex_substitution_parameter_prior(
             expected_component_names=component_names,
-            fixed_values={
-                component_name: fixed_value
-                for component_name, fixed_value in zip(
+            fixed_values=dict(
+                zip(
                     component_names,
                     fixed_values,
                     strict=True,
                 )
-            },
+            ),
             fixed_tolerance=_require_float(payload, key="fixed_tolerance"),
         )
     raise PhylogeneticsError(
@@ -784,7 +787,9 @@ def _validate_retained_sample_ids(
             "bayesian run manifest requires at least one retained sample identifier",
             code="bayesian_run_manifest_retained_sample_ids_empty",
         )
-    if any(not isinstance(value, str) or not value.strip() for value in validated_values):
+    if any(
+        not isinstance(value, str) or not value.strip() for value in validated_values
+    ):
         raise PhylogeneticsError(
             "bayesian run manifest requires every retained sample identifier to be one nonblank string",
             code="bayesian_run_manifest_retained_sample_id_invalid",
@@ -1010,8 +1015,7 @@ def _optional_float_mapping(value: object) -> dict[str, float] | None:
         owner_name="optional float mapping payload",
     )
     if any(
-        not isinstance(mapping_key, str)
-        or not isinstance(mapping_value, (int, float))
+        not isinstance(mapping_key, str) or not isinstance(mapping_value, (int, float))
         for mapping_key, mapping_value in payload.items()
     ):
         raise PhylogeneticsError(
@@ -1060,8 +1064,7 @@ def _require_float_mapping(
 ) -> dict[str, float]:
     value = _require_mapping(payload, key=key)
     if any(
-        not isinstance(mapping_key, str)
-        or not isinstance(mapping_value, (int, float))
+        not isinstance(mapping_key, str) or not isinstance(mapping_value, (int, float))
         for mapping_key, mapping_value in value.items()
     ):
         raise PhylogeneticsError(
@@ -1069,7 +1072,10 @@ def _require_float_mapping(
             code="bayesian_run_manifest_load_float_mapping_invalid",
             details={"key": key},
         )
-    return {mapping_key: float(mapping_value) for mapping_key, mapping_value in value.items()}
+    return {
+        mapping_key: float(mapping_value)
+        for mapping_key, mapping_value in value.items()
+    }
 
 
 def _require_float_sequence(

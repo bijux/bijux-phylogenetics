@@ -47,12 +47,14 @@ def validate_nucleotide_likelihood_starting_tree_from_alignment(
 ) -> None:
     """Validate one likelihood start tree against one DNA alignment input."""
     resolved_tree, _resolved_tree_path = resolve_nucleotide_topology_search_tree(tree)
-    resolved_records, _resolved_alignment_path = resolve_nucleotide_topology_search_records(
-        records
+    resolved_records, _resolved_alignment_path = (
+        resolve_nucleotide_topology_search_records(records)
     )
-    _normalized_records, compressed_patterns = normalize_nucleotide_topology_search_records(
-        resolved_records,
-        owner_name=workflow_name,
+    _normalized_records, compressed_patterns = (
+        normalize_nucleotide_topology_search_records(
+            resolved_records,
+            owner_name=workflow_name,
+        )
     )
     validate_nucleotide_likelihood_starting_tree(
         resolved_tree,

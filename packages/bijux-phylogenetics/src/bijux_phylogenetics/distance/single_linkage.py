@@ -7,6 +7,8 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from .extremal_linkage import build_extremal_linkage_tree
 from .linkage_common import (
     LinkageClusterHeightRow as SingleLinkageClusterHeightRow,
+)
+from .linkage_common import (
     LinkageMergeRow as SingleLinkageMergeRow,
 )
 

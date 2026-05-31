@@ -300,7 +300,9 @@ def write_distance_method_comparison_run_json(
         "rf_rows": [asdict(row) for row in report.rf_rows],
         "warning_rows": [asdict(row) for row in report.warning_rows],
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 

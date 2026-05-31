@@ -34,7 +34,9 @@ def generate_random_bifurcating_tree(
     }
     for leaf in random_tree.iter_leaves():
         if leaf.name is None:
-            raise ValueError("random bifurcating tree generation produced an unnamed tip")
+            raise ValueError(
+                "random bifurcating tree generation produced an unnamed tip"
+            )
         leaf.name = label_map[leaf.name]
         if validated_branch_length_policy == "none":
             leaf.branch_length = None
@@ -55,10 +57,14 @@ def generate_random_bifurcating_tree(
 def validate_random_bifurcating_taxa(taxa: list[str]) -> list[str]:
     """Require at least two distinct non-empty taxa and canonicalize their order."""
     if len(taxa) < 2:
-        raise ValueError("random bifurcating tree generation requires at least two taxa")
+        raise ValueError(
+            "random bifurcating tree generation requires at least two taxa"
+        )
     blank_taxa = sorted({taxon for taxon in taxa if not taxon.strip()})
     if blank_taxa:
-        raise ValueError("random bifurcating tree generation does not allow blank taxon labels")
+        raise ValueError(
+            "random bifurcating tree generation does not allow blank taxon labels"
+        )
     duplicate_taxa = sorted({taxon for taxon in taxa if taxa.count(taxon) > 1})
     if duplicate_taxa:
         raise ValueError(
@@ -111,7 +117,9 @@ def summarize_random_bifurcating_tree(
         rooted=tree.rooted,
         strictly_bifurcating=strictly_bifurcating,
         all_requested_taxa_present_once=not (
-            missing_requested_taxa or duplicate_generated_taxa or unexpected_generated_taxa
+            missing_requested_taxa
+            or duplicate_generated_taxa
+            or unexpected_generated_taxa
         ),
         missing_requested_taxa=missing_requested_taxa,
         duplicate_generated_taxa=duplicate_generated_taxa,
@@ -194,7 +202,9 @@ def write_random_bifurcating_tree_run_json(
         "validation_errors": report.validation_errors,
         "tree_newick": report.tree_newick,
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 

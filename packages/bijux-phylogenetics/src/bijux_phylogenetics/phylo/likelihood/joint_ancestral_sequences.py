@@ -56,7 +56,11 @@ def reconstruct_nucleotide_joint_ancestral_sequences(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> JointAncestralSequenceReport:
     """Reconstruct one globally optimal internal-node state assignment per site."""
@@ -67,7 +71,9 @@ def reconstruct_nucleotide_joint_ancestral_sequences(
         records,
         model_name=normalized_model_name.upper(),
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     specification = resolve_selected_nucleotide_likelihood_specification(
         normalized_records,
         model_name=normalized_model_name,
@@ -109,7 +115,11 @@ def reconstruct_nucleotide_joint_ancestral_sequences_from_alignment(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> JointAncestralSequenceReport:
     """Reconstruct one joint ancestral sequence report from file paths."""
@@ -153,10 +163,12 @@ def _reconstruct_selected_nucleotide_joint_sequences_from_patterns(
         joint_assignment = compute_joint_state_assignment(
             tree,
             state_count=len(DNA_STATE_ORDER),
-            leaf_likelihood=lambda node, current_states_by_taxon=current_states_by_taxon: one_hot_dna_leaf_vector(
-                current_states_by_taxon,
-                model_name=model_name,
-                node_name=node.name,
+            leaf_likelihood=lambda node, current_states_by_taxon=current_states_by_taxon: (
+                one_hot_dna_leaf_vector(
+                    current_states_by_taxon,
+                    model_name=model_name,
+                    node_name=node.name,
+                )
             ),
             transition_matrix_for_child=transition_matrix_for_child,
             root_prior=root_prior,

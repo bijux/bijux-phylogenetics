@@ -534,7 +534,9 @@ def add_phylo_commands(subparsers: Any) -> None:
         help="Comma-separated explicit ordered state labels for Wagner stepwise scoring.",
     )
     _add_parsimony_character_weights_argument(phylo_parsimony_stepwise_addition)
-    phylo_parsimony_stepwise_addition.add_argument("--out-dir", required=True, type=Path)
+    phylo_parsimony_stepwise_addition.add_argument(
+        "--out-dir", required=True, type=Path
+    )
     phylo_parsimony_stepwise_addition.add_argument(
         "--json", action="store_true", help="Emit the stepwise-addition report as JSON."
     )
@@ -789,9 +791,13 @@ def add_phylo_commands(subparsers: Any) -> None:
         choices=["fitch", "acctran", "deltran"],
     )
     phylo_parsimony_rescaled_consistency.add_argument("--taxon-column")
-    phylo_parsimony_rescaled_consistency.add_argument("--out-dir", required=True, type=Path)
     phylo_parsimony_rescaled_consistency.add_argument(
-        "--json", action="store_true", help="Emit the rescaled-consistency report as JSON."
+        "--out-dir", required=True, type=Path
+    )
+    phylo_parsimony_rescaled_consistency.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the rescaled-consistency report as JSON.",
     )
     _add_manifest_argument(phylo_parsimony_rescaled_consistency)
 
@@ -964,7 +970,9 @@ def add_phylo_commands(subparsers: Any) -> None:
     )
     phylo_likelihood_infer_tree.add_argument("--out-dir", required=True, type=Path)
     phylo_likelihood_infer_tree.add_argument(
-        "--json", action="store_true", help="Emit the native ML tree-inference report as JSON."
+        "--json",
+        action="store_true",
+        help="Emit the native ML tree-inference report as JSON.",
     )
     _add_manifest_argument(phylo_likelihood_infer_tree)
     phylo_likelihood_bootstrap_tree = phylo_likelihood_subparsers.add_parser(
@@ -1066,7 +1074,9 @@ def add_phylo_commands(subparsers: Any) -> None:
     )
     phylo_dating_least_squares.add_argument("--out-dir", required=True, type=Path)
     phylo_dating_least_squares.add_argument(
-        "--json", action="store_true", help="Emit the least-squares dating report as JSON."
+        "--json",
+        action="store_true",
+        help="Emit the least-squares dating report as JSON.",
     )
     _add_manifest_argument(phylo_dating_least_squares)
     phylo_dating_calibration_constraints = phylo_dating_subparsers.add_parser(
@@ -1121,11 +1131,9 @@ def add_phylo_commands(subparsers: Any) -> None:
         help="Emit the penalized likelihood dating report as JSON.",
     )
     _add_manifest_argument(phylo_dating_penalized_likelihood)
-    phylo_dating_penalized_likelihood_cross_validation = (
-        phylo_dating_subparsers.add_parser(
-            "penalized-likelihood-cross-validation",
-            help="Select one penalized-dating smoothing value by held-out fixed-calibration prediction error.",
-        )
+    phylo_dating_penalized_likelihood_cross_validation = phylo_dating_subparsers.add_parser(
+        "penalized-likelihood-cross-validation",
+        help="Select one penalized-dating smoothing value by held-out fixed-calibration prediction error.",
     )
     phylo_dating_penalized_likelihood_cross_validation.add_argument(
         "tree_path",
@@ -2243,11 +2251,7 @@ def run_phylo_command(args: Any) -> int:
         parsimony_inputs = [
             *([args.tree_path] if hasattr(args, "tree_path") else []),
             args.matrix_path,
-            *(
-                [args.query_matrix_path]
-                if hasattr(args, "query_matrix_path")
-                else []
-            ),
+            *([args.query_matrix_path] if hasattr(args, "query_matrix_path") else []),
             *(
                 [args.cost_matrix_path]
                 if hasattr(args, "cost_matrix_path")

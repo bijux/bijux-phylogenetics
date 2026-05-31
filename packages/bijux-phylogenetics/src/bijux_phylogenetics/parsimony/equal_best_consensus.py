@@ -82,7 +82,9 @@ def summarize_equal_best_parsimony_trees(
         character_weights=resolved_weights,
     )
     retained_equal_best_trees = equal_best_trees[:max_retained_equal_best_trees]
-    retained_all_equal_best_trees = len(retained_equal_best_trees) == len(equal_best_trees)
+    retained_all_equal_best_trees = len(retained_equal_best_trees) == len(
+        equal_best_trees
+    )
     strict_consensus = None
     majority_consensus = None
     if retained_all_equal_best_trees:

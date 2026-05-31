@@ -100,7 +100,9 @@ def build_instability_sections(
                         "robust_clade_count": conclusion_summary.robust_clade_count,
                         "uncertain_clade_count": conclusion_summary.uncertain_clade_count,
                         "conflicting_clade_count": conclusion_summary.conflicting_clade_count,
-                        "robust_rows": preview_report_rows(robust_rows, limit=preview_limit),
+                        "robust_rows": preview_report_rows(
+                            robust_rows, limit=preview_limit
+                        ),
                         "robust_truncated_row_count": robust_truncated,
                         "uncertain_rows": preview_report_rows(
                             uncertain_rows, limit=preview_limit

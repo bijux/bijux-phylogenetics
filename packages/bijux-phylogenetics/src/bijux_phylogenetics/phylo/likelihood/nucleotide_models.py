@@ -85,7 +85,11 @@ def resolve_selected_nucleotide_likelihood_specification(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> SelectedNucleotideLikelihoodSpecification:
     normalized_model_name = validate_selected_nucleotide_likelihood_model(model_name)

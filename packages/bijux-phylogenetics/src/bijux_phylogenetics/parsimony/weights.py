@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 import csv
 import math
-from collections.abc import Mapping
 from pathlib import Path
 
 from bijux_phylogenetics.runtime.errors import ParsimonyAnalysisError
@@ -76,7 +76,7 @@ def resolve_parsimony_character_weights(
     if character_weights is None:
         return ParsimonyCharacterWeights(
             weights_path=None,
-            weights_by_character={character_id: 1.0 for character_id in character_ids},
+            weights_by_character=dict.fromkeys(character_ids, 1.0),
         )
     if isinstance(character_weights, Path):
         resolved_weights = load_parsimony_character_weights(character_weights)

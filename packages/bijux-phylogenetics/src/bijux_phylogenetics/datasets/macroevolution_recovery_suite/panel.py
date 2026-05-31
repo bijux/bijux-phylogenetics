@@ -46,9 +46,7 @@ def load_macroevolution_recovery_suite_dataset() -> MacroevolutionRecoverySuiteD
             known_answer_panel.taxon_count,
         ),
         total_recovery_case_count=(
-            continuous_panel.case_count
-            + discrete_panel.case_count
-            + 11
+            continuous_panel.case_count + discrete_panel.case_count + 11
         ),
         geiger_recovery_case_count=(
             continuous_panel.case_count + discrete_panel.case_count

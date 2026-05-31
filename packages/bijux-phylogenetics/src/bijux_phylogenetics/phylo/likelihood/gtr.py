@@ -136,7 +136,11 @@ def evaluate_gtr_tree_likelihood(
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
     observation_policy: str = "reject",
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> GtrTreeLikelihoodReport:
     """Evaluate one fixed-topology GTR likelihood from aligned DNA records."""
@@ -145,7 +149,9 @@ def evaluate_gtr_tree_likelihood(
         model_name="GTR",
         observation_policy=observation_policy,
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     if base_frequencies is None:
         stationary = estimate_empirical_dna_base_frequencies_from_records(
             normalized_records,
@@ -203,7 +209,11 @@ def evaluate_gtr_tree_likelihood_from_alignment(
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
     observation_policy: str = "reject",
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> GtrTreeLikelihoodReport:
     """Evaluate one fixed-topology GTR likelihood from one tree path and alignment."""
@@ -227,7 +237,11 @@ def evaluate_gtr_tree_likelihood_from_unconstrained_exchangeabilities(
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
     observation_policy: str = "reject",
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> GtrTreeLikelihoodReport:
     """Evaluate one fixed-topology GTR likelihood from unconstrained simplex coordinates."""
@@ -256,7 +270,11 @@ def evaluate_gtr_tree_likelihood_from_unconstrained_exchangeabilities_from_align
     base_frequencies: dict[str, float] | numpy.ndarray | None = None,
     observation_policy: str = "reject",
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> GtrTreeLikelihoodReport:
     """Evaluate one fixed-topology GTR likelihood from unconstrained coordinates and file inputs."""
@@ -305,7 +323,9 @@ def optimize_gtr_exchangeabilities(
         model_name="GTR",
         observation_policy="reject",
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     if base_frequencies is None:
         stationary = estimate_empirical_dna_base_frequencies_from_records(
             normalized_records,
@@ -320,7 +340,9 @@ def optimize_gtr_exchangeabilities(
         )
         source = "provided"
     if initial_exchangeabilities is None:
-        normalized_exchangeabilities = numpy.ones(len(DNA_EXCHANGEABILITY_ORDER), dtype=float)
+        normalized_exchangeabilities = numpy.ones(
+            len(DNA_EXCHANGEABILITY_ORDER), dtype=float
+        )
     else:
         normalized_exchangeabilities = normalize_dna_exchangeabilities_by_anchor(
             initial_exchangeabilities,
@@ -503,7 +525,9 @@ def _evaluate_gtr_tree_likelihood_from_patterns(
         }
 
     def site_log_likelihood(states: tuple[str, ...]) -> float:
-        states_by_taxon = dict(zip(compressed_patterns.taxon_order, states, strict=True))
+        states_by_taxon = dict(
+            zip(compressed_patterns.taxon_order, states, strict=True)
+        )
         pruning_pass = postorder_conditional_likelihoods(
             tree,
             state_count=len(state_order),

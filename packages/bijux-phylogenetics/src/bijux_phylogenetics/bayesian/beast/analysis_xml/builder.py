@@ -4,10 +4,10 @@ from .._shared import (
     ElementTree,
     EngineWorkflowError,
     Path,
+    _ensure_inference_ready_alignment,
     deepcopy,
     infer_alignment_alphabet,
     load_fasta_alignment,
-    _ensure_inference_ready_alignment,
 )
 from ..models import BeastCalibration, BeastPreparationReport
 from ..validation import validate_fossil_calibration_table, validate_tip_dating_metadata

@@ -28,7 +28,6 @@ from ..validation.audits import summarize_fasttree_support_distribution
 from ..validation.preflight import require_external_engine_surface
 from .models import EngineWorkflowReport, ExternalTreeComparisonReport
 from .state import (
-    _validate_complete_support_coverage,
     _ensure_inference_ready_alignment,
     _manifest_path_from_output,
     _persist_workflow_report,
@@ -37,6 +36,7 @@ from .state import (
     _resume_existing_workflow,
     _resume_has_fasttree_review_outputs,
     _sidecar,
+    _validate_complete_support_coverage,
     _validate_support_value_count,
     _validate_tree_output,
 )

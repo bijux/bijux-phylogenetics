@@ -40,9 +40,11 @@ def _consensus_metrics_from_trees(
     exact_taxa = sorted(trees[0].tip_names)
     exact_taxa_set = set(exact_taxa)
     clade_counts = _clade_counts(trees, exact_taxa_set)
-    consensus_tree, included_clade_count = _build_consensus_tree_with_threshold_from_trees(
-        trees,
-        threshold=threshold,
+    consensus_tree, included_clade_count = (
+        _build_consensus_tree_with_threshold_from_trees(
+            trees,
+            threshold=threshold,
+        )
     )
     included_support_percents = [
         round((count / len(trees)) * 100.0, 15)
@@ -113,7 +115,9 @@ def detect_rogue_taxa(
         _rooted_topology_summary(analysis.trees)
     )
 
-    scored_rows: list[tuple[tuple[float, float, float, float, str], dict[str, object]]] = []
+    scored_rows: list[
+        tuple[tuple[float, float, float, float, str], dict[str, object]]
+    ] = []
     for taxon in exact_taxa:
         retained_taxa = [name for name in exact_taxa if name != taxon]
         pruned_trees = [
@@ -189,16 +193,22 @@ def detect_rogue_taxa(
         RogueTaxonScoreRow(
             taxon=str(row_values["taxon"]),
             rank=rank,
-            mean_terminal_branch_length=row_values["mean_terminal_branch_length"],  # type: ignore[arg-type]
+            mean_terminal_branch_length=float(
+                row_values["mean_terminal_branch_length"]
+            ),
             baseline_consensus_resolution=float(
                 row_values["baseline_consensus_resolution"]
             ),
-            pruned_consensus_resolution=float(row_values["pruned_consensus_resolution"]),
+            pruned_consensus_resolution=float(
+                row_values["pruned_consensus_resolution"]
+            ),
             consensus_resolution_delta=float(row_values["consensus_resolution_delta"]),
             baseline_mean_support_percent=float(
                 row_values["baseline_mean_support_percent"]
             ),
-            pruned_mean_support_percent=float(row_values["pruned_mean_support_percent"]),
+            pruned_mean_support_percent=float(
+                row_values["pruned_mean_support_percent"]
+            ),
             mean_support_percent_delta=float(row_values["mean_support_percent_delta"]),
             baseline_mean_normalized_robinson_foulds=float(
                 row_values["baseline_mean_normalized_robinson_foulds"]
@@ -212,7 +222,9 @@ def detect_rogue_taxa(
             baseline_rooted_topology_count=int(
                 row_values["baseline_rooted_topology_count"]
             ),
-            pruned_rooted_topology_count=int(row_values["pruned_rooted_topology_count"]),
+            pruned_rooted_topology_count=int(
+                row_values["pruned_rooted_topology_count"]
+            ),
             rooted_topology_count_delta=int(row_values["rooted_topology_count_delta"]),
             baseline_dominant_topology_frequency=float(
                 row_values["baseline_dominant_topology_frequency"]

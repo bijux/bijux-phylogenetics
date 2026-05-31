@@ -227,9 +227,7 @@ def run_recovery_demo_command(args: Any) -> int | None:
                 "selection_review_case_count": (
                     result.workflow_bundle.selection_review_case_count
                 ),
-                "selection_match_count": (
-                    result.workflow_bundle.selection_match_count
-                ),
+                "selection_match_count": (result.workflow_bundle.selection_match_count),
                 "geiger_selection_match_count": (
                     result.workflow_bundle.geiger_selection_match_count
                 ),
@@ -253,9 +251,7 @@ def run_recovery_demo_command(args: Any) -> int | None:
                 "requirement_pass_count": (
                     result.workflow_bundle.requirement_pass_count
                 ),
-                "requirement_row_count": (
-                    result.workflow_bundle.requirement_row_count
-                ),
+                "requirement_row_count": (result.workflow_bundle.requirement_row_count),
                 "reference_output_count": count_expected_output_files(
                     result.dataset_export.expected_output_root
                 ),

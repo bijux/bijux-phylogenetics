@@ -3,13 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.io.fasta import detect_fasta_sequence_type
-from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet
-from bijux_phylogenetics.phylo.alignment import AlignmentRecord
+from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet, AlignmentRecord
 
 from ...validation import ModelSelectionValidationReport
 from ...workflows.models import EngineWorkflowReport
-from .contracts import FastaToTreeModelRow
-from .contracts import FastaToTreeSupportRow
+from .contracts import FastaToTreeModelRow, FastaToTreeSupportRow
 
 
 def infer_unaligned_sequence_type(records: list[tuple[str, str]]) -> AlignmentAlphabet:

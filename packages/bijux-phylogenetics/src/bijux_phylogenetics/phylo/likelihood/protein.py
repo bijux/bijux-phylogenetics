@@ -4,7 +4,10 @@ from collections.abc import Callable
 
 import numpy
 
-from bijux_phylogenetics.phylo.likelihood.patterns import CompressedAlignmentSitePatterns
+from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.patterns import (
+    CompressedAlignmentSitePatterns,
+)
 from bijux_phylogenetics.phylo.likelihood.pruning import (
     log_likelihood_from_root_prior,
     postorder_conditional_likelihoods,
@@ -16,10 +19,11 @@ from bijux_phylogenetics.phylo.likelihood.validation import (
     validate_explicit_branch_lengths,
     validate_tree_taxa_against_patterns,
 )
-from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-from bijux_phylogenetics.runtime.errors import AlignmentTaxonMismatchError
-from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
+from bijux_phylogenetics.runtime.errors import (
+    AlignmentTaxonMismatchError,
+    InvalidAlignmentError,
+)
 
 PROTEIN_STATE_ORDER = (
     "A",
@@ -43,9 +47,7 @@ PROTEIN_STATE_ORDER = (
     "W",
     "Y",
 )
-PROTEIN_STATE_INDEX = {
-    state: index for index, state in enumerate(PROTEIN_STATE_ORDER)
-}
+PROTEIN_STATE_INDEX = {state: index for index, state in enumerate(PROTEIN_STATE_ORDER)}
 UNIFORM_PROTEIN_ROOT_PRIOR = numpy.full(
     len(PROTEIN_STATE_ORDER),
     1.0 / len(PROTEIN_STATE_ORDER),
@@ -266,15 +268,17 @@ def evaluate_fixed_topology_protein_likelihood_from_patterns(
 
     return sum_compressed_site_pattern_log_likelihoods(
         compressed_patterns,
-        site_log_likelihood=lambda states: evaluate_fixed_topology_protein_site_log_likelihood(
-            tree,
-            states,
-            taxon_order=compressed_patterns.taxon_order,
-            model_name=model_name,
-            root_prior=validated_root_prior,
-            transition_matrix_for_child=transition_matrix_for_child,
-            gap_policy=gap_policy,
-            missing_policy=missing_policy,
+        site_log_likelihood=lambda states: (
+            evaluate_fixed_topology_protein_site_log_likelihood(
+                tree,
+                states,
+                taxon_order=compressed_patterns.taxon_order,
+                model_name=model_name,
+                root_prior=validated_root_prior,
+                transition_matrix_for_child=transition_matrix_for_child,
+                gap_policy=gap_policy,
+                missing_policy=missing_policy,
+            )
         ),
     )
 

@@ -56,7 +56,9 @@ def summarize_posterior_agreement_subtree(
         rooted_representatives: dict[str, PhyloTree] = {}
         for tree in pruned_trees:
             topology_id = _rooted_topology_id(tree, retained_taxa_set)
-            rooted_topology_counts[topology_id] = rooted_topology_counts.get(topology_id, 0) + 1
+            rooted_topology_counts[topology_id] = (
+                rooted_topology_counts.get(topology_id, 0) + 1
+            )
             rooted_representatives.setdefault(topology_id, tree)
         dominant_rooted_topology_id, dominant_rooted_topology_count = max(
             rooted_topology_counts.items(),
@@ -82,7 +84,11 @@ def summarize_posterior_agreement_subtree(
             stable_rooted_topology_id = dominant_rooted_topology_id
             agreement_tree = rooted_representatives[dominant_rooted_topology_id]
             break
-    if agreement_tree is None or retained_taxa is None or stable_rooted_topology_id is None:
+    if (
+        agreement_tree is None
+        or retained_taxa is None
+        or stable_rooted_topology_id is None
+    ):
         raise AssertionError(
             "posterior agreement subtree summary must find a stable retained taxon subset"
         )

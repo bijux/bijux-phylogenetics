@@ -4,7 +4,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 import shutil
 
-from bijux_phylogenetics.compare.influence import TaxonInfluenceReport, analyze_taxon_influence
+from bijux_phylogenetics.compare.influence import (
+    TaxonInfluenceReport,
+    analyze_taxon_influence,
+)
 from bijux_phylogenetics.compare.presentation import build_tree_comparison_report
 from bijux_phylogenetics.compare.topology import write_tree_comparison_table
 from bijux_phylogenetics.phylo.alignment import AlignmentAlphabet

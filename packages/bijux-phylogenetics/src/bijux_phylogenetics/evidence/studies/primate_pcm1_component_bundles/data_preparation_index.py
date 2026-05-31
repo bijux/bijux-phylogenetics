@@ -3,8 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from .bundle_builder import build_primate_pcm1_component_bundles
-from .definitions import DATA_PREPARATION_BUNDLE_IDS
-from .definitions import STUDY_ID
+from .definitions import DATA_PREPARATION_BUNDLE_IDS, STUDY_ID
 
 
 def build_primate_data_preparation_bundle_index(repo_root: Path) -> dict[str, object]:

@@ -38,7 +38,9 @@ def place_parsimony_queries(
         raise ValueError("parsimony placement currently supports only the Fitch method")
     resolved_tree, tree_path = _resolve_tree(tree)
     resolved_matrix = (
-        matrix if isinstance(matrix, FitchCharacterMatrix) else load_fitch_character_matrix(matrix)
+        matrix
+        if isinstance(matrix, FitchCharacterMatrix)
+        else load_fitch_character_matrix(matrix)
     )
     resolved_query_matrix = (
         query_matrix
@@ -124,7 +126,9 @@ def _validate_reference_matrix_against_tree(
     tree: PhyloTree,
     matrix: FitchCharacterMatrix,
 ) -> None:
-    leaf_taxa = sorted(node.name for node in tree.iter_leaves() if node.name is not None)
+    leaf_taxa = sorted(
+        node.name for node in tree.iter_leaves() if node.name is not None
+    )
     missing_from_matrix = sorted(set(leaf_taxa) - set(matrix.states_by_taxon))
     extra_in_matrix = sorted(set(matrix.states_by_taxon) - set(leaf_taxa))
     if missing_from_matrix:
@@ -144,7 +148,9 @@ def _validate_reference_matrix_against_tree(
             code="parsimony_placement_reference_extra_taxa",
             details={
                 "extra_taxa": extra_in_matrix,
-                "matrix_path": None if matrix.matrix_path is None else str(matrix.matrix_path),
+                "matrix_path": None
+                if matrix.matrix_path is None
+                else str(matrix.matrix_path),
             },
         )
 

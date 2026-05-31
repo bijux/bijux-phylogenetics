@@ -55,7 +55,11 @@ def evaluate_nucleotide_marginal_ancestral_probabilities(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> MarginalAncestralSequenceProbabilityReport:
     """Evaluate internal-node marginal ancestral state probabilities per site."""
@@ -66,7 +70,9 @@ def evaluate_nucleotide_marginal_ancestral_probabilities(
         records,
         model_name=normalized_model_name.upper(),
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     specification = resolve_selected_nucleotide_likelihood_specification(
         normalized_records,
         model_name=normalized_model_name,
@@ -110,7 +116,11 @@ def evaluate_nucleotide_marginal_ancestral_probabilities_from_alignment(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> MarginalAncestralSequenceProbabilityReport:
     """Evaluate one fixed-topology nucleotide posterior report from file paths."""
@@ -153,10 +163,12 @@ def _evaluate_selected_nucleotide_marginal_probabilities_from_patterns(
         posterior_pass = compute_marginal_state_posteriors(
             tree,
             state_count=len(DNA_STATE_ORDER),
-            leaf_likelihood=lambda node, current_states_by_taxon=current_states_by_taxon: one_hot_dna_leaf_vector(
-                current_states_by_taxon,
-                model_name=model_name,
-                node_name=node.name,
+            leaf_likelihood=lambda node, current_states_by_taxon=current_states_by_taxon: (
+                one_hot_dna_leaf_vector(
+                    current_states_by_taxon,
+                    model_name=model_name,
+                    node_name=node.name,
+                )
             ),
             transition_matrix_for_child=transition_matrix_for_child,
             root_prior=root_prior,

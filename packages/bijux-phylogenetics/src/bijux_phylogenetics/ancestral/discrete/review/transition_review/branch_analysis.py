@@ -109,4 +109,3 @@ def _node_signature_taxa(node: TreeNode) -> list[str]:
     for child in node.children:
         descendant_taxa.extend(_node_signature_taxa(child))
     return descendant_taxa
-

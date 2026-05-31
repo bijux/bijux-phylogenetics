@@ -3,8 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .definitions import EVIDENCE_ID
-from .definitions import STUDY_ID
+from .definitions import EVIDENCE_ID, STUDY_ID
 from .registry import _bundle_root
 
 

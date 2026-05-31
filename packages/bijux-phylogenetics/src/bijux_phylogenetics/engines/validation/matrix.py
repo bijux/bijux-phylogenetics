@@ -346,7 +346,9 @@ def _assert_beast_reference_close(
     expected: float,
     label: str,
 ) -> None:
-    if observed is None or not math.isclose(observed, expected, rel_tol=1e-9, abs_tol=1e-6):
+    if observed is None or not math.isclose(
+        observed, expected, rel_tol=1e-9, abs_tol=1e-6
+    ):
         raise EngineWorkflowError(
             f"governed BEAST reference mismatch for {label}: observed {observed}, expected {expected}"
         )

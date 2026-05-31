@@ -54,6 +54,6 @@ def score_balanced_minimum_evolution(
                 if node is not tree.root and not node.is_leaf()
             )
             total += distance_lookup[(left_identifier, right_identifier)] * (
-                0.5 ** non_root_internal_count
+                0.5**non_root_internal_count
             )
     return round(total, 12)

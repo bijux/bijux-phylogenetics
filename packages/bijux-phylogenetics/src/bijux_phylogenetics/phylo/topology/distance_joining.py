@@ -175,9 +175,7 @@ def build_three_taxon_join_tree(
     left_length = (left_middle + left_right - middle_right) / 2.0
     middle_length = (left_middle + middle_right - left_right) / 2.0
     right_length = (left_right + middle_right - left_middle) / 2.0
-    active_clusters[left_key].node.branch_length = normalized_branch_length(
-        left_length
-    )
+    active_clusters[left_key].node.branch_length = normalized_branch_length(left_length)
     active_clusters[middle_key].node.branch_length = normalized_branch_length(
         middle_length
     )

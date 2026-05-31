@@ -63,7 +63,9 @@ def add_simulate_tree_commands(simulate_subparsers: Any) -> None:
     simulate_coalescent.add_argument("--tree-count", type=int, default=1)
     simulate_coalescent.add_argument("--tip-count", type=int, required=True)
     simulate_coalescent.add_argument("--population-size", type=float, default=1.0)
-    simulate_coalescent.add_argument("--waiting-time-tolerance", type=float, default=0.2)
+    simulate_coalescent.add_argument(
+        "--waiting-time-tolerance", type=float, default=0.2
+    )
     simulate_coalescent.add_argument("--seed", type=int, default=1)
     simulate_coalescent.add_argument("--out", required=True, type=Path)
     simulate_coalescent.add_argument("--record-table-out", type=Path)
@@ -80,7 +82,9 @@ def add_simulate_tree_commands(simulate_subparsers: Any) -> None:
         help="Simulate one gene tree inside a rooted ultrametric species tree.",
     )
     simulate_multispecies_coalescent.add_argument("tree", type=Path)
-    simulate_multispecies_coalescent.add_argument("--population-size", type=float, default=1.0)
+    simulate_multispecies_coalescent.add_argument(
+        "--population-size", type=float, default=1.0
+    )
     simulate_multispecies_coalescent.add_argument("--population-size-table", type=Path)
     simulate_multispecies_coalescent.add_argument("--sample-count-table", type=Path)
     simulate_multispecies_coalescent.add_argument("--seed", type=int, default=1)

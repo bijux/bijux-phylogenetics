@@ -9,7 +9,9 @@ from .linked_evidence import TaxonLinkedEvidence
 TAXON_REPORT_TITLE = "Bijux Taxon Audit Report"
 
 
-def build_taxon_reviewer_summary(*, audit: Any, linked_evidence: TaxonLinkedEvidence) -> list[str]:
+def build_taxon_reviewer_summary(
+    *, audit: Any, linked_evidence: TaxonLinkedEvidence
+) -> list[str]:
     """Build the reviewer summary for a taxon audit report."""
     reviewer_summary = [
         f"taxon audit status: {audit.status}",

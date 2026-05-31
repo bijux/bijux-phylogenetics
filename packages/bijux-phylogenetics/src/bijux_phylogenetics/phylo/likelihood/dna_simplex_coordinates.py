@@ -20,7 +20,10 @@ DNA_EXCHANGEABILITY_LABELS = tuple("".join(pair) for pair in DNA_EXCHANGEABILITY
 
 
 def parameterize_dna_base_frequency_simplex(
-    base_frequencies: Mapping[str, float] | numpy.ndarray | list[float] | tuple[float, ...],
+    base_frequencies: Mapping[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...],
     *,
     normalization_tolerance: float = 1e-9,
 ) -> SimplexCoordinateParameterization:
@@ -123,7 +126,9 @@ def resolve_anchor_normalized_dna_exchangeabilities_from_unconstrained(
     try:
         anchor_index = DNA_EXCHANGEABILITY_LABELS.index("".join(anchor_pair))
     except ValueError as error:
-        raise ValueError(f"unsupported DNA exchangeability anchor {anchor_pair}") from error
+        raise ValueError(
+            f"unsupported DNA exchangeability anchor {anchor_pair}"
+        ) from error
     constrained_values = numpy.array(parameterization.constrained_values, dtype=float)
     anchor_value = float(constrained_values[anchor_index])
     if anchor_value <= 0.0:

@@ -2,9 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .definitions import EVIDENCE_ID
-from .definitions import FAMILY_DEFINITIONS
-from .definitions import STUDY_ID
+from .definitions import EVIDENCE_ID, FAMILY_DEFINITIONS, STUDY_ID
 from .registry import build_primate_source_fragment_map
 
 

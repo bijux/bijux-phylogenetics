@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import asdict
-import json
 from itertools import combinations
+import json
 from pathlib import Path
 
 from bijux_phylogenetics.runtime.errors import InvalidDistanceMatrixError
@@ -156,7 +156,9 @@ def write_distance_additivity_run_json(
         "violating_quartets": [asdict(row) for row in report.violating_quartets],
         "warnings": report.warnings,
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 
@@ -190,7 +192,12 @@ def _build_additivity_diagnostics(
     tested_quartet_count = 0
     skipped_quartet_count = 0
     max_violation = 0.0
-    for first_identifier, second_identifier, third_identifier, fourth_identifier in combinations(
+    for (
+        first_identifier,
+        second_identifier,
+        third_identifier,
+        fourth_identifier,
+    ) in combinations(
         identifiers,
         4,
     ):

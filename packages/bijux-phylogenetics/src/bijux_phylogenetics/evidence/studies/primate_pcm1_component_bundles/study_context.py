@@ -4,8 +4,7 @@ import csv
 import json
 from pathlib import Path
 
-from .definitions import REFERENCE_BUNDLE_ID
-from .definitions import REFERENCE_SCRIPT_PATH
+from .definitions import REFERENCE_BUNDLE_ID, REFERENCE_SCRIPT_PATH
 
 
 def study_root(repo_root: Path) -> Path:
@@ -46,13 +45,17 @@ def load_reference_context(repo_root: Path) -> dict[str, object]:
     bundle_root = reference_bundle_root(repo_root)
     return {
         "r_results": read_json(bundle_root / "results" / "r_reference_results.json"),
-        "bijux_results": read_json(bundle_root / "results" / "bijux_reference_results.json"),
+        "bijux_results": read_json(
+            bundle_root / "results" / "bijux_reference_results.json"
+        ),
         "reference_rows": read_csv_rows(
             study_root(repo_root) / "datasets" / "reference_primate.csv"
         ),
         "block_payloads": {
             path.stem: read_json(path)
-            for path in sorted((bundle_root / "results" / "block-payloads").glob("*.json"))
+            for path in sorted(
+                (bundle_root / "results" / "block-payloads").glob("*.json")
+            )
         },
     }
 

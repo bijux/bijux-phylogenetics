@@ -594,11 +594,13 @@ def _evaluate_ou_node_distributions(
         tip_values=tip_values,
         location=optimum,
         scale=sigma_squared,
-        covariance_evaluator=lambda left_node, right_node, depth_index: _evaluate_ou_covariance(
-            left_node=left_node,
-            right_node=right_node,
-            depth_index=depth_index,
-            alpha=alpha,
+        covariance_evaluator=lambda left_node, right_node, depth_index: (
+            _evaluate_ou_covariance(
+                left_node=left_node,
+                right_node=right_node,
+                depth_index=depth_index,
+                alpha=alpha,
+            )
         ),
     )
 
@@ -627,7 +629,9 @@ def _evaluate_continuous_node_distributions(
             },
         )
     depth_index = _build_tree_depth_index(tree)
-    tip_lookup = {node.name: node for node in tree.iter_leaves() if node.name is not None}
+    tip_lookup = {
+        node.name: node for node in tree.iter_leaves() if node.name is not None
+    }
     ordered_tip_nodes = [tip_lookup[taxon] for taxon in ordered_taxa]
     ordered_tip_values = [tip_values[taxon] for taxon in ordered_taxa]
     root_distribution = _build_posterior_continuous_node_distribution(
@@ -636,7 +640,9 @@ def _evaluate_continuous_node_distributions(
         conditional_standard_deviation=0.0,
     )
     internal_nodes = [
-        node for node in tree.iter_internal_nodes(order="preorder") if node is not tree.root
+        node
+        for node in tree.iter_internal_nodes(order="preorder")
+        if node is not tree.root
     ]
     if not internal_nodes:
         return [root_distribution]

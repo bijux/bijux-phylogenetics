@@ -71,7 +71,9 @@ def _resolve_local_clock_model_name(model: str) -> str:
     normalized = model.strip().casefold()
     resolved = _SUPPORTED_MODELS.get(normalized)
     if resolved is None:
-        raise ValueError(f"local-clock likelihood currently supports only JC69, got {model}")
+        raise ValueError(
+            f"local-clock likelihood currently supports only JC69, got {model}"
+        )
     return resolved
 
 
@@ -264,8 +266,7 @@ def _resolve_branch_assignments(
             if len(tied_regimes) > 1:
                 raise PhylogeneticsError(
                     "local clock branch assignment is ambiguous for clade "
-                    f"'{'|'.join(child.descendant_taxa)}': "
-                    + ", ".join(tied_regimes),
+                    f"'{'|'.join(child.descendant_taxa)}': " + ", ".join(tied_regimes),
                     code="local_clock_error",
                 )
             assignment = _BranchAssignment(
@@ -366,7 +367,9 @@ def _build_local_clock_branch_rows(
                 descendant_taxa=child.descendant_taxa,
                 regime_id=assignment.regime_id,
                 target_kind=assignment.target_kind,
-                time_duration=float(time_tree.node_by_id(child.node_id).branch_length or 0.0),
+                time_duration=float(
+                    time_tree.node_by_id(child.node_id).branch_length or 0.0
+                ),
                 optimized_branch_length=float(child.branch_length or 0.0),
                 optimized_clock_rate=optimized_rate_by_regime_id[assignment.regime_id],
             )
@@ -400,7 +403,9 @@ def fit_local_clock_likelihood(
         records,
         model_name="local-clock JC69",
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     validate_tree_taxa_against_patterns(
         time_tree,
         compressed_patterns,
@@ -473,13 +478,15 @@ def fit_local_clock_likelihood(
         pattern_count=compressed_patterns.pattern_count,
         model_name="JC69 local-clock",
         baseline_log_likelihood=optimized_report.log_likelihood,
-        evaluate_tree_log_likelihood=lambda candidate_tree: _evaluate_jc69_tree_likelihood_from_patterns(
-            candidate_tree,
-            compressed_patterns,
-            observation_policy="reject",
-            gap_state_frequency=None,
-            root_prior=UNIFORM_DNA_ROOT_PRIOR,
-        ).log_likelihood,
+        evaluate_tree_log_likelihood=lambda candidate_tree: (
+            _evaluate_jc69_tree_likelihood_from_patterns(
+                candidate_tree,
+                compressed_patterns,
+                observation_policy="reject",
+                gap_state_frequency=None,
+                root_prior=UNIFORM_DNA_ROOT_PRIOR,
+            ).log_likelihood
+        ),
     )
     optimized_rate_by_regime_id = dict(search_result.parameter_values)
     regime_rows = _build_local_clock_regime_rows(
@@ -497,9 +504,7 @@ def fit_local_clock_likelihood(
     aic = (-2.0 * optimized_report.log_likelihood) + (2.0 * float(parameter_count))
     aic_delta_vs_strict_clock = aic - strict_clock_report.aic
     preferred_model_by_aic = (
-        "local-clock"
-        if aic < (strict_clock_report.aic - 1e-12)
-        else "strict-clock"
+        "local-clock" if aic < (strict_clock_report.aic - 1e-12) else "strict-clock"
     )
     return LocalClockLikelihoodReport(
         model_name="JC69 local-clock",

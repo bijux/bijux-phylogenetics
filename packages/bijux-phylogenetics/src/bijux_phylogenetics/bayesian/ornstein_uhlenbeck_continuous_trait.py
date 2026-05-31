@@ -512,7 +512,9 @@ def _build_ou_prior_components(
     )
     alpha = state.model_parameters.scalar_parameters[_ALPHA_PARAMETER_NAME]
     optimum = state.model_parameters.scalar_parameters[_OPTIMUM_PARAMETER_NAME]
-    sigma_squared = state.model_parameters.scalar_parameters[_SIGMA_SQUARED_PARAMETER_NAME]
+    sigma_squared = state.model_parameters.scalar_parameters[
+        _SIGMA_SQUARED_PARAMETER_NAME
+    ]
     alpha_log_prior = evaluate_continuous_trait_scalar_log_prior(
         parameter_value=alpha,
         prior_model=model_definition.alpha_prior,
@@ -777,7 +779,9 @@ def _require_ou_state_consistency(
     state: BayesianPhylogeneticState,
     fixed_topology_id: str | None,
 ) -> None:
-    model_name = state.model_parameters.categorical_parameters.get(_MODEL_PARAMETER_NAME)
+    model_name = state.model_parameters.categorical_parameters.get(
+        _MODEL_PARAMETER_NAME
+    )
     if model_name != _MODEL_NAME:
         raise PhylogeneticsError(
             "bayesian OU continuous-trait model requires every sampled state to preserve the configured model label",

@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import math
 
-from bijux_phylogenetics.comparative._math import invert_matrix
-from bijux_phylogenetics.comparative._math import log_determinant
-from bijux_phylogenetics.comparative._math import quadratic_form
+from bijux_phylogenetics.comparative._math import (
+    invert_matrix,
+    log_determinant,
+    quadratic_form,
+)
 
 from .contracts import CorrelatedTraitComparisonRow
 

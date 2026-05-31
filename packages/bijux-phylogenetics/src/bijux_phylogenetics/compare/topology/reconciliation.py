@@ -170,7 +170,9 @@ def reconcile_duplication_loss_transfer(
             1 for row in event_rows if row.event_type == "duplication"
         ),
         loss_event_count=sum(len(row.loss_branches) for row in event_rows),
-        transfer_event_count=sum(1 for row in event_rows if row.event_type == "transfer"),
+        transfer_event_count=sum(
+            1 for row in event_rows if row.event_type == "transfer"
+        ),
         speciation_event_count=sum(
             1 for row in event_rows if row.event_type == "speciation"
         ),
@@ -267,7 +269,8 @@ def _reconcile_internal(
                         transferred_child_side=None,
                         transfer_recipient_branch=None,
                         loss_branches=[*left_losses, *right_losses],
-                        child_total_cost=left_choice.total_cost + right_choice.total_cost,
+                        child_total_cost=left_choice.total_cost
+                        + right_choice.total_cost,
                         event_cost=loss_cost * (len(left_losses) + len(right_losses)),
                     ),
                 )
@@ -281,12 +284,15 @@ def _reconcile_internal(
                         transferred_child_side=None,
                         transfer_recipient_branch=None,
                         loss_branches=[*right_losses, *left_losses],
-                        child_total_cost=left_choice.total_cost + right_choice.total_cost,
+                        child_total_cost=left_choice.total_cost
+                        + right_choice.total_cost,
                         event_cost=loss_cost * (len(left_losses) + len(right_losses)),
                     ),
                 )
 
-    for left_target in species_index.descendants_including_self_by_branch[species_branch]:
+    for left_target in species_index.descendants_including_self_by_branch[
+        species_branch
+    ]:
         left_choice = reconcile_gene_to_species(left_gene_key, left_target)
         if left_choice.total_cost == _UNREACHABLE_COST:
             continue
@@ -366,7 +372,9 @@ def _reconcile_internal(
                         right_child_species_branch=(
                             recipient_target if donor_side == "left" else donor_target
                         ),
-                        transferred_child_side="right" if donor_side == "left" else "left",
+                        transferred_child_side="right"
+                        if donor_side == "left"
+                        else "left",
                         transfer_recipient_branch=recipient_target,
                         loss_branches=donor_losses,
                         child_total_cost=donor_choice.total_cost
@@ -386,7 +394,9 @@ def _build_event_rows(
     species_index: _SpeciesIndex,
     reconcile_gene_to_species,
 ) -> list[DuplicationLossTransferEventRow]:
-    choice = reconcile_gene_to_species(_gene_branch_key(gene_node), mapped_species_branch)
+    choice = reconcile_gene_to_species(
+        _gene_branch_key(gene_node), mapped_species_branch
+    )
     left_child = None if gene_node.is_leaf() else gene_node.children[0]
     right_child = None if gene_node.is_leaf() else gene_node.children[1]
     event_rows = [
@@ -480,8 +490,12 @@ def _choice_sort_key(choice: _ReconciliationChoice) -> tuple[object, ...]:
     return (
         choice.event_type,
         choice.mapped_species_branch,
-        "" if choice.left_child_species_branch is None else choice.left_child_species_branch,
-        "" if choice.right_child_species_branch is None else choice.right_child_species_branch,
+        ""
+        if choice.left_child_species_branch is None
+        else choice.left_child_species_branch,
+        ""
+        if choice.right_child_species_branch is None
+        else choice.right_child_species_branch,
         "" if choice.transferred_child_side is None else choice.transferred_child_side,
         ""
         if choice.transfer_recipient_branch is None
@@ -517,7 +531,9 @@ def _resolve_gene_to_species_tip_map(
 ) -> dict[str, str]:
     species_taxa = set(species_tree.tip_names)
     if taxon_map_path is None:
-        if any((tip_name or "") not in species_taxa for tip_name in gene_tree.tip_names):
+        if any(
+            (tip_name or "") not in species_taxa for tip_name in gene_tree.tip_names
+        ):
             raise ValueError(
                 "duplication-loss-transfer reconciliation requires --taxon-map when gene tips do not exactly match species-tree taxa"
             )
@@ -596,7 +612,8 @@ def _build_species_index(tree: PhyloTree) -> _SpeciesIndex:
         branch: sorted(node.descendant_taxa) for branch, node in nodes_by_branch.items()
     }
     ancestry_by_branch = {
-        branch: tuple(_ancestor_branch_keys(node)) for branch, node in nodes_by_branch.items()
+        branch: tuple(_ancestor_branch_keys(node))
+        for branch, node in nodes_by_branch.items()
     }
     return _SpeciesIndex(
         tree=tree,
@@ -632,7 +649,10 @@ def _loss_branches_on_path(
 ) -> list[str]:
     if start_branch == end_branch:
         return []
-    if end_branch not in species_index.descendants_including_self_by_branch[start_branch]:
+    if (
+        end_branch
+        not in species_index.descendants_including_self_by_branch[start_branch]
+    ):
         return []
     current = species_index.nodes_by_branch[start_branch]
     target = species_index.nodes_by_branch[end_branch]
@@ -644,7 +664,10 @@ def _loss_branches_on_path(
         skipped_child = None
         for child in current.children:
             child_branch = _species_branch_key(child)
-            if end_branch in species_index.descendants_including_self_by_branch[child_branch]:
+            if (
+                end_branch
+                in species_index.descendants_including_self_by_branch[child_branch]
+            ):
                 matching_child = child
             else:
                 skipped_child = child
@@ -661,9 +684,10 @@ def _is_descendant_or_self(
     ancestor_branch: str,
     descendant_branch: str,
 ) -> bool:
-    return descendant_branch in species_index.descendants_including_self_by_branch[
-        ancestor_branch
-    ]
+    return (
+        descendant_branch
+        in species_index.descendants_including_self_by_branch[ancestor_branch]
+    )
 
 
 def _species_branch_key(node: TreeNode) -> str:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
+import math
 from pathlib import Path
 
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
@@ -152,9 +152,7 @@ def evaluate_nucleotide_nested_likelihood_ratio_test(
     )
     null_fit = null_context.fit
     alternative_fit = alternative_context.fit
-    raw_statistic = 2.0 * (
-        alternative_fit.log_likelihood - null_fit.log_likelihood
-    )
+    raw_statistic = 2.0 * (alternative_fit.log_likelihood - null_fit.log_likelihood)
     warnings: list[str] = []
     if raw_statistic < 0.0 and not math.isclose(raw_statistic, 0.0, abs_tol=1e-12):
         warnings.append(

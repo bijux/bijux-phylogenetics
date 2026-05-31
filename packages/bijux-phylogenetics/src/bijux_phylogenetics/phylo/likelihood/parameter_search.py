@@ -139,14 +139,15 @@ def run_bounded_coordinate_likelihood_search(
     if max_coordinate_passes < 1:
         raise ValueError("coordinate likelihood search requires at least one pass")
     if improvement_tolerance < 0.0:
-        raise ValueError("coordinate likelihood search improvement_tolerance must be nonnegative")
+        raise ValueError(
+            "coordinate likelihood search improvement_tolerance must be nonnegative"
+        )
     if set(initial_values) != set(bounds_by_name):
-        raise ValueError("initial_values and bounds_by_name must have identical parameter names")
+        raise ValueError(
+            "initial_values and bounds_by_name must have identical parameter names"
+        )
 
-    current_values = {
-        name: float(value)
-        for name, value in initial_values.items()
-    }
+    current_values = {name: float(value) for name, value in initial_values.items()}
     for name, (lower_bound, upper_bound) in bounds_by_name.items():
         validated_lower_bound, validated_upper_bound = (
             validate_increasing_parameter_bounds(

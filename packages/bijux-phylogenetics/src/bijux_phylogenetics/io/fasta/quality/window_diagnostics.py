@@ -13,11 +13,11 @@ from ..core import (
     _GAP_CHARACTERS,
     _is_ambiguity_character,
     _is_explicit_missing,
+    load_fasta_alignment,
 )
 from ..records import (
     summarise_fasta,
 )
-from ..core import load_fasta_alignment
 
 
 def summarize_alignment_windows_from_records(

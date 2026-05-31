@@ -28,7 +28,7 @@ def _raw_missing_pair_counts(
     identifiers: list[str],
     defined_lookup: dict[tuple[str, str], float],
 ) -> dict[str, int]:
-    missing_pair_counts = {identifier: 0 for identifier in identifiers}
+    missing_pair_counts = dict.fromkeys(identifiers, 0)
     for left_index, left_identifier in enumerate(identifiers):
         for right_index in range(left_index + 1, len(identifiers)):
             right_identifier = identifiers[right_index]
@@ -265,7 +265,9 @@ def write_distance_taxon_influence_run_json(
         ),
         "rows": [asdict(row) for row in report.rows],
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 

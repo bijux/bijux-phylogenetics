@@ -56,9 +56,7 @@ def run_compare_clade_ages_command(
                 "unstable_clades": report.unstable_clade_count,
                 "comparison_scope": report.comparison_scope,
                 "topology_equal": report.topology.topology_equal,
-                "robinson_foulds_distance": (
-                    report.topology.robinson_foulds_distance
-                ),
+                "robinson_foulds_distance": (report.topology.robinson_foulds_distance),
             },
             data=report,
         ),

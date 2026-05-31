@@ -43,9 +43,9 @@ def _build_reference_tree_quartet_support_report(
 ) -> TreeSetQuartetSupportReport:
     exact_taxa = _require_exact_taxa(analysis)
     taxon_scope = set(exact_taxa)
-    quartet_split_cache: list[dict[tuple[str, str, str, str], frozenset[str] | None]] = [
-        {} for _ in analysis.trees
-    ]
+    quartet_split_cache: list[
+        dict[tuple[str, str, str, str], frozenset[str] | None]
+    ] = [{} for _ in analysis.trees]
     rows: list[TreeSetQuartetSupportRow] = []
     total_concordant = 0
     total_discordant = 0
@@ -72,7 +72,9 @@ def _build_reference_tree_quartet_support_report(
                 for tree_index, tree in enumerate(analysis.trees):
                     cached_split = quartet_split_cache[tree_index].get(quartet_taxa)
                     if quartet_taxa not in quartet_split_cache[tree_index]:
-                        cached_split = _resolve_induced_quartet_split(tree, quartet_taxa)
+                        cached_split = _resolve_induced_quartet_split(
+                            tree, quartet_taxa
+                        )
                         quartet_split_cache[tree_index][quartet_taxa] = cached_split
                     if cached_split is None:
                         uninformative += 1

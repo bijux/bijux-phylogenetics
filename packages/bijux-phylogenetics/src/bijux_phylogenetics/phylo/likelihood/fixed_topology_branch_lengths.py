@@ -25,12 +25,12 @@ from bijux_phylogenetics.phylo.likelihood.nucleotide_models import (
     resolve_selected_nucleotide_likelihood_specification,
     validate_selected_nucleotide_likelihood_model,
 )
-from bijux_phylogenetics.phylo.likelihood.parameter_search import (
-    run_bounded_coordinate_likelihood_search,
-)
 from bijux_phylogenetics.phylo.likelihood.optimization_boundary_warnings import (
     boundary_warning_messages,
     build_branch_length_boundary_warnings,
+)
+from bijux_phylogenetics.phylo.likelihood.parameter_search import (
+    run_bounded_coordinate_likelihood_search,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
@@ -92,7 +92,11 @@ def optimize_fixed_topology_nucleotide_branch_lengths(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
     lower_branch_length_bound: float = 0.0,
     upper_branch_length_bound: float = 5.0,
@@ -119,7 +123,9 @@ def optimize_fixed_topology_nucleotide_branch_lengths(
         model_name=f"{normalized_model_name.upper()} fixed-topology branch optimization",
         observation_policy=normalized_observation_policy,
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     specification = resolve_selected_nucleotide_likelihood_specification(
         normalized_records,
         model_name=normalized_model_name,
@@ -157,7 +163,9 @@ def optimize_fixed_topology_nucleotide_branch_lengths(
         improvement_tolerance=improvement_tolerance,
         max_coordinate_passes=max_coordinate_passes,
     )
-    optimized_branch_lengths = _collect_branch_lengths_by_id(search_result.optimized_tree)
+    optimized_branch_lengths = _collect_branch_lengths_by_id(
+        search_result.optimized_tree
+    )
     branch_rows = [
         BranchLengthOptimizationRow(
             branch_id=node.node_id or "",
@@ -216,7 +224,11 @@ def optimize_fixed_topology_nucleotide_branch_lengths_from_alignment(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
     lower_branch_length_bound: float = 0.0,
     upper_branch_length_bound: float = 5.0,
@@ -260,7 +272,11 @@ def optimize_fixed_topology_nucleotide_single_branch_length(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
     lower_branch_length_bound: float = 0.0,
     upper_branch_length_bound: float = 5.0,
@@ -283,7 +299,9 @@ def optimize_fixed_topology_nucleotide_single_branch_length(
         model_name=f"{normalized_model_name.upper()} fixed-topology single-branch optimization",
         observation_policy=normalized_observation_policy,
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     specification = resolve_selected_nucleotide_likelihood_specification(
         normalized_records,
         model_name=normalized_model_name,
@@ -325,7 +343,9 @@ def optimize_fixed_topology_nucleotide_single_branch_length(
         upper_branch_length_bound=upper_branch_length_bound,
         max_coordinate_passes=1,
     )
-    optimized_branch_lengths = _collect_branch_lengths_by_id(search_result.optimized_tree)
+    optimized_branch_lengths = _collect_branch_lengths_by_id(
+        search_result.optimized_tree
+    )
     return FixedTopologyNucleotideSingleBranchOptimizationReport(
         model_name=specification.model_name,
         taxa=compressed_patterns.taxon_order,
@@ -380,7 +400,11 @@ def optimize_fixed_topology_nucleotide_single_branch_length_from_alignment(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
     lower_branch_length_bound: float = 0.0,
     upper_branch_length_bound: float = 5.0,
@@ -416,8 +440,7 @@ def optimize_selected_nucleotide_branch_lengths(
     """Reoptimize one fixed-topology nucleotide tree under one resolved likelihood surface."""
     working_tree = tree.copy().refresh()
     optimized_branch_ids = [
-        child.node_id or ""
-        for _parent, child in working_tree.iter_edges()
+        child.node_id or "" for _parent, child in working_tree.iter_edges()
     ]
     return optimize_selected_nucleotide_branch_length_subset(
         working_tree,
@@ -467,21 +490,18 @@ def optimize_selected_nucleotide_branch_length_subset(
         optimized_branch_ids=optimized_branch_ids,
     )
     for branch_length in initial_branch_lengths.values():
-        if not (lower_branch_length_bound <= branch_length <= upper_branch_length_bound):
+        if not (
+            lower_branch_length_bound <= branch_length <= upper_branch_length_bound
+        ):
             raise InvalidBranchLengthError(
                 "every starting branch length must lie within the declared optimization bounds"
             )
     initial_values = {
-        branch_id: initial_branch_lengths[branch_id]
-        for branch_id in target_branch_ids
+        branch_id: initial_branch_lengths[branch_id] for branch_id in target_branch_ids
     }
-    bounds_by_name = {
-        branch_id: (
-            lower_branch_length_bound,
-            upper_branch_length_bound,
-        )
-        for branch_id in target_branch_ids
-    }
+    bounds_by_name = dict.fromkeys(
+        target_branch_ids, (lower_branch_length_bound, upper_branch_length_bound)
+    )
 
     def evaluate_candidate(
         branch_lengths_by_id: dict[str, float],
@@ -506,12 +526,14 @@ def optimize_selected_nucleotide_branch_length_subset(
     optimized_branch_lengths = dict(initial_branch_lengths)
     optimized_branch_lengths.update(search_result.parameter_values)
     assign_branch_lengths(working_tree, optimized_branch_lengths)
-    boundary_warning_messages_for_subset = _resolve_subset_branch_boundary_warning_messages(
-        working_tree,
-        initial_branch_lengths=initial_branch_lengths,
-        target_branch_ids=target_branch_ids,
-        lower_branch_length_bound=lower_branch_length_bound,
-        upper_branch_length_bound=upper_branch_length_bound,
+    boundary_warning_messages_for_subset = (
+        _resolve_subset_branch_boundary_warning_messages(
+            working_tree,
+            initial_branch_lengths=initial_branch_lengths,
+            target_branch_ids=target_branch_ids,
+            lower_branch_length_bound=lower_branch_length_bound,
+            upper_branch_length_bound=upper_branch_length_bound,
+        )
     )
     return BranchReoptimizationResult(
         optimized_tree=working_tree.refresh(),
@@ -524,7 +546,9 @@ def optimize_selected_nucleotide_branch_length_subset(
     )
 
 
-def assign_branch_lengths(tree: PhyloTree, branch_lengths_by_id: dict[str, float]) -> None:
+def assign_branch_lengths(
+    tree: PhyloTree, branch_lengths_by_id: dict[str, float]
+) -> None:
     """Assign one branch-length vector to one refreshed tree by node identity."""
     for _parent, child in tree.iter_edges():
         if child.node_id is None:
@@ -547,18 +571,21 @@ def evaluate_selected_nucleotide_log_likelihood_from_patterns(
     )
     total_log_likelihood = 0.0
     for pattern in compressed_patterns.patterns:
-        total_log_likelihood += pattern.weight * evaluate_fixed_topology_dna_site_log_likelihood(
-            tree,
-            pattern.states,
-            taxon_order=compressed_patterns.taxon_order,
-            model_name=specification.model_name,
-            observation_policy=specification.observation_policy,
-            root_prior=specification.root_prior,
-            transition_matrix_for_child=lambda child: (
-                specification.transition_matrix_for_branch_length(
-                    max(float(child.branch_length or 0.0), 0.0)
-                )
-            ),
+        total_log_likelihood += (
+            pattern.weight
+            * evaluate_fixed_topology_dna_site_log_likelihood(
+                tree,
+                pattern.states,
+                taxon_order=compressed_patterns.taxon_order,
+                model_name=specification.model_name,
+                observation_policy=specification.observation_policy,
+                root_prior=specification.root_prior,
+                transition_matrix_for_child=lambda child: (
+                    specification.transition_matrix_for_branch_length(
+                        max(float(child.branch_length or 0.0), 0.0)
+                    )
+                ),
+            )
         )
     return total_log_likelihood
 
@@ -585,7 +612,9 @@ def _validate_target_branch_ids(
         if branch_id not in available_branch_lengths:
             raise ValueError(f"tree does not contain branch_id '{branch_id}'")
         if branch_id in seen_branch_ids:
-            raise ValueError(f"optimized_branch_ids contains duplicate branch_id '{branch_id}'")
+            raise ValueError(
+                f"optimized_branch_ids contains duplicate branch_id '{branch_id}'"
+            )
         seen_branch_ids.add(branch_id)
         validated_branch_ids.append(branch_id)
     return validated_branch_ids
@@ -605,7 +634,9 @@ def _resolve_subset_branch_boundary_warning_messages(
             child_name=tree.node_by_id(branch_id).name,
             descendant_taxa=tree.node_by_id(branch_id).descendant_taxa,
             initial_branch_length=initial_branch_lengths[branch_id],
-            optimized_branch_length=float(tree.node_by_id(branch_id).branch_length or 0.0),
+            optimized_branch_length=float(
+                tree.node_by_id(branch_id).branch_length or 0.0
+            ),
         )
         for branch_id in target_branch_ids
     ]

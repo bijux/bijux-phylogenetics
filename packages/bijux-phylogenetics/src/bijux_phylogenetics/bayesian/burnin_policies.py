@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from bijux_phylogenetics.bayesian.independent_chains import (
-    IndependentMetropolisHastingsChainReport,
     IndependentMetropolisHastingsRunReport,
 )
 from bijux_phylogenetics.bayesian.metropolis_hastings import MetropolisHastingsRunReport
@@ -53,7 +52,7 @@ class MetropolisHastingsBurninReport:
     retained_sample_count: int
     discarded_rows: list[BurninSampleRow]
     retained_rows: list[BurninSampleRow]
-    diagnostic_report: "MetropolisHastingsBurninDiagnosticReport | None" = None
+    diagnostic_report: MetropolisHastingsBurninDiagnosticReport | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -411,7 +410,9 @@ def _validate_policy_name(value: str) -> str:
     return validated_value
 
 
-def _build_sample_rows(chain_report: MetropolisHastingsRunReport) -> list[BurninSampleRow]:
+def _build_sample_rows(
+    chain_report: MetropolisHastingsRunReport,
+) -> list[BurninSampleRow]:
     sample_rows = [
         BurninSampleRow(
             sample_index=sample_index,

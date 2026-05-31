@@ -4,8 +4,8 @@ from dataclasses import dataclass
 import math
 from statistics import mean
 
-from bijux_phylogenetics.bayesian.calibration_priors import CalibrationPriorDefinition
 from bijux_phylogenetics.bayesian.calibration_priors import (
+    CalibrationPriorDefinition,
     evaluate_calibration_tree_log_prior,
 )
 from bijux_phylogenetics.bayesian.clock_model_priors import (
@@ -254,38 +254,48 @@ def run_fixed_topology_strict_clock_metropolis_hastings(
     initial_state = score_bayesian_phylogenetic_state(
         tree=initial_tree,
         model_parameters=initial_model_parameters,
-        update_prior_components=lambda state: _build_fixed_topology_strict_clock_prior_components(
-            state=state,
-            model_definition=model_definition,
-            fixed_topology_id=None,
+        update_prior_components=lambda state: (
+            _build_fixed_topology_strict_clock_prior_components(
+                state=state,
+                model_definition=model_definition,
+                fixed_topology_id=None,
+            )
         ),
-        update_log_likelihood=lambda state: _evaluate_fixed_topology_strict_clock_log_likelihood(
-            state=state,
-            substitution_tree=fixed_substitution_tree,
-            model_definition=model_definition,
-            fixed_topology_id=None,
+        update_log_likelihood=lambda state: (
+            _evaluate_fixed_topology_strict_clock_log_likelihood(
+                state=state,
+                substitution_tree=fixed_substitution_tree,
+                model_definition=model_definition,
+                fixed_topology_id=None,
+            )
         ),
     )
     fixed_topology_id = initial_state.tree.topology_id
     chain_report = run_metropolis_hastings_sampler(
         initial_state=initial_state,
-        propose_state=lambda current_state, rng: _propose_fixed_topology_strict_clock_state(
-            current_state=current_state,
-            rng=rng,
-            substitution_tree=fixed_substitution_tree,
-            model_definition=model_definition,
-            proposal_schedule=proposal_schedule,
+        propose_state=lambda current_state, rng: (
+            _propose_fixed_topology_strict_clock_state(
+                current_state=current_state,
+                rng=rng,
+                substitution_tree=fixed_substitution_tree,
+                model_definition=model_definition,
+                proposal_schedule=proposal_schedule,
+            )
         ),
-        update_prior_components=lambda state: _build_fixed_topology_strict_clock_prior_components(
-            state=state,
-            model_definition=model_definition,
-            fixed_topology_id=fixed_topology_id,
+        update_prior_components=lambda state: (
+            _build_fixed_topology_strict_clock_prior_components(
+                state=state,
+                model_definition=model_definition,
+                fixed_topology_id=fixed_topology_id,
+            )
         ),
-        update_log_likelihood=lambda state: _evaluate_fixed_topology_strict_clock_log_likelihood(
-            state=state,
-            substitution_tree=fixed_substitution_tree,
-            model_definition=model_definition,
-            fixed_topology_id=fixed_topology_id,
+        update_log_likelihood=lambda state: (
+            _evaluate_fixed_topology_strict_clock_log_likelihood(
+                state=state,
+                substitution_tree=fixed_substitution_tree,
+                model_definition=model_definition,
+                fixed_topology_id=fixed_topology_id,
+            )
         ),
         iteration_count=iteration_count,
         sample_every=sample_every,
@@ -769,7 +779,10 @@ def _require_fixed_topology_strict_clock_state_consistency(
         raise PhylogeneticsError(
             "fixed-topology strict-clock posterior model requires every sampled state to preserve the configured clock-model label",
             code="fixed_topology_strict_clock_state_model_label_invalid",
-            details={"observed_model_name": model_name, "expected_model_name": _MODEL_NAME},
+            details={
+                "observed_model_name": model_name,
+                "expected_model_name": _MODEL_NAME,
+            },
         )
     if fixed_topology_id is not None and state.tree.topology_id != fixed_topology_id:
         raise PhylogeneticsError(
@@ -781,7 +794,9 @@ def _require_fixed_topology_strict_clock_state_consistency(
             },
         )
     try:
-        return state.model_parameters.scalar_parameters[_GLOBAL_CLOCK_RATE_PARAMETER_NAME]
+        return state.model_parameters.scalar_parameters[
+            _GLOBAL_CLOCK_RATE_PARAMETER_NAME
+        ]
     except KeyError as error:
         raise PhylogeneticsError(
             "fixed-topology strict-clock posterior model requires every sampled state to include one global-clock-rate scalar parameter",
@@ -835,7 +850,9 @@ def _invalid_prior_support_reason(
         not math.isfinite(row.log_prior_contribution)
         for row in calibration_prior_report.calibration_rows
     ):
-        return "strict-clock proposal moved dated tree outside calibration prior support"
+        return (
+            "strict-clock proposal moved dated tree outside calibration prior support"
+        )
     return None
 
 
@@ -858,7 +875,9 @@ def _time_tree_prior_parameter_values(
     if isinstance(prior_model, ConstantPopulationCoalescentPriorModel):
         return {"effective_population_size": prior_model.effective_population_size}
     if isinstance(prior_model, SkylineCoalescentPriorModel):
-        parameter_values: dict[str, float] = {"epoch_count": float(len(prior_model.epochs))}
+        parameter_values: dict[str, float] = {
+            "epoch_count": float(len(prior_model.epochs))
+        }
         for index, epoch in enumerate(prior_model.epochs, start=1):
             parameter_values[f"epoch_{index}_younger_boundary_age"] = (
                 epoch.younger_boundary_age

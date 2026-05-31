@@ -20,13 +20,10 @@ from bijux_phylogenetics.phylo.likelihood.models import (
     ApproximateTopologyTestResamplingRow,
     ApproximateTopologyTestSummaryRow,
     CandidateTreeSiteLikelihoodMatrixReport,
-    CandidateTreeSiteLikelihoodSummary,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
-_APPROXIMATE_TOPOLOGY_TEST_CAUTION_LABEL = (
-    "site-resampled p-like statistics are approximate ranking aids and must not be interpreted as AU/SH-style p-values"
-)
+_APPROXIMATE_TOPOLOGY_TEST_CAUTION_LABEL = "site-resampled p-like statistics are approximate ranking aids and must not be interpreted as AU/SH-style p-values"
 _APPROXIMATE_TOPOLOGY_TEST_RESAMPLING_METHOD = "site-resampling-with-replacement"
 
 
@@ -83,13 +80,15 @@ def evaluate_nucleotide_approximate_topology_test_from_alignment(
     ) = None,
 ) -> ApproximateTopologyTestReport:
     """Compare candidate topologies from tree-set and alignment paths."""
-    matrix_report = evaluate_nucleotide_candidate_tree_site_likelihood_matrix_from_alignment(
-        tree_set_path,
-        alignment_path,
-        model_name=model_name,
-        kappa=kappa,
-        base_frequencies=base_frequencies,
-        exchangeabilities=exchangeabilities,
+    matrix_report = (
+        evaluate_nucleotide_candidate_tree_site_likelihood_matrix_from_alignment(
+            tree_set_path,
+            alignment_path,
+            model_name=model_name,
+            kappa=kappa,
+            base_frequencies=base_frequencies,
+            exchangeabilities=exchangeabilities,
+        )
     )
     return evaluate_nucleotide_approximate_topology_test_from_matrix_report(
         matrix_report,
@@ -112,8 +111,8 @@ def evaluate_nucleotide_approximate_topology_test_from_matrix_report(
     observed_best = select_observed_best_candidate_tree(candidate_vectors)
     rng = random.Random(resampling_seed)  # nosec B311
     resampling_rows: list[ApproximateTopologyTestResamplingRow] = []
-    rows_by_candidate_id: dict[str, list[ApproximateTopologyTestResamplingRow]] = defaultdict(
-        list
+    rows_by_candidate_id: dict[str, list[ApproximateTopologyTestResamplingRow]] = (
+        defaultdict(list)
     )
     site_count = matrix_report.site_count
 
@@ -164,7 +163,8 @@ def evaluate_nucleotide_approximate_topology_test_from_matrix_report(
             observed_log_likelihood=candidate.log_likelihood,
             observed_delta_log_likelihood=observed_best.log_likelihood
             - candidate.log_likelihood,
-            observed_best_tree=candidate.candidate_tree_id == observed_best.candidate_tree_id,
+            observed_best_tree=candidate.candidate_tree_id
+            == observed_best.candidate_tree_id,
             resampling_win_count=sum(
                 1
                 for row in rows_by_candidate_id[candidate.candidate_tree_id]
@@ -258,7 +258,9 @@ def resolve_candidate_tree_site_likelihood_vectors(
         candidate_site_vector[site_index] = row.log_likelihood
     candidate_vectors: list[CandidateTreeSiteLikelihoodVector] = []
     for candidate in matrix_report.candidate_trees:
-        candidate_site_vector = site_vectors_by_candidate_id[candidate.candidate_tree_id]
+        candidate_site_vector = site_vectors_by_candidate_id[
+            candidate.candidate_tree_id
+        ]
         if any(value is None for value in candidate_site_vector):
             raise ValueError(
                 f"candidate tree '{candidate.candidate_tree_id}' is missing one or more site log likelihood rows"
@@ -281,7 +283,9 @@ def select_observed_best_candidate_tree(
 ) -> CandidateTreeSiteLikelihoodVector:
     """Choose the observed best candidate by likelihood with deterministic tie breaks."""
     if not candidates:
-        raise ValueError("approximate topology test requires at least one candidate tree")
+        raise ValueError(
+            "approximate topology test requires at least one candidate tree"
+        )
     best_candidate = candidates[0]
     for candidate in candidates[1:]:
         if prefer_higher_likelihood_candidate(candidate, best_candidate):
@@ -471,7 +475,9 @@ def write_approximate_topology_test_run_json(
             for row in report.resampling_rows
         ],
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 

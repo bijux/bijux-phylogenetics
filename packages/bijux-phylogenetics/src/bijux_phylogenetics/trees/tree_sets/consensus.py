@@ -166,9 +166,7 @@ def _build_consensus_tree_with_threshold_from_trees(
             if length is not None:
                 terminal_lengths.setdefault(taxon, []).append(float(length))
     majority_clades = {
-        clade
-        for clade, count in counts.items()
-        if count / len(trees) >= threshold
+        clade for clade, count in counts.items() if count / len(trees) >= threshold
     }
     clade_support = {
         clade: round((counts[clade] / len(trees)) * 100.0, 15)
@@ -180,9 +178,7 @@ def _build_consensus_tree_with_threshold_from_trees(
         if clade in majority_clades and lengths
     }
     terminal_length_means = {
-        taxon: _mean(lengths)
-        for taxon, lengths in terminal_lengths.items()
-        if lengths
+        taxon: _mean(lengths) for taxon, lengths in terminal_lengths.items() if lengths
     }
     tree = _build_consensus_tree_from_selected_clades(
         shared_taxa=shared_taxa,

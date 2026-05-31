@@ -30,8 +30,10 @@ from .inventory import artifact_row, unexpected_files
 from .presentation import write_html_report
 from .revalidation_policy import (
     check_row,
-    overall_revalidation_status as derive_overall_revalidation_status,
     status,
+)
+from .revalidation_policy import (
+    overall_revalidation_status as derive_overall_revalidation_status,
 )
 
 _ARTIFACT_COLUMNS = [

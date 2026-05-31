@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.phylo.alignment import (
-    AlignmentAlphabet,
     CodingSequenceExclusion,
 )
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError
@@ -23,7 +22,6 @@ from ..models import (
     AlignmentTrimmingSummary,
     CodonAwareAlignmentWorkflowReport,
     EngineWorkflowReport,
-    ExternalTreeComparisonReport,
     IqtreeSupportValue,
     IqtreeWorkflowSummary,
 )

@@ -207,9 +207,7 @@ def _require_matching_topology(
 def _branch_lookup_by_descendant_taxa(
     tree: PhyloTree,
 ) -> Mapping[tuple[str, ...], TreeNode]:
-    return {
-        tuple(child.descendant_taxa): child for _parent, child in tree.iter_edges()
-    }
+    return {tuple(child.descendant_taxa): child for _parent, child in tree.iter_edges()}
 
 
 def write_relaxed_rate_branch_summary_tsv(

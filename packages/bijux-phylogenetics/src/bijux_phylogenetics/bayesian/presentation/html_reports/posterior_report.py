@@ -10,7 +10,9 @@ from bijux_phylogenetics.bayesian.mrbayes import (
     parse_mrbayes_parameter_traces,
     summarize_mrbayes_posterior_trees,
 )
-from bijux_phylogenetics.evidence.provenance.method_tiers import bayesian_report_method_tier
+from bijux_phylogenetics.evidence.provenance.method_tiers import (
+    bayesian_report_method_tier,
+)
 from bijux_phylogenetics.render.html import write_html_report
 from bijux_phylogenetics.trees import compute_clade_frequency_table
 

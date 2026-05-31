@@ -88,4 +88,3 @@ def summarize_ancestral_transition_report(
         unique_transition_count=len(report.transition_rows),
         warning_count=len(report.warnings),
     )
-

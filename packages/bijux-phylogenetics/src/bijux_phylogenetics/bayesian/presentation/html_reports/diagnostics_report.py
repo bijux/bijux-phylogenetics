@@ -16,17 +16,19 @@ from bijux_phylogenetics.bayesian.beast.validation import (
     validate_tip_dating_metadata,
 )
 from bijux_phylogenetics.bayesian.beast.xml_analysis import summarize_beast_analysis_xml
-from bijux_phylogenetics.evidence.provenance.method_tiers import bayesian_report_method_tier
+from bijux_phylogenetics.evidence.provenance.method_tiers import (
+    bayesian_report_method_tier,
+)
 from bijux_phylogenetics.render.html import write_html_report
 
-from .contracts import BayesianDiagnosticsReportBuildResult
-from .report_policy import method_tier_section, method_tier_summary_metrics
 from ..posterior_uncertainty import (
     summarize_beast_workflow_evidence,
     write_bayesian_limitations_text,
     write_bayesian_methods_summary_text,
     write_supplementary_bayesian_diagnostics_table,
 )
+from .contracts import BayesianDiagnosticsReportBuildResult
+from .report_policy import method_tier_section, method_tier_summary_metrics
 
 
 def render_bayesian_diagnostics_report(

@@ -121,6 +121,7 @@ def resolve_named_simplex_from_unconstrained(
         normalization_tolerance=normalization_tolerance,
     )
 
+
 def _validate_reference_component_name(
     *,
     component_names: tuple[str, ...],

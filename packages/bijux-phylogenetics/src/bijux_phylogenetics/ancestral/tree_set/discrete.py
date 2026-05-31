@@ -8,13 +8,13 @@ from bijux_phylogenetics.ancestral.common import stable_value
 from bijux_phylogenetics.ancestral.discrete import (
     reconstruct_discrete_ancestral_states,
 )
+from bijux_phylogenetics.ancestral.discrete.policy import (
+    resolve_discrete_model_name,
+)
 from bijux_phylogenetics.ancestral.discrete.state_resolution import (
     resolve_clade_consensus_state,
 )
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
-from bijux_phylogenetics.ancestral.discrete.policy import (
-    resolve_discrete_model_name,
-)
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 
@@ -207,9 +207,7 @@ def summarize_discrete_clades(
                 observed_states_by_taxon=observed_states_by_taxon,
                 fallback_state=row.most_likely_state,
             )
-            state_counts[resolved_state] = (
-                state_counts.get(resolved_state, 0) + 1
-            )
+            state_counts[resolved_state] = state_counts.get(resolved_state, 0) + 1
         dominant_state = max(
             sorted(state_counts),
             key=lambda state: (state_counts[state], state),

@@ -56,7 +56,11 @@ def evaluate_nucleotide_site_log_likelihoods(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> FixedTopologySiteLogLikelihoodReport:
     """Evaluate one fixed-topology nucleotide likelihood with expanded site rows."""
@@ -66,7 +70,9 @@ def evaluate_nucleotide_site_log_likelihoods(
         model_name=normalized_model_name.upper(),
         observation_policy=observation_policy,
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     specification = resolve_selected_nucleotide_likelihood_specification(
         normalized_records,
         model_name=normalized_model_name,
@@ -112,7 +118,11 @@ def evaluate_nucleotide_site_log_likelihoods_from_alignment(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
 ) -> FixedTopologySiteLogLikelihoodReport:
     """Evaluate one fixed-topology nucleotide likelihood from paths with site rows."""
@@ -150,14 +160,16 @@ def evaluate_selected_dna_site_log_likelihoods_from_patterns(
     site_log_likelihoods, total_log_likelihood = (
         expanded_site_log_likelihood_rows_from_patterns(
             compressed_patterns,
-            site_log_likelihood=lambda states: evaluate_fixed_topology_dna_site_log_likelihood(
-                tree,
-                states,
-                taxon_order=compressed_patterns.taxon_order,
-                model_name=model_name,
-                observation_policy=observation_policy,
-                root_prior=root_prior,
-                transition_matrix_for_child=transition_matrix_for_child,
+            site_log_likelihood=lambda states: (
+                evaluate_fixed_topology_dna_site_log_likelihood(
+                    tree,
+                    states,
+                    taxon_order=compressed_patterns.taxon_order,
+                    model_name=model_name,
+                    observation_policy=observation_policy,
+                    root_prior=root_prior,
+                    transition_matrix_for_child=transition_matrix_for_child,
+                )
             ),
         )
     )

@@ -48,9 +48,9 @@ def _updated_cluster_distance(
     if update_rule == "equal":
         return (left_distance + right_distance) / 2.0
     if update_rule == "taxon-count":
-        return (
-            (left_distance * left_size) + (right_distance * right_size)
-        ) / (left_size + right_size)
+        return ((left_distance * left_size) + (right_distance * right_size)) / (
+            left_size + right_size
+        )
     raise ValueError(f"unsupported agglomerative update rule: {update_rule}")
 
 
