@@ -210,6 +210,51 @@ class RootedNniNeighborhoodReport:
     neighbor_rows: list[RootedNniNeighborRow]
 
 
+@dataclass(slots=True)
+class RootedNniMoveApplicationReport:
+    """Explicit record of one rooted NNI move, its reverse, and preserved payloads."""
+
+    algorithm: str
+    input_tree_path: Path | None
+    input_tree_newick: str
+    input_topology_fingerprint: str
+    selected_move_index: int
+    available_move_count: int
+    selected_parent_node_id: str
+    selected_child_node_id: str
+    selected_sibling_node_id: str
+    selected_exchanged_child_node_id: str
+    selected_pivot_branch_id: str
+    selected_sibling_clade_id: str
+    selected_exchanged_clade_id: str
+    moved_tree_newick: str
+    moved_topology_fingerprint: str
+    moved_topology_changed: bool
+    reverse_parent_node_id: str
+    reverse_child_node_id: str
+    reverse_sibling_node_id: str
+    reverse_exchanged_child_node_id: str
+    reverse_pivot_branch_id: str
+    reverse_sibling_clade_id: str
+    reverse_exchanged_clade_id: str
+    reversed_tree_newick: str
+    reversed_topology_fingerprint: str
+    reverse_restores_original_topology: bool
+    tip_count: int
+    internal_node_count: int
+    rooted: bool | None
+    strictly_bifurcating: bool
+    missing_tip_taxa: list[str]
+    unexpected_tip_taxa: list[str]
+    moved_validation_errors: list[str]
+    reversed_validation_errors: list[str]
+    node_names_preserved: bool
+    node_metadata_preserved: bool
+    edge_metadata_preserved: bool
+    branch_lengths_preserved: bool
+    total_branch_length_preserved: bool
+
+
 @dataclass(frozen=True, slots=True)
 class RootedSprNeighborRow:
     """One rooted SPR neighbor with a representative move and multiplicity."""

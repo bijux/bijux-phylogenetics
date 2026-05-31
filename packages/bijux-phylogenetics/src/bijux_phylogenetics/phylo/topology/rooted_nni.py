@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass
 import json
 from pathlib import Path
@@ -11,6 +12,7 @@ from bijux_phylogenetics.phylo.topology.clades import (
 )
 from bijux_phylogenetics.phylo.topology.models import (
     RootedNniNeighborRow,
+    RootedNniMoveApplicationReport,
     RootedNniNeighborhoodReport,
 )
 
@@ -96,6 +98,152 @@ def apply_rooted_nni_move(
     child.replace_children([remaining_child, sibling])
     parent.replace_children([child, exchanged_child])
     return swapped_tree.refresh()
+
+
+def resolve_rooted_nni_move_candidate(
+    tree: PhyloTree | Path,
+    move_index: int,
+) -> tuple[RootedNniMoveCandidate, int]:
+    """Resolve one 1-indexed rooted NNI move candidate from a validated tree."""
+    resolved_tree, _input_tree_path = _resolve_rooted_nni_tree(tree)
+    validate_rooted_nni_tree(resolved_tree)
+    candidates = list(iter_rooted_nni_move_candidates(resolved_tree))
+    if move_index < 1 or move_index > len(candidates):
+        raise ValueError(
+            f"rooted NNI move index must be between 1 and {len(candidates)}"
+        )
+    return candidates[move_index - 1], len(candidates)
+
+
+def derive_rooted_nni_reverse_move_candidate(
+    original_tree: PhyloTree,
+    moved_tree: PhyloTree,
+    candidate: RootedNniMoveCandidate,
+) -> RootedNniMoveCandidate:
+    """Derive the exact rooted NNI move that restores one applied candidate."""
+    original_parent = original_tree.node_by_id(candidate.parent_node_id)
+    original_child = original_tree.node_by_id(candidate.child_node_id)
+    original_sibling = original_tree.node_by_id(candidate.sibling_node_id)
+    original_exchanged_child = original_tree.node_by_id(
+        candidate.exchanged_child_node_id
+    )
+    original_remaining_child = next(
+        child
+        for child in original_child.children
+        if child is not original_exchanged_child
+    )
+    parent_signature = frozenset(descendant_taxa(original_parent))
+    reverse_child_signature = frozenset(
+        [
+            *descendant_taxa(original_remaining_child),
+            *descendant_taxa(original_sibling),
+        ]
+    )
+    reverse_sibling_signature = frozenset(descendant_taxa(original_exchanged_child))
+    reverse_exchanged_signature = frozenset(descendant_taxa(original_sibling))
+
+    moved_parent = _find_rooted_nni_node_by_signature(moved_tree, parent_signature)
+    moved_child = _find_rooted_nni_direct_child_by_signature(
+        moved_parent,
+        reverse_child_signature,
+    )
+    moved_sibling = _find_rooted_nni_direct_child_by_signature(
+        moved_parent,
+        reverse_sibling_signature,
+    )
+    moved_exchanged_child = _find_rooted_nni_direct_child_by_signature(
+        moved_child,
+        reverse_exchanged_signature,
+    )
+    return RootedNniMoveCandidate(
+        parent_node_id=require_rooted_nni_node_id(moved_parent),
+        child_node_id=require_rooted_nni_node_id(moved_child),
+        sibling_node_id=require_rooted_nni_node_id(moved_sibling),
+        exchanged_child_node_id=require_rooted_nni_node_id(moved_exchanged_child),
+        pivot_branch_id=rooted_nni_clade_id(moved_child),
+        sibling_clade_id=rooted_nni_clade_id(moved_sibling),
+        exchanged_clade_id=rooted_nni_clade_id(moved_exchanged_child),
+    )
+
+
+def summarize_rooted_nni_move_application(
+    tree: PhyloTree | Path,
+    move_index: int,
+) -> RootedNniMoveApplicationReport:
+    """Apply one rooted NNI move, derive its reverse, and verify preserved payloads."""
+    resolved_tree, input_tree_path = _resolve_rooted_nni_tree(tree)
+    validate_rooted_nni_tree(resolved_tree)
+    selected_candidate, available_move_count = resolve_rooted_nni_move_candidate(
+        resolved_tree,
+        move_index,
+    )
+    moved_tree = apply_rooted_nni_move(resolved_tree, selected_candidate)
+    reverse_candidate = derive_rooted_nni_reverse_move_candidate(
+        resolved_tree,
+        moved_tree,
+        selected_candidate,
+    )
+    reversed_tree = apply_rooted_nni_move(moved_tree, reverse_candidate)
+    input_tip_taxa = set(resolved_tree.tip_names)
+    moved_tip_taxa = set(moved_tree.tip_names)
+    input_topology_fingerprint = rooted_topology_fingerprint(resolved_tree)
+    moved_topology_fingerprint = rooted_topology_fingerprint(moved_tree)
+    reversed_topology_fingerprint = rooted_topology_fingerprint(reversed_tree)
+    report = RootedNniMoveApplicationReport(
+        algorithm="rooted-nni-move-application",
+        input_tree_path=input_tree_path,
+        input_tree_newick=resolved_tree.to_newick(),
+        input_topology_fingerprint=input_topology_fingerprint,
+        selected_move_index=move_index,
+        available_move_count=available_move_count,
+        selected_parent_node_id=selected_candidate.parent_node_id,
+        selected_child_node_id=selected_candidate.child_node_id,
+        selected_sibling_node_id=selected_candidate.sibling_node_id,
+        selected_exchanged_child_node_id=selected_candidate.exchanged_child_node_id,
+        selected_pivot_branch_id=selected_candidate.pivot_branch_id,
+        selected_sibling_clade_id=selected_candidate.sibling_clade_id,
+        selected_exchanged_clade_id=selected_candidate.exchanged_clade_id,
+        moved_tree_newick=moved_tree.to_newick(),
+        moved_topology_fingerprint=moved_topology_fingerprint,
+        moved_topology_changed=moved_topology_fingerprint
+        != input_topology_fingerprint,
+        reverse_parent_node_id=reverse_candidate.parent_node_id,
+        reverse_child_node_id=reverse_candidate.child_node_id,
+        reverse_sibling_node_id=reverse_candidate.sibling_node_id,
+        reverse_exchanged_child_node_id=reverse_candidate.exchanged_child_node_id,
+        reverse_pivot_branch_id=reverse_candidate.pivot_branch_id,
+        reverse_sibling_clade_id=reverse_candidate.sibling_clade_id,
+        reverse_exchanged_clade_id=reverse_candidate.exchanged_clade_id,
+        reversed_tree_newick=reversed_tree.to_newick(),
+        reversed_topology_fingerprint=reversed_topology_fingerprint,
+        reverse_restores_original_topology=reversed_topology_fingerprint
+        == input_topology_fingerprint,
+        tip_count=resolved_tree.tip_count,
+        internal_node_count=resolved_tree.internal_node_count,
+        rooted=resolved_tree.rooted,
+        strictly_bifurcating=True,
+        missing_tip_taxa=sorted(input_tip_taxa - moved_tip_taxa),
+        unexpected_tip_taxa=sorted(moved_tip_taxa - input_tip_taxa),
+        moved_validation_errors=moved_tree.validation_errors(),
+        reversed_validation_errors=reversed_tree.validation_errors(),
+        node_names_preserved=_rooted_nni_node_name_multiset(resolved_tree)
+        == _rooted_nni_node_name_multiset(moved_tree)
+        == _rooted_nni_node_name_multiset(reversed_tree),
+        node_metadata_preserved=_rooted_nni_node_metadata_multiset(resolved_tree)
+        == _rooted_nni_node_metadata_multiset(moved_tree)
+        == _rooted_nni_node_metadata_multiset(reversed_tree),
+        edge_metadata_preserved=_rooted_nni_edge_metadata_multiset(resolved_tree)
+        == _rooted_nni_edge_metadata_multiset(moved_tree)
+        == _rooted_nni_edge_metadata_multiset(reversed_tree),
+        branch_lengths_preserved=_rooted_nni_branch_length_multiset(resolved_tree)
+        == _rooted_nni_branch_length_multiset(moved_tree)
+        == _rooted_nni_branch_length_multiset(reversed_tree),
+        total_branch_length_preserved=resolved_tree.total_branch_length()
+        == moved_tree.total_branch_length()
+        == reversed_tree.total_branch_length(),
+    )
+    _validate_rooted_nni_move_application_report(report)
+    return report
 
 
 def validate_rooted_nni_tree(tree: PhyloTree) -> None:
@@ -218,6 +366,74 @@ def _validate_rooted_nni_neighbor_report(
     ]
     if invalid_neighbor_rows:
         raise ValueError("rooted NNI enumeration generated invalid neighbor trees")
+
+
+def _find_rooted_nni_node_by_signature(
+    tree: PhyloTree,
+    signature: frozenset[str],
+) -> TreeNode:
+    for node in tree.iter_nodes(order="preorder"):
+        if frozenset(descendant_taxa(node)) == signature:
+            return node
+    raise KeyError(f"tree does not contain descendant-taxa signature '{sorted(signature)}'")
+
+
+def _find_rooted_nni_direct_child_by_signature(
+    node: TreeNode,
+    signature: frozenset[str],
+) -> TreeNode:
+    for child in node.children:
+        if frozenset(descendant_taxa(child)) == signature:
+            return child
+    raise KeyError(
+        "tree does not contain one direct child with descendant-taxa signature "
+        f"'{sorted(signature)}'"
+    )
+
+
+def _rooted_nni_node_name_multiset(tree: PhyloTree) -> Counter[str | None]:
+    return Counter(node.name for node in tree.iter_nodes(order="preorder"))
+
+
+def _rooted_nni_node_metadata_multiset(tree: PhyloTree) -> Counter[str]:
+    return Counter(
+        json.dumps(node.metadata, sort_keys=True)
+        for node in tree.iter_nodes(order="preorder")
+    )
+
+
+def _rooted_nni_edge_metadata_multiset(tree: PhyloTree) -> Counter[str]:
+    return Counter(
+        json.dumps(node.edge_metadata, sort_keys=True)
+        for node in tree.iter_nodes(order="preorder")
+    )
+
+
+def _rooted_nni_branch_length_multiset(tree: PhyloTree) -> Counter[float | None]:
+    return Counter(tree.branch_lengths())
+
+
+def _validate_rooted_nni_move_application_report(
+    report: RootedNniMoveApplicationReport,
+) -> None:
+    if not report.moved_topology_changed:
+        raise ValueError("rooted NNI move application did not change the topology")
+    if report.missing_tip_taxa or report.unexpected_tip_taxa:
+        raise ValueError("rooted NNI move application changed the input taxon set")
+    if report.moved_validation_errors or report.reversed_validation_errors:
+        raise ValueError("rooted NNI move application generated an invalid tree")
+    if not report.reverse_restores_original_topology:
+        raise ValueError(
+            "rooted NNI move application failed to restore the original topology"
+        )
+    if not report.node_names_preserved:
+        raise ValueError("rooted NNI move application lost node labels")
+    if not report.node_metadata_preserved:
+        raise ValueError("rooted NNI move application lost node metadata")
+    if not report.edge_metadata_preserved:
+        raise ValueError("rooted NNI move application lost edge metadata")
+    if not report.branch_lengths_preserved or not report.total_branch_length_preserved:
+        raise ValueError("rooted NNI move application lost branch-length payloads")
 
 
 def write_rooted_nni_neighbor_table(
