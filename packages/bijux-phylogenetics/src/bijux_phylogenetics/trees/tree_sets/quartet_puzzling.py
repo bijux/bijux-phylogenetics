@@ -36,7 +36,9 @@ DEFAULT_QUARTET_PUZZLING_RANDOM_SEED = 0
 CANONICAL_QUARTET_PUZZLING_ROOTING_STRATEGY = "lexicographic-tip-outgroup"
 
 
-def _canonical_quartet(quartet_taxa: tuple[str, str, str, str]) -> tuple[str, str, str, str]:
+def _canonical_quartet(
+    quartet_taxa: tuple[str, str, str, str],
+) -> tuple[str, str, str, str]:
     return tuple(sorted(quartet_taxa))
 
 
@@ -103,7 +105,10 @@ def _format_quartet_score_row(
 
 def _score_tree_set_quartets(
     analysis: _TreeSetAnalysis,
-) -> tuple[list[QuartetTopologyScoreRow], dict[tuple[str, str, str, str], dict[frozenset[str], float]]]:
+) -> tuple[
+    list[QuartetTopologyScoreRow],
+    dict[tuple[str, str, str, str], dict[frozenset[str], float]],
+]:
     exact_taxa = _require_exact_taxa(analysis)
     quartet_rows: list[QuartetTopologyScoreRow] = []
     quartet_frequency_lookup: dict[
@@ -198,30 +203,33 @@ def _assemble_quartet_puzzling_tree(
         best_score: float | None = None
         best_newick: str | None = None
         for candidate in iter_stepwise_addition_edge_candidates(current_tree):
-            candidate_tree = apply_stepwise_addition_candidate(current_tree, candidate, taxon)
-            candidate_score = _score_quartet_puzzling_tree(candidate_tree, quartet_lookup)
+            candidate_tree = apply_stepwise_addition_candidate(
+                current_tree, candidate, taxon
+            )
+            candidate_score = _score_quartet_puzzling_tree(
+                candidate_tree, quartet_lookup
+            )
             candidate_newick = candidate_tree.to_newick()
             if (
-                best_score is None
-                or candidate_score > best_score
-                or (
-                    candidate_score == best_score
-                    and best_newick is not None
-                    and candidate_newick < best_newick
+                (
+                    best_score is None
+                    or candidate_score > best_score
+                    or (
+                        candidate_score == best_score
+                        and best_newick is not None
+                        and candidate_newick < best_newick
+                    )
                 )
-            ):
-                best_tree = candidate_tree
-                best_score = candidate_score
-                best_newick = candidate_newick
-            elif (
-                best_score is None
+                or best_score is None
                 and best_newick is None
             ):
                 best_tree = candidate_tree
                 best_score = candidate_score
                 best_newick = candidate_newick
         if best_tree is None or best_score is None:
-            raise AssertionError("quartet puzzling insertion must evaluate at least one edge")
+            raise AssertionError(
+                "quartet puzzling insertion must evaluate at least one edge"
+            )
         current_tree = best_tree
         current_score = best_score
     return current_tree, current_score
@@ -271,7 +279,7 @@ def _generate_taxon_orders(
         rotated = ordered_taxa[offset:] + ordered_taxa[:offset]
         add(rotated)
         add(list(reversed(rotated)))
-    rng = Random(random_seed)
+    rng = Random(random_seed)  # nosec B311
     while len(candidate_orders) < max_order_count:
         shuffled = list(ordered_taxa)
         rng.shuffle(shuffled)
@@ -336,9 +344,11 @@ def build_quartet_puzzling_consensus(
                 assembled_tree_newick=dumps_newick(canonical_tree),
             )
         )
-    consensus_tree, included_clade_count = _build_consensus_tree_with_threshold_from_trees(
-        assembled_trees,
-        threshold=consensus_threshold,
+    consensus_tree, included_clade_count = (
+        _build_consensus_tree_with_threshold_from_trees(
+            assembled_trees,
+            threshold=consensus_threshold,
+        )
     )
     report = QuartetPuzzlingReport(
         tree_set_path=tree_set_path,
@@ -352,7 +362,9 @@ def build_quartet_puzzling_consensus(
         ),
         canonical_root_taxon=canonical_root_taxon,
         canonical_rooting_strategy=CANONICAL_QUARTET_PUZZLING_ROOTING_STRATEGY,
-        consensus_method="majority-rule" if consensus_threshold == 0.5 else "thresholded",
+        consensus_method="majority-rule"
+        if consensus_threshold == 0.5
+        else "thresholded",
         consensus_threshold=consensus_threshold,
         included_clade_count=included_clade_count,
         consensus_newick=dumps_newick(consensus_tree),

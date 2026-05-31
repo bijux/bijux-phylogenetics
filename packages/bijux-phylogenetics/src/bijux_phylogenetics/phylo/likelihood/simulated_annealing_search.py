@@ -74,7 +74,11 @@ def search_nucleotide_likelihood_simulated_annealing(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
     lower_branch_length_bound: float = 0.0,
     upper_branch_length_bound: float = 5.0,
@@ -83,14 +87,14 @@ def search_nucleotide_likelihood_simulated_annealing(
 ) -> NucleotideLikelihoodSimulatedAnnealingSearchReport:
     """Search one rooted nucleotide tree by simulated annealing over legal topology moves."""
     resolved_tree, resolved_tree_path = resolve_nucleotide_topology_search_tree(tree)
-    resolved_records, resolved_alignment_path = resolve_nucleotide_topology_search_records(
-        records
+    resolved_records, resolved_alignment_path = (
+        resolve_nucleotide_topology_search_records(records)
     )
     validated_move_family = validate_nucleotide_likelihood_annealing_move_family(
         proposal_move_family
     )
-    validated_iteration_count = validate_nucleotide_likelihood_annealing_iteration_count(
-        iteration_count
+    validated_iteration_count = (
+        validate_nucleotide_likelihood_annealing_iteration_count(iteration_count)
     )
     validated_initial_temperature = (
         validate_nucleotide_likelihood_annealing_initial_temperature(
@@ -110,9 +114,11 @@ def search_nucleotide_likelihood_simulated_annealing(
         resolved_tree,
         workflow_name="nucleotide likelihood simulated annealing search",
     )
-    normalized_records, compressed_patterns = normalize_nucleotide_topology_search_records(
-        resolved_records,
-        owner_name="nucleotide likelihood simulated annealing search",
+    normalized_records, compressed_patterns = (
+        normalize_nucleotide_topology_search_records(
+            resolved_records,
+            owner_name="nucleotide likelihood simulated annealing search",
+        )
     )
     resolved_surface = resolve_nucleotide_topology_search_surface(
         resolved_tree,
@@ -147,10 +153,10 @@ def search_nucleotide_likelihood_simulated_annealing(
     total_branch_optimization_pass_count = start_result.optimization_pass_count
     total_branch_function_evaluation_count = start_result.function_evaluation_count
     trace_rows: list[NucleotideLikelihoodSimulatedAnnealingTraceRow] = []
-    rng = Random(annealing_seed)
+    rng = Random(annealing_seed)  # nosec B311
     for iteration in range(1, validated_iteration_count + 1):
-        temperature = (
-            validated_initial_temperature * validated_cooling_rate ** (iteration - 1)
+        temperature = validated_initial_temperature * validated_cooling_rate ** (
+            iteration - 1
         )
         current_log_likelihood_before = current_log_likelihood
         current_tree_before_newick = current_tree_newick
@@ -174,17 +180,17 @@ def search_nucleotide_likelihood_simulated_annealing(
                 max_coordinate_passes=max_coordinate_passes,
             )
         )
-        total_branch_optimization_pass_count += (
-            proposal_result.optimization_pass_count
-        )
+        total_branch_optimization_pass_count += proposal_result.optimization_pass_count
         total_branch_function_evaluation_count += (
             proposal_result.function_evaluation_count
         )
         proposed_tree_newick = dumps_newick(proposal_result.optimized_tree)
         log_likelihood_delta = proposal_result.log_likelihood - current_log_likelihood
-        acceptance_probability = resolve_nucleotide_likelihood_annealing_acceptance_probability(
-            log_likelihood_delta,
-            temperature=temperature,
+        acceptance_probability = (
+            resolve_nucleotide_likelihood_annealing_acceptance_probability(
+                log_likelihood_delta,
+                temperature=temperature,
+            )
         )
         acceptance_uniform_draw = rng.random()
         accepted_move = acceptance_uniform_draw <= acceptance_probability
@@ -317,7 +323,11 @@ def search_nucleotide_likelihood_simulated_annealing_from_alignment(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
     lower_branch_length_bound: float = 0.0,
     upper_branch_length_bound: float = 5.0,
@@ -461,7 +471,10 @@ def _select_random_nni_annealing_proposal(
     for candidate in iter_rooted_nni_move_candidates(tree):
         proposed_tree = apply_rooted_nni_move(tree, candidate)
         proposal_topology = rooted_topology_fingerprint(proposed_tree)
-        if proposal_topology == current_topology or proposal_topology in seen_topologies:
+        if (
+            proposal_topology == current_topology
+            or proposal_topology in seen_topologies
+        ):
             continue
         seen_topologies.add(proposal_topology)
         candidate_rows.append(
@@ -502,7 +515,10 @@ def _select_random_spr_annealing_proposal(
             upper_branch_length_bound=upper_branch_length_bound,
         )
         proposal_topology = rooted_topology_fingerprint(proposed_tree)
-        if proposal_topology == current_topology or proposal_topology in seen_topologies:
+        if (
+            proposal_topology == current_topology
+            or proposal_topology in seen_topologies
+        ):
             continue
         seen_topologies.add(proposal_topology)
         candidate_rows.append(
@@ -704,9 +720,9 @@ def write_nucleotide_likelihood_simulated_annealing_trace_table(
         ]
         rows.append(
             "\t".join(
-                "" if value is None else (
-                    format(value, ".15g") if isinstance(value, float) else str(value)
-                )
+                ""
+                if value is None
+                else (format(value, ".15g") if isinstance(value, float) else str(value))
                 for value in payload
             )
         )
@@ -785,7 +801,9 @@ def write_nucleotide_likelihood_simulated_annealing_run_json(
             for row in report.trace_rows
         ],
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 

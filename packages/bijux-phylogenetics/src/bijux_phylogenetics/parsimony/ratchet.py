@@ -41,7 +41,10 @@ def run_parsimony_ratchet(
     state_order: list[str] | None = None,
     cost_matrix: SankoffCostMatrix | Path | None = None,
     allow_asymmetric_costs: bool = False,
-    character_weights: ParsimonyCharacterWeights | Mapping[str, float] | Path | None = None,
+    character_weights: ParsimonyCharacterWeights
+    | Mapping[str, float]
+    | Path
+    | None = None,
 ) -> ParsimonyRatchetReport:
     """Run one deterministic parsimony ratchet over rooted SPR search cycles."""
     if cycle_count <= 0:
@@ -116,7 +119,7 @@ def run_parsimony_ratchet(
         )
     ]
     cycle_rows: list[ParsimonyRatchetCycle] = []
-    rng = Random(random_seed)
+    rng = Random(random_seed)  # nosec B311
     for cycle_index in range(1, cycle_count + 1):
         cycle_start_tree_newick = current_tree_newick
         cycle_start_score = current_score

@@ -27,7 +27,6 @@ from bijux_phylogenetics.bayesian.state import BayesianPhylogeneticState
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.alignment.partitions import (
     LocusPartition,
-    slice_partition_sequence,
 )
 from bijux_phylogenetics.phylo.likelihood.dna import (
     DNA_STATE_ORDER,
@@ -35,7 +34,9 @@ from bijux_phylogenetics.phylo.likelihood.dna import (
 )
 from bijux_phylogenetics.phylo.likelihood.f81 import f81_transition_probability_matrix
 from bijux_phylogenetics.phylo.likelihood.gtr import gtr_transition_probability_matrix
-from bijux_phylogenetics.phylo.likelihood.hky85 import hky85_transition_probability_matrix
+from bijux_phylogenetics.phylo.likelihood.hky85 import (
+    hky85_transition_probability_matrix,
+)
 from bijux_phylogenetics.phylo.likelihood.jc69 import jc69_transition_probability_matrix
 from bijux_phylogenetics.phylo.likelihood.k80 import k80_transition_probability_matrix
 from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
@@ -253,8 +254,10 @@ def simulate_fixed_topology_dna_posterior_predictive(
         tree=sample_tree,
         owner_name="fixed-topology DNA posterior predictive simulation",
     )
-    observed_statistic_rows = _build_alignment_observed_statistic_rows(validated_records)
-    rng = random.Random(validated_definition.seed)
+    observed_statistic_rows = _build_alignment_observed_statistic_rows(
+        validated_records
+    )
+    rng = random.Random(validated_definition.seed)  # nosec B311
     replicates: list[PosteriorPredictiveAlignmentReplicate] = []
     replicate_statistic_rows: list[PosteriorPredictiveReplicateStatisticRow] = []
     for replicate_index, sample_index in enumerate(
@@ -336,8 +339,10 @@ def simulate_joint_topology_dna_posterior_predictive(
         tree=sample_tree,
         owner_name="joint topology DNA posterior predictive simulation",
     )
-    observed_statistic_rows = _build_alignment_observed_statistic_rows(validated_records)
-    rng = random.Random(validated_definition.seed)
+    observed_statistic_rows = _build_alignment_observed_statistic_rows(
+        validated_records
+    )
+    rng = random.Random(validated_definition.seed)  # nosec B311
     replicates: list[PosteriorPredictiveAlignmentReplicate] = []
     replicate_statistic_rows: list[PosteriorPredictiveReplicateStatisticRow] = []
     for replicate_index, sample_index in enumerate(
@@ -419,12 +424,14 @@ def simulate_fixed_topology_partitioned_dna_posterior_predictive(
         tree=sample_tree,
         owner_name="fixed-topology partitioned DNA posterior predictive simulation",
     )
-    observed_statistic_rows = _build_alignment_observed_statistic_rows(validated_records)
+    observed_statistic_rows = _build_alignment_observed_statistic_rows(
+        validated_records
+    )
     partition_length_by_name = {
         partition.name: partition.total_sites
         for partition in run_report.model_definition.locus_partitions
     }
-    rng = random.Random(validated_definition.seed)
+    rng = random.Random(validated_definition.seed)  # nosec B311
     replicates: list[PosteriorPredictiveAlignmentReplicate] = []
     replicate_statistic_rows: list[PosteriorPredictiveReplicateStatisticRow] = []
     for replicate_index, sample_index in enumerate(
@@ -443,16 +450,20 @@ def simulate_fixed_topology_partitioned_dna_posterior_predictive(
                 for partition_model in run_report.model_definition.partition_models
             ),
         )
-        partition_parameter_states = resolve_partition_parameter_states_from_model_parameters(
-            model_parameters=state.model_parameters,
-            partition_models=run_report.model_definition.partition_models,
-            linkage_plan=linkage_plan,
+        partition_parameter_states = (
+            resolve_partition_parameter_states_from_model_parameters(
+                model_parameters=state.model_parameters,
+                partition_models=run_report.model_definition.partition_models,
+                linkage_plan=linkage_plan,
+            )
         )
         records_by_partition_name = {
             partition_state.partition_name: _simulate_dna_alignment_replicate(
                 tree=tree,
                 record_ids=record_ids,
-                alignment_length=partition_length_by_name[partition_state.partition_name],
+                alignment_length=partition_length_by_name[
+                    partition_state.partition_name
+                ],
                 model_name=next(
                     partition_model.model_name
                     for partition_model in run_report.model_definition.partition_models
@@ -533,7 +544,7 @@ def simulate_discrete_trait_mk_posterior_predictive(
         state_ordering=_DISCRETE_TRAIT_STATE_ORDERING,
         allowed_transition_pairs=None,
     )
-    rng = random.Random(validated_definition.seed)
+    rng = random.Random(validated_definition.seed)  # nosec B311
     replicates: list[PosteriorPredictiveDiscreteTraitReplicate] = []
     replicate_statistic_rows: list[PosteriorPredictiveReplicateStatisticRow] = []
     for replicate_index, sample_index in enumerate(
@@ -617,7 +628,7 @@ def simulate_brownian_continuous_trait_posterior_predictive(
         tip_values=run_report.tip_values,
         taxa=run_report.taxa,
     )
-    rng = random.Random(validated_definition.seed)
+    rng = random.Random(validated_definition.seed)  # nosec B311
     replicates: list[PosteriorPredictiveContinuousTraitReplicate] = []
     replicate_statistic_rows: list[PosteriorPredictiveReplicateStatisticRow] = []
     for replicate_index, sample_index in enumerate(
@@ -685,7 +696,7 @@ def simulate_ornstein_uhlenbeck_continuous_trait_posterior_predictive(
         tip_values=run_report.tip_values,
         taxa=run_report.taxa,
     )
-    rng = random.Random(validated_definition.seed)
+    rng = random.Random(validated_definition.seed)  # nosec B311
     replicates: list[PosteriorPredictiveContinuousTraitReplicate] = []
     replicate_statistic_rows: list[PosteriorPredictiveReplicateStatisticRow] = []
     for replicate_index, sample_index in enumerate(
@@ -742,10 +753,14 @@ def _build_posterior_predictive_statistic_summary_rows(
 ) -> list[PosteriorPredictiveStatisticSummaryRow]:
     replicate_values_by_statistic: dict[str, list[float]] = {}
     for row in replicate_statistic_rows:
-        replicate_values_by_statistic.setdefault(row.statistic_name, []).append(row.value)
+        replicate_values_by_statistic.setdefault(row.statistic_name, []).append(
+            row.value
+        )
     summary_rows: list[PosteriorPredictiveStatisticSummaryRow] = []
     for observed_row in observed_statistic_rows:
-        replicate_values = replicate_values_by_statistic.get(observed_row.statistic_name)
+        replicate_values = replicate_values_by_statistic.get(
+            observed_row.statistic_name
+        )
         if not replicate_values:
             raise PhylogeneticsError(
                 "posterior predictive statistic summaries require at least one replicate value for every observed statistic",
@@ -873,8 +888,7 @@ def _validate_tip_states(
     owner_name: str,
 ) -> dict[str, str]:
     validated_tip_states = {
-        str(taxon): state.strip()
-        for taxon, state in tip_states.items()
+        str(taxon): state.strip() for taxon, state in tip_states.items()
     }
     if sorted(validated_tip_states) != sorted(expected_taxa):
         raise PhylogeneticsError(
@@ -1496,9 +1510,13 @@ def _categorical_state_entropy(
     if total_count <= 0:
         return 0.0
     probabilities = [
-        counts.get(state, 0) / total_count for state in state_order if counts.get(state, 0) > 0
+        counts.get(state, 0) / total_count
+        for state in state_order
+        if counts.get(state, 0) > 0
     ]
-    return -math.fsum(probability * math.log(probability) for probability in probabilities)
+    return -math.fsum(
+        probability * math.log(probability) for probability in probabilities
+    )
 
 
 def _majority_state_frequency(counts: Mapping[str, int], total_count: int) -> float:

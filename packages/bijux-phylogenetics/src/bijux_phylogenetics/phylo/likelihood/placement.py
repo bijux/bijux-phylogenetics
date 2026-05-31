@@ -78,7 +78,9 @@ def place_queries_by_likelihood(
             "likelihood placement pendant length bounds must be strictly increasing"
         )
     if max_coordinate_passes < 1:
-        raise ValueError("likelihood placement max_coordinate_passes must be at least one")
+        raise ValueError(
+            "likelihood placement max_coordinate_passes must be at least one"
+        )
 
     working_tree = reference_tree.copy().refresh()
     validate_explicit_branch_lengths(working_tree, model_name="JC69 placement")
@@ -190,7 +192,9 @@ def _place_single_query(
     max_coordinate_passes: int,
 ) -> tuple[list[LikelihoodPlacementAlternativeRow], LikelihoodPlacementQuerySummary]:
     combined_records = [*reference_records, query_record]
-    compressed_patterns = compress_alignment_site_patterns_from_records(combined_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        combined_records
+    )
     specification = resolve_selected_nucleotide_likelihood_specification(
         combined_records,
         model_name=model_name,
@@ -331,7 +335,10 @@ def _optimize_edge_placement(
     max_coordinate_passes: int,
 ) -> dict[str, float | int | bool | str]:
     initial_pendant_length = min(
-        max(lower_pendant_length_bound, max(original_branch_length, lower_pendant_length_bound)),
+        max(
+            lower_pendant_length_bound,
+            max(original_branch_length, lower_pendant_length_bound),
+        ),
         upper_pendant_length_bound,
     )
     total_function_evaluation_count = 0
@@ -356,7 +363,9 @@ def _optimize_edge_placement(
             root_prior=root_prior,
             parameter_values={},
             transition_matrix_for_child=lambda child: (
-                transition_matrix_for_branch_length(max(float(child.branch_length or 0.0), 0.0))
+                transition_matrix_for_branch_length(
+                    max(float(child.branch_length or 0.0), 0.0)
+                )
             ),
         )
         return report.tree_newick, report.log_likelihood
@@ -375,12 +384,15 @@ def _optimize_edge_placement(
             "pendant_length": float(pendant_search.parameter_value),
             "log_likelihood": float(pendant_search.objective_value),
             "function_evaluation_count": total_function_evaluation_count,
-            "optimization_pass_count": 1,
+            # Bandit misreads the stable report field name here as a credential.
+            "optimization_pass_count": 1,  # nosec B105
             "converged": pendant_search.converged,
             "placed_tree_newick": pendant_search.payload,
         }
 
-    def evaluate_coordinate_values(candidate_values: dict[str, float]) -> tuple[str, float]:
+    def evaluate_coordinate_values(
+        candidate_values: dict[str, float],
+    ) -> tuple[str, float]:
         return evaluate_candidate(
             float(candidate_values["distal_length"]),
             float(candidate_values["pendant_length"]),
@@ -424,7 +436,8 @@ def _optimize_edge_placement(
                 "distal_length": boundary_distal_length,
                 "pendant_length": float(boundary_search.parameter_value),
                 "log_likelihood": float(boundary_search.objective_value),
-                "optimization_pass_count": 1,
+                # Bandit misreads the stable report field name here as a credential.
+                "optimization_pass_count": 1,  # nosec B105
                 "converged": boundary_search.converged,
                 "placed_tree_newick": boundary_search.payload,
             }
@@ -500,7 +513,9 @@ def _iter_reference_edges(
     rows: list[tuple[str, str | None, list[str], float]] = []
     for _parent, child in tree.iter_edges():
         if child.node_id is None:
-            raise InvalidBranchLengthError("likelihood placement requires stable edge node_id values")
+            raise InvalidBranchLengthError(
+                "likelihood placement requires stable edge node_id values"
+            )
         rows.append(
             (
                 child.node_id,

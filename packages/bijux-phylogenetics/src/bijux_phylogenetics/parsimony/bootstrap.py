@@ -9,12 +9,14 @@ from bijux_phylogenetics.runtime.errors import ParsimonyAnalysisError
 
 from .exact_resampling import (
     DEFAULT_MAX_EXACT_TAXA,
-    build_clade_support_rows as _build_generic_clade_support_rows,
     build_resampled_matrix,
     build_resampled_weights,
     resolve_resampled_parsimony_context,
     resolve_resampled_parsimony_matrix,
     select_best_tree,
+)
+from .exact_resampling import (
+    build_clade_support_rows as _build_generic_clade_support_rows,
 )
 from .models import (
     FitchCharacterMatrix,
@@ -79,7 +81,7 @@ def bootstrap_parsimony(
         allow_asymmetric_costs=allow_asymmetric_costs,
         character_weights=resolved_weights,
     )
-    rng = Random(random_seed)
+    rng = Random(random_seed)  # nosec B311
     replicate_rows: list[ParsimonyBootstrapReplicate] = []
     replicate_trees = []
     for replicate_index in range(1, replicate_count + 1):

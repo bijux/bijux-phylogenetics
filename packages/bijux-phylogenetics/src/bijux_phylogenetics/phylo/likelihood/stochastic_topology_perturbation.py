@@ -65,7 +65,11 @@ def search_nucleotide_likelihood_stochastic_topology_perturbation(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
     lower_branch_length_bound: float = 0.0,
     upper_branch_length_bound: float = 5.0,
@@ -74,8 +78,8 @@ def search_nucleotide_likelihood_stochastic_topology_perturbation(
 ) -> NucleotideLikelihoodStochasticTopologyPerturbationSearchReport:
     """Perturb topology by random legal rooted moves before one native local search."""
     resolved_tree, resolved_tree_path = resolve_nucleotide_topology_search_tree(tree)
-    resolved_records, resolved_alignment_path = resolve_nucleotide_topology_search_records(
-        records
+    resolved_records, resolved_alignment_path = (
+        resolve_nucleotide_topology_search_records(records)
     )
     validated_move_family = validate_nucleotide_likelihood_perturbation_move_family(
         perturbation_move_family
@@ -84,9 +88,7 @@ def search_nucleotide_likelihood_stochastic_topology_perturbation(
         local_search_method
     )
     validated_perturbation_move_count = (
-        validate_nucleotide_likelihood_perturbation_move_count(
-            perturbation_move_count
-        )
+        validate_nucleotide_likelihood_perturbation_move_count(perturbation_move_count)
     )
     validated_branch_reoptimization_policy = (
         validate_nucleotide_likelihood_perturbation_branch_reoptimization_policy(
@@ -98,11 +100,13 @@ def search_nucleotide_likelihood_stochastic_topology_perturbation(
         resolved_tree,
         workflow_name="nucleotide likelihood stochastic topology perturbation search",
     )
-    normalized_records, compressed_patterns = normalize_nucleotide_topology_search_records(
-        resolved_records,
-        owner_name="nucleotide likelihood stochastic topology perturbation search",
+    normalized_records, compressed_patterns = (
+        normalize_nucleotide_topology_search_records(
+            resolved_records,
+            owner_name="nucleotide likelihood stochastic topology perturbation search",
+        )
     )
-    rng = Random(perturbation_seed)
+    rng = Random(perturbation_seed)  # nosec B311
     perturbed_tree = resolved_tree.copy().refresh()
     perturbation_steps: list[NucleotideLikelihoodTopologyPerturbationStep] = []
     for step_index in range(1, validated_perturbation_move_count + 1):
@@ -194,7 +198,11 @@ def search_nucleotide_likelihood_stochastic_topology_perturbation_from_alignment
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
     lower_branch_length_bound: float = 0.0,
     upper_branch_length_bound: float = 5.0,
@@ -315,7 +323,11 @@ def run_nucleotide_likelihood_topology_perturbation_local_search(
         | None
     ),
     root_prior_policy: str | None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None,
     fixed_root_state: str | None,
     lower_branch_length_bound: float,
     upper_branch_length_bound: float,
@@ -435,9 +447,7 @@ def _apply_random_spr_perturbation(
         tree_before_newick=tree_before_newick,
         tree_after_newick=tree_after_newick,
         topology_fingerprint_before=topology_fingerprint_before,
-        topology_fingerprint_after=rooted_topology_fingerprint(
-            initialized_moved_tree
-        ),
+        topology_fingerprint_after=rooted_topology_fingerprint(initialized_moved_tree),
         pivot_branch_id=None,
         sibling_clade_id=None,
         exchanged_clade_id=None,
@@ -480,9 +490,7 @@ def write_nucleotide_likelihood_topology_perturbation_trace_table(
             row.pruned_clade_id,
             row.regraft_target_branch_id,
         ]
-        rows.append(
-            "\t".join("" if value is None else str(value) for value in payload)
-        )
+        rows.append("\t".join("" if value is None else str(value) for value in payload))
     path.write_text("\n".join(rows) + "\n", encoding="utf-8")
     return path
 
@@ -564,13 +572,17 @@ def write_nucleotide_likelihood_stochastic_topology_perturbation_artifacts(
         out_dir / "final_tree.nwk",
         loads_newick(report.final_tree_newick),
     )
-    perturbation_trace_path = write_nucleotide_likelihood_topology_perturbation_trace_table(
-        out_dir / "perturbation_trace.tsv",
-        report,
+    perturbation_trace_path = (
+        write_nucleotide_likelihood_topology_perturbation_trace_table(
+            out_dir / "perturbation_trace.tsv",
+            report,
+        )
     )
-    run_json_path = write_nucleotide_likelihood_stochastic_topology_perturbation_run_json(
-        out_dir / "run.json",
-        report,
+    run_json_path = (
+        write_nucleotide_likelihood_stochastic_topology_perturbation_run_json(
+            out_dir / "run.json",
+            report,
+        )
     )
     return {
         "input_tree_path": input_tree_path,

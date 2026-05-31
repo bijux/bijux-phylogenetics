@@ -86,7 +86,7 @@ def jackknife_parsimony(
         allow_asymmetric_costs=allow_asymmetric_costs,
         character_weights=resolved_weights,
     )
-    rng = Random(random_seed)
+    rng = Random(random_seed)  # nosec B311
     replicate_rows: list[ParsimonyJackknifeReplicate] = []
     replicate_trees = []
     for replicate_index in range(1, replicate_count + 1):

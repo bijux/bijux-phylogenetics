@@ -70,7 +70,11 @@ def search_nucleotide_likelihood_ratchet(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
     lower_branch_length_bound: float = 0.0,
     upper_branch_length_bound: float = 5.0,
@@ -79,19 +83,17 @@ def search_nucleotide_likelihood_ratchet(
 ) -> NucleotideLikelihoodRatchetReport:
     """Run a native temporary-site-reweighting likelihood ratchet over one tree."""
     resolved_tree, resolved_tree_path = resolve_nucleotide_topology_search_tree(tree)
-    resolved_records, resolved_alignment_path = resolve_nucleotide_topology_search_records(
-        records
+    resolved_records, resolved_alignment_path = (
+        resolve_nucleotide_topology_search_records(records)
     )
-    validated_local_search_method = validate_nucleotide_likelihood_ratchet_local_search_method(
-        local_search_method
+    validated_local_search_method = (
+        validate_nucleotide_likelihood_ratchet_local_search_method(local_search_method)
     )
     validated_cycle_count = validate_nucleotide_likelihood_ratchet_cycle_count(
         cycle_count
     )
     validated_perturbation_factor = (
-        validate_nucleotide_likelihood_ratchet_perturbation_factor(
-            perturbation_factor
-        )
+        validate_nucleotide_likelihood_ratchet_perturbation_factor(perturbation_factor)
     )
     validated_branch_reoptimization_policy = (
         validate_nucleotide_likelihood_ratchet_branch_reoptimization_policy(
@@ -99,21 +101,27 @@ def search_nucleotide_likelihood_ratchet(
             local_search_method=validated_local_search_method,
         )
     )
-    validated_evaluation_budget = validate_nucleotide_likelihood_ratchet_evaluation_budget(
-        evaluation_budget,
-        local_search_method=validated_local_search_method,
+    validated_evaluation_budget = (
+        validate_nucleotide_likelihood_ratchet_evaluation_budget(
+            evaluation_budget,
+            local_search_method=validated_local_search_method,
+        )
     )
     validate_nucleotide_topology_search_tree(
         resolved_tree,
         workflow_name="nucleotide likelihood ratchet search",
     )
-    normalized_records, compressed_patterns = normalize_nucleotide_topology_search_records(
-        resolved_records,
-        owner_name="nucleotide likelihood ratchet search",
+    normalized_records, compressed_patterns = (
+        normalize_nucleotide_topology_search_records(
+            resolved_records,
+            owner_name="nucleotide likelihood ratchet search",
+        )
     )
-    validated_perturbed_site_count = validate_nucleotide_likelihood_ratchet_perturbed_site_count(
-        perturbed_site_count,
-        site_count=compressed_patterns.alignment_length,
+    validated_perturbed_site_count = (
+        validate_nucleotide_likelihood_ratchet_perturbed_site_count(
+            perturbed_site_count,
+            site_count=compressed_patterns.alignment_length,
+        )
     )
     resolved_surface = resolve_nucleotide_topology_search_surface(
         resolved_tree,
@@ -152,7 +160,7 @@ def search_nucleotide_likelihood_ratchet(
         )
     ]
     cycle_rows: list[NucleotideLikelihoodRatchetCycle] = []
-    rng = Random(perturbation_seed)
+    rng = Random(perturbation_seed)  # nosec B311
     latest_restored_report: (
         NucleotideLikelihoodNniSearchReport
         | NucleotideLikelihoodSprSearchReport
@@ -241,10 +249,9 @@ def search_nucleotide_likelihood_ratchet(
                 start_log_likelihood=cycle_start_score,
                 start_tree_newick=cycle_start_tree_newick,
                 reweighted_site_positions=reweighted_site_positions,
-                temporary_site_weights={
-                    position: validated_perturbation_factor
-                    for position in reweighted_site_positions
-                },
+                temporary_site_weights=dict.fromkeys(
+                    reweighted_site_positions, validated_perturbation_factor
+                ),
                 perturbation_factor=validated_perturbation_factor,
                 perturbed_alignment_length=perturbed_patterns.alignment_length,
                 perturbed_pattern_count=perturbed_patterns.pattern_count,
@@ -335,7 +342,11 @@ def search_nucleotide_likelihood_ratchet_from_alignment(
         | None
     ) = None,
     root_prior_policy: str | None = None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
     fixed_root_state: str | None = None,
     lower_branch_length_bound: float = 0.0,
     upper_branch_length_bound: float = 5.0,
@@ -488,7 +499,11 @@ def _run_nucleotide_likelihood_ratchet_local_search(
         | None
     ),
     root_prior_policy: str | None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None,
     fixed_root_state: str | None,
     lower_branch_length_bound: float,
     upper_branch_length_bound: float,
@@ -726,7 +741,9 @@ def write_nucleotide_likelihood_ratchet_run_json(
             for row in report.best_tree_history_rows
         ],
     }
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 
@@ -752,9 +769,11 @@ def write_nucleotide_likelihood_ratchet_artifacts(
         out_dir / "cycle_table.tsv",
         report,
     )
-    best_tree_history_path = write_nucleotide_likelihood_ratchet_best_tree_history_table(
-        out_dir / "best_tree_history.tsv",
-        report,
+    best_tree_history_path = (
+        write_nucleotide_likelihood_ratchet_best_tree_history_table(
+            out_dir / "best_tree_history.tsv",
+            report,
+        )
     )
     run_json_path = write_nucleotide_likelihood_ratchet_run_json(
         out_dir / "run.json",

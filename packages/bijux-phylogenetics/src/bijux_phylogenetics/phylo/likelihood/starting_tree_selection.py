@@ -63,7 +63,9 @@ def validate_nucleotide_likelihood_starting_tree_strategy_priority(
     """Normalize one declared strategy-priority order over starting-tree sources."""
     if strategy_priority is None:
         return _DEFAULT_STARTING_TREE_STRATEGY_PRIORITY
-    normalized_priority = tuple(strategy.strip().lower() for strategy in strategy_priority)
+    normalized_priority = tuple(
+        strategy.strip().lower() for strategy in strategy_priority
+    )
     if not normalized_priority:
         raise ValueError("strategy_priority must not be empty when provided")
     if len(set(normalized_priority)) != len(normalized_priority):
@@ -147,7 +149,7 @@ def _select_random_starting_tree_subset(
             "selected_start_tree_count must not exceed the scored starting-tree pool size"
         )
     selected_indexes = sorted(
-        random.Random(selection_seed).sample(
+        random.Random(selection_seed).sample(  # nosec B311
             range(len(pool_rows)),
             selected_start_tree_count,
         )
@@ -163,9 +165,7 @@ def _select_strategy_priority_starting_tree_subset(
 ) -> list[NucleotideLikelihoodStartingTreeSummary]:
     selected_rows: list[NucleotideLikelihoodStartingTreeSummary] = []
     for strategy in strategy_priority:
-        strategy_rows = [
-            row for row in pool_rows if row.source_strategy == strategy
-        ]
+        strategy_rows = [row for row in pool_rows if row.source_strategy == strategy]
         if not strategy_rows:
             continue
         selected_rows.append(_best_starting_tree_summary(strategy_rows))

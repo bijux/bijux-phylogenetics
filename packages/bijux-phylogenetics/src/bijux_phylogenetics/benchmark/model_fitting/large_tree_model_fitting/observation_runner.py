@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-import subprocess
+
+# Bandit flags subprocess imports broadly; this benchmark intentionally shells
+# out so it can measure external-process behavior in a governed way.
+import subprocess  # nosec B404
 
 from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
 from bijux_phylogenetics.comparative.evolutionary_modes import (
