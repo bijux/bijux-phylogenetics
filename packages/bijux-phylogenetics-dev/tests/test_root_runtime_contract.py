@@ -23,6 +23,7 @@ EXPECTED_ROOT_GATEWAYS = [
     "datasets",
     "distance",
     "evidence",
+    "parsimony",
     "parity",
     "phylo",
     "trees",
