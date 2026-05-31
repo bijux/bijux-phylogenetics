@@ -115,6 +115,8 @@ def _evaluate_jc69_site_log_likelihood_rows(
         tree,
         compressed_patterns,
         model_name="JC69",
+        state_count=len(UNIFORM_DNA_ROOT_PRIOR),
+        observation_policy="reject",
         root_prior=UNIFORM_DNA_ROOT_PRIOR,
         parameter_values={},
         transition_matrix_for_child=lambda child: jc69_transition_probability_matrix(
@@ -158,6 +160,8 @@ def _fit_jc69_strict_clock_likelihood(
     initial_report = _evaluate_jc69_tree_likelihood_from_patterns(
         initial_scaled_tree,
         compressed_patterns,
+        observation_policy="reject",
+        gap_state_frequency=None,
         root_prior=UNIFORM_DNA_ROOT_PRIOR,
     )
 
@@ -171,6 +175,8 @@ def _fit_jc69_strict_clock_likelihood(
         report = _evaluate_jc69_tree_likelihood_from_patterns(
             scaled_tree,
             compressed_patterns,
+            observation_policy="reject",
+            gap_state_frequency=None,
             root_prior=UNIFORM_DNA_ROOT_PRIOR,
         )
         return scaled_tree, report.log_likelihood
@@ -184,6 +190,8 @@ def _fit_jc69_strict_clock_likelihood(
     optimized_report = _evaluate_jc69_tree_likelihood_from_patterns(
         optimized_scaled_tree,
         compressed_patterns,
+        observation_policy="reject",
+        gap_state_frequency=None,
         root_prior=UNIFORM_DNA_ROOT_PRIOR,
     )
     site_log_likelihood_report = _evaluate_jc69_site_log_likelihood_rows(
@@ -200,6 +208,8 @@ def _fit_jc69_strict_clock_likelihood(
         evaluate_tree_log_likelihood=lambda candidate_tree: _evaluate_jc69_tree_likelihood_from_patterns(
             candidate_tree,
             compressed_patterns,
+            observation_policy="reject",
+            gap_state_frequency=None,
             root_prior=UNIFORM_DNA_ROOT_PRIOR,
         ).log_likelihood,
     )

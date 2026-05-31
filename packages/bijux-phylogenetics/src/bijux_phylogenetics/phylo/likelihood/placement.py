@@ -209,6 +209,8 @@ def _place_single_query(
             edge_id=edge_id,
             original_branch_length=original_branch_length,
             model_name=specification.model_name,
+            state_count=specification.state_count,
+            observation_policy=specification.observation_policy,
             root_prior=specification.root_prior,
             transition_matrix_for_branch_length=(
                 specification.transition_matrix_for_branch_length
@@ -320,6 +322,8 @@ def _optimize_edge_placement(
     edge_id: str,
     original_branch_length: float,
     model_name: str,
+    state_count: int,
+    observation_policy: str,
     root_prior,
     transition_matrix_for_branch_length,
     lower_pendant_length_bound: float,
@@ -347,6 +351,8 @@ def _optimize_edge_placement(
             placed_tree,
             compressed_patterns,
             model_name=model_name,
+            state_count=state_count,
+            observation_policy=observation_policy,
             root_prior=root_prior,
             parameter_values={},
             transition_matrix_for_child=lambda child: (

@@ -442,6 +442,8 @@ def fit_local_clock_likelihood(
         report = _evaluate_jc69_tree_likelihood_from_patterns(
             scaled_tree,
             compressed_patterns,
+            observation_policy="reject",
+            gap_state_frequency=None,
             root_prior=UNIFORM_DNA_ROOT_PRIOR,
         )
         return scaled_tree, report.log_likelihood
@@ -456,6 +458,8 @@ def fit_local_clock_likelihood(
     optimized_report = _evaluate_jc69_tree_likelihood_from_patterns(
         optimized_scaled_tree,
         compressed_patterns,
+        observation_policy="reject",
+        gap_state_frequency=None,
         root_prior=UNIFORM_DNA_ROOT_PRIOR,
     )
     site_log_likelihood_report = _evaluate_jc69_site_log_likelihood_rows(
@@ -472,6 +476,8 @@ def fit_local_clock_likelihood(
         evaluate_tree_log_likelihood=lambda candidate_tree: _evaluate_jc69_tree_likelihood_from_patterns(
             candidate_tree,
             compressed_patterns,
+            observation_policy="reject",
+            gap_state_frequency=None,
             root_prior=UNIFORM_DNA_ROOT_PRIOR,
         ).log_likelihood,
     )

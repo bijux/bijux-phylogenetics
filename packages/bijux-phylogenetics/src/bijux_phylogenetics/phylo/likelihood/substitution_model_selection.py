@@ -473,6 +473,7 @@ def _candidate_pattern_likelihood(
                 states,
                 taxon_order=taxon_order,
                 model_name=specification.model_name,
+                observation_policy="reject",
                 root_prior=root_prior,
                 transition_matrix_for_child=lambda child: (
                     transition_matrix_for_scaled_branch_length(
@@ -491,6 +492,7 @@ def _candidate_pattern_likelihood(
                     states,
                     taxon_order=taxon_order,
                     model_name=specification.model_name,
+                    observation_policy="reject",
                     root_prior=root_prior,
                     transition_matrix_for_child=lambda child, rate=category.rate: (
                         transition_matrix_for_scaled_branch_length(

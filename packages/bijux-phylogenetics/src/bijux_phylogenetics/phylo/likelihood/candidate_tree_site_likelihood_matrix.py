@@ -92,6 +92,8 @@ def evaluate_nucleotide_candidate_tree_site_likelihood_matrix(
                 candidate.tree,
                 compressed_patterns,
                 model_name=specification.model_name,
+                state_count=specification.state_count,
+                observation_policy=specification.observation_policy,
                 root_prior=specification.root_prior,
                 parameter_values=specification.parameter_values,
                 transition_matrix_for_child=lambda child: (
