@@ -76,12 +76,14 @@ from bijux_phylogenetics.phylo.dating import (
     write_relaxed_rate_branch_summary_artifacts,
 )
 from bijux_phylogenetics.phylo.likelihood import (
+    bootstrap_nucleotide_likelihood_tree_inference_from_alignment,
     fit_local_clock_likelihood_from_alignment,
     fit_strict_clock_likelihood_from_alignment,
     infer_nucleotide_likelihood_tree_from_alignment,
     place_queries_by_likelihood_from_alignment,
     write_likelihood_placement_artifacts,
     write_local_clock_likelihood_artifacts,
+    write_nucleotide_likelihood_bootstrap_artifacts,
     write_nucleotide_likelihood_tree_inference_artifacts,
     write_strict_clock_likelihood_artifacts,
 )
@@ -965,6 +967,83 @@ def add_phylo_commands(subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the native ML tree-inference report as JSON."
     )
     _add_manifest_argument(phylo_likelihood_infer_tree)
+    phylo_likelihood_bootstrap_tree = phylo_likelihood_subparsers.add_parser(
+        "bootstrap-tree",
+        help="Infer one native rooted nucleotide ML tree and bootstrap clade support by site resampling.",
+    )
+    phylo_likelihood_bootstrap_tree.add_argument("alignment_path", type=Path)
+    phylo_likelihood_bootstrap_tree.add_argument(
+        "--model",
+        default="auto",
+        choices=["auto", "jc69", "k80", "f81", "hky85", "gtr"],
+        help="Fixed nucleotide model to use, or auto to select one native fixed-rate base model for the reference tree.",
+    )
+    phylo_likelihood_bootstrap_tree.add_argument(
+        "--model-selection-criterion",
+        default="aic",
+        choices=["aic", "aicc", "bic"],
+        help="Information criterion used when --model auto selects one native base model for the reference tree.",
+    )
+    phylo_likelihood_bootstrap_tree.add_argument(
+        "--search-method",
+        default="nni",
+        choices=["nni", "spr", "tbr"],
+        help="Native local topology search method applied to the reference tree and every bootstrap replicate.",
+    )
+    phylo_likelihood_bootstrap_tree.add_argument(
+        "--start-tree-count",
+        type=int,
+        default=4,
+        help="Total start trees to score for the reference tree and every bootstrap replicate.",
+    )
+    phylo_likelihood_bootstrap_tree.add_argument(
+        "--start-tree-seed",
+        type=int,
+        default=1,
+        help="Deterministic seed for random additional start-tree generation.",
+    )
+    phylo_likelihood_bootstrap_tree.add_argument(
+        "--branch-reoptimization-policy",
+        default="coordinate-branch-lengths",
+        help="Branch-length reoptimization policy used during native local topology search.",
+    )
+    phylo_likelihood_bootstrap_tree.add_argument(
+        "--replicate-count",
+        type=int,
+        default=100,
+        help="Number of site-resampled native ML bootstrap replicates to infer.",
+    )
+    phylo_likelihood_bootstrap_tree.add_argument(
+        "--bootstrap-seed",
+        type=int,
+        default=1,
+        help="Deterministic seed for site-resampling draws.",
+    )
+    phylo_likelihood_bootstrap_tree.add_argument(
+        "--lower-branch-length-bound",
+        type=float,
+        default=0.0,
+        help="Nonnegative lower branch-length bound applied during native optimization.",
+    )
+    phylo_likelihood_bootstrap_tree.add_argument(
+        "--upper-branch-length-bound",
+        type=float,
+        default=5.0,
+        help="Upper branch-length bound applied during native optimization.",
+    )
+    phylo_likelihood_bootstrap_tree.add_argument(
+        "--max-coordinate-passes",
+        type=int,
+        default=12,
+        help="Maximum branch-length coordinate-search passes for native optimization stages.",
+    )
+    phylo_likelihood_bootstrap_tree.add_argument("--out-dir", required=True, type=Path)
+    phylo_likelihood_bootstrap_tree.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the native ML bootstrap-tree report as JSON.",
+    )
+    _add_manifest_argument(phylo_likelihood_bootstrap_tree)
     phylo_dating = phylo_subparsers.add_parser(
         "dating",
         help="Fit governed dated-tree workflows on rooted substitution trees and tip-date tables.",
@@ -1336,6 +1415,51 @@ def run_phylo_command(args: Any) -> int:
             code="phylo_dating_command_unknown",
         )
     if args.phylo_command == "likelihood":
+        if args.phylo_likelihood_command == "bootstrap-tree":
+            report = bootstrap_nucleotide_likelihood_tree_inference_from_alignment(
+                args.alignment_path,
+                model_name=args.model,
+                model_selection_criterion=args.model_selection_criterion,
+                search_method=args.search_method,
+                start_tree_count=args.start_tree_count,
+                start_tree_seed=args.start_tree_seed,
+                branch_reoptimization_policy=args.branch_reoptimization_policy,
+                replicate_count=args.replicate_count,
+                bootstrap_seed=args.bootstrap_seed,
+                lower_branch_length_bound=args.lower_branch_length_bound,
+                upper_branch_length_bound=args.upper_branch_length_bound,
+                max_coordinate_passes=args.max_coordinate_passes,
+            )
+            artifact_paths = write_nucleotide_likelihood_bootstrap_artifacts(
+                args.out_dir,
+                report,
+            )
+            outputs = _finalize_outputs(
+                args,
+                command="phylo",
+                inputs=[args.alignment_path],
+                outputs=list(artifact_paths.values()),
+            )
+            _print_result(
+                build_command_result(
+                    command="phylo",
+                    inputs=[args.alignment_path],
+                    outputs=outputs,
+                    metrics={
+                        "selected_reference_model_name": report.selected_reference_model_name,
+                        "taxon_count": report.taxon_count,
+                        "site_count": report.site_count,
+                        "pattern_count": report.pattern_count,
+                        "replicate_count": report.replicate_count,
+                        "support_row_count": len(report.clade_support_rows),
+                        "reference_log_likelihood": report.reference_log_likelihood,
+                        "search_method": report.search_method,
+                    },
+                    data=report,
+                ),
+                json_output=args.json,
+            )
+            return 0
         if args.phylo_likelihood_command == "infer-tree":
             report = infer_nucleotide_likelihood_tree_from_alignment(
                 args.alignment_path,
