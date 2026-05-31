@@ -1180,8 +1180,10 @@ class CandidateTreeSiteLikelihoodSummary:
 
     candidate_tree_id: str
     candidate_tree_label: str
+    topology_fingerprint: str
     tree_newick: str
     log_likelihood: float
+    observed_delta_log_likelihood: float
 
 
 @dataclass(slots=True)
@@ -1211,6 +1213,7 @@ class CandidateTreeSiteLikelihoodMatrixReport:
     pattern_count: int
     compression_used: bool
     expansion_policy: str
+    comparison_caution_label: str
     parameter_values: dict[str, float]
     candidate_trees: list[CandidateTreeSiteLikelihoodSummary]
     matrix_rows: list[CandidateTreeSiteLikelihoodRow]
