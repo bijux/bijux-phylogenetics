@@ -144,6 +144,10 @@ from bijux_phylogenetics.bayesian import (
     PosteriorMissingNucleotideSequenceRecord,
     PosteriorMissingNucleotideSiteSummaryRow,
     PosteriorMissingNucleotideStateProbabilityRow,
+    PosteriorModelAveragedEstimateRow,
+    PosteriorModelAveragingReport,
+    PosteriorModelEstimateRow,
+    PosteriorModelSupportRow,
     POSTERIOR_PREDICTIVE_SAMPLE_SELECTION_POLICIES,
     PosteriorPredictiveAlignmentReplicate,
     PosteriorPredictiveAlignmentSimulationReport,
@@ -313,6 +317,8 @@ from bijux_phylogenetics.bayesian import (
     simulate_fixed_topology_partitioned_dna_posterior_predictive,
     simulate_joint_topology_dna_posterior_predictive,
     simulate_ornstein_uhlenbeck_continuous_trait_posterior_predictive,
+    summarize_metropolis_hastings_model_averaged_estimates,
+    summarize_posterior_model_averaged_estimates,
     summarize_posterior_predictive_p_values,
     simulate_prior_only_phylogenetic_states,
     strip_partition_model_parameter_state,
@@ -1459,6 +1465,13 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is PosteriorMissingNucleotideStateProbabilityRow
     )
     assert (
+        bayesian_api.PosteriorModelAveragedEstimateRow
+        is PosteriorModelAveragedEstimateRow
+    )
+    assert bayesian_api.PosteriorModelAveragingReport is PosteriorModelAveragingReport
+    assert bayesian_api.PosteriorModelEstimateRow is PosteriorModelEstimateRow
+    assert bayesian_api.PosteriorModelSupportRow is PosteriorModelSupportRow
+    assert (
         bayesian_api.PosteriorPredictiveSimulationDefinition
         is PosteriorPredictiveSimulationDefinition
     )
@@ -1952,6 +1965,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.summarize_posterior_predictive_p_values
         is summarize_posterior_predictive_p_values
+    )
+    assert (
+        bayesian_api.summarize_metropolis_hastings_model_averaged_estimates
+        is summarize_metropolis_hastings_model_averaged_estimates
+    )
+    assert (
+        bayesian_api.summarize_posterior_model_averaged_estimates
+        is summarize_posterior_model_averaged_estimates
     )
     assert (
         bayesian_api.summarize_brownian_continuous_trait_posterior_ancestral_states
