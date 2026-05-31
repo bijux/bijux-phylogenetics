@@ -6,6 +6,8 @@ from pathlib import Path
 import numpy
 
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick, write_newick
+from bijux_phylogenetics.phylo.topology.affected_subtrees import summarize_affected_subtrees
+from bijux_phylogenetics.phylo.topology.clades import canonical_clade_id
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.models import (
     NucleotideLikelihoodSprSearchReport,
@@ -15,11 +17,12 @@ from bijux_phylogenetics.phylo.likelihood.topology_search import (
     BranchReoptimizationResult,
     normalize_nucleotide_topology_search_records,
     prefer_higher_likelihood,
+    reoptimize_nucleotide_topology_tree_branch_subset,
     reoptimize_nucleotide_topology_tree,
+    resolve_reoptimized_branch_clade_ids,
     resolve_nucleotide_topology_search_records,
     resolve_nucleotide_topology_search_surface,
     resolve_nucleotide_topology_search_tree,
-    validate_branch_reoptimization_policy,
     validate_nucleotide_topology_search_tree,
 )
 from bijux_phylogenetics.phylo.topology import (
@@ -27,7 +30,11 @@ from bijux_phylogenetics.phylo.topology import (
     apply_rooted_spr_move,
     iter_rooted_spr_move_candidates,
 )
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, descendant_taxa
+
+_SUPPORTED_SPR_BRANCH_REOPTIMIZATION_POLICIES = frozenset(
+    {"coordinate-branch-lengths", "spr-local-affected-branches"}
+)
 
 
 def search_nucleotide_likelihood_spr(
@@ -60,7 +67,7 @@ def search_nucleotide_likelihood_spr(
     resolved_records, resolved_alignment_path = resolve_nucleotide_topology_search_records(
         records
     )
-    validated_branch_reoptimization_policy = validate_branch_reoptimization_policy(
+    validated_branch_reoptimization_policy = validate_nucleotide_likelihood_spr_branch_reoptimization_policy(
         branch_reoptimization_policy
     )
     validated_evaluation_budget = validate_likelihood_spr_evaluation_budget(
@@ -90,7 +97,7 @@ def search_nucleotide_likelihood_spr(
         resolved_tree,
         compressed_patterns=compressed_patterns,
         resolved_surface=resolved_surface,
-        branch_reoptimization_policy=validated_branch_reoptimization_policy,
+        branch_reoptimization_policy="coordinate-branch-lengths",
         lower_branch_length_bound=lower_branch_length_bound,
         upper_branch_length_bound=upper_branch_length_bound,
         improvement_tolerance=improvement_tolerance,
@@ -112,6 +119,13 @@ def search_nucleotide_likelihood_spr(
             pruned_clade_id=None,
             regraft_target_branch_id=None,
             branch_reoptimization_policy=validated_branch_reoptimization_policy,
+            branch_reoptimization_scope="all-branches",
+            affected_branch_clade_ids=[],
+            optimized_branch_count=len(start_result.optimized_branch_ids),
+            optimized_branch_clade_ids=resolve_reoptimized_branch_clade_ids(
+                current_tree,
+                start_result.optimized_branch_ids,
+            ),
             branch_optimization_pass_count=start_result.optimization_pass_count,
             branch_function_evaluation_count=start_result.function_evaluation_count,
             stopping_reason=None,
@@ -140,16 +154,36 @@ def search_nucleotide_likelihood_spr(
             if neighbor_newick in seen_neighbor_newicks:
                 continue
             seen_neighbor_newicks.add(neighbor_newick)
-            neighbor_result = reoptimize_nucleotide_topology_tree(
+            affected_branch_clade_ids = resolve_spr_affected_branch_clade_ids(
+                current_tree,
                 neighbor_tree,
-                compressed_patterns=compressed_patterns,
-                resolved_surface=resolved_surface,
-                branch_reoptimization_policy=validated_branch_reoptimization_policy,
-                lower_branch_length_bound=lower_branch_length_bound,
-                upper_branch_length_bound=upper_branch_length_bound,
-                improvement_tolerance=improvement_tolerance,
-                max_coordinate_passes=max_coordinate_passes,
+                candidate,
             )
+            if validated_branch_reoptimization_policy == "coordinate-branch-lengths":
+                neighbor_result = reoptimize_nucleotide_topology_tree(
+                    neighbor_tree,
+                    compressed_patterns=compressed_patterns,
+                    resolved_surface=resolved_surface,
+                    branch_reoptimization_policy=validated_branch_reoptimization_policy,
+                    lower_branch_length_bound=lower_branch_length_bound,
+                    upper_branch_length_bound=upper_branch_length_bound,
+                    improvement_tolerance=improvement_tolerance,
+                    max_coordinate_passes=max_coordinate_passes,
+                )
+            else:
+                neighbor_result = reoptimize_nucleotide_topology_tree_branch_subset(
+                    neighbor_tree,
+                    compressed_patterns=compressed_patterns,
+                    resolved_surface=resolved_surface,
+                    optimized_branch_ids=resolve_spr_local_branch_ids(
+                        neighbor_tree,
+                        affected_branch_clade_ids,
+                    ),
+                    lower_branch_length_bound=lower_branch_length_bound,
+                    upper_branch_length_bound=upper_branch_length_bound,
+                    improvement_tolerance=improvement_tolerance,
+                    max_coordinate_passes=max_coordinate_passes,
+                )
             evaluated_neighbor_count += 1
             total_branch_optimization_pass_count += (
                 neighbor_result.optimization_pass_count
@@ -182,7 +216,8 @@ def search_nucleotide_likelihood_spr(
             break
         accepted_move_count += 1
         log_likelihood_before = current_log_likelihood
-        tree_before_newick = dumps_newick(current_tree)
+        tree_before = current_tree.copy().refresh()
+        tree_before_newick = dumps_newick(tree_before)
         current_tree = improving_result.optimized_tree.copy().refresh()
         current_log_likelihood = improving_result.log_likelihood
         trace_rows.append(
@@ -198,6 +233,19 @@ def search_nucleotide_likelihood_spr(
                 pruned_clade_id=improving_candidate.pruned_clade_id,
                 regraft_target_branch_id=improving_candidate.regraft_target_branch_id,
                 branch_reoptimization_policy=validated_branch_reoptimization_policy,
+                branch_reoptimization_scope=resolve_spr_branch_reoptimization_scope(
+                    validated_branch_reoptimization_policy
+                ),
+                affected_branch_clade_ids=resolve_spr_affected_branch_clade_ids(
+                    tree_before,
+                    current_tree,
+                    improving_candidate,
+                ),
+                optimized_branch_count=len(improving_result.optimized_branch_ids),
+                optimized_branch_clade_ids=resolve_reoptimized_branch_clade_ids(
+                    current_tree,
+                    improving_result.optimized_branch_ids,
+                ),
                 branch_optimization_pass_count=improving_result.optimization_pass_count,
                 branch_function_evaluation_count=improving_result.function_evaluation_count,
                 stopping_reason=None,
@@ -219,6 +267,10 @@ def search_nucleotide_likelihood_spr(
             pruned_clade_id=None,
             regraft_target_branch_id=None,
             branch_reoptimization_policy=validated_branch_reoptimization_policy,
+            branch_reoptimization_scope="none",
+            affected_branch_clade_ids=[],
+            optimized_branch_count=0,
+            optimized_branch_clade_ids=[],
             branch_optimization_pass_count=0,
             branch_function_evaluation_count=0,
             stopping_reason=stopping_reason,
@@ -298,6 +350,58 @@ def search_nucleotide_likelihood_spr_from_alignment(
     )
 
 
+def validate_nucleotide_likelihood_spr_branch_reoptimization_policy(policy: str) -> str:
+    """Validate one rooted likelihood SPR branch-reoptimization policy."""
+    normalized_policy = policy.strip().lower()
+    if normalized_policy not in _SUPPORTED_SPR_BRANCH_REOPTIMIZATION_POLICIES:
+        raise ValueError(
+            "branch_reoptimization_policy must be one of "
+            + ", ".join(sorted(_SUPPORTED_SPR_BRANCH_REOPTIMIZATION_POLICIES))
+        )
+    return normalized_policy
+
+
+def resolve_spr_branch_reoptimization_scope(policy: str) -> str:
+    """Render one durable recomputation-scope label for rooted likelihood SPR moves."""
+    if policy == "coordinate-branch-lengths":
+        return "all-branches"
+    if policy == "spr-local-affected-branches":
+        return "local-affected-branches"
+    raise ValueError(f"unsupported rooted likelihood SPR reoptimization policy '{policy}'")
+
+
+def resolve_spr_affected_branch_clade_ids(
+    original_tree: PhyloTree,
+    moved_tree: PhyloTree,
+    candidate: RootedSprMoveCandidate,
+) -> list[str]:
+    """Resolve the affected branch-clade ledger for one rooted SPR move."""
+    affected_branch_clade_ids = list(
+        summarize_affected_subtrees(original_tree, moved_tree).affected_branch_clade_ids
+    )
+    affected_branch_clade_ids.append(candidate.pruned_clade_id)
+    if candidate.regraft_target_branch_id != "root":
+        affected_branch_clade_ids.append(candidate.regraft_target_branch_id)
+    return sorted(set(affected_branch_clade_ids))
+
+
+def resolve_spr_local_branch_ids(
+    moved_tree: PhyloTree,
+    affected_branch_clade_ids: list[str],
+) -> list[str]:
+    """Resolve moved-tree branch identifiers for one local rooted SPR reoptimization set."""
+    branch_ids_by_clade_id = {
+        canonical_clade_id(frozenset(descendant_taxa(node))): node.node_id or ""
+        for node in moved_tree.iter_nodes(order="preorder")
+        if node is not moved_tree.root
+    }
+    return [
+        branch_ids_by_clade_id[clade_id]
+        for clade_id in affected_branch_clade_ids
+        if clade_id in branch_ids_by_clade_id
+    ]
+
+
 def write_nucleotide_likelihood_spr_trace_table(
     path: Path,
     report: NucleotideLikelihoodSprSearchReport,
@@ -316,6 +420,10 @@ def write_nucleotide_likelihood_spr_trace_table(
         "pruned_clade_id",
         "regraft_target_branch_id",
         "branch_reoptimization_policy",
+        "branch_reoptimization_scope",
+        "affected_branch_clade_ids",
+        "optimized_branch_count",
+        "optimized_branch_clade_ids",
         "branch_optimization_pass_count",
         "branch_function_evaluation_count",
         "stopping_reason",
@@ -334,6 +442,10 @@ def write_nucleotide_likelihood_spr_trace_table(
             row.pruned_clade_id,
             row.regraft_target_branch_id,
             row.branch_reoptimization_policy,
+            row.branch_reoptimization_scope,
+            ",".join(row.affected_branch_clade_ids),
+            row.optimized_branch_count,
+            ",".join(row.optimized_branch_clade_ids),
             row.branch_optimization_pass_count,
             row.branch_function_evaluation_count,
             row.stopping_reason,
@@ -394,6 +506,10 @@ def write_nucleotide_likelihood_spr_run_json(
                 "pruned_clade_id": row.pruned_clade_id,
                 "regraft_target_branch_id": row.regraft_target_branch_id,
                 "branch_reoptimization_policy": row.branch_reoptimization_policy,
+                "branch_reoptimization_scope": row.branch_reoptimization_scope,
+                "affected_branch_clade_ids": row.affected_branch_clade_ids,
+                "optimized_branch_count": row.optimized_branch_count,
+                "optimized_branch_clade_ids": row.optimized_branch_clade_ids,
                 "branch_optimization_pass_count": row.branch_optimization_pass_count,
                 "branch_function_evaluation_count": row.branch_function_evaluation_count,
                 "stopping_reason": row.stopping_reason,

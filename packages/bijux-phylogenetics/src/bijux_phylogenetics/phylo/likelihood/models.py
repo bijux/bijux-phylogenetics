@@ -491,6 +491,10 @@ class NucleotideLikelihoodSprTraceRow:
     pruned_clade_id: str | None
     regraft_target_branch_id: str | None
     branch_reoptimization_policy: str
+    branch_reoptimization_scope: str
+    affected_branch_clade_ids: list[str]
+    optimized_branch_count: int
+    optimized_branch_clade_ids: list[str]
     branch_optimization_pass_count: int
     branch_function_evaluation_count: int
     stopping_reason: str | None
