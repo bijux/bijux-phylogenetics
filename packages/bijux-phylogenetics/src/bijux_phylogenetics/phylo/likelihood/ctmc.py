@@ -177,6 +177,10 @@ def solve_ctmc_stationary_distribution(
     validated_probability_tolerance = _validate_probability_tolerance(
         probability_tolerance
     )
+    _validate_stationary_distribution_uniqueness(
+        validated_rate_matrix=validated_rate_matrix,
+        probability_tolerance=validated_probability_tolerance,
+    )
     stationary_vector = _solve_stationary_vector(validated_rate_matrix.rate_matrix)
     _validate_stationary_vector(
         stationary_vector,
@@ -208,6 +212,10 @@ def verify_ctmc_stationary_distribution(
     )
     validated_probability_tolerance = _validate_probability_tolerance(
         probability_tolerance
+    )
+    _validate_stationary_distribution_uniqueness(
+        validated_rate_matrix=validated_rate_matrix,
+        probability_tolerance=validated_probability_tolerance,
     )
     candidate_vector = _resolve_stationary_distribution_vector(
         stationary_distribution,
@@ -294,6 +302,37 @@ def _solve_stationary_vector(rate_matrix: numpy.ndarray) -> numpy.ndarray:
     return numpy.real_if_close(stationary_vector, tol=1000).astype(float)
 
 
+def _validate_stationary_distribution_uniqueness(
+    *,
+    validated_rate_matrix: ValidatedCtmcRateMatrix,
+    probability_tolerance: float,
+) -> None:
+    singular_values = numpy.linalg.svd(
+        validated_rate_matrix.rate_matrix.T,
+        compute_uv=False,
+    )
+    rank_tolerance = _stationary_rank_tolerance(
+        rate_matrix=validated_rate_matrix.rate_matrix,
+        row_sum_tolerance=validated_rate_matrix.row_sum_tolerance,
+        probability_tolerance=probability_tolerance,
+    )
+    nullity = sum(
+        1 for singular_value in singular_values if float(singular_value) <= rank_tolerance
+    )
+    if nullity == 1:
+        return
+    raise PhylogeneticsError(
+        "ctmc stationary distribution is not unique for this rate matrix",
+        code="ctmc_stationary_distribution_not_unique",
+        details={
+            "state_labels": list(validated_rate_matrix.state_labels),
+            "nullity": nullity,
+            "rank_tolerance": rank_tolerance,
+            "singular_values": [float(value) for value in singular_values],
+        },
+    )
+
+
 def _resolve_stationary_distribution_vector(
     stationary_distribution: Mapping[str, float] | Sequence[float] | numpy.ndarray,
     *,
@@ -323,7 +362,10 @@ def _resolve_stationary_distribution_vector(
                 details={"missing_states": missing_states},
             )
         return numpy.array(
-            [float(stationary_distribution[state]) for state in validated_rate_matrix.state_labels],
+            [
+                float(stationary_distribution[state])
+                for state in validated_rate_matrix.state_labels
+            ],
             dtype=float,
         )
     vector = numpy.asarray(stationary_distribution, dtype=float)
@@ -436,6 +478,20 @@ def _validate_probability_tolerance(probability_tolerance: float) -> float:
             details={"probability_tolerance": probability_tolerance},
         )
     return float(probability_tolerance)
+
+
+def _stationary_rank_tolerance(
+    *,
+    rate_matrix: numpy.ndarray,
+    row_sum_tolerance: float,
+    probability_tolerance: float,
+) -> float:
+    matrix_scale = max(
+        1.0,
+        float(numpy.linalg.norm(rate_matrix, ord=2)),
+        float(numpy.max(numpy.abs(rate_matrix))),
+    )
+    return max(row_sum_tolerance, probability_tolerance) * matrix_scale * rate_matrix.shape[0]
 
 
 def _first_invalid_entry(
