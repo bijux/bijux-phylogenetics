@@ -265,3 +265,31 @@ def test_nucleotide_substitution_parameter_optimization_emits_boundary_warnings(
         rel_tol=0.0,
         abs_tol=1e-9,
     )
+    assert [warning.message for warning in report.boundary_warnings] == [
+        "kappa hit upper search boundary"
+    ]
+
+
+def test_f81_substitution_parameter_optimization_emits_frequency_boundary_warnings() -> (
+    None
+):
+    report = optimize_nucleotide_substitution_parameters_from_alignment(
+        fixture("trees", "f81_aic_bias_tree_2_taxa.nwk"),
+        fixture("alignments", "f81_frequency_boundary_alignment_2_taxa.fasta"),
+        model_name="f81",
+    )
+
+    assert report.base_frequency_source == "estimated"
+    assert report.parameter_rows == []
+    assert report.warnings == [
+        "base_frequency_c hit lower frequency boundary",
+        "base_frequency_g hit lower frequency boundary",
+    ]
+    assert [warning.warning_kind for warning in report.boundary_warnings] == [
+        "frequency-boundary",
+        "frequency-boundary",
+    ]
+    assert [warning.affected_parameter for warning in report.boundary_warnings] == [
+        "base_frequency_c",
+        "base_frequency_g",
+    ]
