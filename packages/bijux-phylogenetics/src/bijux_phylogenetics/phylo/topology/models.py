@@ -272,6 +272,14 @@ class RootedSprNeighborRow:
     validation_errors: list[str]
 
 
+@dataclass(frozen=True, slots=True)
+class RootedSprEnumerationBudget:
+    """Explicit rooted SPR enumeration limits over prune nodes and regraft targets."""
+
+    max_pruned_clade_count: int | None = None
+    max_regraft_target_count_per_pruned_clade: int | None = None
+
+
 @dataclass(slots=True)
 class RootedSprNeighborhoodReport:
     """Explicit record of rooted SPR neighbors for one binary-root tree."""
@@ -283,6 +291,10 @@ class RootedSprNeighborhoodReport:
     internal_node_count: int
     rooted: bool | None
     strictly_bifurcating: bool
+    max_pruned_clade_count: int | None
+    max_regraft_target_count_per_pruned_clade: int | None
+    skipped_pruned_clade_count: int
+    skipped_regraft_target_count: int
     generated_move_candidate_count: int
     identity_move_candidate_count: int
     self_regraft_candidate_count: int

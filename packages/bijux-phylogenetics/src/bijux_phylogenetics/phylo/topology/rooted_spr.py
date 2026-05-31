@@ -10,6 +10,7 @@ from bijux_phylogenetics.phylo.topology.clades import (
     rooted_topology_fingerprint,
 )
 from bijux_phylogenetics.phylo.topology.models import (
+    RootedSprEnumerationBudget,
     RootedSprNeighborRow,
     RootedSprNeighborhoodReport,
 )
@@ -46,6 +47,27 @@ def require_rooted_spr_node_id(node: TreeNode) -> str:
     if node.node_id is None:
         raise AssertionError("rooted SPR search requires refreshed node identities")
     return node.node_id
+
+
+def validate_rooted_spr_enumeration_budget(
+    budget: RootedSprEnumerationBudget | None,
+) -> RootedSprEnumerationBudget:
+    """Normalize one explicit rooted SPR enumeration budget."""
+    if budget is None:
+        return RootedSprEnumerationBudget()
+    if (
+        budget.max_pruned_clade_count is not None
+        and budget.max_pruned_clade_count <= 0
+    ):
+        raise ValueError("rooted SPR prune-node budget must be positive when provided")
+    if (
+        budget.max_regraft_target_count_per_pruned_clade is not None
+        and budget.max_regraft_target_count_per_pruned_clade <= 0
+    ):
+        raise ValueError(
+            "rooted SPR regraft-target budget must be positive when provided"
+        )
+    return budget
 
 
 def iter_rooted_spr_move_candidates(tree: PhyloTree):
