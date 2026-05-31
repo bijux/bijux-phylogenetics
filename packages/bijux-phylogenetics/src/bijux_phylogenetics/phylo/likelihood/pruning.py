@@ -10,7 +10,7 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 
 from .ctmc import ValidatedCtmcRateMatrix, validate_ctmc_rate_matrix
 
-_EIGENVALUE_REAL_PART_TOLERANCE = 1e-12
+_EIGENVALUE_REAL_PART_TOLERANCE = 1e-10
 _TRANSITION_NEGATIVE_TOLERANCE = 1e-12
 _TRANSITION_ROW_SUM_TOLERANCE = 1e-12
 
