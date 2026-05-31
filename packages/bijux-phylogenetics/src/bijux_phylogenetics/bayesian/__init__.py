@@ -620,6 +620,13 @@ from .trace_posterior_intervals import (
     summarize_independent_metropolis_hastings_trace_posterior_intervals,
     summarize_metropolis_hastings_trace_posterior_intervals,
 )
+from .wrapper_correspondence import (
+    BAYESIAN_WRAPPER_CORRESPONDENCE_STATUSES,
+    BayesianWrapperCorrespondenceObservation,
+    BayesianWrapperCorrespondenceReport,
+    BayesianWrapperCorrespondenceSummaryRow,
+    summarize_bayesian_wrapper_correspondence,
+)
 from .time_tree_priors import (
     BIRTH_DEATH_TREE_PRIOR_FAMILIES,
     COALESCENT_TREE_PRIOR_FAMILIES,
@@ -1113,6 +1120,7 @@ __all__ = [
     "summarize_metropolis_hastings_trace_autocorrelation",
     "summarize_independent_metropolis_hastings_trace_posterior_intervals",
     "summarize_metropolis_hastings_trace_posterior_intervals",
+    "summarize_bayesian_wrapper_correspondence",
     "thin_posterior_tree_set",
     "TipDatingValidationIssue",
     "TipDatingValidationReport",
@@ -1137,6 +1145,10 @@ __all__ = [
     "IndependentMetropolisHastingsTracePosteriorIntervalReport",
     "compute_equal_tail_interval",
     "compute_highest_posterior_density_interval",
+    "BAYESIAN_WRAPPER_CORRESPONDENCE_STATUSES",
+    "BayesianWrapperCorrespondenceObservation",
+    "BayesianWrapperCorrespondenceReport",
+    "BayesianWrapperCorrespondenceSummaryRow",
     "BurninSampleRow",
     "IndependentMetropolisHastingsBurninReport",
     "IndependentMetropolisHastingsChainBurninReport",
