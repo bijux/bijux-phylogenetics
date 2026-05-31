@@ -36,6 +36,9 @@ class FiniteStateTransitionMatrixEvaluator:
     """Branch-length transition evaluator for one validated finite-state model."""
 
     validated_rate_matrix: ValidatedCtmcRateMatrix
+    eigenvalues: numpy.ndarray
+    eigenvectors: numpy.ndarray
+    inverse_vectors: numpy.ndarray
     cache_matrices: bool
     transition_matrix_by_branch_length: dict[float, numpy.ndarray]
     matrix_exponential_evaluation_count: int = 0
@@ -44,6 +47,14 @@ class FiniteStateTransitionMatrixEvaluator:
     def cached_branch_length_count(self) -> int:
         return len(self.transition_matrix_by_branch_length)
 
+    @property
+    def eigendecomposition(self) -> "FiniteStateRateMatrixEigendecomposition":
+        return FiniteStateRateMatrixEigendecomposition(
+            eigenvalues=self.eigenvalues,
+            eigenvectors=self.eigenvectors,
+            inverse_vectors=self.inverse_vectors,
+        )
+
     def transition_probability_matrix(self, branch_length: float) -> numpy.ndarray:
         normalized_branch_length = _normalize_branch_length(branch_length)
         if not self.cache_matrices:
@@ -51,6 +62,7 @@ class FiniteStateTransitionMatrixEvaluator:
             return _compute_transition_probability_matrix(
                 self.validated_rate_matrix,
                 normalized_branch_length,
+                eigendecomposition=self.eigendecomposition,
             )
         cached_matrix = self.transition_matrix_by_branch_length.get(
             normalized_branch_length
@@ -59,6 +71,7 @@ class FiniteStateTransitionMatrixEvaluator:
             cached_matrix = _compute_transition_probability_matrix(
                 self.validated_rate_matrix,
                 normalized_branch_length,
+                eigendecomposition=self.eigendecomposition,
             )
             cached_matrix.setflags(write=False)
             self.transition_matrix_by_branch_length[normalized_branch_length] = (
@@ -75,8 +88,12 @@ def build_transition_matrix_evaluator(
 ) -> FiniteStateTransitionMatrixEvaluator:
     """Build one reusable transition evaluator for a single finite-state model."""
     validated_rate_matrix = _validated_rate_matrix(rate_matrix)
+    eigendecomposition = _compute_rate_matrix_eigendecomposition(validated_rate_matrix)
     return FiniteStateTransitionMatrixEvaluator(
         validated_rate_matrix=validated_rate_matrix,
+        eigenvalues=eigendecomposition.eigenvalues,
+        eigenvectors=eigendecomposition.eigenvectors,
+        inverse_vectors=eigendecomposition.inverse_vectors,
         cache_matrices=cache_matrices,
         transition_matrix_by_branch_length={},
     )
@@ -108,14 +125,42 @@ def _normalize_branch_length(branch_length: float) -> float:
     return float(branch_length)
 
 
+@dataclass(slots=True)
+class FiniteStateRateMatrixEigendecomposition:
+    """Cached eigendecomposition for one validated CTMC rate matrix."""
+
+    eigenvalues: numpy.ndarray
+    eigenvectors: numpy.ndarray
+    inverse_vectors: numpy.ndarray
+
+
+def _compute_rate_matrix_eigendecomposition(
+    validated_rate_matrix: ValidatedCtmcRateMatrix,
+) -> FiniteStateRateMatrixEigendecomposition:
+    eigenvalues, eigenvectors = numpy.linalg.eig(validated_rate_matrix.rate_matrix)
+    inverse_vectors = numpy.linalg.inv(eigenvectors)
+    return FiniteStateRateMatrixEigendecomposition(
+        eigenvalues=eigenvalues,
+        eigenvectors=eigenvectors,
+        inverse_vectors=inverse_vectors,
+    )
+
+
 def _compute_transition_probability_matrix(
     validated_rate_matrix: ValidatedCtmcRateMatrix,
     branch_length: float,
+    *,
+    eigendecomposition: FiniteStateRateMatrixEigendecomposition | None = None,
 ) -> numpy.ndarray:
     if branch_length == 0.0:
         return numpy.eye(validated_rate_matrix.state_count, dtype=float)
-    eigenvalues, eigenvectors = numpy.linalg.eig(validated_rate_matrix.rate_matrix)
-    inverse_vectors = numpy.linalg.inv(eigenvectors)
+    if eigendecomposition is None:
+        eigendecomposition = _compute_rate_matrix_eigendecomposition(
+            validated_rate_matrix
+        )
+    eigenvalues = eigendecomposition.eigenvalues
+    eigenvectors = eigendecomposition.eigenvectors
+    inverse_vectors = eigendecomposition.inverse_vectors
     diagonal = numpy.diag(numpy.exp(eigenvalues * branch_length))
     transition = eigenvectors @ diagonal @ inverse_vectors
     transition = numpy.real_if_close(transition, tol=1000).astype(float)
