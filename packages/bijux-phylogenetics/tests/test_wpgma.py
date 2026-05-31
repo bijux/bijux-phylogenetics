@@ -4,16 +4,16 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.distance.average_linkage as average_linkage_module
 from bijux_phylogenetics.distance import (
     build_tree_from_imported_distance_matrix,
     build_upgma_tree,
     build_wpgma_tree,
     load_imported_distance_matrix,
 )
+import bijux_phylogenetics.distance.average_linkage as average_linkage_module
+import bijux_phylogenetics.distance.upgma as upgma_module
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.runtime.errors import InvalidDistanceMatrixError
-import bijux_phylogenetics.distance.upgma as upgma_module
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -95,9 +95,9 @@ def test_build_wpgma_tree_matches_uneven_cluster_fixture_and_differs_from_upgma(
     ]
 
 
-def test_build_wpgma_tree_does_not_delegate_to_upgma(monkeypatch: pytest.MonkeyPatch) -> (
-    None
-):
+def test_build_wpgma_tree_does_not_delegate_to_upgma(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     identifiers, lookup = _lookup_from_imported_matrix(
         fixture("example_distance_matrix_wpgma_uneven_cluster.tsv")
     )

@@ -41,9 +41,10 @@ def test_summarize_bayesian_wrapper_correspondence_separates_wrapper_outcomes() 
     assert beast_log.status == "tolerance-match"
     assert beast_log.tolerance == 1e-9
     assert "currently matches the cached reference exactly" in beast_log.rationale
-    assert beast_log.observed_output["posterior.mean"] == beast_log.expected_output[
-        "posterior.mean"
-    ]
+    assert (
+        beast_log.observed_output["posterior.mean"]
+        == beast_log.expected_output["posterior.mean"]
+    )
 
     assert beast_consensus.status == "exact-match"
     assert (
@@ -71,9 +72,7 @@ def test_summarize_bayesian_wrapper_correspondence_separates_wrapper_outcomes() 
         mrbayes_branch_lengths.observed_output["same_topology_different_branch_lengths"]
         is True
     )
-    assert (
-        float(mrbayes_branch_lengths.observed_output["branch_score_distance"]) > 0.0
-    )
+    assert float(mrbayes_branch_lengths.observed_output["branch_score_distance"]) > 0.0
     assert (
         mrbayes_branch_lengths.observed_output["native_consensus_newick"]
         != mrbayes_branch_lengths.observed_output["wrapper_consensus_newick"]

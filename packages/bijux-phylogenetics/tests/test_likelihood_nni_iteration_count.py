@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.phylo.likelihood import search_nucleotide_likelihood_nni_from_alignment
+from bijux_phylogenetics.phylo.likelihood import (
+    search_nucleotide_likelihood_nni_from_alignment,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -21,8 +23,6 @@ def test_likelihood_nni_search_reports_full_iteration_count() -> None:
 
     assert report.accepted_move_count == 2
     assert report.iteration_count == 3
-    assert report.iteration_count == max(
-        row.iteration for row in report.candidate_rows
-    )
+    assert report.iteration_count == max(row.iteration for row in report.candidate_rows)
     assert report.iteration_count == report.accepted_move_count + 1
     assert report.trace_rows[-1].stopping_reason == "no-improving-neighbor"

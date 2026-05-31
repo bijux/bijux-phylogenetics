@@ -52,13 +52,9 @@ def test_write_nucleotide_likelihood_starting_tree_score_table_writes_expected_r
     assert [row["generation_seed"] for row in rows] == ["", "", "17", "18"]
     assert all(row["model_name"] == "JC69" for row in rows)
     assert all(len(row["topology_hash"]) == 64 for row in rows)
+    assert all(math.isfinite(float(row["starting_log_likelihood"])) for row in rows)
     assert all(
-        math.isfinite(float(row["starting_log_likelihood"]))
-        for row in rows
-    )
-    assert all(
-        row["substitution_parameter_policy"] == "fixed-from-model"
-        for row in rows
+        row["substitution_parameter_policy"] == "fixed-from-model" for row in rows
     )
     assert all(row["substitution_parameter_values"] == "{}" for row in rows)
     assert all(row["substitution_parameter_warnings"] == "" for row in rows)

@@ -95,8 +95,12 @@ def test_relaxed_rate_summary_reports_zero_z_scores_on_constant_rate_fixture() -
     assert report.mean_branch_rate == pytest.approx(0.25, abs=1e-12)
     assert report.standard_deviation_branch_rate == pytest.approx(0.0, abs=1e-12)
     assert report.outlier_count == 0
-    assert all(row.branch_rate == pytest.approx(0.25, abs=1e-12) for row in report.branch_rows)
-    assert all(row.rate_z_score == pytest.approx(0.0, abs=1e-12) for row in report.branch_rows)
+    assert all(
+        row.branch_rate == pytest.approx(0.25, abs=1e-12) for row in report.branch_rows
+    )
+    assert all(
+        row.rate_z_score == pytest.approx(0.0, abs=1e-12) for row in report.branch_rows
+    )
     assert report.outlier_rows == []
 
 

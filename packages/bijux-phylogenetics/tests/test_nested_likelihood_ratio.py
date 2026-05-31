@@ -7,11 +7,7 @@ import pytest
 
 from bijux_phylogenetics.phylo.likelihood import (
     evaluate_nucleotide_nested_likelihood_ratio_test_from_alignment,
-)
-from bijux_phylogenetics.phylo.likelihood import (
     list_declared_nucleotide_likelihood_ratio_pairs,
-)
-from bijux_phylogenetics.phylo.likelihood import (
     validate_declared_nucleotide_likelihood_ratio_pair,
 )
 
@@ -70,8 +66,7 @@ def test_nucleotide_nested_likelihood_ratio_report_governed_jc69_to_k80_case() -
     assert report.likelihood_ratio_statistic > 0.0
     assert math.isclose(
         report.likelihood_ratio_statistic,
-        2.0
-        * (report.alternative_fit.log_likelihood - report.null_fit.log_likelihood),
+        2.0 * (report.alternative_fit.log_likelihood - report.null_fit.log_likelihood),
         rel_tol=0.0,
         abs_tol=1e-12,
     )

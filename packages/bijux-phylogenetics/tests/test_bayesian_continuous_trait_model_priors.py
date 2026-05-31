@@ -172,9 +172,7 @@ def test_continuous_trait_model_prior_report_matches_analytical_ou_fixture() -> 
             "delta",
             1.25,
             build_continuous_trait_model_prior_bundle(
-                delta_prior=build_fixed_continuous_trait_scalar_prior(
-                    fixed_value=1.25
-                )
+                delta_prior=build_fixed_continuous_trait_scalar_prior(fixed_value=1.25)
             ),
             ["delta"],
         ),
@@ -272,7 +270,9 @@ def test_continuous_trait_model_prior_changes_posterior_score_on_owned_fit_surfa
     )
 
 
-def test_continuous_trait_model_prior_beta_and_exponential_density_match_fixture() -> None:
+def test_continuous_trait_model_prior_beta_and_exponential_density_match_fixture() -> (
+    None
+):
     fit_report = _build_synthetic_fit_report(
         mode="pagel-lambda",
         parameter_name="lambda",
@@ -298,4 +298,3 @@ def test_continuous_trait_model_prior_beta_and_exponential_density_match_fixture
     )
 
     assert report.total_log_prior == pytest.approx(expected_total_log_prior, abs=1e-12)
-

@@ -17,9 +17,7 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 
 
 def test_branch_length_scaling_proposal_keeps_all_branch_lengths_positive() -> None:
-    current_state = _build_flat_branch_length_state(
-        branch_lengths=(0.2, 0.3, 0.4, 0.5)
-    )
+    current_state = _build_flat_branch_length_state(branch_lengths=(0.2, 0.3, 0.4, 0.5))
     rng = random.Random(17)
 
     for _ in range(100):
@@ -41,9 +39,7 @@ def test_branch_length_scaling_proposal_keeps_all_branch_lengths_positive() -> N
 
 
 def test_branch_length_scaling_proposal_reports_hastings_correction() -> None:
-    current_state = _build_flat_branch_length_state(
-        branch_lengths=(0.2, 0.3, 0.4, 0.5)
-    )
+    current_state = _build_flat_branch_length_state(branch_lengths=(0.2, 0.3, 0.4, 0.5))
     proposal = propose_branch_length_scaling_move(
         current_state,
         random.Random(9),
@@ -52,9 +48,9 @@ def test_branch_length_scaling_proposal_reports_hastings_correction() -> None:
 
     assert proposal.is_valid is True
     changed_branch_id = proposal.changed_fields[0].split("tree.branch_length:", 1)[1]
-    current_branch_length = current_state.tree.to_tree().node_by_id(
-        changed_branch_id
-    ).branch_length
+    current_branch_length = (
+        current_state.tree.to_tree().node_by_id(changed_branch_id).branch_length
+    )
     assert current_branch_length is not None
     proposed_tree = proposal.proposed_tree
     assert proposed_tree is not None
@@ -95,10 +91,10 @@ def test_sampler_uses_branch_length_scaling_hastings_ratio_on_flat_target() -> N
         )
 
 
-def test_branch_length_scaling_proposal_reports_invalid_tree_without_positive_edges() -> None:
-    current_state = _build_flat_branch_length_state(
-        branch_lengths=(0.0, 0.0, 0.0, 0.0)
-    )
+def test_branch_length_scaling_proposal_reports_invalid_tree_without_positive_edges() -> (
+    None
+):
+    current_state = _build_flat_branch_length_state(branch_lengths=(0.0, 0.0, 0.0, 0.0))
     proposal = propose_branch_length_scaling_move(
         current_state,
         random.Random(5),
@@ -106,7 +102,9 @@ def test_branch_length_scaling_proposal_reports_invalid_tree_without_positive_ed
     )
 
     assert proposal.is_valid is False
-    assert proposal.invalid_reason == "tree has no strictly positive finite branch lengths"
+    assert (
+        proposal.invalid_reason == "tree has no strictly positive finite branch lengths"
+    )
     assert proposal.proposed_tree is None
     assert proposal.proposed_model_parameters is None
 

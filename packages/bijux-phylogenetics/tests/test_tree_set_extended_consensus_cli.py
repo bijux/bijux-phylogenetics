@@ -45,9 +45,13 @@ def test_cli_tree_set_majority_rule_extended_consensus_writes_expected_outputs(
     assert (out_dir / "consensus_tree.nwk").read_text(encoding="utf-8").strip() == (
         "(((A,B)60,C)40,(D,E)40);"
     )
-    assert (out_dir / "inclusion_order.tsv").read_text(
-        encoding="utf-8"
-    ).startswith("insertion_rank\tclade\ttree_count\tfrequency\tinclusion_stage\n")
-    assert (out_dir / "rejected_conflicts.tsv").read_text(
-        encoding="utf-8"
-    ).startswith("clade\ttree_count\tfrequency\tblocking_clades\n")
+    assert (
+        (out_dir / "inclusion_order.tsv")
+        .read_text(encoding="utf-8")
+        .startswith("insertion_rank\tclade\ttree_count\tfrequency\tinclusion_stage\n")
+    )
+    assert (
+        (out_dir / "rejected_conflicts.tsv")
+        .read_text(encoding="utf-8")
+        .startswith("clade\ttree_count\tfrequency\tblocking_clades\n")
+    )

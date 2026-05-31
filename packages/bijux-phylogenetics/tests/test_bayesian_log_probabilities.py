@@ -22,11 +22,7 @@ def test_logsumexp_matches_high_precision_underflow_fixture() -> None:
         context.prec = 80
         expected = (
             Decimal("-1000")
-            + (
-                Decimal(1)
-                + Decimal("-1").exp()
-                + Decimal("-2").exp()
-            ).ln()
+            + (Decimal(1) + Decimal("-1").exp() + Decimal("-2").exp()).ln()
         )
     assert math.isclose(result, float(expected), rel_tol=0.0, abs_tol=1e-12)
 
@@ -57,9 +53,7 @@ def test_normalize_log_probabilities_matches_high_precision_fixture() -> None:
     with localcontext() as context:
         context.prec = 80
         total = (
-            Decimal("-1000").exp()
-            + Decimal("-1001").exp()
-            + Decimal("-1002").exp()
+            Decimal("-1000").exp() + Decimal("-1001").exp() + Decimal("-1002").exp()
         ).ln()
         expected = tuple(float(Decimal(str(value)) - total) for value in log_values)
     assert all(

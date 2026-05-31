@@ -130,9 +130,11 @@ def _expected_hky85_two_tip_log_likelihood(
         left_index = state_index[left_state]
         right_index = state_index[right_state]
         for root_index, root_probability in enumerate(base_frequencies):
-            pair_probability += float(root_probability) * float(
-                left_transition[root_index, left_index]
-            ) * float(right_transition[root_index, right_index])
+            pair_probability += (
+                float(root_probability)
+                * float(left_transition[root_index, left_index])
+                * float(right_transition[root_index, right_index])
+            )
         probability *= pair_probability
     return math.log(probability)
 
@@ -156,9 +158,7 @@ def _independent_hky85_rate_matrix(
         for right_index, right_state in enumerate(state_order):
             if left_index == right_index:
                 continue
-            multiplier = (
-                kappa if (left_state, right_state) in transition_pairs else 1.0
-            )
+            multiplier = kappa if (left_state, right_state) in transition_pairs else 1.0
             off_diagonal[left_index, right_index] = (
                 multiplier * base_frequencies[right_index]
             )

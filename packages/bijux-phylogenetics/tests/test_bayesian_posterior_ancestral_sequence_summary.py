@@ -49,7 +49,9 @@ def test_posterior_ancestral_sequence_summary_aggregates_fixed_topology_hky85_ch
         substitution_model_name="HKY85",
         branch_length_prior=build_exponential_branch_length_prior(rate=4.0),
         substitution_parameter_prior_bundle=build_substitution_parameter_prior_bundle(
-            kappa_prior=build_exponential_positive_substitution_parameter_prior(rate=1.5),
+            kappa_prior=build_exponential_positive_substitution_parameter_prior(
+                rate=1.5
+            ),
             base_frequency_prior=build_dirichlet_simplex_substitution_parameter_prior(
                 expected_component_names=("A", "C", "G", "T"),
                 concentration_parameters={"A": 2.0, "C": 2.0, "G": 2.0, "T": 2.0},
@@ -65,7 +67,9 @@ def test_posterior_ancestral_sequence_summary_aggregates_fixed_topology_hky85_ch
         base_frequency_move_weight=1.0,
         base_frequency_coordinate_standard_deviation=0.45,
     )
-    records = load_fasta_alignment(fixture("alignments", "hky85_likelihood_alignment_2_taxa.fasta"))
+    records = load_fasta_alignment(
+        fixture("alignments", "hky85_likelihood_alignment_2_taxa.fasta")
+    )
     run_report = run_fixed_topology_dna_metropolis_hastings(
         tree=load_tree(fixture("trees", "hky85_likelihood_tree_2_taxa.nwk")),
         records=records,
@@ -118,7 +122,9 @@ def test_posterior_ancestral_sequence_summary_tracks_topology_uncertainty_across
         substitution_model_name="K80",
         branch_length_prior=build_exponential_branch_length_prior(rate=4.0),
         substitution_parameter_prior_bundle=build_substitution_parameter_prior_bundle(
-            kappa_prior=build_exponential_positive_substitution_parameter_prior(rate=1.5)
+            kappa_prior=build_exponential_positive_substitution_parameter_prior(
+                rate=1.5
+            )
         ),
     )
     joint_model_definition = build_joint_topology_dna_model_definition(
@@ -157,10 +163,7 @@ def test_posterior_ancestral_sequence_summary_tracks_topology_uncertainty_across
 
     assert summary.distinct_topology_count > 1
     assert summary.sampled_substitution_models == ["K80"]
-    assert any(
-        "multiple sampled topologies" in warning
-        for warning in summary.warnings
-    )
+    assert any("multiple sampled topologies" in warning for warning in summary.warnings)
     assert any(
         row.clade_posterior_probability < 1.0
         for row in summary.state_probability_rows
@@ -181,7 +184,9 @@ def _assert_site_probabilities_sum_to_clade_support(
     clade_support_by_key: dict[tuple[str, int], float] = {}
     for row in summary.state_probability_rows:
         key = (row.clade_id, row.site_position)
-        grouped_probabilities.setdefault(key, []).append(row.marginal_posterior_probability)
+        grouped_probabilities.setdefault(key, []).append(
+            row.marginal_posterior_probability
+        )
         clade_support_by_key.setdefault(key, row.clade_posterior_probability)
     for key, probabilities in grouped_probabilities.items():
         assert math.isclose(

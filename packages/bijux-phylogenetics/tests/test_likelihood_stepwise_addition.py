@@ -105,8 +105,12 @@ def test_write_stepwise_addition_artifacts_materializes_likelihood_outputs(
     )
 
     assert set(outputs) == {"tree_path", "trace_path", "run_json_path"}
-    assert outputs["trace_path"].read_text(encoding="utf-8").startswith(
-        "step_index\ttaxon\tinserted_taxa\ttested_edge_id\ttested_edge_descendant_taxa\ttested_edge_score\tbest_edge_id\tbest_edge_descendant_taxa\tbest_score\tselected\tcandidate_tree_newick\n"
+    assert (
+        outputs["trace_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "step_index\ttaxon\tinserted_taxa\ttested_edge_id\ttested_edge_descendant_taxa\ttested_edge_score\tbest_edge_id\tbest_edge_descendant_taxa\tbest_score\tselected\tcandidate_tree_newick\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["objective_name"] == "likelihood-jc69"
@@ -115,10 +119,13 @@ def test_write_stepwise_addition_artifacts_materializes_likelihood_outputs(
     assert payload["trace_rows"][1]["best_edge_id"] == "C"
 
 
-def test_validate_likelihood_stepwise_addition_model_rejects_unsupported_model() -> None:
+def test_validate_likelihood_stepwise_addition_model_rejects_unsupported_model() -> (
+    None
+):
     with pytest.raises(ValueError) as error_info:
         validate_likelihood_stepwise_addition_model("k80")
 
     assert (
-        str(error_info.value) == "likelihood stepwise addition model must be one of jc69"
+        str(error_info.value)
+        == "likelihood stepwise addition model must be one of jc69"
     )

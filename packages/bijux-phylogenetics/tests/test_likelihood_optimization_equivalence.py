@@ -29,11 +29,9 @@ def test_fixed_topology_branch_optimization_equivalence_replays_custom_root_prio
         root_prior={"A": 0.7, "C": 0.1, "G": 0.1, "T": 0.1},
     )
 
-    equivalence_report = (
-        optimization_equivalence.check_nucleotide_likelihood_optimization_equivalence_from_alignment(
-            report,
-            alignment_path,
-        )
+    equivalence_report = optimization_equivalence.check_nucleotide_likelihood_optimization_equivalence_from_alignment(
+        report,
+        alignment_path,
     )
 
     assert report.root_prior_source == "provided"
@@ -59,8 +57,7 @@ def test_fixed_topology_single_branch_optimization_equivalence_preserves_selecte
 ):
     tree = load_tree(fixture("trees", "jc69_branch_optimization_start_tree_2_taxa.nwk"))
     branch_ids_by_name = {
-        child.name or "": child.node_id or ""
-        for _parent, child in tree.iter_edges()
+        child.name or "": child.node_id or "" for _parent, child in tree.iter_edges()
     }
     alignment_path = fixture("alignments", "f81_likelihood_alignment_2_taxa.fasta")
     report = branch_optimization.optimize_fixed_topology_nucleotide_single_branch_length_from_alignment(
@@ -73,11 +70,9 @@ def test_fixed_topology_single_branch_optimization_equivalence_preserves_selecte
         root_prior={"A": 0.55, "C": 0.15, "G": 0.1, "T": 0.2},
     )
 
-    equivalence_report = (
-        optimization_equivalence.check_nucleotide_likelihood_optimization_equivalence_from_alignment(
-            report,
-            alignment_path,
-        )
+    equivalence_report = optimization_equivalence.check_nucleotide_likelihood_optimization_equivalence_from_alignment(
+        report,
+        alignment_path,
     )
 
     assert report.root_prior_source == "provided"
@@ -106,7 +101,9 @@ def test_fixed_topology_single_branch_optimization_equivalence_preserves_selecte
 def test_substitution_parameter_optimization_equivalence_replays_optimized_model_state() -> (
     None
 ):
-    alignment_path = fixture("alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta")
+    alignment_path = fixture(
+        "alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta"
+    )
     report = substitution_optimization.optimize_nucleotide_substitution_parameters_from_alignment(
         fixture("trees", "jc69_branch_optimization_start_tree_2_taxa.nwk"),
         alignment_path,
@@ -114,11 +111,9 @@ def test_substitution_parameter_optimization_equivalence_replays_optimized_model
         max_coordinate_passes=12,
     )
 
-    equivalence_report = (
-        optimization_equivalence.check_nucleotide_likelihood_optimization_equivalence_from_alignment(
-            report,
-            alignment_path,
-        )
+    equivalence_report = optimization_equivalence.check_nucleotide_likelihood_optimization_equivalence_from_alignment(
+        report,
+        alignment_path,
     )
 
     assert (
@@ -127,7 +122,10 @@ def test_substitution_parameter_optimization_equivalence_replays_optimized_model
     )
     assert equivalence_report.model_name == "GTR"
     assert equivalence_report.parameter_values["AC"] == 1.0
-    assert equivalence_report.parameter_values["AG"] == report.parameter_rows[0].optimized_value
+    assert (
+        equivalence_report.parameter_values["AG"]
+        == report.parameter_rows[0].optimized_value
+    )
     assert equivalence_report.equivalent is True
     assert math.isclose(
         equivalence_report.independently_rescored_log_likelihood,
@@ -138,7 +136,9 @@ def test_substitution_parameter_optimization_equivalence_replays_optimized_model
 
 
 def test_joint_optimization_equivalence_replays_final_branch_and_model_state() -> None:
-    alignment_path = fixture("alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta")
+    alignment_path = fixture(
+        "alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta"
+    )
     report = joint_optimization.optimize_fixed_topology_nucleotide_branches_and_model_from_alignment(
         fixture("trees", "jc69_branch_optimization_start_tree_2_taxa.nwk"),
         alignment_path,
@@ -147,14 +147,15 @@ def test_joint_optimization_equivalence_replays_final_branch_and_model_state() -
         max_model_coordinate_passes=12,
     )
 
-    equivalence_report = (
-        optimization_equivalence.check_nucleotide_likelihood_optimization_equivalence_from_alignment(
-            report,
-            alignment_path,
-        )
+    equivalence_report = optimization_equivalence.check_nucleotide_likelihood_optimization_equivalence_from_alignment(
+        report,
+        alignment_path,
     )
 
-    assert equivalence_report.optimization_surface == "fixed-topology-nucleotide-joint-optimization"
+    assert (
+        equivalence_report.optimization_surface
+        == "fixed-topology-nucleotide-joint-optimization"
+    )
     assert equivalence_report.model_name == "GTR"
     assert equivalence_report.parameter_values["AC"] == 1.0
     assert equivalence_report.root_prior_source == report.root_prior_source
@@ -168,7 +169,9 @@ def test_joint_optimization_equivalence_replays_final_branch_and_model_state() -
 
 
 def test_joint_restart_equivalence_replays_selected_attempt_result() -> None:
-    alignment_path = fixture("alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta")
+    alignment_path = fixture(
+        "alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta"
+    )
     report = joint_optimization.optimize_fixed_topology_nucleotide_branches_and_model_with_restarts_from_alignment(
         fixture("trees", "jc69_branch_optimization_start_tree_2_taxa.nwk"),
         alignment_path,
@@ -180,11 +183,9 @@ def test_joint_restart_equivalence_replays_selected_attempt_result() -> None:
         upper_branch_length_bound=1.0,
     )
 
-    equivalence_report = (
-        optimization_equivalence.check_nucleotide_likelihood_optimization_equivalence_from_alignment(
-            report,
-            alignment_path,
-        )
+    equivalence_report = optimization_equivalence.check_nucleotide_likelihood_optimization_equivalence_from_alignment(
+        report,
+        alignment_path,
     )
 
     assert (
@@ -211,18 +212,20 @@ def test_optimization_equivalence_reports_mismatched_stored_likelihood() -> None
     )
     report.optimized_log_likelihood += 0.5
 
-    equivalence_report = (
-        optimization_equivalence.check_nucleotide_likelihood_optimization_equivalence_from_alignment(
-            report,
-            alignment_path,
-        )
+    equivalence_report = optimization_equivalence.check_nucleotide_likelihood_optimization_equivalence_from_alignment(
+        report,
+        alignment_path,
     )
 
     assert equivalence_report.equivalent is False
-    assert math.isclose(equivalence_report.absolute_difference, 0.5, rel_tol=0.0, abs_tol=1e-12)
+    assert math.isclose(
+        equivalence_report.absolute_difference, 0.5, rel_tol=0.0, abs_tol=1e-12
+    )
 
 
-def test_optimization_equivalence_tolerance_validation_rejects_negative_values() -> None:
+def test_optimization_equivalence_tolerance_validation_rejects_negative_values() -> (
+    None
+):
     try:
         optimization_equivalence.validate_nucleotide_likelihood_optimization_equivalence_tolerances(
             absolute_tolerance=-1e-9,

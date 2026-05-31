@@ -24,7 +24,9 @@ def _write_executable(path: Path, body: str) -> Path:
     return path
 
 
-def _fake_posterior_engine(path: Path, *, version_text: str = "posterior-engine v1.0") -> Path:
+def _fake_posterior_engine(
+    path: Path, *, version_text: str = "posterior-engine v1.0"
+) -> Path:
     return _write_executable(
         path,
         f"""#!{sys.executable}

@@ -46,7 +46,9 @@ def test_external_engine_validation_matrix_collects_all_governed_engines(
             inference_alignment_path=fixture("alignments/example_alignment.fasta"),
         ),
         bayesian_inputs=BayesianValidationMatrixInputs(
-            mrbayes_alignment_path=fixture("alignments/example_multilocus_alignment.fasta"),
+            mrbayes_alignment_path=fixture(
+                "alignments/example_multilocus_alignment.fasta"
+            ),
             mrbayes_partition_path=fixture(
                 "alignments/example_multilocus_partitions.txt"
             ),

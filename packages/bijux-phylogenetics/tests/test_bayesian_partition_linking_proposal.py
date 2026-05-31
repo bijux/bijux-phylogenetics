@@ -220,9 +220,7 @@ def test_partition_linking_move_rejects_mixed_target_linkage_states() -> None:
         ),
         preserved_categorical_parameters={"substitution-model": "partitioned-dna"},
     )
-    categorical_parameters = dict(
-        linked_model_parameters.categorical_parameters
-    )
+    categorical_parameters = dict(linked_model_parameters.categorical_parameters)
     scalar_parameters = dict(linked_model_parameters.scalar_parameters)
     categorical_parameters["partition-linkage:kappa:gene_gamma"] = "gene_gamma"
     scalar_parameters["partition-parameter:kappa:gene_gamma"] = 2.0
@@ -324,10 +322,12 @@ def _partition_prior_report_for_models(
             partition_model.partition_name for partition_model in partition_models
         ),
     )
-    partition_parameter_states = resolve_partition_parameter_states_from_model_parameters(
-        model_parameters=model_parameters,
-        partition_models=partition_models,
-        linkage_plan=linkage_plan,
+    partition_parameter_states = (
+        resolve_partition_parameter_states_from_model_parameters(
+            model_parameters=model_parameters,
+            partition_models=partition_models,
+            linkage_plan=linkage_plan,
+        )
     )
     return evaluate_partition_model_log_prior(
         prior_bundle=build_partition_model_prior_bundle(
@@ -344,9 +344,7 @@ def _partition_prior_report_for_models(
                     )
                 ),
                 gamma_alpha_prior=(
-                    build_exponential_positive_substitution_parameter_prior(
-                        rate=0.9
-                    )
+                    build_exponential_positive_substitution_parameter_prior(rate=0.9)
                 ),
             ),
         ),

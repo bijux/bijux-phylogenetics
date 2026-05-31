@@ -17,7 +17,9 @@ def fixture(group: str, name: str) -> Path:
     return FIXTURES / group / name
 
 
-def test_empirical_protein_branch_optimization_improves_bad_fixed_rate_start_tree() -> None:
+def test_empirical_protein_branch_optimization_improves_bad_fixed_rate_start_tree() -> (
+    None
+):
     report = optimize_empirical_protein_branch_lengths_from_alignment(
         fixture("trees", "empirical_protein_branch_optimization_start_tree_2_taxa.nwk"),
         fixture("alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"),
@@ -103,11 +105,17 @@ def test_empirical_protein_branch_optimization_improves_bad_fixed_rate_start_tre
     )
 
 
-def test_empirical_protein_branch_optimization_rejects_irrelevant_alpha_for_fixed_rate() -> None:
+def test_empirical_protein_branch_optimization_rejects_irrelevant_alpha_for_fixed_rate() -> (
+    None
+):
     with pytest.raises(ValueError, match="does not accept alpha"):
         optimize_empirical_protein_branch_lengths_from_alignment(
-            fixture("trees", "empirical_protein_branch_optimization_start_tree_2_taxa.nwk"),
-            fixture("alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"),
+            fixture(
+                "trees", "empirical_protein_branch_optimization_start_tree_2_taxa.nwk"
+            ),
+            fixture(
+                "alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"
+            ),
             rate_matrix=_compact_polar_rate_matrix(),
             likelihood_model="fixed-rate",
             alpha=0.8,
@@ -181,6 +189,4 @@ def _protein_state_order() -> tuple[str, ...]:
 
 
 def _protein_state_index() -> dict[str, int]:
-    return {
-        state: index for index, state in enumerate(_protein_state_order())
-    }
+    return {state: index for index, state in enumerate(_protein_state_order())}

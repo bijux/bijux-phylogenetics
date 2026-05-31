@@ -30,7 +30,9 @@ def test_joint_topology_dna_runner_samples_multiple_topologies_and_model_paramet
         substitution_model_name="K80",
         branch_length_prior=build_exponential_branch_length_prior(rate=4.0),
         substitution_parameter_prior_bundle=build_substitution_parameter_prior_bundle(
-            kappa_prior=build_exponential_positive_substitution_parameter_prior(rate=1.5)
+            kappa_prior=build_exponential_positive_substitution_parameter_prior(
+                rate=1.5
+            )
         ),
     )
     joint_model_definition = build_joint_topology_dna_model_definition(
@@ -62,11 +64,15 @@ def test_joint_topology_dna_runner_samples_multiple_topologies_and_model_paramet
     assert report.distinct_topology_count > 1
     assert len(report.distinct_topology_ids) == report.distinct_topology_count
     assert len(report.posterior_rows) == len(report.chain_report.sampled_states)
+    assert all(row.substitution_model_name == "K80" for row in report.posterior_rows)
     assert all(
-        row.substitution_model_name == "K80" for row in report.posterior_rows
+        "tree-topology" in row.prior_component_log_priors
+        for row in report.posterior_rows
     )
-    assert all("tree-topology" in row.prior_component_log_priors for row in report.posterior_rows)
-    assert all("branch-lengths" in row.prior_component_log_priors for row in report.posterior_rows)
+    assert all(
+        "branch-lengths" in row.prior_component_log_priors
+        for row in report.posterior_rows
+    )
     assert all(
         "substitution:kappa" in row.prior_component_log_priors
         for row in report.posterior_rows

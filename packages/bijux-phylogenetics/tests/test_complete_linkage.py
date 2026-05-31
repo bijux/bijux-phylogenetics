@@ -4,13 +4,13 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.distance.extremal_linkage as extremal_linkage_module
 from bijux_phylogenetics.distance import (
     build_complete_linkage_tree,
     build_single_linkage_tree,
     build_tree_from_imported_distance_matrix,
     load_imported_distance_matrix,
 )
+import bijux_phylogenetics.distance.extremal_linkage as extremal_linkage_module
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.runtime.errors import InvalidDistanceMatrixError
 
@@ -89,9 +89,7 @@ def test_build_complete_linkage_tree_differs_from_single_linkage_on_compact_clus
     assert dumps_newick(single_tree) == (
         "(((A:1,D:1)Inner2:0.5,(B:1,C:1)Inner1:0.5)Inner3:1,E:2.5)Inner4;"
     )
-    assert [
-        row.pair_distance for row in complete_report.merge_history
-    ] == [
+    assert [row.pair_distance for row in complete_report.merge_history] == [
         2.0,
         2.0,
         7.0,
@@ -113,7 +111,9 @@ def test_build_complete_linkage_tree_routes_through_shared_agglomerative_engine(
     )
 
     def _boom(*_args: object, **_kwargs: object) -> object:
-        raise AssertionError("complete-linkage must call the shared agglomerative engine")
+        raise AssertionError(
+            "complete-linkage must call the shared agglomerative engine"
+        )
 
     monkeypatch.setattr(
         extremal_linkage_module,

@@ -66,10 +66,9 @@ def test_likelihood_nni_equal_best_tree_cap_omits_extra_ties() -> None:
     equal_best = report.equal_best_tree_report
     assert equal_best.retained_tree_count == 1
     assert equal_best.omitted_tree_count == 2
-    assert (
-        rooted_topology_fingerprint_from_newick(equal_best.consensus_newick)
-        == rooted_topology_fingerprint_from_newick(equal_best.rows[0].tree_newick)
-    )
+    assert rooted_topology_fingerprint_from_newick(
+        equal_best.consensus_newick
+    ) == rooted_topology_fingerprint_from_newick(equal_best.rows[0].tree_newick)
 
 
 def test_write_nucleotide_likelihood_nni_run_json_records_equal_best_tree_report(
@@ -96,7 +95,9 @@ def test_write_nucleotide_likelihood_nni_run_json_records_equal_best_tree_report
     assert len(payload["equal_best_tree_report"]["rows"]) == 3
 
 
-def test_likelihood_spr_and_tbr_reports_surface_one_retained_best_tree_by_default() -> None:
+def test_likelihood_spr_and_tbr_reports_surface_one_retained_best_tree_by_default() -> (
+    None
+):
     spr_report = search_nucleotide_likelihood_spr_from_alignment(
         fixture("trees", "jc69_likelihood_spr_start_tree_5_taxa.nwk"),
         fixture("alignments", "jc69_likelihood_spr_alignment_5_taxa.fasta"),
@@ -113,19 +114,19 @@ def test_likelihood_spr_and_tbr_reports_surface_one_retained_best_tree_by_defaul
 
     assert spr_report.equal_best_tree_report.retained_tree_count == 1
     assert spr_report.equal_best_tree_report.omitted_tree_count == 0
-    assert spr_report.equal_best_tree_report.rows[0].tree_newick == spr_report.final_tree_newick
     assert (
-        rooted_topology_fingerprint_from_newick(
-            spr_report.equal_best_tree_report.consensus_newick
-        )
-        == rooted_topology_fingerprint_from_newick(spr_report.final_tree_newick)
+        spr_report.equal_best_tree_report.rows[0].tree_newick
+        == spr_report.final_tree_newick
     )
+    assert rooted_topology_fingerprint_from_newick(
+        spr_report.equal_best_tree_report.consensus_newick
+    ) == rooted_topology_fingerprint_from_newick(spr_report.final_tree_newick)
     assert tbr_report.equal_best_tree_report.retained_tree_count == 1
     assert tbr_report.equal_best_tree_report.omitted_tree_count == 2
-    assert tbr_report.equal_best_tree_report.rows[0].tree_newick == tbr_report.final_tree_newick
     assert (
-        rooted_topology_fingerprint_from_newick(
-            tbr_report.equal_best_tree_report.consensus_newick
-        )
-        == rooted_topology_fingerprint_from_newick(tbr_report.final_tree_newick)
+        tbr_report.equal_best_tree_report.rows[0].tree_newick
+        == tbr_report.final_tree_newick
     )
+    assert rooted_topology_fingerprint_from_newick(
+        tbr_report.equal_best_tree_report.consensus_newick
+    ) == rooted_topology_fingerprint_from_newick(tbr_report.final_tree_newick)

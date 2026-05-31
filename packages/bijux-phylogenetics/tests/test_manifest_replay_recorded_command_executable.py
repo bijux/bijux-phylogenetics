@@ -62,4 +62,3 @@ def test_replay_workflow_manifest_reuses_recorded_command_executable(
     assert report.engine_version_drift_detected is False
     assert report.outputs_equivalent is True
     assert report.replay_manifest_path.exists()
-

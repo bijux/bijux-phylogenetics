@@ -30,9 +30,18 @@ def test_shared_beast_posterior_fixture_lookup_preserves_reference_bundle_paths(
 ):
     fixture = get_shared_beast_posterior_fixture("strict_yule_real_posterior")
 
-    assert fixture.analysis_xml_relative_path == "metadata/beast2_strict_yule_posterior.xml"
-    assert fixture.posterior_log_relative_path == "metadata/beast2_strict_yule_posterior.log"
-    assert fixture.posterior_trees_relative_path == "metadata/beast2_strict_yule_posterior.trees"
+    assert (
+        fixture.analysis_xml_relative_path
+        == "metadata/beast2_strict_yule_posterior.xml"
+    )
+    assert (
+        fixture.posterior_log_relative_path
+        == "metadata/beast2_strict_yule_posterior.log"
+    )
+    assert (
+        fixture.posterior_trees_relative_path
+        == "metadata/beast2_strict_yule_posterior.trees"
+    )
     assert fixture.beast_version == "2.7"
     assert fixture.recommended_burnin_fraction == 0.1
     assert fixture.posterior_row_count == 101

@@ -43,8 +43,12 @@ def test_phylo_parsimony_acctran_cli_writes_governed_artifacts(
     assert (out_dir / "resolved_states.tsv").is_file()
     assert (out_dir / "branch_changes.tsv").is_file()
     assert (out_dir / "run.json").is_file()
-    assert (out_dir / "branch_changes.tsv").read_text(encoding="utf-8").startswith(
-        "branch_id\tcharacter_id\tparent_node\tchild_node\tchild_node_name\tchild_descendant_taxa\tchange_from\tchange_to\tambiguous\n"
+    assert (
+        (out_dir / "branch_changes.tsv")
+        .read_text(encoding="utf-8")
+        .startswith(
+            "branch_id\tcharacter_id\tparent_node\tchild_node\tchild_node_name\tchild_descendant_taxa\tchange_from\tchange_to\tambiguous\n"
+        )
     )
 
 

@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import bijux_phylogenetics.phylo.likelihood.nni_search as nni_search_module
 from bijux_phylogenetics.phylo.likelihood import (
     search_nucleotide_likelihood_nni_from_alignment,
 )
+import bijux_phylogenetics.phylo.likelihood.nni_search as nni_search_module
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -14,7 +14,9 @@ def fixture(group: str, name: str) -> Path:
     return FIXTURES / group / name
 
 
-def test_likelihood_nni_search_stops_when_best_improvement_is_within_tolerance() -> None:
+def test_likelihood_nni_search_stops_when_best_improvement_is_within_tolerance() -> (
+    None
+):
     report = search_nucleotide_likelihood_nni_from_alignment(
         fixture("trees", "jc69_likelihood_nni_start_tree_4_taxa.nwk"),
         fixture("alignments", "jc69_likelihood_nni_alignment_4_taxa.fasta"),

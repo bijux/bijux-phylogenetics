@@ -4,9 +4,9 @@ import json
 import math
 from pathlib import Path
 
-import bijux_phylogenetics.phylo.likelihood as likelihood_api
 from bijux_phylogenetics.io.newick import load_newick_tree_set
 from bijux_phylogenetics.io.trees import load_tree
+import bijux_phylogenetics.phylo.likelihood as likelihood_api
 from bijux_phylogenetics.phylo.likelihood import (
     search_nucleotide_likelihood_nni_from_alignment,
     search_nucleotide_likelihood_spr_from_alignment,
@@ -14,7 +14,9 @@ from bijux_phylogenetics.phylo.likelihood import (
     validate_nucleotide_likelihood_spr_search_budget,
     write_nucleotide_likelihood_spr_artifacts,
 )
-from bijux_phylogenetics.phylo.likelihood.validation import validate_explicit_branch_lengths
+from bijux_phylogenetics.phylo.likelihood.validation import (
+    validate_explicit_branch_lengths,
+)
 from bijux_phylogenetics.phylo.topology import (
     apply_rooted_spr_move,
     descendant_taxa,
@@ -48,7 +50,9 @@ def test_package_likelihood_gateway_exports_spr_search_surface() -> None:
 
 
 def test_rooted_spr_candidates_preserve_taxa_and_explicit_branch_lengths() -> None:
-    start_tree = load_tree(fixture("trees", "jc69_likelihood_spr_start_tree_5_taxa.nwk"))
+    start_tree = load_tree(
+        fixture("trees", "jc69_likelihood_spr_start_tree_5_taxa.nwk")
+    )
     candidates = list(iter_rooted_spr_move_candidates(start_tree))
 
     assert len(candidates) == 52
@@ -135,7 +139,12 @@ def test_likelihood_spr_search_improves_when_likelihood_nni_stalls() -> None:
     ]
     assert spr_report.trace_rows[1].pruned_clade_id == "A"
     assert spr_report.trace_rows[1].regraft_target_branch_id == "B"
-    assert spr_report.trace_rows[1].affected_branch_clade_ids == ["A", "A|B", "A|D", "B"]
+    assert spr_report.trace_rows[1].affected_branch_clade_ids == [
+        "A",
+        "A|B",
+        "A|D",
+        "B",
+    ]
     assert spr_report.trace_rows[1].optimized_branch_clade_ids == [
         "A",
         "B",
@@ -156,7 +165,9 @@ def test_likelihood_spr_search_improves_when_likelihood_nni_stalls() -> None:
     assert spr_report.trace_rows[-1].boundary_warning_messages == []
 
 
-def test_likelihood_spr_search_local_branch_reoptimization_reports_affected_scope() -> None:
+def test_likelihood_spr_search_local_branch_reoptimization_reports_affected_scope() -> (
+    None
+):
     tree_path = fixture("trees", "jc69_likelihood_spr_start_tree_5_taxa.nwk")
     alignment_path = fixture("alignments", "jc69_likelihood_spr_alignment_5_taxa.fasta")
 
@@ -192,7 +203,10 @@ def test_likelihood_spr_search_local_branch_reoptimization_reports_affected_scop
         accepted_rows[0].optimized_branch_count
         < full_report.trace_rows[1].optimized_branch_count
     )
-    assert local_report.total_branch_function_evaluation_count < full_report.total_branch_function_evaluation_count
+    assert (
+        local_report.total_branch_function_evaluation_count
+        < full_report.total_branch_function_evaluation_count
+    )
     assert math.isclose(
         local_report.final_log_likelihood,
         full_report.final_log_likelihood,
@@ -227,8 +241,12 @@ def test_write_nucleotide_likelihood_spr_artifacts_materializes_governed_output_
     }
     assert outputs["best_tree_path"].name == "best_trees.nwk"
     assert len(load_newick_tree_set(outputs["best_tree_path"])) == 1
-    assert outputs["trace_path"].read_text(encoding="utf-8").startswith(
-        "event_index\tevent_kind\titeration\tmove_type\tcandidate_topology_fingerprint\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\taccepted_move\ttrace_reason\ttree_before_newick\ttree_after_newick\tpruned_clade_id\tregraft_target_branch_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\taffected_branch_clade_ids\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\tstopping_reason\tunsearched_candidate_count\n"
+    assert (
+        outputs["trace_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "event_index\tevent_kind\titeration\tmove_type\tcandidate_topology_fingerprint\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\taccepted_move\ttrace_reason\ttree_before_newick\ttree_after_newick\tpruned_clade_id\tregraft_target_branch_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\taffected_branch_clade_ids\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\tstopping_reason\tunsearched_candidate_count\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "nucleotide-likelihood-spr-search"
@@ -250,7 +268,12 @@ def test_write_nucleotide_likelihood_spr_artifacts_materializes_governed_output_
     assert payload["trace_rows"][1]["trace_reason"] == "accepted-improving-move"
     assert payload["trace_rows"][-1]["trace_reason"] == "candidate-budget-exhausted"
     assert payload["trace_rows"][1]["branch_reoptimization_scope"] == "all-branches"
-    assert payload["trace_rows"][1]["affected_branch_clade_ids"] == ["A", "A|B", "A|D", "B"]
+    assert payload["trace_rows"][1]["affected_branch_clade_ids"] == [
+        "A",
+        "A|B",
+        "A|D",
+        "B",
+    ]
     assert payload["trace_rows"][1]["optimized_branch_count"] == 8
     assert payload["trace_rows"][1]["branch_reoptimization_converged"] is True
     assert payload["trace_rows"][1]["boundary_warning_messages"]

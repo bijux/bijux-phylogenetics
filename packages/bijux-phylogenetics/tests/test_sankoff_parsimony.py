@@ -98,9 +98,7 @@ def test_load_sankoff_cost_matrix_rejects_non_square_matrices() -> None:
 
 def test_load_sankoff_cost_matrix_rejects_inconsistent_labels() -> None:
     with pytest.raises(ParsimonyAnalysisError) as error_info:
-        load_sankoff_cost_matrix(
-            fixture("sankoff_inconsistent_labels_cost_matrix.tsv")
-        )
+        load_sankoff_cost_matrix(fixture("sankoff_inconsistent_labels_cost_matrix.tsv"))
 
     assert error_info.value.code == "parsimony_cost_matrix_inconsistent_labels"
     assert error_info.value.details["column_labels"] == ["red", "green", "blue"]
@@ -166,14 +164,26 @@ def test_write_sankoff_artifacts_materializes_governed_output_family(
         "node_selection_path",
         "run_json_path",
     }
-    assert outputs["steps_path"].read_text(encoding="utf-8").startswith(
-        "character_id\tminimum_cost\tobserved_states\tmatrix_states\tcharacter_weight\tweighted_score\n"
+    assert (
+        outputs["steps_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "character_id\tminimum_cost\tobserved_states\tmatrix_states\tcharacter_weight\tweighted_score\n"
+        )
     )
-    assert outputs["node_costs_path"].read_text(encoding="utf-8").startswith(
-        "character_id\tnode\tnode_name\tdescendant_taxa\tstate\tcost\tis_optimal_state\n"
+    assert (
+        outputs["node_costs_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "character_id\tnode\tnode_name\tdescendant_taxa\tstate\tcost\tis_optimal_state\n"
+        )
     )
-    assert outputs["node_selection_path"].read_text(encoding="utf-8").startswith(
-        "character_id\tnode\tnode_name\tdescendant_taxa\toptimal_states\ttie_states\n"
+    assert (
+        outputs["node_selection_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "character_id\tnode\tnode_name\tdescendant_taxa\toptimal_states\ttie_states\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "sankoff"

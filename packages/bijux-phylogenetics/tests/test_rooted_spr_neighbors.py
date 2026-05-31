@@ -9,8 +9,8 @@ from bijux_phylogenetics.io.newick import loads_newick
 import bijux_phylogenetics.phylo.topology as topology_api
 from bijux_phylogenetics.phylo.topology import (
     RootedSprMoveCandidate,
-    RootedSprNeighborRow,
     RootedSprNeighborhoodReport,
+    RootedSprNeighborRow,
     enumerate_rooted_spr_neighbors,
     rooted_topology_fingerprint,
     validate_rooted_spr_tree,
@@ -66,7 +66,9 @@ def test_rooted_spr_neighbors_preserve_taxa_and_exclude_input_topology() -> None
     report = enumerate_rooted_spr_neighbors(tree)
     input_topology_fingerprint = rooted_topology_fingerprint(tree)
 
-    assert all(sorted(row.tip_order) == ["A", "B", "C", "D"] for row in report.neighbor_rows)
+    assert all(
+        sorted(row.tip_order) == ["A", "B", "C", "D"] for row in report.neighbor_rows
+    )
     assert all(row.validation_errors == [] for row in report.neighbor_rows)
     assert all(row.supporting_move_count >= 1 for row in report.neighbor_rows)
     assert all(
@@ -75,12 +77,16 @@ def test_rooted_spr_neighbors_preserve_taxa_and_exclude_input_topology() -> None
     )
 
 
-def test_rooted_spr_validation_accepts_binary_root_representation_without_rooted_flag() -> None:
+def test_rooted_spr_validation_accepts_binary_root_representation_without_rooted_flag() -> (
+    None
+):
     validate_rooted_spr_tree(loads_newick("(((A,C),B),D);"))
 
 
 def test_rooted_spr_validation_rejects_nonbinary_rooted_representation() -> None:
-    with pytest.raises(ValueError, match="rooted SPR enumeration requires a binary root"):
+    with pytest.raises(
+        ValueError, match="rooted SPR enumeration requires a binary root"
+    ):
         validate_rooted_spr_tree(loads_newick("(A,B,C,D);"))
 
 
@@ -100,7 +106,9 @@ def test_rooted_spr_neighbor_enumeration_rejects_internal_polytomies() -> None:
         enumerate_rooted_spr_neighbors(loads_newick("((A,B,C),D);"))
 
 
-def test_write_rooted_spr_artifacts_materializes_governed_outputs(tmp_path: Path) -> None:
+def test_write_rooted_spr_artifacts_materializes_governed_outputs(
+    tmp_path: Path,
+) -> None:
     report = enumerate_rooted_spr_neighbors(fixture("example_tree.nwk"))
 
     outputs = write_rooted_spr_artifacts(tmp_path / "rooted-spr-neighbors", report)
@@ -111,11 +119,19 @@ def test_write_rooted_spr_artifacts_materializes_governed_outputs(tmp_path: Path
         "summary_path",
         "run_json_path",
     }
-    assert outputs["neighbors_path"].read_text(encoding="utf-8").startswith(
-        "neighbor_index\trepresentative_pruned_node_id\trepresentative_pruned_clade_id\trepresentative_pruned_descendant_taxa\trepresentative_regraft_target_branch_id\trepresentative_regraft_target_descendant_taxa\tsupporting_move_count\tneighbor_topology_fingerprint\ttip_order\tvalidation_errors\tneighbor_tree_newick\n"
+    assert (
+        outputs["neighbors_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "neighbor_index\trepresentative_pruned_node_id\trepresentative_pruned_clade_id\trepresentative_pruned_descendant_taxa\trepresentative_regraft_target_branch_id\trepresentative_regraft_target_descendant_taxa\tsupporting_move_count\tneighbor_topology_fingerprint\ttip_order\tvalidation_errors\tneighbor_tree_newick\n"
+        )
     )
-    assert outputs["summary_path"].read_text(encoding="utf-8").startswith(
-        "neighborhood_family\talgorithm\tcandidate_count\tvalid_count\tduplicate_count\tskipped_count\tskipped_reason\tbudget_reason\n"
+    assert (
+        outputs["summary_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "neighborhood_family\talgorithm\tcandidate_count\tvalid_count\tduplicate_count\tskipped_count\tskipped_reason\tbudget_reason\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "rooted-spr-neighbor-enumeration"

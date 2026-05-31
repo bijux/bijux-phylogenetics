@@ -45,9 +45,7 @@ def test_fixed_topology_relaxed_clock_model_definition_requires_sampled_clock_hy
             time_tree_prior=build_crown_conditioned_yule_tree_prior(
                 speciation_rate=0.5
             ),
-            mean_clock_rate_prior=build_fixed_clock_model_scalar_prior(
-                fixed_value=0.2
-            ),
+            mean_clock_rate_prior=build_fixed_clock_model_scalar_prior(fixed_value=0.2),
             log_standard_deviation_prior=build_exponential_clock_model_scalar_prior(
                 rate=3.0
             ),
@@ -103,7 +101,9 @@ def test_fixed_topology_relaxed_clock_model_definition_requires_unique_calibrati
         )
 
 
-def test_fixed_topology_relaxed_clock_proposal_schedule_requires_positive_moves() -> None:
+def test_fixed_topology_relaxed_clock_proposal_schedule_requires_positive_moves() -> (
+    None
+):
     model_definition = build_fixed_topology_relaxed_clock_model_definition(
         rate_policy="autocorrelated",
         time_tree_prior=build_crown_conditioned_yule_tree_prior(speciation_rate=0.5),

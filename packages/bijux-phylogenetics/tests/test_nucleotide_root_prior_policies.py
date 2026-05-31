@@ -173,7 +173,9 @@ def test_f81_fixed_tree_likelihood_changes_with_root_prior_policy() -> None:
     )
 
 
-def test_site_log_likelihood_export_matches_direct_f81_total_for_provided_root_prior() -> None:
+def test_site_log_likelihood_export_matches_direct_f81_total_for_provided_root_prior() -> (
+    None
+):
     tree_path = fixture("trees", "f81_likelihood_tree_2_taxa.nwk")
     alignment_path = fixture("alignments", "f81_likelihood_alignment_2_taxa.fasta")
     direct_report = evaluate_f81_tree_likelihood(
@@ -221,9 +223,7 @@ def test_marginal_ancestral_probabilities_respect_fixed_root_state() -> None:
         for row in report.posterior_rows
         if row.node_id == root_node_id and row.site_position == 1
     ]
-    posterior_by_state = {
-        row.state: row.posterior_probability for row in site_one_rows
-    }
+    posterior_by_state = {row.state: row.posterior_probability for row in site_one_rows}
 
     assert posterior_by_state["A"] == 1.0
     assert posterior_by_state["C"] == 0.0

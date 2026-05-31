@@ -26,9 +26,18 @@ def fixture(name: str) -> Path:
 
 def test_topology_gateway_exports_move_validity_surface() -> None:
     assert topology_api.TopologyMoveValidityReport is TopologyMoveValidityReport
-    assert topology_api.summarize_rooted_nni_move_validity is summarize_rooted_nni_move_validity
-    assert topology_api.summarize_rooted_spr_move_validity is summarize_rooted_spr_move_validity
-    assert topology_api.summarize_rooted_tbr_move_validity is summarize_rooted_tbr_move_validity
+    assert (
+        topology_api.summarize_rooted_nni_move_validity
+        is summarize_rooted_nni_move_validity
+    )
+    assert (
+        topology_api.summarize_rooted_spr_move_validity
+        is summarize_rooted_spr_move_validity
+    )
+    assert (
+        topology_api.summarize_rooted_tbr_move_validity
+        is summarize_rooted_tbr_move_validity
+    )
 
 
 def test_rooted_nni_move_validity_accepts_available_candidate() -> None:
@@ -49,7 +58,9 @@ def test_rooted_nni_move_validity_accepts_available_candidate() -> None:
 
 def test_rooted_spr_move_validity_rejects_self_regraft_candidates() -> None:
     tree = loads_newick("(((A,C),B),D);")
-    resolved_candidate, available_move_count = resolve_rooted_spr_move_candidate(tree, 1)
+    resolved_candidate, available_move_count = resolve_rooted_spr_move_candidate(
+        tree, 1
+    )
     candidate = RootedSprMoveCandidate(
         pruned_node_id=resolved_candidate.pruned_node_id,
         pruned_clade_id=resolved_candidate.pruned_clade_id,
@@ -145,4 +156,3 @@ def test_rooted_nni_move_validity_rejects_incompatible_rootedness_fixtures() -> 
     assert report.validity_decision == "rejected"
     assert report.rejection_code == "topology_move_incompatible_rootedness"
     assert report.evidence == {"rooted": False, "root_child_count": 4}
-

@@ -95,8 +95,7 @@ def test_fixed_topology_relaxed_clock_runner_emits_branch_rate_and_node_age_summ
     assert root_summary.hpd_95_lower <= root_summary.posterior_mean
     assert root_summary.posterior_mean <= root_summary.hpd_95_upper
     assert any(
-        summary.node_kind == "internal"
-        and summary.hpd_95_lower < summary.hpd_95_upper
+        summary.node_kind == "internal" and summary.hpd_95_lower < summary.hpd_95_upper
         for summary in report.node_age_summaries
     )
 

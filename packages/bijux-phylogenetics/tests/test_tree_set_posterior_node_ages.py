@@ -85,9 +85,11 @@ def test_summarize_posterior_node_ages_rejects_non_ultrametric_tree_sets(
     tmp_path: Path,
 ) -> None:
     tree_set_path = tmp_path / "non-ultrametric-tree-set.nwk"
-    nonclock = fixture("strict_clock_nonclock_tree_4_taxa.nwk").read_text(
-        encoding="utf-8"
-    ).strip()
+    nonclock = (
+        fixture("strict_clock_nonclock_tree_4_taxa.nwk")
+        .read_text(encoding="utf-8")
+        .strip()
+    )
     tree_set_path.write_text(f"{nonclock}\n{nonclock}\n", encoding="utf-8")
 
     with pytest.raises(NonUltrametricTreeError) as error:

@@ -85,7 +85,9 @@ def test_penalized_likelihood_dating_separates_data_and_smoothing_scores() -> No
     assert low_rate_spread > high_rate_spread
     assert low_rate_spread > 0.0
     assert low_smoothing_report.root_date > least_squares_report.root_date
-    assert low_smoothing_report.dated_tree_newick != least_squares_report.dated_tree_newick
+    assert (
+        low_smoothing_report.dated_tree_newick != least_squares_report.dated_tree_newick
+    )
     assert low_smoothing_report.optimizer_name == (
         "bounded-coordinate-search with closed-form penalized log-rate solve"
     )
@@ -96,8 +98,7 @@ def test_penalized_likelihood_dating_separates_data_and_smoothing_scores() -> No
     assert len(low_smoothing_report.branch_rows) == 6
     assert all(row.estimated_rate > 0.0 for row in low_smoothing_report.node_rows)
     assert all(
-        row.estimated_branch_rate > 0.0
-        for row in low_smoothing_report.branch_rows
+        row.estimated_branch_rate > 0.0 for row in low_smoothing_report.branch_rows
     )
 
 

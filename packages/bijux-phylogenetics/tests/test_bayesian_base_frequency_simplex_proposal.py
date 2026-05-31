@@ -30,7 +30,9 @@ def fixture(group: str, name: str) -> Path:
     return FIXTURES / group / name
 
 
-def test_base_frequency_simplex_proposal_changes_likelihood_and_keeps_simplex_valid() -> None:
+def test_base_frequency_simplex_proposal_changes_likelihood_and_keeps_simplex_valid() -> (
+    None
+):
     current_state = _build_scored_base_frequency_state()
 
     proposal = propose_base_frequency_simplex_move(
@@ -52,9 +54,8 @@ def test_base_frequency_simplex_proposal_changes_likelihood_and_keeps_simplex_va
     proposed_model_parameters = proposal.proposed_model_parameters
     assert proposed_tree is not None
     assert proposed_model_parameters is not None
-    assert (
-        rooted_topology_fingerprint(proposed_tree)
-        == rooted_topology_fingerprint(current_state.tree.to_tree())
+    assert rooted_topology_fingerprint(proposed_tree) == rooted_topology_fingerprint(
+        current_state.tree.to_tree()
     )
     assert (
         proposed_model_parameters.categorical_parameters["substitution-model"] == "F81"
@@ -86,7 +87,9 @@ def test_base_frequency_simplex_proposal_changes_likelihood_and_keeps_simplex_va
     )
 
 
-def test_sampler_uses_base_frequency_simplex_proposal_on_real_likelihood_surface() -> None:
+def test_sampler_uses_base_frequency_simplex_proposal_on_real_likelihood_surface() -> (
+    None
+):
     initial_state = _build_scored_base_frequency_state()
 
     report = run_metropolis_hastings_sampler(
@@ -177,7 +180,7 @@ def _build_scored_base_frequency_state() -> BayesianPhylogeneticState:
                         "T": 0.3,
                     }
                 ).constrained_mapping()
-            }
+            },
         ),
         update_prior_components=_zero_prior_components,
         update_log_likelihood=_f81_log_likelihood,
@@ -187,7 +190,9 @@ def _build_scored_base_frequency_state() -> BayesianPhylogeneticState:
 def _f81_log_likelihood(state: BayesianPhylogeneticState) -> float:
     return evaluate_f81_tree_likelihood(
         state.tree.to_tree(),
-        load_fasta_alignment(fixture("alignments", "f81_likelihood_alignment_2_taxa.fasta")),
+        load_fasta_alignment(
+            fixture("alignments", "f81_likelihood_alignment_2_taxa.fasta")
+        ),
         base_frequencies=state.model_parameters.vector_parameters["base-frequencies"],
     ).log_likelihood
 

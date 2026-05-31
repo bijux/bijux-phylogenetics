@@ -24,7 +24,9 @@ def test_package_compare_gateway_exports_dlt_reconciliation_surface() -> None:
         compare_api.DuplicationLossTransferAssociationRow
         is DuplicationLossTransferAssociationRow
     )
-    assert compare_api.DuplicationLossTransferEventRow is DuplicationLossTransferEventRow
+    assert (
+        compare_api.DuplicationLossTransferEventRow is DuplicationLossTransferEventRow
+    )
     assert compare_api.DuplicationLossTransferReport is DuplicationLossTransferReport
     assert (
         compare_api.reconcile_duplication_loss_transfer

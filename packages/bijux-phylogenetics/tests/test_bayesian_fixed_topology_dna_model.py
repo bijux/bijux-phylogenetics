@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import pytest
 
+from bijux_phylogenetics.bayesian.branch_length_priors import (
+    build_exponential_branch_length_prior,
+    build_fixed_branch_length_prior,
+)
 from bijux_phylogenetics.bayesian.fixed_topology_dna import (
     FixedTopologyDnaModelDefinition,
     FixedTopologyDnaProposalSchedule,
@@ -13,10 +17,6 @@ from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
     build_exponential_positive_substitution_parameter_prior,
     build_substitution_parameter_prior_bundle,
 )
-from bijux_phylogenetics.bayesian.branch_length_priors import (
-    build_exponential_branch_length_prior,
-    build_fixed_branch_length_prior,
-)
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 
@@ -27,10 +27,12 @@ def test_build_fixed_topology_dna_model_definition_records_active_parameter_surf
         substitution_model_name="HKY85",
         branch_length_prior=build_exponential_branch_length_prior(rate=4.0),
         substitution_parameter_prior_bundle=build_substitution_parameter_prior_bundle(
-            kappa_prior=build_exponential_positive_substitution_parameter_prior(rate=1.5),
+            kappa_prior=build_exponential_positive_substitution_parameter_prior(
+                rate=1.5
+            ),
             base_frequency_prior=build_dirichlet_simplex_substitution_parameter_prior(
                 expected_component_names=("A", "C", "G", "T"),
-                concentration_parameters={"A": 2.0, "C": 2.0, "G": 2.0, "T": 2.0}
+                concentration_parameters={"A": 2.0, "C": 2.0, "G": 2.0, "T": 2.0},
             ),
         ),
         initial_kappa=2.5,
@@ -88,7 +90,7 @@ def test_build_fixed_topology_dna_model_definition_records_active_parameter_surf
                             "C": 2.0,
                             "G": 2.0,
                             "T": 2.0,
-                        }
+                        },
                     )
                 ),
             },
@@ -111,7 +113,9 @@ def test_build_fixed_topology_dna_proposal_schedule_requires_active_parameter_mo
         substitution_model_name="K80",
         branch_length_prior=build_exponential_branch_length_prior(rate=4.0),
         substitution_parameter_prior_bundle=build_substitution_parameter_prior_bundle(
-            kappa_prior=build_exponential_positive_substitution_parameter_prior(rate=1.5)
+            kappa_prior=build_exponential_positive_substitution_parameter_prior(
+                rate=1.5
+            )
         ),
     )
 

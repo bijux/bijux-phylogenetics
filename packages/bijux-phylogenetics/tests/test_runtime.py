@@ -8,36 +8,20 @@ import pytest
 
 import bijux_phylogenetics
 from bijux_phylogenetics.bayesian import (
-    AdaptiveMetropolisHastingsRunReport,
-    AdaptiveTuningController,
-    AdaptiveTuningReport,
-    AdaptiveTuningWindowRow,
+    BAYESIAN_BURNIN_POLICY_NAMES,
+    BAYESIAN_WRAPPER_CORRESPONDENCE_STATUSES,
     BIRTH_DEATH_TREE_PRIOR_FAMILIES,
+    BROWNIAN_CONTINUOUS_TRAIT_MODELS,
     CALIBRATION_PRIOR_FAMILIES,
     CATEGORICAL_MISSING_STATE_POLICIES,
-    CLOCK_RATE_MODEL_FAMILIES,
     CLOCK_MODEL_SCALAR_PRIOR_FAMILIES,
+    CLOCK_RATE_MODEL_FAMILIES,
     COALESCENT_TREE_PRIOR_FAMILIES,
     CONTINUOUS_TRAIT_LOCATION_PRIOR_FAMILIES,
     CONTINUOUS_TRAIT_PRIOR_MODES,
     CONTINUOUS_TRAIT_PRIOR_TARGETS,
     CONTINUOUS_TRAIT_PROBABILITY_PRIOR_FAMILIES,
     CONTINUOUS_TRAIT_SCALAR_PRIOR_FAMILIES,
-    CategoricalProbabilityVector,
-    BeastAnalysisXmlReport,
-    BeastCalibration,
-    BirthDeathTreePriorModel,
-    CalibrationPriorDefinition,
-    CalibrationPriorEvaluationReport,
-    CalibrationPriorRow,
-    ConstantPopulationCoalescentPriorModel,
-    ContinuousTraitLocationPriorModel,
-    ContinuousTraitModelPriorBundle,
-    ContinuousTraitModelPriorEvaluationReport,
-    ContinuousTraitModelPriorRow,
-    ContinuousTraitProbabilityPriorModel,
-    ContinuousTraitScalarPriorModel,
-    ClockModelScalarPriorModel,
     DISCRETE_TRAIT_MK_MODELS,
     DISCRETE_TRAIT_MK_ROOT_PRIOR_MODES,
     DISCRETE_TRAIT_RATE_PRIOR_FAMILIES,
@@ -47,56 +31,68 @@ from bijux_phylogenetics.bayesian import (
     FIXED_TOPOLOGY_RELAXED_CLOCK_MODELS,
     FIXED_TOPOLOGY_STRICT_CLOCK_MODELS,
     JOINT_TOPOLOGY_DNA_TOPOLOGY_MOVE_KINDS,
-    BROWNIAN_CONTINUOUS_TRAIT_MODELS,
+    LOCAL_CLOCK_RATE_MODEL_FAMILIES,
+    LOCAL_CLOCK_TARGET_KINDS,
+    METROPOLIS_HASTINGS_BURNIN_POLICY_NAMES,
     ORNSTEIN_UHLENBECK_CONTINUOUS_TRAIT_MODELS,
     PARTITION_MODEL_PRIOR_TARGETS,
     PARTITION_PARAMETER_LINKAGE_POLICIES,
     PARTITION_SUBSTITUTION_BASE_MODELS,
-    DiscreteTraitRatePriorEvaluationReport,
-    DiscreteTraitRatePriorModel,
-    DiscreteTraitRatePriorRow,
-    LOCAL_CLOCK_RATE_MODEL_FAMILIES,
-    LOCAL_CLOCK_TARGET_KINDS,
-    LocalClockRateModel,
-    MrBayesParameterDiagnosticsReport,
     POSITIVE_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES,
+    POSTERIOR_PREDICTIVE_SAMPLE_SELECTION_POLICIES,
     PROBABILITY_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES,
     RELAXED_CLOCK_RATE_POLICIES,
-    RelaxedLognormalClockModel,
     SIMPLEX_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES,
-    StrictClockRateModel,
     SUBSTITUTION_PARAMETER_PRIOR_TARGETS,
-    SkylineCoalescentPriorModel,
     TIME_TREE_PRIOR_CONDITIONING_MODES,
     TREE_TOPOLOGY_PRIOR_FAMILIES,
-    TreeTopologyPriorModel,
-    PartitionModelPriorBundle,
-    PartitionModelPriorEvaluationReport,
-    PartitionModelPriorRow,
-    PartitionParameterLinkagePlan,
-    PartitionSubstitutionModelDefinition,
-    PartitionSubstitutionParameterState,
+    YULE_TREE_PRIOR_FAMILIES,
+    AdaptiveMetropolisHastingsRunReport,
+    AdaptiveTuningController,
+    AdaptiveTuningReport,
+    AdaptiveTuningWindowRow,
     BayesianModelParameterState,
     BayesianPhylogeneticState,
+    BayesianPosteriorTreeSample,
+    BayesianPosteriorTreeSampleArchive,
     BayesianPriorComponentState,
+    BayesianRunBurninPolicy,
+    BayesianRunManifest,
+    BayesianRunManifestReplayReport,
+    BayesianRunPriorRow,
     BayesianStateBranchRow,
     BayesianTreeState,
-    DiscreteTraitMkModelDefinition,
-    DiscreteTraitMkNodeStateSummary,
-    DiscreteTraitMkPosteriorRow,
-    DiscreteTraitMkProposalSchedule,
-    DiscreteTraitMkRunReport,
+    BayesianWrapperCorrespondenceObservation,
+    BayesianWrapperCorrespondenceReport,
+    BayesianWrapperCorrespondenceSummaryRow,
+    BeastAnalysisXmlReport,
+    BeastCalibration,
+    BirthDeathTreePriorModel,
     BrownianContinuousTraitModelDefinition,
     BrownianContinuousTraitParameterSummary,
     BrownianContinuousTraitPosteriorRow,
     BrownianContinuousTraitProposalSchedule,
     BrownianContinuousTraitRunReport,
-    OrnsteinUhlenbeckContinuousTraitIdentifiabilityWarning,
-    OrnsteinUhlenbeckContinuousTraitModelDefinition,
-    OrnsteinUhlenbeckContinuousTraitParameterSummary,
-    OrnsteinUhlenbeckContinuousTraitPosteriorRow,
-    OrnsteinUhlenbeckContinuousTraitProposalSchedule,
-    OrnsteinUhlenbeckContinuousTraitRunReport,
+    BurninSampleRow,
+    CalibrationPriorDefinition,
+    CalibrationPriorEvaluationReport,
+    CalibrationPriorRow,
+    CategoricalProbabilityVector,
+    ConstantPopulationCoalescentPriorModel,
+    ContinuousTraitLocationPriorModel,
+    ContinuousTraitModelPriorBundle,
+    ContinuousTraitModelPriorEvaluationReport,
+    ContinuousTraitModelPriorRow,
+    ContinuousTraitProbabilityPriorModel,
+    ContinuousTraitScalarPriorModel,
+    DiscreteTraitMkModelDefinition,
+    DiscreteTraitMkNodeStateSummary,
+    DiscreteTraitMkPosteriorRow,
+    DiscreteTraitMkProposalSchedule,
+    DiscreteTraitMkRunReport,
+    DiscreteTraitRatePriorEvaluationReport,
+    DiscreteTraitRatePriorModel,
+    DiscreteTraitRatePriorRow,
     FixedTopologyDnaModelDefinition,
     FixedTopologyDnaPosteriorRow,
     FixedTopologyDnaProposalSchedule,
@@ -118,17 +114,47 @@ from bijux_phylogenetics.bayesian import (
     FixedTopologyStrictClockProposalSchedule,
     FixedTopologyStrictClockRateSummary,
     FixedTopologyStrictClockRunReport,
+    HighestPosteriorDensityInterval,
+    IndependentMetropolisHastingsBurninReport,
+    IndependentMetropolisHastingsChainBurninReport,
+    IndependentMetropolisHastingsChainTraceAutocorrelationReport,
+    IndependentMetropolisHastingsChainTraceEffectiveSampleSizeReport,
+    IndependentMetropolisHastingsTraceAutocorrelationReport,
+    IndependentMetropolisHastingsTraceEffectiveSampleSizeReport,
     JointTopologyDnaModelDefinition,
     JointTopologyDnaPosteriorRow,
     JointTopologyDnaProposalSchedule,
     JointTopologyDnaRunReport,
-    PosteriorContinuousTraitNodeSummaryRow,
-    PosteriorContinuousTraitReport,
+    LocalClockRateModel,
+    MetropolisHastingsBurninDiagnosticCandidate,
+    MetropolisHastingsBurninDiagnosticReport,
+    MetropolisHastingsBurninPolicy,
+    MetropolisHastingsBurninReport,
+    MetropolisHastingsProposal,
+    MetropolisHastingsRunReport,
+    MetropolisHastingsStepRow,
+    MetropolisHastingsTraceAutocorrelationReport,
+    MetropolisHastingsTraceEffectiveSampleSizeReport,
+    MrBayesParameterDiagnosticsReport,
+    OrnsteinUhlenbeckContinuousTraitIdentifiabilityWarning,
+    OrnsteinUhlenbeckContinuousTraitModelDefinition,
+    OrnsteinUhlenbeckContinuousTraitParameterSummary,
+    OrnsteinUhlenbeckContinuousTraitPosteriorRow,
+    OrnsteinUhlenbeckContinuousTraitProposalSchedule,
+    OrnsteinUhlenbeckContinuousTraitRunReport,
+    PartitionModelPriorBundle,
+    PartitionModelPriorEvaluationReport,
+    PartitionModelPriorRow,
+    PartitionParameterLinkagePlan,
+    PartitionSubstitutionModelDefinition,
+    PartitionSubstitutionParameterState,
     PosteriorAncestralSequenceDefinition,
     PosteriorAncestralSequenceRecord,
     PosteriorAncestralSequenceReport,
     PosteriorAncestralSiteSummaryRow,
     PosteriorAncestralStateProbabilityRow,
+    PosteriorContinuousTraitNodeSummaryRow,
+    PosteriorContinuousTraitReport,
     PosteriorDiscreteTraitNodeSummaryRow,
     PosteriorDiscreteTraitReport,
     PosteriorDiscreteTraitStateProbabilityRow,
@@ -148,37 +174,6 @@ from bijux_phylogenetics.bayesian import (
     PosteriorModelAveragingReport,
     PosteriorModelEstimateRow,
     PosteriorModelSupportRow,
-    BayesianPosteriorTreeSample,
-    BayesianPosteriorTreeSampleArchive,
-    BAYESIAN_BURNIN_POLICY_NAMES,
-    METROPOLIS_HASTINGS_BURNIN_POLICY_NAMES,
-    BayesianRunBurninPolicy,
-    BayesianRunManifest,
-    BayesianRunManifestReplayReport,
-    BayesianRunPriorRow,
-    BAYESIAN_WRAPPER_CORRESPONDENCE_STATUSES,
-    BayesianWrapperCorrespondenceObservation,
-    BayesianWrapperCorrespondenceReport,
-    BayesianWrapperCorrespondenceSummaryRow,
-    BurninSampleRow,
-    HighestPosteriorDensityInterval,
-    TraceEffectiveSampleSizeRow,
-    MetropolisHastingsTraceEffectiveSampleSizeReport,
-    IndependentMetropolisHastingsChainTraceEffectiveSampleSizeReport,
-    IndependentMetropolisHastingsTraceEffectiveSampleSizeReport,
-    TraceAutocorrelationLagRow,
-    TraceAutocorrelationParameterReport,
-    MetropolisHastingsTraceAutocorrelationReport,
-    IndependentMetropolisHastingsChainTraceAutocorrelationReport,
-    IndependentMetropolisHastingsTraceAutocorrelationReport,
-    TracePosteriorIntervalRow,
-    IndependentMetropolisHastingsBurninReport,
-    IndependentMetropolisHastingsChainBurninReport,
-    MetropolisHastingsBurninDiagnosticCandidate,
-    MetropolisHastingsBurninDiagnosticReport,
-    MetropolisHastingsBurninPolicy,
-    MetropolisHastingsBurninReport,
-    POSTERIOR_PREDICTIVE_SAMPLE_SELECTION_POLICIES,
     PosteriorPredictiveAlignmentReplicate,
     PosteriorPredictiveAlignmentSimulationReport,
     PosteriorPredictiveContinuousTraitReplicate,
@@ -191,18 +186,24 @@ from bijux_phylogenetics.bayesian import (
     PosteriorPredictiveReplicateStatisticRow,
     PosteriorPredictiveSimulationDefinition,
     PosteriorPredictiveStatisticSummaryRow,
-    MetropolisHastingsProposal,
-    MetropolisHastingsRunReport,
-    MetropolisHastingsStepRow,
     PriorOnlyPhylogeneticSample,
     PriorOnlyPhylogeneticSimulationReport,
     PriorOnlySampledBranchRow,
     PriorOnlySubstitutionParameterState,
+    RelaxedLognormalClockModel,
+    SkylineCoalescentPriorModel,
+    StrictClockRateModel,
     SubstitutionParameterPriorBundle,
     SubstitutionParameterPriorEvaluationReport,
     SubstitutionParameterPriorRow,
-    YULE_TREE_PRIOR_FAMILIES,
+    TraceAutocorrelationLagRow,
+    TraceAutocorrelationParameterReport,
+    TraceEffectiveSampleSizeRow,
+    TracePosteriorIntervalRow,
+    TreeTopologyPriorModel,
     YuleTreePriorModel,
+    apply_independent_metropolis_hastings_burnin_policy,
+    apply_metropolis_hastings_burnin_policy,
     assess_beast_burnin_sensitivity,
     assess_beast_convergence,
     assess_mrbayes_burnin_sensitivity,
@@ -211,131 +212,128 @@ from bijux_phylogenetics.bayesian import (
     build_adaptive_tuning_report,
     build_adaptive_tuning_window_row,
     build_bayesian_evidence_package,
-    build_metropolis_hastings_burnin_policy,
-    compute_equal_tail_interval,
-    compute_highest_posterior_density_interval,
-    compute_trace_autocorrelation,
-    compute_trace_effective_sample_size,
-    compute_trace_integrated_autocorrelation_time,
+    build_bayesian_model_parameter_state,
+    build_bayesian_phylogenetic_state,
+    build_bayesian_phylogenetic_state_from_prior_only_sample,
     build_bayesian_posterior_tree_sample,
     build_bayesian_posterior_tree_sample_archive,
-    build_brownian_continuous_trait_model_definition,
-    build_brownian_continuous_trait_proposal_schedule,
-    build_ornstein_uhlenbeck_continuous_trait_model_definition,
-    build_ornstein_uhlenbeck_continuous_trait_proposal_schedule,
+    build_bayesian_prior_component_state,
+    build_bayesian_run_burnin_policy,
+    build_bayesian_run_manifest,
+    build_bayesian_tree_state,
     build_beta_continuous_trait_probability_prior,
     build_beta_probability_substitution_parameter_prior,
+    build_brownian_continuous_trait_model_definition,
+    build_brownian_continuous_trait_proposal_schedule,
     build_categorical_probability_vector,
+    build_constant_population_coalescent_tree_prior,
     build_continuous_trait_model_prior_bundle,
+    build_crown_conditioned_birth_death_tree_prior,
+    build_crown_conditioned_yule_tree_prior,
+    build_dirichlet_simplex_substitution_parameter_prior,
     build_discrete_trait_mk_model_definition,
     build_discrete_trait_mk_proposal_schedule,
-    build_dirichlet_simplex_substitution_parameter_prior,
     build_exponential_clock_model_scalar_prior,
-    build_exponential_discrete_trait_rate_prior,
     build_exponential_continuous_trait_scalar_prior,
+    build_exponential_discrete_trait_rate_prior,
     build_exponential_positive_substitution_parameter_prior,
     build_fixed_clock_model_scalar_prior,
-    build_fixed_topology_dna_model_definition,
-    build_fixed_topology_dna_proposal_schedule,
-    build_fixed_topology_partitioned_dna_model_definition,
-    build_fixed_topology_partitioned_dna_proposal_schedule,
-    build_fixed_topology_relaxed_clock_model_definition,
-    build_fixed_topology_relaxed_clock_proposal_schedule,
-    build_fixed_topology_strict_clock_model_definition,
-    build_fixed_topology_strict_clock_proposal_schedule,
     build_fixed_continuous_trait_location_prior,
     build_fixed_continuous_trait_probability_prior,
     build_fixed_continuous_trait_scalar_prior,
     build_fixed_positive_substitution_parameter_prior,
     build_fixed_probability_substitution_parameter_prior,
     build_fixed_simplex_substitution_parameter_prior,
-    build_gamma_discrete_trait_rate_prior,
+    build_fixed_topology_dna_model_definition,
+    build_fixed_topology_dna_proposal_schedule,
+    build_fixed_topology_dna_run_manifest,
+    build_fixed_topology_partitioned_dna_model_definition,
+    build_fixed_topology_partitioned_dna_proposal_schedule,
+    build_fixed_topology_relaxed_clock_model_definition,
+    build_fixed_topology_relaxed_clock_proposal_schedule,
+    build_fixed_topology_strict_clock_model_definition,
+    build_fixed_topology_strict_clock_proposal_schedule,
     build_gamma_clock_model_scalar_prior,
     build_gamma_continuous_trait_scalar_prior,
+    build_gamma_discrete_trait_rate_prior,
     build_gamma_positive_substitution_parameter_prior,
     build_joint_topology_dna_model_definition,
     build_joint_topology_dna_proposal_schedule,
-    load_calibration_prior_definitions,
+    build_local_clock_rate_model,
     build_lognormal_clock_model_scalar_prior,
-    build_lognormal_discrete_trait_rate_prior,
     build_lognormal_continuous_trait_scalar_prior,
+    build_lognormal_discrete_trait_rate_prior,
     build_lognormal_positive_substitution_parameter_prior,
+    build_metropolis_hastings_burnin_policy,
+    build_metropolis_hastings_posterior_tree_sample_archive,
+    build_metropolis_hastings_proposal,
     build_normal_continuous_trait_location_prior,
-    build_constant_population_coalescent_tree_prior,
-    build_crown_conditioned_birth_death_tree_prior,
-    build_crown_conditioned_yule_tree_prior,
-    build_partition_model_prior_bundle,
+    build_ornstein_uhlenbeck_continuous_trait_model_definition,
+    build_ornstein_uhlenbeck_continuous_trait_proposal_schedule,
     build_partition_model_parameter_state,
+    build_partition_model_prior_bundle,
     build_partition_parameter_linkage_plan,
+    build_partition_substitution_model_definition,
     build_posterior_ancestral_sequence_definition,
     build_posterior_missing_continuous_trait_definition,
     build_posterior_missing_discrete_trait_definition,
     build_posterior_missing_nucleotide_definition,
     build_posterior_predictive_simulation_definition,
-    build_partition_substitution_model_definition,
-    build_bayesian_model_parameter_state,
-    build_bayesian_phylogenetic_state,
-    build_bayesian_phylogenetic_state_from_prior_only_sample,
-    build_bayesian_prior_component_state,
-    build_bayesian_tree_state,
-    build_metropolis_hastings_posterior_tree_sample_archive,
-    build_metropolis_hastings_proposal,
-    build_local_clock_rate_model,
+    build_posterior_uncertainty_figure_package,
     build_relaxed_lognormal_clock_model,
+    build_skyline_coalescent_tree_prior,
     build_strict_clock_rate_model,
     build_substitution_parameter_prior_bundle,
-    build_skyline_coalescent_tree_prior,
-    build_posterior_uncertainty_figure_package,
     build_uniform_rooted_tree_topology_prior,
     compare_log_probabilities,
+    compute_equal_tail_interval,
+    compute_highest_posterior_density_interval,
     compute_mrbayes_effective_sample_sizes,
+    compute_trace_autocorrelation,
+    compute_trace_effective_sample_size,
+    compute_trace_integrated_autocorrelation_time,
     count_rooted_labeled_bifurcating_topologies,
+    deserialize_bayesian_phylogenetic_state,
+    deserialize_bayesian_phylogenetic_state_json,
     diagnose_metropolis_hastings_burnin,
-    evaluate_constant_population_coalescent_tree_log_prior,
-    evaluate_calibration_tree_log_prior,
     evaluate_birth_death_tree_log_prior,
+    evaluate_calibration_tree_log_prior,
     evaluate_clock_model_scalar_log_prior,
+    evaluate_constant_population_coalescent_tree_log_prior,
     evaluate_continuous_trait_location_log_prior,
     evaluate_continuous_trait_model_log_prior,
     evaluate_continuous_trait_probability_log_prior,
     evaluate_continuous_trait_scalar_log_prior,
     evaluate_discrete_trait_rate_log_prior,
     evaluate_discrete_trait_rate_value_log_prior,
-    evaluate_partition_model_log_prior,
     evaluate_local_clock_tree_log_prior,
+    evaluate_partition_model_log_prior,
     evaluate_relaxed_lognormal_clock_tree_log_prior,
     evaluate_skyline_coalescent_tree_log_prior,
     evaluate_strict_clock_tree_log_prior,
     evaluate_substitution_parameter_log_prior,
+    evaluate_tree_topology_log_prior,
     evaluate_yule_tree_log_prior,
+    infer_bayesian_model_id,
+    list_metropolis_hastings_retained_sample_ids,
+    load_bayesian_posterior_tree_sample_archive,
+    load_bayesian_run_manifest,
+    load_calibration_prior_definitions,
+    load_local_clock_regime_definitions,
     log_probability_add,
     logsumexp,
     normalize_log_probabilities,
     parse_beast_log,
     parse_beast_posterior_tree_samples,
     parse_mrbayes_consensus_tree,
-    load_local_clock_regime_definitions,
-    run_beast_posterior_inference,
-    run_brownian_continuous_trait_metropolis_hastings,
-    run_ornstein_uhlenbeck_continuous_trait_metropolis_hastings,
-    run_discrete_trait_mk_metropolis_hastings,
-    run_fixed_topology_dna_metropolis_hastings,
-    run_fixed_topology_partitioned_dna_metropolis_hastings,
-    run_fixed_topology_relaxed_clock_metropolis_hastings,
-    run_fixed_topology_strict_clock_metropolis_hastings,
-    run_joint_topology_dna_metropolis_hastings,
-    run_mrbayes_posterior_inference,
-    deserialize_bayesian_phylogenetic_state,
-    deserialize_bayesian_phylogenetic_state_json,
-    run_metropolis_hastings_sampler,
     propose_base_frequency_simplex_move,
     propose_branch_length_scaling_move,
     propose_clock_rate_move,
     propose_continuous_trait_location_move,
     propose_discrete_trait_rate_move,
     propose_gamma_alpha_move,
-    propose_gtr_exchangeability_move,
     propose_global_tree_height_scaling_move,
+    propose_gtr_exchangeability_move,
     propose_invariant_proportion_move,
     propose_kappa_move,
     propose_nni_topology_move,
@@ -343,13 +341,22 @@ from bijux_phylogenetics.bayesian import (
     propose_partition_linking_move,
     propose_spr_topology_move,
     propose_tbr_topology_move,
-    apply_independent_metropolis_hastings_burnin_policy,
-    apply_metropolis_hastings_burnin_policy,
+    replay_fixed_topology_dna_run_manifest,
     resolve_partition_parameter_linkage_plan_from_model_parameters,
     resolve_partition_parameter_states_from_model_parameters,
     run_adaptive_tuned_metropolis_hastings_sampler,
+    run_beast_posterior_inference,
+    run_brownian_continuous_trait_metropolis_hastings,
+    run_discrete_trait_mk_metropolis_hastings,
+    run_fixed_topology_dna_metropolis_hastings,
+    run_fixed_topology_partitioned_dna_metropolis_hastings,
+    run_fixed_topology_relaxed_clock_metropolis_hastings,
+    run_fixed_topology_strict_clock_metropolis_hastings,
+    run_joint_topology_dna_metropolis_hastings,
+    run_metropolis_hastings_sampler,
+    run_mrbayes_posterior_inference,
+    run_ornstein_uhlenbeck_continuous_trait_metropolis_hastings,
     sample_prior_only_phylogenetic_state,
-    evaluate_tree_topology_log_prior,
     score_bayesian_phylogenetic_state,
     serialize_bayesian_phylogenetic_state,
     serialize_bayesian_phylogenetic_state_json,
@@ -359,26 +366,9 @@ from bijux_phylogenetics.bayesian import (
     simulate_fixed_topology_partitioned_dna_posterior_predictive,
     simulate_joint_topology_dna_posterior_predictive,
     simulate_ornstein_uhlenbeck_continuous_trait_posterior_predictive,
-    build_bayesian_run_manifest,
-    build_bayesian_run_burnin_policy,
-    build_fixed_topology_dna_run_manifest,
-    infer_bayesian_model_id,
-    list_metropolis_hastings_retained_sample_ids,
-    load_bayesian_posterior_tree_sample_archive,
-    load_bayesian_run_manifest,
-    replay_fixed_topology_dna_run_manifest,
-    summarize_bayesian_wrapper_correspondence,
-    summarize_metropolis_hastings_model_averaged_estimates,
-    summarize_metropolis_hastings_trace_effective_sample_size,
-    summarize_metropolis_hastings_trace_autocorrelation,
-    summarize_metropolis_hastings_trace_posterior_intervals,
-    summarize_posterior_model_averaged_estimates,
-    summarize_posterior_predictive_p_values,
-    summarize_independent_metropolis_hastings_trace_effective_sample_size,
-    summarize_independent_metropolis_hastings_trace_autocorrelation,
-    summarize_independent_metropolis_hastings_trace_posterior_intervals,
     simulate_prior_only_phylogenetic_states,
     strip_partition_model_parameter_state,
+    summarize_bayesian_wrapper_correspondence,
     summarize_beast_log,
     summarize_brownian_continuous_trait_posterior_ancestral_states,
     summarize_brownian_continuous_trait_posterior_missing_values,
@@ -386,22 +376,31 @@ from bijux_phylogenetics.bayesian import (
     summarize_continuous_trait_posterior_missing_values,
     summarize_discrete_trait_mk_posterior_ancestral_states,
     summarize_discrete_trait_mk_posterior_missing_states,
-    summarize_mrbayes_posterior_trees,
     summarize_fixed_topology_dna_posterior_missing_states,
     summarize_fixed_topology_partitioned_dna_posterior_missing_states,
+    summarize_independent_metropolis_hastings_trace_autocorrelation,
+    summarize_independent_metropolis_hastings_trace_effective_sample_size,
+    summarize_independent_metropolis_hastings_trace_posterior_intervals,
     summarize_joint_topology_dna_posterior_missing_states,
-    summarize_nucleotide_posterior_missing_states,
+    summarize_metropolis_hastings_model_averaged_estimates,
+    summarize_metropolis_hastings_trace_autocorrelation,
+    summarize_metropolis_hastings_trace_effective_sample_size,
+    summarize_metropolis_hastings_trace_posterior_intervals,
+    summarize_mrbayes_posterior_trees,
     summarize_nucleotide_posterior_ancestral_sequences,
+    summarize_nucleotide_posterior_missing_states,
     summarize_ornstein_uhlenbeck_continuous_trait_posterior_ancestral_states,
     summarize_ornstein_uhlenbeck_continuous_trait_posterior_missing_values,
+    summarize_posterior_model_averaged_estimates,
+    summarize_posterior_predictive_p_values,
     validate_partition_substitution_model_name,
     validate_tree_topology_prior_taxa,
+    write_bayesian_posterior_tree_sample_archive,
+    write_bayesian_run_manifest,
     write_beast_log_summary_table,
     write_mrbayes_parameter_summary_table,
     write_posterior_ancestral_sequence_fasta,
     write_posterior_ancestral_state_probability_table,
-    write_bayesian_posterior_tree_sample_archive,
-    write_bayesian_run_manifest,
     write_posterior_tree_subsample,
     write_supplementary_bayesian_diagnostics_table,
 )
@@ -758,28 +757,28 @@ from bijux_phylogenetics.runtime.errors import (
 )
 from bijux_phylogenetics.runtime.identity import IDENTITY
 from bijux_phylogenetics.trees import (
+    TREE_SET_SPLIT_FREQUENCY_POLICIES,
     BranchLengthAggregate,
     BranchLengthDistributionReport,
     CladeTableReport,
     PosteriorAgreementSubtreeCandidateRow,
     PosteriorAgreementSubtreeReport,
-    PosteriorCladeCorrelationReport,
-    PosteriorCladeCorrelationRow,
     PosteriorBranchLengthSummaryReport,
     PosteriorBranchLengthSummaryRow,
+    PosteriorCladeCorrelationReport,
+    PosteriorCladeCorrelationRow,
     PosteriorNodeAgeSummaryReport,
     PosteriorNodeAgeSummaryRow,
     PosteriorTreeDistanceDiagnosticRow,
     PosteriorTreeDistanceDiagnosticsReport,
     PosteriorTreeDistanceDistributionRow,
-    TREE_SET_SPLIT_FREQUENCY_POLICIES,
-    TreeShapeReport,
     TreeSetCredibleCladeRow,
     TreeSetCredibleCladeSetReport,
     TreeSetMaximumCladeCredibilityCandidateRow,
     TreeSetMaximumCladeCredibilityReport,
     TreeSetSplitFrequencyReport,
     TreeSetSplitFrequencyRow,
+    TreeShapeReport,
     analyze_branch_length_distribution,
     analyze_tree_set_branch_lengths,
     cluster_trees_by_topology,
@@ -793,18 +792,18 @@ from bijux_phylogenetics.trees import (
     compute_posterior_clade_correlation_matrix,
     compute_posterior_tree_distance_diagnostics,
     compute_strict_consensus_tree,
-    compute_tree_set_split_frequency_table,
     compute_tree_distance_matrix,
+    compute_tree_set_split_frequency_table,
     detect_posterior_topology_multimodality,
     detect_unstable_clades,
     detect_unstable_taxa,
     extract_tree_clades,
     extract_tree_set_clades,
     load_tree_set,
+    summarize_clade_credibility_conflicts,
     summarize_posterior_agreement_subtree,
     summarize_posterior_branch_lengths,
     summarize_posterior_node_ages,
-    summarize_clade_credibility_conflicts,
     summarize_tree_set_shapes,
     summarize_tree_shape,
     summarize_uncertainty_aware_conclusions,
@@ -820,16 +819,16 @@ from bijux_phylogenetics.trees import (
     write_posterior_agreement_subtree_removed_taxa_table,
     write_posterior_agreement_subtree_search_table,
     write_posterior_agreement_subtree_summary_table,
+    write_posterior_branch_length_summary_table,
     write_posterior_clade_correlation_artifacts,
     write_posterior_clade_correlation_matrix_table,
     write_posterior_clade_correlation_pair_table,
-    write_posterior_branch_length_summary_table,
     write_posterior_node_age_summary_table,
     write_posterior_tree_distance_artifacts,
     write_posterior_tree_distance_diagnostic_table,
     write_posterior_tree_distance_distribution_table,
-    write_tree_set_split_frequency_table,
     write_topology_cluster_table,
+    write_tree_set_split_frequency_table,
     write_tree_shape_table,
     write_uncertainty_conclusion_table,
 )
@@ -913,8 +912,8 @@ def test_package_root_exposes_curated_domain_gateways() -> None:
     import bijux_phylogenetics.datasets as datasets_api
     import bijux_phylogenetics.distance as distance_api
     import bijux_phylogenetics.evidence as evidence_api
-    import bijux_phylogenetics.parsimony as parsimony_api
     import bijux_phylogenetics.parity as parity_api
+    import bijux_phylogenetics.parsimony as parsimony_api
     import bijux_phylogenetics.phylo as phylo_api
     import bijux_phylogenetics.trees as trees_api
 
@@ -1023,9 +1022,7 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         trees_api.PosteriorAgreementSubtreeCandidateRow
         is PosteriorAgreementSubtreeCandidateRow
     )
-    assert (
-        trees_api.PosteriorAgreementSubtreeReport is PosteriorAgreementSubtreeReport
-    )
+    assert trees_api.PosteriorAgreementSubtreeReport is PosteriorAgreementSubtreeReport
     assert trees_api.PosteriorCladeCorrelationReport is PosteriorCladeCorrelationReport
     assert trees_api.PosteriorCladeCorrelationRow is PosteriorCladeCorrelationRow
     assert trees_api.PosteriorBranchLengthSummaryRow is PosteriorBranchLengthSummaryRow
@@ -1047,7 +1044,9 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         trees_api.PosteriorTreeDistanceDistributionRow
         is PosteriorTreeDistanceDistributionRow
     )
-    assert trees_api.TREE_SET_SPLIT_FREQUENCY_POLICIES is TREE_SET_SPLIT_FREQUENCY_POLICIES
+    assert (
+        trees_api.TREE_SET_SPLIT_FREQUENCY_POLICIES is TREE_SET_SPLIT_FREQUENCY_POLICIES
+    )
     assert trees_api.TreeShapeReport is TreeShapeReport
     assert trees_api.TreeSetCredibleCladeRow is TreeSetCredibleCladeRow
     assert trees_api.TreeSetCredibleCladeSetReport is TreeSetCredibleCladeSetReport
@@ -1323,12 +1322,8 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.CATEGORICAL_MISSING_STATE_POLICIES
         is CATEGORICAL_MISSING_STATE_POLICIES
     )
-    assert (
-        bayesian_api.CLOCK_RATE_MODEL_FAMILIES is CLOCK_RATE_MODEL_FAMILIES
-    )
-    assert (
-        bayesian_api.CALIBRATION_PRIOR_FAMILIES is CALIBRATION_PRIOR_FAMILIES
-    )
+    assert bayesian_api.CLOCK_RATE_MODEL_FAMILIES is CLOCK_RATE_MODEL_FAMILIES
+    assert bayesian_api.CALIBRATION_PRIOR_FAMILIES is CALIBRATION_PRIOR_FAMILIES
     assert (
         bayesian_api.POSITIVE_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES
         is POSITIVE_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES
@@ -1338,15 +1333,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is PROBABILITY_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES
     )
     assert (
-        bayesian_api.LOCAL_CLOCK_RATE_MODEL_FAMILIES
-        is LOCAL_CLOCK_RATE_MODEL_FAMILIES
+        bayesian_api.LOCAL_CLOCK_RATE_MODEL_FAMILIES is LOCAL_CLOCK_RATE_MODEL_FAMILIES
     )
-    assert (
-        bayesian_api.LOCAL_CLOCK_TARGET_KINDS is LOCAL_CLOCK_TARGET_KINDS
-    )
-    assert (
-        bayesian_api.RELAXED_CLOCK_RATE_POLICIES is RELAXED_CLOCK_RATE_POLICIES
-    )
+    assert bayesian_api.LOCAL_CLOCK_TARGET_KINDS is LOCAL_CLOCK_TARGET_KINDS
+    assert bayesian_api.RELAXED_CLOCK_RATE_POLICIES is RELAXED_CLOCK_RATE_POLICIES
     assert (
         bayesian_api.SIMPLEX_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES
         is SIMPLEX_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES
@@ -1355,17 +1345,11 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.SUBSTITUTION_PARAMETER_PRIOR_TARGETS
         is SUBSTITUTION_PARAMETER_PRIOR_TARGETS
     )
+    assert bayesian_api.TREE_TOPOLOGY_PRIOR_FAMILIES is TREE_TOPOLOGY_PRIOR_FAMILIES
     assert (
-        bayesian_api.TREE_TOPOLOGY_PRIOR_FAMILIES is TREE_TOPOLOGY_PRIOR_FAMILIES
+        bayesian_api.BIRTH_DEATH_TREE_PRIOR_FAMILIES is BIRTH_DEATH_TREE_PRIOR_FAMILIES
     )
-    assert (
-        bayesian_api.BIRTH_DEATH_TREE_PRIOR_FAMILIES
-        is BIRTH_DEATH_TREE_PRIOR_FAMILIES
-    )
-    assert (
-        bayesian_api.COALESCENT_TREE_PRIOR_FAMILIES
-        is COALESCENT_TREE_PRIOR_FAMILIES
-    )
+    assert bayesian_api.COALESCENT_TREE_PRIOR_FAMILIES is COALESCENT_TREE_PRIOR_FAMILIES
     assert (
         bayesian_api.CONTINUOUS_TRAIT_SCALAR_PRIOR_FAMILIES
         is CONTINUOUS_TRAIT_SCALAR_PRIOR_FAMILIES
@@ -1379,10 +1363,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is CONTINUOUS_TRAIT_PROBABILITY_PRIOR_FAMILIES
     )
     assert bayesian_api.CONTINUOUS_TRAIT_PRIOR_MODES is CONTINUOUS_TRAIT_PRIOR_MODES
-    assert (
-        bayesian_api.CONTINUOUS_TRAIT_PRIOR_TARGETS
-        is CONTINUOUS_TRAIT_PRIOR_TARGETS
-    )
+    assert bayesian_api.CONTINUOUS_TRAIT_PRIOR_TARGETS is CONTINUOUS_TRAIT_PRIOR_TARGETS
     assert (
         bayesian_api.DISCRETE_TRAIT_RATE_PRIOR_FAMILIES
         is DISCRETE_TRAIT_RATE_PRIOR_FAMILIES
@@ -1391,10 +1372,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.DISCRETE_TRAIT_RATE_PRIOR_MODELS
         is DISCRETE_TRAIT_RATE_PRIOR_MODELS
     )
-    assert (
-        bayesian_api.PARTITION_MODEL_PRIOR_TARGETS
-        is PARTITION_MODEL_PRIOR_TARGETS
-    )
+    assert bayesian_api.PARTITION_MODEL_PRIOR_TARGETS is PARTITION_MODEL_PRIOR_TARGETS
     assert (
         bayesian_api.PARTITION_PARAMETER_LINKAGE_POLICIES
         is PARTITION_PARAMETER_LINKAGE_POLICIES
@@ -1433,16 +1411,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is ContinuousTraitLocationPriorModel
     )
     assert (
-        bayesian_api.ContinuousTraitScalarPriorModel
-        is ContinuousTraitScalarPriorModel
+        bayesian_api.ContinuousTraitScalarPriorModel is ContinuousTraitScalarPriorModel
     )
     assert (
         bayesian_api.ContinuousTraitProbabilityPriorModel
         is ContinuousTraitProbabilityPriorModel
     )
     assert (
-        bayesian_api.ContinuousTraitModelPriorBundle
-        is ContinuousTraitModelPriorBundle
+        bayesian_api.ContinuousTraitModelPriorBundle is ContinuousTraitModelPriorBundle
     )
     assert (
         bayesian_api.ContinuousTraitModelPriorEvaluationReport
@@ -1455,18 +1431,13 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is DiscreteTraitRatePriorEvaluationReport
     )
     assert bayesian_api.DiscreteTraitRatePriorRow is DiscreteTraitRatePriorRow
+    assert bayesian_api.DiscreteTraitMkModelDefinition is DiscreteTraitMkModelDefinition
     assert (
-        bayesian_api.DiscreteTraitMkModelDefinition
-        is DiscreteTraitMkModelDefinition
-    )
-    assert (
-        bayesian_api.DiscreteTraitMkNodeStateSummary
-        is DiscreteTraitMkNodeStateSummary
+        bayesian_api.DiscreteTraitMkNodeStateSummary is DiscreteTraitMkNodeStateSummary
     )
     assert bayesian_api.DiscreteTraitMkPosteriorRow is DiscreteTraitMkPosteriorRow
     assert (
-        bayesian_api.DiscreteTraitMkProposalSchedule
-        is DiscreteTraitMkProposalSchedule
+        bayesian_api.DiscreteTraitMkProposalSchedule is DiscreteTraitMkProposalSchedule
     )
     assert bayesian_api.DiscreteTraitMkRunReport is DiscreteTraitMkRunReport
     assert bayesian_api.LocalClockRateModel is LocalClockRateModel
@@ -1540,8 +1511,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is OrnsteinUhlenbeckContinuousTraitRunReport
     )
     assert (
-        bayesian_api.FixedTopologyDnaModelDefinition
-        is FixedTopologyDnaModelDefinition
+        bayesian_api.FixedTopologyDnaModelDefinition is FixedTopologyDnaModelDefinition
     )
     assert bayesian_api.FixedTopologyDnaPosteriorRow is FixedTopologyDnaPosteriorRow
     assert (
@@ -1618,8 +1588,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is FixedTopologyStrictClockRunReport
     )
     assert (
-        bayesian_api.JointTopologyDnaModelDefinition
-        is JointTopologyDnaModelDefinition
+        bayesian_api.JointTopologyDnaModelDefinition is JointTopologyDnaModelDefinition
     )
     assert bayesian_api.JointTopologyDnaPosteriorRow is JointTopologyDnaPosteriorRow
     assert (
@@ -1693,7 +1662,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.PosteriorMissingNucleotideDefinition
         is PosteriorMissingNucleotideDefinition
     )
-    assert bayesian_api.PosteriorMissingNucleotideReport is PosteriorMissingNucleotideReport
+    assert (
+        bayesian_api.PosteriorMissingNucleotideReport
+        is PosteriorMissingNucleotideReport
+    )
     assert (
         bayesian_api.PosteriorMissingNucleotideSequenceRecord
         is PosteriorMissingNucleotideSequenceRecord
@@ -1721,8 +1693,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bayesian_api.BayesianRunBurninPolicy is BayesianRunBurninPolicy
     assert bayesian_api.BayesianRunManifest is BayesianRunManifest
     assert (
-        bayesian_api.BayesianRunManifestReplayReport
-        is BayesianRunManifestReplayReport
+        bayesian_api.BayesianRunManifestReplayReport is BayesianRunManifestReplayReport
     )
     assert bayesian_api.BayesianRunPriorRow is BayesianRunPriorRow
     assert (
@@ -1733,7 +1704,9 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.PosteriorPredictiveObservedStatisticRow
         is PosteriorPredictiveObservedStatisticRow
     )
-    assert bayesian_api.PosteriorPredictivePValueReport is PosteriorPredictivePValueReport
+    assert (
+        bayesian_api.PosteriorPredictivePValueReport is PosteriorPredictivePValueReport
+    )
     assert bayesian_api.PosteriorPredictivePValueRow is PosteriorPredictivePValueRow
     assert (
         bayesian_api.PosteriorPredictiveReplicateStatisticRow
@@ -2004,17 +1977,12 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.build_constant_population_coalescent_tree_prior
         is build_constant_population_coalescent_tree_prior
     )
-    assert (
-        bayesian_api.build_local_clock_rate_model is build_local_clock_rate_model
-    )
+    assert bayesian_api.build_local_clock_rate_model is build_local_clock_rate_model
     assert (
         bayesian_api.build_relaxed_lognormal_clock_model
         is build_relaxed_lognormal_clock_model
     )
-    assert (
-        bayesian_api.build_strict_clock_rate_model
-        is build_strict_clock_rate_model
-    )
+    assert bayesian_api.build_strict_clock_rate_model is build_strict_clock_rate_model
     assert (
         bayesian_api.build_skyline_coalescent_tree_prior
         is build_skyline_coalescent_tree_prior
@@ -2039,7 +2007,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.build_adaptive_tuning_controller
         is build_adaptive_tuning_controller
     )
-    assert bayesian_api.build_adaptive_tuning_window_row is build_adaptive_tuning_window_row
+    assert (
+        bayesian_api.build_adaptive_tuning_window_row
+        is build_adaptive_tuning_window_row
+    )
     assert bayesian_api.build_adaptive_tuning_report is build_adaptive_tuning_report
     assert (
         bayesian_api.build_partition_model_parameter_state
@@ -2142,10 +2113,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.propose_node_height_sliding_move
         is propose_node_height_sliding_move
     )
-    assert (
-        bayesian_api.propose_partition_linking_move
-        is propose_partition_linking_move
-    )
+    assert bayesian_api.propose_partition_linking_move is propose_partition_linking_move
     assert bayesian_api.propose_spr_topology_move is propose_spr_topology_move
     assert bayesian_api.propose_tbr_topology_move is propose_tbr_topology_move
     assert (
@@ -2165,8 +2133,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is score_bayesian_phylogenetic_state
     )
     assert (
-        bayesian_api.run_metropolis_hastings_sampler
-        is run_metropolis_hastings_sampler
+        bayesian_api.run_metropolis_hastings_sampler is run_metropolis_hastings_sampler
     )
     assert (
         bayesian_api.run_brownian_continuous_trait_metropolis_hastings
@@ -2317,19 +2284,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.BayesianWrapperCorrespondenceSummaryRow
         is BayesianWrapperCorrespondenceSummaryRow
     )
-    assert (
-        bayesian_api.compute_equal_tail_interval is compute_equal_tail_interval
-    )
+    assert bayesian_api.compute_equal_tail_interval is compute_equal_tail_interval
     assert (
         bayesian_api.compute_highest_posterior_density_interval
         is compute_highest_posterior_density_interval
     )
+    assert bayesian_api.compute_trace_autocorrelation is compute_trace_autocorrelation
     assert (
-        bayesian_api.compute_trace_autocorrelation is compute_trace_autocorrelation
-    )
-    assert (
-        bayesian_api.HighestPosteriorDensityInterval
-        is HighestPosteriorDensityInterval
+        bayesian_api.HighestPosteriorDensityInterval is HighestPosteriorDensityInterval
     )
     assert (
         bayesian_api.compute_trace_effective_sample_size
@@ -2514,9 +2476,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.evaluate_substitution_parameter_log_prior
         is evaluate_substitution_parameter_log_prior
     )
-    assert (
-        bayesian_api.DISCRETE_TRAIT_MK_MODELS is DISCRETE_TRAIT_MK_MODELS
-    )
+    assert bayesian_api.DISCRETE_TRAIT_MK_MODELS is DISCRETE_TRAIT_MK_MODELS
     assert (
         bayesian_api.DISCRETE_TRAIT_MK_ROOT_PRIOR_MODES
         is DISCRETE_TRAIT_MK_ROOT_PRIOR_MODES
@@ -2735,7 +2695,9 @@ def test_compute_clade_frequency_table_counts_informative_clades() -> None:
     ]
 
 
-def test_compute_tree_set_split_frequency_table_distinguishes_rooting_policies() -> None:
+def test_compute_tree_set_split_frequency_table_distinguishes_rooting_policies() -> (
+    None
+):
     rooted_report = compute_tree_set_split_frequency_table(
         fixture("example_tree_set_rooting_only_difference.nwk"),
         split_policy="rooted",
@@ -11401,7 +11363,9 @@ def test_cli_phylo_dating_penalized_likelihood_cross_validation_includes_manifes
     tree_path = fixture(
         "penalized_likelihood_cross_validation_substitution_tree_5_taxa.nwk"
     )
-    metadata_path = fixture("penalized_likelihood_cross_validation_tip_dates_5_taxa.tsv")
+    metadata_path = fixture(
+        "penalized_likelihood_cross_validation_tip_dates_5_taxa.tsv"
+    )
     calibration_path = fixture(
         "penalized_likelihood_cross_validation_calibrations_5_taxa.tsv"
     )
@@ -11468,7 +11432,9 @@ def test_cli_phylo_dating_calibration_constraints_includes_manifest(
     tree_path = fixture(
         "penalized_likelihood_cross_validation_substitution_tree_5_taxa.nwk"
     )
-    calibration_path = fixture("dating_calibration_constraints_contradictory_5_taxa.tsv")
+    calibration_path = fixture(
+        "dating_calibration_constraints_contradictory_5_taxa.tsv"
+    )
 
     exit_code = main(
         [
@@ -11514,7 +11480,9 @@ def test_cli_phylo_dating_relaxed_rate_summary_includes_manifest(
 ) -> None:
     out_dir = tmp_path / "relaxed-rate-summary"
     manifest = tmp_path / "relaxed-rate-summary.manifest.json"
-    substitution_tree_path = fixture("relaxed_rate_summary_substitution_tree_4_taxa.nwk")
+    substitution_tree_path = fixture(
+        "relaxed_rate_summary_substitution_tree_4_taxa.nwk"
+    )
     dated_tree_path = fixture("relaxed_rate_summary_dated_tree_4_taxa.nwk")
 
     exit_code = main(

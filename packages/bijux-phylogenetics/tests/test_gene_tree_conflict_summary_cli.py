@@ -53,5 +53,8 @@ def test_cli_tree_set_gene_tree_conflicts_writes_expected_outputs(
         "gene-tree-review.summary.tsv",
     ]
     assert (
-        output_dir / "gene-tree-review.clade-conflicts.tsv"
-    ).read_text(encoding="utf-8").splitlines()[1].startswith("A|B\t0.666666666666667")
+        (output_dir / "gene-tree-review.clade-conflicts.tsv")
+        .read_text(encoding="utf-8")
+        .splitlines()[1]
+        .startswith("A|B\t0.666666666666667")
+    )

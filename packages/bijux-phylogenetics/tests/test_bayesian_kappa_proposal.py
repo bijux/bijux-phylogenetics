@@ -43,9 +43,8 @@ def test_kappa_proposal_changes_real_likelihood_and_preserves_model_label() -> N
     proposed_model_parameters = proposal.proposed_model_parameters
     assert proposed_tree is not None
     assert proposed_model_parameters is not None
-    assert (
-        rooted_topology_fingerprint(proposed_tree)
-        == rooted_topology_fingerprint(current_state.tree.to_tree())
+    assert rooted_topology_fingerprint(proposed_tree) == rooted_topology_fingerprint(
+        current_state.tree.to_tree()
     )
     assert (
         proposed_model_parameters.categorical_parameters["substitution-model"] == "K80"
@@ -151,7 +150,9 @@ def _build_scored_k80_state() -> BayesianPhylogeneticState:
 def _k80_log_likelihood(state: BayesianPhylogeneticState) -> float:
     return evaluate_k80_tree_likelihood(
         state.tree.to_tree(),
-        load_fasta_alignment(fixture("alignments", "k80_likelihood_alignment_2_taxa.fasta")),
+        load_fasta_alignment(
+            fixture("alignments", "k80_likelihood_alignment_2_taxa.fasta")
+        ),
         kappa=state.model_parameters.scalar_parameters["kappa"],
     ).log_likelihood
 

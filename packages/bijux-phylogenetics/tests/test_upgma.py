@@ -4,12 +4,12 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.distance.average_linkage as average_linkage_module
 from bijux_phylogenetics.distance import (
     build_tree_from_imported_distance_matrix,
     build_upgma_tree,
     load_imported_distance_matrix,
 )
+import bijux_phylogenetics.distance.average_linkage as average_linkage_module
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.runtime.errors import InvalidDistanceMatrixError
 

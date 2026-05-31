@@ -38,7 +38,9 @@ def test_bayesian_engine_validation_matrix_collects_real_and_governed_cases(
     executables = require_bayesian_validation_matrix_executables()
     matrix = run_bayesian_engine_validation_matrix(
         inputs=BayesianValidationMatrixInputs(
-            mrbayes_alignment_path=fixture("alignments/example_multilocus_alignment.fasta"),
+            mrbayes_alignment_path=fixture(
+                "alignments/example_multilocus_alignment.fasta"
+            ),
             mrbayes_partition_path=fixture(
                 "alignments/example_multilocus_partitions.txt"
             ),

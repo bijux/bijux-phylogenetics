@@ -4,8 +4,8 @@ import json
 import math
 from pathlib import Path
 
-import bijux_phylogenetics.phylo.likelihood as likelihood_api
 from bijux_phylogenetics.io.newick import loads_newick
+import bijux_phylogenetics.phylo.likelihood as likelihood_api
 from bijux_phylogenetics.phylo.likelihood import (
     search_nucleotide_likelihood_simulated_annealing,
     search_nucleotide_likelihood_simulated_annealing_from_alignment,
@@ -215,8 +215,12 @@ def test_write_likelihood_simulated_annealing_artifacts_materializes_governed_ou
         "trace_table_path",
         "run_json_path",
     }
-    assert outputs["trace_table_path"].read_text(encoding="utf-8").startswith(
-        "iteration\ttemperature\tmove_family\tcurrent_log_likelihood_before\tproposed_log_likelihood\tlog_likelihood_delta\tacceptance_probability\tacceptance_uniform_draw\tacceptance_decision\taccepted_move\tbest_tree_improved\tcurrent_tree_before_newick\tproposed_tree_newick\tcurrent_tree_after_newick\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tpruned_clade_id\tregraft_target_branch_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\n"
+    assert (
+        outputs["trace_table_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "iteration\ttemperature\tmove_family\tcurrent_log_likelihood_before\tproposed_log_likelihood\tlog_likelihood_delta\tacceptance_probability\tacceptance_uniform_draw\tacceptance_decision\taccepted_move\tbest_tree_improved\tcurrent_tree_before_newick\tproposed_tree_newick\tcurrent_tree_after_newick\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tpruned_clade_id\tregraft_target_branch_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "nucleotide-likelihood-simulated-annealing-search"

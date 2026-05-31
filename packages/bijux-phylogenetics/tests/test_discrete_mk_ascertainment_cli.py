@@ -12,13 +12,19 @@ def fixture(group: str, name: str) -> Path:
     return FIXTURES / group / name
 
 
-def test_comparative_discrete_mk_cli_reports_lewis_ascertainment_metrics(capsys) -> None:
+def test_comparative_discrete_mk_cli_reports_lewis_ascertainment_metrics(
+    capsys,
+) -> None:
     exit_code = main(
         [
             "comparative",
             "discrete-mk",
             str(fixture("trees", "example_tree.nwk")),
-            str(fixture("metadata", "example_traits_discrete_mk_variable_only_four_taxa.tsv")),
+            str(
+                fixture(
+                    "metadata", "example_traits_discrete_mk_variable_only_four_taxa.tsv"
+                )
+            ),
             "--trait",
             "state",
             "--taxon-column",

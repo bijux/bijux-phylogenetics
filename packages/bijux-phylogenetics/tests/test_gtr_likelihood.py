@@ -127,9 +127,11 @@ def _expected_gtr_two_tip_log_likelihood(
         left_index = state_index[left_state]
         right_index = state_index[right_state]
         for root_index, root_probability in enumerate(base_frequencies):
-            pair_probability += float(root_probability) * float(
-                left_transition[root_index, left_index]
-            ) * float(right_transition[root_index, right_index])
+            pair_probability += (
+                float(root_probability)
+                * float(left_transition[root_index, left_index])
+                * float(right_transition[root_index, right_index])
+            )
         probability *= pair_probability
     return math.log(probability)
 

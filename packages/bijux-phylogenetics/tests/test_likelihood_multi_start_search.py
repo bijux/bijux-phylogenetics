@@ -4,8 +4,8 @@ import json
 import math
 from pathlib import Path
 
-import bijux_phylogenetics.phylo.likelihood as likelihood_api
 from bijux_phylogenetics.io.trees import load_tree
+import bijux_phylogenetics.phylo.likelihood as likelihood_api
 from bijux_phylogenetics.phylo.likelihood import (
     build_likelihood_multi_start_candidates,
     search_nucleotide_likelihood_multi_start_from_alignment,
@@ -35,8 +35,12 @@ def test_package_likelihood_gateway_exports_multi_start_search_surface() -> None
     )
 
 
-def test_likelihood_multi_start_candidates_include_input_tree_and_distinct_random_starts() -> None:
-    start_tree = load_tree(fixture("trees", "jc69_likelihood_nni_start_tree_4_taxa.nwk"))
+def test_likelihood_multi_start_candidates_include_input_tree_and_distinct_random_starts() -> (
+    None
+):
+    start_tree = load_tree(
+        fixture("trees", "jc69_likelihood_nni_start_tree_4_taxa.nwk")
+    )
 
     candidates = build_likelihood_multi_start_candidates(
         start_tree,
@@ -61,7 +65,9 @@ def test_likelihood_multi_start_candidates_include_input_tree_and_distinct_rando
     assert len({candidate.tree.to_newick() for candidate in candidates}) == 4
 
 
-def test_likelihood_multi_start_search_reports_each_source_likelihood_hash_and_best_run() -> None:
+def test_likelihood_multi_start_search_reports_each_source_likelihood_hash_and_best_run() -> (
+    None
+):
     report = search_nucleotide_likelihood_multi_start_from_alignment(
         fixture("trees", "jc69_likelihood_nni_start_tree_4_taxa.nwk"),
         fixture("alignments", "jc69_likelihood_nni_alignment_4_taxa.fasta"),
@@ -97,9 +103,9 @@ def test_likelihood_multi_start_search_reports_each_source_likelihood_hash_and_b
         "nucleotide-likelihood-nni-search",
     ]
     assert len({row.start_tree_newick for row in report.run_summaries}) == 3
-    assert {
-        row.final_topology_fingerprint for row in report.run_summaries
-    } == {report.best_final_topology_fingerprint}
+    assert {row.final_topology_fingerprint for row in report.run_summaries} == {
+        report.best_final_topology_fingerprint
+    }
     assert [row.best_run for row in report.run_summaries] == [True, False, False]
 
 
@@ -149,8 +155,12 @@ def test_write_nucleotide_likelihood_multi_start_artifacts_materializes_governed
         "summary_path",
         "run_json_path",
     }
-    assert outputs["summary_path"].read_text(encoding="utf-8").startswith(
-        "start_tree_source_kind\tstart_tree_source_label\tstart_tree_generation_seed\tsearch_algorithm\tstart_log_likelihood\tfinal_log_likelihood\tfinal_likelihood_rank\tfinal_topology_fingerprint\tsearch_iteration_count\taccepted_move_count\tevaluated_neighbor_count\tbranch_reoptimization_policy\tsubstitution_parameter_policy\tstopping_reason\tbest_run\tstart_tree_newick\tfinal_tree_newick\n"
+    assert (
+        outputs["summary_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "start_tree_source_kind\tstart_tree_source_label\tstart_tree_generation_seed\tsearch_algorithm\tstart_log_likelihood\tfinal_log_likelihood\tfinal_likelihood_rank\tfinal_topology_fingerprint\tsearch_iteration_count\taccepted_move_count\tevaluated_neighbor_count\tbranch_reoptimization_policy\tsubstitution_parameter_policy\tstopping_reason\tbest_run\tstart_tree_newick\tfinal_tree_newick\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "nucleotide-likelihood-multi-start-search"

@@ -141,11 +141,17 @@ def test_write_parsimony_jackknife_artifacts_materializes_governed_output_family
         "clade_frequencies_path",
         "run_json_path",
     }
-    assert outputs["replicate_scores_path"].read_text(encoding="utf-8").startswith(
-        "replicate_index\tretained_character_count\tbest_score\toptimal_tree_count\ttree_newick\n"
+    assert (
+        outputs["replicate_scores_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "replicate_index\tretained_character_count\tbest_score\toptimal_tree_count\ttree_newick\n"
+        )
     )
-    assert outputs["retained_characters_path"].read_text(encoding="utf-8").startswith(
-        "replicate_index\tretained_index\tsource_character_id\n"
+    assert (
+        outputs["retained_characters_path"]
+        .read_text(encoding="utf-8")
+        .startswith("replicate_index\tretained_index\tsource_character_id\n")
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "parsimony-jackknife"

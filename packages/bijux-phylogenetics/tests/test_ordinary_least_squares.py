@@ -76,7 +76,9 @@ def test_fit_ordinary_least_squares_tree_reports_full_matrix_diagnostics() -> No
 
 def test_fit_ordinary_least_squares_tree_reports_negative_branches() -> None:
     report = fit_ordinary_least_squares_tree_from_imported_distance_matrix(
-        fixture("example_distance_matrix_ordinary_least_squares_negative_branch_five_taxon.tsv"),
+        fixture(
+            "example_distance_matrix_ordinary_least_squares_negative_branch_five_taxon.tsv"
+        ),
         fixture("example_tree_minimum_evolution_five_taxon.nwk"),
     )[1]
 

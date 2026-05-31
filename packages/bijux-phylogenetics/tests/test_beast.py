@@ -66,6 +66,8 @@ def fixture(name: str) -> Path:
         if candidate.exists():
             return candidate
     raise FileNotFoundError(name)
+
+
 def test_core_dataset_imports_after_beast_package_split() -> None:
     dataset_module = importlib.import_module("bijux_phylogenetics.core.dataset")
     assert hasattr(dataset_module, "summarize_dataset_readiness")
@@ -1130,8 +1132,9 @@ def test_parse_beast_posterior_tree_samples_reads_annotation_rich_beast_fixture(
     assert sample.annotation_values["rate_95%_HPD"] == "{0.5,0.9}"
 
 
-def test_parse_beast_posterior_tree_samples_accepts_quoted_translate_labels_fixture(
-) -> None:
+def test_parse_beast_posterior_tree_samples_accepts_quoted_translate_labels_fixture() -> (
+    None
+):
     report = parse_beast_posterior_tree_samples(
         fixture("engine_outputs/beast/posterior-tree-version-variant.trees"),
         burnin_fraction=0.0,
@@ -1146,9 +1149,7 @@ def test_parse_beast_posterior_tree_samples_accepts_quoted_translate_labels_fixt
     assert sample.annotation_values["note"] == "'founder''s clade'"
 
 
-def test_parse_beast_posterior_tree_samples_reports_invalid_translate_fixture() -> (
-    None
-):
+def test_parse_beast_posterior_tree_samples_reports_invalid_translate_fixture() -> None:
     with pytest.raises(EngineWorkflowError) as error:
         parse_beast_posterior_tree_samples(
             fixture("engine_outputs/beast/posterior-tree-invalid-translate.trees"),
@@ -1369,7 +1370,9 @@ def test_real_beast_reference_bundle_matches_expected_outputs(tmp_path: Path) ->
     )
     assert (
         consensus.consensus_newick
-        == SHARED_BEAST_POSTERIOR.consensus_tree_path.read_text(encoding="utf-8").strip()
+        == SHARED_BEAST_POSTERIOR.consensus_tree_path.read_text(
+            encoding="utf-8"
+        ).strip()
     )
     assert consensus.consensus_newick == reference.consensus_reference.newick
     assert (
@@ -1382,9 +1385,10 @@ def test_real_beast_reference_bundle_matches_expected_outputs(tmp_path: Path) ->
     assert consensus.maximum_posterior_probability == pytest.approx(
         reference.consensus_reference.maximum_posterior_probability
     )
-    assert mcc.mcc_newick == SHARED_BEAST_POSTERIOR.mcc_tree_path.read_text(
-        encoding="utf-8"
-    ).strip()
+    assert (
+        mcc.mcc_newick
+        == SHARED_BEAST_POSTERIOR.mcc_tree_path.read_text(encoding="utf-8").strip()
+    )
     assert mcc.mcc_newick == reference.mcc_reference.newick
     assert mcc.selected_tree_index == reference.mcc_reference.selected_tree_index
     assert mcc.clade_credibility_score == pytest.approx(

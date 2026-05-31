@@ -19,10 +19,15 @@ def fixture(group: str, name: str) -> Path:
 
 
 def test_package_dating_gateway_exports_constraint_solver_surface() -> None:
-    assert dating_api.solve_dating_calibration_constraints is solve_dating_calibration_constraints
+    assert (
+        dating_api.solve_dating_calibration_constraints
+        is solve_dating_calibration_constraints
+    )
 
 
-def test_solve_dating_calibration_constraints_maps_bounds_and_reports_feasible() -> None:
+def test_solve_dating_calibration_constraints_maps_bounds_and_reports_feasible() -> (
+    None
+):
     report = solve_dating_calibration_constraints(
         fixture(
             "trees",
@@ -41,7 +46,9 @@ def test_solve_dating_calibration_constraints_maps_bounds_and_reports_feasible()
     assert report.contradictory_node_count == 0
     assert report.feasible is True
     rows_by_calibration_id = {row.calibration_id: row for row in report.constraint_rows}
-    assert rows_by_calibration_id["cal-ab"].fixed_date == pytest.approx(1996.0, abs=1e-12)
+    assert rows_by_calibration_id["cal-ab"].fixed_date == pytest.approx(
+        1996.0, abs=1e-12
+    )
     assert rows_by_calibration_id["cal-root"].node_kind == "root"
     window_rows_by_taxa = {
         tuple(row.descendant_taxa): row for row in report.node_window_rows
@@ -57,7 +64,9 @@ def test_solve_dating_calibration_constraints_maps_bounds_and_reports_feasible()
     assert report.issue_rows == []
 
 
-def test_solve_dating_calibration_constraints_reports_ancestor_descendant_conflicts() -> None:
+def test_solve_dating_calibration_constraints_reports_ancestor_descendant_conflicts() -> (
+    None
+):
     report = solve_dating_calibration_constraints(
         fixture(
             "trees",
@@ -83,7 +92,9 @@ def test_solve_dating_calibration_constraints_reports_ancestor_descendant_confli
     assert window_rows_by_taxa[("A", "B")].contradictory is True
 
 
-def test_require_feasible_dating_calibration_constraints_raises_for_contradictory_fixture() -> None:
+def test_require_feasible_dating_calibration_constraints_raises_for_contradictory_fixture() -> (
+    None
+):
     with pytest.raises(
         PhylogeneticsError,
         match="dating calibrations are infeasible",

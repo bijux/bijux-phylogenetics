@@ -59,9 +59,7 @@ def test_likelihood_starting_tree_selection_policies_pick_distinct_subsets() -> 
         "random-tree-seed-17",
         "random-tree-seed-18",
     ]
-    assert [row.tree_id for row in best_rows] == [
-        "likelihood-stepwise-addition-tree"
-    ]
+    assert [row.tree_id for row in best_rows] == ["likelihood-stepwise-addition-tree"]
     assert len(random_rows) == 2
     assert [row.tree_id for row in random_rows] == [
         row.tree_id for row in repeated_random_rows
@@ -71,17 +69,32 @@ def test_likelihood_starting_tree_selection_policies_pick_distinct_subsets() -> 
         "input-tree",
         "random-tree",
     ]
-    assert len({tuple(row.tree_id for row in rows) for rows in [
-        all_rows,
-        best_rows,
-        random_rows,
-        strategy_rows,
-    ]}) == 4
+    assert (
+        len(
+            {
+                tuple(row.tree_id for row in rows)
+                for rows in [
+                    all_rows,
+                    best_rows,
+                    random_rows,
+                    strategy_rows,
+                ]
+            }
+        )
+        == 4
+    )
 
 
-def test_likelihood_starting_tree_selection_validators_reject_invalid_requests() -> None:
-    assert validate_nucleotide_likelihood_starting_tree_selection_policy("BEST") == "best"
-    assert validate_nucleotide_likelihood_starting_tree_selection_count("all", None) is None
+def test_likelihood_starting_tree_selection_validators_reject_invalid_requests() -> (
+    None
+):
+    assert (
+        validate_nucleotide_likelihood_starting_tree_selection_policy("BEST") == "best"
+    )
+    assert (
+        validate_nucleotide_likelihood_starting_tree_selection_count("all", None)
+        is None
+    )
     assert validate_nucleotide_likelihood_starting_tree_strategy_priority(
         ["random-tree", "input-tree"]
     ) == ("random-tree", "input-tree")

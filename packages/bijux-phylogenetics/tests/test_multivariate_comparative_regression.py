@@ -79,9 +79,7 @@ def _multivariate_reference_gls(
     residual_variances: dict[str, float] = {}
     for response in responses:
         resolved_lambda = (
-            lambda_value[response]
-            if isinstance(lambda_value, dict)
-            else lambda_value
+            lambda_value[response] if isinstance(lambda_value, dict) else lambda_value
         )
         covariance = numpy.array(
             lambda_transform_covariance(base_covariance, resolved_lambda),
@@ -311,7 +309,9 @@ def test_run_multivariate_comparative_regression_matches_reference_with_heteroge
     )
     reference = _multivariate_reference_gls(
         tree_path=fixture("example_tree_six_taxa.nwk"),
-        traits_path=fixture("example_traits_comparative_multivariate_heterogeneous_lambda.tsv"),
+        traits_path=fixture(
+            "example_traits_comparative_multivariate_heterogeneous_lambda.tsv"
+        ),
         responses=report.responses,
         predictors=report.predictors,
         taxa=report.analysis_taxa,

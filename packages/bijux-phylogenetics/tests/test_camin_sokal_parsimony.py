@@ -69,8 +69,7 @@ def test_unordered_fitch_does_not_provide_irreversible_change_placement() -> Non
     root_rows = [
         row
         for row in fitch_report.node_state_rows
-        if row.character_id == "char01_disjoint_presences"
-        and row.node == "A|B|C|D|E"
+        if row.character_id == "char01_disjoint_presences" and row.node == "A|B|C|D|E"
     ]
     assert [row.state_set for row in root_rows] == [["0", "1"]]
     assert [
@@ -105,11 +104,17 @@ def test_write_camin_sokal_artifacts_materializes_governed_output_family(
     outputs = write_camin_sokal_artifacts(tmp_path / "camin-sokal-run", report)
 
     assert set(outputs) == {"steps_path", "branch_changes_path", "run_json_path"}
-    assert outputs["steps_path"].read_text(encoding="utf-8").startswith(
-        "character_id\tderived_taxon_count\tgain_count\troot_state\tcharacter_weight\tweighted_score\n"
+    assert (
+        outputs["steps_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "character_id\tderived_taxon_count\tgain_count\troot_state\tcharacter_weight\tweighted_score\n"
+        )
     )
-    assert outputs["branch_changes_path"].read_text(encoding="utf-8").startswith(
-        "character_id\tchange_kind\tnode\tnode_name\tdescendant_taxa\n"
+    assert (
+        outputs["branch_changes_path"]
+        .read_text(encoding="utf-8")
+        .startswith("character_id\tchange_kind\tnode\tnode_name\tdescendant_taxa\n")
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "camin-sokal"

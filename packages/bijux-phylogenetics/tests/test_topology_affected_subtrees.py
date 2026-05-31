@@ -21,7 +21,9 @@ def test_affected_subtree_summary_reports_exact_changed_and_unchanged_nni_branch
     None
 ):
     original_tree = loads_newick("(((A,C),B),D);")
-    candidate, _available_move_count = resolve_rooted_nni_move_candidate(original_tree, 1)
+    candidate, _available_move_count = resolve_rooted_nni_move_candidate(
+        original_tree, 1
+    )
     moved_tree = apply_rooted_nni_move(original_tree, candidate)
 
     report = summarize_affected_subtrees(original_tree, moved_tree)

@@ -845,8 +845,9 @@ def test_parse_mrbayes_tree_and_consensus_accept_version_variant_fixtures() -> N
     )
 
 
-def test_parse_mrbayes_posterior_tree_samples_reports_invalid_translate_fixture(
-) -> None:
+def test_parse_mrbayes_posterior_tree_samples_reports_invalid_translate_fixture() -> (
+    None
+):
     with pytest.raises(EngineWorkflowError) as error:
         parse_mrbayes_posterior_tree_samples(
             fixture("engine_outputs/mrbayes/posterior-tree-invalid-translate.run1.t")

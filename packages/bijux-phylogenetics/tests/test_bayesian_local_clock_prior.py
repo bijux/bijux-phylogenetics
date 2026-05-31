@@ -228,7 +228,9 @@ def test_local_clock_prior_rejects_unrooted_missing_rates_and_zero_duration() ->
     zero_duration_dated_tree = dated_tree.copy()
     zero_duration_dated_tree.root.children[1].branch_length = 0.0
 
-    with pytest.raises(UnrootedTreeError, match="requires one rooted substitution tree"):
+    with pytest.raises(
+        UnrootedTreeError, match="requires one rooted substitution tree"
+    ):
         evaluate_local_clock_tree_log_prior(
             unrooted_substitution_tree,
             dated_tree,

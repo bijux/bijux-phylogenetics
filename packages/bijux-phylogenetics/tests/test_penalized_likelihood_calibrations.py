@@ -71,7 +71,9 @@ def test_load_fixed_dating_calibrations_rejects_interval_constraints(
         )
 
 
-def test_load_fixed_dating_calibrations_rejects_contradictory_fixed_constraints() -> None:
+def test_load_fixed_dating_calibrations_rejects_contradictory_fixed_constraints() -> (
+    None
+):
     with pytest.raises(
         PhylogeneticsError,
         match="dating calibrations are infeasible",

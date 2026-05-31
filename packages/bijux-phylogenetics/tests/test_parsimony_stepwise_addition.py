@@ -22,7 +22,9 @@ def test_package_parsimony_gateway_exports_stepwise_addition_surface() -> None:
     )
 
 
-def test_build_parsimony_stepwise_addition_tree_scores_each_insertion_under_fitch() -> None:
+def test_build_parsimony_stepwise_addition_tree_scores_each_insertion_under_fitch() -> (
+    None
+):
     tree, report = build_parsimony_stepwise_addition_tree(
         fixture("nni_search_matrix.tsv"),
     )
@@ -45,7 +47,9 @@ def test_build_parsimony_stepwise_addition_tree_scores_each_insertion_under_fitc
     assert tree.tip_names == ["A", "B", "C", "D"]
 
 
-def test_build_parsimony_stepwise_addition_tree_rejects_insertion_order_taxa_mismatch() -> None:
+def test_build_parsimony_stepwise_addition_tree_rejects_insertion_order_taxa_mismatch() -> (
+    None
+):
     with pytest.raises(ParsimonyAnalysisError) as error_info:
         build_parsimony_stepwise_addition_tree(
             fixture("nni_search_matrix.tsv"),

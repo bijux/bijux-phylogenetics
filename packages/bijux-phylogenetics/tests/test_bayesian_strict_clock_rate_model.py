@@ -56,9 +56,7 @@ def test_strict_clock_rate_model_matches_one_global_rate_scaled_tree() -> None:
     assert report.mismatch_count == 0
     assert report.total_log_prior == 0.0
     assert report.substitution_tree_newick == report.expected_substitution_tree_newick
-    row_by_taxa = {
-        tuple(row.descendant_taxa): row for row in report.branch_rows
-    }
+    row_by_taxa = {tuple(row.descendant_taxa): row for row in report.branch_rows}
     tip_a_row = row_by_taxa[("A",)]
     assert math.isclose(tip_a_row.dated_time_duration, 1.0, rel_tol=0.0, abs_tol=1e-12)
     assert math.isclose(
@@ -96,9 +94,7 @@ def test_strict_clock_rate_model_changes_with_changed_global_rate() -> None:
     assert report.total_log_prior == -math.inf
     assert report.exact_match_count == 0
     assert report.mismatch_count == report.branch_count
-    row_by_taxa = {
-        tuple(row.descendant_taxa): row for row in report.branch_rows
-    }
+    row_by_taxa = {tuple(row.descendant_taxa): row for row in report.branch_rows}
     tip_d_row = row_by_taxa[("D",)]
     assert math.isclose(
         tip_d_row.expected_substitution_branch_length,
@@ -160,7 +156,10 @@ def test_strict_clock_rate_model_rejects_mismatched_rooted_topology() -> None:
 @pytest.mark.parametrize(
     ("builder_kwargs", "message"),
     [
-        ({"global_clock_rate": 0.0}, "requires a strictly positive finite global clock rate"),
+        (
+            {"global_clock_rate": 0.0},
+            "requires a strictly positive finite global clock rate",
+        ),
         (
             {"global_clock_rate": 0.5, "branch_length_tolerance": -1e-6},
             "requires a non-negative finite branch-length tolerance",
@@ -183,7 +182,9 @@ def test_strict_clock_rate_model_rejects_unrooted_and_incomplete_trees() -> None
     incomplete_dated_tree = dated_tree.copy()
     incomplete_dated_tree.root.children[0].branch_length = None
 
-    with pytest.raises(UnrootedTreeError, match="requires one rooted substitution tree"):
+    with pytest.raises(
+        UnrootedTreeError, match="requires one rooted substitution tree"
+    ):
         evaluate_strict_clock_tree_log_prior(
             unrooted_substitution_tree,
             dated_tree,

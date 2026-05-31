@@ -11,7 +11,9 @@ def fixture(name: str) -> Path:
     return Path(__file__).parent / "fixtures" / "metadata" / name
 
 
-def test_distance_taxon_jackknife_rebuilds_each_reduced_tree_and_reports_deltas() -> None:
+def test_distance_taxon_jackknife_rebuilds_each_reduced_tree_and_reports_deltas() -> (
+    None
+):
     report = analyze_distance_taxon_jackknife_from_imported_distance_matrix(
         fixture("example_distance_matrix_taxon_influence_missing_noisy_five_taxon.tsv"),
         method="neighbor-joining",

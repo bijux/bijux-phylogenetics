@@ -7,7 +7,9 @@ from bijux_phylogenetics.phylo.likelihood import transition_probability_matrix
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 
-def test_transition_probability_matrix_rejects_invalid_rate_matrix_before_exponentiation() -> None:
+def test_transition_probability_matrix_rejects_invalid_rate_matrix_before_exponentiation() -> (
+    None
+):
     with pytest.raises(PhylogeneticsError) as error_info:
         transition_probability_matrix(
             numpy.array([[-1.0, 0.9], [0.5, -0.5]], dtype=float),

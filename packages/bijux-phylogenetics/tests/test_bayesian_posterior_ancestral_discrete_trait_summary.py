@@ -7,9 +7,9 @@ import pytest
 
 from bijux_phylogenetics.bayesian.discrete_trait_mk import (
     DiscreteTraitMkNodeStateSummary,
-    run_discrete_trait_mk_metropolis_hastings,
     build_discrete_trait_mk_model_definition,
     build_discrete_trait_mk_proposal_schedule,
+    run_discrete_trait_mk_metropolis_hastings,
 )
 from bijux_phylogenetics.bayesian.discrete_trait_rate_priors import (
     build_exponential_discrete_trait_rate_prior,

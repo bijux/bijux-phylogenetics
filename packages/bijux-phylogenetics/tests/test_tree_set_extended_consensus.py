@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import bijux_phylogenetics.trees as trees_api
 import pytest
 
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
+import bijux_phylogenetics.trees as trees_api
 from bijux_phylogenetics.trees import (
     MajorityRuleExtendedAcceptedCladeRow,
     MajorityRuleExtendedConsensusReport,

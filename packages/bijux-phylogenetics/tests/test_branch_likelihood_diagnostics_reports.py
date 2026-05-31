@@ -60,10 +60,12 @@ def test_write_strict_clock_likelihood_artifacts_materialize_branch_likelihood_d
     assert outputs["branch_likelihood_diagnostic_path"].name == (
         "branch_likelihood_diagnostics.tsv"
     )
-    assert outputs["branch_likelihood_diagnostic_path"].read_text(
-        encoding="utf-8"
-    ).startswith(
-        "model_name\tbranch_id\tchild_name\tdescendant_taxa\tbranch_length\tbaseline_log_likelihood\tcollapsed_branch_log_likelihood\tcontribution_proxy\twarning_flags\n"
+    assert (
+        outputs["branch_likelihood_diagnostic_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "model_name\tbranch_id\tchild_name\tdescendant_taxa\tbranch_length\tbaseline_log_likelihood\tcollapsed_branch_log_likelihood\tcontribution_proxy\twarning_flags\n"
+        )
     )
 
 
@@ -81,8 +83,10 @@ def test_write_local_clock_likelihood_artifacts_materialize_branch_likelihood_di
     assert outputs["branch_likelihood_diagnostic_path"].name == (
         "branch_likelihood_diagnostics.tsv"
     )
-    assert outputs["branch_likelihood_diagnostic_path"].read_text(
-        encoding="utf-8"
-    ).startswith(
-        "model_name\tbranch_id\tchild_name\tdescendant_taxa\tbranch_length\tbaseline_log_likelihood\tcollapsed_branch_log_likelihood\tcontribution_proxy\twarning_flags\n"
+    assert (
+        outputs["branch_likelihood_diagnostic_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "model_name\tbranch_id\tchild_name\tdescendant_taxa\tbranch_length\tbaseline_log_likelihood\tcollapsed_branch_log_likelihood\tcontribution_proxy\twarning_flags\n"
+        )
     )

@@ -13,7 +13,9 @@ def fixture(group: str, name: str) -> Path:
     return FIXTURES / group / name
 
 
-def test_simulate_multispecies_coalescent_gene_tree_records_species_tree_events() -> None:
+def test_simulate_multispecies_coalescent_gene_tree_records_species_tree_events() -> (
+    None
+):
     gene_tree, report = simulate_multispecies_coalescent_gene_tree(
         fixture("trees", "multispecies_coalescent_species_tree_3_taxa.nwk"),
         sample_count_table_path=fixture(

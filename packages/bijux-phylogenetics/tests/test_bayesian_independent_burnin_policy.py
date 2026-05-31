@@ -48,7 +48,9 @@ def test_apply_independent_metropolis_hastings_burnin_policy_keeps_named_chain_r
 
     assert isinstance(burnin_report, IndependentMetropolisHastingsBurninReport)
     assert [row.chain_name for row in burnin_report.chain_reports] == ["alpha", "beta"]
-    assert [row.burnin_report.retained_sample_count for row in burnin_report.chain_reports] == [
+    assert [
+        row.burnin_report.retained_sample_count for row in burnin_report.chain_reports
+    ] == [
         4,
         4,
     ]

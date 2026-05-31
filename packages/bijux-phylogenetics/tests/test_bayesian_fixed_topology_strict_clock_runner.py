@@ -59,7 +59,9 @@ def test_fixed_topology_strict_clock_runner_emits_clock_rate_and_node_age_summar
 
     assert len(report.posterior_rows) == 41
     assert report.clock_rate_summary.sample_count == len(report.posterior_rows)
-    assert report.clock_rate_summary.hpd_95_lower < report.clock_rate_summary.hpd_95_upper
+    assert (
+        report.clock_rate_summary.hpd_95_lower < report.clock_rate_summary.hpd_95_upper
+    )
     assert len(report.node_age_summaries) == 3
     assert all(
         row.topology_id == report.posterior_rows[0].topology_id
@@ -173,7 +175,9 @@ def test_fixed_topology_strict_clock_runner_seeds_rate_from_root_calibration_cen
     )
 
 
-def test_fixed_topology_strict_clock_runner_rejects_unrooted_substitution_tree() -> None:
+def test_fixed_topology_strict_clock_runner_rejects_unrooted_substitution_tree() -> (
+    None
+):
     model_definition = build_fixed_topology_strict_clock_model_definition(
         time_tree_prior=build_crown_conditioned_yule_tree_prior(speciation_rate=0.4),
         global_clock_rate_prior=build_exponential_clock_model_scalar_prior(rate=1.5),

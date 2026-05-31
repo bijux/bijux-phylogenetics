@@ -65,13 +65,19 @@ def fixture(name: str) -> Path:
         ),
         (
             reconstruct_acctran,
-            (fixture("acctran_tree_5_taxa.nwk"), fixture("acctran_ambiguous_matrix.tsv")),
+            (
+                fixture("acctran_tree_5_taxa.nwk"),
+                fixture("acctran_ambiguous_matrix.tsv"),
+            ),
             "acctran_character_weights.tsv",
             5.0,
         ),
         (
             reconstruct_deltran,
-            (fixture("acctran_tree_5_taxa.nwk"), fixture("acctran_ambiguous_matrix.tsv")),
+            (
+                fixture("acctran_tree_5_taxa.nwk"),
+                fixture("acctran_ambiguous_matrix.tsv"),
+            ),
             "acctran_character_weights.tsv",
             5.0,
         ),

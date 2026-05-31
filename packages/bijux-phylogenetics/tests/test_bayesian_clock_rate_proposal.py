@@ -64,9 +64,8 @@ def test_clock_rate_proposal_changes_strict_clock_posterior() -> None:
     proposed_model_parameters = proposal.proposed_model_parameters
     assert proposed_tree is not None
     assert proposed_model_parameters is not None
-    assert (
-        rooted_topology_fingerprint(proposed_tree)
-        == rooted_topology_fingerprint(current_state.tree.to_tree())
+    assert rooted_topology_fingerprint(proposed_tree) == rooted_topology_fingerprint(
+        current_state.tree.to_tree()
     )
     current_clock_rate = current_state.model_parameters.scalar_parameters["clock-rate"]
     proposed_clock_rate = proposed_model_parameters.scalar_parameters["clock-rate"]
@@ -197,7 +196,9 @@ def _build_scored_strict_clock_rate_state() -> BayesianPhylogeneticState:
 
 def _build_scored_relaxed_clock_rate_state() -> BayesianPhylogeneticState:
     return score_bayesian_phylogenetic_state(
-        tree=_load_rooted_tree_fixture("relaxed_rate_summary_substitution_tree_4_taxa.nwk"),
+        tree=_load_rooted_tree_fixture(
+            "relaxed_rate_summary_substitution_tree_4_taxa.nwk"
+        ),
         model_parameters=build_bayesian_model_parameter_state(
             scalar_parameters={"mean-clock-rate": 0.2}
         ),

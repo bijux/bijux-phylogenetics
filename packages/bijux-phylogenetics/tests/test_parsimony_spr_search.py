@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import bijux_phylogenetics.parsimony as parsimony_api
 from bijux_phylogenetics.io.newick import loads_newick
+import bijux_phylogenetics.parsimony as parsimony_api
 from bijux_phylogenetics.parsimony import (
     search_parsimony_nni,
     search_parsimony_spr,
@@ -28,9 +28,7 @@ def test_parsimony_spr_candidates_exclude_self_regrafts() -> None:
     candidates = list(
         _iter_spr_move_candidates(
             loads_newick(
-                fixture("spr_search_start_tree_5_taxa.nwk").read_text(
-                    encoding="utf-8"
-                )
+                fixture("spr_search_start_tree_5_taxa.nwk").read_text(encoding="utf-8")
             )
         )
     )
@@ -143,8 +141,12 @@ def test_write_parsimony_spr_artifacts_materializes_governed_output_family(
         "trace_path",
         "run_json_path",
     }
-    assert outputs["trace_path"].read_text(encoding="utf-8").startswith(
-        "event_index\tevent_kind\titeration\tscore_before\tscore_after\tscore_delta\ttree_before_newick\ttree_after_newick\tpruned_clade_id\tregraft_target_branch_id\tstopping_reason\n"
+    assert (
+        outputs["trace_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "event_index\tevent_kind\titeration\tscore_before\tscore_after\tscore_delta\ttree_before_newick\ttree_after_newick\tpruned_clade_id\tregraft_target_branch_id\tstopping_reason\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "parsimony-spr-search"

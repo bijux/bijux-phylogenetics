@@ -93,7 +93,9 @@ def test_rooted_tbr_move_application_report_preserves_input_tree_path() -> None:
         1,
     )
 
-    assert report.input_tree_path == fixture("parsimony", "spr_search_start_tree_5_taxa.nwk")
+    assert report.input_tree_path == fixture(
+        "parsimony", "spr_search_start_tree_5_taxa.nwk"
+    )
     assert report.input_tree_newick == "((((A,D),B),C),E);"
     assert report.tip_count == 5
 

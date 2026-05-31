@@ -43,11 +43,19 @@ def test_write_nucleotide_likelihood_nni_artifacts_materializes_candidate_table(
     assert outputs["best_tree_path"].name == "best_trees.nwk"
     assert len(load_newick_tree_set(outputs["best_tree_path"])) == 1
     assert outputs["best_tree_path"].read_text(encoding="utf-8").strip()
-    assert outputs["trace_path"].read_text(encoding="utf-8").startswith(
-        "event_index\tevent_kind\titeration\tmove_type\tcandidate_topology_fingerprint\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\taccepted_move\ttrace_reason\ttree_before_newick\ttree_after_newick\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\tstopping_reason\n"
+    assert (
+        outputs["trace_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "event_index\tevent_kind\titeration\tmove_type\tcandidate_topology_fingerprint\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\taccepted_move\ttrace_reason\ttree_before_newick\ttree_after_newick\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\tstopping_reason\n"
+        )
     )
-    assert outputs["candidate_table_path"].read_text(encoding="utf-8").startswith(
-        "iteration\tcandidate_order\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tcandidate_tree_newick\tlog_likelihood\tlog_likelihood_delta\timproving_move\tselected_best_move\tbranch_reoptimization_scope\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\n"
+    assert (
+        outputs["candidate_table_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "iteration\tcandidate_order\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tcandidate_tree_newick\tlog_likelihood\tlog_likelihood_delta\timproving_move\tselected_best_move\tbranch_reoptimization_scope\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     selected_rows = [
@@ -69,6 +77,5 @@ def test_write_nucleotide_likelihood_nni_artifacts_materializes_candidate_table(
         (2, 2),
     ]
     assert all(
-        row["selected_best_move"] is False
-        for row in payload["candidate_rows"][8:]
+        row["selected_best_move"] is False for row in payload["candidate_rows"][8:]
     )

@@ -59,7 +59,11 @@ def test_simulate_coalescent_trees_reports_population_size_and_envelope() -> Non
     assert report.pooled_branch_count == 12
     assert [row.observation_count for row in report.envelope_metrics[:2]] == [2, 2]
     assert report.coalescent_waiting_time_tolerance == 0.2
-    assert [row.lineage_count for row in report.coalescent_waiting_time_rows] == [4, 3, 2]
+    assert [row.lineage_count for row in report.coalescent_waiting_time_rows] == [
+        4,
+        3,
+        2,
+    ]
 
 
 def test_simulate_coalescent_trees_match_kingman_waiting_time_expectations() -> None:
@@ -86,14 +90,18 @@ def test_simulate_coalescent_trees_match_kingman_waiting_time_expectations() -> 
         1.0,
         0.333333333333333,
     ]
-    assert [row.expected_waiting_time for row in report.coalescent_waiting_time_rows] == [
+    assert [
+        row.expected_waiting_time for row in report.coalescent_waiting_time_rows
+    ] == [
         0.2,
         0.3,
         0.5,
         1.0,
         3.0,
     ]
-    assert all(row.observation_count == 256 for row in report.coalescent_waiting_time_rows)
+    assert all(
+        row.observation_count == 256 for row in report.coalescent_waiting_time_rows
+    )
     assert all(row.within_tolerance for row in report.coalescent_waiting_time_rows)
     assert max(row.relative_error for row in report.coalescent_waiting_time_rows) < 0.15
 
@@ -135,7 +143,9 @@ def test_simulate_coalescent_tree_matches_single_tree_batch_surface() -> None:
     assert report.coalescent_waiting_time_tolerance == (
         batch_report.coalescent_waiting_time_tolerance
     )
-    assert report.coalescent_waiting_time_rows == batch_report.coalescent_waiting_time_rows
+    assert (
+        report.coalescent_waiting_time_rows == batch_report.coalescent_waiting_time_rows
+    )
 
 
 def test_write_tree_simulation_tables_emit_reviewable_ledgers(tmp_path: Path) -> None:

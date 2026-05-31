@@ -5,7 +5,6 @@ from pathlib import Path
 import pytest
 
 import bijux_phylogenetics.compare as compare_api
-
 from bijux_phylogenetics.compare import (
     MaximumAgreementSubtreeApproximationReport,
     MaximumAgreementSubtreeSearchRow,
@@ -23,7 +22,9 @@ def test_package_compare_gateway_exports_maximum_agreement_subtree_surface() -> 
         compare_api.MaximumAgreementSubtreeApproximationReport
         is MaximumAgreementSubtreeApproximationReport
     )
-    assert compare_api.MaximumAgreementSubtreeSearchRow is MaximumAgreementSubtreeSearchRow
+    assert (
+        compare_api.MaximumAgreementSubtreeSearchRow is MaximumAgreementSubtreeSearchRow
+    )
     assert (
         compare_api.approximate_maximum_agreement_subtree
         is approximate_maximum_agreement_subtree
@@ -53,14 +54,13 @@ def test_approximate_maximum_agreement_subtree_matches_exact_small_fixture() -> 
         report.selection_objective
         == "minimize-robinson-foulds-then-normalized-distance"
     )
-    assert (
-        report.approximation_status
-        == "heuristic-solution-not-guaranteed-optimal"
-    )
+    assert report.approximation_status == "heuristic-solution-not-guaranteed-optimal"
     assert report.possible_retained_subset_count == 26
     assert report.max_evaluated_candidate_count == 13
     assert report.evaluated_candidate_count == 6
-    assert [row.retained_taxa for row in report.search_rows if row.selected_for_next_step] == [
+    assert [
+        row.retained_taxa for row in report.search_rows if row.selected_for_next_step
+    ] == [
         ["A", "B", "C", "D", "E"],
         ["A", "B", "D", "E"],
     ]
@@ -69,9 +69,7 @@ def test_approximate_maximum_agreement_subtree_matches_exact_small_fixture() -> 
 
 
 def test_approximate_maximum_agreement_subtree_requires_positive_budget() -> None:
-    with pytest.raises(
-        ValueError, match="positive explicit candidate budget"
-    ):
+    with pytest.raises(ValueError, match="positive explicit candidate budget"):
         approximate_maximum_agreement_subtree(
             fixture("agreement_subtree_left.nwk"),
             fixture("agreement_subtree_right.nwk"),
@@ -79,10 +77,10 @@ def test_approximate_maximum_agreement_subtree_requires_positive_budget() -> Non
         )
 
 
-def test_approximate_maximum_agreement_subtree_rejects_too_small_frontier_budget() -> None:
-    with pytest.raises(
-        ValueError, match="need at least 6 candidates"
-    ):
+def test_approximate_maximum_agreement_subtree_rejects_too_small_frontier_budget() -> (
+    None
+):
+    with pytest.raises(ValueError, match="need at least 6 candidates"):
         approximate_maximum_agreement_subtree(
             fixture("agreement_subtree_left.nwk"),
             fixture("agreement_subtree_right.nwk"),
@@ -98,10 +96,7 @@ def test_approximate_maximum_agreement_subtree_reports_large_fixture_status() ->
     )
 
     assert report.shared_taxa == ["A", "B", "C", "D", "E", "F", "G", "H"]
-    assert (
-        report.approximation_status
-        == "heuristic-solution-not-guaranteed-optimal"
-    )
+    assert report.approximation_status == "heuristic-solution-not-guaranteed-optimal"
     assert report.max_evaluated_candidate_count == 32
     assert report.evaluated_candidate_count <= 32
     assert len(report.retained_taxa) < len(report.shared_taxa)

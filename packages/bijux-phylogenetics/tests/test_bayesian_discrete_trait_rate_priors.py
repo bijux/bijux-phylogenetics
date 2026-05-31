@@ -106,8 +106,7 @@ def test_symmetric_discrete_trait_prior_scores_each_bidirectional_pair_once() ->
     )
 
     expected_total_log_prior = math.fsum(
-        _gamma_log_density(row.rate_value, shape=2.5, scale=0.75)
-        for row in report.rows
+        _gamma_log_density(row.rate_value, shape=2.5, scale=0.75) for row in report.rows
     )
 
     assert report.parameter_count == 3

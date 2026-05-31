@@ -28,8 +28,7 @@ def _lognormal_log_density(
         -math.log(value)
         - math.log(log_standard_deviation)
         - 0.5 * math.log(2.0 * math.pi)
-        - ((math.log(value) - log_mean) ** 2)
-        / (2.0 * (log_standard_deviation**2))
+        - ((math.log(value) - log_mean) ** 2) / (2.0 * (log_standard_deviation**2))
     )
 
 
@@ -57,7 +56,9 @@ def _dirichlet_log_density(
     )
 
 
-def test_substitution_parameter_prior_bundle_matches_analytical_density_fixture() -> None:
+def test_substitution_parameter_prior_bundle_matches_analytical_density_fixture() -> (
+    None
+):
     prior_bundle = build_substitution_parameter_prior_bundle(
         kappa_prior=build_exponential_positive_substitution_parameter_prior(rate=0.75),
         exchangeability_prior=build_dirichlet_simplex_substitution_parameter_prior(
@@ -102,7 +103,8 @@ def test_substitution_parameter_prior_bundle_matches_analytical_density_fixture(
     )
 
     expected_total_log_prior = (
-        math.log(0.75) - (0.75 * 2.0)
+        math.log(0.75)
+        - (0.75 * 2.0)
         + _dirichlet_log_density(
             (0.1, 0.2, 0.1, 0.3, 0.2, 0.1),
             (2.0, 3.0, 4.0, 5.0, 6.0, 7.0),
@@ -135,7 +137,9 @@ def test_substitution_parameter_prior_bundle_matches_analytical_density_fixture(
     )
 
 
-def test_substitution_parameter_prior_bundle_changes_when_parameter_values_change() -> None:
+def test_substitution_parameter_prior_bundle_changes_when_parameter_values_change() -> (
+    None
+):
     prior_bundle = build_substitution_parameter_prior_bundle(
         kappa_prior=build_exponential_positive_substitution_parameter_prior(rate=0.5),
         exchangeability_prior=build_dirichlet_simplex_substitution_parameter_prior(
@@ -169,7 +173,9 @@ def test_substitution_parameter_prior_bundle_changes_when_parameter_values_chang
     )
 
 
-def test_substitution_parameter_fixed_priors_distinguish_exact_and_mismatched_values() -> None:
+def test_substitution_parameter_fixed_priors_distinguish_exact_and_mismatched_values() -> (
+    None
+):
     prior_bundle = build_substitution_parameter_prior_bundle(
         kappa_prior=build_fixed_positive_substitution_parameter_prior(fixed_value=2.0),
         base_frequency_prior=build_fixed_simplex_substitution_parameter_prior(
@@ -198,7 +204,9 @@ def test_substitution_parameter_fixed_priors_distinguish_exact_and_mismatched_va
     assert mismatched_report.total_log_prior == -math.inf
 
 
-def test_substitution_parameter_prior_bundle_requires_values_for_configured_priors() -> None:
+def test_substitution_parameter_prior_bundle_requires_values_for_configured_priors() -> (
+    None
+):
     prior_bundle = build_substitution_parameter_prior_bundle(
         gamma_alpha_prior=build_lognormal_positive_substitution_parameter_prior(
             log_mean=0.0,

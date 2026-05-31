@@ -67,7 +67,7 @@ def test_write_posterior_agreement_subtree_tables_write_expected_rows(
 
     assert summary_path.read_text(encoding="utf-8").splitlines() == [
         "tree_count\tsearch_strategy\tpossible_retained_subset_count\tevaluated_candidate_count\tretained_taxa\tagreement_removed_taxa\tstable_rooted_topology_id\tagreement_subtree_newick",
-            "3\texact-descending-retained-subsets\t26\t4\tA|B|D|E\tC\tA|B||D|E\t((A:1,B:1):2,(D:1,E:1):2);",
+        "3\texact-descending-retained-subsets\t26\t4\tA|B|D|E\tC\tA|B||D|E\t((A:1,B:1):2,(D:1,E:1):2);",
     ]
     assert removed_path.read_text(encoding="utf-8").splitlines() == [
         "taxon\tremoved_for_agreement_subtree",
@@ -108,4 +108,6 @@ def test_write_posterior_agreement_subtree_artifacts_writes_bundle(
 
 def test_summarize_posterior_agreement_subtree_requires_exact_taxa() -> None:
     with pytest.raises(InvalidAlignmentError, match="exact same taxon set"):
-        summarize_posterior_agreement_subtree(fixture("example_tree_set_mismatched.nwk"))
+        summarize_posterior_agreement_subtree(
+            fixture("example_tree_set_mismatched.nwk")
+        )

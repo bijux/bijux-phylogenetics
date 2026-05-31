@@ -18,7 +18,9 @@ def fixture(name: str) -> Path:
 
 
 def test_topology_gateway_exports_rooted_nni_move_artifact_surface() -> None:
-    assert topology_api.write_rooted_nni_move_artifacts is write_rooted_nni_move_artifacts
+    assert (
+        topology_api.write_rooted_nni_move_artifacts is write_rooted_nni_move_artifacts
+    )
     assert topology_api.write_rooted_nni_move_run_json is write_rooted_nni_move_run_json
 
 
@@ -37,7 +39,9 @@ def test_write_rooted_nni_move_artifacts_materializes_governed_outputs(
     }
     assert outputs["input_tree_path"].read_text(encoding="utf-8").strip().endswith(";")
     assert outputs["moved_tree_path"].read_text(encoding="utf-8").strip().endswith(";")
-    assert outputs["reversed_tree_path"].read_text(encoding="utf-8").strip().endswith(";")
+    assert (
+        outputs["reversed_tree_path"].read_text(encoding="utf-8").strip().endswith(";")
+    )
 
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "rooted-nni-move-application"

@@ -3,9 +3,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import bijux_phylogenetics.parsimony as parsimony_api
 import pytest
+
 from bijux_phylogenetics.io.newick import loads_newick
+import bijux_phylogenetics.parsimony as parsimony_api
 from bijux_phylogenetics.parsimony import (
     FitchCharacterMatrix,
     ParsimonyBremerSupportReport,
@@ -111,8 +112,12 @@ def test_write_parsimony_bremer_support_artifacts_materializes_outputs(
         "bremer_support_path",
         "run_json_path",
     }
-    assert outputs["bremer_support_path"].read_text(encoding="utf-8").startswith(
-        "branch_id\tnode_name\tdescendant_taxa\tshortest_lacking_score\tdecay_index\tshortest_lacking_tree_count\tshortest_lacking_tree_newick\n"
+    assert (
+        outputs["bremer_support_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "branch_id\tnode_name\tdescendant_taxa\tshortest_lacking_score\tdecay_index\tshortest_lacking_tree_count\tshortest_lacking_tree_newick\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "parsimony-bremer-support"
@@ -121,8 +126,9 @@ def test_write_parsimony_bremer_support_artifacts_materializes_outputs(
     assert payload["bremer_rows"][0]["decay_index"] == 1.0
 
 
-def test_parsimony_bremer_support_keeps_zero_decay_when_excluding_tree_is_still_optimal(
-) -> None:
+def test_parsimony_bremer_support_keeps_zero_decay_when_excluding_tree_is_still_optimal() -> (
+    None
+):
     report = compute_parsimony_bremer_support(
         loads_newick("(((A,B),C),D);"),
         fixture("bootstrap_matrix.tsv"),

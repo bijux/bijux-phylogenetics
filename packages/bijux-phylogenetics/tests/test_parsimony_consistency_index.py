@@ -60,7 +60,9 @@ def test_consistency_index_matches_hand_computed_fitch_fixture() -> None:
     ]
 
 
-def test_consistency_index_reports_undefined_aggregate_for_all_constant_matrix() -> None:
+def test_consistency_index_reports_undefined_aggregate_for_all_constant_matrix() -> (
+    None
+):
     report = consistency_index(
         fixture("fitch_tree.nwk"),
         fixture("consistency_index_constant_matrix.tsv"),
@@ -94,7 +96,9 @@ def test_consistency_index_supports_wagner_minimum_possible_step_policy() -> Non
     ]
 
 
-def test_consistency_index_rejects_sankoff_methods_until_step_matrix_minima_are_owned() -> None:
+def test_consistency_index_rejects_sankoff_methods_until_step_matrix_minima_are_owned() -> (
+    None
+):
     with pytest.raises(ParsimonyAnalysisError) as error_info:
         consistency_index(
             fixture("sankoff_tree_5_taxa.nwk"),
@@ -114,11 +118,17 @@ def test_write_parsimony_consistency_artifacts_materializes_governed_output_fami
         method="fitch",
     )
 
-    outputs = write_parsimony_consistency_artifacts(tmp_path / "consistency-run", report)
+    outputs = write_parsimony_consistency_artifacts(
+        tmp_path / "consistency-run", report
+    )
 
     assert set(outputs) == {"indices_path", "run_json_path"}
-    assert outputs["indices_path"].read_text(encoding="utf-8").startswith(
-        "character_id\tcharacter_kind\tobserved_states\tminimum_possible_steps\tobserved_steps\tconsistency_index\tundefined_reason\n"
+    assert (
+        outputs["indices_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "character_id\tcharacter_kind\tobserved_states\tminimum_possible_steps\tobserved_steps\tconsistency_index\tundefined_reason\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "parsimony-consistency-index"

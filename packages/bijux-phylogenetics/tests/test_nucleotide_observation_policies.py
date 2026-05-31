@@ -23,8 +23,12 @@ def fixture(group: str, name: str) -> Path:
 
 
 def test_jc69_observation_policies_change_likelihood_on_ambiguity_fixture() -> None:
-    tree = load_tree(fixture("trees", "jc69_joint_ancestral_difference_tree_3_taxa.nwk"))
-    records = load_fasta_alignment(fixture("alignments", "example_alignment_ambiguity.fasta"))
+    tree = load_tree(
+        fixture("trees", "jc69_joint_ancestral_difference_tree_3_taxa.nwk")
+    )
+    records = load_fasta_alignment(
+        fixture("alignments", "example_alignment_ambiguity.fasta")
+    )
 
     missing_report = evaluate_jc69_tree_likelihood(
         tree,
@@ -91,8 +95,12 @@ def test_nucleotide_models_support_fifth_state_observation_policy(
     evaluator,
     kwargs: dict[str, object],
 ) -> None:
-    tree = load_tree(fixture("trees", "jc69_joint_ancestral_difference_tree_3_taxa.nwk"))
-    records = load_fasta_alignment(fixture("alignments", "example_alignment_ambiguity.fasta"))
+    tree = load_tree(
+        fixture("trees", "jc69_joint_ancestral_difference_tree_3_taxa.nwk")
+    )
+    records = load_fasta_alignment(
+        fixture("alignments", "example_alignment_ambiguity.fasta")
+    )
 
     report = evaluator(
         tree,

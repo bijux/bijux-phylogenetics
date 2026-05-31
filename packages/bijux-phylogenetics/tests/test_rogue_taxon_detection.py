@@ -4,9 +4,8 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.trees as trees_api
-
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
+import bijux_phylogenetics.trees as trees_api
 from bijux_phylogenetics.trees import (
     RogueTaxonDetectionReport,
     RogueTaxonScoreRow,
@@ -73,9 +72,7 @@ def test_detect_rogue_taxa_requires_at_least_four_shared_taxa(
         encoding="utf-8",
     )
 
-    with pytest.raises(
-        InvalidAlignmentError, match="requires at least four taxa"
-    ):
+    with pytest.raises(InvalidAlignmentError, match="requires at least four taxa"):
         detect_rogue_taxa(tree_set)
 
 

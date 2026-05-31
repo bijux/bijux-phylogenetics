@@ -12,6 +12,7 @@ from bijux_phylogenetics.phylo.likelihood.dna import (
     DNA_STATE_INDEX,
     DNA_STATE_ORDER,
 )
+
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
@@ -19,7 +20,9 @@ def fixture(group: str, name: str) -> Path:
     return FIXTURES / group / name
 
 
-def test_marginal_ancestral_probabilities_match_jc69_two_tip_analytical_fixture() -> None:
+def test_marginal_ancestral_probabilities_match_jc69_two_tip_analytical_fixture() -> (
+    None
+):
     report = evaluate_nucleotide_marginal_ancestral_probabilities_from_alignment(
         fixture("trees", "jc69_likelihood_tree_2_taxa.nwk"),
         fixture("alignments", "jc69_likelihood_alignment_2_taxa.fasta"),
@@ -77,7 +80,9 @@ def test_marginal_ancestral_probabilities_match_jc69_two_tip_analytical_fixture(
             )
 
 
-def test_marginal_ancestral_probabilities_expand_internal_node_site_state_rows() -> None:
+def test_marginal_ancestral_probabilities_expand_internal_node_site_state_rows() -> (
+    None
+):
     tree = load_tree(fixture("trees", "likelihood_site_pattern_tree_4_taxa.nwk"))
     report = evaluate_nucleotide_marginal_ancestral_probabilities_from_alignment(
         fixture("trees", "likelihood_site_pattern_tree_4_taxa.nwk"),
@@ -85,10 +90,10 @@ def test_marginal_ancestral_probabilities_expand_internal_node_site_state_rows()
         model_name="jc69",
     )
 
-    internal_node_ids = {node.node_id for node in tree.iter_internal_nodes(order="preorder")}
-    assert internal_node_ids == {
-        row.node_id for row in report.posterior_rows
+    internal_node_ids = {
+        node.node_id for node in tree.iter_internal_nodes(order="preorder")
     }
+    assert internal_node_ids == {row.node_id for row in report.posterior_rows}
     assert report.internal_node_count == 3
     assert report.site_count == 10
     assert report.pattern_count == 6
@@ -137,7 +142,9 @@ def test_marginal_ancestral_probabilities_normalize_for_all_selected_models() ->
         posterior_sums: dict[tuple[str, int], float] = {}
         for row in report.posterior_rows:
             key = (row.node_id, row.site_position)
-            posterior_sums[key] = posterior_sums.get(key, 0.0) + row.posterior_probability
+            posterior_sums[key] = (
+                posterior_sums.get(key, 0.0) + row.posterior_probability
+            )
         assert len(posterior_sums) == report.internal_node_count * report.site_count
         for probability_sum in posterior_sums.values():
             assert math.isclose(probability_sum, 1.0, rel_tol=0.0, abs_tol=1e-12)

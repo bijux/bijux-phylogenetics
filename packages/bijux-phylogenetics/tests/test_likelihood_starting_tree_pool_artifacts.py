@@ -41,8 +41,12 @@ def test_write_nucleotide_likelihood_starting_tree_pool_artifacts_materializes_g
     assert outputs["start_tree_path"].name == "starting_trees.nwk"
     assert outputs["score_table_path"].name == "starting_trees.tsv"
     assert outputs["run_json_path"].name == "run.json"
-    assert outputs["score_table_path"].read_text(encoding="utf-8").startswith(
-        "model_name\ttree_id\tsource_strategy\tgeneration_seed\tstarting_log_likelihood\ttopology_hash\tsubstitution_parameter_policy\tsubstitution_parameter_values\tsubstitution_parameter_warnings\ttree_newick\n"
+    assert (
+        outputs["score_table_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "model_name\ttree_id\tsource_strategy\tgeneration_seed\tstarting_log_likelihood\ttopology_hash\tsubstitution_parameter_policy\tsubstitution_parameter_values\tsubstitution_parameter_warnings\ttree_newick\n"
+        )
     )
 
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))

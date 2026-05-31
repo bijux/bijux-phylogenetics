@@ -51,11 +51,17 @@ def test_summarize_independent_metropolis_hastings_trace_autocorrelation_preserv
         "independent",
         "autocorrelated",
     ]
-    independent_lag_one = report.chain_reports[0].autocorrelation_report.parameter_reports[
-        0
-    ].lag_rows[0].autocorrelation
-    autocorrelated_lag_one = report.chain_reports[
-        1
-    ].autocorrelation_report.parameter_reports[0].lag_rows[0].autocorrelation
+    independent_lag_one = (
+        report.chain_reports[0]
+        .autocorrelation_report.parameter_reports[0]
+        .lag_rows[0]
+        .autocorrelation
+    )
+    autocorrelated_lag_one = (
+        report.chain_reports[1]
+        .autocorrelation_report.parameter_reports[0]
+        .lag_rows[0]
+        .autocorrelation
+    )
     assert independent_lag_one == 0.0
     assert autocorrelated_lag_one == 0.625

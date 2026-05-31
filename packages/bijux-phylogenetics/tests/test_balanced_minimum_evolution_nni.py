@@ -30,9 +30,7 @@ def distance_lookup(name: str) -> tuple[list[str], dict[tuple[str, str], float]]
     return validation.identifiers, lookup
 
 
-def test_search_balanced_minimum_evolution_nni_improves_from_nj_family_starts() -> (
-    None
-):
+def test_search_balanced_minimum_evolution_nni_improves_from_nj_family_starts() -> None:
     identifiers, lookup = distance_lookup(
         "example_distance_matrix_balanced_minimum_evolution_nni_five_taxon.tsv"
     )
@@ -72,7 +70,9 @@ def test_search_balanced_minimum_evolution_nni_improves_from_nj_family_starts() 
 def test_search_balanced_minimum_evolution_nni_from_imported_distance_matrix_carries_matrix_path() -> (
     None
 ):
-    matrix_path = fixture("example_distance_matrix_balanced_minimum_evolution_nni_five_taxon.tsv")
+    matrix_path = fixture(
+        "example_distance_matrix_balanced_minimum_evolution_nni_five_taxon.tsv"
+    )
 
     report = search_balanced_minimum_evolution_nni_from_imported_distance_matrix(
         matrix_path,

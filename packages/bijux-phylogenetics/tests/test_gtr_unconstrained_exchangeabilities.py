@@ -20,7 +20,9 @@ def fixture(group: str, name: str) -> Path:
     return FIXTURES / group / name
 
 
-def test_gtr_likelihood_from_unconstrained_exchangeabilities_matches_constrained_surface() -> None:
+def test_gtr_likelihood_from_unconstrained_exchangeabilities_matches_constrained_surface() -> (
+    None
+):
     tree = load_tree(fixture("trees", "gtr_likelihood_tree_2_taxa.nwk"))
     records = load_fasta_alignment(
         fixture("alignments", "gtr_likelihood_alignment_2_taxa.fasta")

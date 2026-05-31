@@ -98,8 +98,7 @@ def test_fixed_topology_nucleotide_single_branch_optimization_keeps_other_branch
     tree = load_tree(fixture("trees", "jc69_branch_optimization_start_tree_2_taxa.nwk"))
     alignment_path = fixture("alignments", alignment_name)
     branch_ids_by_name = {
-        child.name or "": child.node_id or ""
-        for _parent, child in tree.iter_edges()
+        child.name or "": child.node_id or "" for _parent, child in tree.iter_edges()
     }
     selected_branch_id = branch_ids_by_name["A"]
     unchanged_branch_id = branch_ids_by_name["B"]
@@ -184,7 +183,9 @@ def test_fixed_topology_nucleotide_single_branch_optimization_rejects_missing_br
         fail_if_called,
     )
 
-    with pytest.raises(ValueError, match="tree does not contain branch_id 'missing-branch'"):
+    with pytest.raises(
+        ValueError, match="tree does not contain branch_id 'missing-branch'"
+    ):
         branch_optimization.optimize_fixed_topology_nucleotide_single_branch_length(
             tree,
             records,

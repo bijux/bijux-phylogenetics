@@ -28,7 +28,9 @@ def test_count_rooted_labeled_bifurcating_topologies_matches_known_values(
     assert count_rooted_labeled_bifurcating_topologies(taxon_count) == expected_count
 
 
-def test_build_uniform_rooted_tree_topology_prior_matches_analytical_log_probability() -> None:
+def test_build_uniform_rooted_tree_topology_prior_matches_analytical_log_probability() -> (
+    None
+):
     prior_model = build_uniform_rooted_tree_topology_prior(["D", "B", "A", "C"])
 
     assert prior_model.family == "uniform-rooted-labeled-bifurcating"

@@ -61,9 +61,5 @@ def test_cli_compare_duplication_loss_transfer_reports_metrics_and_writes_ledger
         "gene_node\tgene_node_name\tdescendant_gene_tips\tevent_type\tmapped_species_branch\t"
     )
     assert mapping_table_path.read_text(encoding="utf-8") == (
-        "gene_taxon\tspecies_taxon\n"
-        "A__1\tA\n"
-        "A__2\tA\n"
-        "C__1\tC\n"
-        "D__1\tD\n"
+        "gene_taxon\tspecies_taxon\nA__1\tA\nA__2\tA\nC__1\tC\nD__1\tD\n"
     )

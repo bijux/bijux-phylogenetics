@@ -14,8 +14,8 @@ from bijux_phylogenetics.phylo.likelihood.dna import (
     DNA_STATE_INDEX,
     DNA_STATE_ORDER,
     UNIFORM_DNA_ROOT_PRIOR,
+    one_hot_dna_leaf_vector,
 )
-from bijux_phylogenetics.phylo.likelihood.dna import one_hot_dna_leaf_vector
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

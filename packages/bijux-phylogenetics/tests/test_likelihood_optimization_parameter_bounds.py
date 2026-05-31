@@ -136,8 +136,12 @@ def test_empirical_branch_optimization_rejects_invalid_alpha_before_objective(
         match="discrete-gamma alpha must be a finite positive value",
     ):
         empirical_likelihood.optimize_empirical_protein_branch_lengths_from_alignment(
-            fixture("trees", "empirical_protein_branch_optimization_start_tree_2_taxa.nwk"),
-            fixture("alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"),
+            fixture(
+                "trees", "empirical_protein_branch_optimization_start_tree_2_taxa.nwk"
+            ),
+            fixture(
+                "alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"
+            ),
             rate_matrix=_compact_polar_rate_matrix(),
             likelihood_model="discrete-gamma",
             alpha=0.0,

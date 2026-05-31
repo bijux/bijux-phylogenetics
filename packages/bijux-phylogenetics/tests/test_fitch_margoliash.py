@@ -109,23 +109,26 @@ def test_fit_fitch_margoliash_tree_beats_ols_under_weighted_objective(
     ols_tree_path = write_newick(tmp_path / "ols-tree.nwk", ols_tree)
 
     assert dumps_newick(fm_tree) != dumps_newick(ols_tree)
-    assert weighted_residual_sum_squares(
-        fm_tree_path,
-        matrix_name,
-        weighting_power=2.0,
-    ) == fm_report.weighted_residual_sum_squares
-    assert weighted_residual_sum_squares(
-        ols_tree_path,
-        matrix_name,
-        weighting_power=2.0,
-    ) == 0.027825546887
     assert (
-        fm_report.weighted_residual_sum_squares
-        < weighted_residual_sum_squares(
+        weighted_residual_sum_squares(
+            fm_tree_path,
+            matrix_name,
+            weighting_power=2.0,
+        )
+        == fm_report.weighted_residual_sum_squares
+    )
+    assert (
+        weighted_residual_sum_squares(
             ols_tree_path,
             matrix_name,
             weighting_power=2.0,
         )
+        == 0.027825546887
+    )
+    assert fm_report.weighted_residual_sum_squares < weighted_residual_sum_squares(
+        ols_tree_path,
+        matrix_name,
+        weighting_power=2.0,
     )
 
 

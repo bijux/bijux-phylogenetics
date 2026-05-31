@@ -3,13 +3,13 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
+from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.likelihood import (
     reconstruct_nucleotide_marginal_ancestral_sequences_from_alignment,
     write_marginal_ancestral_sequence_fasta,
     write_marginal_ancestral_sequence_uncertainty_table,
 )
 from bijux_phylogenetics.phylo.topology.tree import stable_node_label
-from bijux_phylogenetics.io.trees import load_tree
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

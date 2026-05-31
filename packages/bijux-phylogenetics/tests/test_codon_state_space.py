@@ -27,19 +27,17 @@ def test_standard_codon_state_space_excludes_stop_codons() -> None:
 def test_validate_codon_frequency_vector_normalizes_mapping() -> None:
     state_space = resolve_codon_state_space()
     frequencies, source = validate_codon_frequency_vector(
-        {
-            codon: 2.0 if codon == "AAA" else 1.0
-            for codon in state_space.state_order
-        },
+        {codon: 2.0 if codon == "AAA" else 1.0 for codon in state_space.state_order},
         state_space=state_space,
         owner_name="test codon likelihood",
     )
 
     assert source == "provided"
     assert math.isclose(float(frequencies.sum()), 1.0, rel_tol=0.0, abs_tol=1e-12)
-    assert frequencies[state_space.state_index["AAA"]] > frequencies[
-        state_space.state_index["AAC"]
-    ]
+    assert (
+        frequencies[state_space.state_index["AAA"]]
+        > frequencies[state_space.state_index["AAC"]]
+    )
 
 
 def test_validate_codon_frequency_vector_rejects_stop_codon_mapping() -> None:

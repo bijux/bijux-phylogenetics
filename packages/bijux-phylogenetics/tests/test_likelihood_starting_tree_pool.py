@@ -73,7 +73,9 @@ def test_likelihood_starting_tree_pool_reports_distinct_scored_strategies() -> N
     )
 
 
-def test_likelihood_starting_tree_pool_rejects_duplicate_strategy_topology_hashes() -> None:
+def test_likelihood_starting_tree_pool_rejects_duplicate_strategy_topology_hashes() -> (
+    None
+):
     stepwise_tree, _report = build_likelihood_stepwise_addition_tree_from_alignment(
         fixture("alignments", "jc69_likelihood_nni_alignment_4_taxa.fasta"),
         model_name="jc69",

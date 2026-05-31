@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import bijux_phylogenetics.compare as compare_api
-
 from bijux_phylogenetics.compare import (
     AgreementSubtreeCandidateRow,
     AgreementSubtreePruningReport,

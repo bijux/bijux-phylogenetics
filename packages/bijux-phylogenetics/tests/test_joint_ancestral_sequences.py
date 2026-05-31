@@ -4,12 +4,8 @@ from pathlib import Path
 
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.likelihood import (
-    reconstruct_nucleotide_joint_ancestral_sequences_from_alignment,
-)
-from bijux_phylogenetics.phylo.likelihood import (
     evaluate_nucleotide_marginal_ancestral_probabilities_from_alignment,
-)
-from bijux_phylogenetics.phylo.likelihood import (
+    reconstruct_nucleotide_joint_ancestral_sequences_from_alignment,
     summarize_marginal_ancestral_sites,
 )
 
@@ -32,10 +28,12 @@ def test_joint_ancestral_sequences_differ_from_marginal_fixture() -> None:
         alignment_path,
         model_name="jc69",
     )
-    marginal_report = evaluate_nucleotide_marginal_ancestral_probabilities_from_alignment(
-        tree_path,
-        alignment_path,
-        model_name="jc69",
+    marginal_report = (
+        evaluate_nucleotide_marginal_ancestral_probabilities_from_alignment(
+            tree_path,
+            alignment_path,
+            model_name="jc69",
+        )
     )
 
     assert joint_report.model_name == "JC69"

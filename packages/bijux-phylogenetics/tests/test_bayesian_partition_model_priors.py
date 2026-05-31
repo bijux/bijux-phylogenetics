@@ -39,7 +39,9 @@ def fixture(name: str) -> Path:
 def _partition_names() -> tuple[str, ...]:
     return tuple(
         partition.name
-        for partition in parse_locus_partitions(fixture("example_multilocus_partitions.txt"))
+        for partition in parse_locus_partitions(
+            fixture("example_multilocus_partitions.txt")
+        )
     )
 
 
@@ -59,7 +61,9 @@ def _gtr_gamma_prior_bundle():
     )
 
 
-def test_partition_model_priors_distinguish_linked_and_unlinked_parameter_terms() -> None:
+def test_partition_model_priors_distinguish_linked_and_unlinked_parameter_terms() -> (
+    None
+):
     partition_models = tuple(
         build_partition_substitution_model_definition(
             partition_name=partition_name,
@@ -141,7 +145,10 @@ def test_partition_model_priors_distinguish_linked_and_unlinked_parameter_terms(
 
     assert linked_report.partition_count == 3
     assert linked_report.parameter_count == 3
-    assert all(row.partition_names == ("gene_alpha", "gene_beta", "gene_gamma") for row in linked_report.rows)
+    assert all(
+        row.partition_names == ("gene_alpha", "gene_beta", "gene_gamma")
+        for row in linked_report.rows
+    )
     assert unlinked_report.parameter_count == 9
     assert len(unlinked_report.rows) == 9
     assert not math.isclose(
@@ -240,7 +247,11 @@ def test_partition_model_priors_respect_per_partition_model_targets() -> None:
         "gamma-alpha": 2,
         "invariant-proportion": 1,
     }
-    assert {tuple(row.partition_names) for row in report.rows if row.target_name == "base-frequencies"} == {
+    assert {
+        tuple(row.partition_names)
+        for row in report.rows
+        if row.target_name == "base-frequencies"
+    } == {
         ("gene_alpha",),
         ("gene_beta",),
     }

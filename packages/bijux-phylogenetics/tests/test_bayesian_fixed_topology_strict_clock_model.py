@@ -63,13 +63,13 @@ def test_fixed_topology_strict_clock_model_definition_requires_sampled_clock_rat
 ):
     with pytest.raises(PhylogeneticsError, match="non-fixed global_clock_rate_prior"):
         build_fixed_topology_strict_clock_model_definition(
-                time_tree_prior=build_crown_conditioned_yule_tree_prior(
-                    speciation_rate=0.5
-                ),
-                global_clock_rate_prior=build_fixed_clock_model_scalar_prior(
-                    fixed_value=0.5
-                ),
-            )
+            time_tree_prior=build_crown_conditioned_yule_tree_prior(
+                speciation_rate=0.5
+            ),
+            global_clock_rate_prior=build_fixed_clock_model_scalar_prior(
+                fixed_value=0.5
+            ),
+        )
 
 
 def test_fixed_topology_strict_clock_model_definition_requires_unique_calibrations() -> (

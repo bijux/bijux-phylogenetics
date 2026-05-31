@@ -156,17 +156,25 @@ def test_write_dating_calibration_constraint_artifacts_materializes_governed_out
         "run_json_path",
         "summary_path",
     ]
-    assert outputs["summary_path"].read_text(encoding="utf-8").startswith(
-        "tree_path\tcalibration_path\ttip_count\t"
+    assert (
+        outputs["summary_path"]
+        .read_text(encoding="utf-8")
+        .startswith("tree_path\tcalibration_path\ttip_count\t")
     )
-    assert outputs["constraints_path"].read_text(encoding="utf-8").startswith(
-        "calibration_id\ttarget_kind\ttarget_label\t"
+    assert (
+        outputs["constraints_path"]
+        .read_text(encoding="utf-8")
+        .startswith("calibration_id\ttarget_kind\ttarget_label\t")
     )
-    assert outputs["node_windows_path"].read_text(encoding="utf-8").startswith(
-        "node_id\tnode_kind\tnode_label\t"
+    assert (
+        outputs["node_windows_path"]
+        .read_text(encoding="utf-8")
+        .startswith("node_id\tnode_kind\tnode_label\t")
     )
-    assert outputs["issues_path"].read_text(encoding="utf-8").startswith(
-        "scope_kind\tscope_id\tcode\t"
+    assert (
+        outputs["issues_path"]
+        .read_text(encoding="utf-8")
+        .startswith("scope_kind\tscope_id\tcode\t")
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["feasible"] is False

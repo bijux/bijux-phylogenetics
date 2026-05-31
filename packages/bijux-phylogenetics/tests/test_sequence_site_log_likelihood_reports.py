@@ -69,34 +69,41 @@ def test_write_site_log_likelihood_table_supports_fixed_protein_models(
 def test_write_site_log_likelihood_table_supports_protein_mixture_models(
     tmp_path: Path,
 ) -> None:
-    gamma_report = evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment(
-        fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-        fixture("alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"),
-        rate_matrix=_compact_polar_rate_matrix(),
-        root_prior=_biased_root_prior(),
-        alpha=0.8,
-        category_count=4,
-        matrix_label="compact-polar",
-    )
-    invariant_report = optimize_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment(
-        fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-        fixture("alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"),
-        rate_matrix=_compact_polar_rate_matrix(),
-        root_prior=_biased_root_prior(),
-        matrix_label="compact-polar",
-        initial_invariant_proportion=0.1,
-    )
-    gamma_invariant_report = (
-        optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
+    gamma_report = (
+        evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment(
             fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-            fixture("alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"),
+            fixture(
+                "alignments",
+                "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
+            ),
             rate_matrix=_compact_polar_rate_matrix(),
             root_prior=_biased_root_prior(),
             alpha=0.8,
             category_count=4,
             matrix_label="compact-polar",
-            initial_invariant_proportion=0.1,
         )
+    )
+    invariant_report = optimize_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment(
+        fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+        fixture(
+            "alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"
+        ),
+        rate_matrix=_compact_polar_rate_matrix(),
+        root_prior=_biased_root_prior(),
+        matrix_label="compact-polar",
+        initial_invariant_proportion=0.1,
+    )
+    gamma_invariant_report = optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
+        fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+        fixture(
+            "alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"
+        ),
+        rate_matrix=_compact_polar_rate_matrix(),
+        root_prior=_biased_root_prior(),
+        alpha=0.8,
+        category_count=4,
+        matrix_label="compact-polar",
+        initial_invariant_proportion=0.1,
     )
 
     for output_name, report in (
@@ -180,7 +187,9 @@ def _weighted_pattern_log_likelihood_sum(path: Path) -> float:
                 row["pattern_id"],
                 (int(row["pattern_weight"]), float(row["log_likelihood"])),
             )
-    return sum(weight * log_likelihood for weight, log_likelihood in pattern_rows.values())
+    return sum(
+        weight * log_likelihood for weight, log_likelihood in pattern_rows.values()
+    )
 
 
 def _compact_polar_rate_matrix() -> numpy.ndarray:

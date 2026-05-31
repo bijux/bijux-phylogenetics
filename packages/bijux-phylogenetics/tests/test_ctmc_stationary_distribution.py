@@ -22,7 +22,9 @@ def test_solve_ctmc_stationary_distribution_matches_two_state_fixture() -> None:
     assert report.as_mapping() == pytest.approx({"A": 1.0 / 3.0, "B": 2.0 / 3.0})
 
 
-def test_solve_ctmc_stationary_distribution_matches_asymmetric_three_state_fixture() -> None:
+def test_solve_ctmc_stationary_distribution_matches_asymmetric_three_state_fixture() -> (
+    None
+):
     report = solve_ctmc_stationary_distribution(
         [
             [-0.7, 0.6, 0.1],

@@ -84,7 +84,9 @@ def test_approximate_topology_test_reports_observed_delta_distribution_and_cauti
     ]
     winner = next(row for row in report.summary_rows if row.observed_best_tree)
     expected_p_like = sum(
-        1.0 for row in loser_distribution if row.candidate_matches_or_beats_observed_best
+        1.0
+        for row in loser_distribution
+        if row.candidate_matches_or_beats_observed_best
     ) / float(report.resampling_replicate_count)
 
     assert math.isclose(
@@ -93,7 +95,9 @@ def test_approximate_topology_test_reports_observed_delta_distribution_and_cauti
         rel_tol=0.0,
         abs_tol=1e-12,
     )
-    assert math.isclose(loser.p_like_statistic, expected_p_like, rel_tol=0.0, abs_tol=1e-12)
+    assert math.isclose(
+        loser.p_like_statistic, expected_p_like, rel_tol=0.0, abs_tol=1e-12
+    )
     assert loser.p_like_statistic == 0.0
     assert loser.caution_label == report.caution_label
 
@@ -127,8 +131,12 @@ def test_write_approximate_topology_test_artifacts_materializes_governed_output_
         "resampling_path",
         "run_json_path",
     }
-    assert outputs["summary_path"].read_text(encoding="utf-8").startswith(
-        "candidate_tree_id\tcandidate_tree_label\tobserved_log_likelihood\tobserved_delta_log_likelihood\tobserved_best_tree\tresampling_win_count\tresampling_frequency\tp_like_statistic\tresampling_mean_delta_log_likelihood\tresampling_min_delta_log_likelihood\tresampling_max_delta_log_likelihood\tcaution_label\ttree_newick\n"
+    assert (
+        outputs["summary_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "candidate_tree_id\tcandidate_tree_label\tobserved_log_likelihood\tobserved_delta_log_likelihood\tobserved_best_tree\tresampling_win_count\tresampling_frequency\tp_like_statistic\tresampling_mean_delta_log_likelihood\tresampling_min_delta_log_likelihood\tresampling_max_delta_log_likelihood\tcaution_label\ttree_newick\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "nucleotide-approximate-topology-test"
@@ -144,4 +152,6 @@ def test_validate_approximate_topology_test_rejects_zero_replicates() -> None:
     except ValueError as error:
         assert str(error) == "resampling_replicate_count must be at least one"
     else:
-        raise AssertionError("approximate topology test must require at least one replicate")
+        raise AssertionError(
+            "approximate topology test must require at least one replicate"
+        )

@@ -103,7 +103,9 @@ def test_fixed_topology_dna_missing_state_summary_recovers_masked_known_state() 
     assert probability_by_state["A"] > probability_by_state["T"]
 
 
-def test_partitioned_dna_missing_state_summary_preserves_global_site_positions() -> None:
+def test_partitioned_dna_missing_state_summary_preserves_global_site_positions() -> (
+    None
+):
     locus_partitions = parse_locus_partitions(
         fixture("metadata", "partitioned_dna_partitions_4_taxa.txt")
     )
@@ -113,7 +115,9 @@ def test_partitioned_dna_missing_state_summary_preserves_global_site_positions()
     masked_records = [
         AlignmentRecord(
             identifier=record.identifier,
-            sequence=record.sequence[:2] + ("N" if record.identifier == "A" else record.sequence[2]) + record.sequence[3:],
+            sequence=record.sequence[:2]
+            + ("N" if record.identifier == "A" else record.sequence[2])
+            + record.sequence[3:],
         )
         for record in observed_records
     ]
@@ -183,7 +187,9 @@ def _build_manual_fixed_topology_dna_run_report() -> FixedTopologyDnaRunReport:
         substitution_model_name="HKY85",
         branch_length_prior=build_exponential_branch_length_prior(rate=3.0),
         substitution_parameter_prior_bundle=build_substitution_parameter_prior_bundle(
-            kappa_prior=build_exponential_positive_substitution_parameter_prior(rate=1.0),
+            kappa_prior=build_exponential_positive_substitution_parameter_prior(
+                rate=1.0
+            ),
             base_frequency_prior=build_dirichlet_simplex_substitution_parameter_prior(
                 expected_component_names=("A", "C", "G", "T"),
                 concentration_parameters={"A": 2.0, "C": 2.0, "G": 2.0, "T": 2.0},

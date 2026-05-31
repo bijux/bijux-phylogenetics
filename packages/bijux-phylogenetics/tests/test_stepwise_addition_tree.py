@@ -20,14 +20,16 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 
 def test_topology_gateway_exports_stepwise_addition_validation_surface() -> None:
     assert (
-        topology_api.validate_stepwise_addition_taxa
-        is validate_stepwise_addition_taxa
+        topology_api.validate_stepwise_addition_taxa is validate_stepwise_addition_taxa
     )
     assert (
         topology_api.validate_stepwise_objective_direction
         is validate_stepwise_objective_direction
     )
-    assert topology_api.STEPWISE_ADDITION_ROOT_BRANCH_ID == STEPWISE_ADDITION_ROOT_BRANCH_ID
+    assert (
+        topology_api.STEPWISE_ADDITION_ROOT_BRANCH_ID
+        == STEPWISE_ADDITION_ROOT_BRANCH_ID
+    )
     assert (
         topology_api.iter_stepwise_addition_edge_candidates
         is iter_stepwise_addition_edge_candidates
@@ -40,7 +42,10 @@ def test_topology_gateway_exports_stepwise_addition_validation_surface() -> None
         topology_api.build_greedy_stepwise_addition_tree
         is build_greedy_stepwise_addition_tree
     )
-    assert topology_api.write_stepwise_addition_artifacts is write_stepwise_addition_artifacts
+    assert (
+        topology_api.write_stepwise_addition_artifacts
+        is write_stepwise_addition_artifacts
+    )
 
 
 def test_validate_stepwise_addition_taxa_preserves_insertion_order() -> None:
@@ -94,7 +99,9 @@ def test_iter_stepwise_addition_edge_candidates_lists_root_and_all_branches() ->
 
     candidates = list(iter_stepwise_addition_edge_candidates(tree))
 
-    assert [(candidate.branch_id, candidate.descendant_taxa) for candidate in candidates] == [
+    assert [
+        (candidate.branch_id, candidate.descendant_taxa) for candidate in candidates
+    ] == [
         ("root", ("Alpha", "Beta")),
         ("Alpha", ("Alpha",)),
         ("Beta", ("Beta",)),
@@ -114,7 +121,9 @@ def test_apply_stepwise_addition_candidate_inserts_taxon_on_selected_edge() -> N
     assert rooted_topology_signature_ids(inserted_tree) == ("Alpha|Gamma",)
 
 
-def test_build_greedy_stepwise_addition_tree_records_best_scoring_edge_per_step() -> None:
+def test_build_greedy_stepwise_addition_tree_records_best_scoring_edge_per_step() -> (
+    None
+):
     def score_tree(tree: PhyloTree) -> float:
         clade_ids = set(rooted_topology_signature_ids(tree))
         score = 0.0
@@ -166,11 +175,17 @@ def test_write_stepwise_addition_artifacts_materializes_governed_outputs(
         objective_name="clade-presence",
     )
 
-    outputs = write_stepwise_addition_artifacts(tmp_path / "stepwise-addition-run", report)
+    outputs = write_stepwise_addition_artifacts(
+        tmp_path / "stepwise-addition-run", report
+    )
 
     assert set(outputs) == {"tree_path", "trace_path", "run_json_path"}
-    assert outputs["trace_path"].read_text(encoding="utf-8").startswith(
-        "step_index\ttaxon\tinserted_taxa\ttested_edge_id\ttested_edge_descendant_taxa\ttested_edge_score\tbest_edge_id\tbest_edge_descendant_taxa\tbest_score\tselected\tcandidate_tree_newick\n"
+    assert (
+        outputs["trace_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "step_index\ttaxon\tinserted_taxa\ttested_edge_id\ttested_edge_descendant_taxa\ttested_edge_score\tbest_edge_id\tbest_edge_descendant_taxa\tbest_score\tselected\tcandidate_tree_newick\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "greedy-stepwise-addition-tree"

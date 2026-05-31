@@ -25,7 +25,10 @@ def fixture(name: str) -> Path:
 def test_topology_gateway_exports_rooted_spr_move_application_surface() -> None:
     assert topology_api.RootedSprMoveApplicationReport is RootedSprMoveApplicationReport
     assert topology_api.RootedSprMoveCandidate is RootedSprMoveCandidate
-    assert topology_api.resolve_rooted_spr_move_candidate is resolve_rooted_spr_move_candidate
+    assert (
+        topology_api.resolve_rooted_spr_move_candidate
+        is resolve_rooted_spr_move_candidate
+    )
     assert (
         topology_api.summarize_rooted_spr_move_application
         is summarize_rooted_spr_move_application

@@ -39,6 +39,9 @@ def test_write_rooted_spr_artifacts_records_budget_fields(tmp_path: Path) -> Non
     assert payload["self_regraft_candidate_count"] == 0
     assert payload["generated_neighbor_count"] == 2
     assert payload["unique_neighbor_topology_count"] == 2
-    assert outputs["summary_path"].read_text(encoding="utf-8").splitlines()[1].startswith(
-        "rooted-spr\trooted-spr-neighbor-enumeration\t30\t2\t0\t28\t"
+    assert (
+        outputs["summary_path"]
+        .read_text(encoding="utf-8")
+        .splitlines()[1]
+        .startswith("rooted-spr\trooted-spr-neighbor-enumeration\t30\t2\t0\t28\t")
     )

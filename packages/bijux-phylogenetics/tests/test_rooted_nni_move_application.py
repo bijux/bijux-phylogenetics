@@ -78,10 +78,7 @@ def _build_metadata_rich_nni_tree() -> PhyloTree:
 
 
 def test_topology_gateway_exports_rooted_nni_move_application_surface() -> None:
-    assert (
-        topology_api.RootedNniMoveApplicationReport
-        is RootedNniMoveApplicationReport
-    )
+    assert topology_api.RootedNniMoveApplicationReport is RootedNniMoveApplicationReport
     assert (
         topology_api.resolve_rooted_nni_move_candidate
         is resolve_rooted_nni_move_candidate
@@ -110,14 +107,14 @@ def test_rooted_nni_move_application_restores_original_topology_hash() -> None:
 
     assert available_move_count == 4
     assert rooted_topology_fingerprint(moved_tree) != rooted_topology_fingerprint(tree)
-    assert (
-        rooted_topology_fingerprint(restored_tree)
-        == rooted_topology_fingerprint(tree)
+    assert rooted_topology_fingerprint(restored_tree) == rooted_topology_fingerprint(
+        tree
     )
 
 
-def test_rooted_nni_move_application_report_preserves_labels_metadata_and_branch_lengths(
-) -> None:
+def test_rooted_nni_move_application_report_preserves_labels_metadata_and_branch_lengths() -> (
+    None
+):
     tree = _build_metadata_rich_nni_tree()
     original_topology_fingerprint = rooted_topology_fingerprint(tree)
     original_newick = tree.to_newick()

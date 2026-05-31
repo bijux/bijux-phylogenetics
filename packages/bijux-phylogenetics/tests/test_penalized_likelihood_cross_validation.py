@@ -58,7 +58,9 @@ def test_penalized_cross_validation_selects_candidate_with_lowest_rmse() -> None
     ) == pytest.approx(report.selected_root_mean_squared_error, abs=1e-15)
     selected_rows = [row for row in report.candidate_rows if row.selected]
     assert [row.smoothing_parameter for row in selected_rows] == [0.01]
-    rows_by_taxa = {tuple(row.descendant_taxa): row for row in report.selected_fit.node_rows}
+    rows_by_taxa = {
+        tuple(row.descendant_taxa): row for row in report.selected_fit.node_rows
+    }
     assert rows_by_taxa[("A", "B")].estimated_date == pytest.approx(1996.0, abs=1e-9)
     assert rows_by_taxa[("A", "B", "C")].estimated_date == pytest.approx(
         1990.0,
@@ -75,7 +77,9 @@ def test_penalized_cross_validation_rejects_infeasible_calibrations_before_optim
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     def fail_if_called(*args, **kwargs):  # pragma: no cover - defensive assertion
-        raise AssertionError("penalized optimizer should not run for infeasible calibrations")
+        raise AssertionError(
+            "penalized optimizer should not run for infeasible calibrations"
+        )
 
     monkeypatch.setattr(
         cross_validation_module,

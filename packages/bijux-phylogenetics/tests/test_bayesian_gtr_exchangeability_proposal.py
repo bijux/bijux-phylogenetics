@@ -32,7 +32,9 @@ def fixture(group: str, name: str) -> Path:
     return FIXTURES / group / name
 
 
-def test_gtr_exchangeability_proposal_changes_likelihood_and_keeps_simplex_valid() -> None:
+def test_gtr_exchangeability_proposal_changes_likelihood_and_keeps_simplex_valid() -> (
+    None
+):
     current_state = _build_scored_gtr_exchangeability_state()
 
     proposal = propose_gtr_exchangeability_move(
@@ -54,9 +56,8 @@ def test_gtr_exchangeability_proposal_changes_likelihood_and_keeps_simplex_valid
     proposed_model_parameters = proposal.proposed_model_parameters
     assert proposed_tree is not None
     assert proposed_model_parameters is not None
-    assert (
-        rooted_topology_fingerprint(proposed_tree)
-        == rooted_topology_fingerprint(current_state.tree.to_tree())
+    assert rooted_topology_fingerprint(proposed_tree) == rooted_topology_fingerprint(
+        current_state.tree.to_tree()
     )
     assert (
         proposed_model_parameters.categorical_parameters["substitution-model"] == "GTR"
@@ -117,7 +118,9 @@ def test_sampler_uses_gtr_exchangeability_proposal_on_real_likelihood_surface() 
     )
     assert any(
         step_row.log_acceptance_ratio is not None
-        and not math.isclose(step_row.log_acceptance_ratio, 0.0, rel_tol=0.0, abs_tol=1e-12)
+        and not math.isclose(
+            step_row.log_acceptance_ratio, 0.0, rel_tol=0.0, abs_tol=1e-12
+        )
         for step_row in report.step_rows
     )
     final_exchangeabilities = report.final_state.model_parameters.vector_parameters[
@@ -178,7 +181,7 @@ def _build_scored_gtr_exchangeability_state() -> BayesianPhylogeneticState:
                         "GT": 1.25,
                     }
                 ).constrained_mapping()
-            }
+            },
         ),
         update_prior_components=_zero_prior_components,
         update_log_likelihood=_gtr_log_likelihood,
@@ -188,7 +191,9 @@ def _build_scored_gtr_exchangeability_state() -> BayesianPhylogeneticState:
 def _gtr_log_likelihood(state: BayesianPhylogeneticState) -> float:
     return evaluate_gtr_tree_likelihood(
         state.tree.to_tree(),
-        load_fasta_alignment(fixture("alignments", "gtr_likelihood_alignment_2_taxa.fasta")),
+        load_fasta_alignment(
+            fixture("alignments", "gtr_likelihood_alignment_2_taxa.fasta")
+        ),
         exchangeabilities=state.model_parameters.vector_parameters["exchangeabilities"],
         base_frequencies=_GTR_BASE_FREQUENCIES,
     ).log_likelihood

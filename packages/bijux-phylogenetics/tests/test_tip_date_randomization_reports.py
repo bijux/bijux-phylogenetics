@@ -111,17 +111,25 @@ def test_write_tip_date_randomization_artifacts_emit_governed_outputs(
         "run_json",
         "summary",
     ]
-    assert (tmp_path / "summary.tsv").read_text(encoding="utf-8").startswith(
-        "tree_path\tmetadata_path\tsource_format\t"
+    assert (
+        (tmp_path / "summary.tsv")
+        .read_text(encoding="utf-8")
+        .startswith("tree_path\tmetadata_path\tsource_format\t")
     )
-    assert (tmp_path / "permutations.tsv").read_text(encoding="utf-8").startswith(
-        "permutation_index\tpermuted_slope\t"
+    assert (
+        (tmp_path / "permutations.tsv")
+        .read_text(encoding="utf-8")
+        .startswith("permutation_index\tpermuted_slope\t")
     )
-    assert (tmp_path / "observed_residuals.tsv").read_text(encoding="utf-8").startswith(
-        "tip\tsampling_time\troot_to_tip_distance\t"
+    assert (
+        (tmp_path / "observed_residuals.tsv")
+        .read_text(encoding="utf-8")
+        .startswith("tip\tsampling_time\troot_to_tip_distance\t")
     )
-    assert (tmp_path / "observed_outliers.tsv").read_text(encoding="utf-8").startswith(
-        "rank\ttip\tsampling_time\troot_to_tip_distance\t"
+    assert (
+        (tmp_path / "observed_outliers.tsv")
+        .read_text(encoding="utf-8")
+        .startswith("rank\ttip\tsampling_time\troot_to_tip_distance\t")
     )
     payload = json.loads((tmp_path / "run.json").read_text(encoding="utf-8"))
     assert payload["observed_regression"]["outliers"][0]["tip"] == "G"

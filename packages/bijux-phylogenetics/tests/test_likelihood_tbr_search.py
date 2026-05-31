@@ -4,8 +4,8 @@ import json
 import math
 from pathlib import Path
 
-import bijux_phylogenetics.phylo.likelihood as likelihood_api
 from bijux_phylogenetics.io.newick import load_newick_tree_set
+import bijux_phylogenetics.phylo.likelihood as likelihood_api
 from bijux_phylogenetics.phylo.likelihood import (
     search_nucleotide_likelihood_tbr_from_alignment,
     write_nucleotide_likelihood_tbr_artifacts,
@@ -98,8 +98,12 @@ def test_write_nucleotide_likelihood_tbr_artifacts_materializes_governed_output_
     }
     assert outputs["best_tree_path"].name == "best_trees.nwk"
     assert len(load_newick_tree_set(outputs["best_tree_path"])) == 1
-    assert outputs["trace_path"].read_text(encoding="utf-8").startswith(
-        "event_index\tevent_kind\titeration\tmove_type\tcandidate_topology_fingerprint\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\taccepted_move\ttrace_reason\ttree_before_newick\ttree_after_newick\tcut_edge_id\tleft_attachment_branch_id\tright_attachment_branch_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\tstopping_reason\n"
+    assert (
+        outputs["trace_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "event_index\tevent_kind\titeration\tmove_type\tcandidate_topology_fingerprint\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\taccepted_move\ttrace_reason\ttree_before_newick\ttree_after_newick\tcut_edge_id\tleft_attachment_branch_id\tright_attachment_branch_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\tstopping_reason\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "nucleotide-likelihood-tbr-search"

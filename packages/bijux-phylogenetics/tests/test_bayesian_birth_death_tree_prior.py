@@ -37,19 +37,17 @@ def _expected_crown_conditioned_birth_death_log_prior(
     sampling_fraction: float,
 ) -> float:
     def denominator(time_before_present: float) -> float:
-        return (
-            speciation_rate * sampling_fraction
-            + (
-                (speciation_rate * (1.0 - sampling_fraction)) - extinction_rate
-            )
-            * math.exp(-(speciation_rate - extinction_rate) * time_before_present)
-        )
+        return speciation_rate * sampling_fraction + (
+            (speciation_rate * (1.0 - sampling_fraction)) - extinction_rate
+        ) * math.exp(-(speciation_rate - extinction_rate) * time_before_present)
 
     def p1(time_before_present: float) -> float:
         if math.isclose(speciation_rate, extinction_rate, abs_tol=1e-15):
-            return sampling_fraction / (
-                1.0 + (sampling_fraction * speciation_rate * time_before_present)
-            ) ** 2
+            return (
+                sampling_fraction
+                / (1.0 + (sampling_fraction * speciation_rate * time_before_present))
+                ** 2
+            )
         rate_gap = speciation_rate - extinction_rate
         return (
             sampling_fraction
@@ -75,7 +73,9 @@ def _expected_crown_conditioned_birth_death_log_prior(
     )
 
 
-def test_crown_conditioned_birth_death_tree_prior_matches_small_ultrametric_fixture() -> None:
+def test_crown_conditioned_birth_death_tree_prior_matches_small_ultrametric_fixture() -> (
+    None
+):
     tree = load_tree(fixture("trees", "strict_clock_time_tree_4_taxa.nwk"))
     prior_model = build_crown_conditioned_birth_death_tree_prior(
         speciation_rate=1.2,

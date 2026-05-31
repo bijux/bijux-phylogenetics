@@ -67,7 +67,9 @@ def test_constant_population_coalescent_prior_matches_hand_computed_fixture() ->
     )
 
 
-def test_constant_population_coalescent_prior_handles_two_tip_ultrametric_tree() -> None:
+def test_constant_population_coalescent_prior_handles_two_tip_ultrametric_tree() -> (
+    None
+):
     tree = load_tree(fixture("trees", "example_tree_two_tip_ultrametric.nwk"))
     prior_model = build_constant_population_coalescent_tree_prior(
         effective_population_size=2.0,

@@ -65,9 +65,8 @@ def test_continuous_trait_location_proposal_changes_real_valued_posterior_surfac
     proposed_model_parameters = proposal.proposed_model_parameters
     assert proposed_tree is not None
     assert proposed_model_parameters is not None
-    assert (
-        rooted_topology_fingerprint(proposed_tree)
-        == rooted_topology_fingerprint(current_state.tree.to_tree())
+    assert rooted_topology_fingerprint(proposed_tree) == rooted_topology_fingerprint(
+        current_state.tree.to_tree()
     )
     assert proposal.log_hastings_ratio == 0.0
     proposed_state = score_bayesian_phylogenetic_state(

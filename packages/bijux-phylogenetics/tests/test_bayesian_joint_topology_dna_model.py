@@ -32,7 +32,9 @@ def _build_k80_sequence_model_definition() -> FixedTopologyDnaModelDefinition:
         substitution_model_name="K80",
         branch_length_prior=build_exponential_branch_length_prior(rate=4.0),
         substitution_parameter_prior_bundle=build_substitution_parameter_prior_bundle(
-            kappa_prior=build_exponential_positive_substitution_parameter_prior(rate=1.5)
+            kappa_prior=build_exponential_positive_substitution_parameter_prior(
+                rate=1.5
+            )
         ),
     )
 

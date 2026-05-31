@@ -7,9 +7,8 @@ import sys
 def write_executable(path: Path, body: str) -> Path:
     normalized_body = body
     if normalized_body.startswith("#!/usr/bin/env python3\n"):
-        normalized_body = (
-            f"#!{sys.executable}\n"
-            + normalized_body.removeprefix("#!/usr/bin/env python3\n")
+        normalized_body = f"#!{sys.executable}\n" + normalized_body.removeprefix(
+            "#!/usr/bin/env python3\n"
         )
     path.write_text(normalized_body, encoding="utf-8")
     path.chmod(0o755)

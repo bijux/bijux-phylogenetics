@@ -23,7 +23,9 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
-def test_diagnose_imported_distance_matrix_additivity_accepts_additive_fixture() -> None:
+def test_diagnose_imported_distance_matrix_additivity_accepts_additive_fixture() -> (
+    None
+):
     report = diagnose_imported_distance_matrix_additivity(
         fixture("example_distance_matrix_ultrametric.tsv")
     )
@@ -90,9 +92,13 @@ def test_write_distance_additivity_artifacts_materializes_governed_output_family
         fixture("example_distance_matrix_equal_row_sum_nonultrametric.tsv")
     )
 
-    outputs = write_distance_additivity_artifacts(tmp_path / "distance-additivity", report)
+    outputs = write_distance_additivity_artifacts(
+        tmp_path / "distance-additivity", report
+    )
 
-    table_lines = outputs["four_point_violations"].read_text(encoding="utf-8").splitlines()
+    table_lines = (
+        outputs["four_point_violations"].read_text(encoding="utf-8").splitlines()
+    )
     assert table_lines[0] == (
         "quartet\tsplit_ab_cd_sum\tsplit_ac_bd_sum\tsplit_ad_bc_sum\tbest_split\tviolation_magnitude"
     )

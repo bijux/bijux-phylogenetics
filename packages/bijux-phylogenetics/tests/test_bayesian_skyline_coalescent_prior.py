@@ -58,7 +58,12 @@ def test_skyline_coalescent_prior_matches_segmented_hand_computation() -> None:
     assert report.internal_node_count == 3
     assert math.isclose(report.root_age, 3.0, rel_tol=0.0, abs_tol=1e-12)
     assert len(report.segment_rows) == 4
-    assert [row.coalescent_interval_index for row in report.segment_rows] == [1, 2, 2, 3]
+    assert [row.coalescent_interval_index for row in report.segment_rows] == [
+        1,
+        2,
+        2,
+        3,
+    ]
     assert [row.skyline_epoch_index for row in report.segment_rows] == [1, 1, 2, 2]
     assert [row.duration for row in report.segment_rows] == [1.0, 0.5, 0.5, 1.0]
     assert [row.lineage_count for row in report.segment_rows] == [4, 3, 3, 2]

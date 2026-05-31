@@ -83,7 +83,10 @@ def test_fixed_topology_partitioned_dna_runner_samples_partition_likelihoods_and
     assert report.chain_report.accepted_count >= 1
     assert len(report.posterior_rows) == len(report.chain_report.sampled_states)
     assert all(len(row.partition_rows) == 2 for row in report.posterior_rows)
-    assert all("branch-lengths" in row.prior_component_log_priors for row in report.posterior_rows)
+    assert all(
+        "branch-lengths" in row.prior_component_log_priors
+        for row in report.posterior_rows
+    )
     assert all(
         math.isclose(
             sum(partition_row.log_likelihood for partition_row in row.partition_rows),
@@ -99,7 +102,10 @@ def test_fixed_topology_partitioned_dna_runner_samples_partition_likelihoods_and
         for row in report.posterior_rows
     )
     assert all(
-        all("kappa" in partition_row.scalar_parameters for partition_row in row.partition_rows)
+        all(
+            "kappa" in partition_row.scalar_parameters
+            for partition_row in row.partition_rows
+        )
         for row in report.posterior_rows
     )
     assert any(

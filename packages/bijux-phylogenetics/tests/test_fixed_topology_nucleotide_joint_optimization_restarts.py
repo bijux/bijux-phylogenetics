@@ -49,7 +49,9 @@ def test_fixed_topology_gtr_joint_restart_policy_records_attempts_and_selects_be
 ):
     report = joint_optimization.optimize_fixed_topology_nucleotide_branches_and_model_with_restarts_from_alignment(
         fixture("trees", "jc69_branch_optimization_start_tree_2_taxa.nwk"),
-        fixture("alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta"),
+        fixture(
+            "alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta"
+        ),
         model_name="gtr",
         restart_policy="restart-on-nonconvergence-or-boundary",
         max_restart_count=2,
@@ -66,9 +68,12 @@ def test_fixed_topology_gtr_joint_restart_policy_records_attempts_and_selects_be
     assert report.attempt_rows[2].trigger_reason == "restart-after-boundary-warning"
     assert sum(1 for row in report.attempt_rows if row.selected_best) == 1
     assert report.attempt_rows[report.selected_attempt_index - 1].selected_best is True
-    assert report.selected_report.optimized_log_likelihood == report.attempt_rows[
-        report.selected_attempt_index - 1
-    ].optimized_log_likelihood
+    assert (
+        report.selected_report.optimized_log_likelihood
+        == report.attempt_rows[
+            report.selected_attempt_index - 1
+        ].optimized_log_likelihood
+    )
     assert all(row.boundary_warning_count == 0 for row in report.attempt_rows)
     assert report.attempt_rows[1].branch_boundary_count == 1
     assert report.attempt_rows[2].branch_boundary_count == 1

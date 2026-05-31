@@ -69,7 +69,9 @@ def test_rescaled_consistency_index_matches_ci_times_ri_from_tested_surfaces() -
     ]
 
 
-def test_rescaled_consistency_index_reports_undefined_aggregate_when_ci_and_ri_are_undefined() -> None:
+def test_rescaled_consistency_index_reports_undefined_aggregate_when_ci_and_ri_are_undefined() -> (
+    None
+):
     report = rescaled_consistency_index(
         fixture("fitch_tree.nwk"),
         fixture("rescaled_consistency_index_constant_matrix.tsv"),
@@ -79,10 +81,15 @@ def test_rescaled_consistency_index_reports_undefined_aggregate_when_ci_and_ri_a
     assert report.ci is None
     assert report.ri is None
     assert report.rc is None
-    assert report.undefined_reason == "no_variable_characters|no_defined_retention_characters"
+    assert (
+        report.undefined_reason
+        == "no_variable_characters|no_defined_retention_characters"
+    )
 
 
-def test_rescaled_consistency_index_rejects_methods_without_common_ci_ri_support() -> None:
+def test_rescaled_consistency_index_rejects_methods_without_common_ci_ri_support() -> (
+    None
+):
     with pytest.raises(ParsimonyAnalysisError) as error_info:
         rescaled_consistency_index(
             fixture("fitch_tree.nwk"),
@@ -102,11 +109,15 @@ def test_write_parsimony_rescaled_consistency_artifacts_materializes_governed_ou
         method="fitch",
     )
 
-    outputs = write_parsimony_rescaled_consistency_artifacts(tmp_path / "rc-run", report)
+    outputs = write_parsimony_rescaled_consistency_artifacts(
+        tmp_path / "rc-run", report
+    )
 
     assert set(outputs) == {"indices_path", "run_json_path"}
-    assert outputs["indices_path"].read_text(encoding="utf-8").startswith(
-        "character_id\tci\tri\trc\tundefined_reason\n"
+    assert (
+        outputs["indices_path"]
+        .read_text(encoding="utf-8")
+        .startswith("character_id\tci\tri\trc\tundefined_reason\n")
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "parsimony-rescaled-consistency-index"

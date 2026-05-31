@@ -56,8 +56,7 @@ def test_native_likelihood_bootstrap_is_seed_reproducible() -> None:
         for row in left_report.replicate_rows
     )
     assert all(
-        0.0 <= row.support_percent <= 100.0
-        for row in left_report.clade_support_rows
+        0.0 <= row.support_percent <= 100.0 for row in left_report.clade_support_rows
     )
     assert all(
         row.supporting_tree_count <= left_report.replicate_count
@@ -93,12 +92,23 @@ def test_native_likelihood_bootstrap_writes_governed_outputs(
         "clade_frequencies_path",
         "run_json_path",
     }
-    assert len(load_newick_tree_set(outputs["replicate_trees_path"])) == report.replicate_count
-    assert outputs["replicate_draws_path"].read_text(encoding="utf-8").startswith(
-        "replicate_index\tsampled_site_indices\treplicate_start_tree_seed\tselected_model_name\tbest_run_source_label\tfinal_log_likelihood\tfinal_topology_fingerprint\taccepted_move_count\tsearch_iteration_count\tfinal_tree_newick\n"
+    assert (
+        len(load_newick_tree_set(outputs["replicate_trees_path"]))
+        == report.replicate_count
     )
-    assert outputs["clade_support_path"].read_text(encoding="utf-8").startswith(
-        "branch_id\tnode_label\tdescendant_taxa\tsupporting_tree_count\tclade_frequency\tsupport_percent\n"
+    assert (
+        outputs["replicate_draws_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "replicate_index\tsampled_site_indices\treplicate_start_tree_seed\tselected_model_name\tbest_run_source_label\tfinal_log_likelihood\tfinal_topology_fingerprint\taccepted_move_count\tsearch_iteration_count\tfinal_tree_newick\n"
+        )
+    )
+    assert (
+        outputs["clade_support_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "branch_id\tnode_label\tdescendant_taxa\tsupporting_tree_count\tclade_frequency\tsupport_percent\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "nucleotide-likelihood-bootstrap-tree-inference"

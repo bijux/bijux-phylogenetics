@@ -46,7 +46,9 @@ def test_compute_tree_set_split_frequency_table_counts_unrooted_signatures() -> 
     ] == [("A|B", 2, 1.0)]
 
 
-def test_compute_tree_set_split_frequency_table_distinguishes_rooting_policies() -> None:
+def test_compute_tree_set_split_frequency_table_distinguishes_rooting_policies() -> (
+    None
+):
     rooted = compute_tree_set_split_frequency_table(
         fixture("example_tree_set_rooting_only_difference.nwk"),
         split_policy="rooted",

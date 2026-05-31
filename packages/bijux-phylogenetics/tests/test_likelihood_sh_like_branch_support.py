@@ -47,9 +47,7 @@ def test_sh_like_branch_support_ranks_strong_and_weak_local_signal() -> None:
         row.caution_label == strong_report.caution_label
         for row in strong_report.branch_support_rows
     )
-    assert all(
-        row.support_fraction == 1.0 for row in strong_report.branch_support_rows
-    )
+    assert all(row.support_fraction == 1.0 for row in strong_report.branch_support_rows)
     assert all(
         row.reference_is_observed_best for row in strong_report.branch_support_rows
     )
@@ -95,14 +93,26 @@ def test_sh_like_branch_support_writes_governed_outputs(
         "resampling_path",
         "run_json_path",
     }
-    assert outputs["branch_support_path"].read_text(encoding="utf-8").startswith(
-        "branch_id\tnode_label\tdescendant_taxa\talternative_arrangement_count\treference_log_likelihood\tbest_alternative_tree_id\tbest_alternative_tree_label\tbest_alternative_topology_fingerprint\tbest_alternative_log_likelihood\tobserved_delta_log_likelihood\treference_is_observed_best\tsupport_replicate_count\tsupport_fraction\tsupport_percent\tcaution_label\n"
+    assert (
+        outputs["branch_support_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "branch_id\tnode_label\tdescendant_taxa\talternative_arrangement_count\treference_log_likelihood\tbest_alternative_tree_id\tbest_alternative_tree_label\tbest_alternative_topology_fingerprint\tbest_alternative_log_likelihood\tobserved_delta_log_likelihood\treference_is_observed_best\tsupport_replicate_count\tsupport_fraction\tsupport_percent\tcaution_label\n"
+        )
     )
-    assert outputs["local_topology_path"].read_text(encoding="utf-8").startswith(
-        "branch_id\tnode_label\tdescendant_taxa\tcandidate_tree_id\tcandidate_tree_label\tlocal_arrangement_kind\ttopology_fingerprint\tobserved_log_likelihood\tobserved_delta_log_likelihood\tobserved_best_local_arrangement\ttree_newick\n"
+    assert (
+        outputs["local_topology_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "branch_id\tnode_label\tdescendant_taxa\tcandidate_tree_id\tcandidate_tree_label\tlocal_arrangement_kind\ttopology_fingerprint\tobserved_log_likelihood\tobserved_delta_log_likelihood\tobserved_best_local_arrangement\ttree_newick\n"
+        )
     )
-    assert outputs["resampling_path"].read_text(encoding="utf-8").startswith(
-        "branch_id\tdescendant_taxa\treplicate_index\treference_resampled_log_likelihood\tbest_local_tree_id\tbest_local_tree_label\tbest_local_resampled_log_likelihood\tbest_alternative_tree_id\tbest_alternative_tree_label\tbest_alternative_resampled_log_likelihood\treference_delta_log_likelihood\treference_matches_or_beats_alternatives\n"
+    assert (
+        outputs["resampling_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "branch_id\tdescendant_taxa\treplicate_index\treference_resampled_log_likelihood\tbest_local_tree_id\tbest_local_tree_label\tbest_local_resampled_log_likelihood\tbest_alternative_tree_id\tbest_alternative_tree_label\tbest_alternative_resampled_log_likelihood\treference_delta_log_likelihood\treference_matches_or_beats_alternatives\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "nucleotide-sh-like-branch-support"
@@ -120,4 +130,6 @@ def test_validate_sh_like_branch_support_rejects_zero_replicates() -> None:
     except ValueError as error:
         assert str(error) == "resampling_replicate_count must be at least one"
     else:
-        raise AssertionError("SH-like branch support must require at least one replicate")
+        raise AssertionError(
+            "SH-like branch support must require at least one replicate"
+        )

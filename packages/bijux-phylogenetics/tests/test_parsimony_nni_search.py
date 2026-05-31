@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import bijux_phylogenetics.parsimony as parsimony_api
 from bijux_phylogenetics.io.newick import loads_newick
+import bijux_phylogenetics.parsimony as parsimony_api
 from bijux_phylogenetics.parsimony import (
     search_parsimony_nni,
     write_parsimony_nni_artifacts,
@@ -117,8 +117,12 @@ def test_write_parsimony_nni_artifacts_materializes_governed_output_family(
         "trace_path",
         "run_json_path",
     }
-    assert outputs["trace_path"].read_text(encoding="utf-8").startswith(
-        "event_index\tevent_kind\titeration\tscore_before\tscore_after\tscore_delta\ttree_before_newick\ttree_after_newick\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tstopping_reason\n"
+    assert (
+        outputs["trace_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "event_index\tevent_kind\titeration\tscore_before\tscore_after\tscore_delta\ttree_before_newick\ttree_after_newick\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tstopping_reason\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "parsimony-nni-search"
@@ -132,7 +136,9 @@ def test_write_parsimony_nni_artifacts_materializes_governed_output_family(
     assert payload["stopping_reason"] == "no-improving-neighbor"
 
 
-def test_parsimony_nni_search_records_clean_stop_when_start_tree_is_already_optimal() -> None:
+def test_parsimony_nni_search_records_clean_stop_when_start_tree_is_already_optimal() -> (
+    None
+):
     report = search_parsimony_nni(
         loads_newick("(((A,B),C),D);"),
         fixture("nni_search_matrix.tsv"),

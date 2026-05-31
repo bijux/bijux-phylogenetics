@@ -92,7 +92,9 @@ def test_build_categorical_probability_vector_rejects_unexpected_states() -> Non
     assert error_info.value.details["unexpected_states"] == ["X"]
 
 
-def test_build_categorical_probability_vector_rejects_invalid_missing_state_policy() -> None:
+def test_build_categorical_probability_vector_rejects_invalid_missing_state_policy() -> (
+    None
+):
     with pytest.raises(PhylogeneticsError) as error_info:
         build_categorical_probability_vector(
             {"A": 1.0},

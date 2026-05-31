@@ -77,7 +77,9 @@ def test_write_relaxed_rate_branch_table_writes_expected_rows(
         rows = list(csv.DictReader(handle, delimiter="\t"))
 
     assert len(rows) == 6
-    rows_by_descendant_taxa = {tuple(row["descendant_taxa"].split("|")): row for row in rows}
+    rows_by_descendant_taxa = {
+        tuple(row["descendant_taxa"].split("|")): row for row in rows
+    }
     assert float(rows_by_descendant_taxa[("A",)]["branch_rate"]) == pytest.approx(
         0.6,
         abs=1e-12,
@@ -133,14 +135,20 @@ def test_write_relaxed_rate_branch_summary_artifacts_materializes_governed_outpu
         "run_json_path",
         "summary_path",
     ]
-    assert outputs["summary_path"].read_text(encoding="utf-8").startswith(
-        "substitution_tree_path\tdated_tree_path\t"
+    assert (
+        outputs["summary_path"]
+        .read_text(encoding="utf-8")
+        .startswith("substitution_tree_path\tdated_tree_path\t")
     )
-    assert outputs["branch_rates_path"].read_text(encoding="utf-8").startswith(
-        "branch_id\tchild_name\tdescendant_taxa\t"
+    assert (
+        outputs["branch_rates_path"]
+        .read_text(encoding="utf-8")
+        .startswith("branch_id\tchild_name\tdescendant_taxa\t")
     )
-    assert outputs["outliers_path"].read_text(encoding="utf-8").startswith(
-        "rank\tbranch_id\tchild_name\tdescendant_taxa\t"
+    assert (
+        outputs["outliers_path"]
+        .read_text(encoding="utf-8")
+        .startswith("rank\tbranch_id\tchild_name\tdescendant_taxa\t")
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["outlier_rows"][0]["child_name"] == "A"

@@ -77,10 +77,13 @@ def test_discrete_trait_rate_proposal_changes_real_mk_likelihood(
     assert proposal.proposed_tree is not None
     proposed_model_parameters = proposal.proposed_model_parameters
     assert proposed_model_parameters is not None
-    assert set(
-        proposed_model_parameters.vector_parameters["discrete-trait-rates"]
-    ) == expected_parameter_names
-    assert proposal.changed_fields[0].startswith("vector_parameters.discrete-trait-rates.")
+    assert (
+        set(proposed_model_parameters.vector_parameters["discrete-trait-rates"])
+        == expected_parameter_names
+    )
+    assert proposal.changed_fields[0].startswith(
+        "vector_parameters.discrete-trait-rates."
+    )
 
     proposed_state = score_bayesian_phylogenetic_state(
         tree=proposal.proposed_tree,
@@ -157,7 +160,9 @@ def test_sampler_uses_discrete_trait_rate_proposal_on_mk_surface() -> None:
 
 def test_discrete_trait_rate_proposal_requires_rate_vector() -> None:
     current_state = score_bayesian_phylogenetic_state(
-        tree=load_tree(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
+        tree=load_tree(
+            fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")
+        ),
         model_parameters=build_bayesian_model_parameter_state(),
         update_prior_components=_zero_prior_components,
         update_log_likelihood=_zero_log_likelihood,
@@ -226,7 +231,9 @@ def _discrete_mk_log_likelihood(
     transition_rate_rows = resolve_discrete_trait_rate_rows(
         model=surface.fit_report.model,
         transition_rate_rows=surface.fit_report.transition_rate_rows,
-        parameter_values=state.model_parameters.vector_parameters["discrete-trait-rates"],
+        parameter_values=state.model_parameters.vector_parameters[
+            "discrete-trait-rates"
+        ],
     )
     rate_matrix = _build_rate_matrix_from_transition_rows(
         state_order=surface.fit_report.state_order,

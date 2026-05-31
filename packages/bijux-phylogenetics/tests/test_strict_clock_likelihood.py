@@ -91,9 +91,10 @@ def test_strict_clock_likelihood_fits_one_global_rate_on_time_tree_fixture() -> 
         ("D",): (3.0, 1.5652151008304491),
     }
     assert set(rows_by_descendant_taxa) == set(expected_rows)
-    for descendant_taxa, (expected_time_duration, expected_branch_length) in (
-        expected_rows.items()
-    ):
+    for descendant_taxa, (
+        expected_time_duration,
+        expected_branch_length,
+    ) in expected_rows.items():
         row = rows_by_descendant_taxa[descendant_taxa]
         assert math.isclose(
             row.time_duration,
@@ -115,8 +116,9 @@ def test_strict_clock_likelihood_fits_one_global_rate_on_time_tree_fixture() -> 
         )
 
 
-def test_strict_clock_likelihood_differs_from_nonclock_likelihood_on_nonclock_fixture(
-) -> None:
+def test_strict_clock_likelihood_differs_from_nonclock_likelihood_on_nonclock_fixture() -> (
+    None
+):
     strict_clock_report = fit_strict_clock_likelihood_from_alignment(
         fixture("trees", "strict_clock_time_tree_4_taxa.nwk"),
         fixture("alignments", "strict_clock_likelihood_alignment_4_taxa.fasta"),
@@ -126,7 +128,9 @@ def test_strict_clock_likelihood_differs_from_nonclock_likelihood_on_nonclock_fi
         fixture("alignments", "strict_clock_likelihood_alignment_4_taxa.fasta"),
     )
 
-    assert free_branch_report.log_likelihood > strict_clock_report.optimized_log_likelihood
+    assert (
+        free_branch_report.log_likelihood > strict_clock_report.optimized_log_likelihood
+    )
     assert not math.isclose(
         free_branch_report.log_likelihood,
         strict_clock_report.optimized_log_likelihood,

@@ -43,10 +43,17 @@ def test_write_nucleotide_likelihood_nni_artifacts_records_first_improvement_pol
         (1, 4),
         (2, 2),
     ]
-    assert [row["candidate_order"] for row in payload["candidate_rows"] if row["iteration"] == 2] == [
+    assert [
+        row["candidate_order"]
+        for row in payload["candidate_rows"]
+        if row["iteration"] == 2
+    ] == [
         1,
         2,
     ]
-    assert outputs["candidate_table_path"].read_text(encoding="utf-8").splitlines()[0].startswith(
-        "iteration\tcandidate_order\tpivot_branch_id"
+    assert (
+        outputs["candidate_table_path"]
+        .read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("iteration\tcandidate_order\tpivot_branch_id")
     )

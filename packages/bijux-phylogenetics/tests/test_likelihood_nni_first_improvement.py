@@ -3,7 +3,9 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.phylo.likelihood import search_nucleotide_likelihood_nni_from_alignment
+from bijux_phylogenetics.phylo.likelihood import (
+    search_nucleotide_likelihood_nni_from_alignment,
+)
 from bijux_phylogenetics.phylo.likelihood.nni_search import (
     validate_nucleotide_likelihood_nni_improvement_policy,
 )
@@ -70,8 +72,7 @@ def test_likelihood_nni_first_improvement_preserves_deterministic_candidate_orde
     assert selected_rows[0].pivot_branch_id == "A|C"
     assert selected_rows[1].pivot_branch_id == "A|B|C"
     assert all(
-        row.iteration != 2 or row.candidate_order <= 2
-        for row in report.candidate_rows
+        row.iteration != 2 or row.candidate_order <= 2 for row in report.candidate_rows
     )
     assert report.trace_rows[-1].stopping_reason == "no-improving-neighbor"
 

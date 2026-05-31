@@ -6,7 +6,9 @@ from bijux_phylogenetics.io.nexus_translate import (
 )
 
 
-def test_parse_nexus_translate_map_unquotes_labels_with_spaces_and_apostrophes() -> None:
+def test_parse_nexus_translate_map_unquotes_labels_with_spaces_and_apostrophes() -> (
+    None
+):
     mapping = parse_nexus_translate_map(
         "#NEXUS\n"
         "Begin trees;\n"
@@ -35,7 +37,4 @@ def test_translate_nexus_tip_labels_requotes_resolved_taxa_for_newick() -> None:
         },
     )
 
-    assert (
-        translated
-        == "(('Taxon A':0.1,'Taxon B''s sample':0.1):0.2,Taxon_C:0.3)"
-    )
+    assert translated == "(('Taxon A':0.1,'Taxon B''s sample':0.1):0.2,Taxon_C:0.3)"

@@ -18,7 +18,9 @@ def test_write_clade_compatibility_node_table_writes_expected_columns(
     tmp_path: Path,
 ) -> None:
     output_path = tmp_path / "clade-compatibility-nodes.tsv"
-    report = compute_clade_compatibility_graph(fixture("clade_compatibility_tree_set.nwk"))
+    report = compute_clade_compatibility_graph(
+        fixture("clade_compatibility_tree_set.nwk")
+    )
 
     write_clade_compatibility_node_table(output_path, report)
 
@@ -37,7 +39,9 @@ def test_write_clade_compatibility_edge_table_writes_expected_columns(
     tmp_path: Path,
 ) -> None:
     output_path = tmp_path / "clade-compatibility-edges.tsv"
-    report = compute_clade_compatibility_graph(fixture("clade_compatibility_tree_set.nwk"))
+    report = compute_clade_compatibility_graph(
+        fixture("clade_compatibility_tree_set.nwk")
+    )
 
     write_clade_compatibility_edge_table(output_path, report)
 
@@ -61,7 +65,9 @@ def test_write_clade_compatibility_graph_dot_writes_expected_relations(
     tmp_path: Path,
 ) -> None:
     output_path = tmp_path / "clade-compatibility.dot"
-    report = compute_clade_compatibility_graph(fixture("clade_compatibility_tree_set.nwk"))
+    report = compute_clade_compatibility_graph(
+        fixture("clade_compatibility_tree_set.nwk")
+    )
 
     write_clade_compatibility_graph_dot(output_path, report)
 
@@ -71,4 +77,7 @@ def test_write_clade_compatibility_graph_dot_writes_expected_relations(
     assert 'label="A|B\\nfrequency=0.5\\ncompatible=1\\nconflict=2"' in dot_text
     assert 'label="C|D\\nfrequency=0.5\\ncompatible=1\\nconflict=2"' in dot_text
     assert 'color="darkgreen", style="solid", label="disjoint"' in dot_text
-    assert 'color="firebrick", style="dashed", label="overlap-without-containment"' in dot_text
+    assert (
+        'color="firebrick", style="dashed", label="overlap-without-containment"'
+        in dot_text
+    )

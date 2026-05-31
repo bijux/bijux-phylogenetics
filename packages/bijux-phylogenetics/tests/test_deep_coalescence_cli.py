@@ -52,9 +52,5 @@ def test_cli_compare_deep_coalescence_reports_metrics_and_writes_ledgers(
         "species_branch\tbranch_role\tdescendant_species\tlineage_count_entering\t"
     )
     assert mapping_table_path.read_text(encoding="utf-8") == (
-        "gene_taxon\tspecies_taxon\n"
-        "A__1\tA\n"
-        "A__2\tA\n"
-        "B__1\tB\n"
-        "C__1\tC\n"
+        "gene_taxon\tspecies_taxon\nA__1\tA\nA__2\tA\nB__1\tB\nC__1\tC\n"
     )

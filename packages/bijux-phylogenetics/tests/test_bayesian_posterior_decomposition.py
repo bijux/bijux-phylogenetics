@@ -89,8 +89,9 @@ def test_summarize_mrbayes_posterior_decomposition_uses_logged_prior_term() -> N
     assert report.rows[0].log_posterior == pytest.approx(0.02016)
 
 
-def test_summarize_mrbayes_posterior_decomposition_rejects_traces_without_prior_term(
-) -> None:
+def test_summarize_mrbayes_posterior_decomposition_rejects_traces_without_prior_term() -> (
+    None
+):
     with pytest.raises(EngineWorkflowError) as error:
         summarize_mrbayes_posterior_decomposition(
             fixture("engine_outputs", "mrbayes/trace-warning-heavy.run1.p")

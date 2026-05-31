@@ -11,10 +11,6 @@ from bijux_phylogenetics.bayesian.fixed_topology_partitioned_dna import (
     build_fixed_topology_partitioned_dna_proposal_schedule,
     run_fixed_topology_partitioned_dna_metropolis_hastings,
 )
-from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
-    build_exponential_positive_substitution_parameter_prior,
-    build_substitution_parameter_prior_bundle,
-)
 from bijux_phylogenetics.bayesian.partition_model_priors import (
     build_partition_model_prior_bundle,
     build_partition_parameter_linkage_plan,
@@ -23,6 +19,10 @@ from bijux_phylogenetics.bayesian.partition_model_priors import (
 from bijux_phylogenetics.bayesian.posterior_ancestral_sequences import (
     build_posterior_ancestral_sequence_definition,
     summarize_nucleotide_posterior_ancestral_sequences,
+)
+from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
+    build_exponential_positive_substitution_parameter_prior,
+    build_substitution_parameter_prior_bundle,
 )
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
@@ -72,7 +72,9 @@ def test_posterior_ancestral_sequence_summary_preserves_partitioned_global_site_
         kappa_log_scale_standard_deviation=0.3,
         linkage_move_weight=2.0,
     )
-    records = load_fasta_alignment(fixture("alignments", "partitioned_dna_alignment_4_taxa.fasta"))
+    records = load_fasta_alignment(
+        fixture("alignments", "partitioned_dna_alignment_4_taxa.fasta")
+    )
     run_report = run_fixed_topology_partitioned_dna_metropolis_hastings(
         tree=load_tree(fixture("trees", "partitioned_dna_tree_4_taxa.nwk")),
         records=records,
@@ -120,7 +122,9 @@ def _assert_site_probabilities_sum_to_clade_support(summary) -> None:
     clade_support_by_key: dict[tuple[str, int], float] = {}
     for row in summary.state_probability_rows:
         key = (row.clade_id, row.site_position)
-        grouped_probabilities.setdefault(key, []).append(row.marginal_posterior_probability)
+        grouped_probabilities.setdefault(key, []).append(
+            row.marginal_posterior_probability
+        )
         clade_support_by_key.setdefault(key, row.clade_posterior_probability)
     for key, probabilities in grouped_probabilities.items():
         assert math.isclose(

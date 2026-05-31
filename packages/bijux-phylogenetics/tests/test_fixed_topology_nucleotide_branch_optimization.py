@@ -149,7 +149,9 @@ def test_fixed_topology_nucleotide_branch_optimization_rejects_starting_lengths_
         child.branch_length = 5.5
 
     def fail_if_called(*args: object, **kwargs: object) -> object:
-        raise AssertionError("fixed-topology nucleotide branch objective should not run")
+        raise AssertionError(
+            "fixed-topology nucleotide branch objective should not run"
+        )
 
     monkeypatch.setattr(
         branch_optimization,

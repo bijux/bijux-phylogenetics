@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import bijux_phylogenetics.phylo.topology as topology_api
 from bijux_phylogenetics.io.newick import loads_newick
+import bijux_phylogenetics.phylo.topology as topology_api
 from bijux_phylogenetics.phylo.topology import (
     RootedSprEnumerationBudget,
     TopologyNeighborhoodSummaryReport,
@@ -26,7 +26,9 @@ def test_topology_gateway_exports_neighborhood_summary_surface() -> None:
         topology_api.TopologyNeighborhoodSummaryReport
         is TopologyNeighborhoodSummaryReport
     )
-    assert topology_api.summarize_topology_neighborhood is summarize_topology_neighborhood
+    assert (
+        topology_api.summarize_topology_neighborhood is summarize_topology_neighborhood
+    )
     assert (
         topology_api.write_topology_neighborhood_summary_table
         is write_topology_neighborhood_summary_table
@@ -128,6 +130,12 @@ def test_write_topology_neighborhood_summary_table_materializes_comparable_rows(
         "neighborhood_family\talgorithm\tcandidate_count\tvalid_count\t"
         "duplicate_count\tskipped_count\tskipped_reason\tbudget_reason"
     )
-    assert lines[1].startswith("rooted-nni\trooted-nni-neighbor-enumeration\t4\t4\t0\t0\t")
-    assert lines[2].startswith("rooted-spr\trooted-spr-neighbor-enumeration\t32\t12\t12\t8\t")
-    assert lines[3].startswith("rooted-tbr\trooted-tbr-neighbor-enumeration\t52\t10\t36\t6\t")
+    assert lines[1].startswith(
+        "rooted-nni\trooted-nni-neighbor-enumeration\t4\t4\t0\t0\t"
+    )
+    assert lines[2].startswith(
+        "rooted-spr\trooted-spr-neighbor-enumeration\t32\t12\t12\t8\t"
+    )
+    assert lines[3].startswith(
+        "rooted-tbr\trooted-tbr-neighbor-enumeration\t52\t10\t36\t6\t"
+    )

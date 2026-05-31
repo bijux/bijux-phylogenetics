@@ -37,7 +37,9 @@ def test_gtr_exchangeability_optimization_recovers_dominant_pattern_over_hky() -
     )
     gtr_optimization = optimize_gtr_exchangeabilities_from_alignment(
         fixture("trees", "gtr_exchangeability_optimization_tree_2_taxa.nwk"),
-        fixture("alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta"),
+        fixture(
+            "alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta"
+        ),
     )
     gtr_report = evaluate_gtr_tree_likelihood(
         tree,

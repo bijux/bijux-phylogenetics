@@ -37,7 +37,9 @@ def _truncated_normal_log_density(
 ) -> float:
     mean = (lower_bound + upper_bound) / 2.0
     standard_deviation = (upper_bound - lower_bound) / (2.0 * _NORMAL_QUANTILE_97_5)
-    normalization_mass = _normal_cdf(upper_bound, mean, standard_deviation) - _normal_cdf(
+    normalization_mass = _normal_cdf(
+        upper_bound, mean, standard_deviation
+    ) - _normal_cdf(
         lower_bound,
         mean,
         standard_deviation,
@@ -56,9 +58,9 @@ def _truncated_lognormal_log_density(
     upper_bound: float,
 ) -> float:
     log_mean = (math.log(lower_bound) + math.log(upper_bound)) / 2.0
-    log_standard_deviation = (
-        math.log(upper_bound) - math.log(lower_bound)
-    ) / (2.0 * _NORMAL_QUANTILE_97_5)
+    log_standard_deviation = (math.log(upper_bound) - math.log(lower_bound)) / (
+        2.0 * _NORMAL_QUANTILE_97_5
+    )
     normalization_mass = _normal_cdf(
         math.log(upper_bound),
         log_mean,
@@ -76,7 +78,9 @@ def _truncated_lognormal_log_density(
     )
 
 
-def test_load_calibration_prior_definitions_resolves_mrca_nodes_and_prior_families() -> None:
+def test_load_calibration_prior_definitions_resolves_mrca_nodes_and_prior_families() -> (
+    None
+):
     prior_definitions = load_calibration_prior_definitions(
         fixture("trees", "calibration_prior_time_tree_6_taxa.nwk"),
         fixture("metadata", "calibration_priors_6_taxa.tsv"),
@@ -89,9 +93,7 @@ def test_load_calibration_prior_definitions_resolves_mrca_nodes_and_prior_famili
         "cal-de",
         "cal-root",
     ]
-    definitions_by_id = {
-        row.calibration_id: row for row in prior_definitions
-    }
+    definitions_by_id = {row.calibration_id: row for row in prior_definitions}
     assert definitions_by_id["cal-root"].family == "fixed"
     assert definitions_by_id["cal-root"].translated is True
     assert definitions_by_id["cal-abcde"].family == "uniform"
@@ -105,7 +107,9 @@ def test_load_calibration_prior_definitions_resolves_mrca_nodes_and_prior_famili
     }
 
 
-def test_evaluate_calibration_tree_log_prior_matches_bounded_and_offset_fixture() -> None:
+def test_evaluate_calibration_tree_log_prior_matches_bounded_and_offset_fixture() -> (
+    None
+):
     tree = load_tree(fixture("trees", "calibration_prior_time_tree_6_taxa.nwk"))
     prior_definitions = load_calibration_prior_definitions(
         fixture("trees", "calibration_prior_time_tree_6_taxa.nwk"),
@@ -152,7 +156,9 @@ def test_evaluate_calibration_tree_log_prior_matches_bounded_and_offset_fixture(
     assert rows_by_id["cal-ab"].translated is True
 
 
-def test_load_calibration_prior_definitions_rejects_contradictory_fixture_before_scoring() -> None:
+def test_load_calibration_prior_definitions_rejects_contradictory_fixture_before_scoring() -> (
+    None
+):
     with pytest.raises(
         PhylogeneticsError,
         match="calibration prior constraints are infeasible",

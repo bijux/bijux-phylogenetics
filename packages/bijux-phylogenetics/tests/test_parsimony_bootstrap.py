@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import bijux_phylogenetics.parsimony as parsimony_api
 from bijux_phylogenetics.io.newick import loads_newick
+import bijux_phylogenetics.parsimony as parsimony_api
 from bijux_phylogenetics.parsimony import (
     bootstrap_parsimony,
     write_parsimony_bootstrap_artifacts,
@@ -152,14 +152,22 @@ def test_write_parsimony_bootstrap_artifacts_materializes_governed_output_family
         "clade_frequencies_path",
         "run_json_path",
     }
-    assert outputs["replicate_scores_path"].read_text(encoding="utf-8").startswith(
-        "replicate_index\tbest_score\toptimal_tree_count\ttree_newick\n"
+    assert (
+        outputs["replicate_scores_path"]
+        .read_text(encoding="utf-8")
+        .startswith("replicate_index\tbest_score\toptimal_tree_count\ttree_newick\n")
     )
-    assert outputs["replicate_draws_path"].read_text(encoding="utf-8").startswith(
-        "replicate_index\tdraw_index\tsource_character_id\n"
+    assert (
+        outputs["replicate_draws_path"]
+        .read_text(encoding="utf-8")
+        .startswith("replicate_index\tdraw_index\tsource_character_id\n")
     )
-    assert outputs["clade_support_path"].read_text(encoding="utf-8").startswith(
-        "branch_id\tnode_name\tdescendant_taxa\tsupporting_tree_count\tclade_frequency\tsupport_percent\n"
+    assert (
+        outputs["clade_support_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "branch_id\tnode_name\tdescendant_taxa\tsupporting_tree_count\tclade_frequency\tsupport_percent\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "parsimony-bootstrap"

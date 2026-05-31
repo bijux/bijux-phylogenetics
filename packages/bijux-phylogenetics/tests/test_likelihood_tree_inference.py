@@ -4,8 +4,8 @@ import json
 import math
 from pathlib import Path
 
-import bijux_phylogenetics.phylo.likelihood as likelihood_api
 from bijux_phylogenetics.io.newick import load_newick_tree_set
+import bijux_phylogenetics.phylo.likelihood as likelihood_api
 from bijux_phylogenetics.phylo.likelihood import (
     infer_nucleotide_likelihood_tree_from_alignment,
     write_nucleotide_likelihood_tree_inference_artifacts,
@@ -101,14 +101,26 @@ def test_native_tree_inference_fixed_model_writes_governed_outputs(
         "run_json_path",
         "candidate_table_path",
     }
-    assert outputs["likelihood_table_path"].read_text(encoding="utf-8").startswith(
-        "start_tree_source_kind\tstart_tree_source_label\tstart_tree_generation_seed\tsearch_algorithm\tstart_log_likelihood\tfinal_log_likelihood\tfinal_likelihood_rank\tfinal_topology_fingerprint\tsearch_iteration_count\taccepted_move_count\tevaluated_neighbor_count\tbranch_reoptimization_policy\tsubstitution_parameter_policy\tstopping_reason\tbest_run\tstart_tree_newick\tfinal_tree_newick\n"
+    assert (
+        outputs["likelihood_table_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "start_tree_source_kind\tstart_tree_source_label\tstart_tree_generation_seed\tsearch_algorithm\tstart_log_likelihood\tfinal_log_likelihood\tfinal_likelihood_rank\tfinal_topology_fingerprint\tsearch_iteration_count\taccepted_move_count\tevaluated_neighbor_count\tbranch_reoptimization_policy\tsubstitution_parameter_policy\tstopping_reason\tbest_run\tstart_tree_newick\tfinal_tree_newick\n"
+        )
     )
-    assert outputs["model_table_path"].read_text(encoding="utf-8").startswith(
-        "model_name\tbase_model_name\trate_heterogeneity_model\tfit_succeeded\tparameter_count\tlog_likelihood\taic\taicc\tbic\tdelta_aic\takaike_weight\trank\tselected_by_aic\tselected_by_aicc\tselected_by_bic\tparameter_values\twarnings\n"
+    assert (
+        outputs["model_table_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "model_name\tbase_model_name\trate_heterogeneity_model\tfit_succeeded\tparameter_count\tlog_likelihood\taic\taicc\tbic\tdelta_aic\takaike_weight\trank\tselected_by_aic\tselected_by_aicc\tselected_by_bic\tparameter_values\twarnings\n"
+        )
     )
-    assert outputs["search_trace_path"].read_text(encoding="utf-8").startswith(
-        "event_index\tevent_kind\titeration\tmove_type\tcandidate_topology_fingerprint\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\taccepted_move\ttrace_reason\ttree_before_newick\ttree_after_newick\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\tstopping_reason\n"
+    assert (
+        outputs["search_trace_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "event_index\tevent_kind\titeration\tmove_type\tcandidate_topology_fingerprint\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\taccepted_move\ttrace_reason\ttree_before_newick\ttree_after_newick\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\tstopping_reason\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "nucleotide-likelihood-tree-inference"

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
 import json
+from pathlib import Path
 
 import pytest
 
@@ -88,8 +88,10 @@ def test_write_equal_best_parsimony_consensus_artifacts_materializes_outputs(
         "clade_frequencies_path",
         "run_json_path",
     }
-    assert outputs["equal_best_scores_path"].read_text(encoding="utf-8").startswith(
-        "tree_index\ttotal_score\ttree_newick\n"
+    assert (
+        outputs["equal_best_scores_path"]
+        .read_text(encoding="utf-8")
+        .startswith("tree_index\ttotal_score\ttree_newick\n")
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "parsimony-equal-best-consensus"
@@ -99,7 +101,9 @@ def test_write_equal_best_parsimony_consensus_artifacts_materializes_outputs(
     assert payload["majority_consensus"]["consensus_newick"] == "((A,B)60,(C,D)60);"
 
 
-def test_equal_best_parsimony_consensus_suppresses_consensus_when_cap_truncates() -> None:
+def test_equal_best_parsimony_consensus_suppresses_consensus_when_cap_truncates() -> (
+    None
+):
     report = summarize_equal_best_parsimony_trees(
         fixture("bootstrap_matrix.tsv"),
         method="fitch",

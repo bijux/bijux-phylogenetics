@@ -18,7 +18,9 @@ from bijux_phylogenetics.bayesian.state import (
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 
 
-def test_apply_metropolis_hastings_burnin_policy_changes_retained_sample_count() -> None:
+def test_apply_metropolis_hastings_burnin_policy_changes_retained_sample_count() -> (
+    None
+):
     chain_report = _build_chain_report([8.0, 6.0, 4.0, 2.0, 1.0, 1.0, 1.0, 1.0])
 
     none_report = apply_metropolis_hastings_burnin_policy(
@@ -66,10 +68,16 @@ def _build_chain_report(sampled_x_values: list[float]) -> MetropolisHastingsRunR
             log_reverse_density=0.0,
             accepted=True,
             log_hastings_ratio=0.0,
-            current_posterior_log_score=sampled_states[iteration_index - 1].posterior_log_score,
-            proposed_posterior_log_score=sampled_states[iteration_index].posterior_log_score,
+            current_posterior_log_score=sampled_states[
+                iteration_index - 1
+            ].posterior_log_score,
+            proposed_posterior_log_score=sampled_states[
+                iteration_index
+            ].posterior_log_score,
             log_acceptance_ratio=0.0,
-            recorded_posterior_log_score=sampled_states[iteration_index].posterior_log_score,
+            recorded_posterior_log_score=sampled_states[
+                iteration_index
+            ].posterior_log_score,
         )
         for iteration_index in range(1, len(sampled_states))
     ]

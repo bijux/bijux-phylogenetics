@@ -34,7 +34,9 @@ def test_package_likelihood_gateway_exports_branch_likelihood_diagnostics() -> N
     )
 
 
-def test_nucleotide_branch_likelihood_diagnostics_report_collapse_delta_per_branch() -> None:
+def test_nucleotide_branch_likelihood_diagnostics_report_collapse_delta_per_branch() -> (
+    None
+):
     report = evaluate_nucleotide_branch_likelihood_diagnostics_from_alignment(
         fixture("trees", "strict_clock_nonclock_tree_4_taxa.nwk"),
         fixture("alignments", "strict_clock_likelihood_alignment_4_taxa.fasta"),
@@ -90,10 +92,14 @@ def test_protein_poisson_branch_likelihood_diagnostics_report_rows_are_finite() 
     assert report.model_name == "protein Poisson"
     assert report.branch_count == 2
     assert len(report.branch_diagnostics) == 2
-    assert all(math.isfinite(row.contribution_proxy) for row in report.branch_diagnostics)
+    assert all(
+        math.isfinite(row.contribution_proxy) for row in report.branch_diagnostics
+    )
 
 
-def test_empirical_protein_branch_likelihood_diagnostics_support_fixed_rate_surface() -> None:
+def test_empirical_protein_branch_likelihood_diagnostics_support_fixed_rate_surface() -> (
+    None
+):
     report = evaluate_empirical_protein_branch_likelihood_diagnostics_from_alignment(
         fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
         fixture("alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"),
@@ -106,7 +112,9 @@ def test_empirical_protein_branch_likelihood_diagnostics_support_fixed_rate_surf
     assert report.model_name == "empirical protein matrix"
     assert report.branch_count == 2
     assert len(report.branch_diagnostics) == 2
-    assert all(math.isfinite(row.contribution_proxy) for row in report.branch_diagnostics)
+    assert all(
+        math.isfinite(row.contribution_proxy) for row in report.branch_diagnostics
+    )
 
 
 def _compact_polar_rate_matrix() -> numpy.ndarray:

@@ -9,19 +9,21 @@ from bijux_phylogenetics.bayesian import (
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 
-def test_reversible_jump_model_switch_family_validation_accepts_declared_family() -> None:
+def test_reversible_jump_model_switch_family_validation_accepts_declared_family() -> (
+    None
+):
     assert list_reversible_jump_model_switch_families() == (
         "nucleotide-substitution-model",
     )
     assert (
-        validate_reversible_jump_model_switch_family(
-            "nucleotide-substitution-model"
-        )
+        validate_reversible_jump_model_switch_family("nucleotide-substitution-model")
         == "nucleotide-substitution-model"
     )
 
 
-def test_reversible_jump_model_switch_family_validation_rejects_unknown_family() -> None:
+def test_reversible_jump_model_switch_family_validation_rejects_unknown_family() -> (
+    None
+):
     with pytest.raises(
         PhylogeneticsError,
         match="requires one declared model family",

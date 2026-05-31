@@ -18,7 +18,9 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 
 
 def test_tbr_topology_proposal_reaches_tbr_only_neighbor_without_taxon_loss() -> None:
-    current_state = _build_scored_tbr_state(update_prior_components=_zero_prior_components)
+    current_state = _build_scored_tbr_state(
+        update_prior_components=_zero_prior_components
+    )
     current_tree = current_state.tree.to_tree()
     current_topology_fingerprint = rooted_topology_fingerprint(current_tree)
     spr_topology_fingerprints = {
@@ -40,8 +42,7 @@ def test_tbr_topology_proposal_reaches_tbr_only_neighbor_without_taxon_loss() ->
         for node in proposed_tree.iter_internal_nodes(order="preorder")
     )
     assert all(
-        child.branch_length is not None
-        for _parent, child in proposed_tree.iter_edges()
+        child.branch_length is not None for _parent, child in proposed_tree.iter_edges()
     )
     assert proposed_topology_fingerprint != current_topology_fingerprint
     assert proposed_topology_fingerprint not in spr_topology_fingerprints
@@ -94,9 +95,7 @@ def test_tbr_topology_proposal_rejects_non_bifurcating_tree() -> None:
     proposal = propose_tbr_topology_move(current_state, Random(7))
 
     assert proposal.is_valid is False
-    assert proposal.invalid_reason == (
-        "rooted TBR enumeration requires a binary root"
-    )
+    assert proposal.invalid_reason == ("rooted TBR enumeration requires a binary root")
     assert proposal.proposed_tree is None
     assert proposal.proposed_model_parameters is None
 

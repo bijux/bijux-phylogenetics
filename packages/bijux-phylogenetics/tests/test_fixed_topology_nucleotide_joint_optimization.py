@@ -55,7 +55,10 @@ def test_fixed_topology_k80_joint_optimization_records_branch_and_model_updates(
     assert report.update_rows[1].optimized_branch_count == 0
     assert report.update_rows[1].updated_parameter_names == ["kappa"]
     assert report.parameter_rows[0].parameter_name == "kappa"
-    assert report.parameter_rows[0].optimized_value > report.parameter_rows[0].initial_value
+    assert (
+        report.parameter_rows[0].optimized_value
+        > report.parameter_rows[0].initial_value
+    )
     assert any(
         not math.isclose(
             row.initial_branch_length,
@@ -72,14 +75,18 @@ def test_fixed_topology_gtr_joint_optimization_reports_free_exchangeability_upda
 ):
     report = joint_optimization.optimize_fixed_topology_nucleotide_branches_and_model_from_alignment(
         fixture("trees", "jc69_branch_optimization_start_tree_2_taxa.nwk"),
-        fixture("alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta"),
+        fixture(
+            "alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta"
+        ),
         model_name="gtr",
         max_joint_passes=4,
         max_model_coordinate_passes=12,
     )
 
     model_rows = [
-        row for row in report.update_rows if row.update_kind == "substitution-parameters"
+        row
+        for row in report.update_rows
+        if row.update_kind == "substitution-parameters"
     ]
     assert report.model_name == "GTR"
     assert report.fixed_parameter_values == {"AC": 1.0}
@@ -95,7 +102,4 @@ def test_fixed_topology_gtr_joint_optimization_reports_free_exchangeability_upda
         "CT",
         "GT",
     ]
-    assert any(
-        row.optimized_value > row.initial_value
-        for row in report.parameter_rows
-    )
+    assert any(row.optimized_value > row.initial_value for row in report.parameter_rows)

@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.bayesian.fixed_topology_dna import (
-    run_fixed_topology_dna_metropolis_hastings,
-    build_fixed_topology_dna_model_definition,
-    build_fixed_topology_dna_proposal_schedule,
-)
 from bijux_phylogenetics.bayesian.branch_length_priors import (
     build_exponential_branch_length_prior,
+)
+from bijux_phylogenetics.bayesian.fixed_topology_dna import (
+    build_fixed_topology_dna_model_definition,
+    build_fixed_topology_dna_proposal_schedule,
+    run_fixed_topology_dna_metropolis_hastings,
 )
 from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
     build_dirichlet_simplex_substitution_parameter_prior,
@@ -32,10 +32,12 @@ def test_fixed_topology_dna_runner_samples_hky85_branch_lengths_and_model_parame
         substitution_model_name="HKY85",
         branch_length_prior=build_exponential_branch_length_prior(rate=4.0),
         substitution_parameter_prior_bundle=build_substitution_parameter_prior_bundle(
-            kappa_prior=build_exponential_positive_substitution_parameter_prior(rate=1.5),
+            kappa_prior=build_exponential_positive_substitution_parameter_prior(
+                rate=1.5
+            ),
             base_frequency_prior=build_dirichlet_simplex_substitution_parameter_prior(
                 expected_component_names=("A", "C", "G", "T"),
-                concentration_parameters={"A": 2.0, "C": 2.0, "G": 2.0, "T": 2.0}
+                concentration_parameters={"A": 2.0, "C": 2.0, "G": 2.0, "T": 2.0},
             ),
         ),
     )
@@ -63,11 +65,12 @@ def test_fixed_topology_dna_runner_samples_hky85_branch_lengths_and_model_parame
 
     assert report.chain_report.accepted_count >= 1
     assert len(report.posterior_rows) == len(report.chain_report.sampled_states)
-    assert all(
-        row.substitution_model_name == "HKY85" for row in report.posterior_rows
-    )
+    assert all(row.substitution_model_name == "HKY85" for row in report.posterior_rows)
     assert len({row.topology_id for row in report.posterior_rows}) == 1
-    assert all("branch-lengths" in row.prior_component_log_priors for row in report.posterior_rows)
+    assert all(
+        "branch-lengths" in row.prior_component_log_priors
+        for row in report.posterior_rows
+    )
     assert all(
         "substitution:kappa" in row.prior_component_log_priors
         for row in report.posterior_rows

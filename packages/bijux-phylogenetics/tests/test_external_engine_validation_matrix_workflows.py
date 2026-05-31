@@ -47,9 +47,7 @@ def _alignment_inputs() -> AlignmentValidationMatrixInputs:
 def _bayesian_inputs() -> BayesianValidationMatrixInputs:
     return BayesianValidationMatrixInputs(
         mrbayes_alignment_path=fixture("alignments/example_multilocus_alignment.fasta"),
-        mrbayes_partition_path=fixture(
-            "alignments/example_multilocus_partitions.txt"
-        ),
+        mrbayes_partition_path=fixture("alignments/example_multilocus_partitions.txt"),
         beast_alignment_path=fixture("example_alignment.fasta"),
     )
 
@@ -122,4 +120,6 @@ def test_run_external_engine_validation_matrix_merges_alignment_and_bayesian_cas
     assert len(matrix.cases) == 7
     assert matrix.cases[0].engine_name == "MAFFT"
     assert matrix.cases[-1].engine_name == "BEAST"
-    assert all(case.command or case.validation_mode == "fixture-parse" for case in matrix.cases)
+    assert all(
+        case.command or case.validation_mode == "fixture-parse" for case in matrix.cases
+    )

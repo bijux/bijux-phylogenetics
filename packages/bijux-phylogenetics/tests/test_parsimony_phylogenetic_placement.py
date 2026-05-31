@@ -26,7 +26,9 @@ def test_package_parsimony_gateway_exports_placement_surface() -> None:
         parsimony_api.ParsimonyPlacementAlternativeRow
         is ParsimonyPlacementAlternativeRow
     )
-    assert parsimony_api.ParsimonyPlacementQuerySummary is ParsimonyPlacementQuerySummary
+    assert (
+        parsimony_api.ParsimonyPlacementQuerySummary is ParsimonyPlacementQuerySummary
+    )
     assert parsimony_api.ParsimonyPlacementReport is ParsimonyPlacementReport
     assert parsimony_api.place_parsimony_queries is place_parsimony_queries
     assert (

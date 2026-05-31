@@ -108,9 +108,9 @@ def test_cli_alignment_distance_additivity_writes_governed_artifacts(
     assert payload["metrics"]["violating_quartet_count"] == 1
     assert payload["metrics"]["max_violation"] == 0.25
     assert payload["metrics"]["additive"] is False
-    table_lines = (out_dir / "four_point_violations.tsv").read_text(
-        encoding="utf-8"
-    ).splitlines()
+    table_lines = (
+        (out_dir / "four_point_violations.tsv").read_text(encoding="utf-8").splitlines()
+    )
     assert table_lines[1] == "A|B|C|D\t0.25\t1\t1.25\tA,B|C,D\t0.25"
     assert (out_dir / "run.json").exists()
 
@@ -168,9 +168,9 @@ def test_cli_distance_additivity_writes_governed_artifacts(
     assert payload["metrics"]["violating_quartet_count"] == 1
     assert payload["metrics"]["max_violation"] == 6.0
     assert payload["metrics"]["additive"] is False
-    table_lines = (out_dir / "four_point_violations.tsv").read_text(
-        encoding="utf-8"
-    ).splitlines()
+    table_lines = (
+        (out_dir / "four_point_violations.tsv").read_text(encoding="utf-8").splitlines()
+    )
     assert table_lines[1] == "A|B|C|D\t2\t8\t14\tA,B|C,D\t6"
     assert (out_dir / "run.json").exists()
 
@@ -261,7 +261,9 @@ def test_cli_distance_build_tree_supports_complete_linkage(
         [
             "distance",
             "build-tree",
-            str(fixture("example_distance_matrix_complete_linkage_compact_cluster.tsv")),
+            str(
+                fixture("example_distance_matrix_complete_linkage_compact_cluster.tsv")
+            ),
             "--method",
             "complete-linkage",
             "--out",
@@ -396,7 +398,11 @@ def test_cli_distance_nonnegative_least_squares_writes_fitted_tree(
         [
             "distance",
             "nonnegative-least-squares",
-            str(fixture("example_distance_matrix_ordinary_least_squares_negative_branch_five_taxon.tsv")),
+            str(
+                fixture(
+                    "example_distance_matrix_ordinary_least_squares_negative_branch_five_taxon.tsv"
+                )
+            ),
             str(fixture("example_tree_minimum_evolution_five_taxon.nwk")),
             "--out",
             str(output_path),
@@ -430,9 +436,9 @@ def test_cli_distance_patristic_residuals_writes_ranked_artifacts(
         ]
     )
     payload = json.loads(capsys.readouterr().out)
-    residual_lines = (out_dir / "distance_residuals.tsv").read_text(
-        encoding="utf-8"
-    ).splitlines()
+    residual_lines = (
+        (out_dir / "distance_residuals.tsv").read_text(encoding="utf-8").splitlines()
+    )
     run_payload = json.loads((out_dir / "run.json").read_text(encoding="utf-8"))
     assert exit_code == 0
     assert residual_lines[:4] == [
@@ -476,9 +482,9 @@ def test_cli_distance_taxon_influence_writes_ranked_artifacts(
         ]
     )
     payload = json.loads(capsys.readouterr().out)
-    influence_lines = (out_dir / "taxon_influence.tsv").read_text(
-        encoding="utf-8"
-    ).splitlines()
+    influence_lines = (
+        (out_dir / "taxon_influence.tsv").read_text(encoding="utf-8").splitlines()
+    )
     run_payload = json.loads((out_dir / "run.json").read_text(encoding="utf-8"))
     assert exit_code == 0
     assert influence_lines[:3] == [
@@ -521,9 +527,9 @@ def test_cli_distance_taxon_jackknife_writes_rebuilt_tree_artifacts(
         ]
     )
     payload = json.loads(capsys.readouterr().out)
-    jackknife_lines = (out_dir / "taxon_jackknife.tsv").read_text(
-        encoding="utf-8"
-    ).splitlines()
+    jackknife_lines = (
+        (out_dir / "taxon_jackknife.tsv").read_text(encoding="utf-8").splitlines()
+    )
     run_payload = json.loads((out_dir / "run.json").read_text(encoding="utf-8"))
     assert exit_code == 0
     assert (out_dir / "baseline_tree.nwk").read_text(encoding="utf-8") == (
@@ -560,11 +566,13 @@ def test_cli_distance_method_comparison_writes_tree_rf_and_warning_artifacts(
         ]
     )
     payload = json.loads(capsys.readouterr().out)
-    score_lines = (out_dir / "method_scores.tsv").read_text(encoding="utf-8").splitlines()
+    score_lines = (
+        (out_dir / "method_scores.tsv").read_text(encoding="utf-8").splitlines()
+    )
     rf_lines = (out_dir / "rf_matrix.tsv").read_text(encoding="utf-8").splitlines()
-    warning_lines = (out_dir / "assumption_warnings.tsv").read_text(
-        encoding="utf-8"
-    ).splitlines()
+    warning_lines = (
+        (out_dir / "assumption_warnings.tsv").read_text(encoding="utf-8").splitlines()
+    )
     run_payload = json.loads((out_dir / "run.json").read_text(encoding="utf-8"))
     assert exit_code == 0
     assert (out_dir / "neighbor-joining.nwk").read_text(encoding="utf-8") == (

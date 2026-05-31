@@ -100,7 +100,9 @@ def test_dna_exchangeability_simplex_round_trip_preserves_normalized_values() ->
     )
 
 
-def test_dna_exchangeability_simplex_round_trip_preserves_anchor_normalized_values() -> None:
+def test_dna_exchangeability_simplex_round_trip_preserves_anchor_normalized_values() -> (
+    None
+):
     anchored_exchangeabilities = {
         "AC": 1.0,
         "AG": 10.436093496916191,

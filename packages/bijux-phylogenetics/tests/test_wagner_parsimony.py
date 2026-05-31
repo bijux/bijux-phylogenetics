@@ -21,7 +21,9 @@ def fixture(name: str) -> Path:
 
 
 def test_package_parsimony_gateway_exports_wagner_surface() -> None:
-    assert parsimony_api.load_parsimony_character_matrix is load_parsimony_character_matrix
+    assert (
+        parsimony_api.load_parsimony_character_matrix is load_parsimony_character_matrix
+    )
     assert parsimony_api.score_wagner is score_wagner
     assert parsimony_api.write_wagner_artifacts is write_wagner_artifacts
 
@@ -106,11 +108,19 @@ def test_write_wagner_artifacts_materializes_governed_output_family(
     outputs = write_wagner_artifacts(tmp_path / "wagner-run", report)
 
     assert set(outputs) == {"steps_path", "node_costs_path", "run_json_path"}
-    assert outputs["steps_path"].read_text(encoding="utf-8").startswith(
-        "character_id\tweighted_step_count\tobserved_states\tstate_order\toptimal_root_states\tcharacter_weight\tweighted_score\n"
+    assert (
+        outputs["steps_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "character_id\tweighted_step_count\tobserved_states\tstate_order\toptimal_root_states\tcharacter_weight\tweighted_score\n"
+        )
     )
-    assert outputs["node_costs_path"].read_text(encoding="utf-8").startswith(
-        "character_id\tnode\tnode_name\tdescendant_taxa\tstate\tcost\tis_optimal_state\n"
+    assert (
+        outputs["node_costs_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "character_id\tnode\tnode_name\tdescendant_taxa\tstate\tcost\tis_optimal_state\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "ordered-wagner"

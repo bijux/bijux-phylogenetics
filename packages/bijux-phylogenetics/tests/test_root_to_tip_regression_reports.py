@@ -36,8 +36,8 @@ def test_write_root_to_tip_regression_artifacts_emit_summary_residuals_and_outli
     assert sorted(artifact_paths) == ["outliers", "residuals", "run_json", "summary"]
     summary_lines = (tmp_path / "summary.tsv").read_text(encoding="utf-8").splitlines()
     residual_lines = (
-        tmp_path / "residuals.tsv"
-    ).read_text(encoding="utf-8").splitlines()
+        (tmp_path / "residuals.tsv").read_text(encoding="utf-8").splitlines()
+    )
     outlier_lines = (tmp_path / "outliers.tsv").read_text(encoding="utf-8").splitlines()
     payload = json.loads((tmp_path / "run.json").read_text(encoding="utf-8"))
 

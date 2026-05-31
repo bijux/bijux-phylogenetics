@@ -4,9 +4,9 @@ import json
 import math
 from pathlib import Path
 
-import bijux_phylogenetics.phylo.likelihood as likelihood_api
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import loads_newick
+import bijux_phylogenetics.phylo.likelihood as likelihood_api
 from bijux_phylogenetics.phylo.likelihood import (
     evaluate_jc69_tree_likelihood,
     evaluate_nucleotide_candidate_tree_site_likelihood_matrix_from_alignment,
@@ -37,7 +37,9 @@ def test_package_likelihood_gateway_exports_candidate_tree_matrix_surface() -> N
         likelihood_api.write_candidate_tree_site_likelihood_matrix_artifacts
         is write_candidate_tree_site_likelihood_matrix_artifacts
     )
-    assert likelihood_api.resolve_candidate_tree_records is resolve_candidate_tree_records
+    assert (
+        likelihood_api.resolve_candidate_tree_records is resolve_candidate_tree_records
+    )
 
 
 def test_candidate_tree_site_likelihood_matrix_reports_tree_by_site_rows_and_totals(
@@ -72,20 +74,27 @@ def test_candidate_tree_site_likelihood_matrix_reports_tree_by_site_rows_and_tot
         "candidate-tree-1",
         "candidate-tree-2",
     ]
-    assert report.candidate_trees[0].topology_fingerprint == rooted_topology_fingerprint(
+    assert report.candidate_trees[
+        0
+    ].topology_fingerprint == rooted_topology_fingerprint(
         loads_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);")
     )
-    assert report.candidate_trees[1].topology_fingerprint == rooted_topology_fingerprint(
+    assert report.candidate_trees[
+        1
+    ].topology_fingerprint == rooted_topology_fingerprint(
         loads_newick("(((A:0.1,B:0.1):0.1,C:0.1):0.1,D:0.1);")
     )
     assert len(report.matrix_rows) == 20
 
     totals_by_tree_id: dict[str, float] = {}
     for row in report.matrix_rows:
-        totals_by_tree_id[row.candidate_tree_id] = totals_by_tree_id.get(
-            row.candidate_tree_id,
-            0.0,
-        ) + row.log_likelihood
+        totals_by_tree_id[row.candidate_tree_id] = (
+            totals_by_tree_id.get(
+                row.candidate_tree_id,
+                0.0,
+            )
+            + row.log_likelihood
+        )
 
     for summary in report.candidate_trees:
         assert math.isclose(
@@ -140,8 +149,9 @@ def test_candidate_tree_site_likelihood_matrix_rejects_incompatible_taxa(
             model_name="jc69",
         )
     except ValueError as error:
-        assert "candidate-tree-2 is incompatible with the shared alignment/model surface" in str(
-            error
+        assert (
+            "candidate-tree-2 is incompatible with the shared alignment/model surface"
+            in str(error)
         )
     else:
         raise AssertionError("candidate trees with incompatible taxa must fail")
@@ -149,7 +159,9 @@ def test_candidate_tree_site_likelihood_matrix_rejects_incompatible_taxa(
 
 def test_candidate_tree_site_likelihood_matrix_requires_multiple_candidates() -> None:
     try:
-        resolve_candidate_tree_records([loads_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);")])
+        resolve_candidate_tree_records(
+            [loads_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);")]
+        )
     except TreeParseError as error:
         assert str(error) == (
             "candidate tree site likelihood matrix requires at least two candidate trees"
@@ -185,11 +197,19 @@ def test_write_candidate_tree_site_likelihood_matrix_artifacts_materializes_gove
         "matrix_path",
         "run_json_path",
     }
-    assert outputs["summary_path"].read_text(encoding="utf-8").startswith(
-        "candidate_tree_id\tcandidate_tree_label\ttopology_fingerprint\ttree_newick\tlog_likelihood\tobserved_delta_log_likelihood\n"
+    assert (
+        outputs["summary_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "candidate_tree_id\tcandidate_tree_label\ttopology_fingerprint\ttree_newick\tlog_likelihood\tobserved_delta_log_likelihood\n"
+        )
     )
-    assert outputs["matrix_path"].read_text(encoding="utf-8").startswith(
-        "model_name\tcandidate_tree_id\tcandidate_tree_label\ttaxon_order\tpattern_id\tpattern_weight\tsite_position\tsite_states\tlog_likelihood\n"
+    assert (
+        outputs["matrix_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "model_name\tcandidate_tree_id\tcandidate_tree_label\ttaxon_order\tpattern_id\tpattern_weight\tsite_position\tsite_states\tlog_likelihood\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["model_name"] == "JC69"
@@ -199,10 +219,7 @@ def test_write_candidate_tree_site_likelihood_matrix_artifacts_materializes_gove
         "all candidate trees are rescored under one shared alignment/model surface; prior per-tree fitted-model differences are not preserved in this comparison"
     )
     assert len(payload["candidate_trees"]) == 2
-    assert {
-        key
-        for key in payload["candidate_trees"][0]
-    } == {
+    assert set(payload["candidate_trees"][0]) == {
         "candidate_tree_id",
         "candidate_tree_label",
         "topology_fingerprint",

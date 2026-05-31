@@ -111,8 +111,14 @@ def test_likelihood_ratchet_records_temporary_weights_best_history_and_restored_
         upper_branch_length_bound=1.0,
     )
 
-    assert report.start_tree_newick == "(((A:2.43539016857288e-10,C:0.999999999756461):2.43539016857288e-10,B:2.43539016857288e-10):0.999999999756461,D:0.999999999756461);"
-    assert report.final_tree_newick == "((A:2.43539016857288e-10,B:2.43539016857288e-10):0.999999999756461,(C:2.43539016857288e-10,D:2.43539016857288e-10):0.999999999756461);"
+    assert (
+        report.start_tree_newick
+        == "(((A:2.43539016857288e-10,C:0.999999999756461):2.43539016857288e-10,B:2.43539016857288e-10):0.999999999756461,D:0.999999999756461);"
+    )
+    assert (
+        report.final_tree_newick
+        == "((A:2.43539016857288e-10,B:2.43539016857288e-10):0.999999999756461,(C:2.43539016857288e-10,D:2.43539016857288e-10):0.999999999756461);"
+    )
     assert len(report.cycle_rows) == 2
     assert len(report.best_tree_history_rows) == 2
 
@@ -182,8 +188,12 @@ def test_write_nucleotide_likelihood_ratchet_artifacts_materializes_governed_out
         "best_tree_history_path",
         "run_json_path",
     }
-    assert outputs["cycle_table_path"].read_text(encoding="utf-8").startswith(
-        "cycle_index\tstart_log_likelihood\tstart_tree_newick\treweighted_site_positions\ttemporary_site_weights\tperturbation_factor\tperturbed_alignment_length\tperturbed_pattern_count\tperturbed_search_algorithm\tperturbed_score\tperturbed_tree_newick\tperturbed_accepted_move_count\tperturbed_evaluated_neighbor_count\tperturbed_stopping_reason\trestored_search_algorithm\trestored_score\trestored_tree_newick\trestored_accepted_move_count\trestored_evaluated_neighbor_count\trestored_stopping_reason\tbest_score_after_cycle\tbest_tree_after_cycle\tbest_tree_improved\n"
+    assert (
+        outputs["cycle_table_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "cycle_index\tstart_log_likelihood\tstart_tree_newick\treweighted_site_positions\ttemporary_site_weights\tperturbation_factor\tperturbed_alignment_length\tperturbed_pattern_count\tperturbed_search_algorithm\tperturbed_score\tperturbed_tree_newick\tperturbed_accepted_move_count\tperturbed_evaluated_neighbor_count\tperturbed_stopping_reason\trestored_search_algorithm\trestored_score\trestored_tree_newick\trestored_accepted_move_count\trestored_evaluated_neighbor_count\trestored_stopping_reason\tbest_score_after_cycle\tbest_tree_after_cycle\tbest_tree_improved\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "nucleotide-likelihood-ratchet-search"

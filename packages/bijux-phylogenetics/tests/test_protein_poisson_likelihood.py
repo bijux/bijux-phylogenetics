@@ -21,9 +21,13 @@ def fixture(group: str, name: str) -> Path:
     return FIXTURES / group / name
 
 
-def test_protein_poisson_fixed_tree_likelihood_matches_two_tip_analytical_fixture() -> None:
+def test_protein_poisson_fixed_tree_likelihood_matches_two_tip_analytical_fixture() -> (
+    None
+):
     tree_path = fixture("trees", "protein_poisson_likelihood_tree_2_taxa.nwk")
-    alignment_path = fixture("alignments", "protein_poisson_likelihood_alignment_2_taxa.fasta")
+    alignment_path = fixture(
+        "alignments", "protein_poisson_likelihood_alignment_2_taxa.fasta"
+    )
 
     report = evaluate_protein_poisson_tree_likelihood_from_alignment(
         tree_path,
@@ -49,7 +53,9 @@ def test_protein_poisson_fixed_tree_likelihood_matches_two_tip_analytical_fixtur
 
 def test_protein_poisson_gap_policy_can_reject_gap_states() -> None:
     tree_path = fixture("trees", "protein_poisson_likelihood_tree_2_taxa.nwk")
-    alignment_path = fixture("alignments", "protein_poisson_likelihood_alignment_2_taxa.fasta")
+    alignment_path = fixture(
+        "alignments", "protein_poisson_likelihood_alignment_2_taxa.fasta"
+    )
 
     with pytest.raises(InvalidAlignmentError, match="gap policy rejects '-'"):
         evaluate_protein_poisson_tree_likelihood_from_alignment(
@@ -61,9 +67,13 @@ def test_protein_poisson_gap_policy_can_reject_gap_states() -> None:
 
 def test_protein_poisson_missing_policy_can_reject_missing_states() -> None:
     tree_path = fixture("trees", "protein_poisson_likelihood_tree_2_taxa.nwk")
-    alignment_path = fixture("alignments", "protein_poisson_likelihood_alignment_2_taxa.fasta")
+    alignment_path = fixture(
+        "alignments", "protein_poisson_likelihood_alignment_2_taxa.fasta"
+    )
 
-    with pytest.raises(InvalidAlignmentError, match="missing-state policy rejects '\\?'"):
+    with pytest.raises(
+        InvalidAlignmentError, match="missing-state policy rejects '\\?'"
+    ):
         evaluate_protein_poisson_tree_likelihood_from_alignment(
             tree_path,
             alignment_path,
@@ -73,7 +83,9 @@ def test_protein_poisson_missing_policy_can_reject_missing_states() -> None:
 
 def test_protein_poisson_likelihood_does_not_reuse_dna_alphabet_surface() -> None:
     tree_path = fixture("trees", "protein_poisson_likelihood_tree_2_taxa.nwk")
-    alignment_path = fixture("alignments", "protein_poisson_likelihood_alignment_2_taxa.fasta")
+    alignment_path = fixture(
+        "alignments", "protein_poisson_likelihood_alignment_2_taxa.fasta"
+    )
 
     with pytest.raises(InvalidAlignmentError):
         evaluate_jc69_tree_likelihood_from_alignment(tree_path, alignment_path)

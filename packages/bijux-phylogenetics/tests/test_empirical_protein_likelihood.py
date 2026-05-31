@@ -18,9 +18,13 @@ def fixture(group: str, name: str) -> Path:
     return FIXTURES / group / name
 
 
-def test_empirical_protein_matrix_fixed_tree_likelihood_matches_independent_fixture() -> None:
+def test_empirical_protein_matrix_fixed_tree_likelihood_matches_independent_fixture() -> (
+    None
+):
     tree_path = fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk")
-    alignment_path = fixture("alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta")
+    alignment_path = fixture(
+        "alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"
+    )
     rate_matrix = _compact_polar_rate_matrix()
     root_prior = _biased_root_prior()
 
@@ -56,7 +60,9 @@ def test_empirical_protein_matrix_fixed_tree_likelihood_matches_independent_fixt
 
 def test_empirical_protein_matrix_argument_changes_likelihood() -> None:
     tree_path = fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk")
-    alignment_path = fixture("alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta")
+    alignment_path = fixture(
+        "alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"
+    )
     compact_polar_report = evaluate_empirical_protein_tree_likelihood_from_alignment(
         tree_path,
         alignment_path,
@@ -84,9 +90,13 @@ def test_empirical_protein_matrix_argument_changes_likelihood() -> None:
 
 def test_empirical_protein_matrix_validation_rejects_non_20x20_input() -> None:
     tree_path = fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk")
-    alignment_path = fixture("alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta")
+    alignment_path = fixture(
+        "alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"
+    )
 
-    with pytest.raises(InvalidAlignmentError, match="requires one 20x20 empirical protein rate matrix"):
+    with pytest.raises(
+        InvalidAlignmentError, match="requires one 20x20 empirical protein rate matrix"
+    ):
         evaluate_empirical_protein_tree_likelihood_from_alignment(
             tree_path,
             alignment_path,
@@ -96,7 +106,9 @@ def test_empirical_protein_matrix_validation_rejects_non_20x20_input() -> None:
 
 def test_empirical_protein_matrix_validation_rejects_nonzero_row_sums() -> None:
     tree_path = fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk")
-    alignment_path = fixture("alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta")
+    alignment_path = fixture(
+        "alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"
+    )
     invalid_matrix = _compact_polar_rate_matrix()
     invalid_matrix[0, 0] += 0.25
 
@@ -174,9 +186,11 @@ def _expected_two_tip_log_likelihood(
         right_index = state_index[right_state]
         site_probability = 0.0
         for root_index, root_probability in enumerate(root_prior):
-            site_probability += float(root_probability) * float(
-                left_transition[root_index, left_index]
-            ) * float(right_transition[root_index, right_index])
+            site_probability += (
+                float(root_probability)
+                * float(left_transition[root_index, left_index])
+                * float(right_transition[root_index, right_index])
+            )
         probability *= site_probability
     return math.log(probability)
 
@@ -222,6 +236,4 @@ def _protein_state_order() -> tuple[str, ...]:
 
 
 def _protein_state_index() -> dict[str, int]:
-    return {
-        state: index for index, state in enumerate(_protein_state_order())
-    }
+    return {state: index for index, state in enumerate(_protein_state_order())}

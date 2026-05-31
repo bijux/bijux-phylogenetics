@@ -90,10 +90,7 @@ def test_diagnose_root_to_tip_regression_requires_variation_in_sampling_time(
 ) -> None:
     metadata_path = tmp_path / "constant_dates.tsv"
     metadata_path.write_text(
-        (
-            "taxon\tdate\n"
-            "A\t4\nB\t4\nC\t4\nD\t4\nE\t4\nF\t4\nG\t4\n"
-        ),
+        ("taxon\tdate\nA\t4\nB\t4\nC\t4\nD\t4\nE\t4\nF\t4\nG\t4\n"),
         encoding="utf-8",
     )
 

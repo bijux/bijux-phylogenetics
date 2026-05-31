@@ -52,6 +52,8 @@ def test_summarize_independent_metropolis_hastings_trace_posterior_intervals_pre
         "right",
     ]
     assert (
-        report.chain_reports[0].posterior_interval_report.parameter_rows[0].hpd_upper_bound
+        report.chain_reports[0]
+        .posterior_interval_report.parameter_rows[0]
+        .hpd_upper_bound
         == 2.0
     )

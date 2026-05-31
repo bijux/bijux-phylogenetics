@@ -109,7 +109,9 @@ def test_write_penalized_cross_validation_predictions_tsv_writes_expected_rows(
         rows = list(csv.DictReader(handle, delimiter="\t"))
 
     assert len(rows) == 20
-    held_out_root_rows = [row for row in rows if row["held_out_calibration_id"] == "cal-root"]
+    held_out_root_rows = [
+        row for row in rows if row["held_out_calibration_id"] == "cal-root"
+    ]
     assert len(held_out_root_rows) == 5
     assert float(held_out_root_rows[0]["smoothing_parameter"]) == pytest.approx(
         0.01,
@@ -159,14 +161,22 @@ def test_write_penalized_cross_validation_artifacts_materializes_governed_output
         outputs["dated_tree_path"].read_text(encoding="utf-8").strip()
         == report.selected_fit.dated_tree_newick
     )
-    assert outputs["summary_path"].read_text(encoding="utf-8").startswith(
-        "tree_path\tmetadata_path\tcalibration_path\t"
+    assert (
+        outputs["summary_path"]
+        .read_text(encoding="utf-8")
+        .startswith("tree_path\tmetadata_path\tcalibration_path\t")
     )
-    assert outputs["candidate_scores_path"].read_text(encoding="utf-8").startswith(
-        "smoothing_parameter\tfold_count\tmean_absolute_error\t"
+    assert (
+        outputs["candidate_scores_path"]
+        .read_text(encoding="utf-8")
+        .startswith("smoothing_parameter\tfold_count\tmean_absolute_error\t")
     )
-    assert outputs["prediction_errors_path"].read_text(encoding="utf-8").startswith(
-        "smoothing_parameter\theld_out_calibration_id\theld_out_target_label\t"
+    assert (
+        outputs["prediction_errors_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "smoothing_parameter\theld_out_calibration_id\theld_out_target_label\t"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["selected_smoothing_parameter"] == 0.01

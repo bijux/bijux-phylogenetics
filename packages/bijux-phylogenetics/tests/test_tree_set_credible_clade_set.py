@@ -51,7 +51,9 @@ def test_compute_credible_clade_set_reports_exact_95_percent_set() -> None:
     ]
 
 
-def test_write_credible_clade_set_tables_writes_expected_columns(tmp_path: Path) -> None:
+def test_write_credible_clade_set_tables_writes_expected_columns(
+    tmp_path: Path,
+) -> None:
     report = compute_credible_clade_set(
         fixture("majority_rule_extended_consensus_tree_set.nwk")
     )
@@ -69,8 +71,10 @@ def test_write_credible_clade_set_tables_writes_expected_columns(tmp_path: Path)
     assert excluded_path.read_text(encoding="utf-8").splitlines()[0] == (
         "inclusion_rank\tclade\ttree_count\tfrequency\tcumulative_frequency"
     )
-    assert excluded_path.read_text(encoding="utf-8").splitlines()[1].startswith(
-        "3\tA|B|D\t2\t0.4\t1.4"
+    assert (
+        excluded_path.read_text(encoding="utf-8")
+        .splitlines()[1]
+        .startswith("3\tA|B|D\t2\t0.4\t1.4")
     )
 
 
@@ -84,11 +88,15 @@ def test_write_credible_clade_set_artifacts_writes_included_and_excluded_ledgers
     paths = write_credible_clade_set_artifacts(tmp_path, report)
 
     assert sorted(paths) == ["credible_clades_path", "excluded_clades_path"]
-    assert paths["credible_clades_path"].read_text(encoding="utf-8").startswith(
-        "inclusion_rank\tclade\ttree_count"
+    assert (
+        paths["credible_clades_path"]
+        .read_text(encoding="utf-8")
+        .startswith("inclusion_rank\tclade\ttree_count")
     )
-    assert paths["excluded_clades_path"].read_text(encoding="utf-8").startswith(
-        "inclusion_rank\tclade\ttree_count"
+    assert (
+        paths["excluded_clades_path"]
+        .read_text(encoding="utf-8")
+        .startswith("inclusion_rank\tclade\ttree_count")
     )
 
 

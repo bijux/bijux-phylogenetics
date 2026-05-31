@@ -156,7 +156,9 @@ def test_tree_length_rejects_missing_character_weights() -> None:
 
 def test_load_parsimony_character_weights_rejects_nonnumeric_values() -> None:
     with pytest.raises(ParsimonyAnalysisError) as error_info:
-        load_parsimony_character_weights(fixture("parsimony_invalid_character_weight.tsv"))
+        load_parsimony_character_weights(
+            fixture("parsimony_invalid_character_weight.tsv")
+        )
 
     assert error_info.value.code == "parsimony_character_weight_invalid_value"
     assert error_info.value.details["character_id"] == "char01_split"
@@ -172,11 +174,15 @@ def test_write_parsimony_tree_length_artifacts_materializes_governed_output_fami
         character_weights=fixture("fitch_character_weights.tsv"),
     )
 
-    outputs = write_parsimony_tree_length_artifacts(tmp_path / "tree-length-run", report)
+    outputs = write_parsimony_tree_length_artifacts(
+        tmp_path / "tree-length-run", report
+    )
 
     assert set(outputs) == {"scores_path", "run_json_path"}
-    assert outputs["scores_path"].read_text(encoding="utf-8").startswith(
-        "character_id\traw_score\tcharacter_weight\tweighted_score\n"
+    assert (
+        outputs["scores_path"]
+        .read_text(encoding="utf-8")
+        .startswith("character_id\traw_score\tcharacter_weight\tweighted_score\n")
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "parsimony-tree-length"

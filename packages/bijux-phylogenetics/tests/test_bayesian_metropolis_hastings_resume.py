@@ -52,7 +52,9 @@ def test_resumed_metropolis_hastings_chain_matches_uninterrupted_chain() -> None
     assert interrupted_run.completed_iteration_count == 8
     assert resumed_run.resumed is True
     assert resumed_run.completed is True
-    assert [checkpoint.completed_iteration_count for checkpoint in resumed_run.checkpoints] == [12]
+    assert [
+        checkpoint.completed_iteration_count for checkpoint in resumed_run.checkpoints
+    ] == [12]
     assert resumed_chain == full_run
 
 

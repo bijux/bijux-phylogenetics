@@ -127,7 +127,9 @@ def _build_gc_heavy_fixed_topology_dna_run_report() -> FixedTopologyDnaRunReport
         substitution_model_name="HKY85",
         branch_length_prior=build_exponential_branch_length_prior(rate=3.0),
         substitution_parameter_prior_bundle=build_substitution_parameter_prior_bundle(
-            kappa_prior=build_exponential_positive_substitution_parameter_prior(rate=1.0),
+            kappa_prior=build_exponential_positive_substitution_parameter_prior(
+                rate=1.0
+            ),
             base_frequency_prior=build_dirichlet_simplex_substitution_parameter_prior(
                 expected_component_names=("A", "C", "G", "T"),
                 concentration_parameters={"A": 2.0, "C": 2.0, "G": 2.0, "T": 2.0},

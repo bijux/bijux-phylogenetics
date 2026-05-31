@@ -24,6 +24,7 @@ from bijux_phylogenetics.distance import (
 )
 from bijux_phylogenetics.io.newick import write_newick
 from bijux_phylogenetics.reports.service import render_distance_report
+
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
 
@@ -205,7 +206,9 @@ def test_bootstrap_distance_trees_returns_consensus_and_support() -> None:
     )
     assert len(trees) == 5
     assert report.tree_count == 5
-    assert report.consensus_newick == "((A:0.0125,B:0.0125)100:0.6875,C:0.0125,D:0.0125);"
+    assert (
+        report.consensus_newick == "((A:0.0125,B:0.0125)100:0.6875,C:0.0125,D:0.0125);"
+    )
     assert [row.sampled_site_indices for row in report.replicate_rows] == [
         [5, 2, 6, 0, 1, 1, 5, 0],
         [3, 0, 1, 6, 6, 1, 3, 1],

@@ -15,15 +15,21 @@ def fixture(group: str, name: str) -> Path:
     return FIXTURES / group / name
 
 
-def test_discrete_gamma_empirical_protein_report_emits_categories_and_site_rows() -> None:
-    report = evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment(
-        fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-        fixture("alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"),
-        rate_matrix=_compact_polar_rate_matrix(),
-        root_prior=_biased_root_prior(),
-        alpha=0.8,
-        category_count=4,
-        matrix_label="compact-polar",
+def test_discrete_gamma_empirical_protein_report_emits_categories_and_site_rows() -> (
+    None
+):
+    report = (
+        evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment(
+            fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+            fixture(
+                "alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"
+            ),
+            rate_matrix=_compact_polar_rate_matrix(),
+            root_prior=_biased_root_prior(),
+            alpha=0.8,
+            category_count=4,
+            matrix_label="compact-polar",
+        )
     )
 
     assert report.alpha == 0.8
@@ -76,23 +82,31 @@ def test_discrete_gamma_empirical_protein_report_emits_categories_and_site_rows(
 
 
 def test_discrete_gamma_alpha_changes_empirical_protein_likelihood() -> None:
-    low_alpha_report = evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment(
-        fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-        fixture("alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"),
-        rate_matrix=_compact_polar_rate_matrix(),
-        root_prior=_biased_root_prior(),
-        alpha=0.5,
-        category_count=4,
-        matrix_label="compact-polar",
+    low_alpha_report = (
+        evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment(
+            fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+            fixture(
+                "alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"
+            ),
+            rate_matrix=_compact_polar_rate_matrix(),
+            root_prior=_biased_root_prior(),
+            alpha=0.5,
+            category_count=4,
+            matrix_label="compact-polar",
+        )
     )
-    high_alpha_report = evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment(
-        fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-        fixture("alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"),
-        rate_matrix=_compact_polar_rate_matrix(),
-        root_prior=_biased_root_prior(),
-        alpha=8.0,
-        category_count=4,
-        matrix_label="compact-polar",
+    high_alpha_report = (
+        evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment(
+            fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+            fixture(
+                "alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"
+            ),
+            rate_matrix=_compact_polar_rate_matrix(),
+            root_prior=_biased_root_prior(),
+            alpha=8.0,
+            category_count=4,
+            matrix_label="compact-polar",
+        )
     )
 
     assert not math.isclose(
@@ -103,12 +117,12 @@ def test_discrete_gamma_alpha_changes_empirical_protein_likelihood() -> None:
     )
     assert [
         round(category.rate, 12) for category in low_alpha_report.category_rates
-    ] != [
-        round(category.rate, 12) for category in high_alpha_report.category_rates
-    ]
+    ] != [round(category.rate, 12) for category in high_alpha_report.category_rates]
 
 
-def test_discrete_gamma_high_alpha_nearly_recovers_fixed_rate_empirical_likelihood() -> None:
+def test_discrete_gamma_high_alpha_nearly_recovers_fixed_rate_empirical_likelihood() -> (
+    None
+):
     fixed_rate_report = evaluate_empirical_protein_tree_likelihood_from_alignment(
         fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
         fixture("alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"),
@@ -116,14 +130,18 @@ def test_discrete_gamma_high_alpha_nearly_recovers_fixed_rate_empirical_likeliho
         root_prior=_biased_root_prior(),
         matrix_label="compact-polar",
     )
-    gamma_report = evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment(
-        fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-        fixture("alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"),
-        rate_matrix=_compact_polar_rate_matrix(),
-        root_prior=_biased_root_prior(),
-        alpha=250.0,
-        category_count=4,
-        matrix_label="compact-polar",
+    gamma_report = (
+        evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment(
+            fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+            fixture(
+                "alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"
+            ),
+            rate_matrix=_compact_polar_rate_matrix(),
+            root_prior=_biased_root_prior(),
+            alpha=250.0,
+            category_count=4,
+            matrix_label="compact-polar",
+        )
     )
 
     assert math.isclose(

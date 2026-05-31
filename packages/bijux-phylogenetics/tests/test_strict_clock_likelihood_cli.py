@@ -25,7 +25,9 @@ def test_phylo_likelihood_strict_clock_cli_writes_governed_outputs(
             "likelihood",
             "strict-clock",
             str(fixture("trees", "strict_clock_time_tree_4_taxa.nwk")),
-            str(fixture("alignments", "strict_clock_likelihood_alignment_4_taxa.fasta")),
+            str(
+                fixture("alignments", "strict_clock_likelihood_alignment_4_taxa.fasta")
+            ),
             "--model",
             "jc69",
             "--out-dir",

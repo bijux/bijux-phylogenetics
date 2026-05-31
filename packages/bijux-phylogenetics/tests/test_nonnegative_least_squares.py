@@ -62,9 +62,13 @@ def test_fit_nonnegative_least_squares_tree_preserves_positive_analytical_fixtur
 
 
 def test_fit_nonnegative_least_squares_tree_constrains_negative_ols_branch() -> None:
-    fitted_tree, report = fit_nonnegative_least_squares_tree_from_imported_distance_matrix(
-        fixture("example_distance_matrix_ordinary_least_squares_negative_branch_five_taxon.tsv"),
-        fixture("example_tree_minimum_evolution_five_taxon.nwk"),
+    fitted_tree, report = (
+        fit_nonnegative_least_squares_tree_from_imported_distance_matrix(
+            fixture(
+                "example_distance_matrix_ordinary_least_squares_negative_branch_five_taxon.tsv"
+            ),
+            fixture("example_tree_minimum_evolution_five_taxon.nwk"),
+        )
     )
 
     assert dumps_newick(fitted_tree) == (

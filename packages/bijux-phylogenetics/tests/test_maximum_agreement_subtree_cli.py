@@ -66,9 +66,9 @@ def test_cli_compare_maximum_agreement_subtree_writes_review_bundle(
         .read_text(encoding="utf-8")
         .startswith("tree_side\ttree_path\trf_mode\tsearch_strategy\t")
     )
-    assert (
-        output_dir / "maximum-agreement-subtree-removed.tsv"
-    ).read_text(encoding="utf-8") == (
+    assert (output_dir / "maximum-agreement-subtree-removed.tsv").read_text(
+        encoding="utf-8"
+    ) == (
         "tree_side\ttree_path\ttaxon\treason\tshared_taxon\tremoved_for_maximum_agreement_subtree\n"
         f"left\t{fixture('agreement_subtree_left.nwk')}\tC\tnot_requested\ttrue\ttrue\n"
         f"right\t{fixture('agreement_subtree_right.nwk')}\tC\tnot_requested\ttrue\ttrue\n"

@@ -67,9 +67,8 @@ def test_invariant_proportion_proposal_changes_real_likelihood() -> None:
     proposed_model_parameters = proposal.proposed_model_parameters
     assert proposed_tree is not None
     assert proposed_model_parameters is not None
-    assert (
-        rooted_topology_fingerprint(proposed_tree)
-        == rooted_topology_fingerprint(current_state.tree.to_tree())
+    assert rooted_topology_fingerprint(proposed_tree) == rooted_topology_fingerprint(
+        current_state.tree.to_tree()
     )
     current_invariant_proportion = current_state.model_parameters.scalar_parameters[
         "invariant-proportion"
@@ -80,13 +79,8 @@ def test_invariant_proportion_proposal_changes_real_likelihood() -> None:
     assert 0.0 <= proposed_invariant_proportion < 1.0
     assert math.isclose(
         proposal.log_hastings_ratio,
-        math.log(
-            proposed_invariant_proportion
-            * (1.0 - proposed_invariant_proportion)
-        )
-        - math.log(
-            current_invariant_proportion * (1.0 - current_invariant_proportion)
-        ),
+        math.log(proposed_invariant_proportion * (1.0 - proposed_invariant_proportion))
+        - math.log(current_invariant_proportion * (1.0 - current_invariant_proportion)),
         rel_tol=0.0,
         abs_tol=1e-12,
     )
@@ -178,7 +172,9 @@ def test_invariant_proportion_proposal_requires_scalar_parameter() -> None:
 
 def _build_scored_invariant_proportion_state() -> BayesianPhylogeneticState:
     return score_bayesian_phylogenetic_state(
-        tree=load_tree(fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk")),
+        tree=load_tree(
+            fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk")
+        ),
         model_parameters=build_bayesian_model_parameter_state(
             scalar_parameters={"invariant-proportion": 0.35}
         ),
@@ -191,7 +187,10 @@ def _invariant_log_likelihood(state: BayesianPhylogeneticState) -> float:
     return evaluate_empirical_protein_tree_likelihood_with_invariant_mixture(
         load_tree(fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk")),
         load_fasta_alignment(
-            fixture("alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta")
+            fixture(
+                "alignments",
+                "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
+            )
         ),
         rate_matrix=_compact_polar_rate_matrix(),
         root_prior=_biased_root_prior(),

@@ -40,7 +40,9 @@ def test_global_tree_height_scaling_proposal_scales_all_branches_coherently() ->
     ]
     scale_factors = [
         proposed / current
-        for current, proposed in zip(current_branch_lengths, proposed_branch_lengths, strict=True)
+        for current, proposed in zip(
+            current_branch_lengths, proposed_branch_lengths, strict=True
+        )
     ]
     first_scale_factor = scale_factors[0]
     assert all(branch_length > 0.0 for branch_length in proposed_branch_lengths)
@@ -80,14 +82,18 @@ def test_global_tree_height_scaling_proposal_reports_hastings_correction() -> No
     )
 
 
-def test_sampler_uses_global_tree_height_scaling_hastings_ratio_on_flat_target() -> None:
+def test_sampler_uses_global_tree_height_scaling_hastings_ratio_on_flat_target() -> (
+    None
+):
     initial_state = _build_positive_branch_state(branch_lengths=(0.2, 0.3, 0.4, 0.5))
     report = run_metropolis_hastings_sampler(
         initial_state=initial_state,
-        propose_state=lambda current_state, rng: propose_global_tree_height_scaling_move(
-            current_state,
-            rng,
-            log_scale_standard_deviation=0.5,
+        propose_state=lambda current_state, rng: (
+            propose_global_tree_height_scaling_move(
+                current_state,
+                rng,
+                log_scale_standard_deviation=0.5,
+            )
         ),
         update_prior_components=_zero_prior_components,
         update_log_likelihood=_zero_log_likelihood,
@@ -107,7 +113,9 @@ def test_sampler_uses_global_tree_height_scaling_hastings_ratio_on_flat_target()
         )
 
 
-def test_global_tree_height_scaling_proposal_rejects_non_positive_branch_lengths() -> None:
+def test_global_tree_height_scaling_proposal_rejects_non_positive_branch_lengths() -> (
+    None
+):
     current_state = _build_positive_branch_state(branch_lengths=(0.0, 0.3, 0.4, 0.5))
     proposal = propose_global_tree_height_scaling_move(
         current_state,

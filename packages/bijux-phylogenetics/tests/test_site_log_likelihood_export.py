@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from collections import Counter
 import csv
 import math
-from collections import Counter
 from pathlib import Path
 
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
@@ -189,9 +189,7 @@ def test_jc69_site_log_likelihood_export_expands_repeated_patterns() -> None:
         fixture("alignments", "jc69_site_pattern_alignment.fasta"),
         model_name="jc69",
     )
-    counts_by_pattern = Counter(
-        row.pattern_id for row in report.site_log_likelihoods
-    )
+    counts_by_pattern = Counter(row.pattern_id for row in report.site_log_likelihoods)
     weights_by_pattern = {
         row.pattern_id: row.pattern_weight for row in report.site_log_likelihoods
     }
@@ -237,7 +235,9 @@ def test_write_site_log_likelihood_table_writes_expanded_tsv(tmp_path: Path) -> 
         fixture("alignments", "jc69_site_pattern_alignment.fasta"),
         model_name="jc69",
     )
-    path = write_site_log_likelihood_table(tmp_path / "site_log_likelihoods.tsv", report)
+    path = write_site_log_likelihood_table(
+        tmp_path / "site_log_likelihoods.tsv", report
+    )
 
     with path.open("r", encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
@@ -250,7 +250,9 @@ def test_write_site_log_likelihood_table_writes_expanded_tsv(tmp_path: Path) -> 
     assert rows[0]["pattern_weight"] == "2"
     assert rows[0]["site_position"] == "1"
     assert rows[0]["site_states"] == "A|A|G|T"
-    assert [row["site_position"] for row in rows if row["pattern_id"] == "pattern-6"] == [
+    assert [
+        row["site_position"] for row in rows if row["pattern_id"] == "pattern-6"
+    ] == [
         "8",
         "9",
         "10",

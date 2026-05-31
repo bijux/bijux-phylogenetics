@@ -45,7 +45,9 @@ def test_independent_metropolis_hastings_runner_records_per_chain_outputs() -> N
         "chain_beta",
     ]
     assert [chain_report.seed for chain_report in report.chain_reports] == [11, 19]
-    assert all(len(chain_report.step_rows) == 8 for chain_report in report.chain_reports)
+    assert all(
+        len(chain_report.step_rows) == 8 for chain_report in report.chain_reports
+    )
     assert all(
         len(chain_report.sampled_states) == 5 for chain_report in report.chain_reports
     )
@@ -53,7 +55,10 @@ def test_independent_metropolis_hastings_runner_records_per_chain_outputs() -> N
         chain_report.acceptance_rate == chain_report.chain_report.acceptance_rate
         for chain_report in report.chain_reports
     )
-    assert report.chain_reports[0].trace_fingerprint != report.chain_reports[1].trace_fingerprint
+    assert (
+        report.chain_reports[0].trace_fingerprint
+        != report.chain_reports[1].trace_fingerprint
+    )
     assert report.diagnostics.chain_count == 2
     assert len(report.diagnostics.comparison_rows) == 1
 

@@ -197,9 +197,7 @@ def test_build_fixed_topology_partitioned_dna_model_definition_tracks_targets_an
                         ),
                     ),
                 ),
-                "branch_length_prior": build_fixed_branch_length_prior(
-                    fixed_value=0.1
-                ),
+                "branch_length_prior": build_fixed_branch_length_prior(fixed_value=0.1),
             },
             "does not support fixed branch-length priors",
         ),

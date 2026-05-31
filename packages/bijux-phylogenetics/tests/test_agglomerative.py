@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from bijux_phylogenetics.distance import load_imported_distance_matrix
 from bijux_phylogenetics.distance.agglomerative import (
     build_agglomerative_clustering_tree,
 )
-from bijux_phylogenetics.distance import load_imported_distance_matrix
 from bijux_phylogenetics.io.newick import dumps_newick
 
 FIXTURES = Path(__file__).parent / "fixtures"

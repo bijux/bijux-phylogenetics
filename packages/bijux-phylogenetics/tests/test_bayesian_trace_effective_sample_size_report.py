@@ -18,7 +18,9 @@ def test_summarize_metropolis_hastings_trace_effective_sample_size_reports_per_p
         chain_report=_build_chain_report([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]),
     )
 
-    assert isinstance(independent_report, MetropolisHastingsTraceEffectiveSampleSizeReport)
+    assert isinstance(
+        independent_report, MetropolisHastingsTraceEffectiveSampleSizeReport
+    )
     independent_x = independent_report.parameter_rows[0]
     autocorrelated_x = autocorrelated_report.parameter_rows[0]
 

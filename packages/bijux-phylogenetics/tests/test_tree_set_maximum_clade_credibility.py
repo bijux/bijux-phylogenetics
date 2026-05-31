@@ -31,9 +31,7 @@ def test_compute_maximum_clade_credibility_tree_selects_known_best_candidate() -
     assert report.rows[0].score_rank == 1
     assert report.rows[0].source_tree_index == 2
     assert report.rows[0].raw_tree_count == 1
-    assert report.rows[0].clade_credibility_score == pytest.approx(
-        -3.259697819388456
-    )
+    assert report.rows[0].clade_credibility_score == pytest.approx(-3.259697819388456)
     assert [row.score_rank for row in report.rows] == [1, 2, 3, 4, 5]
     assert max(report.rows, key=lambda row: row.raw_tree_count).source_tree_index in {
         4,
@@ -76,14 +74,19 @@ def test_write_maximum_clade_credibility_artifacts_writes_tree_and_score_table(
         "candidate_score_table_path",
         "maximum_clade_credibility_tree_path",
     ]
-    assert paths["maximum_clade_credibility_tree_path"].read_text(
-        encoding="utf-8"
-    ).strip() == "(((A:1,B:1):1,(E:1,F:1):1):1,(C:1,D:1):2);"
-    assert paths["candidate_score_table_path"].read_text(encoding="utf-8").startswith(
-        "score_rank\tsource_tree_index\trooted_topology_id"
+    assert (
+        paths["maximum_clade_credibility_tree_path"].read_text(encoding="utf-8").strip()
+        == "(((A:1,B:1):1,(E:1,F:1):1):1,(C:1,D:1):2);"
+    )
+    assert (
+        paths["candidate_score_table_path"]
+        .read_text(encoding="utf-8")
+        .startswith("score_rank\tsource_tree_index\trooted_topology_id")
     )
 
 
 def test_compute_maximum_clade_credibility_tree_requires_exact_taxa() -> None:
     with pytest.raises(InvalidAlignmentError, match="exact same taxon set"):
-        compute_maximum_clade_credibility_tree(fixture("example_tree_set_mismatched.nwk"))
+        compute_maximum_clade_credibility_tree(
+            fixture("example_tree_set_mismatched.nwk")
+        )

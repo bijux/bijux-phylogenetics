@@ -70,7 +70,9 @@ def test_retention_index_matches_hand_computed_fitch_fixture() -> None:
     ]
 
 
-def test_retention_index_reports_undefined_aggregate_for_all_zero_range_matrix() -> None:
+def test_retention_index_reports_undefined_aggregate_for_all_zero_range_matrix() -> (
+    None
+):
     report = retention_index(
         fixture("fitch_tree.nwk"),
         fixture("retention_index_constant_matrix.tsv"),
@@ -109,8 +111,12 @@ def test_write_parsimony_retention_artifacts_materializes_governed_output_family
     outputs = write_parsimony_retention_artifacts(tmp_path / "retention-run", report)
 
     assert set(outputs) == {"indices_path", "run_json_path"}
-    assert outputs["indices_path"].read_text(encoding="utf-8").startswith(
-        "character_id\tcharacter_kind\tobserved_states\tminimum_possible_steps\tmaximum_possible_steps\tobserved_steps\tretention_index\tundefined_reason\n"
+    assert (
+        outputs["indices_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "character_id\tcharacter_kind\tobserved_states\tminimum_possible_steps\tmaximum_possible_steps\tobserved_steps\tretention_index\tundefined_reason\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "parsimony-retention-index"

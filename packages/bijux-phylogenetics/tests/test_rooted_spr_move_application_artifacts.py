@@ -19,7 +19,9 @@ def fixture(name: str) -> Path:
 
 
 def test_topology_gateway_exports_rooted_spr_move_artifact_surface() -> None:
-    assert topology_api.write_rooted_spr_move_artifacts is write_rooted_spr_move_artifacts
+    assert (
+        topology_api.write_rooted_spr_move_artifacts is write_rooted_spr_move_artifacts
+    )
     assert topology_api.write_rooted_spr_move_run_json is write_rooted_spr_move_run_json
 
 

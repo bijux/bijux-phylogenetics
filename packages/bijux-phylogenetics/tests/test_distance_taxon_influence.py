@@ -15,7 +15,9 @@ def tree_fixture(name: str) -> Path:
     return Path(__file__).parent / "fixtures" / "trees" / name
 
 
-def test_distance_taxon_influence_ranks_leave_one_out_improvement_not_missingness() -> None:
+def test_distance_taxon_influence_ranks_leave_one_out_improvement_not_missingness() -> (
+    None
+):
     report = analyze_distance_taxon_influence_from_imported_distance_matrix(
         fixture("example_distance_matrix_taxon_influence_missing_noisy_five_taxon.tsv"),
         tree_fixture("example_tree_minimum_evolution_five_taxon.nwk"),

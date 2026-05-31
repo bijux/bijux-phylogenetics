@@ -40,9 +40,7 @@ def test_brownian_continuous_trait_model_requires_sampled_root_state_prior() -> 
         )
 
 
-def test_brownian_continuous_trait_model_requires_sampled_sigma_squared_prior() -> (
-    None
-):
+def test_brownian_continuous_trait_model_requires_sampled_sigma_squared_prior() -> None:
     with pytest.raises(PhylogeneticsError, match="non-fixed sigma-squared prior"):
         build_brownian_continuous_trait_model_definition(
             root_state_prior=build_normal_continuous_trait_location_prior(
@@ -109,9 +107,8 @@ def test_brownian_continuous_trait_runner_emits_parameter_summaries() -> None:
     }
     assert set(summary_by_parameter) == {"root-state", "sigma-squared"}
     assert summary_by_parameter["root-state"].sample_count == len(report.posterior_rows)
-    assert (
-        summary_by_parameter["sigma-squared"].sample_count
-        == len(report.posterior_rows)
+    assert summary_by_parameter["sigma-squared"].sample_count == len(
+        report.posterior_rows
     )
     assert math.isfinite(summary_by_parameter["root-state"].posterior_mean)
     assert math.isfinite(summary_by_parameter["sigma-squared"].posterior_mean)

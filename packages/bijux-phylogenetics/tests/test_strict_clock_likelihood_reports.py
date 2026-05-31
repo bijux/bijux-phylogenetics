@@ -77,16 +77,26 @@ def test_write_strict_clock_likelihood_artifacts_materializes_governed_outputs(
         "(((A:0.521738366943483,B:0.521738366943483):0.521738366943483,"
         "C:1.04347673388697):0.521738366943483,D:1.56521510083045);"
     )
-    assert outputs["branch_table_path"].read_text(encoding="utf-8").startswith(
-        "branch_id\tchild_name\tdescendant_taxa\ttime_duration\toptimized_branch_length\toptimized_clock_rate\n"
+    assert (
+        outputs["branch_table_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "branch_id\tchild_name\tdescendant_taxa\ttime_duration\toptimized_branch_length\toptimized_clock_rate\n"
+        )
     )
-    assert outputs["site_log_likelihood_path"].read_text(encoding="utf-8").startswith(
-        "model_name\ttaxon_order\tpattern_id\tpattern_weight\tsite_position\tsite_states\tlog_likelihood\n"
+    assert (
+        outputs["site_log_likelihood_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "model_name\ttaxon_order\tpattern_id\tpattern_weight\tsite_position\tsite_states\tlog_likelihood\n"
+        )
     )
-    assert outputs["branch_likelihood_diagnostic_path"].read_text(
-        encoding="utf-8"
-    ).startswith(
-        "model_name\tbranch_id\tchild_name\tdescendant_taxa\tbranch_length\tbaseline_log_likelihood\tcollapsed_branch_log_likelihood\tcontribution_proxy\twarning_flags\n"
+    assert (
+        outputs["branch_likelihood_diagnostic_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "model_name\tbranch_id\tchild_name\tdescendant_taxa\tbranch_length\tbaseline_log_likelihood\tcollapsed_branch_log_likelihood\tcontribution_proxy\twarning_flags\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["model_name"] == "JC69"

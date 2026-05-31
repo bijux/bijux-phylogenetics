@@ -151,7 +151,9 @@ def test_nucleotide_substitution_parameter_recovery_benchmark_reports_governed_m
 
     gtr_report = optimize_nucleotide_substitution_parameters_from_alignment(
         fixture("trees", "gtr_exchangeability_optimization_tree_2_taxa.nwk"),
-        fixture("alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta"),
+        fixture(
+            "alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta"
+        ),
         model_name="gtr",
     )
     gtr_rows = {row.parameter_name: row for row in gtr_report.parameter_rows}
@@ -238,7 +240,9 @@ def test_nucleotide_substitution_parameter_optimization_beats_hardcoded_paramete
     )
     gtr_optimized = optimize_nucleotide_substitution_parameters_from_alignment(
         fixture("trees", "gtr_exchangeability_optimization_tree_2_taxa.nwk"),
-        fixture("alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta"),
+        fixture(
+            "alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta"
+        ),
         model_name="gtr",
     )
     assert gtr_optimized.optimized_log_likelihood > gtr_baseline.log_likelihood

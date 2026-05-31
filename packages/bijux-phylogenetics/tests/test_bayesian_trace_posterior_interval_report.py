@@ -12,7 +12,9 @@ def test_summarize_metropolis_hastings_trace_posterior_intervals_reports_per_par
     None
 ):
     report = summarize_metropolis_hastings_trace_posterior_intervals(
-        chain_report=_build_chain_report([0.0, 0.0, 0.0, 0.0, 1.0, 2.0, 8.0, 9.0, 10.0, 11.0]),
+        chain_report=_build_chain_report(
+            [0.0, 0.0, 0.0, 0.0, 1.0, 2.0, 8.0, 9.0, 10.0, 11.0]
+        ),
         mass_fraction=0.6,
     )
 

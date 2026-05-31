@@ -53,7 +53,9 @@ def test_cli_tree_set_rogue_taxa_writes_review_bundle(
         encoding="utf-8"
     ) == "((A:1.02,B:0.1)100:0.12,(C:0.1,D:0.12)100:0.12);\n"
     assert (
-        output_dir / "rogue-taxon-ranking.tsv"
-    ).read_text(encoding="utf-8").startswith(
-        "rank\ttaxon\tmean_terminal_branch_length\tbaseline_consensus_resolution\t"
+        (output_dir / "rogue-taxon-ranking.tsv")
+        .read_text(encoding="utf-8")
+        .startswith(
+            "rank\ttaxon\tmean_terminal_branch_length\tbaseline_consensus_resolution\t"
+        )
     )

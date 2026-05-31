@@ -85,8 +85,14 @@ def test_discrete_trait_posterior_predictive_p_values_cover_all_statistics() -> 
         "state-entropy",
     }
     assert all(row.replicate_count == 7 for row in p_value_report.statistic_rows)
-    assert all(0.0 <= row.lower_tail_probability <= 1.0 for row in p_value_report.statistic_rows)
-    assert all(0.0 <= row.upper_tail_probability <= 1.0 for row in p_value_report.statistic_rows)
+    assert all(
+        0.0 <= row.lower_tail_probability <= 1.0
+        for row in p_value_report.statistic_rows
+    )
+    assert all(
+        0.0 <= row.upper_tail_probability <= 1.0
+        for row in p_value_report.statistic_rows
+    )
     assert all(
         0.0 <= row.posterior_predictive_p_value <= 1.0
         for row in p_value_report.statistic_rows
@@ -134,7 +140,10 @@ def test_brownian_posterior_predictive_p_values_cover_all_statistics() -> None:
         "tip-variance",
     }
     assert all(row.replicate_count == 9 for row in p_value_report.statistic_rows)
-    assert all(row.replicate_minimum <= row.replicate_median <= row.replicate_maximum for row in p_value_report.statistic_rows)
+    assert all(
+        row.replicate_minimum <= row.replicate_median <= row.replicate_maximum
+        for row in p_value_report.statistic_rows
+    )
     assert all(
         0.0 <= row.posterior_predictive_p_value <= 1.0
         for row in p_value_report.statistic_rows

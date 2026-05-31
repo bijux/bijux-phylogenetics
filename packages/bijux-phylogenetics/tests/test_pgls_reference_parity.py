@@ -152,7 +152,9 @@ def test_run_pgls_matches_interaction_brownian_reference_case() -> None:
 @pytest.mark.slow
 def test_run_pgls_matches_primate_fixed_reference_lambda_case() -> None:
     repository_root = Path(__file__).resolve().parents[3]
-    reference = _extended_reference_case("pgls-primate-longevity-fixed-reference-lambda")
+    reference = _extended_reference_case(
+        "pgls-primate-longevity-fixed-reference-lambda"
+    )
     report = run_pgls(
         repository_root
         / "evidence-book"

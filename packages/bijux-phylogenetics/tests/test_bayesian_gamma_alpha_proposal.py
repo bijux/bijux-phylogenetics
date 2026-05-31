@@ -48,9 +48,7 @@ def test_gamma_alpha_proposal_keeps_alpha_on_positive_support() -> None:
         assert proposal.invalid_reason is None
         assert proposal.changed_fields == ("scalar_parameters.gamma-alpha",)
         assert proposal.proposed_model_parameters is not None
-        assert (
-            proposal.proposed_model_parameters.scalar_parameters["gamma-alpha"] > 0.0
-        )
+        assert proposal.proposed_model_parameters.scalar_parameters["gamma-alpha"] > 0.0
 
 
 def test_gamma_alpha_proposal_changes_category_rates_and_likelihood() -> None:
@@ -69,9 +67,8 @@ def test_gamma_alpha_proposal_changes_category_rates_and_likelihood() -> None:
     proposed_model_parameters = proposal.proposed_model_parameters
     assert proposed_tree is not None
     assert proposed_model_parameters is not None
-    assert (
-        rooted_topology_fingerprint(proposed_tree)
-        == rooted_topology_fingerprint(current_state.tree.to_tree())
+    assert rooted_topology_fingerprint(proposed_tree) == rooted_topology_fingerprint(
+        current_state.tree.to_tree()
     )
     current_alpha = current_state.model_parameters.scalar_parameters["gamma-alpha"]
     proposed_alpha = proposed_model_parameters.scalar_parameters["gamma-alpha"]
@@ -180,7 +177,9 @@ def test_gamma_alpha_proposal_requires_gamma_alpha_scalar() -> None:
 
 def _build_scored_gamma_alpha_state() -> BayesianPhylogeneticState:
     return score_bayesian_phylogenetic_state(
-        tree=load_tree(fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk")),
+        tree=load_tree(
+            fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk")
+        ),
         model_parameters=build_bayesian_model_parameter_state(
             scalar_parameters={"gamma-alpha": 0.8}
         ),

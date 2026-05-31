@@ -8,7 +8,9 @@ from bijux_phylogenetics.phylo.likelihood.search_convergence import (
 )
 
 
-def test_validate_nucleotide_likelihood_search_improvement_tolerance_rejects_negative_values() -> None:
+def test_validate_nucleotide_likelihood_search_improvement_tolerance_rejects_negative_values() -> (
+    None
+):
     with pytest.raises(ValueError, match="must be finite and nonnegative"):
         validate_nucleotide_likelihood_search_improvement_tolerance(-1e-9)
 
@@ -67,7 +69,9 @@ def test_likelihood_search_convergence_reports_failure() -> None:
     assert decision.stopping_reason == "search-failure"
 
 
-def test_likelihood_search_convergence_allows_continuation_for_real_improvement() -> None:
+def test_likelihood_search_convergence_allows_continuation_for_real_improvement() -> (
+    None
+):
     decision = resolve_nucleotide_likelihood_search_convergence_decision(
         best_improving_delta=1.0,
         improvement_tolerance=1e-9,

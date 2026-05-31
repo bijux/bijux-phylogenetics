@@ -60,7 +60,9 @@ def test_jc69_branch_optimization_improves_two_tip_likelihood() -> None:
 
 
 def test_jc69_branch_optimization_beats_starting_tree_directly() -> None:
-    starting_tree = load_tree(fixture("trees", "jc69_branch_optimization_start_tree_2_taxa.nwk"))
+    starting_tree = load_tree(
+        fixture("trees", "jc69_branch_optimization_start_tree_2_taxa.nwk")
+    )
     records = load_fasta_alignment(
         fixture("alignments", "jc69_branch_optimization_alignment_2_taxa.fasta")
     )

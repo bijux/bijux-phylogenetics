@@ -94,7 +94,9 @@ def test_build_tree_from_imported_distance_matrix_applies_missing_distance_polic
     assert report.missing_distance_policy_report.imputed_rows[0].imputed_distance == 5.0
 
 
-def test_build_distance_tree_applies_missing_distance_policy_to_alignment_pairs() -> None:
+def test_build_distance_tree_applies_missing_distance_policy_to_alignment_pairs() -> (
+    None
+):
     with pytest.raises(
         InvalidAlignmentError,
         match="missing-distance policy 'reject' blocks incomplete distance pairs",
@@ -125,6 +127,15 @@ def test_build_distance_tree_applies_missing_distance_policy_to_alignment_pairs(
         missing_distance_policy="triangle-bound",
     )
 
-    assert mean_report.missing_distance_policy_report.imputed_rows[0].imputed_distance == 0.75
-    assert nearest_report.missing_distance_policy_report.imputed_rows[0].imputed_distance == 0.5
-    assert triangle_report.missing_distance_policy_report.imputed_rows[0].imputed_distance == 1.5
+    assert (
+        mean_report.missing_distance_policy_report.imputed_rows[0].imputed_distance
+        == 0.75
+    )
+    assert (
+        nearest_report.missing_distance_policy_report.imputed_rows[0].imputed_distance
+        == 0.5
+    )
+    assert (
+        triangle_report.missing_distance_policy_report.imputed_rows[0].imputed_distance
+        == 1.5
+    )

@@ -145,9 +145,7 @@ def test_relaxed_lognormal_clock_prior_reports_expected_branch_fields() -> None:
         ),
     )
 
-    row_by_taxa = {
-        tuple(row.descendant_taxa): row for row in report.branch_rows
-    }
+    row_by_taxa = {tuple(row.descendant_taxa): row for row in report.branch_rows}
     d_row = row_by_taxa[("D",)]
     assert math.isclose(d_row.dated_time_duration, 8.0, rel_tol=0.0, abs_tol=1e-12)
     assert math.isclose(
@@ -209,7 +207,9 @@ def test_relaxed_lognormal_clock_prior_rejects_invalid_parameters(
         build_relaxed_lognormal_clock_model(**builder_kwargs)
 
 
-def test_relaxed_lognormal_clock_prior_rejects_unrooted_and_zero_duration_trees() -> None:
+def test_relaxed_lognormal_clock_prior_rejects_unrooted_and_zero_duration_trees() -> (
+    None
+):
     substitution_tree = load_rooted_tree_fixture(
         "relaxed_rate_summary_substitution_tree_4_taxa.nwk"
     )
@@ -219,7 +219,9 @@ def test_relaxed_lognormal_clock_prior_rejects_unrooted_and_zero_duration_trees(
     zero_duration_dated_tree = dated_tree.copy()
     zero_duration_dated_tree.root.children[1].branch_length = 0.0
 
-    with pytest.raises(UnrootedTreeError, match="requires one rooted substitution tree"):
+    with pytest.raises(
+        UnrootedTreeError, match="requires one rooted substitution tree"
+    ):
         evaluate_relaxed_lognormal_clock_tree_log_prior(
             unrooted_substitution_tree,
             dated_tree,

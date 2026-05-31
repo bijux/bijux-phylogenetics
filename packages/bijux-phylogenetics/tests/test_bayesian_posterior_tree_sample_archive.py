@@ -133,14 +133,15 @@ def test_load_bayesian_posterior_tree_sample_archive_rejects_sample_count_mismat
     )
     payload = json.loads(archive_path.read_text(encoding="utf-8"))
     payload["sample_count"] = payload["sample_count"] + 1
-    archive_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    archive_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
 
     with pytest.raises(PhylogeneticsError) as error_info:
         load_bayesian_posterior_tree_sample_archive(archive_path)
 
     assert (
-        error_info.value.code
-        == "bayesian_posterior_tree_sample_archive_count_mismatch"
+        error_info.value.code == "bayesian_posterior_tree_sample_archive_count_mismatch"
     )
 
 
@@ -149,7 +150,9 @@ def _build_fixed_topology_dna_run_report(*, seed: int) -> FixedTopologyDnaRunRep
         substitution_model_name="HKY85",
         branch_length_prior=build_exponential_branch_length_prior(rate=4.0),
         substitution_parameter_prior_bundle=build_substitution_parameter_prior_bundle(
-            kappa_prior=build_exponential_positive_substitution_parameter_prior(rate=1.5),
+            kappa_prior=build_exponential_positive_substitution_parameter_prior(
+                rate=1.5
+            ),
             base_frequency_prior=build_dirichlet_simplex_substitution_parameter_prior(
                 expected_component_names=("A", "C", "G", "T"),
                 concentration_parameters={"A": 2.0, "C": 2.0, "G": 2.0, "T": 2.0},

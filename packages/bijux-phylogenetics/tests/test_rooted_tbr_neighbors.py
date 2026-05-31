@@ -5,13 +5,13 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.phylo.topology as topology_api
 from bijux_phylogenetics.io.newick import loads_newick
+import bijux_phylogenetics.phylo.topology as topology_api
 from bijux_phylogenetics.phylo.topology import (
+    RootedTbrNeighborhoodReport,
+    RootedTbrNeighborRow,
     enumerate_rooted_spr_neighbors,
     enumerate_rooted_tbr_neighbors,
-    RootedTbrNeighborRow,
-    RootedTbrNeighborhoodReport,
     validate_rooted_tbr_tree,
     write_rooted_tbr_artifacts,
 )
@@ -56,9 +56,7 @@ def test_rooted_tbr_neighbor_surface_is_not_just_spr_renamed() -> None:
 
     assert tbr_report.generated_neighbor_count == 3
     assert spr_report.generated_neighbor_count == 10
-    assert {
-        row.neighbor_topology_fingerprint for row in tbr_report.neighbor_rows
-    } != {
+    assert {row.neighbor_topology_fingerprint for row in tbr_report.neighbor_rows} != {
         row.neighbor_topology_fingerprint for row in spr_report.neighbor_rows
     }
 
@@ -68,17 +66,24 @@ def test_rooted_tbr_neighbors_preserve_taxa_and_generate_valid_topologies() -> N
         fixture("parsimony", "spr_search_start_tree_5_taxa.nwk")
     )
 
-    assert all(sorted(row.tip_order) == ["A", "B", "C", "D", "E"] for row in report.neighbor_rows)
+    assert all(
+        sorted(row.tip_order) == ["A", "B", "C", "D", "E"]
+        for row in report.neighbor_rows
+    )
     assert all(row.validation_errors == [] for row in report.neighbor_rows)
     assert all(row.supporting_reconnection_count >= 1 for row in report.neighbor_rows)
 
 
-def test_rooted_tbr_validation_accepts_binary_root_representation_without_rooted_flag() -> None:
+def test_rooted_tbr_validation_accepts_binary_root_representation_without_rooted_flag() -> (
+    None
+):
     validate_rooted_tbr_tree(loads_newick("(((A,C),B),D);"))
 
 
 def test_rooted_tbr_validation_rejects_nonbinary_rooted_representation() -> None:
-    with pytest.raises(ValueError, match="rooted TBR enumeration requires a binary root"):
+    with pytest.raises(
+        ValueError, match="rooted TBR enumeration requires a binary root"
+    ):
         validate_rooted_tbr_tree(loads_newick("(A,B,C,D);"))
 
 
@@ -95,12 +100,16 @@ def test_rooted_tbr_report_preserves_input_tree_path_for_file_inputs() -> None:
         fixture("parsimony", "spr_search_start_tree_5_taxa.nwk")
     )
 
-    assert report.input_tree_path == fixture("parsimony", "spr_search_start_tree_5_taxa.nwk")
+    assert report.input_tree_path == fixture(
+        "parsimony", "spr_search_start_tree_5_taxa.nwk"
+    )
     assert report.input_tree_newick == "((((A,D),B),C),E);"
     assert report.rooted is False
 
 
-def test_write_rooted_tbr_artifacts_materializes_governed_outputs(tmp_path: Path) -> None:
+def test_write_rooted_tbr_artifacts_materializes_governed_outputs(
+    tmp_path: Path,
+) -> None:
     report = enumerate_rooted_tbr_neighbors(
         fixture("parsimony", "spr_search_start_tree_5_taxa.nwk")
     )
@@ -113,11 +122,19 @@ def test_write_rooted_tbr_artifacts_materializes_governed_outputs(tmp_path: Path
         "summary_path",
         "run_json_path",
     }
-    assert outputs["neighbors_path"].read_text(encoding="utf-8").startswith(
-        "neighbor_index\trepresentative_cut_edge_id\trepresentative_cut_descendant_taxa\trepresentative_left_attachment_branch_id\trepresentative_left_attachment_descendant_taxa\trepresentative_right_attachment_branch_id\trepresentative_right_attachment_descendant_taxa\tsupporting_reconnection_count\tneighbor_topology_fingerprint\ttip_order\tvalidation_errors\tneighbor_tree_newick\n"
+    assert (
+        outputs["neighbors_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "neighbor_index\trepresentative_cut_edge_id\trepresentative_cut_descendant_taxa\trepresentative_left_attachment_branch_id\trepresentative_left_attachment_descendant_taxa\trepresentative_right_attachment_branch_id\trepresentative_right_attachment_descendant_taxa\tsupporting_reconnection_count\tneighbor_topology_fingerprint\ttip_order\tvalidation_errors\tneighbor_tree_newick\n"
+        )
     )
-    assert outputs["summary_path"].read_text(encoding="utf-8").startswith(
-        "neighborhood_family\talgorithm\tcandidate_count\tvalid_count\tduplicate_count\tskipped_count\tskipped_reason\tbudget_reason\n"
+    assert (
+        outputs["summary_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "neighborhood_family\talgorithm\tcandidate_count\tvalid_count\tduplicate_count\tskipped_count\tskipped_reason\tbudget_reason\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "rooted-tbr-neighbor-enumeration"

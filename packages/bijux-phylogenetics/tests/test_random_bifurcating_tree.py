@@ -12,15 +12,23 @@ from bijux_phylogenetics.phylo.topology import (
 
 
 def test_topology_gateway_exports_random_bifurcating_tree_surface() -> None:
-    assert topology_api.generate_random_bifurcating_tree is generate_random_bifurcating_tree
-    assert topology_api.validate_random_bifurcating_taxa is validate_random_bifurcating_taxa
+    assert (
+        topology_api.generate_random_bifurcating_tree
+        is generate_random_bifurcating_tree
+    )
+    assert (
+        topology_api.validate_random_bifurcating_taxa
+        is validate_random_bifurcating_taxa
+    )
     assert (
         topology_api.write_random_bifurcating_tree_artifacts
         is write_random_bifurcating_tree_artifacts
     )
 
 
-def test_generate_random_bifurcating_tree_uses_requested_taxa_once_with_seeded_topology() -> None:
+def test_generate_random_bifurcating_tree_uses_requested_taxa_once_with_seeded_topology() -> (
+    None
+):
     left_tree, left_report = generate_random_bifurcating_tree(
         ["Gamma", "Alpha", "Delta", "Beta"],
         seed=19,
@@ -77,8 +85,12 @@ def test_write_random_bifurcating_tree_artifacts_materializes_governed_outputs(
     )
 
     assert set(outputs) == {"tree_path", "summary_path", "run_json_path"}
-    assert outputs["summary_path"].read_text(encoding="utf-8").startswith(
-        "algorithm\tseed\tbranch_length_policy\trequested_taxa\ttip_order\ttip_count\tinternal_node_count\trooted\tstrictly_bifurcating\tall_requested_taxa_present_once\tmissing_requested_taxa\tduplicate_generated_taxa\tunexpected_generated_taxa\tvalidation_errors\ttree_newick\n"
+    assert (
+        outputs["summary_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "algorithm\tseed\tbranch_length_policy\trequested_taxa\ttip_order\ttip_count\tinternal_node_count\trooted\tstrictly_bifurcating\tall_requested_taxa_present_once\tmissing_requested_taxa\tduplicate_generated_taxa\tunexpected_generated_taxa\tvalidation_errors\ttree_newick\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "random-bifurcating-tree-generation"

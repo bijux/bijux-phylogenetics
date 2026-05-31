@@ -147,7 +147,9 @@ def test_clock_model_scalar_prior_builders_reject_invalid_parameters(
         builder(**kwargs)
 
 
-def test_clock_model_scalar_prior_evaluation_requires_positive_parameter_values() -> None:
+def test_clock_model_scalar_prior_evaluation_requires_positive_parameter_values() -> (
+    None
+):
     prior_model = build_exponential_clock_model_scalar_prior(rate=2.0)
 
     with pytest.raises(

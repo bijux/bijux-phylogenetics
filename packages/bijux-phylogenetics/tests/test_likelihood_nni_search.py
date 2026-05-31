@@ -7,8 +7,6 @@ from pathlib import Path
 import bijux_phylogenetics.parsimony as parsimony_api
 from bijux_phylogenetics.phylo.likelihood import (
     search_nucleotide_likelihood_nni_from_alignment,
-)
-from bijux_phylogenetics.phylo.likelihood import (
     write_nucleotide_likelihood_nni_artifacts,
 )
 
@@ -23,7 +21,9 @@ def test_likelihood_nni_search_uses_likelihood_objective_and_reaches_local_optim
     monkeypatch,
 ) -> None:
     def fail_if_called(*_args, **_kwargs):
-        raise AssertionError("parsimony NNI must not be reused by likelihood NNI search")
+        raise AssertionError(
+            "parsimony NNI must not be reused by likelihood NNI search"
+        )
 
     monkeypatch.setattr(parsimony_api, "search_parsimony_nni", fail_if_called)
 
@@ -130,7 +130,9 @@ def test_likelihood_nni_search_uses_likelihood_objective_and_reaches_local_optim
     assert report.trace_rows[-1].tree_after_newick == report.final_tree_newick
 
 
-def test_likelihood_nni_search_local_branch_reoptimization_reports_neighborhood_scope() -> None:
+def test_likelihood_nni_search_local_branch_reoptimization_reports_neighborhood_scope() -> (
+    None
+):
     full_report = search_nucleotide_likelihood_nni_from_alignment(
         fixture("trees", "jc69_likelihood_nni_start_tree_4_taxa.nwk"),
         fixture("alignments", "jc69_likelihood_nni_alignment_4_taxa.fasta"),
@@ -212,8 +214,12 @@ def test_write_nucleotide_likelihood_nni_artifacts_materializes_governed_output_
     }
     assert outputs["best_tree_path"].name == "best_trees.nwk"
     assert outputs["candidate_table_path"].name == "candidate_table.tsv"
-    assert outputs["trace_path"].read_text(encoding="utf-8").startswith(
-        "event_index\tevent_kind\titeration\tmove_type\tcandidate_topology_fingerprint\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\taccepted_move\ttrace_reason\ttree_before_newick\ttree_after_newick\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\tstopping_reason\n"
+    assert (
+        outputs["trace_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "event_index\tevent_kind\titeration\tmove_type\tcandidate_topology_fingerprint\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\taccepted_move\ttrace_reason\ttree_before_newick\ttree_after_newick\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\tstopping_reason\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "nucleotide-likelihood-nni-search"

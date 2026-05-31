@@ -4,7 +4,10 @@ import json
 from pathlib import Path
 
 import bijux_phylogenetics.parsimony as parsimony_api
-from bijux_phylogenetics.parsimony import run_parsimony_ratchet, write_parsimony_ratchet_artifacts
+from bijux_phylogenetics.parsimony import (
+    run_parsimony_ratchet,
+    write_parsimony_ratchet_artifacts,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures" / "parsimony"
 
@@ -131,7 +134,9 @@ def test_parsimony_ratchet_repeats_same_seed_identically() -> None:
     ]
 
 
-def test_parsimony_ratchet_requires_real_temporary_reweighting_to_escape_local_optimum() -> None:
+def test_parsimony_ratchet_requires_real_temporary_reweighting_to_escape_local_optimum() -> (
+    None
+):
     report = run_parsimony_ratchet(
         fixture("ratchet_search_start_tree_5_taxa.nwk"),
         fixture("ratchet_search_matrix.tsv"),
@@ -180,11 +185,17 @@ def test_write_parsimony_ratchet_artifacts_materializes_governed_output_family(
         "best_tree_history_path",
         "run_json_path",
     }
-    assert outputs["cycle_history_path"].read_text(encoding="utf-8").startswith(
-        "cycle_index\tstart_score\tstart_tree_newick\tperturbed_character_ids\tperturbation_factor\tperturbed_score\tperturbed_tree_newick\tperturbed_accepted_move_count\trestored_score\trestored_tree_newick\trestored_accepted_move_count\tbest_score_after_cycle\tbest_tree_after_cycle\tbest_tree_improved\n"
+    assert (
+        outputs["cycle_history_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "cycle_index\tstart_score\tstart_tree_newick\tperturbed_character_ids\tperturbation_factor\tperturbed_score\tperturbed_tree_newick\tperturbed_accepted_move_count\trestored_score\trestored_tree_newick\trestored_accepted_move_count\tbest_score_after_cycle\tbest_tree_after_cycle\tbest_tree_improved\n"
+        )
     )
-    assert outputs["best_tree_history_path"].read_text(encoding="utf-8").startswith(
-        "history_index\tcycle_index\tbest_score\tbest_tree_newick\n"
+    assert (
+        outputs["best_tree_history_path"]
+        .read_text(encoding="utf-8")
+        .startswith("history_index\tcycle_index\tbest_score\tbest_tree_newick\n")
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "parsimony-ratchet"

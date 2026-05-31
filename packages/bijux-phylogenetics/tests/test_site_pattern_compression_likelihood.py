@@ -134,10 +134,10 @@ def _hky85_rate_matrix(
         for right_index, right_state in enumerate(state_order):
             if left_index == right_index:
                 continue
-            is_transition = (
-                {left_state, right_state} <= purines
-                or {left_state, right_state} <= pyrimidines
-            )
+            is_transition = {left_state, right_state} <= purines or {
+                left_state,
+                right_state,
+            } <= pyrimidines
             multiplier = kappa if is_transition else 1.0
             rate_matrix[left_index, right_index] = (
                 multiplier * base_frequencies[right_index]

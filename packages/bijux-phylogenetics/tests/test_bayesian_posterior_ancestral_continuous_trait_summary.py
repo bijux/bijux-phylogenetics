@@ -91,7 +91,9 @@ def test_brownian_posterior_ancestral_summary_emits_root_and_internal_hpd_rows()
     assert root_row.conditional_hpd_95_lower <= root_row.conditional_hpd_95_upper
     assert internal_row.clade_posterior_probability == 1.0
     assert internal_row.mean_conditional_standard_deviation > 0.0
-    assert internal_row.conditional_hpd_95_lower <= internal_row.conditional_hpd_95_upper
+    assert (
+        internal_row.conditional_hpd_95_lower <= internal_row.conditional_hpd_95_upper
+    )
 
 
 def test_ou_posterior_ancestral_summary_emits_optimum_root_and_internal_hpd_rows() -> (
@@ -158,7 +160,9 @@ def test_ou_posterior_ancestral_summary_emits_optimum_root_and_internal_hpd_rows
     assert root_row.conditional_hpd_95_lower <= root_row.conditional_hpd_95_upper
     assert internal_row.clade_posterior_probability == 1.0
     assert internal_row.mean_conditional_standard_deviation > 0.0
-    assert internal_row.conditional_hpd_95_lower <= internal_row.conditional_hpd_95_upper
+    assert (
+        internal_row.conditional_hpd_95_lower <= internal_row.conditional_hpd_95_upper
+    )
 
 
 def _load_rooted_tree_fixture(name: str):

@@ -20,7 +20,9 @@ def fixture(group: str, name: str) -> Path:
     return FIXTURES / group / name
 
 
-def test_validate_nucleotide_likelihood_spr_search_budget_rejects_conflicting_candidate_aliases() -> None:
+def test_validate_nucleotide_likelihood_spr_search_budget_rejects_conflicting_candidate_aliases() -> (
+    None
+):
     try:
         validate_nucleotide_likelihood_spr_search_budget(
             evaluation_budget=2,
@@ -34,7 +36,9 @@ def test_validate_nucleotide_likelihood_spr_search_budget_rejects_conflicting_ca
         raise AssertionError("conflicting candidate budget aliases must fail")
 
 
-def test_validate_nucleotide_likelihood_spr_search_budget_rejects_nonpositive_elapsed_time() -> None:
+def test_validate_nucleotide_likelihood_spr_search_budget_rejects_nonpositive_elapsed_time() -> (
+    None
+):
     try:
         validate_nucleotide_likelihood_spr_search_budget(max_elapsed_seconds=0.0)
     except ValueError as error:
@@ -45,7 +49,9 @@ def test_validate_nucleotide_likelihood_spr_search_budget_rejects_nonpositive_el
         raise AssertionError("nonpositive elapsed-time budgets must fail")
 
 
-def test_likelihood_spr_search_stops_for_iteration_budget_and_reports_remaining_neighbors() -> None:
+def test_likelihood_spr_search_stops_for_iteration_budget_and_reports_remaining_neighbors() -> (
+    None
+):
     report = search_nucleotide_likelihood_spr_from_alignment(
         fixture("trees", "jc69_likelihood_spr_start_tree_5_taxa.nwk"),
         fixture("alignments", "jc69_likelihood_spr_alignment_5_taxa.fasta"),
@@ -107,7 +113,10 @@ def test_likelihood_spr_search_stops_for_time_budget_before_second_candidate() -
     assert report.stopping_reason == "time-budget-exhausted"
     assert report.search_budget.max_elapsed_seconds == 0.1
     assert report.unsearched_candidate_count > 0
-    assert report.trace_rows[-1].unsearched_candidate_count == report.unsearched_candidate_count
+    assert (
+        report.trace_rows[-1].unsearched_candidate_count
+        == report.unsearched_candidate_count
+    )
 
 
 def count_unique_spr_neighbors(tree_newick: str) -> int:

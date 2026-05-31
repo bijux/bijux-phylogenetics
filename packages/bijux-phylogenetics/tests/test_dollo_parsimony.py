@@ -83,11 +83,17 @@ def test_write_dollo_artifacts_materializes_governed_output_family(
     outputs = write_dollo_artifacts(tmp_path / "dollo-run", report)
 
     assert set(outputs) == {"steps_path", "branch_changes_path", "run_json_path"}
-    assert outputs["steps_path"].read_text(encoding="utf-8").startswith(
-        "character_id\tderived_taxon_count\tgain_node\tgain_node_name\tgain_descendant_taxa\ttotal_losses\timpossible_state_warning\tstep_count\tcharacter_weight\tweighted_score\n"
+    assert (
+        outputs["steps_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "character_id\tderived_taxon_count\tgain_node\tgain_node_name\tgain_descendant_taxa\ttotal_losses\timpossible_state_warning\tstep_count\tcharacter_weight\tweighted_score\n"
+        )
     )
-    assert outputs["branch_changes_path"].read_text(encoding="utf-8").startswith(
-        "character_id\tchange_kind\tnode\tnode_name\tdescendant_taxa\n"
+    assert (
+        outputs["branch_changes_path"]
+        .read_text(encoding="utf-8")
+        .startswith("character_id\tchange_kind\tnode\tnode_name\tdescendant_taxa\n")
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "dollo"

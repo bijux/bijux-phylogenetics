@@ -2,16 +2,16 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from bijux_phylogenetics.bayesian.brownian_continuous_trait import (
+    build_brownian_continuous_trait_model_definition,
+    build_brownian_continuous_trait_proposal_schedule,
+    run_brownian_continuous_trait_metropolis_hastings,
+)
 from bijux_phylogenetics.bayesian.continuous_trait_location_priors import (
     build_normal_continuous_trait_location_prior,
 )
 from bijux_phylogenetics.bayesian.continuous_trait_model_priors import (
     build_exponential_continuous_trait_scalar_prior,
-)
-from bijux_phylogenetics.bayesian.brownian_continuous_trait import (
-    build_brownian_continuous_trait_model_definition,
-    build_brownian_continuous_trait_proposal_schedule,
-    run_brownian_continuous_trait_metropolis_hastings,
 )
 from bijux_phylogenetics.bayesian.discrete_trait_mk import (
     build_discrete_trait_mk_model_definition,

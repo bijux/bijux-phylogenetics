@@ -11,7 +11,6 @@ from bijux_phylogenetics.bayesian.fixed_topology_dna import (
     FixedTopologyDnaRunReport,
     build_fixed_topology_dna_model_definition,
     build_fixed_topology_dna_proposal_schedule,
-    run_fixed_topology_dna_metropolis_hastings,
 )
 from bijux_phylogenetics.bayesian.fixed_topology_partitioned_dna import (
     build_fixed_topology_partitioned_dna_model_definition,
@@ -63,7 +62,9 @@ def fixture(group: str, name: str) -> Path:
 
 
 def test_posterior_predictive_definition_rejects_unsupported_policy() -> None:
-    with pytest.raises(PhylogeneticsError, match="supported posterior-sample selection"):
+    with pytest.raises(
+        PhylogeneticsError, match="supported posterior-sample selection"
+    ):
         build_posterior_predictive_simulation_definition(
             replicate_count=2,
             sample_selection_policy="without-replacement",
@@ -121,7 +122,9 @@ def test_joint_topology_dna_posterior_predictive_emits_observed_and_replicate_st
         substitution_model_name="K80",
         branch_length_prior=build_exponential_branch_length_prior(rate=4.0),
         substitution_parameter_prior_bundle=build_substitution_parameter_prior_bundle(
-            kappa_prior=build_exponential_positive_substitution_parameter_prior(rate=1.5)
+            kappa_prior=build_exponential_positive_substitution_parameter_prior(
+                rate=1.5
+            )
         ),
     )
     run_report = run_joint_topology_dna_metropolis_hastings(
@@ -238,7 +241,9 @@ def _build_manual_fixed_topology_dna_run_report() -> FixedTopologyDnaRunReport:
         substitution_model_name="HKY85",
         branch_length_prior=build_exponential_branch_length_prior(rate=3.0),
         substitution_parameter_prior_bundle=build_substitution_parameter_prior_bundle(
-            kappa_prior=build_exponential_positive_substitution_parameter_prior(rate=1.0),
+            kappa_prior=build_exponential_positive_substitution_parameter_prior(
+                rate=1.0
+            ),
             base_frequency_prior=build_dirichlet_simplex_substitution_parameter_prior(
                 expected_component_names=("A", "C", "G", "T"),
                 concentration_parameters={"A": 2.0, "C": 2.0, "G": 2.0, "T": 2.0},

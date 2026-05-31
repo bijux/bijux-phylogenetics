@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import bijux_phylogenetics.trees as trees_api
-
 from bijux_phylogenetics.trees import (
     CladeCompatibilityEdgeRow,
     CladeCompatibilityGraphReport,
@@ -20,11 +19,15 @@ def test_package_tree_gateway_exports_clade_compatibility_surface() -> None:
     assert trees_api.CladeCompatibilityNodeRow is CladeCompatibilityNodeRow
     assert trees_api.CladeCompatibilityEdgeRow is CladeCompatibilityEdgeRow
     assert trees_api.CladeCompatibilityGraphReport is CladeCompatibilityGraphReport
-    assert trees_api.compute_clade_compatibility_graph is compute_clade_compatibility_graph
+    assert (
+        trees_api.compute_clade_compatibility_graph is compute_clade_compatibility_graph
+    )
 
 
 def test_compute_clade_compatibility_graph_matches_exact_fixture() -> None:
-    report = compute_clade_compatibility_graph(fixture("clade_compatibility_tree_set.nwk"))
+    report = compute_clade_compatibility_graph(
+        fixture("clade_compatibility_tree_set.nwk")
+    )
 
     assert report.tree_count == 2
     assert report.shared_taxa == ["A", "B", "C", "D"]
@@ -127,7 +130,9 @@ def test_compute_clade_compatibility_graph_matches_exact_fixture() -> None:
 
 
 def test_compute_clade_compatibility_graph_uses_clades_not_taxa() -> None:
-    report = compute_clade_compatibility_graph(fixture("clade_compatibility_tree_set.nwk"))
+    report = compute_clade_compatibility_graph(
+        fixture("clade_compatibility_tree_set.nwk")
+    )
 
     assert all("|" in row.clade for row in report.nodes)
     assert {row.clade for row in report.nodes} == {"A|B", "A|C", "B|D", "C|D"}

@@ -22,7 +22,9 @@ def fixture(group: str, name: str) -> Path:
     return FIXTURES / group / name
 
 
-def test_likelihood_starting_tree_validation_accepts_binary_root_representation() -> None:
+def test_likelihood_starting_tree_validation_accepts_binary_root_representation() -> (
+    None
+):
     validate_nucleotide_likelihood_starting_tree_from_alignment(
         fixture("trees", "jc69_likelihood_nni_start_tree_4_taxa.nwk"),
         fixture("alignments", "jc69_likelihood_nni_alignment_4_taxa.fasta"),
@@ -104,7 +106,9 @@ def test_likelihood_starting_tree_pool_rejects_unrooted_representation() -> None
         )
 
 
-def test_likelihood_multi_start_search_rejects_invalid_start_tree_before_search() -> None:
+def test_likelihood_multi_start_search_rejects_invalid_start_tree_before_search() -> (
+    None
+):
     with pytest.raises(
         AlignmentTaxonMismatchError,
         match="alignment-only taxa: D",

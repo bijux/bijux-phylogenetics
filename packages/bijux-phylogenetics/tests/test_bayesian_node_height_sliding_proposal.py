@@ -137,7 +137,10 @@ def test_node_height_sliding_proposal_rejects_non_ultrametric_tree() -> None:
     )
 
     assert proposal.is_valid is False
-    assert proposal.invalid_reason == "node-height sliding requires one rooted ultrametric tree"
+    assert (
+        proposal.invalid_reason
+        == "node-height sliding requires one rooted ultrametric tree"
+    )
     assert proposal.proposed_tree is None
     assert proposal.proposed_model_parameters is None
 

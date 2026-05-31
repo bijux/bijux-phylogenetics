@@ -65,12 +65,8 @@ def test_posterior_model_averaging_emits_per_model_and_model_averaged_estimates(
         abs_tol=1e-12,
     )
 
-    estimate_by_model = {
-        row.model_name: row for row in report.per_model_estimate_rows
-    }
-    assert (
-        estimate_by_model["JC69"].estimate_name == "transition-transversion-ratio"
-    )
+    estimate_by_model = {row.model_name: row for row in report.per_model_estimate_rows}
+    assert estimate_by_model["JC69"].estimate_name == "transition-transversion-ratio"
     assert estimate_by_model["JC69"].posterior_mean == 1.0
     assert estimate_by_model["JC69"].hpd_95_lower == 1.0
     assert estimate_by_model["JC69"].hpd_95_upper == 1.0
@@ -96,10 +92,12 @@ def test_metropolis_hastings_model_averaging_summarizes_real_reversible_jump_cha
 
     run_report = run_metropolis_hastings_sampler(
         initial_state=initial_state,
-        propose_state=lambda current_state, rng: propose_reversible_jump_model_switch_move(
-            current_state,
-            rng,
-            log_kappa_standard_deviation=0.45,
+        propose_state=lambda current_state, rng: (
+            propose_reversible_jump_model_switch_move(
+                current_state,
+                rng,
+                log_kappa_standard_deviation=0.45,
+            )
         ),
         update_prior_components=_flat_prior_components,
         update_log_likelihood=_sequence_model_log_likelihood,
@@ -121,8 +119,10 @@ def test_metropolis_hastings_model_averaging_summarizes_real_reversible_jump_cha
     }
     model_averaged_mean = report.model_averaged_estimate_rows[0].posterior_mean
     assert model_averaged_mean != estimate_by_model["JC69"]
-    assert min(estimate_by_model.values()) <= model_averaged_mean <= max(
-        estimate_by_model.values()
+    assert (
+        min(estimate_by_model.values())
+        <= model_averaged_mean
+        <= max(estimate_by_model.values())
     )
 
 

@@ -73,9 +73,13 @@ def test_write_majority_rule_extended_consensus_artifacts_materializes_governed_
     assert outputs["consensus_tree_path"].read_text(encoding="utf-8").strip() == (
         "(((A,B)60,C)40,(D,E)40);"
     )
-    assert outputs["inclusion_table_path"].read_text(encoding="utf-8").startswith(
-        "insertion_rank\tclade\ttree_count\tfrequency\tinclusion_stage\n"
+    assert (
+        outputs["inclusion_table_path"]
+        .read_text(encoding="utf-8")
+        .startswith("insertion_rank\tclade\ttree_count\tfrequency\tinclusion_stage\n")
     )
-    assert outputs["rejected_conflicts_path"].read_text(
-        encoding="utf-8"
-    ).startswith("clade\ttree_count\tfrequency\tblocking_clades\n")
+    assert (
+        outputs["rejected_conflicts_path"]
+        .read_text(encoding="utf-8")
+        .startswith("clade\ttree_count\tfrequency\tblocking_clades\n")
+    )

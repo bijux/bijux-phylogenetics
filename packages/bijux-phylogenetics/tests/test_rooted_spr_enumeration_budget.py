@@ -53,4 +53,3 @@ def test_rooted_spr_budget_validation_rejects_nonpositive_regraft_limit() -> Non
         validate_rooted_spr_enumeration_budget(
             RootedSprEnumerationBudget(max_regraft_target_count_per_pruned_clade=0)
         )
-

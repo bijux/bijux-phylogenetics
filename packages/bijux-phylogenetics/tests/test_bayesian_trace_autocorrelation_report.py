@@ -31,7 +31,10 @@ def test_summarize_metropolis_hastings_trace_autocorrelation_reports_scalar_para
     assert [row.lag for row in independent_x.lag_rows] == [1, 2]
     assert independent_x.lag_rows[0].autocorrelation == 0.0
     assert autocorrelated_x.lag_rows[0].autocorrelation == 0.625
-    assert autocorrelated_x.lag_rows[0].autocorrelation > independent_x.lag_rows[0].autocorrelation
+    assert (
+        autocorrelated_x.lag_rows[0].autocorrelation
+        > independent_x.lag_rows[0].autocorrelation
+    )
 
 
 def test_summarize_metropolis_hastings_trace_autocorrelation_rejects_out_of_range_maximum_lag() -> (

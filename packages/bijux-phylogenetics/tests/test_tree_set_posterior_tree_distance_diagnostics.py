@@ -111,9 +111,10 @@ def test_write_posterior_tree_distance_artifacts_writes_reference_trees_and_tabl
         "posterior_tree_distance_diagnostic_table_path",
         "posterior_tree_distance_distribution_table_path",
     ]
-    assert paths["maximum_clade_credibility_tree_path"].read_text(
-        encoding="utf-8"
-    ).strip() == "(((A:1,B:1):1,(E:1,F:1):1):1,(C:1,D:1):2);"
+    assert (
+        paths["maximum_clade_credibility_tree_path"].read_text(encoding="utf-8").strip()
+        == "(((A:1,B:1):1,(E:1,F:1):1):1,(C:1,D:1):2);"
+    )
     assert paths["consensus_tree_path"].read_text(encoding="utf-8").strip() == (
         "(A:1,B:1,(C:1,D:1)60:1.66666666666667,E:1,F:1);"
     )

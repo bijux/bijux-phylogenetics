@@ -25,7 +25,9 @@ def test_package_likelihood_gateway_exports_local_clock_surface() -> None:
     )
 
 
-def test_local_clock_likelihood_fits_clade_and_branch_regimes_and_beats_strict_clock() -> None:
+def test_local_clock_likelihood_fits_clade_and_branch_regimes_and_beats_strict_clock() -> (
+    None
+):
     report = fit_local_clock_likelihood_from_alignment(
         fixture("trees", "strict_clock_time_tree_4_taxa.nwk"),
         fixture("alignments", "local_clock_likelihood_alignment_4_taxa.fasta"),
@@ -55,12 +57,14 @@ def test_local_clock_likelihood_fits_clade_and_branch_regimes_and_beats_strict_c
     assert regime_rows_by_id["background"].target_kind == "background"
     assert regime_rows_by_id["ab_clade"].target_kind == "clade"
     assert regime_rows_by_id["abc_stem"].target_kind == "branch"
-    assert regime_rows_by_id["abc_stem"].optimized_clock_rate > regime_rows_by_id[
-        "ab_clade"
-    ].optimized_clock_rate
-    assert regime_rows_by_id["ab_clade"].optimized_clock_rate > regime_rows_by_id[
-        "background"
-    ].optimized_clock_rate
+    assert (
+        regime_rows_by_id["abc_stem"].optimized_clock_rate
+        > regime_rows_by_id["ab_clade"].optimized_clock_rate
+    )
+    assert (
+        regime_rows_by_id["ab_clade"].optimized_clock_rate
+        > regime_rows_by_id["background"].optimized_clock_rate
+    )
 
     rows_by_descendant_taxa = {
         tuple(row.descendant_taxa): row for row in report.branch_rows

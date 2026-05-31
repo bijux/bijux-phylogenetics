@@ -25,7 +25,9 @@ def test_package_parsimony_gateway_exports_deltran_surface() -> None:
     )
 
 
-def test_reconstruct_deltran_delays_ambiguous_changes_toward_terminal_branches() -> None:
+def test_reconstruct_deltran_delays_ambiguous_changes_toward_terminal_branches() -> (
+    None
+):
     deltran_report = reconstruct_deltran(
         fixture("acctran_tree_5_taxa.nwk"),
         fixture("acctran_ambiguous_matrix.tsv"),
@@ -37,7 +39,10 @@ def test_reconstruct_deltran_delays_ambiguous_changes_toward_terminal_branches()
 
     assert deltran_report.total_steps == 2
     assert acctran_report.total_steps == 2
-    assert [(row.character_id, row.step_count, row.root_state) for row in deltran_report.step_rows] == [
+    assert [
+        (row.character_id, row.step_count, row.root_state)
+        for row in deltran_report.step_rows
+    ] == [
         ("char01_ambiguous", 2, "0"),
     ]
     assert [
@@ -136,17 +141,33 @@ def test_write_deltran_artifacts_materializes_governed_output_family(
         "branch_changes_path",
         "run_json_path",
     }
-    assert outputs["steps_path"].read_text(encoding="utf-8").startswith(
-        "character_id\tstep_count\tobserved_states\troot_state\tcharacter_weight\tweighted_score\n"
+    assert (
+        outputs["steps_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "character_id\tstep_count\tobserved_states\troot_state\tcharacter_weight\tweighted_score\n"
+        )
     )
-    assert outputs["node_states_path"].read_text(encoding="utf-8").startswith(
-        "character_id\tnode\tnode_name\tdescendant_taxa\tresolved_state\tis_tip\tobserved_state\n"
+    assert (
+        outputs["node_states_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "character_id\tnode\tnode_name\tdescendant_taxa\tresolved_state\tis_tip\tobserved_state\n"
+        )
     )
-    assert outputs["ancestral_states_path"].read_text(encoding="utf-8").startswith(
-        "node_id\tclade_id\tcharacter_id\tpossible_states\tchosen_state\tmethod\tambiguous\n"
+    assert (
+        outputs["ancestral_states_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "node_id\tclade_id\tcharacter_id\tpossible_states\tchosen_state\tmethod\tambiguous\n"
+        )
     )
-    assert outputs["branch_changes_path"].read_text(encoding="utf-8").startswith(
-        "branch_id\tcharacter_id\tparent_node\tchild_node\tchild_node_name\tchild_descendant_taxa\tchange_from\tchange_to\tambiguous\n"
+    assert (
+        outputs["branch_changes_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "branch_id\tcharacter_id\tparent_node\tchild_node\tchild_node_name\tchild_descendant_taxa\tchange_from\tchange_to\tambiguous\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "deltran"

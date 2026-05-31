@@ -92,12 +92,16 @@ def test_write_posterior_clade_correlation_artifacts_writes_matrix_and_pairs(
         "posterior_clade_correlation_matrix_path",
         "posterior_clade_correlation_pair_path",
     ]
-    assert paths["posterior_clade_correlation_matrix_path"].read_text(
-        encoding="utf-8"
-    ).startswith("clade\tA|B\tC|D")
-    assert paths["posterior_clade_correlation_pair_path"].read_text(
-        encoding="utf-8"
-    ).startswith("left_clade\tright_clade")
+    assert (
+        paths["posterior_clade_correlation_matrix_path"]
+        .read_text(encoding="utf-8")
+        .startswith("clade\tA|B\tC|D")
+    )
+    assert (
+        paths["posterior_clade_correlation_pair_path"]
+        .read_text(encoding="utf-8")
+        .startswith("left_clade\tright_clade")
+    )
 
 
 def test_compute_posterior_clade_correlation_matrix_requires_exact_taxa() -> None:

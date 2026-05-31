@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics.distance.extremal_linkage as extremal_linkage_module
 from bijux_phylogenetics.distance import (
     build_single_linkage_tree,
     build_tree_from_imported_distance_matrix,
@@ -12,6 +11,7 @@ from bijux_phylogenetics.distance import (
     build_wpgma_tree,
     load_imported_distance_matrix,
 )
+import bijux_phylogenetics.distance.extremal_linkage as extremal_linkage_module
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.runtime.errors import InvalidDistanceMatrixError
 

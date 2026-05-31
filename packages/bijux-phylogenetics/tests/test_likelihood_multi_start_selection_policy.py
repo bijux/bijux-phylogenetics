@@ -13,7 +13,9 @@ def fixture(group: str, name: str) -> Path:
     return FIXTURES / group / name
 
 
-def test_likelihood_multi_start_best_selection_policy_searches_best_scored_pool_start() -> None:
+def test_likelihood_multi_start_best_selection_policy_searches_best_scored_pool_start() -> (
+    None
+):
     report = search_nucleotide_likelihood_multi_start_from_alignment(
         fixture("trees", "jc69_likelihood_nni_start_tree_4_taxa.nwk"),
         fixture("alignments", "jc69_likelihood_nni_alignment_4_taxa.fasta"),
@@ -32,7 +34,9 @@ def test_likelihood_multi_start_best_selection_policy_searches_best_scored_pool_
     ]
 
 
-def test_likelihood_multi_start_strategy_priority_policy_searches_one_start_per_strategy() -> None:
+def test_likelihood_multi_start_strategy_priority_policy_searches_one_start_per_strategy() -> (
+    None
+):
     report = search_nucleotide_likelihood_multi_start_from_alignment(
         fixture("trees", "jc69_likelihood_nni_start_tree_4_taxa.nwk"),
         fixture("alignments", "jc69_likelihood_nni_alignment_4_taxa.fasta"),

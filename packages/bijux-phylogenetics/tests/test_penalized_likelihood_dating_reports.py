@@ -66,7 +66,9 @@ def test_write_penalized_likelihood_dating_summary_tsv_writes_expected_row(
     assert float(row["root_date"]) == pytest.approx(1985.738765803845, abs=1e-9)
     assert float(row["smoothing_parameter"]) == pytest.approx(0.01, abs=1e-12)
     assert float(row["data_score"]) == pytest.approx(2.9289583718815336e-06, abs=1e-18)
-    assert float(row["penalty_score"]) == pytest.approx(0.00013482416705344673, abs=1e-18)
+    assert float(row["penalty_score"]) == pytest.approx(
+        0.00013482416705344673, abs=1e-18
+    )
     assert float(row["total_score"]) == pytest.approx(
         0.00013775312542532825,
         abs=1e-18,
@@ -92,13 +94,19 @@ def test_write_penalized_likelihood_node_dates_tsv_writes_expected_rows(
         rows = list(csv.DictReader(handle, delimiter="\t"))
 
     assert len(rows) == 7
-    rows_by_descendant_taxa = {tuple(row["descendant_taxa"].split("|")): row for row in rows}
+    rows_by_descendant_taxa = {
+        tuple(row["descendant_taxa"].split("|")): row for row in rows
+    }
     assert rows_by_descendant_taxa[("A", "B", "C", "D")]["node_kind"] == "root"
-    assert float(rows_by_descendant_taxa[("A", "B", "C", "D")]["estimated_date"]) == pytest.approx(
+    assert float(
+        rows_by_descendant_taxa[("A", "B", "C", "D")]["estimated_date"]
+    ) == pytest.approx(
         1985.738765803845,
         abs=1e-9,
     )
-    assert float(rows_by_descendant_taxa[("A", "B", "C")]["estimated_rate"]) == pytest.approx(
+    assert float(
+        rows_by_descendant_taxa[("A", "B", "C")]["estimated_rate"]
+    ) == pytest.approx(
         0.08392676134136667,
         abs=1e-15,
     )
@@ -123,7 +131,9 @@ def test_write_penalized_likelihood_branch_rate_tsv_writes_expected_rows(
         rows = list(csv.DictReader(handle, delimiter="\t"))
 
     assert len(rows) == 6
-    rows_by_descendant_taxa = {tuple(row["descendant_taxa"].split("|")): row for row in rows}
+    rows_by_descendant_taxa = {
+        tuple(row["descendant_taxa"].split("|")): row for row in rows
+    }
     assert float(
         rows_by_descendant_taxa[("A", "B", "C")]["estimated_branch_rate"]
     ) == pytest.approx(0.08136342580549531, abs=1e-15)
@@ -178,14 +188,20 @@ def test_write_penalized_likelihood_dating_artifacts_materializes_governed_outpu
         outputs["dated_tree_path"].read_text(encoding="utf-8").strip()
         == report.dated_tree_newick
     )
-    assert outputs["summary_path"].read_text(encoding="utf-8").startswith(
-        "tree_path\tmetadata_path\ttaxon_column\tdate_column\t"
+    assert (
+        outputs["summary_path"]
+        .read_text(encoding="utf-8")
+        .startswith("tree_path\tmetadata_path\ttaxon_column\tdate_column\t")
     )
-    assert outputs["node_dates_path"].read_text(encoding="utf-8").startswith(
-        "node_id\tnode_kind\tnode_label\tdescendant_taxa\t"
+    assert (
+        outputs["node_dates_path"]
+        .read_text(encoding="utf-8")
+        .startswith("node_id\tnode_kind\tnode_label\tdescendant_taxa\t")
     )
-    assert outputs["branch_rates_path"].read_text(encoding="utf-8").startswith(
-        "branch_id\tchild_name\tdescendant_taxa\tparent_date\t"
+    assert (
+        outputs["branch_rates_path"]
+        .read_text(encoding="utf-8")
+        .startswith("branch_id\tchild_name\tdescendant_taxa\tparent_date\t")
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["smoothing_parameter"] == 0.01

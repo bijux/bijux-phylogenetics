@@ -65,4 +65,6 @@ def test_phylo_parsimony_camin_sokal_cli_reports_multistate_binarization_errors(
     assert exit_code == 2
     assert payload["status"] == "error"
     assert payload["errors"][0]["code"] == "parsimony_matrix_multistate_not_binarized"
-    assert payload["errors"][0]["details"]["character_id"] == "char01_needs_binarization"
+    assert (
+        payload["errors"][0]["details"]["character_id"] == "char01_needs_binarization"
+    )

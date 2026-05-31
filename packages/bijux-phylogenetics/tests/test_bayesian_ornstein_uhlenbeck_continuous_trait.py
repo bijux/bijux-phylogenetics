@@ -47,9 +47,7 @@ def test_ou_continuous_trait_model_requires_sampled_optimum_prior() -> None:
     with pytest.raises(PhylogeneticsError, match="non-fixed optimum prior"):
         build_ornstein_uhlenbeck_continuous_trait_model_definition(
             alpha_prior=build_exponential_continuous_trait_scalar_prior(rate=1.0),
-            optimum_prior=build_fixed_continuous_trait_location_prior(
-                fixed_value=0.0
-            ),
+            optimum_prior=build_fixed_continuous_trait_location_prior(fixed_value=0.0),
             sigma_squared_prior=build_exponential_continuous_trait_scalar_prior(
                 rate=1.0
             ),
@@ -116,9 +114,7 @@ def test_ou_continuous_trait_runner_emits_sampled_parameter_summaries() -> None:
     assert "small_sample_size" in warning_kinds
 
 
-def test_ou_continuous_trait_weak_fixture_reports_broad_and_boundary_warnings() -> (
-    None
-):
+def test_ou_continuous_trait_weak_fixture_reports_broad_and_boundary_warnings() -> None:
     model_definition = build_ornstein_uhlenbeck_continuous_trait_model_definition(
         alpha_prior=build_exponential_continuous_trait_scalar_prior(rate=0.2),
         optimum_prior=build_normal_continuous_trait_location_prior(

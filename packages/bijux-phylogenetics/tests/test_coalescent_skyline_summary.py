@@ -13,7 +13,9 @@ from bijux_phylogenetics.simulation import (
 
 def test_simulation_gateway_exports_coalescent_skyline_surface() -> None:
     assert simulation_api.CoalescentSkylineSummaryRow is CoalescentSkylineSummaryRow
-    assert simulation_api.write_coalescent_skyline_table is write_coalescent_skyline_table
+    assert (
+        simulation_api.write_coalescent_skyline_table is write_coalescent_skyline_table
+    )
 
 
 def test_simulate_coalescent_trees_reports_piecewise_effective_population_estimates() -> (
@@ -42,8 +44,7 @@ def test_simulate_coalescent_trees_reports_piecewise_effective_population_estima
         2,
     ]
     assert [
-        row.effective_population_size_estimate
-        for row in report.coalescent_skyline_rows
+        row.effective_population_size_estimate for row in report.coalescent_skyline_rows
     ] == pytest.approx(
         [
             2.87420076024687,

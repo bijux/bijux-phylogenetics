@@ -3,9 +3,9 @@ from __future__ import annotations
 import pytest
 
 from bijux_phylogenetics.bayesian.discrete_trait_mk import (
-    run_discrete_trait_mk_metropolis_hastings,
     build_discrete_trait_mk_model_definition,
     build_discrete_trait_mk_proposal_schedule,
+    run_discrete_trait_mk_metropolis_hastings,
 )
 from bijux_phylogenetics.bayesian.discrete_trait_rate_priors import (
     build_exponential_discrete_trait_rate_prior,
@@ -47,18 +47,24 @@ def test_discrete_trait_mk_runner_samples_er_sym_and_ard_transition_rate_posteri
     assert report.chain_report.accepted_count >= 1
     assert report.state_order == ["north", "south", "west"]
     assert len(report.posterior_rows) == len(report.chain_report.sampled_states)
-    assert all(row.transition_model_name == transition_model_name for row in report.posterior_rows)
-    assert all(len(row.rate_parameters) == expected_parameter_count for row in report.posterior_rows)
+    assert all(
+        row.transition_model_name == transition_model_name
+        for row in report.posterior_rows
+    )
+    assert all(
+        len(row.rate_parameters) == expected_parameter_count
+        for row in report.posterior_rows
+    )
     assert all(
         len(row.prior_component_log_priors) == expected_parameter_count
         for row in report.posterior_rows
     )
+    assert all(summary.node_state_summaries for summary in report.posterior_rows)
     assert all(
-        summary.node_state_summaries
-        for summary in report.posterior_rows
-    )
-    assert all(
-        any(node_summary.node_id == "A|B|C|D" for node_summary in row.node_state_summaries)
+        any(
+            node_summary.node_id == "A|B|C|D"
+            for node_summary in row.node_state_summaries
+        )
         for row in report.posterior_rows
     )
     assert all(
@@ -107,7 +113,9 @@ def test_discrete_trait_mk_runner_respects_fixed_root_state_in_node_state_summar
     ]
 
     assert all(summary.most_likely_state == "north" for summary in root_summaries)
-    assert all(summary.state_probabilities["north"] == 1.0 for summary in root_summaries)
+    assert all(
+        summary.state_probabilities["north"] == 1.0 for summary in root_summaries
+    )
 
 
 def _build_trait_tree() -> PhyloTree:

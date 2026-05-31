@@ -44,7 +44,9 @@ def test_phylo_likelihood_local_clock_cli_writes_governed_outputs(
     assert payload["metrics"]["branch_count"] == 6
     assert payload["metrics"]["regime_count"] == 3
     assert payload["metrics"]["preferred_model_by_aic"] == "local-clock"
-    assert payload["metrics"]["strict_clock_aic"] > payload["metrics"]["local_clock_aic"]
+    assert (
+        payload["metrics"]["strict_clock_aic"] > payload["metrics"]["local_clock_aic"]
+    )
     assert payload["metrics"]["converged"] is True
     assert (out_dir / "scaled_tree.nwk").is_file()
     assert (out_dir / "branch_rates.tsv").is_file()

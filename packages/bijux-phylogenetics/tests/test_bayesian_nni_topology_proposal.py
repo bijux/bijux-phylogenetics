@@ -17,7 +17,9 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 
 
 def test_nni_topology_proposal_changes_rooted_topology_without_changing_taxa() -> None:
-    current_state = _build_scored_nni_state(update_prior_components=_zero_prior_components)
+    current_state = _build_scored_nni_state(
+        update_prior_components=_zero_prior_components
+    )
     current_tree = current_state.tree.to_tree()
     current_topology_fingerprint = rooted_topology_fingerprint(current_tree)
 
@@ -86,9 +88,7 @@ def test_nni_topology_proposal_rejects_non_bifurcating_tree() -> None:
     proposal = propose_nni_topology_move(current_state, Random(7))
 
     assert proposal.is_valid is False
-    assert proposal.invalid_reason == (
-        "rooted NNI enumeration requires a binary root"
-    )
+    assert proposal.invalid_reason == ("rooted NNI enumeration requires a binary root")
     assert proposal.proposed_tree is None
     assert proposal.proposed_model_parameters is None
 

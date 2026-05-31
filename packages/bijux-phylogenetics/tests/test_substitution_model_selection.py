@@ -5,8 +5,6 @@ from pathlib import Path
 
 from bijux_phylogenetics.phylo.likelihood import (
     compare_nucleotide_substitution_models_from_alignment,
-)
-from bijux_phylogenetics.phylo.likelihood import (
     default_substitution_model_selection_candidates,
 )
 
@@ -84,11 +82,7 @@ def test_substitution_model_selection_report_emits_ranked_rows_and_failed_candid
     assert "HKY" not in rows
 
     assert math.isclose(
-        sum(
-            row.akaike_weight or 0.0
-            for row in report.rows
-            if row.fit_succeeded
-        ),
+        sum(row.akaike_weight or 0.0 for row in report.rows if row.fit_succeeded),
         1.0,
         rel_tol=0.0,
         abs_tol=1e-12,
@@ -103,9 +97,15 @@ def test_substitution_model_selection_report_emits_ranked_rows_and_failed_candid
         rel_tol=0.0,
         abs_tol=1e-12,
     )
-    assert math.isclose(jc69_row.aic or 0.0, 22.21020546164847, rel_tol=0.0, abs_tol=1e-12)
-    assert math.isclose(jc69_row.aicc or 0.0, 22.21020546164847, rel_tol=0.0, abs_tol=1e-12)
-    assert math.isclose(jc69_row.bic or 0.0, 22.21020546164847, rel_tol=0.0, abs_tol=1e-12)
+    assert math.isclose(
+        jc69_row.aic or 0.0, 22.21020546164847, rel_tol=0.0, abs_tol=1e-12
+    )
+    assert math.isclose(
+        jc69_row.aicc or 0.0, 22.21020546164847, rel_tol=0.0, abs_tol=1e-12
+    )
+    assert math.isclose(
+        jc69_row.bic or 0.0, 22.21020546164847, rel_tol=0.0, abs_tol=1e-12
+    )
     assert math.isclose(jc69_row.delta_aic or 0.0, 0.0, rel_tol=0.0, abs_tol=1e-12)
     assert math.isclose(
         jc69_row.akaike_weight or 0.0,

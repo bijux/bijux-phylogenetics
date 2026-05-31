@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from bijux_phylogenetics.io.newick import loads_newick
 import bijux_phylogenetics.phylo.topology as topology_api
 from bijux_phylogenetics.phylo.topology import (
     RootedSprMoveCandidate,
@@ -11,7 +12,6 @@ from bijux_phylogenetics.phylo.topology import (
     write_topology_move_validity_artifacts,
     write_topology_move_validity_run_json,
 )
-from bijux_phylogenetics.io.newick import loads_newick
 
 FIXTURES = Path(__file__).parent / "fixtures" / "trees"
 
@@ -25,14 +25,19 @@ def test_topology_gateway_exports_move_validity_artifact_surface() -> None:
         topology_api.write_topology_move_validity_artifacts
         is write_topology_move_validity_artifacts
     )
-    assert topology_api.write_topology_move_validity_run_json is write_topology_move_validity_run_json
+    assert (
+        topology_api.write_topology_move_validity_run_json
+        is write_topology_move_validity_run_json
+    )
 
 
 def test_write_topology_move_validity_artifacts_materializes_rejected_run_json(
     tmp_path: Path,
 ) -> None:
     tree = loads_newick("(((A,C),B),D);")
-    resolved_candidate, _available_move_count = resolve_rooted_spr_move_candidate(tree, 1)
+    resolved_candidate, _available_move_count = resolve_rooted_spr_move_candidate(
+        tree, 1
+    )
     candidate = RootedSprMoveCandidate(
         pruned_node_id=resolved_candidate.pruned_node_id,
         pruned_clade_id=resolved_candidate.pruned_clade_id,
@@ -56,6 +61,7 @@ def test_write_topology_move_validity_artifacts_materializes_rejected_run_json(
     assert payload["validity_decision"] == "rejected"
     assert payload["rejection_code"] == "topology_move_self_regraft"
     assert payload["evidence"] == report.evidence
-    assert payload["candidate_payload"]["regraft_target_branch_id"] == (
-        report.candidate_payload["regraft_target_branch_id"]
+    assert (
+        payload["candidate_payload"]["regraft_target_branch_id"]
+        == (report.candidate_payload["regraft_target_branch_id"])
     )

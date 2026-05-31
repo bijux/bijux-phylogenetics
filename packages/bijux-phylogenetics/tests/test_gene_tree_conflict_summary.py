@@ -27,7 +27,10 @@ def test_package_tree_gateway_exports_gene_tree_conflict_surface() -> None:
     assert trees_api.GeneTreeConflictReferenceTree is GeneTreeConflictReferenceTree
     assert trees_api.GeneTreeConflictSummaryReport is GeneTreeConflictSummaryReport
     assert trees_api.summarize_gene_tree_conflicts is summarize_gene_tree_conflicts
-    assert trees_api.write_gene_tree_conflict_artifacts is write_gene_tree_conflict_artifacts
+    assert (
+        trees_api.write_gene_tree_conflict_artifacts
+        is write_gene_tree_conflict_artifacts
+    )
     assert (
         trees_api.write_gene_tree_conflict_quartet_table
         is write_gene_tree_conflict_quartet_table

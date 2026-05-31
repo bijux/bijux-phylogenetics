@@ -43,11 +43,15 @@ def test_cli_tree_set_compatibility_graph_writes_expected_outputs(
     ]
 
     node_lines = (
-        out_dir / "clade-compatibility-nodes.tsv"
-    ).read_text(encoding="utf-8").splitlines()
+        (out_dir / "clade-compatibility-nodes.tsv")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    )
     edge_lines = (
-        out_dir / "clade-compatibility-edges.tsv"
-    ).read_text(encoding="utf-8").splitlines()
+        (out_dir / "clade-compatibility-edges.tsv")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    )
     dot_text = (out_dir / "clade-compatibility.dot").read_text(encoding="utf-8")
 
     assert node_lines[0] == (

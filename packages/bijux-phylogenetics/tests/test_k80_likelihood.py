@@ -51,7 +51,10 @@ def test_k80_kappa_changes_likelihood_on_transition_biased_fixture() -> None:
     jc69_equivalent_report = evaluate_k80_tree_likelihood(tree, records, kappa=1.0)
     transition_weighted_report = evaluate_k80_tree_likelihood(tree, records, kappa=4.0)
 
-    assert transition_weighted_report.log_likelihood > jc69_equivalent_report.log_likelihood
+    assert (
+        transition_weighted_report.log_likelihood
+        > jc69_equivalent_report.log_likelihood
+    )
 
 
 def _expected_k80_two_tip_fixture_probability(*, kappa: float) -> float:

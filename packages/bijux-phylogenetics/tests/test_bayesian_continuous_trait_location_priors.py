@@ -27,9 +27,7 @@ def test_normal_continuous_trait_location_prior_matches_analytical_density() -> 
 
     centered_value = (0.5 - 1.5) / 0.75
     expected_log_prior = (
-        -math.log(0.75)
-        - (0.5 * math.log(2.0 * math.pi))
-        - (0.5 * (centered_value**2))
+        -math.log(0.75) - (0.5 * math.log(2.0 * math.pi)) - (0.5 * (centered_value**2))
     )
 
     assert CONTINUOUS_TRAIT_LOCATION_PRIOR_FAMILIES == ("fixed", "normal")

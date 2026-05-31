@@ -45,15 +45,21 @@ def test_summarize_independent_metropolis_hastings_trace_effective_sample_size_p
         run_report=run_report,
     )
 
-    assert isinstance(report, IndependentMetropolisHastingsTraceEffectiveSampleSizeReport)
+    assert isinstance(
+        report, IndependentMetropolisHastingsTraceEffectiveSampleSizeReport
+    )
     assert [chain_report.chain_name for chain_report in report.chain_reports] == [
         "independent",
         "autocorrelated",
     ]
-    independent_ess = report.chain_reports[0].effective_sample_size_report.parameter_rows[
-        0
-    ].effective_sample_size
-    autocorrelated_ess = report.chain_reports[
-        1
-    ].effective_sample_size_report.parameter_rows[0].effective_sample_size
+    independent_ess = (
+        report.chain_reports[0]
+        .effective_sample_size_report.parameter_rows[0]
+        .effective_sample_size
+    )
+    autocorrelated_ess = (
+        report.chain_reports[1]
+        .effective_sample_size_report.parameter_rows[0]
+        .effective_sample_size
+    )
     assert autocorrelated_ess < independent_ess

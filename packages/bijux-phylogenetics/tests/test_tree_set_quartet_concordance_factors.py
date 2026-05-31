@@ -23,8 +23,7 @@ def fixture(name: str) -> Path:
 def test_package_tree_gateway_exports_quartet_concordance_surface() -> None:
     assert trees_api.GeneTreeQuartetConcordanceRow is GeneTreeQuartetConcordanceRow
     assert (
-        trees_api.GeneTreeQuartetConcordanceReport
-        is GeneTreeQuartetConcordanceReport
+        trees_api.GeneTreeQuartetConcordanceReport is GeneTreeQuartetConcordanceReport
     )
     assert (
         trees_api.compute_gene_tree_quartet_concordance_factors
@@ -71,7 +70,9 @@ def test_compute_gene_tree_quartet_concordance_matches_hand_counted_fixture() ->
     ]
 
 
-def test_compute_gene_tree_quartet_concordance_handles_multiple_quartets_per_branch() -> None:
+def test_compute_gene_tree_quartet_concordance_handles_multiple_quartets_per_branch() -> (
+    None
+):
     report = compute_gene_tree_quartet_concordance_factors(
         fixture("quartet_concordance_species_tree_5_taxa.nwk"),
         fixture("quartet_concordance_gene_trees_5_taxa.nwk"),

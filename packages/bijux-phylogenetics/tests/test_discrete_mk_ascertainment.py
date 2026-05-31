@@ -95,4 +95,8 @@ def test_discrete_mk_model_ranking_carries_ascertainment_policy() -> None:
     )
 
     assert report.ascertainment_policy == "lewis-variable-only"
-    assert all(row.likelihood_constant_policy == report.likelihood_constant_policy for row in report.rows if row.comparable)
+    assert all(
+        row.likelihood_constant_policy == report.likelihood_constant_policy
+        for row in report.rows
+        if row.comparable
+    )

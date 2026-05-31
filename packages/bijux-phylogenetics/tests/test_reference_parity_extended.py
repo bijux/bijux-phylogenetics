@@ -74,7 +74,9 @@ def test_validate_reference_parity_examples_extended_passes() -> None:
         ]
         > 0.0
     )
-    assert primate_fixed.observed_output["aic"] < primate_estimated.observed_output["aic"]
+    assert (
+        primate_fixed.observed_output["aic"] < primate_estimated.observed_output["aic"]
+    )
     assert primate_fixed.observed_output["lambda_value"] >= 0.75
     assert (
         primate_fixed.observed_output["coefficient.social_group_size.standard_error"]
@@ -96,7 +98,9 @@ def test_validate_reference_parity_examples_extended_passes() -> None:
         if row.case == "blomberg-k-strong-signal-twenty-four-taxa"
     )
     weak_k = next(
-        row for row in report.observations if row.case == "blomberg-k-weak-signal-twenty-four-taxa"
+        row
+        for row in report.observations
+        if row.case == "blomberg-k-weak-signal-twenty-four-taxa"
     )
     assert strong_lambda.observed_output["lambda_value"] >= 0.99
     assert weak_lambda.observed_output["lambda_value"] <= 0.001

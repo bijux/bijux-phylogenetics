@@ -25,7 +25,9 @@ def test_distance_method_comparison_reports_all_owned_trees_and_scores() -> None
         "upgma",
         "wpgma",
     ]
-    assert [(row.method, row.patristic_residual_sum_squares) for row in report.rows] == [
+    assert [
+        (row.method, row.patristic_residual_sum_squares) for row in report.rows
+    ] == [
         ("neighbor-joining", 168.09375),
         ("bionj", 194.315733333333),
         ("upgma", 258.0),
@@ -81,9 +83,7 @@ def test_distance_method_comparison_reports_rf_matrix_and_assumption_warnings() 
         ("bionj", "wpgma", 3, 0.6),
         ("upgma", "wpgma", 0, 0.0),
     ]
-    assert [
-        (row.scope, row.method, row.warning) for row in report.warning_rows
-    ] == [
+    assert [(row.scope, row.method, row.warning) for row in report.warning_rows] == [
         (
             "matrix",
             None,

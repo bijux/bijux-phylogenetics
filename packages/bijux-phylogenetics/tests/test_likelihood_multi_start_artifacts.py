@@ -32,9 +32,21 @@ def test_write_nucleotide_likelihood_multi_start_artifacts_records_rank_and_iter
         report,
     )
 
-    assert outputs["summary_path"].read_text(encoding="utf-8").startswith(
-        "start_tree_source_kind\tstart_tree_source_label\tstart_tree_generation_seed\tsearch_algorithm\tstart_log_likelihood\tfinal_log_likelihood\tfinal_likelihood_rank\tfinal_topology_fingerprint\tsearch_iteration_count\taccepted_move_count\tevaluated_neighbor_count\tbranch_reoptimization_policy\tsubstitution_parameter_policy\tstopping_reason\tbest_run\tstart_tree_newick\tfinal_tree_newick\n"
+    assert (
+        outputs["summary_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "start_tree_source_kind\tstart_tree_source_label\tstart_tree_generation_seed\tsearch_algorithm\tstart_log_likelihood\tfinal_log_likelihood\tfinal_likelihood_rank\tfinal_topology_fingerprint\tsearch_iteration_count\taccepted_move_count\tevaluated_neighbor_count\tbranch_reoptimization_policy\tsubstitution_parameter_policy\tstopping_reason\tbest_run\tstart_tree_newick\tfinal_tree_newick\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
-    assert [row["final_likelihood_rank"] for row in payload["run_summaries"]] == [1, 2, 3]
-    assert [row["search_iteration_count"] for row in payload["run_summaries"]] == [3, 3, 3]
+    assert [row["final_likelihood_rank"] for row in payload["run_summaries"]] == [
+        1,
+        2,
+        3,
+    ]
+    assert [row["search_iteration_count"] for row in payload["run_summaries"]] == [
+        3,
+        3,
+        3,
+    ]

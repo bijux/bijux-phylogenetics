@@ -30,7 +30,9 @@ def fixture(group: str, name: str) -> Path:
     return FIXTURES / group / name
 
 
-def test_reversible_jump_model_switch_records_jc69_to_k80_mapping_and_acceptance_ratio() -> None:
+def test_reversible_jump_model_switch_records_jc69_to_k80_mapping_and_acceptance_ratio() -> (
+    None
+):
     current_state = _build_scored_jc69_state()
 
     proposal = propose_reversible_jump_model_switch_move(
@@ -47,10 +49,9 @@ def test_reversible_jump_model_switch_records_jc69_to_k80_mapping_and_acceptance
     )
     assert proposal.proposed_tree is not None
     assert proposal.proposed_model_parameters is not None
-    assert (
-        rooted_topology_fingerprint(proposal.proposed_tree)
-        == rooted_topology_fingerprint(current_state.tree.to_tree())
-    )
+    assert rooted_topology_fingerprint(
+        proposal.proposed_tree
+    ) == rooted_topology_fingerprint(current_state.tree.to_tree())
     assert (
         current_state.model_parameters.categorical_parameters["substitution-model"]
         == "JC69"
@@ -80,7 +81,9 @@ def test_reversible_jump_model_switch_records_jc69_to_k80_mapping_and_acceptance
     )
 
 
-def test_reversible_jump_model_switch_records_k80_to_jc69_mapping_and_acceptance_ratio() -> None:
+def test_reversible_jump_model_switch_records_k80_to_jc69_mapping_and_acceptance_ratio() -> (
+    None
+):
     current_state = _build_scored_k80_state(kappa=2.5)
 
     proposal = propose_reversible_jump_model_switch_move(
@@ -123,7 +126,9 @@ def test_reversible_jump_model_switch_records_k80_to_jc69_mapping_and_acceptance
     )
 
 
-def test_reversible_jump_model_switch_changes_real_sequence_likelihood_surface() -> None:
+def test_reversible_jump_model_switch_changes_real_sequence_likelihood_surface() -> (
+    None
+):
     current_state = _build_scored_jc69_state()
 
     proposal = propose_reversible_jump_model_switch_move(
@@ -156,10 +161,12 @@ def test_sampler_uses_reversible_jump_model_switch_on_real_sequence_surface() ->
 
     report = run_metropolis_hastings_sampler(
         initial_state=initial_state,
-        propose_state=lambda current_state, rng: propose_reversible_jump_model_switch_move(
-            current_state,
-            rng,
-            log_kappa_standard_deviation=0.45,
+        propose_state=lambda current_state, rng: (
+            propose_reversible_jump_model_switch_move(
+                current_state,
+                rng,
+                log_kappa_standard_deviation=0.45,
+            )
         ),
         update_prior_components=_flat_prior_components,
         update_log_likelihood=_sequence_model_log_likelihood,
@@ -226,7 +233,9 @@ def test_reversible_jump_model_switch_requires_substitution_model_label() -> Non
     assert proposal.proposed_model_parameters is None
 
 
-def test_reversible_jump_model_switch_rejects_inconsistent_jc69_state_with_kappa() -> None:
+def test_reversible_jump_model_switch_rejects_inconsistent_jc69_state_with_kappa() -> (
+    None
+):
     current_state = score_bayesian_phylogenetic_state(
         tree=load_tree(fixture("trees", "k80_likelihood_tree_2_taxa.nwk")),
         model_parameters=build_bayesian_model_parameter_state(
@@ -249,7 +258,9 @@ def test_reversible_jump_model_switch_rejects_inconsistent_jc69_state_with_kappa
     )
 
 
-def test_reversible_jump_model_switch_rejects_inconsistent_k80_state_without_kappa() -> None:
+def test_reversible_jump_model_switch_rejects_inconsistent_k80_state_without_kappa() -> (
+    None
+):
     current_state = score_bayesian_phylogenetic_state(
         tree=load_tree(fixture("trees", "k80_likelihood_tree_2_taxa.nwk")),
         model_parameters=build_bayesian_model_parameter_state(
@@ -360,8 +371,5 @@ def _lognormal_positive_draw_density(
         -math.log(proposed_value)
         - math.log(log_standard_deviation)
         - (0.5 * math.log(2.0 * math.pi))
-        - (
-            math.log(proposed_value) ** 2
-            / (2.0 * (log_standard_deviation**2))
-        )
+        - (math.log(proposed_value) ** 2 / (2.0 * (log_standard_deviation**2)))
     )

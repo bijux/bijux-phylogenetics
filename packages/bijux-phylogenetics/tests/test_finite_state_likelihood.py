@@ -61,7 +61,9 @@ def test_two_tip_finite_state_pruning_matches_binary_analytical_likelihood() -> 
     )
 
 
-def test_three_tip_finite_state_pruning_matches_dna_like_analytical_likelihood() -> None:
+def test_three_tip_finite_state_pruning_matches_dna_like_analytical_likelihood() -> (
+    None
+):
     tree = load_tree(fixture("felsenstein_three_tip_tree.nwk"))
     transition_by_descendants = {
         ("A",): numpy.array(
@@ -178,9 +180,11 @@ def test_discrete_tree_log_likelihood_matches_shared_pruning_kernel() -> None:
             2,
             0 if states_by_taxon[node.name or ""] == "0" else 1,
         ),
-        transition_matrix_for_child=lambda child: discrete_transition_probability_matrix(
-            rate_matrix,
-            max(float(child.branch_length or 0.0), 0.0),
+        transition_matrix_for_child=lambda child: (
+            discrete_transition_probability_matrix(
+                rate_matrix,
+                max(float(child.branch_length or 0.0), 0.0),
+            )
         ),
     )
     shared_log_likelihood = log_likelihood_from_root_prior(

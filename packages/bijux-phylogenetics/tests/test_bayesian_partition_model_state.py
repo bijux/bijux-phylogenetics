@@ -16,7 +16,9 @@ from bijux_phylogenetics.bayesian.state import build_bayesian_model_parameter_st
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 
-def test_partition_model_state_round_trip_preserves_linkage_and_partition_values() -> None:
+def test_partition_model_state_round_trip_preserves_linkage_and_partition_values() -> (
+    None
+):
     partition_models = (
         build_partition_substitution_model_definition(
             partition_name="gene_alpha",
@@ -57,9 +59,11 @@ def test_partition_model_state_round_trip_preserves_linkage_and_partition_values
         preserved_scalar_parameters={"clock-rate": 0.5},
     )
 
-    resolved_linkage_plan = resolve_partition_parameter_linkage_plan_from_model_parameters(
-        model_parameters=model_parameter_state,
-        partition_names=("gene_alpha", "gene_beta"),
+    resolved_linkage_plan = (
+        resolve_partition_parameter_linkage_plan_from_model_parameters(
+            model_parameters=model_parameter_state,
+            partition_names=("gene_alpha", "gene_beta"),
+        )
     )
     resolved_states = resolve_partition_parameter_states_from_model_parameters(
         model_parameters=model_parameter_state,
@@ -190,7 +194,9 @@ def test_partition_model_state_encoding_uses_partition_names_not_state_order() -
     assert resolved_states[1].kappa == 3.0
 
 
-def test_partition_model_state_encoding_rejects_duplicate_partition_state_entries() -> None:
+def test_partition_model_state_encoding_rejects_duplicate_partition_state_entries() -> (
+    None
+):
     partition_models = (
         build_partition_substitution_model_definition(
             partition_name="gene_alpha",
