@@ -767,6 +767,77 @@ class NucleotideLikelihoodRatchetReport:
 
 
 @dataclass(slots=True)
+class NucleotideLikelihoodSimulatedAnnealingTraceRow:
+    """One simulated-annealing proposal row inside a native likelihood topology search."""
+
+    iteration: int
+    temperature: float
+    move_family: str
+    current_log_likelihood_before: float
+    proposed_log_likelihood: float
+    log_likelihood_delta: float
+    acceptance_probability: float
+    acceptance_uniform_draw: float
+    acceptance_decision: str
+    accepted_move: bool
+    best_tree_improved: bool
+    current_tree_before_newick: str
+    proposed_tree_newick: str
+    current_tree_after_newick: str
+    pivot_branch_id: str | None
+    sibling_clade_id: str | None
+    exchanged_clade_id: str | None
+    pruned_clade_id: str | None
+    regraft_target_branch_id: str | None
+    branch_reoptimization_policy: str
+    branch_reoptimization_scope: str
+    optimized_branch_count: int
+    optimized_branch_clade_ids: list[str]
+    branch_reoptimization_converged: bool
+    branch_optimization_pass_count: int
+    branch_function_evaluation_count: int
+    boundary_warning_messages: list[str]
+
+
+@dataclass(slots=True)
+class NucleotideLikelihoodSimulatedAnnealingSearchReport:
+    """Complete native likelihood simulated-annealing topology search summary."""
+
+    algorithm: str
+    model_name: str
+    proposal_move_family: str
+    branch_reoptimization_policy: str
+    tree_path: str | None
+    alignment_path: str | None
+    taxon_count: int
+    site_count: int
+    pattern_count: int
+    annealing_seed: int
+    iteration_count_requested: int
+    iteration_count_completed: int
+    initial_temperature: float
+    cooling_rate: float
+    input_tree_newick: str
+    start_tree_newick: str
+    start_log_likelihood: float
+    final_tree_newick: str
+    final_log_likelihood: float
+    best_tree_newick: str
+    best_log_likelihood: float
+    best_topology_fingerprint: str
+    accepted_move_count: int
+    rejected_move_count: int
+    accepted_worse_move_count: int
+    substitution_parameter_policy: str
+    substitution_parameter_values: dict[str, float]
+    substitution_parameter_warnings: list[str]
+    total_branch_optimization_pass_count: int
+    total_branch_function_evaluation_count: int
+    stopping_reason: str
+    trace_rows: list[NucleotideLikelihoodSimulatedAnnealingTraceRow]
+
+
+@dataclass(slots=True)
 class NucleotideLikelihoodMultiStartRunSummary:
     """One independently searched start tree inside a multi-start likelihood workflow."""
 
