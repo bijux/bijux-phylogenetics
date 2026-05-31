@@ -942,6 +942,40 @@ class NucleotideLikelihoodMultiStartSearchReport:
 
 
 @dataclass(slots=True)
+class NucleotideLikelihoodTreeInferenceReport:
+    """Complete native nucleotide maximum-likelihood tree inference summary."""
+
+    algorithm: str
+    alignment_path: str | None
+    taxon_count: int
+    site_count: int
+    pattern_count: int
+    stepwise_addition_model_name: str
+    stepwise_addition_tree_newick: str
+    stepwise_addition_final_score: float
+    start_tree_source_policy: str
+    random_start_tree_count: int
+    start_tree_seed: int
+    model_selection_strategy: str
+    model_selection_criterion: str | None
+    model_selection_tree_newick: str
+    selected_model_name: str
+    search_method: str
+    branch_reoptimization_policy: str
+    run_summaries: list[NucleotideLikelihoodMultiStartRunSummary]
+    best_run_source_label: str
+    best_final_tree_newick: str
+    best_final_log_likelihood: float
+    best_final_topology_fingerprint: str
+    model_selection_report: SubstitutionModelSelectionReport
+    best_search_report: (
+        NucleotideLikelihoodNniSearchReport
+        | NucleotideLikelihoodSprSearchReport
+        | NucleotideLikelihoodTbrSearchReport
+    )
+
+
+@dataclass(slots=True)
 class NucleotideLikelihoodSearchTraceReplayStep:
     """One accepted search-trace step replayed against the evolving tree."""
 
