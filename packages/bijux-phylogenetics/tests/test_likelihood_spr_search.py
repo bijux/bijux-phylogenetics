@@ -10,6 +10,7 @@ from bijux_phylogenetics.phylo.likelihood import (
     search_nucleotide_likelihood_nni_from_alignment,
     search_nucleotide_likelihood_spr_from_alignment,
     validate_likelihood_spr_evaluation_budget,
+    validate_nucleotide_likelihood_spr_search_budget,
     write_nucleotide_likelihood_spr_artifacts,
 )
 from bijux_phylogenetics.phylo.likelihood.validation import validate_explicit_branch_lengths
@@ -38,6 +39,10 @@ def test_package_likelihood_gateway_exports_spr_search_surface() -> None:
     assert (
         likelihood_api.validate_likelihood_spr_evaluation_budget
         is validate_likelihood_spr_evaluation_budget
+    )
+    assert (
+        likelihood_api.validate_nucleotide_likelihood_spr_search_budget
+        is validate_nucleotide_likelihood_spr_search_budget
     )
 
 
@@ -85,13 +90,19 @@ def test_likelihood_spr_search_improves_when_likelihood_nni_stalls() -> None:
     assert spr_report.algorithm == "nucleotide-likelihood-spr-search"
     assert spr_report.model_name == "JC69"
     assert spr_report.accepted_move_count == 1
+    assert spr_report.iteration_count == 1
     assert spr_report.evaluated_neighbor_count == 2
     assert spr_report.evaluation_budget == 2
+    assert spr_report.search_budget.max_candidate_count == 2
+    assert spr_report.search_budget.max_iteration_count is None
+    assert spr_report.search_budget.max_elapsed_seconds is None
+    assert spr_report.search_budget.max_accepted_move_count is None
     assert spr_report.branch_reoptimization_policy == "coordinate-branch-lengths"
     assert spr_report.substitution_parameter_policy == "fixed-from-model"
     assert spr_report.substitution_parameter_values == {}
     assert spr_report.substitution_parameter_warnings == []
-    assert spr_report.stopping_reason == "evaluation-budget-exhausted"
+    assert spr_report.stopping_reason == "candidate-budget-exhausted"
+    assert spr_report.unsearched_candidate_count == 43
     assert spr_report.final_tree_newick != nni_report.final_tree_newick
     assert math.isclose(
         spr_report.start_log_likelihood,
@@ -135,7 +146,8 @@ def test_likelihood_spr_search_improves_when_likelihood_nni_stalls() -> None:
         "A|B|C|D",
     ]
     assert spr_report.trace_rows[1].branch_reoptimization_converged is True
-    assert spr_report.trace_rows[2].stopping_reason == "evaluation-budget-exhausted"
+    assert spr_report.trace_rows[2].stopping_reason == "candidate-budget-exhausted"
+    assert spr_report.trace_rows[2].unsearched_candidate_count == 43
     assert any(
         "search boundary" in warning
         for warning in spr_report.trace_rows[0].boundary_warning_messages
@@ -212,16 +224,25 @@ def test_write_nucleotide_likelihood_spr_artifacts_materializes_governed_output_
         "run_json_path",
     }
     assert outputs["trace_path"].read_text(encoding="utf-8").startswith(
-        "event_index\tevent_kind\titeration\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\ttree_before_newick\ttree_after_newick\tpruned_clade_id\tregraft_target_branch_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\taffected_branch_clade_ids\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\tstopping_reason\n"
+        "event_index\tevent_kind\titeration\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\ttree_before_newick\ttree_after_newick\tpruned_clade_id\tregraft_target_branch_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\taffected_branch_clade_ids\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\tstopping_reason\tunsearched_candidate_count\n"
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "nucleotide-likelihood-spr-search"
     assert payload["evaluation_budget"] == 2
+    assert payload["search_budget"] == {
+        "max_accepted_move_count": None,
+        "max_candidate_count": 2,
+        "max_elapsed_seconds": None,
+        "max_iteration_count": None,
+    }
     assert payload["accepted_move_count"] == 1
+    assert payload["iteration_count"] == 1
     assert payload["evaluated_neighbor_count"] == 2
-    assert payload["stopping_reason"] == "evaluation-budget-exhausted"
+    assert payload["stopping_reason"] == "candidate-budget-exhausted"
+    assert payload["unsearched_candidate_count"] == 43
     assert payload["trace_rows"][1]["branch_reoptimization_scope"] == "all-branches"
     assert payload["trace_rows"][1]["affected_branch_clade_ids"] == ["A", "A|B", "A|D", "B"]
     assert payload["trace_rows"][1]["optimized_branch_count"] == 8
     assert payload["trace_rows"][1]["branch_reoptimization_converged"] is True
     assert payload["trace_rows"][1]["boundary_warning_messages"]
+    assert payload["trace_rows"][2]["unsearched_candidate_count"] == 43
