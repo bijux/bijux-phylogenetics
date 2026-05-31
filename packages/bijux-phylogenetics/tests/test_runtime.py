@@ -724,6 +724,8 @@ from bijux_phylogenetics.trees import (
     CladeTableReport,
     PosteriorAgreementSubtreeCandidateRow,
     PosteriorAgreementSubtreeReport,
+    PosteriorCladeCorrelationReport,
+    PosteriorCladeCorrelationRow,
     PosteriorBranchLengthSummaryReport,
     PosteriorBranchLengthSummaryRow,
     PosteriorNodeAgeSummaryReport,
@@ -746,6 +748,7 @@ from bijux_phylogenetics.trees import (
     compute_consensus_tree,
     compute_credible_clade_set,
     compute_maximum_clade_credibility_tree,
+    compute_posterior_clade_correlation_matrix,
     compute_strict_consensus_tree,
     compute_tree_set_split_frequency_table,
     compute_tree_distance_matrix,
@@ -774,6 +777,9 @@ from bijux_phylogenetics.trees import (
     write_posterior_agreement_subtree_removed_taxa_table,
     write_posterior_agreement_subtree_search_table,
     write_posterior_agreement_subtree_summary_table,
+    write_posterior_clade_correlation_artifacts,
+    write_posterior_clade_correlation_matrix_table,
+    write_posterior_clade_correlation_pair_table,
     write_posterior_branch_length_summary_table,
     write_posterior_node_age_summary_table,
     write_tree_set_split_frequency_table,
@@ -974,6 +980,8 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         trees_api.PosteriorAgreementSubtreeReport is PosteriorAgreementSubtreeReport
     )
+    assert trees_api.PosteriorCladeCorrelationReport is PosteriorCladeCorrelationReport
+    assert trees_api.PosteriorCladeCorrelationRow is PosteriorCladeCorrelationRow
     assert trees_api.PosteriorBranchLengthSummaryRow is PosteriorBranchLengthSummaryRow
     assert (
         trees_api.PosteriorBranchLengthSummaryReport
@@ -1008,6 +1016,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         trees_api.compute_maximum_clade_credibility_tree
         is compute_maximum_clade_credibility_tree
+    )
+    assert (
+        trees_api.compute_posterior_clade_correlation_matrix
+        is compute_posterior_clade_correlation_matrix
     )
     assert (
         trees_api.summarize_posterior_agreement_subtree
@@ -1059,6 +1071,18 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         trees_api.write_posterior_agreement_subtree_summary_table
         is write_posterior_agreement_subtree_summary_table
+    )
+    assert (
+        trees_api.write_posterior_clade_correlation_artifacts
+        is write_posterior_clade_correlation_artifacts
+    )
+    assert (
+        trees_api.write_posterior_clade_correlation_matrix_table
+        is write_posterior_clade_correlation_matrix_table
+    )
+    assert (
+        trees_api.write_posterior_clade_correlation_pair_table
+        is write_posterior_clade_correlation_pair_table
     )
     assert (
         trees_api.write_posterior_branch_length_summary_table
@@ -2561,6 +2585,20 @@ def test_summarize_posterior_agreement_subtree_finds_stable_retained_topology() 
     assert report.agreement_removed_taxa == ["C"]
     assert report.evaluated_candidate_count == 4
     assert report.candidate_rows[-1].stable_topology_reached is True
+
+
+def test_compute_posterior_clade_correlation_matrix_reports_negative_conflict() -> None:
+    report = compute_posterior_clade_correlation_matrix(
+        fixture("posterior_clade_correlation_tree_set.nwk")
+    )
+    row_map = {(row.left_clade, row.right_clade): row for row in report.rows}
+
+    assert report.clade_order == ["A|B", "C|D", "A|C", "A|D", "B|C", "B|D"]
+    assert row_map[("A|B", "C|D")].binary_correlation == pytest.approx(1.0)
+    assert row_map[("A|B", "A|C")].cooccurrence_tree_count == 0
+    assert row_map[("A|B", "A|C")].binary_correlation == pytest.approx(
+        -0.577350269189626
+    )
 
 
 def test_summarize_posterior_branch_lengths_matches_clades_across_topologies() -> None:
@@ -10624,6 +10662,52 @@ def test_cli_tree_set_posterior_agreement_subtree_includes_manifest(
     assert manifest_payload["arguments"] == [
         "tree-set",
         "posterior-agreement-subtree",
+        str(tree_set_path),
+        "--out-dir",
+        str(output_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_set_path)]
+
+
+def test_cli_tree_set_posterior_clade_correlation_matrix_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    output_dir = tmp_path / "posterior-clade-correlation-matrix"
+    manifest = tmp_path / "posterior-clade-correlation-matrix.manifest.json"
+    tree_set_path = fixture("posterior_clade_correlation_tree_set.nwk")
+
+    exit_code = main(
+        [
+            "tree-set",
+            "posterior-clade-correlation-matrix",
+            str(tree_set_path),
+            "--out-dir",
+            str(output_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["clade_count"] == 6
+    assert payload["metrics"]["pair_count"] == 21
+    assert sorted(Path(path).name for path in payload["outputs"][:-1]) == [
+        "posterior-clade-correlation-matrix.tsv",
+        "posterior-clade-correlation-pairs.tsv",
+    ]
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "tree-set"
+    assert manifest_payload["arguments"] == [
+        "tree-set",
+        "posterior-clade-correlation-matrix",
         str(tree_set_path),
         "--out-dir",
         str(output_dir),
