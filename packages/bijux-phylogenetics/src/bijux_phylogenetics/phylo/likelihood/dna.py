@@ -4,7 +4,7 @@ import math
 
 import numpy
 
-from bijux_phylogenetics.bayesian.probability_vectors import (
+from bijux_phylogenetics.core.categorical_probability_vectors import (
     build_categorical_probability_vector,
 )
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord

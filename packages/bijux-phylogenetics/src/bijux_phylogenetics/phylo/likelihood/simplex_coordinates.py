@@ -4,7 +4,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 import math
 
-from bijux_phylogenetics.bayesian.probability_vectors import (
+from bijux_phylogenetics.core.categorical_probability_vectors import (
     build_categorical_probability_vector,
 )
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
