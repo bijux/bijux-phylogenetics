@@ -88,6 +88,48 @@ def compute_trace_effective_sample_size(
     return round(len(validated_values) / integrated_autocorrelation_time, 15)
 
 
+def summarize_metropolis_hastings_trace_effective_sample_size(
+    *,
+    chain_report: MetropolisHastingsRunReport,
+    maximum_lag: int | None = None,
+) -> MetropolisHastingsTraceEffectiveSampleSizeReport:
+    """Summarize autocorrelation-time ESS per scalar parameter for one native chain."""
+    if not isinstance(chain_report, MetropolisHastingsRunReport):
+        raise PhylogeneticsError(
+            "metropolis-hastings trace effective sample size summary requires one MetropolisHastingsRunReport",
+            code="trace_effective_sample_size_chain_report_type_invalid",
+        )
+    parameter_names = _resolve_scalar_parameter_names(chain_report)
+    parameter_rows = []
+    for parameter_name in parameter_names:
+        values = _extract_scalar_parameter_trace(
+            chain_report=chain_report,
+            parameter_name=parameter_name,
+        )
+        integrated_autocorrelation_time, last_positive_lag = (
+            compute_trace_integrated_autocorrelation_time(
+                values,
+                maximum_lag=maximum_lag,
+            )
+        )
+        parameter_rows.append(
+            TraceEffectiveSampleSizeRow(
+                parameter_name=parameter_name,
+                sample_count=len(values),
+                integrated_autocorrelation_time=integrated_autocorrelation_time,
+                effective_sample_size=compute_trace_effective_sample_size(
+                    values,
+                    maximum_lag=maximum_lag,
+                ),
+                last_positive_lag=last_positive_lag,
+            )
+        )
+    return MetropolisHastingsTraceEffectiveSampleSizeReport(
+        sample_every=chain_report.sample_every,
+        parameter_rows=parameter_rows,
+    )
+
+
 def _validate_numeric_series(values: Sequence[float]) -> list[float]:
     validated_values = list(values)
     if not validated_values:
@@ -102,6 +144,46 @@ def _validate_numeric_series(values: Sequence[float]) -> list[float]:
                 code="trace_effective_sample_size_series_value_type_invalid",
             )
     return [float(value) for value in validated_values]
+
+
+def _resolve_scalar_parameter_names(
+    chain_report: MetropolisHastingsRunReport,
+) -> list[str]:
+    sampled_states = list(chain_report.sampled_states)
+    if not sampled_states:
+        raise PhylogeneticsError(
+            "metropolis-hastings trace effective sample size summary requires at least one sampled state",
+            code="trace_effective_sample_size_sampled_states_empty",
+        )
+    first_parameter_names = set(sampled_states[0].model_parameters.scalar_parameters)
+    if not first_parameter_names:
+        raise PhylogeneticsError(
+            "metropolis-hastings trace effective sample size summary requires at least one scalar model parameter",
+            code="trace_effective_sample_size_scalar_parameters_empty",
+        )
+    for sampled_state in sampled_states[1:]:
+        parameter_names = set(sampled_state.model_parameters.scalar_parameters)
+        if parameter_names != first_parameter_names:
+            raise PhylogeneticsError(
+                "metropolis-hastings trace effective sample size summary requires the same scalar parameter set across sampled states",
+                code="trace_effective_sample_size_scalar_parameter_set_inconsistent",
+                details={
+                    "expected_scalar_parameters": sorted(first_parameter_names),
+                    "observed_scalar_parameters": sorted(parameter_names),
+                },
+            )
+    return sorted(first_parameter_names)
+
+
+def _extract_scalar_parameter_trace(
+    *,
+    chain_report: MetropolisHastingsRunReport,
+    parameter_name: str,
+) -> list[float]:
+    return [
+        float(sampled_state.model_parameters.scalar_parameters[parameter_name])
+        for sampled_state in chain_report.sampled_states
+    ]
 
 
 def _resolve_maximum_lag(
