@@ -140,6 +140,8 @@ from bijux_phylogenetics.bayesian import (
     PosteriorPredictiveDiscreteTraitReplicate,
     PosteriorPredictiveDiscreteTraitSimulationReport,
     PosteriorPredictiveObservedStatisticRow,
+    PosteriorPredictivePValueReport,
+    PosteriorPredictivePValueRow,
     PosteriorPredictiveReplicateStatisticRow,
     PosteriorPredictiveSimulationDefinition,
     PosteriorPredictiveStatisticSummaryRow,
@@ -296,6 +298,7 @@ from bijux_phylogenetics.bayesian import (
     simulate_fixed_topology_partitioned_dna_posterior_predictive,
     simulate_joint_topology_dna_posterior_predictive,
     simulate_ornstein_uhlenbeck_continuous_trait_posterior_predictive,
+    summarize_posterior_predictive_p_values,
     simulate_prior_only_phylogenetic_states,
     strip_partition_model_parameter_state,
     summarize_beast_log,
@@ -1395,6 +1398,8 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.PosteriorPredictiveObservedStatisticRow
         is PosteriorPredictiveObservedStatisticRow
     )
+    assert bayesian_api.PosteriorPredictivePValueReport is PosteriorPredictivePValueReport
+    assert bayesian_api.PosteriorPredictivePValueRow is PosteriorPredictivePValueRow
     assert (
         bayesian_api.PosteriorPredictiveReplicateStatisticRow
         is PosteriorPredictiveReplicateStatisticRow
@@ -1863,6 +1868,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.simulate_ornstein_uhlenbeck_continuous_trait_posterior_predictive
         is simulate_ornstein_uhlenbeck_continuous_trait_posterior_predictive
+    )
+    assert (
+        bayesian_api.summarize_posterior_predictive_p_values
+        is summarize_posterior_predictive_p_values
     )
     assert (
         bayesian_api.summarize_brownian_continuous_trait_posterior_ancestral_states
