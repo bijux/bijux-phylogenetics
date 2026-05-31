@@ -23,6 +23,9 @@ from bijux_phylogenetics.phylo.likelihood.models import (
 from bijux_phylogenetics.phylo.likelihood.nni_search import (
     search_nucleotide_likelihood_nni,
 )
+from bijux_phylogenetics.phylo.likelihood.starting_tree_validation import (
+    validate_nucleotide_likelihood_starting_tree,
+)
 from bijux_phylogenetics.phylo.likelihood.spr_search import (
     search_nucleotide_likelihood_spr,
 )
@@ -31,7 +34,6 @@ from bijux_phylogenetics.phylo.likelihood.topology_search import (
     resolve_nucleotide_topology_search_records,
     resolve_nucleotide_topology_search_tree,
     validate_branch_reoptimization_policy,
-    validate_nucleotide_topology_search_tree,
 )
 from bijux_phylogenetics.phylo.topology import rooted_topology_fingerprint
 from bijux_phylogenetics.phylo.topology.random_bifurcating import (
@@ -101,13 +103,15 @@ def search_nucleotide_likelihood_multi_start(
         normalized_local_search_method,
         evaluation_budget,
     )
-    validate_nucleotide_topology_search_tree(
-        resolved_tree,
-        workflow_name="nucleotide likelihood multi-start search",
-    )
     _normalized_records, compressed_patterns = normalize_nucleotide_topology_search_records(
         resolved_records,
         owner_name="nucleotide likelihood multi-start search",
+    )
+    validate_nucleotide_likelihood_starting_tree(
+        resolved_tree,
+        compressed_patterns,
+        model_name=model_name,
+        workflow_name="nucleotide likelihood multi-start search",
     )
     start_tree_candidates = build_likelihood_multi_start_candidates(
         resolved_tree,
@@ -120,6 +124,12 @@ def search_nucleotide_likelihood_multi_start(
         NucleotideLikelihoodNniSearchReport | NucleotideLikelihoodSprSearchReport
     ] = []
     for candidate in start_tree_candidates:
+        validate_nucleotide_likelihood_starting_tree(
+            candidate.tree,
+            compressed_patterns,
+            model_name=model_name,
+            workflow_name="nucleotide likelihood multi-start search",
+        )
         local_report = _run_local_search(
             candidate.tree,
             resolved_records,
