@@ -107,9 +107,17 @@ def test_write_rooted_tbr_artifacts_materializes_governed_outputs(tmp_path: Path
 
     outputs = write_rooted_tbr_artifacts(tmp_path / "rooted-tbr-neighbors", report)
 
-    assert set(outputs) == {"input_tree_path", "neighbors_path", "run_json_path"}
+    assert set(outputs) == {
+        "input_tree_path",
+        "neighbors_path",
+        "summary_path",
+        "run_json_path",
+    }
     assert outputs["neighbors_path"].read_text(encoding="utf-8").startswith(
         "neighbor_index\trepresentative_cut_edge_id\trepresentative_cut_descendant_taxa\trepresentative_left_attachment_branch_id\trepresentative_left_attachment_descendant_taxa\trepresentative_right_attachment_branch_id\trepresentative_right_attachment_descendant_taxa\tsupporting_reconnection_count\tneighbor_topology_fingerprint\ttip_order\tvalidation_errors\tneighbor_tree_newick\n"
+    )
+    assert outputs["summary_path"].read_text(encoding="utf-8").startswith(
+        "neighborhood_family\talgorithm\tcandidate_count\tvalid_count\tduplicate_count\tskipped_count\tskipped_reason\tbudget_reason\n"
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "rooted-tbr-neighbor-enumeration"

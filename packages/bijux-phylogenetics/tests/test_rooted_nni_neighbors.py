@@ -101,9 +101,17 @@ def test_write_rooted_nni_artifacts_materializes_governed_outputs(tmp_path: Path
 
     outputs = write_rooted_nni_artifacts(tmp_path / "rooted-nni-neighbors", report)
 
-    assert set(outputs) == {"input_tree_path", "neighbors_path", "run_json_path"}
+    assert set(outputs) == {
+        "input_tree_path",
+        "neighbors_path",
+        "summary_path",
+        "run_json_path",
+    }
     assert outputs["neighbors_path"].read_text(encoding="utf-8").startswith(
         "neighbor_index\tparent_node_id\tchild_node_id\tsibling_node_id\texchanged_child_node_id\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tneighbor_topology_fingerprint\ttip_order\tvalidation_errors\tneighbor_tree_newick\n"
+    )
+    assert outputs["summary_path"].read_text(encoding="utf-8").startswith(
+        "neighborhood_family\talgorithm\tcandidate_count\tvalid_count\tduplicate_count\tskipped_count\tskipped_reason\tbudget_reason\n"
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "rooted-nni-neighbor-enumeration"

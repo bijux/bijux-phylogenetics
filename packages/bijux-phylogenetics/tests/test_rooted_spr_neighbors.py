@@ -105,9 +105,17 @@ def test_write_rooted_spr_artifacts_materializes_governed_outputs(tmp_path: Path
 
     outputs = write_rooted_spr_artifacts(tmp_path / "rooted-spr-neighbors", report)
 
-    assert set(outputs) == {"input_tree_path", "neighbors_path", "run_json_path"}
+    assert set(outputs) == {
+        "input_tree_path",
+        "neighbors_path",
+        "summary_path",
+        "run_json_path",
+    }
     assert outputs["neighbors_path"].read_text(encoding="utf-8").startswith(
         "neighbor_index\trepresentative_pruned_node_id\trepresentative_pruned_clade_id\trepresentative_pruned_descendant_taxa\trepresentative_regraft_target_branch_id\trepresentative_regraft_target_descendant_taxa\tsupporting_move_count\tneighbor_topology_fingerprint\ttip_order\tvalidation_errors\tneighbor_tree_newick\n"
+    )
+    assert outputs["summary_path"].read_text(encoding="utf-8").startswith(
+        "neighborhood_family\talgorithm\tcandidate_count\tvalid_count\tduplicate_count\tskipped_count\tskipped_reason\tbudget_reason\n"
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "rooted-spr-neighbor-enumeration"
