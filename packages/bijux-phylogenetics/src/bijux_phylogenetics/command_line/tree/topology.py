@@ -21,12 +21,14 @@ from bijux_phylogenetics.phylo.topology import (
     RootedSprEnumerationBudget,
     summarize_rooted_nni_move_application,
     summarize_rooted_spr_move_application,
+    summarize_rooted_tbr_move_application,
     unroot_tree,
     write_rooted_nni_artifacts,
     write_rooted_nni_move_artifacts,
     write_rooted_spr_artifacts,
     write_rooted_spr_move_artifacts,
     write_rooted_tbr_artifacts,
+    write_rooted_tbr_move_artifacts,
     write_tree_rooting_report,
 )
 from bijux_phylogenetics.runtime.results import build_command_result
@@ -232,6 +234,20 @@ def add_topology_commands(subparsers: Any) -> None:
         help="Emit the rooted TBR neighborhood report as JSON.",
     )
     _add_manifest_argument(topology_rooted_tbr_neighbors)
+
+    topology_rooted_tbr_apply = topology_subparsers.add_parser(
+        "rooted-tbr-apply",
+        help="Apply one indexed rooted TBR move and write governed artifacts.",
+    )
+    topology_rooted_tbr_apply.add_argument("tree", type=Path)
+    topology_rooted_tbr_apply.add_argument("--move-index", required=True, type=int)
+    topology_rooted_tbr_apply.add_argument("--out-dir", required=True, type=Path)
+    topology_rooted_tbr_apply.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the rooted TBR move-application report as JSON.",
+    )
+    _add_manifest_argument(topology_rooted_tbr_apply)
 
 
 def run_topology_command(args: Any) -> int:
@@ -553,6 +569,37 @@ def run_topology_command(args: Any) -> int:
                     "duplicate_reconnection_neighbor_topology_count": len(
                         report.duplicate_reconnection_neighbor_topologies
                     ),
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.topology_command == "rooted-tbr-apply":
+        report = summarize_rooted_tbr_move_application(args.tree, args.move_index)
+        outputs = _finalize_outputs(
+            args,
+            command="topology",
+            inputs=[args.tree],
+            outputs=list(write_rooted_tbr_move_artifacts(args.out_dir, report).values()),
+        )
+        _print_result(
+            build_command_result(
+                command="topology",
+                inputs=[args.tree],
+                outputs=outputs,
+                metrics={
+                    "algorithm": report.algorithm,
+                    "selected_move_index": report.selected_move_index,
+                    "available_move_count": report.available_move_count,
+                    "left_component_tip_count": report.left_component_tip_count,
+                    "right_component_tip_count": report.right_component_tip_count,
+                    "moved_topology_changed": report.moved_topology_changed,
+                    "reverse_move_available": report.reverse_move_available,
+                    "reverse_available_move_count": report.reverse_available_move_count,
+                    "missing_tip_taxa": len(report.missing_tip_taxa),
+                    "unexpected_tip_taxa": len(report.unexpected_tip_taxa),
                 },
                 data=report,
             ),
