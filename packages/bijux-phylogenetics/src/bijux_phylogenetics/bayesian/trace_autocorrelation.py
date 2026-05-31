@@ -85,6 +85,51 @@ def compute_trace_autocorrelation(
     return round(numerator / denominator, 15)
 
 
+def summarize_metropolis_hastings_trace_autocorrelation(
+    *,
+    chain_report: MetropolisHastingsRunReport,
+    maximum_lag: int | None = None,
+) -> MetropolisHastingsTraceAutocorrelationReport:
+    """Summarize lag autocorrelation per scalar parameter for one native chain."""
+    if not isinstance(chain_report, MetropolisHastingsRunReport):
+        raise PhylogeneticsError(
+            "metropolis-hastings trace autocorrelation summary requires one MetropolisHastingsRunReport",
+            code="trace_autocorrelation_chain_report_type_invalid",
+        )
+    scalar_parameter_names = _resolve_scalar_parameter_names(chain_report)
+    sample_count = len(chain_report.sampled_states)
+    validated_maximum_lag = _resolve_maximum_lag(
+        sample_count=sample_count,
+        maximum_lag=maximum_lag,
+        owner_name="metropolis-hastings trace autocorrelation summary",
+    )
+    parameter_reports = [
+        TraceAutocorrelationParameterReport(
+            parameter_name=parameter_name,
+            sample_count=sample_count,
+            lag_rows=[
+                TraceAutocorrelationLagRow(
+                    parameter_name=parameter_name,
+                    lag=lag,
+                    autocorrelation=compute_trace_autocorrelation(
+                        _extract_scalar_parameter_trace(
+                            chain_report=chain_report,
+                            parameter_name=parameter_name,
+                        ),
+                        lag=lag,
+                    ),
+                )
+                for lag in range(1, validated_maximum_lag + 1)
+            ],
+        )
+        for parameter_name in scalar_parameter_names
+    ]
+    return MetropolisHastingsTraceAutocorrelationReport(
+        sample_every=chain_report.sample_every,
+        parameter_reports=parameter_reports,
+    )
+
+
 def _validate_numeric_series(values: Sequence[float]) -> list[float]:
     validated_values = list(values)
     if len(validated_values) < 2:
@@ -100,6 +145,72 @@ def _validate_numeric_series(values: Sequence[float]) -> list[float]:
                 code="trace_autocorrelation_series_value_type_invalid",
             )
     return [float(value) for value in validated_values]
+
+
+def _resolve_scalar_parameter_names(
+    chain_report: MetropolisHastingsRunReport,
+) -> list[str]:
+    sampled_states = list(chain_report.sampled_states)
+    if len(sampled_states) < 2:
+        raise PhylogeneticsError(
+            "metropolis-hastings trace autocorrelation summary requires at least two sampled states",
+            code="trace_autocorrelation_sampled_state_count_too_small",
+            details={"sampled_state_count": len(sampled_states)},
+        )
+    first_parameter_names = set(sampled_states[0].model_parameters.scalar_parameters)
+    if not first_parameter_names:
+        raise PhylogeneticsError(
+            "metropolis-hastings trace autocorrelation summary requires at least one scalar model parameter",
+            code="trace_autocorrelation_scalar_parameters_empty",
+        )
+    for sampled_state in sampled_states[1:]:
+        parameter_names = set(sampled_state.model_parameters.scalar_parameters)
+        if parameter_names != first_parameter_names:
+            raise PhylogeneticsError(
+                "metropolis-hastings trace autocorrelation summary requires the same scalar parameter set across sampled states",
+                code="trace_autocorrelation_scalar_parameter_set_inconsistent",
+                details={
+                    "expected_scalar_parameters": sorted(first_parameter_names),
+                    "observed_scalar_parameters": sorted(parameter_names),
+                },
+            )
+    return sorted(first_parameter_names)
+
+
+def _extract_scalar_parameter_trace(
+    *,
+    chain_report: MetropolisHastingsRunReport,
+    parameter_name: str,
+) -> list[float]:
+    return [
+        float(sampled_state.model_parameters.scalar_parameters[parameter_name])
+        for sampled_state in chain_report.sampled_states
+    ]
+
+
+def _resolve_maximum_lag(
+    *,
+    sample_count: int,
+    maximum_lag: int | None,
+    owner_name: str,
+) -> int:
+    if maximum_lag is None:
+        return sample_count - 1
+    validated_maximum_lag = _validate_positive_integer(
+        value=maximum_lag,
+        field_name="maximum_lag",
+        owner_name=owner_name,
+    )
+    if validated_maximum_lag >= sample_count:
+        raise PhylogeneticsError(
+            f"{owner_name} requires 'maximum_lag' to be smaller than the sampled trace length",
+            code="trace_autocorrelation_maximum_lag_out_of_range",
+            details={
+                "maximum_lag": validated_maximum_lag,
+                "sample_count": sample_count,
+            },
+        )
+    return validated_maximum_lag
 
 
 def _validate_positive_integer(
