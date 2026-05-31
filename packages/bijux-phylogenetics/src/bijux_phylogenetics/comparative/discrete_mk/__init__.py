@@ -22,10 +22,14 @@ from .models import (
     DiscreteMkFitReport,
     DiscreteMkInputAudit,
     DiscreteMkModelComparisonReport,
+    DiscreteMkPatternLikelihoodRow,
     DiscreteMkTransformBaselineComparison,
     DiscreteMkTransformFit,
     DiscreteMkTransformProfileRow,
     DiscreteMkTransformWarning,
+)
+from .tables import (
+    write_discrete_mk_pattern_likelihood_table as write_discrete_mk_pattern_likelihood_table,
 )
 from .tables import (
     write_discrete_mk_rate_table as write_discrete_mk_rate_table,
@@ -44,6 +48,7 @@ __all__ = [
     "DiscreteMkFitReport",
     "DiscreteMkInputAudit",
     "DiscreteMkModelComparisonReport",
+    "DiscreteMkPatternLikelihoodRow",
     "DiscreteMkTransformBaselineComparison",
     "DiscreteMkTransformFit",
     "DiscreteMkTransformProfileRow",
@@ -52,6 +57,7 @@ __all__ = [
     "compare_discrete_mk_model_ranking_from_dataset",
     "fit_discrete_mk_model",
     "fit_discrete_mk_model_from_dataset",
+    "write_discrete_mk_pattern_likelihood_table",
     "write_discrete_mk_rate_table",
     "write_discrete_mk_summary_table",
 ]

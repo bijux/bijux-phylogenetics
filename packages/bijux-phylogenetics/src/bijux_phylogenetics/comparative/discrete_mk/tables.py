@@ -289,3 +289,39 @@ def write_discrete_mk_rate_table(path: Path, report: DiscreteMkFitReport) -> Pat
             for row in report.transition_rate_rows
         ],
     )
+
+
+def write_discrete_mk_pattern_likelihood_table(
+    path: Path,
+    report: DiscreteMkFitReport,
+) -> Path:
+    """Write the observed Mk trait-pattern likelihood rows used to reconstruct totals."""
+    return write_ancestral_rows(
+        path,
+        columns=[
+            "pattern_id",
+            "pattern_weight",
+            "tip_states",
+            "raw_log_likelihood",
+            "ascertainment_conditioning_log_probability",
+            "log_likelihood",
+        ],
+        rows=[
+            {
+                "pattern_id": row.pattern_id,
+                "pattern_weight": str(row.pattern_weight),
+                "tip_states": "|".join(row.tip_states),
+                "raw_log_likelihood": format(row.raw_log_likelihood, ".15g"),
+                "ascertainment_conditioning_log_probability": (
+                    ""
+                    if row.ascertainment_conditioning_log_probability is None
+                    else format(
+                        row.ascertainment_conditioning_log_probability,
+                        ".15g",
+                    )
+                ),
+                "log_likelihood": format(row.log_likelihood, ".15g"),
+            }
+            for row in report.pattern_likelihood_rows
+        ],
+    )
