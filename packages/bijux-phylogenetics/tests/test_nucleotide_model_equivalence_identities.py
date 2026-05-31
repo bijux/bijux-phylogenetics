@@ -10,6 +10,7 @@ from bijux_phylogenetics.phylo.likelihood import (
     evaluate_hky85_tree_likelihood,
     evaluate_jc69_tree_likelihood,
     evaluate_k80_tree_likelihood,
+    evaluate_nucleotide_site_log_likelihoods_from_alignment,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -34,6 +35,10 @@ def _assert_likelihood_match(left: float, right: float) -> None:
 
 def _assert_likelihood_mismatch(left: float, right: float) -> None:
     assert not math.isclose(left, right, rel_tol=0.0, abs_tol=1e-9)
+
+
+def _site_log_likelihood_vector(report) -> list[float]:
+    return [row.log_likelihood for row in report.site_log_likelihoods]
 
 
 def test_k80_with_unit_kappa_matches_jc69() -> None:
@@ -122,3 +127,40 @@ def test_gtr_with_nonunit_parameters_diverges_from_jc69() -> None:
     )
 
     _assert_likelihood_mismatch(gtr.log_likelihood, jc69.log_likelihood)
+
+
+def test_k80_site_rows_match_jc69_when_kappa_is_one() -> None:
+    jc69 = evaluate_nucleotide_site_log_likelihoods_from_alignment(
+        fixture("trees", "likelihood_site_pattern_tree_4_taxa.nwk"),
+        fixture("alignments", "jc69_site_pattern_alignment.fasta"),
+        model_name="jc69",
+    )
+    k80 = evaluate_nucleotide_site_log_likelihoods_from_alignment(
+        fixture("trees", "likelihood_site_pattern_tree_4_taxa.nwk"),
+        fixture("alignments", "jc69_site_pattern_alignment.fasta"),
+        model_name="k80",
+        kappa=1.0,
+    )
+
+    assert len(jc69.site_log_likelihoods) == len(k80.site_log_likelihoods)
+    for left, right in zip(_site_log_likelihood_vector(jc69), _site_log_likelihood_vector(k80), strict=True):
+        _assert_likelihood_match(left, right)
+
+
+def test_hky85_site_rows_match_jc69_under_uniform_unit_parameters() -> None:
+    jc69 = evaluate_nucleotide_site_log_likelihoods_from_alignment(
+        fixture("trees", "likelihood_site_pattern_tree_4_taxa.nwk"),
+        fixture("alignments", "jc69_site_pattern_alignment.fasta"),
+        model_name="jc69",
+    )
+    hky85 = evaluate_nucleotide_site_log_likelihoods_from_alignment(
+        fixture("trees", "likelihood_site_pattern_tree_4_taxa.nwk"),
+        fixture("alignments", "jc69_site_pattern_alignment.fasta"),
+        model_name="hky85",
+        kappa=1.0,
+        base_frequencies=_UNIFORM_BASE_FREQUENCIES,
+    )
+
+    assert len(jc69.site_log_likelihoods) == len(hky85.site_log_likelihoods)
+    for left, right in zip(_site_log_likelihood_vector(jc69), _site_log_likelihood_vector(hky85), strict=True):
+        _assert_likelihood_match(left, right)
