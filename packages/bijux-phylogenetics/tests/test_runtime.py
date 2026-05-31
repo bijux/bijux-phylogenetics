@@ -148,6 +148,11 @@ from bijux_phylogenetics.bayesian import (
     PosteriorModelAveragingReport,
     PosteriorModelEstimateRow,
     PosteriorModelSupportRow,
+    BAYESIAN_BURNIN_POLICY_NAMES,
+    BayesianRunBurninPolicy,
+    BayesianRunManifest,
+    BayesianRunManifestReplayReport,
+    BayesianRunPriorRow,
     POSTERIOR_PREDICTIVE_SAMPLE_SELECTION_POLICIES,
     PosteriorPredictiveAlignmentReplicate,
     PosteriorPredictiveAlignmentSimulationReport,
@@ -317,6 +322,12 @@ from bijux_phylogenetics.bayesian import (
     simulate_fixed_topology_partitioned_dna_posterior_predictive,
     simulate_joint_topology_dna_posterior_predictive,
     simulate_ornstein_uhlenbeck_continuous_trait_posterior_predictive,
+    build_bayesian_run_burnin_policy,
+    build_bayesian_run_manifest,
+    build_fixed_topology_dna_run_manifest,
+    list_metropolis_hastings_retained_sample_ids,
+    load_bayesian_run_manifest,
+    replay_fixed_topology_dna_run_manifest,
     summarize_metropolis_hastings_model_averaged_estimates,
     summarize_posterior_model_averaged_estimates,
     summarize_posterior_predictive_p_values,
@@ -343,6 +354,7 @@ from bijux_phylogenetics.bayesian import (
     write_mrbayes_parameter_summary_table,
     write_posterior_ancestral_sequence_fasta,
     write_posterior_ancestral_state_probability_table,
+    write_bayesian_run_manifest,
     write_posterior_tree_subsample,
     write_supplementary_bayesian_diagnostics_table,
 )
@@ -1471,6 +1483,13 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bayesian_api.PosteriorModelAveragingReport is PosteriorModelAveragingReport
     assert bayesian_api.PosteriorModelEstimateRow is PosteriorModelEstimateRow
     assert bayesian_api.PosteriorModelSupportRow is PosteriorModelSupportRow
+    assert bayesian_api.BayesianRunBurninPolicy is BayesianRunBurninPolicy
+    assert bayesian_api.BayesianRunManifest is BayesianRunManifest
+    assert (
+        bayesian_api.BayesianRunManifestReplayReport
+        is BayesianRunManifestReplayReport
+    )
+    assert bayesian_api.BayesianRunPriorRow is BayesianRunPriorRow
     assert (
         bayesian_api.PosteriorPredictiveSimulationDefinition
         is PosteriorPredictiveSimulationDefinition
@@ -1974,6 +1993,26 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.summarize_posterior_model_averaged_estimates
         is summarize_posterior_model_averaged_estimates
     )
+    assert bayesian_api.BAYESIAN_BURNIN_POLICY_NAMES == BAYESIAN_BURNIN_POLICY_NAMES
+    assert (
+        bayesian_api.build_bayesian_run_burnin_policy
+        is build_bayesian_run_burnin_policy
+    )
+    assert bayesian_api.build_bayesian_run_manifest is build_bayesian_run_manifest
+    assert (
+        bayesian_api.build_fixed_topology_dna_run_manifest
+        is build_fixed_topology_dna_run_manifest
+    )
+    assert (
+        bayesian_api.list_metropolis_hastings_retained_sample_ids
+        is list_metropolis_hastings_retained_sample_ids
+    )
+    assert bayesian_api.load_bayesian_run_manifest is load_bayesian_run_manifest
+    assert (
+        bayesian_api.replay_fixed_topology_dna_run_manifest
+        is replay_fixed_topology_dna_run_manifest
+    )
+    assert bayesian_api.write_bayesian_run_manifest is write_bayesian_run_manifest
     assert (
         bayesian_api.summarize_brownian_continuous_trait_posterior_ancestral_states
         is summarize_brownian_continuous_trait_posterior_ancestral_states
