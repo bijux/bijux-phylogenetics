@@ -9,6 +9,7 @@ from pathlib import Path
 from bijux_phylogenetics.engines.common import build_file_checksums
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
+from .fixed_topology_dna import FixedTopologyDnaModelDefinition, FixedTopologyDnaRunReport
 from .metropolis_hastings import MetropolisHastingsRunReport
 from .state import BayesianPhylogeneticState, serialize_bayesian_phylogenetic_state
 
@@ -206,6 +207,47 @@ def build_bayesian_run_manifest(
     )
 
 
+def build_fixed_topology_dna_run_manifest(
+    *,
+    run_report: FixedTopologyDnaRunReport,
+    tree_path: Path | str,
+    alignment_path: Path | str,
+    output_paths: Sequence[Path | str],
+    burnin_policy: BayesianRunBurninPolicy | None = None,
+) -> BayesianRunManifest:
+    """Build one reproducibility manifest for one fixed-topology DNA posterior run."""
+    if not isinstance(run_report, FixedTopologyDnaRunReport):
+        raise PhylogeneticsError(
+            "fixed-topology DNA run manifest builder requires one FixedTopologyDnaRunReport",
+            code="bayesian_run_manifest_fixed_topology_dna_report_type_invalid",
+        )
+    resolved_burnin_policy = (
+        burnin_policy
+        if burnin_policy is not None
+        else build_bayesian_run_burnin_policy(policy_name="none")
+    )
+    return build_bayesian_run_manifest(
+        run_kind="fixed-topology-dna",
+        model_name=run_report.model_definition.substitution_model_name,
+        model_configuration=asdict(run_report.model_definition),
+        prior_rows=_build_fixed_topology_dna_prior_rows(run_report.model_definition),
+        proposal_schedule=asdict(run_report.proposal_schedule),
+        seed=run_report.chain_report.seed,
+        chain_count=1,
+        burnin_policy=resolved_burnin_policy,
+        execution_configuration={
+            "iteration_count": run_report.chain_report.iteration_count,
+            "sample_every": run_report.chain_report.sample_every,
+            "observation_policy": run_report.observation_policy,
+        },
+        retained_sample_ids=list_metropolis_hastings_retained_sample_ids(
+            chain_report=run_report.chain_report
+        ),
+        input_paths=[tree_path, alignment_path],
+        output_paths=output_paths,
+    )
+
+
 def write_bayesian_run_manifest(
     path: Path,
     manifest: BayesianRunManifest,
@@ -336,6 +378,60 @@ def _validate_policy_name(value: str) -> str:
             },
         )
     return validated_value
+
+
+def _build_fixed_topology_dna_prior_rows(
+    model_definition: FixedTopologyDnaModelDefinition,
+) -> list[BayesianRunPriorRow]:
+    prior_rows = [
+        BayesianRunPriorRow(
+            prior_name="branch-lengths",
+            family=model_definition.branch_length_prior.family,
+            parameter_values=model_definition.branch_length_prior.parameter_values(),
+        )
+    ]
+    prior_bundle = model_definition.substitution_parameter_prior_bundle
+    if prior_bundle.kappa_prior is not None:
+        prior_rows.append(
+            BayesianRunPriorRow(
+                prior_name="substitution:kappa",
+                family=prior_bundle.kappa_prior.family,
+                parameter_values=prior_bundle.kappa_prior.parameter_values(),
+            )
+        )
+    if prior_bundle.base_frequency_prior is not None:
+        prior_rows.append(
+            BayesianRunPriorRow(
+                prior_name="substitution:base-frequencies",
+                family=prior_bundle.base_frequency_prior.family,
+                parameter_values=prior_bundle.base_frequency_prior.parameter_values(),
+            )
+        )
+    if prior_bundle.exchangeability_prior is not None:
+        prior_rows.append(
+            BayesianRunPriorRow(
+                prior_name="substitution:exchangeabilities",
+                family=prior_bundle.exchangeability_prior.family,
+                parameter_values=prior_bundle.exchangeability_prior.parameter_values(),
+            )
+        )
+    if prior_bundle.gamma_alpha_prior is not None:
+        prior_rows.append(
+            BayesianRunPriorRow(
+                prior_name="substitution:gamma-alpha",
+                family=prior_bundle.gamma_alpha_prior.family,
+                parameter_values=prior_bundle.gamma_alpha_prior.parameter_values(),
+            )
+        )
+    if prior_bundle.invariant_proportion_prior is not None:
+        prior_rows.append(
+            BayesianRunPriorRow(
+                prior_name="substitution:invariant-proportion",
+                family=prior_bundle.invariant_proportion_prior.family,
+                parameter_values=prior_bundle.invariant_proportion_prior.parameter_values(),
+            )
+        )
+    return prior_rows
 
 
 def _validate_prior_rows(
@@ -601,6 +697,7 @@ __all__ = [
     "BayesianRunPriorRow",
     "build_bayesian_run_burnin_policy",
     "build_bayesian_run_manifest",
+    "build_fixed_topology_dna_run_manifest",
     "list_metropolis_hastings_retained_sample_ids",
     "load_bayesian_run_manifest",
     "write_bayesian_run_manifest",
