@@ -281,6 +281,8 @@ __all__ = [
     "select_nucleotide_likelihood_starting_tree_pool",
     "SimplexCoordinateParameterization",
     "SolvedCtmcStationaryDistribution",
+    "compute_ctmc_expected_substitution_rate",
+    "normalize_ctmc_rate_matrix_by_expected_substitution_rate",
     "solve_ctmc_stationary_distribution",
     "summarize_marginal_ancestral_sites",
     "summarize_likelihood_wrapper_correspondence",

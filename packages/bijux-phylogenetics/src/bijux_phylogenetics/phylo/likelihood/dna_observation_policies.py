@@ -6,6 +6,9 @@ import math
 import numpy
 
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    normalize_ctmc_rate_matrix_by_expected_substitution_rate,
+)
 from bijux_phylogenetics.phylo.likelihood.dna import (
     DNA_STATE_INDEX,
     DNA_STATE_ORDER,
@@ -18,6 +21,7 @@ from bijux_phylogenetics.phylo.likelihood.nucleotide_root_priors import (
 from bijux_phylogenetics.runtime.errors import (
     AlignmentTaxonMismatchError,
     InvalidAlignmentError,
+    PhylogeneticsError,
 )
 
 _FIFTH_STATE_GAP_SYMBOL = "-"
@@ -321,16 +325,16 @@ def augment_dna_rate_matrix_with_gap_state(
         augmented_rate_matrix[row_index, row_index] = -float(
             numpy.sum(augmented_rate_matrix[row_index, :])
         )
-    expected_rate = -float(
-        numpy.sum(
-            extended_stationary_frequencies * numpy.diag(augmented_rate_matrix)
+    try:
+        return normalize_ctmc_rate_matrix_by_expected_substitution_rate(
+            augmented_rate_matrix,
+            extended_stationary_frequencies,
+            state_labels=dna_observation_state_order(observation_policy="fifth-state"),
         )
-    )
-    if expected_rate <= 0.0 or not math.isfinite(expected_rate):
+    except PhylogeneticsError as error:
         raise InvalidAlignmentError(
             f"{model_name} fifth-state rate augmentation requires a positive finite expected substitution rate"
-        )
-    return augmented_rate_matrix / expected_rate
+        ) from error
 
 
 def resolve_default_dna_root_prior_for_observation_policy(

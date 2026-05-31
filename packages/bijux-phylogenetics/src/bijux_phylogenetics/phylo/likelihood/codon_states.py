@@ -5,7 +5,10 @@ from dataclasses import dataclass
 from Bio.Data import CodonTable
 import numpy
 
-from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    normalize_ctmc_rate_matrix_by_expected_substitution_rate,
+)
+from bijux_phylogenetics.runtime.errors import InvalidAlignmentError, PhylogeneticsError
 
 _DNA_BASE_ORDER = ("A", "C", "G", "T")
 
@@ -124,14 +127,19 @@ def build_equal_rate_codon_ctmc_rate_matrix(
             if _single_nucleotide_difference(source_codon, target_codon):
                 rate_matrix[row_index, column_index] = frequencies[column_index]
         rate_matrix[row_index, row_index] = -float(rate_matrix[row_index, :].sum())
-    expected_rate = -float(numpy.sum(frequencies * numpy.diag(rate_matrix)))
-    if expected_rate <= 0.0:
+    try:
+        normalized_rate_matrix = normalize_ctmc_rate_matrix_by_expected_substitution_rate(
+            rate_matrix,
+            frequencies,
+            state_labels=state_space.state_order,
+        )
+    except PhylogeneticsError as error:
         raise InvalidAlignmentError(
             "codon CTMC likelihood requires a frequency vector with positive expected substitution rate"
-        )
+        ) from error
     return (
         state_space,
-        rate_matrix / expected_rate,
+        normalized_rate_matrix,
         frequencies,
         frequency_source,
     )

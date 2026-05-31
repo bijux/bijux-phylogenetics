@@ -197,6 +197,63 @@ def solve_ctmc_stationary_distribution(
     )
 
 
+def compute_ctmc_expected_substitution_rate(
+    rate_matrix: numpy.ndarray | Sequence[Sequence[float]] | ValidatedCtmcRateMatrix,
+    stationary_distribution: Mapping[str, float] | Sequence[float] | numpy.ndarray,
+    *,
+    state_labels: Sequence[str] | None = None,
+    row_sum_tolerance: float = 1e-9,
+    probability_tolerance: float = 1e-9,
+) -> float:
+    validated_rate_matrix = _resolve_validated_rate_matrix(
+        rate_matrix,
+        state_labels=state_labels,
+        row_sum_tolerance=row_sum_tolerance,
+    )
+    validated_probability_tolerance = _validate_probability_tolerance(
+        probability_tolerance
+    )
+    probability_vector = _resolve_probability_vector_for_expected_rate(
+        stationary_distribution,
+        validated_rate_matrix=validated_rate_matrix,
+        probability_tolerance=validated_probability_tolerance,
+    )
+    expected_rate = -float(
+        numpy.sum(probability_vector * numpy.diag(validated_rate_matrix.rate_matrix))
+    )
+    if expected_rate <= 0.0 or not math.isfinite(expected_rate):
+        raise PhylogeneticsError(
+            "ctmc rate matrix requires a positive finite expected substitution rate",
+            code="ctmc_expected_substitution_rate_nonpositive",
+            details={
+                "expected_substitution_rate": expected_rate,
+                "state_labels": list(validated_rate_matrix.state_labels),
+            },
+        )
+    return expected_rate
+
+
+def normalize_ctmc_rate_matrix_by_expected_substitution_rate(
+    rate_matrix: numpy.ndarray | Sequence[Sequence[float]] | ValidatedCtmcRateMatrix,
+    stationary_distribution: Mapping[str, float] | Sequence[float] | numpy.ndarray,
+    *,
+    state_labels: Sequence[str] | None = None,
+    row_sum_tolerance: float = 1e-9,
+    probability_tolerance: float = 1e-9,
+) -> numpy.ndarray:
+    validated_rate_matrix = _resolve_validated_rate_matrix(
+        rate_matrix,
+        state_labels=state_labels,
+        row_sum_tolerance=row_sum_tolerance,
+    )
+    expected_rate = compute_ctmc_expected_substitution_rate(
+        validated_rate_matrix,
+        stationary_distribution,
+        probability_tolerance=probability_tolerance,
+    )
+    return validated_rate_matrix.rate_matrix / expected_rate
+
+
 def verify_ctmc_stationary_distribution(
     rate_matrix: numpy.ndarray | Sequence[Sequence[float]] | ValidatedCtmcRateMatrix,
     stationary_distribution: Mapping[str, float] | Sequence[float] | numpy.ndarray,
@@ -381,6 +438,58 @@ def _resolve_stationary_distribution_vector(
     return vector
 
 
+def _resolve_probability_vector_for_expected_rate(
+    stationary_distribution: Mapping[str, float] | Sequence[float] | numpy.ndarray,
+    *,
+    validated_rate_matrix: ValidatedCtmcRateMatrix,
+    probability_tolerance: float,
+) -> numpy.ndarray:
+    candidate = _resolve_stationary_distribution_vector(
+        stationary_distribution,
+        validated_rate_matrix=validated_rate_matrix,
+    ).astype(float, copy=True)
+    if not numpy.all(numpy.isfinite(candidate)):
+        raise PhylogeneticsError(
+            "ctmc expected-rate probabilities must contain only finite values",
+            code="ctmc_expected_substitution_rate_probability_not_finite",
+        )
+    if numpy.any(candidate < -probability_tolerance):
+        offending_indices = [
+            index
+            for index, value in enumerate(candidate)
+            if float(value) < -probability_tolerance
+        ]
+        raise PhylogeneticsError(
+            "ctmc expected-rate probabilities must not contain negative values",
+            code="ctmc_expected_substitution_rate_probability_negative",
+            details={
+                "offending_states": [
+                    validated_rate_matrix.state_labels[index]
+                    for index in offending_indices
+                ],
+                "probabilities": [
+                    float(candidate[index]) for index in offending_indices
+                ],
+                "probability_tolerance": probability_tolerance,
+            },
+        )
+    candidate[candidate < 0.0] = 0.0
+    total_probability = float(numpy.sum(candidate))
+    normalization_error = abs(total_probability - 1.0)
+    if normalization_error > probability_tolerance:
+        raise PhylogeneticsError(
+            "ctmc expected-rate probabilities must sum to one within tolerance",
+            code="ctmc_expected_substitution_rate_probability_not_normalized",
+            details={
+                "total_probability": total_probability,
+                "expected_total": 1.0,
+                "absolute_error": normalization_error,
+                "probability_tolerance": probability_tolerance,
+            },
+        )
+    return candidate / total_probability
+
+
 def _validate_stationary_vector(
     stationary_vector: numpy.ndarray,
     *,
@@ -517,6 +626,8 @@ def _first_positive_diagonal_index(
 
 
 __all__ = [
+    "compute_ctmc_expected_substitution_rate",
+    "normalize_ctmc_rate_matrix_by_expected_substitution_rate",
     "SolvedCtmcStationaryDistribution",
     "ValidatedCtmcRateMatrix",
     "solve_ctmc_stationary_distribution",

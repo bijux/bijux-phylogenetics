@@ -8,6 +8,9 @@ from bijux_phylogenetics.core.categorical_probability_vectors import (
     build_categorical_probability_vector,
 )
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    normalize_ctmc_rate_matrix_by_expected_substitution_rate,
+)
 from bijux_phylogenetics.phylo.likelihood.pruning import (
     log_likelihood_from_root_prior,
     postorder_conditional_likelihoods,
@@ -278,12 +281,16 @@ def normalize_dna_rate_matrix(
         stationary_frequencies,
         model_name=model_name,
     )
-    expected_rate = -float(numpy.sum(stationary * numpy.diag(rate_matrix)))
-    if expected_rate <= 0.0 or not math.isfinite(expected_rate):
+    try:
+        return normalize_ctmc_rate_matrix_by_expected_substitution_rate(
+            rate_matrix,
+            stationary,
+            state_labels=DNA_STATE_ORDER,
+        )
+    except PhylogeneticsError as error:
         raise InvalidAlignmentError(
             f"{model_name} likelihood requires a positive finite expected substitution rate"
-        )
-    return rate_matrix / expected_rate
+        ) from error
 
 
 def is_dna_transition(left_state: str, right_state: str) -> bool:
