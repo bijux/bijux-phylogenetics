@@ -22,6 +22,7 @@ from bijux_phylogenetics.trees import (
     compute_strict_consensus_tree,
     extract_tree_set_clades,
     load_tree_set,
+    summarize_posterior_agreement_subtree,
     summarize_posterior_branch_lengths,
     summarize_posterior_node_ages,
     write_candidate_tree_quartet_score_table,
@@ -35,6 +36,7 @@ from bijux_phylogenetics.trees import (
     write_gene_tree_quartet_concordance_table,
     write_majority_rule_extended_consensus_artifacts,
     write_maximum_clade_credibility_artifacts,
+    write_posterior_agreement_subtree_artifacts,
     write_posterior_branch_length_summary_table,
     write_posterior_node_age_summary_table,
     write_quartet_puzzling_artifacts,
@@ -172,6 +174,19 @@ def add_tree_set_summary_commands(tree_set_subparsers: Any) -> None:
         help="Emit the posterior node-age summary report as JSON.",
     )
     _add_manifest_argument(tree_set_posterior_node_ages)
+
+    tree_set_posterior_agreement_subtree = tree_set_subparsers.add_parser(
+        "posterior-agreement-subtree",
+        help="Find the largest retained taxon subset whose pruned posterior trees share one rooted topology.",
+    )
+    tree_set_posterior_agreement_subtree.add_argument("tree_set", type=Path)
+    tree_set_posterior_agreement_subtree.add_argument("--out-dir", required=True, type=Path)
+    tree_set_posterior_agreement_subtree.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the posterior agreement-subtree report as JSON.",
+    )
+    _add_manifest_argument(tree_set_posterior_agreement_subtree)
 
     tree_set_support_map = tree_set_subparsers.add_parser(
         "support-map",
@@ -607,6 +622,44 @@ def run_tree_set_summary_command(args: Any) -> int | None:
                     "shared_taxon_count": len(report.shared_taxa),
                     "hpd_mass": report.hpd_mass,
                     "node_age_summary_count": len(report.rows),
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.tree_set_command == "posterior-agreement-subtree":
+        tree, report = summarize_posterior_agreement_subtree(args.tree_set)
+        output_paths = write_posterior_agreement_subtree_artifacts(
+            args.out_dir,
+            tree,
+            report,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="tree-set",
+            inputs=[args.tree_set],
+            outputs=list(output_paths.values()),
+        )
+        _print_result(
+            build_command_result(
+                command="tree-set",
+                inputs=[args.tree_set],
+                outputs=outputs,
+                metrics={
+                    "tree_count": report.tree_count,
+                    "runtime_seconds": report.processing.runtime_seconds,
+                    "peak_memory_bytes": report.processing.peak_memory_bytes,
+                    "skipped_malformed_tree_count": (
+                        report.processing.skipped_malformed_tree_count
+                    ),
+                    "shared_taxon_count": len(report.shared_taxa),
+                    "evaluated_candidate_count": report.evaluated_candidate_count,
+                    "retained_taxon_count": len(report.retained_taxa),
+                    "agreement_removed_taxon_count": len(
+                        report.agreement_removed_taxa
+                    ),
                 },
                 data=report,
             ),
