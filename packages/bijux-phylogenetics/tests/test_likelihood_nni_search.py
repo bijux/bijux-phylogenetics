@@ -163,6 +163,60 @@ def test_likelihood_nni_search_uses_likelihood_objective_and_reaches_local_optim
     assert report.trace_rows[-1].tree_after_newick == report.final_tree_newick
 
 
+def test_likelihood_nni_search_local_branch_reoptimization_reports_neighborhood_scope() -> None:
+    full_report = search_nucleotide_likelihood_nni_from_alignment(
+        fixture("trees", "jc69_likelihood_nni_start_tree_4_taxa.nwk"),
+        fixture("alignments", "jc69_likelihood_nni_alignment_4_taxa.fasta"),
+        model_name="jc69",
+        upper_branch_length_bound=1.0,
+    )
+    local_report = search_nucleotide_likelihood_nni_from_alignment(
+        fixture("trees", "jc69_likelihood_nni_start_tree_4_taxa.nwk"),
+        fixture("alignments", "jc69_likelihood_nni_alignment_4_taxa.fasta"),
+        model_name="jc69",
+        branch_reoptimization_policy="nni-local-affected-branches",
+        upper_branch_length_bound=1.0,
+    )
+
+    assert local_report.branch_reoptimization_policy == "nni-local-affected-branches"
+    assert local_report.trace_rows[0].branch_reoptimization_scope == "all-branches"
+    assert local_report.trace_rows[0].optimized_branch_count == 6
+    accepted_rows = [
+        row for row in local_report.trace_rows if row.event_kind == "accepted-move"
+    ]
+    assert accepted_rows
+    assert all(
+        row.branch_reoptimization_scope == "local-nni-neighborhood"
+        for row in accepted_rows
+    )
+    assert all(
+        row.optimized_branch_count < local_report.trace_rows[0].optimized_branch_count
+        for row in accepted_rows
+    )
+    assert set(accepted_rows[0].optimized_branch_clade_ids) == {
+        "A",
+        "B",
+        "C",
+        "A|B",
+        "A|B|C",
+    }
+    assert set(accepted_rows[-1].optimized_branch_clade_ids) == {
+        "C",
+        "D",
+        "A|B",
+        "C|D",
+    }
+    assert local_report.trace_rows[-1].branch_reoptimization_scope == "none"
+    assert (
+        local_report.trace_rows[1].optimized_branch_count
+        < full_report.trace_rows[1].optimized_branch_count
+    )
+    assert (
+        local_report.total_branch_function_evaluation_count
+        < full_report.total_branch_function_evaluation_count
+    )
+
+
 def test_write_nucleotide_likelihood_nni_artifacts_materializes_governed_output_family(
     tmp_path: Path,
 ) -> None:
