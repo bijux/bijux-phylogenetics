@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.diagnostics.validation import _load_tree
+from bijux_phylogenetics.diagnostics.validation.structure import _load_tree
 from bijux_phylogenetics.phylo.taxa import build_taxon_audit_report
 from bijux_phylogenetics.render.html import write_html_report
 

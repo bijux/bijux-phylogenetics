@@ -4,9 +4,8 @@ from dataclasses import dataclass
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.diagnostics.validation import _load_tree
+from bijux_phylogenetics.diagnostics.validation.structure import _load_tree
 from bijux_phylogenetics.phylo.branch_lengths.node_ages import (
-    RootedCladeNodeAgeObservation,
     rooted_clade_node_age_map,
 )
 from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
@@ -60,7 +59,9 @@ def _comparison_scope_trees(
     right_only_taxa: list[str],
     taxon_overlap_policy: str,
 ) -> tuple[PhyloTree, PhyloTree, str]:
-    if taxon_overlap_policy == "prune-to-shared" and (left_only_taxa or right_only_taxa):
+    if taxon_overlap_policy == "prune-to-shared" and (
+        left_only_taxa or right_only_taxa
+    ):
         pruned_left, _ = prune_tree_to_requested_taxa(left_path, comparison_shared_taxa)
         pruned_right, _ = prune_tree_to_requested_taxa(
             right_path, comparison_shared_taxa
@@ -105,7 +106,9 @@ def compare_clade_ages(
         tree_path=right_path,
         tolerance=tolerance,
     )
-    matched_signatures = sorted(left_clades.keys() & right_clades.keys(), key=split_sort_key)
+    matched_signatures = sorted(
+        left_clades.keys() & right_clades.keys(), key=split_sort_key
+    )
     age_differences = [
         round(right_clades[signature].age - left_clades[signature].age, 15)
         for signature in matched_signatures

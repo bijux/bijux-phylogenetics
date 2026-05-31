@@ -22,7 +22,7 @@ from bijux_phylogenetics.compare.topology import (
     compare_branch_score_distance,
     compare_robinson_foulds,
 )
-from bijux_phylogenetics.diagnostics.validation import _load_tree
+from bijux_phylogenetics.diagnostics.validation.structure import _load_tree
 from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
 from bijux_phylogenetics.io.trees import detect_tree_format

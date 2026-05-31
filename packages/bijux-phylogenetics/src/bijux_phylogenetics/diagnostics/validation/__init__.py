@@ -6,7 +6,6 @@ from .branch_review import (
 from .branch_review import (
     SHORT_BRANCH_OUTLIER_FACTOR as SHORT_BRANCH_OUTLIER_FACTOR,
 )
-from .structure import _load_tree as _load_tree
 from .inspection import inspect_tree_path
 from .models import (
     BranchLengthContextAssessment as BranchLengthContextAssessment,
@@ -44,6 +43,7 @@ from .models import (
 from .models import (
     TreeValidationReport as TreeValidationReport,
 )
+from .structure import _load_tree as _load_tree
 from .workflow import (
     diagnose_tree_path,
     forensic_tree_path,

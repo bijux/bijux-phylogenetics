@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.diagnostics.validation import _load_tree
+from bijux_phylogenetics.diagnostics.validation.structure import _load_tree
 
 from .circular_layout import render_circular_tree_layout
 from .contracts import AnnotationStrip, TreeRenderResult
@@ -13,6 +13,8 @@ from .rectangular_layout import render_rectangular_tree_layout
 from .render_state import TreeSvgRenderState
 from .shared import (
     categorical_color_map as build_categorical_color_map,
+)
+from .shared import (
     count_visible_leaves,
     is_numeric_strings,
     max_visible_depth,

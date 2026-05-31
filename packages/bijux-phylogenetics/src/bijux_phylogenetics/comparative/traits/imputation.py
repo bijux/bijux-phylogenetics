@@ -18,7 +18,7 @@ from bijux_phylogenetics.comparative.common import (
     load_comparative_dataset,
     summarize_numeric_trait_readiness,
 )
-from bijux_phylogenetics.comparative.continuous import (
+from bijux_phylogenetics.comparative.continuous.brownian import (
     BrownianTraitEvolutionSummaryReport,
     summarize_brownian_trait_evolution,
 )

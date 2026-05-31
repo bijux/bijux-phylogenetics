@@ -5,7 +5,7 @@ import csv
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.diagnostics.validation import _load_tree
+from bijux_phylogenetics.diagnostics.validation.structure import _load_tree
 
 from ..topology.comparison import _build_tree_comparison_report
 from ..topology.models import (

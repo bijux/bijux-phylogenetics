@@ -4,7 +4,7 @@ import csv
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.diagnostics.validation import _load_tree
+from bijux_phylogenetics.diagnostics.validation.structure import _load_tree
 from bijux_phylogenetics.phylo.topology.clades import (
     canonical_clade_id,
     informative_rooted_clades,

@@ -5,7 +5,7 @@ from itertools import combinations
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.diagnostics.validation import _load_tree
+from bijux_phylogenetics.diagnostics.validation.structure import _load_tree
 from bijux_phylogenetics.phylo.pruning import (
     prune_tree_object_to_requested_taxa,
     prune_tree_to_requested_taxa,
@@ -285,9 +285,7 @@ def approximate_maximum_agreement_subtree(
                     normalized_robinson_foulds=(
                         candidate_comparison.normalized_robinson_foulds
                     ),
-                    topology_equal=(
-                        candidate_comparison.robinson_foulds_distance == 0
-                    ),
+                    topology_equal=(candidate_comparison.robinson_foulds_distance == 0),
                     selected_for_next_step=False,
                 )
             )

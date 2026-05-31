@@ -5,7 +5,7 @@ import hashlib
 from pathlib import Path
 
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
-from bijux_phylogenetics.diagnostics.validation import _load_tree
+from bijux_phylogenetics.diagnostics.validation.structure import _load_tree
 from bijux_phylogenetics.io.fasta.records import summarise_fasta
 
 from .models import ReportInputLedgerEntry

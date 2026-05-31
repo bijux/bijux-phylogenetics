@@ -7,7 +7,8 @@ from pathlib import Path
 import random
 
 from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
-from bijux_phylogenetics.diagnostics.validation import _load_tree, validate_tree_path
+from bijux_phylogenetics.diagnostics.validation import validate_tree_path
+from bijux_phylogenetics.diagnostics.validation.structure import _load_tree
 from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
     summarize_ultrametric_tip_depths,
 )
@@ -242,9 +243,7 @@ def diagnose_tip_date_randomization(
     )
     randomizer = random.Random(seed)  # nosec B311
     sampling_values = [sampling_time for _tip, sampling_time, _distance in observations]
-    distances_by_tip = {
-        tip: distance for tip, _sampling_time, distance in observations
-    }
+    distances_by_tip = {tip: distance for tip, _sampling_time, distance in observations}
     permutation_rows: list[TipDateRandomizationRow] = []
     exceed_count = 0
     for permutation_index in range(1, permutations + 1):
@@ -278,9 +277,7 @@ def diagnose_tip_date_randomization(
                 at_or_above_observed=at_or_above_observed,
             )
         )
-    permuted_r_squared_values = [
-        row.permuted_r_squared for row in permutation_rows
-    ]
+    permuted_r_squared_values = [row.permuted_r_squared for row in permutation_rows]
     return TipDateRandomizationReport(
         tree_path=tree_path,
         metadata_path=metadata_path,
@@ -321,8 +318,7 @@ def _build_root_to_tip_regression_report(
     mean_sampling_time = sum(sampling_values) / len(sampling_values)
     mean_distance = sum(distance_values) / len(distance_values)
     sum_squares_sampling = sum(
-        (sampling_time - mean_sampling_time) ** 2
-        for sampling_time in sampling_values
+        (sampling_time - mean_sampling_time) ** 2 for sampling_time in sampling_values
     )
     if sum_squares_sampling == 0.0:
         raise PhylogeneticsError(
@@ -351,9 +347,7 @@ def _build_root_to_tip_regression_report(
         (distance - mean_distance) ** 2 for distance in distance_values
     )
     r_squared = (
-        1.0 - (residual_sum_squares / total_sum_squares)
-        if total_sum_squares
-        else 1.0
+        1.0 - (residual_sum_squares / total_sum_squares) if total_sum_squares else 1.0
     )
     residual_mean_square = residual_sum_squares / (len(observations) - 2)
     rows: list[RootToTipRegressionRow] = []
@@ -373,9 +367,7 @@ def _build_root_to_tip_regression_report(
             ),
             0.999999,
         )
-        denominator = math.sqrt(
-            max(residual_mean_square * (1.0 - leverage), 1e-12)
-        )
+        denominator = math.sqrt(max(residual_mean_square * (1.0 - leverage), 1e-12))
         studentized_residual = residual / denominator
         rows.append(
             RootToTipRegressionRow(
@@ -799,8 +791,7 @@ def _load_sampling_times(
     missing_tree_taxa = sorted(tree_taxa_set - table_taxa_set)
     if missing_tree_taxa:
         raise MetadataJoinError(
-            "sampling-time table is missing tree taxa: "
-            + ", ".join(missing_tree_taxa)
+            "sampling-time table is missing tree taxa: " + ", ".join(missing_tree_taxa)
         )
     extra_table_taxa = sorted(table_taxa_set - tree_taxa_set)
     if extra_table_taxa:
@@ -825,7 +816,9 @@ def _load_sampling_times(
     return sampling_times, table.taxon_column
 
 
-def _root_to_tip_regression_payload(report: RootToTipRegressionReport) -> dict[str, object]:
+def _root_to_tip_regression_payload(
+    report: RootToTipRegressionReport,
+) -> dict[str, object]:
     return {
         "tree_path": str(report.tree_path),
         "metadata_path": str(report.metadata_path),
