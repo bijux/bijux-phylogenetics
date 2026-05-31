@@ -18,8 +18,10 @@ from bijux_phylogenetics.phylo.topology import (
     enumerate_rooted_tbr_neighbors,
     reroot_tree_by_midpoint,
     root_tree_on_outgroup,
+    summarize_rooted_nni_move_application,
     unroot_tree,
     write_rooted_nni_artifacts,
+    write_rooted_nni_move_artifacts,
     write_rooted_spr_artifacts,
     write_rooted_tbr_artifacts,
     write_tree_rooting_report,
@@ -163,6 +165,20 @@ def add_topology_commands(subparsers: Any) -> None:
         help="Emit the rooted NNI neighborhood report as JSON.",
     )
     _add_manifest_argument(topology_rooted_nni_neighbors)
+
+    topology_rooted_nni_apply = topology_subparsers.add_parser(
+        "rooted-nni-apply",
+        help="Apply one indexed rooted NNI move, derive its reverse, and write governed artifacts.",
+    )
+    topology_rooted_nni_apply.add_argument("tree", type=Path)
+    topology_rooted_nni_apply.add_argument("--move-index", required=True, type=int)
+    topology_rooted_nni_apply.add_argument("--out-dir", required=True, type=Path)
+    topology_rooted_nni_apply.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the rooted NNI move-application report as JSON.",
+    )
+    _add_manifest_argument(topology_rooted_nni_apply)
 
     topology_rooted_spr_neighbors = topology_subparsers.add_parser(
         "rooted-spr-neighbors",
@@ -362,6 +378,40 @@ def run_topology_command(args: Any) -> int:
                     ),
                     "missing_tip_taxa": len(report.missing_tip_taxa),
                     "unexpected_tip_taxa": len(report.unexpected_tip_taxa),
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.topology_command == "rooted-nni-apply":
+        report = summarize_rooted_nni_move_application(args.tree, args.move_index)
+        outputs = _finalize_outputs(
+            args,
+            command="topology",
+            inputs=[args.tree],
+            outputs=list(write_rooted_nni_move_artifacts(args.out_dir, report).values()),
+        )
+        _print_result(
+            build_command_result(
+                command="topology",
+                inputs=[args.tree],
+                outputs=outputs,
+                metrics={
+                    "algorithm": report.algorithm,
+                    "selected_move_index": report.selected_move_index,
+                    "available_move_count": report.available_move_count,
+                    "moved_topology_changed": report.moved_topology_changed,
+                    "reverse_restores_original_topology": (
+                        report.reverse_restores_original_topology
+                    ),
+                    "missing_tip_taxa": len(report.missing_tip_taxa),
+                    "unexpected_tip_taxa": len(report.unexpected_tip_taxa),
+                    "node_names_preserved": report.node_names_preserved,
+                    "node_metadata_preserved": report.node_metadata_preserved,
+                    "edge_metadata_preserved": report.edge_metadata_preserved,
+                    "branch_lengths_preserved": report.branch_lengths_preserved,
                 },
                 data=report,
             ),
