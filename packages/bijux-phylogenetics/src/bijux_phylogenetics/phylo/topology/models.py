@@ -421,6 +421,26 @@ class RootedTbrMoveApplicationReport:
 
 
 @dataclass(slots=True)
+class TopologyMoveValidityReport:
+    """Explicit acceptance or rejection record for one requested topology move."""
+
+    algorithm: str
+    move_family: str
+    input_tree_path: Path | None
+    input_tree_newick: str
+    tip_count: int
+    internal_node_count: int
+    rooted: bool | None
+    available_move_count: int
+    input_validation_errors: list[str]
+    candidate_payload: dict[str, object]
+    validity_decision: str
+    rejection_code: str | None
+    rejection_reason: str | None
+    evidence: dict[str, object]
+
+
+@dataclass(slots=True)
 class AffectedSubtreeReport:
     """Explicit rooted branch-subtree comparison for one topology move."""
 
