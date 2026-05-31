@@ -55,7 +55,7 @@
   "integrity_action_required_count": 0,
   "maturity_tier": "reviewable_but_incomplete",
   "max_score": 18,
-  "open_unresolved_mismatch_count": 3,
+  "open_unresolved_mismatch_count": 12,
   "portability_action_required_count": 0,
   "schema_version": 1,
   "total_score": 15

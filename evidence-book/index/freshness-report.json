@@ -5,7 +5,7 @@
       "evidence_id": "evidence-001",
       "freshness_status": "stale",
       "last_generated_on": "2026-05-16",
-      "latest_governed_change_on": "2026-05-20",
+      "latest_governed_change_on": "2026-05-31",
       "relative_path": "studies/primate-longevity-signal/evidence-001",
       "study_id": "primate-longevity-signal",
       "tracked_input_count": 2
@@ -14,163 +14,163 @@
       "evidence_id": "evidence-002",
       "freshness_status": "current",
       "last_generated_on": "2026-05-16",
-      "latest_governed_change_on": "2026-05-11",
+      "latest_governed_change_on": "2026-05-10",
       "relative_path": "studies/primate-longevity-signal/evidence-002",
       "study_id": "primate-longevity-signal",
-      "tracked_input_count": 2
+      "tracked_input_count": 1
     },
     {
       "evidence_id": "evidence-003",
       "freshness_status": "current",
       "last_generated_on": "2026-05-14",
-      "latest_governed_change_on": "2026-05-11",
+      "latest_governed_change_on": "2026-05-10",
       "relative_path": "studies/primate-longevity-signal/evidence-003",
       "study_id": "primate-longevity-signal",
-      "tracked_input_count": 2
+      "tracked_input_count": 1
     },
     {
       "evidence_id": "evidence-004",
       "freshness_status": "current",
       "last_generated_on": "2026-05-14",
-      "latest_governed_change_on": "2026-05-11",
+      "latest_governed_change_on": "2026-05-10",
       "relative_path": "studies/primate-longevity-signal/evidence-004",
       "study_id": "primate-longevity-signal",
-      "tracked_input_count": 2
+      "tracked_input_count": 1
     },
     {
       "evidence_id": "evidence-005",
       "freshness_status": "current",
       "last_generated_on": "2026-05-14",
-      "latest_governed_change_on": "2026-05-11",
+      "latest_governed_change_on": "2026-05-10",
       "relative_path": "studies/primate-longevity-signal/evidence-005",
       "study_id": "primate-longevity-signal",
-      "tracked_input_count": 2
+      "tracked_input_count": 1
     },
     {
       "evidence_id": "evidence-006",
       "freshness_status": "current",
       "last_generated_on": "2026-05-14",
-      "latest_governed_change_on": "2026-05-11",
+      "latest_governed_change_on": "2026-05-10",
       "relative_path": "studies/primate-longevity-signal/evidence-006",
       "study_id": "primate-longevity-signal",
-      "tracked_input_count": 2
+      "tracked_input_count": 1
     },
     {
       "evidence_id": "evidence-007",
       "freshness_status": "current",
       "last_generated_on": "2026-05-14",
-      "latest_governed_change_on": "2026-05-11",
+      "latest_governed_change_on": "2026-05-10",
       "relative_path": "studies/primate-longevity-signal/evidence-007",
       "study_id": "primate-longevity-signal",
-      "tracked_input_count": 2
+      "tracked_input_count": 1
     },
     {
       "evidence_id": "evidence-008",
       "freshness_status": "current",
       "last_generated_on": "2026-05-14",
-      "latest_governed_change_on": "2026-05-11",
+      "latest_governed_change_on": "2026-05-10",
       "relative_path": "studies/primate-longevity-signal/evidence-008",
       "study_id": "primate-longevity-signal",
-      "tracked_input_count": 2
+      "tracked_input_count": 1
     },
     {
       "evidence_id": "evidence-009",
       "freshness_status": "current",
       "last_generated_on": "2026-05-14",
-      "latest_governed_change_on": "2026-05-11",
+      "latest_governed_change_on": "2026-05-10",
       "relative_path": "studies/primate-longevity-signal/evidence-009",
       "study_id": "primate-longevity-signal",
-      "tracked_input_count": 2
+      "tracked_input_count": 1
     },
     {
       "evidence_id": "evidence-001",
       "freshness_status": "current",
-      "last_generated_on": "2026-05-11",
-      "latest_governed_change_on": "2026-05-11",
+      "last_generated_on": "2026-05-27",
+      "latest_governed_change_on": "2026-05-27",
       "relative_path": "studies/primate-pgls-and-signal/evidence-001",
       "study_id": "primate-pgls-and-signal",
-      "tracked_input_count": 2
+      "tracked_input_count": 3
     },
     {
       "evidence_id": "evidence-002",
       "freshness_status": "current",
-      "last_generated_on": "2026-05-19",
-      "latest_governed_change_on": "2026-05-11",
+      "last_generated_on": "2026-05-31",
+      "latest_governed_change_on": "2026-05-27",
       "relative_path": "studies/primate-pgls-and-signal/evidence-002",
       "study_id": "primate-pgls-and-signal",
-      "tracked_input_count": 2
+      "tracked_input_count": 3
     },
     {
       "evidence_id": "evidence-003",
       "freshness_status": "current",
-      "last_generated_on": "2026-05-11",
-      "latest_governed_change_on": "2026-05-11",
+      "last_generated_on": "2026-05-27",
+      "latest_governed_change_on": "2026-05-27",
       "relative_path": "studies/primate-pgls-and-signal/evidence-003",
       "study_id": "primate-pgls-and-signal",
-      "tracked_input_count": 2
+      "tracked_input_count": 3
     },
     {
       "evidence_id": "evidence-004",
       "freshness_status": "current",
-      "last_generated_on": "2026-05-11",
-      "latest_governed_change_on": "2026-05-11",
+      "last_generated_on": "2026-05-27",
+      "latest_governed_change_on": "2026-05-27",
       "relative_path": "studies/primate-pgls-and-signal/evidence-004",
       "study_id": "primate-pgls-and-signal",
-      "tracked_input_count": 2
+      "tracked_input_count": 3
     },
     {
       "evidence_id": "evidence-005",
       "freshness_status": "current",
-      "last_generated_on": "2026-05-11",
-      "latest_governed_change_on": "2026-05-11",
+      "last_generated_on": "2026-05-27",
+      "latest_governed_change_on": "2026-05-27",
       "relative_path": "studies/primate-pgls-and-signal/evidence-005",
       "study_id": "primate-pgls-and-signal",
-      "tracked_input_count": 2
+      "tracked_input_count": 3
     },
     {
       "evidence_id": "evidence-006",
       "freshness_status": "current",
-      "last_generated_on": "2026-05-11",
-      "latest_governed_change_on": "2026-05-11",
+      "last_generated_on": "2026-05-27",
+      "latest_governed_change_on": "2026-05-27",
       "relative_path": "studies/primate-pgls-and-signal/evidence-006",
       "study_id": "primate-pgls-and-signal",
-      "tracked_input_count": 2
+      "tracked_input_count": 3
     },
     {
       "evidence_id": "evidence-007",
       "freshness_status": "current",
-      "last_generated_on": "2026-05-11",
-      "latest_governed_change_on": "2026-05-11",
+      "last_generated_on": "2026-05-27",
+      "latest_governed_change_on": "2026-05-27",
       "relative_path": "studies/primate-pgls-and-signal/evidence-007",
       "study_id": "primate-pgls-and-signal",
-      "tracked_input_count": 2
+      "tracked_input_count": 3
     },
     {
       "evidence_id": "evidence-008",
       "freshness_status": "current",
-      "last_generated_on": "2026-05-11",
-      "latest_governed_change_on": "2026-05-11",
+      "last_generated_on": "2026-05-27",
+      "latest_governed_change_on": "2026-05-27",
       "relative_path": "studies/primate-pgls-and-signal/evidence-008",
       "study_id": "primate-pgls-and-signal",
-      "tracked_input_count": 2
+      "tracked_input_count": 3
     },
     {
       "evidence_id": "evidence-009",
       "freshness_status": "current",
-      "last_generated_on": "2026-05-11",
-      "latest_governed_change_on": "2026-05-11",
+      "last_generated_on": "2026-05-27",
+      "latest_governed_change_on": "2026-05-27",
       "relative_path": "studies/primate-pgls-and-signal/evidence-009",
       "study_id": "primate-pgls-and-signal",
-      "tracked_input_count": 2
+      "tracked_input_count": 3
     },
     {
       "evidence_id": "evidence-010",
       "freshness_status": "current",
-      "last_generated_on": "2026-05-11",
-      "latest_governed_change_on": "2026-05-11",
+      "last_generated_on": "2026-05-27",
+      "latest_governed_change_on": "2026-05-27",
       "relative_path": "studies/primate-pgls-and-signal/evidence-010",
       "study_id": "primate-pgls-and-signal",
-      "tracked_input_count": 2
+      "tracked_input_count": 3
     }
   ],
   "freshness_status_counts": {

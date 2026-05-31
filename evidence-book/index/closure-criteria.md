@@ -19,7 +19,7 @@ Pass when:
 
 Blocking factors:
 - 2 analytical surfaces are still uncovered by governed evidence families.
-- 3 unresolved scalar mismatch rows remain visible in the mismatch archive.
+- 12 unresolved scalar mismatch rows remain visible in the mismatch archive.
 - 4 coverage-gap debt entries remain reviewer-visible.
 
 Supporting evidence:
