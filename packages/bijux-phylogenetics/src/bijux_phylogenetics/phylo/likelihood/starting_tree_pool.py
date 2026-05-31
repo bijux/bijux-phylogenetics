@@ -17,13 +17,15 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 from .multi_start_search import build_random_likelihood_start_tree
 from .stepwise_addition import build_likelihood_stepwise_addition_tree
+from .starting_tree_validation import (
+    validate_nucleotide_likelihood_starting_tree,
+)
 from .topology_search import (
     evaluate_selected_nucleotide_log_likelihood_from_patterns,
     normalize_nucleotide_topology_search_records,
     resolve_nucleotide_topology_search_records,
     resolve_nucleotide_topology_search_surface,
     resolve_nucleotide_topology_search_tree,
-    validate_nucleotide_topology_search_tree,
 )
 
 
@@ -56,17 +58,21 @@ def build_nucleotide_likelihood_starting_tree_pool(
     resolved_records, resolved_alignment_path = resolve_nucleotide_topology_search_records(
         records
     )
-    validate_nucleotide_topology_search_tree(
-        resolved_tree,
-        workflow_name="nucleotide likelihood starting-tree pool",
-    )
     normalized_records, compressed_patterns = normalize_nucleotide_topology_search_records(
         resolved_records,
         owner_name="nucleotide likelihood starting-tree pool",
     )
+    validate_nucleotide_likelihood_starting_tree(
+        resolved_tree,
+        compressed_patterns,
+        model_name=normalized_model_name,
+        workflow_name="nucleotide likelihood starting-tree pool",
+    )
     prepared_trees = _prepare_distinct_starting_trees(
         resolved_tree,
         normalized_records,
+        compressed_patterns=compressed_patterns,
+        model_name=normalized_model_name,
         random_start_tree_count=validated_random_start_tree_count,
         random_start_tree_seed=random_start_tree_seed,
     )
@@ -136,6 +142,8 @@ def _prepare_distinct_starting_trees(
     input_tree: PhyloTree,
     records: list[AlignmentRecord],
     *,
+    compressed_patterns: CompressedAlignmentSitePatterns,
+    model_name: str,
     random_start_tree_count: int,
     random_start_tree_seed: int,
 ) -> list[_PreparedStartingTree]:
@@ -170,15 +178,26 @@ def _prepare_distinct_starting_trees(
                 tree=build_random_likelihood_start_tree(ordered_taxa, seed=seed),
             )
         )
-    _assert_unique_topology_hashes(prepared_trees)
+    _assert_unique_topology_hashes(
+        prepared_trees,
+        compressed_patterns=compressed_patterns,
+        model_name=model_name,
+    )
     return prepared_trees
 
 
-def _assert_unique_topology_hashes(prepared_trees: list[_PreparedStartingTree]) -> None:
+def _assert_unique_topology_hashes(
+    prepared_trees: list[_PreparedStartingTree],
+    *,
+    compressed_patterns: CompressedAlignmentSitePatterns,
+    model_name: str,
+) -> None:
     tree_id_by_hash: dict[str, str] = {}
     for prepared_tree in prepared_trees:
-        validate_nucleotide_topology_search_tree(
+        validate_nucleotide_likelihood_starting_tree(
             prepared_tree.tree,
+            compressed_patterns,
+            model_name=model_name,
             workflow_name="nucleotide likelihood starting-tree pool",
         )
         topology_hash = rooted_topology_fingerprint(prepared_tree.tree)
