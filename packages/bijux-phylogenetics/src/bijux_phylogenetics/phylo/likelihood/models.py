@@ -1075,6 +1075,36 @@ class FixedTopologyNucleotideJointOptimizationReport:
 
 
 @dataclass(slots=True)
+class JointNucleotideOptimizationRestartAttemptRow:
+    """One recorded restart attempt around one joint branch-and-model optimization run."""
+
+    attempt_index: int
+    trigger_reason: str
+    initial_kappa: float | None
+    initial_exchangeability_profile_name: str | None
+    optimized_log_likelihood: float
+    converged: bool
+    convergence_reason: str
+    boundary_warning_count: int
+    branch_boundary_count: int
+    warning_count: int
+    selected_best: bool
+
+
+@dataclass(slots=True)
+class FixedTopologyNucleotideJointOptimizationRestartReport:
+    """Restart-policy summary around one joint fixed-topology nucleotide optimization workflow."""
+
+    model_name: str
+    restart_policy: str
+    attempt_count: int
+    selected_attempt_index: int
+    selected_solution_reason: str
+    selected_report: FixedTopologyNucleotideJointOptimizationReport
+    attempt_rows: list[JointNucleotideOptimizationRestartAttemptRow]
+
+
+@dataclass(slots=True)
 class ProteinEmpiricalBranchLengthOptimizationReport:
     """Fixed-topology branch-length optimization summary for one empirical protein model."""
 
