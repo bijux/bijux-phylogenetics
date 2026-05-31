@@ -46,7 +46,7 @@ from bijux_phylogenetics.phylo.likelihood.protein import (
     PROTEIN_STATE_ORDER,
     UNIFORM_PROTEIN_ROOT_PRIOR,
     evaluate_fixed_topology_protein_site_log_likelihood,
-    normalize_unambiguous_protein_records,
+    normalize_protein_likelihood_records,
     validate_empirical_protein_rate_matrix,
     validate_protein_root_prior,
 )
@@ -88,13 +88,15 @@ def evaluate_empirical_protein_tree_likelihood(
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
+    ambiguity_policy: str = "reject",
 ) -> ProteinEmpiricalMatrixTreeLikelihoodReport:
     """Evaluate one fixed-topology protein likelihood from one empirical rate matrix."""
-    normalized_records = normalize_unambiguous_protein_records(
+    normalized_records = normalize_protein_likelihood_records(
         records,
         model_name="empirical protein matrix",
         gap_policy=gap_policy,
         missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
     )
     compressed_patterns = compress_alignment_site_patterns_from_records(
         normalized_records
@@ -117,6 +119,7 @@ def evaluate_empirical_protein_tree_likelihood(
         matrix_label=matrix_label,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
     )
 
 
@@ -129,6 +132,7 @@ def evaluate_empirical_protein_tree_likelihood_from_alignment(
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
+    ambiguity_policy: str = "reject",
 ) -> ProteinEmpiricalMatrixTreeLikelihoodReport:
     """Evaluate one fixed-topology protein likelihood from paths and one empirical matrix."""
     return evaluate_empirical_protein_tree_likelihood(
@@ -139,6 +143,7 @@ def evaluate_empirical_protein_tree_likelihood_from_alignment(
         matrix_label=matrix_label,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
     )
 
 
@@ -907,6 +912,7 @@ def _evaluate_empirical_protein_tree_likelihood_from_patterns(
     matrix_label: str,
     gap_policy: str,
     missing_policy: str,
+    ambiguity_policy: str,
 ) -> ProteinEmpiricalMatrixTreeLikelihoodReport:
     validated_rate_matrix = validate_empirical_protein_rate_matrix(
         rate_matrix,
@@ -934,6 +940,7 @@ def _evaluate_empirical_protein_tree_likelihood_from_patterns(
                     ],
                     gap_policy=gap_policy,
                     missing_policy=missing_policy,
+                    ambiguity_policy=ambiguity_policy,
                 )
             ),
         )
@@ -949,6 +956,7 @@ def _evaluate_empirical_protein_tree_likelihood_from_patterns(
         root_prior_source=root_prior_source,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
         log_likelihood=log_likelihood,
         site_log_likelihoods=site_log_likelihoods,
     )

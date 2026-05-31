@@ -46,6 +46,7 @@ def test_empirical_protein_matrix_fixed_tree_likelihood_matches_independent_fixt
     assert report.root_prior_source == "provided"
     assert report.gap_policy == "treat-as-missing"
     assert report.missing_policy == "treat-as-missing"
+    assert report.ambiguity_policy == "reject"
     assert math.isclose(
         report.log_likelihood,
         _expected_two_tip_log_likelihood(
@@ -118,6 +119,39 @@ def test_empirical_protein_matrix_validation_rejects_nonzero_row_sums() -> None:
             alignment_path,
             rate_matrix=invalid_matrix,
         )
+
+
+def test_empirical_protein_matrix_ambiguity_policies_change_likelihood() -> None:
+    tree_path = fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk")
+    alignment_path = fixture(
+        "alignments", "protein_poisson_likelihood_alignment_ambiguity_2_taxa.fasta"
+    )
+
+    missing_report = evaluate_empirical_protein_tree_likelihood_from_alignment(
+        tree_path,
+        alignment_path,
+        rate_matrix=_compact_polar_rate_matrix(),
+        root_prior=_biased_root_prior(),
+        ambiguity_policy="treat-as-missing",
+    )
+    ambiguity_report = evaluate_empirical_protein_tree_likelihood_from_alignment(
+        tree_path,
+        alignment_path,
+        rate_matrix=_compact_polar_rate_matrix(),
+        root_prior=_biased_root_prior(),
+        ambiguity_policy="ambiguity-vector",
+    )
+
+    assert missing_report.ambiguity_policy == "treat-as-missing"
+    assert ambiguity_report.ambiguity_policy == "ambiguity-vector"
+    assert math.isfinite(missing_report.log_likelihood)
+    assert math.isfinite(ambiguity_report.log_likelihood)
+    assert not math.isclose(
+        missing_report.log_likelihood,
+        ambiguity_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
 
 
 def _compact_polar_rate_matrix() -> numpy.ndarray:

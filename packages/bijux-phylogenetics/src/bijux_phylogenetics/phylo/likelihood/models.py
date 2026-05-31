@@ -1562,6 +1562,7 @@ class ProteinEmpiricalMatrixTreeLikelihoodReport:
     root_prior_source: str
     gap_policy: str
     missing_policy: str
+    ambiguity_policy: str
     log_likelihood: float
     site_log_likelihoods: list[SiteLogLikelihoodRow]
     branch_likelihood_diagnostics: list[BranchLikelihoodDiagnosticRow] | None = None
