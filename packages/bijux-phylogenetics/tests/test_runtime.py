@@ -132,6 +132,18 @@ from bijux_phylogenetics.bayesian import (
     PosteriorDiscreteTraitNodeSummaryRow,
     PosteriorDiscreteTraitReport,
     PosteriorDiscreteTraitStateProbabilityRow,
+    PosteriorMissingContinuousTraitDefinition,
+    PosteriorMissingContinuousTraitReport,
+    PosteriorMissingContinuousTraitTaxonSummaryRow,
+    PosteriorMissingDiscreteTraitDefinition,
+    PosteriorMissingDiscreteTraitReport,
+    PosteriorMissingDiscreteTraitStateProbabilityRow,
+    PosteriorMissingDiscreteTraitTaxonSummaryRow,
+    PosteriorMissingNucleotideDefinition,
+    PosteriorMissingNucleotideReport,
+    PosteriorMissingNucleotideSequenceRecord,
+    PosteriorMissingNucleotideSiteSummaryRow,
+    PosteriorMissingNucleotideStateProbabilityRow,
     POSTERIOR_PREDICTIVE_SAMPLE_SELECTION_POLICIES,
     PosteriorPredictiveAlignmentReplicate,
     PosteriorPredictiveAlignmentSimulationReport,
@@ -214,6 +226,9 @@ from bijux_phylogenetics.bayesian import (
     build_partition_model_parameter_state,
     build_partition_parameter_linkage_plan,
     build_posterior_ancestral_sequence_definition,
+    build_posterior_missing_continuous_trait_definition,
+    build_posterior_missing_discrete_trait_definition,
+    build_posterior_missing_nucleotide_definition,
     build_posterior_predictive_simulation_definition,
     build_partition_substitution_model_definition,
     build_bayesian_model_parameter_state,
@@ -303,11 +318,19 @@ from bijux_phylogenetics.bayesian import (
     strip_partition_model_parameter_state,
     summarize_beast_log,
     summarize_brownian_continuous_trait_posterior_ancestral_states,
+    summarize_brownian_continuous_trait_posterior_missing_values,
     summarize_continuous_trait_posterior_ancestral_states,
+    summarize_continuous_trait_posterior_missing_values,
     summarize_discrete_trait_mk_posterior_ancestral_states,
+    summarize_discrete_trait_mk_posterior_missing_states,
     summarize_mrbayes_posterior_trees,
+    summarize_fixed_topology_dna_posterior_missing_states,
+    summarize_fixed_topology_partitioned_dna_posterior_missing_states,
+    summarize_joint_topology_dna_posterior_missing_states,
+    summarize_nucleotide_posterior_missing_states,
     summarize_nucleotide_posterior_ancestral_sequences,
     summarize_ornstein_uhlenbeck_continuous_trait_posterior_ancestral_states,
+    summarize_ornstein_uhlenbeck_continuous_trait_posterior_missing_values,
     validate_partition_substitution_model_name,
     validate_tree_topology_prior_taxa,
     write_beast_log_summary_table,
@@ -1391,6 +1414,51 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is PosteriorDiscreteTraitStateProbabilityRow
     )
     assert (
+        bayesian_api.PosteriorMissingContinuousTraitDefinition
+        is PosteriorMissingContinuousTraitDefinition
+    )
+    assert (
+        bayesian_api.PosteriorMissingContinuousTraitReport
+        is PosteriorMissingContinuousTraitReport
+    )
+    assert (
+        bayesian_api.PosteriorMissingContinuousTraitTaxonSummaryRow
+        is PosteriorMissingContinuousTraitTaxonSummaryRow
+    )
+    assert (
+        bayesian_api.PosteriorMissingDiscreteTraitDefinition
+        is PosteriorMissingDiscreteTraitDefinition
+    )
+    assert (
+        bayesian_api.PosteriorMissingDiscreteTraitReport
+        is PosteriorMissingDiscreteTraitReport
+    )
+    assert (
+        bayesian_api.PosteriorMissingDiscreteTraitStateProbabilityRow
+        is PosteriorMissingDiscreteTraitStateProbabilityRow
+    )
+    assert (
+        bayesian_api.PosteriorMissingDiscreteTraitTaxonSummaryRow
+        is PosteriorMissingDiscreteTraitTaxonSummaryRow
+    )
+    assert (
+        bayesian_api.PosteriorMissingNucleotideDefinition
+        is PosteriorMissingNucleotideDefinition
+    )
+    assert bayesian_api.PosteriorMissingNucleotideReport is PosteriorMissingNucleotideReport
+    assert (
+        bayesian_api.PosteriorMissingNucleotideSequenceRecord
+        is PosteriorMissingNucleotideSequenceRecord
+    )
+    assert (
+        bayesian_api.PosteriorMissingNucleotideSiteSummaryRow
+        is PosteriorMissingNucleotideSiteSummaryRow
+    )
+    assert (
+        bayesian_api.PosteriorMissingNucleotideStateProbabilityRow
+        is PosteriorMissingNucleotideStateProbabilityRow
+    )
+    assert (
         bayesian_api.PosteriorPredictiveSimulationDefinition
         is PosteriorPredictiveSimulationDefinition
     )
@@ -1711,6 +1779,18 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is build_posterior_ancestral_sequence_definition
     )
     assert (
+        bayesian_api.build_posterior_missing_continuous_trait_definition
+        is build_posterior_missing_continuous_trait_definition
+    )
+    assert (
+        bayesian_api.build_posterior_missing_discrete_trait_definition
+        is build_posterior_missing_discrete_trait_definition
+    )
+    assert (
+        bayesian_api.build_posterior_missing_nucleotide_definition
+        is build_posterior_missing_nucleotide_definition
+    )
+    assert (
         bayesian_api.build_posterior_predictive_simulation_definition
         is build_posterior_predictive_simulation_definition
     )
@@ -1878,12 +1958,40 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is summarize_brownian_continuous_trait_posterior_ancestral_states
     )
     assert (
+        bayesian_api.summarize_brownian_continuous_trait_posterior_missing_values
+        is summarize_brownian_continuous_trait_posterior_missing_values
+    )
+    assert (
         bayesian_api.summarize_continuous_trait_posterior_ancestral_states
         is summarize_continuous_trait_posterior_ancestral_states
     )
     assert (
+        bayesian_api.summarize_continuous_trait_posterior_missing_values
+        is summarize_continuous_trait_posterior_missing_values
+    )
+    assert (
         bayesian_api.summarize_discrete_trait_mk_posterior_ancestral_states
         is summarize_discrete_trait_mk_posterior_ancestral_states
+    )
+    assert (
+        bayesian_api.summarize_discrete_trait_mk_posterior_missing_states
+        is summarize_discrete_trait_mk_posterior_missing_states
+    )
+    assert (
+        bayesian_api.summarize_fixed_topology_dna_posterior_missing_states
+        is summarize_fixed_topology_dna_posterior_missing_states
+    )
+    assert (
+        bayesian_api.summarize_fixed_topology_partitioned_dna_posterior_missing_states
+        is summarize_fixed_topology_partitioned_dna_posterior_missing_states
+    )
+    assert (
+        bayesian_api.summarize_joint_topology_dna_posterior_missing_states
+        is summarize_joint_topology_dna_posterior_missing_states
+    )
+    assert (
+        bayesian_api.summarize_nucleotide_posterior_missing_states
+        is summarize_nucleotide_posterior_missing_states
     )
     assert (
         bayesian_api.summarize_nucleotide_posterior_ancestral_sequences
@@ -1892,6 +2000,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.summarize_ornstein_uhlenbeck_continuous_trait_posterior_ancestral_states
         is summarize_ornstein_uhlenbeck_continuous_trait_posterior_ancestral_states
+    )
+    assert (
+        bayesian_api.summarize_ornstein_uhlenbeck_continuous_trait_posterior_missing_values
+        is summarize_ornstein_uhlenbeck_continuous_trait_posterior_missing_values
     )
     assert (
         bayesian_api.sample_prior_only_phylogenetic_state
