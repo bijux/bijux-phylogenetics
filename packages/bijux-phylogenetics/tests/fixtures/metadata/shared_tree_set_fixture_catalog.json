@@ -61,6 +61,16 @@
       "notes": "Four rooted five-taxon trees where repeated clades move across different topologies so posterior branch-length summaries must match branches by descendant-tip set rather than node index."
     },
     {
+      "fixture_id": "posterior_node_age_summary_tree_set",
+      "relative_path": "trees/posterior_node_age_summary_tree_set.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 4,
+      "shared_taxa": ["A", "B", "C", "D", "E"],
+      "feature_tags": ["multiple-trees", "branch-lengths", "shared-taxon-set", "posterior-like", "dated", "ultrametric", "clade-identity-matching"],
+      "notes": "Four rooted ultrametric five-taxon trees where repeated clades move across different dated topologies so posterior node-age summaries must match ages by descendant-tip set rather than node index."
+    },
+    {
       "fixture_id": "prop_clades_duplicate_conflict_tree_set",
       "relative_path": "trees/example_tree_set_left.nwk",
       "source_format": "newick",
