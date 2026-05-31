@@ -259,6 +259,7 @@ __all__ = [
     "validate_nucleotide_likelihood_starting_tree",
     "validate_nucleotide_likelihood_starting_tree_from_alignment",
     "validate_nucleotide_joint_ancestral_sequence_model",
+    "validate_nucleotide_likelihood_nni_improvement_policy",
     "validate_nucleotide_likelihood_optimization_equivalence_tolerances",
     "validate_nucleotide_marginal_ancestral_probability_model",
     "validate_nucleotide_site_log_likelihood_model",
