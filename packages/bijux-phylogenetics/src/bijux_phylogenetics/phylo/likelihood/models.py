@@ -475,6 +475,30 @@ class NucleotideLikelihoodSearchConvergenceDecision:
 
 
 @dataclass(slots=True)
+class NucleotideLikelihoodEqualBestTreeRow:
+    """One retained equal-best search tree within one native likelihood search run."""
+
+    retained_rank: int
+    topology_fingerprint: str
+    tree_newick: str
+    log_likelihood: float
+
+
+@dataclass(slots=True)
+class NucleotideLikelihoodEqualBestTreeReport:
+    """Retained equal-best search trees and strict consensus for one search run."""
+
+    likelihood_tolerance: float
+    retention_cap: int
+    retained_tree_count: int
+    omitted_tree_count: int
+    best_log_likelihood: float
+    consensus_method: str
+    consensus_newick: str
+    rows: list[NucleotideLikelihoodEqualBestTreeRow]
+
+
+@dataclass(slots=True)
 class NucleotideLikelihoodNniCandidateRow:
     """One evaluated rooted NNI neighbor inside one best-improvement iteration."""
 
@@ -524,6 +548,7 @@ class NucleotideLikelihoodNniSearchReport:
     total_branch_optimization_pass_count: int
     total_branch_function_evaluation_count: int
     stopping_reason: str
+    equal_best_tree_report: NucleotideLikelihoodEqualBestTreeReport
     trace_rows: list[NucleotideLikelihoodNniTraceRow]
     candidate_rows: list[NucleotideLikelihoodNniCandidateRow]
 
@@ -594,6 +619,7 @@ class NucleotideLikelihoodSprSearchReport:
     total_branch_optimization_pass_count: int
     total_branch_function_evaluation_count: int
     stopping_reason: str
+    equal_best_tree_report: NucleotideLikelihoodEqualBestTreeReport
     trace_rows: list[NucleotideLikelihoodSprTraceRow]
 
 
@@ -648,6 +674,7 @@ class NucleotideLikelihoodTbrSearchReport:
     total_branch_optimization_pass_count: int
     total_branch_function_evaluation_count: int
     stopping_reason: str
+    equal_best_tree_report: NucleotideLikelihoodEqualBestTreeReport
     trace_rows: list[NucleotideLikelihoodTbrTraceRow]
 
 
