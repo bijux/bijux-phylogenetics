@@ -433,7 +433,10 @@ def _load_manifest_payload(payload: Mapping[str, object]) -> BayesianRunManifest
                 ),
             )
             for prior_payload in (
-                _require_mapping(item, owner_name="bayesian run prior row payload")
+                _require_mapping_from_object(
+                    item,
+                    owner_name="bayesian run prior row payload",
+                )
                 for item in prior_payloads
             )
         ],
