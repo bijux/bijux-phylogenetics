@@ -156,6 +156,10 @@ from bijux_phylogenetics.bayesian import (
     BayesianRunManifest,
     BayesianRunManifestReplayReport,
     BayesianRunPriorRow,
+    BAYESIAN_WRAPPER_CORRESPONDENCE_STATUSES,
+    BayesianWrapperCorrespondenceObservation,
+    BayesianWrapperCorrespondenceReport,
+    BayesianWrapperCorrespondenceSummaryRow,
     BurninSampleRow,
     HighestPosteriorDensityInterval,
     TraceEffectiveSampleSizeRow,
@@ -363,6 +367,7 @@ from bijux_phylogenetics.bayesian import (
     load_bayesian_posterior_tree_sample_archive,
     load_bayesian_run_manifest,
     replay_fixed_topology_dna_run_manifest,
+    summarize_bayesian_wrapper_correspondence,
     summarize_metropolis_hastings_model_averaged_estimates,
     summarize_metropolis_hastings_trace_effective_sample_size,
     summarize_metropolis_hastings_trace_autocorrelation,
@@ -2297,6 +2302,22 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is build_metropolis_hastings_burnin_policy
     )
     assert (
+        bayesian_api.BAYESIAN_WRAPPER_CORRESPONDENCE_STATUSES
+        == BAYESIAN_WRAPPER_CORRESPONDENCE_STATUSES
+    )
+    assert (
+        bayesian_api.BayesianWrapperCorrespondenceObservation
+        is BayesianWrapperCorrespondenceObservation
+    )
+    assert (
+        bayesian_api.BayesianWrapperCorrespondenceReport
+        is BayesianWrapperCorrespondenceReport
+    )
+    assert (
+        bayesian_api.BayesianWrapperCorrespondenceSummaryRow
+        is BayesianWrapperCorrespondenceSummaryRow
+    )
+    assert (
         bayesian_api.compute_equal_tail_interval is compute_equal_tail_interval
     )
     assert (
@@ -2321,6 +2342,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.diagnose_metropolis_hastings_burnin
         is diagnose_metropolis_hastings_burnin
+    )
+    assert (
+        bayesian_api.summarize_bayesian_wrapper_correspondence
+        is summarize_bayesian_wrapper_correspondence
     )
     assert (
         bayesian_api.summarize_independent_metropolis_hastings_trace_effective_sample_size
