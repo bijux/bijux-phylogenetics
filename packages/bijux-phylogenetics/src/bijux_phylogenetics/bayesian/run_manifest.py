@@ -7,11 +7,36 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.engines.common import build_file_checksums
+from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
+from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
-from .fixed_topology_dna import FixedTopologyDnaModelDefinition, FixedTopologyDnaRunReport
+from .branch_length_priors import (
+    build_exponential_branch_length_prior,
+    build_fixed_branch_length_prior,
+    build_gamma_branch_length_prior,
+    build_lognormal_branch_length_prior,
+)
+from .fixed_topology_dna import (
+    FixedTopologyDnaModelDefinition,
+    FixedTopologyDnaRunReport,
+    build_fixed_topology_dna_model_definition,
+    build_fixed_topology_dna_proposal_schedule,
+    run_fixed_topology_dna_metropolis_hastings,
+)
 from .metropolis_hastings import MetropolisHastingsRunReport
 from .state import BayesianPhylogeneticState, serialize_bayesian_phylogenetic_state
+from .substitution_parameter_priors import (
+    build_beta_probability_substitution_parameter_prior,
+    build_dirichlet_simplex_substitution_parameter_prior,
+    build_exponential_positive_substitution_parameter_prior,
+    build_fixed_positive_substitution_parameter_prior,
+    build_fixed_probability_substitution_parameter_prior,
+    build_fixed_simplex_substitution_parameter_prior,
+    build_gamma_positive_substitution_parameter_prior,
+    build_lognormal_positive_substitution_parameter_prior,
+    build_substitution_parameter_prior_bundle,
+)
 
 BAYESIAN_BURNIN_POLICY_NAMES = ("none", "discarded-samples", "adaptive-tuning")
 
@@ -55,6 +80,19 @@ class BayesianRunManifest:
     input_checksums: dict[str, str]
     output_paths: list[str]
     output_checksums: dict[str, str]
+
+
+@dataclass(frozen=True, slots=True)
+class BayesianRunManifestReplayReport:
+    """One retained-sample reproducibility report from one manifest replay."""
+
+    run_kind: str
+    model_name: str
+    expected_retained_sample_count: int
+    replayed_retained_sample_count: int
+    matches_retained_sample_ids: bool
+    expected_retained_sample_ids: list[str]
+    replayed_retained_sample_ids: list[str]
 
 
 def build_bayesian_run_burnin_policy(
@@ -266,6 +304,80 @@ def write_bayesian_run_manifest(
     return path
 
 
+def replay_fixed_topology_dna_run_manifest(
+    manifest: BayesianRunManifest,
+) -> BayesianRunManifestReplayReport:
+    """Replay one fixed-topology DNA run manifest and compare retained sample IDs."""
+    if not isinstance(manifest, BayesianRunManifest):
+        raise PhylogeneticsError(
+            "fixed-topology DNA run manifest replay requires one BayesianRunManifest",
+            code="bayesian_run_manifest_replay_type_invalid",
+        )
+    if manifest.run_kind != "fixed-topology-dna":
+        raise PhylogeneticsError(
+            "fixed-topology DNA run manifest replay requires manifest.run_kind 'fixed-topology-dna'",
+            code="bayesian_run_manifest_replay_kind_invalid",
+            details={"run_kind": manifest.run_kind},
+        )
+    input_paths = [Path(path) for path in manifest.input_paths]
+    if len(input_paths) != 2:
+        raise PhylogeneticsError(
+            "fixed-topology DNA run manifest replay requires exactly two input paths: tree then alignment",
+            code="bayesian_run_manifest_replay_input_path_count_invalid",
+            details={"input_paths": manifest.input_paths},
+        )
+    current_input_checksums = build_file_checksums(input_paths)
+    if current_input_checksums != manifest.input_checksums:
+        raise PhylogeneticsError(
+            "fixed-topology DNA run manifest replay requires current input checksums to match the recorded manifest",
+            code="bayesian_run_manifest_replay_input_checksum_mismatch",
+            details={
+                "recorded_input_checksums": manifest.input_checksums,
+                "current_input_checksums": current_input_checksums,
+            },
+        )
+    model_definition = _deserialize_fixed_topology_dna_model_definition(
+        manifest.model_configuration
+    )
+    proposal_schedule = _deserialize_fixed_topology_dna_proposal_schedule(
+        manifest.proposal_schedule,
+        model_definition=model_definition,
+    )
+    replayed_report = run_fixed_topology_dna_metropolis_hastings(
+        tree=load_tree(input_paths[0]),
+        records=load_fasta_alignment(input_paths[1]),
+        model_definition=model_definition,
+        proposal_schedule=proposal_schedule,
+        iteration_count=_require_integer(
+            manifest.execution_configuration,
+            key="iteration_count",
+        ),
+        sample_every=_require_integer(
+            manifest.execution_configuration,
+            key="sample_every",
+        ),
+        seed=manifest.seed,
+        observation_policy=_require_string(
+            manifest.execution_configuration,
+            key="observation_policy",
+        ),
+    )
+    replayed_retained_sample_ids = list_metropolis_hastings_retained_sample_ids(
+        chain_report=replayed_report.chain_report
+    )
+    return BayesianRunManifestReplayReport(
+        run_kind=manifest.run_kind,
+        model_name=manifest.model_name,
+        expected_retained_sample_count=manifest.retained_sample_count,
+        replayed_retained_sample_count=len(replayed_retained_sample_ids),
+        matches_retained_sample_ids=(
+            replayed_retained_sample_ids == manifest.retained_sample_ids
+        ),
+        expected_retained_sample_ids=list(manifest.retained_sample_ids),
+        replayed_retained_sample_ids=replayed_retained_sample_ids,
+    )
+
+
 def load_bayesian_run_manifest(path: Path | str) -> BayesianRunManifest:
     """Load one Bayesian run manifest from one JSON file."""
     manifest_path = Path(path)
@@ -434,6 +546,215 @@ def _build_fixed_topology_dna_prior_rows(
     return prior_rows
 
 
+def _deserialize_fixed_topology_dna_model_definition(
+    payload: Mapping[str, object],
+) -> FixedTopologyDnaModelDefinition:
+    return build_fixed_topology_dna_model_definition(
+        substitution_model_name=_require_string(payload, key="substitution_model_name"),
+        branch_length_prior=_deserialize_branch_length_prior(
+            _require_mapping(payload, key="branch_length_prior")
+        ),
+        substitution_parameter_prior_bundle=_deserialize_substitution_parameter_prior_bundle(
+            _require_mapping(payload, key="substitution_parameter_prior_bundle")
+        ),
+        initial_kappa=_optional_float(payload.get("initial_kappa")),
+        initial_base_frequencies=_optional_float_mapping(
+            payload.get("initial_base_frequencies")
+        ),
+        initial_exchangeabilities=_optional_float_mapping(
+            payload.get("initial_exchangeabilities")
+        ),
+    )
+
+
+def _deserialize_fixed_topology_dna_proposal_schedule(
+    payload: Mapping[str, object],
+    *,
+    model_definition: FixedTopologyDnaModelDefinition,
+):
+    return build_fixed_topology_dna_proposal_schedule(
+        model_definition=model_definition,
+        branch_length_move_weight=_require_float(payload, key="branch_length_move_weight"),
+        branch_length_log_scale_standard_deviation=_require_float(
+            payload,
+            key="branch_length_log_scale_standard_deviation",
+        ),
+        kappa_move_weight=_require_float(payload, key="kappa_move_weight"),
+        kappa_log_scale_standard_deviation=_optional_float(
+            payload.get("kappa_log_scale_standard_deviation")
+        ),
+        base_frequency_move_weight=_require_float(
+            payload,
+            key="base_frequency_move_weight",
+        ),
+        base_frequency_coordinate_standard_deviation=_optional_float(
+            payload.get("base_frequency_coordinate_standard_deviation")
+        ),
+        exchangeability_move_weight=_require_float(
+            payload,
+            key="exchangeability_move_weight",
+        ),
+        exchangeability_coordinate_standard_deviation=_optional_float(
+            payload.get("exchangeability_coordinate_standard_deviation")
+        ),
+    )
+
+
+def _deserialize_branch_length_prior(payload: Mapping[str, object]):
+    family = _require_string(payload, key="family")
+    if family == "exponential":
+        return build_exponential_branch_length_prior(rate=_require_float(payload, key="rate"))
+    if family == "gamma":
+        return build_gamma_branch_length_prior(
+            shape=_require_float(payload, key="shape"),
+            scale=_require_float(payload, key="scale"),
+        )
+    if family == "lognormal":
+        return build_lognormal_branch_length_prior(
+            log_mean=_require_float(payload, key="log_mean"),
+            log_standard_deviation=_require_float(
+                payload,
+                key="log_standard_deviation",
+            ),
+        )
+    if family == "fixed":
+        return build_fixed_branch_length_prior(
+            fixed_value=_require_float(payload, key="fixed_value"),
+            fixed_tolerance=_require_float(payload, key="fixed_tolerance"),
+        )
+    raise PhylogeneticsError(
+        "fixed-topology DNA run manifest replay requires one supported branch-length prior family",
+        code="bayesian_run_manifest_branch_length_prior_family_invalid",
+        details={"family": family},
+    )
+
+
+def _deserialize_substitution_parameter_prior_bundle(payload: Mapping[str, object]):
+    return build_substitution_parameter_prior_bundle(
+        kappa_prior=_deserialize_optional_positive_prior(payload.get("kappa_prior")),
+        exchangeability_prior=_deserialize_optional_simplex_prior(
+            payload.get("exchangeability_prior")
+        ),
+        base_frequency_prior=_deserialize_optional_simplex_prior(
+            payload.get("base_frequency_prior")
+        ),
+        gamma_alpha_prior=_deserialize_optional_positive_prior(
+            payload.get("gamma_alpha_prior")
+        ),
+        invariant_proportion_prior=_deserialize_optional_probability_prior(
+            payload.get("invariant_proportion_prior")
+        ),
+    )
+
+
+def _deserialize_optional_positive_prior(value: object):
+    if value is None:
+        return None
+    payload = _require_mapping_from_object(
+        value,
+        owner_name="positive substitution-parameter prior payload",
+    )
+    family = _require_string(payload, key="family")
+    if family == "exponential":
+        return build_exponential_positive_substitution_parameter_prior(
+            rate=_require_float(payload, key="rate")
+        )
+    if family == "gamma":
+        return build_gamma_positive_substitution_parameter_prior(
+            shape=_require_float(payload, key="shape"),
+            scale=_require_float(payload, key="scale"),
+        )
+    if family == "lognormal":
+        return build_lognormal_positive_substitution_parameter_prior(
+            log_mean=_require_float(payload, key="log_mean"),
+            log_standard_deviation=_require_float(
+                payload,
+                key="log_standard_deviation",
+            ),
+        )
+    if family == "fixed":
+        return build_fixed_positive_substitution_parameter_prior(
+            fixed_value=_require_float(payload, key="fixed_value"),
+            fixed_tolerance=_require_float(payload, key="fixed_tolerance"),
+        )
+    raise PhylogeneticsError(
+        "bayesian run manifest replay requires one supported positive substitution-parameter prior family",
+        code="bayesian_run_manifest_positive_prior_family_invalid",
+        details={"family": family},
+    )
+
+
+def _deserialize_optional_probability_prior(value: object):
+    if value is None:
+        return None
+    payload = _require_mapping_from_object(
+        value,
+        owner_name="probability substitution-parameter prior payload",
+    )
+    family = _require_string(payload, key="family")
+    if family == "beta":
+        return build_beta_probability_substitution_parameter_prior(
+            alpha=_require_float(payload, key="alpha"),
+            beta=_require_float(payload, key="beta"),
+        )
+    if family == "fixed":
+        return build_fixed_probability_substitution_parameter_prior(
+            fixed_value=_require_float(payload, key="fixed_value"),
+            fixed_tolerance=_require_float(payload, key="fixed_tolerance"),
+        )
+    raise PhylogeneticsError(
+        "bayesian run manifest replay requires one supported probability substitution-parameter prior family",
+        code="bayesian_run_manifest_probability_prior_family_invalid",
+        details={"family": family},
+    )
+
+
+def _deserialize_optional_simplex_prior(value: object):
+    if value is None:
+        return None
+    payload = _require_mapping_from_object(
+        value,
+        owner_name="simplex substitution-parameter prior payload",
+    )
+    family = _require_string(payload, key="family")
+    component_names = tuple(_require_string_list(payload, key="component_names"))
+    if family == "dirichlet":
+        concentration_parameters = _require_float_sequence(
+            payload,
+            key="concentration_parameters",
+        )
+        return build_dirichlet_simplex_substitution_parameter_prior(
+            expected_component_names=component_names,
+            concentration_parameters={
+                component_name: concentration_value
+                for component_name, concentration_value in zip(
+                    component_names,
+                    concentration_parameters,
+                    strict=True,
+                )
+            },
+        )
+    if family == "fixed":
+        fixed_values = _require_float_sequence(payload, key="fixed_values")
+        return build_fixed_simplex_substitution_parameter_prior(
+            expected_component_names=component_names,
+            fixed_values={
+                component_name: fixed_value
+                for component_name, fixed_value in zip(
+                    component_names,
+                    fixed_values,
+                    strict=True,
+                )
+            },
+            fixed_tolerance=_require_float(payload, key="fixed_tolerance"),
+        )
+    raise PhylogeneticsError(
+        "bayesian run manifest replay requires one supported simplex substitution-parameter prior family",
+        code="bayesian_run_manifest_simplex_prior_family_invalid",
+        details={"family": family},
+    )
+
+
 def _validate_prior_rows(
     prior_rows: Sequence[BayesianRunPriorRow],
 ) -> tuple[BayesianRunPriorRow, ...]:
@@ -598,6 +919,20 @@ def _require_mapping(
     return value
 
 
+def _require_mapping_from_object(
+    value: object,
+    *,
+    owner_name: str,
+) -> Mapping[str, object]:
+    if not isinstance(value, Mapping):
+        raise PhylogeneticsError(
+            f"bayesian run manifest replay requires {owner_name} to be one mapping",
+            code="bayesian_run_manifest_replay_mapping_invalid",
+            details={"owner_name": owner_name},
+        )
+    return value
+
+
 def _require_list(payload: Mapping[str, object], *, key: str) -> list[object]:
     value = payload.get(key)
     if not isinstance(value, list):
@@ -631,6 +966,17 @@ def _require_integer(payload: Mapping[str, object], *, key: str) -> int:
     return value
 
 
+def _require_float(payload: Mapping[str, object], *, key: str) -> float:
+    value = payload.get(key)
+    if not isinstance(value, (int, float)):
+        raise PhylogeneticsError(
+            f"bayesian run manifest loader requires '{key}' to be one numeric value",
+            code="bayesian_run_manifest_load_float_invalid",
+            details={"key": key},
+        )
+    return float(value)
+
+
 def _optional_integer(value: object) -> int | None:
     if value is None:
         return None
@@ -640,6 +986,39 @@ def _optional_integer(value: object) -> int | None:
             code="bayesian_run_manifest_load_optional_integer_invalid",
         )
     return value
+
+
+def _optional_float(value: object) -> float | None:
+    if value is None:
+        return None
+    if not isinstance(value, (int, float)):
+        raise PhylogeneticsError(
+            "bayesian run manifest replay requires optional numeric fields to be numeric when present",
+            code="bayesian_run_manifest_load_optional_float_invalid",
+        )
+    return float(value)
+
+
+def _optional_float_mapping(value: object) -> dict[str, float] | None:
+    if value is None:
+        return None
+    payload = _require_mapping_from_object(
+        value,
+        owner_name="optional float mapping payload",
+    )
+    if any(
+        not isinstance(mapping_key, str)
+        or not isinstance(mapping_value, (int, float))
+        for mapping_key, mapping_value in payload.items()
+    ):
+        raise PhylogeneticsError(
+            "bayesian run manifest replay requires optional float mappings to contain string keys and numeric values",
+            code="bayesian_run_manifest_load_optional_float_mapping_invalid",
+        )
+    return {
+        str(mapping_key): float(mapping_value)
+        for mapping_key, mapping_value in payload.items()
+    }
 
 
 def _require_string_list(payload: Mapping[str, object], *, key: str) -> list[str]:
@@ -690,15 +1069,34 @@ def _require_float_mapping(
     return {mapping_key: float(mapping_value) for mapping_key, mapping_value in value.items()}
 
 
+def _require_float_sequence(
+    payload: Mapping[str, object],
+    *,
+    key: str,
+) -> list[float]:
+    raw_values = payload.get(key)
+    if not isinstance(raw_values, list) or any(
+        not isinstance(value, (int, float)) for value in raw_values
+    ):
+        raise PhylogeneticsError(
+            f"bayesian run manifest replay requires '{key}' to be one numeric list",
+            code="bayesian_run_manifest_load_float_sequence_invalid",
+            details={"key": key},
+        )
+    return [float(value) for value in raw_values]
+
+
 __all__ = [
     "BAYESIAN_BURNIN_POLICY_NAMES",
     "BayesianRunBurninPolicy",
     "BayesianRunManifest",
+    "BayesianRunManifestReplayReport",
     "BayesianRunPriorRow",
     "build_bayesian_run_burnin_policy",
     "build_bayesian_run_manifest",
     "build_fixed_topology_dna_run_manifest",
     "list_metropolis_hastings_retained_sample_ids",
     "load_bayesian_run_manifest",
+    "replay_fixed_topology_dna_run_manifest",
     "write_bayesian_run_manifest",
 ]
