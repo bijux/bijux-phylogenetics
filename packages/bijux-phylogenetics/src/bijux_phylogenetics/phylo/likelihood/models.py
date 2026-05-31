@@ -589,6 +589,60 @@ class NucleotideLikelihoodSprSearchReport:
 
 
 @dataclass(slots=True)
+class NucleotideLikelihoodTbrTraceRow:
+    """One deterministic event row in a rooted nucleotide likelihood TBR search trace."""
+
+    event_index: int
+    event_kind: str
+    iteration: int
+    log_likelihood_before: float | None
+    log_likelihood_after: float
+    log_likelihood_delta: float | None
+    tree_before_newick: str | None
+    tree_after_newick: str
+    cut_edge_id: str | None
+    left_attachment_branch_id: str | None
+    right_attachment_branch_id: str | None
+    branch_reoptimization_policy: str
+    branch_reoptimization_scope: str
+    optimized_branch_count: int
+    optimized_branch_clade_ids: list[str]
+    branch_reoptimization_converged: bool | None
+    branch_optimization_pass_count: int
+    branch_function_evaluation_count: int
+    boundary_warning_messages: list[str]
+    stopping_reason: str | None
+
+
+@dataclass(slots=True)
+class NucleotideLikelihoodTbrSearchReport:
+    """Complete rooted nucleotide likelihood TBR hill-climb report."""
+
+    algorithm: str
+    model_name: str
+    tree_path: str | None
+    alignment_path: str | None
+    taxon_count: int
+    site_count: int
+    pattern_count: int
+    input_tree_newick: str
+    start_tree_newick: str
+    start_log_likelihood: float
+    final_tree_newick: str
+    final_log_likelihood: float
+    accepted_move_count: int
+    evaluated_neighbor_count: int
+    branch_reoptimization_policy: str
+    substitution_parameter_policy: str
+    substitution_parameter_values: dict[str, float]
+    substitution_parameter_warnings: list[str]
+    total_branch_optimization_pass_count: int
+    total_branch_function_evaluation_count: int
+    stopping_reason: str
+    trace_rows: list[NucleotideLikelihoodTbrTraceRow]
+
+
+@dataclass(slots=True)
 class NucleotideLikelihoodMultiStartRunSummary:
     """One independently searched start tree inside a multi-start likelihood workflow."""
 
