@@ -432,6 +432,14 @@ from .posterior_missing_data import (
     summarize_nucleotide_posterior_missing_states,
     summarize_ornstein_uhlenbeck_continuous_trait_posterior_missing_values,
 )
+from .posterior_model_averaging import (
+    PosteriorModelAveragedEstimateRow,
+    PosteriorModelAveragingReport,
+    PosteriorModelEstimateRow,
+    PosteriorModelSupportRow,
+    summarize_metropolis_hastings_model_averaged_estimates,
+    summarize_posterior_model_averaged_estimates,
+)
 from .posterior_predictive_simulation import (
     POSTERIOR_PREDICTIVE_SAMPLE_SELECTION_POLICIES,
     PosteriorPredictiveAlignmentReplicate,
@@ -760,6 +768,10 @@ __all__ = [
     "PosteriorMissingNucleotideSequenceRecord",
     "PosteriorMissingNucleotideSiteSummaryRow",
     "PosteriorMissingNucleotideStateProbabilityRow",
+    "PosteriorModelAveragedEstimateRow",
+    "PosteriorModelAveragingReport",
+    "PosteriorModelEstimateRow",
+    "PosteriorModelSupportRow",
     "PosteriorDiscreteTraitNodeSummaryRow",
     "PosteriorDiscreteTraitReport",
     "PosteriorDiscreteTraitStateProbabilityRow",
@@ -1000,10 +1012,12 @@ __all__ = [
     "summarize_fixed_topology_dna_posterior_missing_states",
     "summarize_fixed_topology_partitioned_dna_posterior_missing_states",
     "summarize_joint_topology_dna_posterior_missing_states",
+    "summarize_metropolis_hastings_model_averaged_estimates",
     "summarize_nucleotide_posterior_missing_states",
     "summarize_nucleotide_posterior_ancestral_sequences",
     "summarize_ornstein_uhlenbeck_continuous_trait_posterior_ancestral_states",
     "summarize_ornstein_uhlenbeck_continuous_trait_posterior_missing_values",
+    "summarize_posterior_model_averaged_estimates",
     "summarize_posterior_predictive_p_values",
     "summarize_posterior_node_ages",
     "thin_posterior_tree_set",
