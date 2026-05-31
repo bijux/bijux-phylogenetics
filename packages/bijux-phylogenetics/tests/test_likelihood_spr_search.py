@@ -172,6 +172,49 @@ def test_likelihood_spr_search_improves_when_likelihood_nni_stalls() -> None:
     ]
 
 
+def test_likelihood_spr_search_local_branch_reoptimization_reports_affected_scope() -> None:
+    tree_path = fixture("trees", "jc69_likelihood_spr_start_tree_5_taxa.nwk")
+    alignment_path = fixture("alignments", "jc69_likelihood_spr_alignment_5_taxa.fasta")
+
+    full_report = search_nucleotide_likelihood_spr_from_alignment(
+        tree_path,
+        alignment_path,
+        model_name="jc69",
+        upper_branch_length_bound=1.0,
+        evaluation_budget=2,
+    )
+    local_report = search_nucleotide_likelihood_spr_from_alignment(
+        tree_path,
+        alignment_path,
+        model_name="jc69",
+        upper_branch_length_bound=1.0,
+        evaluation_budget=2,
+        branch_reoptimization_policy="spr-local-affected-branches",
+    )
+
+    assert local_report.branch_reoptimization_policy == "spr-local-affected-branches"
+    assert local_report.trace_rows[0].branch_reoptimization_scope == "all-branches"
+    accepted_rows = [
+        row for row in local_report.trace_rows if row.event_kind == "accepted-move"
+    ]
+    assert accepted_rows
+    assert accepted_rows[0].branch_reoptimization_scope == "local-affected-branches"
+    assert accepted_rows[0].affected_branch_clade_ids == ["A", "A|B", "A|D", "B"]
+    assert accepted_rows[0].optimized_branch_clade_ids == ["A", "B", "A|B"]
+    assert accepted_rows[0].optimized_branch_count == 3
+    assert (
+        accepted_rows[0].optimized_branch_count
+        < full_report.trace_rows[1].optimized_branch_count
+    )
+    assert local_report.total_branch_function_evaluation_count < full_report.total_branch_function_evaluation_count
+    assert math.isclose(
+        local_report.final_log_likelihood,
+        full_report.final_log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
 def test_write_nucleotide_likelihood_spr_artifacts_materializes_governed_output_family(
     tmp_path: Path,
 ) -> None:
