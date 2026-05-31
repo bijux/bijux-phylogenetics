@@ -141,11 +141,13 @@ def search_nucleotide_likelihood_nni(
         )
     ]
     accepted_move_count = 0
+    iteration_count = 0
     evaluated_neighbor_count = 0
     candidate_rows: list[NucleotideLikelihoodNniCandidateRow] = []
     total_branch_optimization_pass_count = start_result.optimization_pass_count
     total_branch_function_evaluation_count = start_result.function_evaluation_count
     while True:
+        iteration_count += 1
         improving_candidate = None
         improving_result: BranchReoptimizationResult | None = None
         improving_newick: str | None = None
@@ -324,6 +326,7 @@ def search_nucleotide_likelihood_nni(
         final_tree_newick=dumps_newick(current_tree),
         final_log_likelihood=current_log_likelihood,
         accepted_move_count=accepted_move_count,
+        iteration_count=iteration_count,
         evaluated_neighbor_count=evaluated_neighbor_count,
         branch_reoptimization_policy=validated_branch_reoptimization_policy,
         substitution_parameter_policy=resolved_surface.substitution_parameter_policy,

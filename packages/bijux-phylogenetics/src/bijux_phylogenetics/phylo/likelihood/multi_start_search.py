@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import cmp_to_key
 import json
 import math
 from pathlib import Path
@@ -208,8 +209,12 @@ def search_nucleotide_likelihood_multi_start(
                 final_topology_fingerprint=rooted_topology_fingerprint_from_newick(
                     local_report.final_tree_newick
                 ),
+                search_iteration_count=resolve_multi_start_local_search_iteration_count(
+                    local_report
+                ),
                 accepted_move_count=local_report.accepted_move_count,
                 evaluated_neighbor_count=local_report.evaluated_neighbor_count,
+                final_likelihood_rank=0,
                 branch_reoptimization_policy=local_report.branch_reoptimization_policy,
                 substitution_parameter_policy=local_report.substitution_parameter_policy,
                 substitution_parameter_values=dict(local_report.substitution_parameter_values),
@@ -222,7 +227,13 @@ def search_nucleotide_likelihood_multi_start(
                 best_run=False,
             )
         )
-    best_run_index = select_best_likelihood_multi_start_run(run_summaries)
+    ranked_run_indices = rank_likelihood_multi_start_runs(run_summaries)
+    for final_likelihood_rank, ranked_run_index in enumerate(
+        ranked_run_indices,
+        start=1,
+    ):
+        run_summaries[ranked_run_index].final_likelihood_rank = final_likelihood_rank
+    best_run_index = ranked_run_indices[0]
     run_summaries[best_run_index].best_run = True
     best_run = run_summaries[best_run_index]
     first_local_report = local_reports[0]
@@ -427,6 +438,23 @@ def select_best_likelihood_multi_start_run(
     return best_index
 
 
+def rank_likelihood_multi_start_runs(
+    run_summaries: list[NucleotideLikelihoodMultiStartRunSummary],
+) -> list[int]:
+    """Rank multi-start runs by final likelihood with deterministic tie-breaking."""
+    if not run_summaries:
+        raise ValueError("run_summaries must not be empty")
+    return sorted(
+        range(len(run_summaries)),
+        key=cmp_to_key(
+            lambda left_index, right_index: _compare_multi_start_runs(
+                run_summaries[left_index],
+                run_summaries[right_index],
+            )
+        ),
+    )
+
+
 def _build_scored_starting_tree_pool_for_multi_start_search(
     tree: PhyloTree,
     records: list[AlignmentRecord],
@@ -478,6 +506,24 @@ def _prefer_multi_start_run(
     if left.final_tree_newick != right.final_tree_newick:
         return left.final_tree_newick < right.final_tree_newick
     return left.start_tree_source_label < right.start_tree_source_label
+
+
+def _compare_multi_start_runs(
+    left: NucleotideLikelihoodMultiStartRunSummary,
+    right: NucleotideLikelihoodMultiStartRunSummary,
+) -> int:
+    if _prefer_multi_start_run(left, right):
+        return -1
+    if _prefer_multi_start_run(right, left):
+        return 1
+    return 0
+
+
+def resolve_multi_start_local_search_iteration_count(
+    local_report: NucleotideLikelihoodNniSearchReport | NucleotideLikelihoodSprSearchReport,
+) -> int:
+    """Resolve one comparable local-search iteration count for a multi-start run."""
+    return local_report.iteration_count
 
 
 def _run_local_search(
@@ -546,7 +592,9 @@ def write_nucleotide_likelihood_multi_start_summary_table(
         "search_algorithm",
         "start_log_likelihood",
         "final_log_likelihood",
+        "final_likelihood_rank",
         "final_topology_fingerprint",
+        "search_iteration_count",
         "accepted_move_count",
         "evaluated_neighbor_count",
         "branch_reoptimization_policy",
@@ -565,7 +613,9 @@ def write_nucleotide_likelihood_multi_start_summary_table(
             row.search_algorithm,
             row.start_log_likelihood,
             row.final_log_likelihood,
+            row.final_likelihood_rank,
             row.final_topology_fingerprint,
+            row.search_iteration_count,
             row.accepted_move_count,
             row.evaluated_neighbor_count,
             row.branch_reoptimization_policy,
@@ -621,7 +671,9 @@ def write_nucleotide_likelihood_multi_start_run_json(
                 "start_log_likelihood": row.start_log_likelihood,
                 "final_tree_newick": row.final_tree_newick,
                 "final_log_likelihood": row.final_log_likelihood,
+                "final_likelihood_rank": row.final_likelihood_rank,
                 "final_topology_fingerprint": row.final_topology_fingerprint,
+                "search_iteration_count": row.search_iteration_count,
                 "accepted_move_count": row.accepted_move_count,
                 "evaluated_neighbor_count": row.evaluated_neighbor_count,
                 "branch_reoptimization_policy": row.branch_reoptimization_policy,

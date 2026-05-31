@@ -507,6 +507,7 @@ class NucleotideLikelihoodNniSearchReport:
     final_tree_newick: str
     final_log_likelihood: float
     accepted_move_count: int
+    iteration_count: int
     evaluated_neighbor_count: int
     branch_reoptimization_policy: str
     substitution_parameter_policy: str
@@ -850,8 +851,10 @@ class NucleotideLikelihoodMultiStartRunSummary:
     final_tree_newick: str
     final_log_likelihood: float
     final_topology_fingerprint: str
+    search_iteration_count: int
     accepted_move_count: int
     evaluated_neighbor_count: int
+    final_likelihood_rank: int
     branch_reoptimization_policy: str
     substitution_parameter_policy: str
     substitution_parameter_values: dict[str, float]
