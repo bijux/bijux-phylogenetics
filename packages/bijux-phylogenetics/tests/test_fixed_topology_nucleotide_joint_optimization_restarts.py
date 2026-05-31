@@ -72,3 +72,7 @@ def test_fixed_topology_gtr_joint_restart_policy_records_attempts_and_selects_be
     assert all(row.boundary_warning_count == 0 for row in report.attempt_rows)
     assert report.attempt_rows[1].branch_boundary_count == 1
     assert report.attempt_rows[2].branch_boundary_count == 1
+    assert any(
+        warning.warning_kind == "branch-boundary"
+        for warning in report.selected_report.boundary_warnings
+    )
