@@ -495,6 +495,7 @@ class NucleotideLikelihoodNniSearchReport:
 
     algorithm: str
     model_name: str
+    improvement_policy: str
     tree_path: str | None
     alignment_path: str | None
     taxon_count: int
