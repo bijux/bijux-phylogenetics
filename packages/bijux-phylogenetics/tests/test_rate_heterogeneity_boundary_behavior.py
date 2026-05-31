@@ -120,6 +120,43 @@ def test_empirical_protein_gamma_invariant_zero_matches_gamma_surface() -> None:
     )
 
 
+def test_empirical_protein_large_gamma_alpha_approaches_equal_rate_surface() -> None:
+    fixed_rate_report = evaluate_empirical_protein_tree_likelihood_from_alignment(
+        fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+        fixture(
+            "alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"
+        ),
+        rate_matrix=_compact_polar_rate_matrix(),
+        root_prior=_biased_root_prior(),
+        matrix_label="compact-polar",
+    )
+    large_alpha_report = (
+        evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment(
+            fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+            fixture(
+                "alignments",
+                "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
+            ),
+            rate_matrix=_compact_polar_rate_matrix(),
+            root_prior=_biased_root_prior(),
+            matrix_label="compact-polar",
+            alpha=10_000.0,
+            category_count=4,
+        )
+    )
+
+    assert all(
+        math.isclose(category.rate, 1.0, rel_tol=0.0, abs_tol=0.03)
+        for category in large_alpha_report.category_rates
+    )
+    assert math.isclose(
+        large_alpha_report.log_likelihood,
+        fixed_rate_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=6e-5,
+    )
+
+
 def _compact_polar_rate_matrix() -> numpy.ndarray:
     return _build_empirical_rate_matrix(
         boosted_pairs={
