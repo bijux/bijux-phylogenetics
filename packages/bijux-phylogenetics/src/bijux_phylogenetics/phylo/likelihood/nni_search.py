@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy
 
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick, write_newick
-from bijux_phylogenetics.phylo.topology.clades import canonical_clade_id, split_sort_key
+from bijux_phylogenetics.phylo.topology.clades import canonical_clade_id
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.models import (
     NucleotideLikelihoodNniSearchReport,
@@ -18,6 +18,7 @@ from bijux_phylogenetics.phylo.likelihood.topology_search import (
     prefer_higher_likelihood,
     reoptimize_nucleotide_topology_tree_branch_subset,
     reoptimize_nucleotide_topology_tree,
+    resolve_reoptimized_branch_clade_ids,
     resolve_nucleotide_topology_search_records,
     resolve_nucleotide_topology_search_surface,
     resolve_nucleotide_topology_search_tree,
@@ -117,7 +118,7 @@ def search_nucleotide_likelihood_nni(
             branch_reoptimization_policy=validated_branch_reoptimization_policy,
             branch_reoptimization_scope="all-branches",
             optimized_branch_count=len(start_result.optimized_branch_ids),
-            optimized_branch_clade_ids=resolve_optimized_branch_clade_ids(
+            optimized_branch_clade_ids=resolve_reoptimized_branch_clade_ids(
                 current_tree,
                 start_result.optimized_branch_ids,
             ),
@@ -211,7 +212,7 @@ def search_nucleotide_likelihood_nni(
                     validated_branch_reoptimization_policy
                 ),
                 optimized_branch_count=len(improving_result.optimized_branch_ids),
-                optimized_branch_clade_ids=resolve_optimized_branch_clade_ids(
+                optimized_branch_clade_ids=resolve_reoptimized_branch_clade_ids(
                     current_tree,
                     improving_result.optimized_branch_ids,
                 ),
@@ -411,20 +412,6 @@ def _find_branch_node_by_signature(
             return node
     raise ValueError(f"tree does not contain branch clade '{canonical_clade_id(signature)}'")
 
-
-def resolve_optimized_branch_clade_ids(
-    tree: PhyloTree,
-    optimized_branch_ids: list[str],
-) -> list[str]:
-    """Render one deterministic optimized-branch clade ledger for a rooted likelihood search."""
-    signatures = [
-        frozenset(descendant_taxa(tree.node_by_id(branch_id)))
-        for branch_id in optimized_branch_ids
-    ]
-    return [
-        canonical_clade_id(signature)
-        for signature in sorted(signatures, key=split_sort_key)
-    ]
 
 
 def write_nucleotide_likelihood_nni_trace_table(

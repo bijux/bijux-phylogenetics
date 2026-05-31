@@ -29,6 +29,8 @@ from bijux_phylogenetics.phylo.likelihood.substitution_parameters import (
     optimize_nucleotide_substitution_parameters,
 )
 from bijux_phylogenetics.phylo.likelihood.validation import validate_explicit_branch_lengths
+from bijux_phylogenetics.phylo.topology.clades import canonical_clade_id, split_sort_key
+from bijux_phylogenetics.phylo.topology.tree import descendant_taxa
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 _SUPPORTED_BRANCH_REOPTIMIZATION_POLICIES = frozenset({"coordinate-branch-lengths"})
@@ -287,6 +289,21 @@ def reoptimize_nucleotide_topology_tree_branch_subset(
         improvement_tolerance=improvement_tolerance,
         max_coordinate_passes=max_coordinate_passes,
     )
+
+
+def resolve_reoptimized_branch_clade_ids(
+    tree: PhyloTree,
+    optimized_branch_ids: list[str],
+) -> list[str]:
+    """Render one deterministic descendant-clade ledger for reoptimized branch identifiers."""
+    signatures = [
+        frozenset(descendant_taxa(tree.node_by_id(branch_id)))
+        for branch_id in optimized_branch_ids
+    ]
+    return [
+        canonical_clade_id(signature)
+        for signature in sorted(signatures, key=split_sort_key)
+    ]
 
 
 def prefer_higher_likelihood(
