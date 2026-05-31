@@ -129,6 +129,10 @@ def search_nucleotide_likelihood_spr(
             branch_reoptimization_converged=start_result.converged,
             branch_optimization_pass_count=start_result.optimization_pass_count,
             branch_function_evaluation_count=start_result.function_evaluation_count,
+            boundary_warning_messages=[
+                *resolved_surface.substitution_parameter_warnings,
+                *start_result.boundary_warning_messages,
+            ],
             stopping_reason=None,
         )
     ]
@@ -250,6 +254,7 @@ def search_nucleotide_likelihood_spr(
                 branch_reoptimization_converged=improving_result.converged,
                 branch_optimization_pass_count=improving_result.optimization_pass_count,
                 branch_function_evaluation_count=improving_result.function_evaluation_count,
+                boundary_warning_messages=list(improving_result.boundary_warning_messages),
                 stopping_reason=None,
             )
         )
@@ -276,6 +281,7 @@ def search_nucleotide_likelihood_spr(
             branch_reoptimization_converged=None,
             branch_optimization_pass_count=0,
             branch_function_evaluation_count=0,
+            boundary_warning_messages=[],
             stopping_reason=stopping_reason,
         )
     )
@@ -430,6 +436,7 @@ def write_nucleotide_likelihood_spr_trace_table(
         "branch_reoptimization_converged",
         "branch_optimization_pass_count",
         "branch_function_evaluation_count",
+        "boundary_warning_messages",
         "stopping_reason",
     ]
     rows = ["\t".join(columns)]
@@ -453,6 +460,7 @@ def write_nucleotide_likelihood_spr_trace_table(
             row.branch_reoptimization_converged,
             row.branch_optimization_pass_count,
             row.branch_function_evaluation_count,
+            ",".join(row.boundary_warning_messages),
             row.stopping_reason,
         ]
         rows.append(
@@ -518,6 +526,7 @@ def write_nucleotide_likelihood_spr_run_json(
                 "branch_reoptimization_converged": row.branch_reoptimization_converged,
                 "branch_optimization_pass_count": row.branch_optimization_pass_count,
                 "branch_function_evaluation_count": row.branch_function_evaluation_count,
+                "boundary_warning_messages": row.boundary_warning_messages,
                 "stopping_reason": row.stopping_reason,
             }
             for row in report.trace_rows

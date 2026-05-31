@@ -29,6 +29,12 @@ from bijux_phylogenetics.phylo.likelihood.models import (
     JointNucleotideOptimizationUpdateRow,
     SubstitutionParameterOptimizationRow,
 )
+from bijux_phylogenetics.phylo.likelihood.optimization_boundary_warnings import (
+    boundary_warning_messages,
+    build_base_frequency_boundary_warnings,
+    build_branch_length_boundary_warnings,
+    build_substitution_parameter_boundary_warnings,
+)
 from bijux_phylogenetics.phylo.likelihood.substitution_parameters import (
     optimize_nucleotide_substitution_parameters,
 )
@@ -445,6 +451,9 @@ def optimize_fixed_topology_nucleotide_branches_and_model(
         for warning in model_report.warnings:
             if warning not in warnings:
                 warnings.append(warning)
+        for warning in branch_report.boundary_warnings:
+            if warning.message not in warnings:
+                warnings.append(warning.message)
 
         if (
             branch_delta <= improvement_tolerance
@@ -474,6 +483,29 @@ def optimize_fixed_topology_nucleotide_branches_and_model(
         upper_exchangeability_bound=upper_exchangeability_bound,
         final_exchangeabilities=current_exchangeabilities,
     )
+    final_branch_rows = _build_final_branch_rows(initial_tree, current_tree)
+    boundary_warnings = build_substitution_parameter_boundary_warnings(
+        final_parameter_rows
+    )
+    boundary_warnings.extend(
+        build_base_frequency_boundary_warnings(
+            base_frequency_source=latest_model_report.base_frequency_source,
+            base_frequency_a=latest_model_report.base_frequency_a,
+            base_frequency_c=latest_model_report.base_frequency_c,
+            base_frequency_g=latest_model_report.base_frequency_g,
+            base_frequency_t=latest_model_report.base_frequency_t,
+        )
+    )
+    boundary_warnings.extend(
+        build_branch_length_boundary_warnings(
+            final_branch_rows,
+            lower_branch_length_bound=lower_branch_length_bound,
+            upper_branch_length_bound=upper_branch_length_bound,
+        )
+    )
+    for warning in boundary_warning_messages(boundary_warnings):
+        if warning not in warnings:
+            warnings.append(warning)
     return FixedTopologyNucleotideJointOptimizationReport(
         model_name=latest_model_report.model_name,
         taxa=latest_branch_report.taxa,
@@ -493,7 +525,7 @@ def optimize_fixed_topology_nucleotide_branches_and_model(
         base_frequency_t=latest_model_report.base_frequency_t,
         fixed_parameter_values=dict(latest_model_report.fixed_parameter_values),
         parameter_rows=final_parameter_rows,
-        branch_rows=_build_final_branch_rows(initial_tree, current_tree),
+        branch_rows=final_branch_rows,
         initial_log_likelihood=initial_log_likelihood,
         optimized_log_likelihood=current_log_likelihood,
         function_evaluation_count=total_function_evaluation_count,
@@ -503,6 +535,7 @@ def optimize_fixed_topology_nucleotide_branches_and_model(
         lower_branch_length_bound=lower_branch_length_bound,
         upper_branch_length_bound=upper_branch_length_bound,
         update_rows=update_rows,
+        boundary_warnings=boundary_warnings,
         warnings=warnings,
     )
 

@@ -28,6 +28,10 @@ from bijux_phylogenetics.phylo.likelihood.nucleotide_models import (
 from bijux_phylogenetics.phylo.likelihood.parameter_search import (
     run_bounded_coordinate_likelihood_search,
 )
+from bijux_phylogenetics.phylo.likelihood.optimization_boundary_warnings import (
+    boundary_warning_messages,
+    build_branch_length_boundary_warnings,
+)
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
     compress_alignment_site_patterns_from_records,
@@ -50,6 +54,7 @@ class BranchReoptimizationResult:
     function_evaluation_count: int
     converged: bool
     optimized_branch_ids: list[str]
+    boundary_warning_messages: list[str]
 
 
 def validate_fixed_topology_nucleotide_branch_length_model(model_name: str) -> str:
@@ -153,6 +158,21 @@ def optimize_fixed_topology_nucleotide_branch_lengths(
         max_coordinate_passes=max_coordinate_passes,
     )
     optimized_branch_lengths = _collect_branch_lengths_by_id(search_result.optimized_tree)
+    branch_rows = [
+        BranchLengthOptimizationRow(
+            branch_id=node.node_id or "",
+            child_name=node.name,
+            descendant_taxa=node.descendant_taxa,
+            initial_branch_length=initial_branch_lengths[node.node_id or ""],
+            optimized_branch_length=optimized_branch_lengths[node.node_id or ""],
+        )
+        for _parent, node in starting_tree.iter_edges()
+    ]
+    boundary_warnings = build_branch_length_boundary_warnings(
+        branch_rows,
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
+    )
     return FixedTopologyNucleotideBranchLengthOptimizationReport(
         model_name=specification.model_name,
         taxa=compressed_patterns.taxon_order,
@@ -173,16 +193,8 @@ def optimize_fixed_topology_nucleotide_branch_lengths(
         converged=search_result.converged,
         lower_branch_length_bound=lower_branch_length_bound,
         upper_branch_length_bound=upper_branch_length_bound,
-        branches=[
-            BranchLengthOptimizationRow(
-                branch_id=node.node_id or "",
-                child_name=node.name,
-                descendant_taxa=node.descendant_taxa,
-                initial_branch_length=initial_branch_lengths[node.node_id or ""],
-                optimized_branch_length=optimized_branch_lengths[node.node_id or ""],
-            )
-            for _parent, node in starting_tree.iter_edges()
-        ],
+        branches=branch_rows,
+        boundary_warnings=boundary_warnings,
     )
 
 
@@ -492,6 +504,13 @@ def optimize_selected_nucleotide_branch_length_subset(
     optimized_branch_lengths = dict(initial_branch_lengths)
     optimized_branch_lengths.update(search_result.parameter_values)
     assign_branch_lengths(working_tree, optimized_branch_lengths)
+    boundary_warning_messages_for_subset = _resolve_subset_branch_boundary_warning_messages(
+        working_tree,
+        initial_branch_lengths=initial_branch_lengths,
+        target_branch_ids=target_branch_ids,
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
+    )
     return BranchReoptimizationResult(
         optimized_tree=working_tree.refresh(),
         log_likelihood=float(search_result.objective_value),
@@ -499,6 +518,7 @@ def optimize_selected_nucleotide_branch_length_subset(
         function_evaluation_count=search_result.function_evaluation_count,
         converged=search_result.converged,
         optimized_branch_ids=list(target_branch_ids),
+        boundary_warning_messages=boundary_warning_messages_for_subset,
     )
 
 
@@ -567,3 +587,30 @@ def _validate_target_branch_ids(
         seen_branch_ids.add(branch_id)
         validated_branch_ids.append(branch_id)
     return validated_branch_ids
+
+
+def _resolve_subset_branch_boundary_warning_messages(
+    tree: PhyloTree,
+    *,
+    initial_branch_lengths: dict[str, float],
+    target_branch_ids: list[str],
+    lower_branch_length_bound: float,
+    upper_branch_length_bound: float,
+) -> list[str]:
+    branch_rows = [
+        BranchLengthOptimizationRow(
+            branch_id=branch_id,
+            child_name=tree.node_by_id(branch_id).name,
+            descendant_taxa=tree.node_by_id(branch_id).descendant_taxa,
+            initial_branch_length=initial_branch_lengths[branch_id],
+            optimized_branch_length=float(tree.node_by_id(branch_id).branch_length or 0.0),
+        )
+        for branch_id in target_branch_ids
+    ]
+    return boundary_warning_messages(
+        build_branch_length_boundary_warnings(
+            branch_rows,
+            lower_branch_length_bound=lower_branch_length_bound,
+            upper_branch_length_bound=upper_branch_length_bound,
+        )
+    )

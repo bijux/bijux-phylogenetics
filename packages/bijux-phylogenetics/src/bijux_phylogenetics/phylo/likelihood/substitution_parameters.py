@@ -30,6 +30,11 @@ from bijux_phylogenetics.phylo.likelihood.models import (
     NucleotideSubstitutionParameterOptimizationReport,
     SubstitutionParameterOptimizationRow,
 )
+from bijux_phylogenetics.phylo.likelihood.optimization_boundary_warnings import (
+    boundary_warning_messages,
+    build_base_frequency_boundary_warnings,
+    build_substitution_parameter_boundary_warnings,
+)
 from bijux_phylogenetics.phylo.likelihood.parameter_bounds import (
     validate_parameter_within_bounds,
     validate_positive_parameter_bounds,
@@ -261,6 +266,7 @@ def _optimize_jc69_substitution_parameters(
         function_evaluation_count=1,
         optimization_pass_count=0,
         converged=True,
+        boundary_warnings=[],
         warnings=["JC69 has no free substitution parameters; skipping parameter search"],
     )
 
@@ -328,6 +334,7 @@ def _optimize_k80_substitution_parameters(
     )
     if not optimization_report.converged:
         warnings.append("K80 substitution-parameter search did not converge")
+    boundary_warnings = build_substitution_parameter_boundary_warnings([parameter_row])
     return NucleotideSubstitutionParameterOptimizationReport(
         model_name="K80",
         taxa=optimization_report.taxa,
@@ -349,6 +356,7 @@ def _optimize_k80_substitution_parameters(
         function_evaluation_count=optimization_report.function_evaluation_count,
         optimization_pass_count=1,
         converged=optimization_report.converged,
+        boundary_warnings=boundary_warnings,
         warnings=warnings,
     )
 
@@ -409,6 +417,13 @@ def _optimize_f81_substitution_parameters(
         base_frequencies=base_frequencies,
     )
     log_likelihood = evaluation_report.log_likelihood
+    boundary_warnings = build_base_frequency_boundary_warnings(
+        base_frequency_source=evaluation_report.base_frequency_source,
+        base_frequency_a=evaluation_report.base_frequency_a,
+        base_frequency_c=evaluation_report.base_frequency_c,
+        base_frequency_g=evaluation_report.base_frequency_g,
+        base_frequency_t=evaluation_report.base_frequency_t,
+    )
     return NucleotideSubstitutionParameterOptimizationReport(
         model_name="F81",
         taxa=evaluation_report.taxa,
@@ -430,7 +445,8 @@ def _optimize_f81_substitution_parameters(
         function_evaluation_count=1,
         optimization_pass_count=0,
         converged=True,
-        warnings=[],
+        boundary_warnings=boundary_warnings,
+        warnings=boundary_warning_messages(boundary_warnings),
     )
 
 
@@ -493,6 +509,21 @@ def _optimize_hky85_substitution_parameters(
     )
     if not optimization_report.converged:
         warnings.append("HKY85 substitution-parameter search did not converge")
+    boundary_warnings = build_substitution_parameter_boundary_warnings([parameter_row])
+    boundary_warnings.extend(
+        build_base_frequency_boundary_warnings(
+            base_frequency_source=optimization_report.base_frequency_source,
+            base_frequency_a=optimization_report.base_frequency_a,
+            base_frequency_c=optimization_report.base_frequency_c,
+            base_frequency_g=optimization_report.base_frequency_g,
+            base_frequency_t=optimization_report.base_frequency_t,
+        )
+    )
+    warnings.extend(
+        warning
+        for warning in boundary_warning_messages(boundary_warnings)
+        if warning not in warnings
+    )
     return NucleotideSubstitutionParameterOptimizationReport(
         model_name="HKY85",
         taxa=optimization_report.taxa,
@@ -514,6 +545,7 @@ def _optimize_hky85_substitution_parameters(
         function_evaluation_count=optimization_report.function_evaluation_count,
         optimization_pass_count=1,
         converged=optimization_report.converged,
+        boundary_warnings=boundary_warnings,
         warnings=warnings,
     )
 
@@ -599,6 +631,21 @@ def _optimize_gtr_substitution_parameters(
         warnings.extend(parameter_warnings)
     if not optimization_report.converged:
         warnings.append("GTR substitution-parameter search did not converge")
+    boundary_warnings = build_substitution_parameter_boundary_warnings(parameter_rows)
+    boundary_warnings.extend(
+        build_base_frequency_boundary_warnings(
+            base_frequency_source=optimization_report.base_frequency_source,
+            base_frequency_a=optimization_report.base_frequency_a,
+            base_frequency_c=optimization_report.base_frequency_c,
+            base_frequency_g=optimization_report.base_frequency_g,
+            base_frequency_t=optimization_report.base_frequency_t,
+        )
+    )
+    warnings.extend(
+        warning
+        for warning in boundary_warning_messages(boundary_warnings)
+        if warning not in warnings
+    )
     return NucleotideSubstitutionParameterOptimizationReport(
         model_name="GTR",
         taxa=optimization_report.taxa,
@@ -620,6 +667,7 @@ def _optimize_gtr_substitution_parameters(
         function_evaluation_count=optimization_report.function_evaluation_count,
         optimization_pass_count=optimization_report.optimization_pass_count,
         converged=optimization_report.converged,
+        boundary_warnings=boundary_warnings,
         warnings=warnings,
     )
 

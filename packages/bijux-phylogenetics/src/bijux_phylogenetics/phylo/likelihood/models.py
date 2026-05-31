@@ -327,6 +327,21 @@ class SubstitutionParameterOptimizationRow:
 
 
 @dataclass(slots=True)
+class LikelihoodOptimizationBoundaryWarning:
+    """One explicit boundary warning emitted by a likelihood optimization surface."""
+
+    warning_kind: str
+    affected_parameter: str | None
+    boundary_side: str
+    observed_value: float
+    lower_bound: float | None
+    upper_bound: float | None
+    affected_branch_id: str | None
+    affected_branch_clade_id: str | None
+    message: str
+
+
+@dataclass(slots=True)
 class NucleotideSubstitutionParameterOptimizationReport:
     """Fixed-topology nucleotide substitution-parameter optimization summary."""
 
@@ -350,6 +365,7 @@ class NucleotideSubstitutionParameterOptimizationReport:
     function_evaluation_count: int
     optimization_pass_count: int
     converged: bool
+    boundary_warnings: list[LikelihoodOptimizationBoundaryWarning]
     warnings: list[str]
 
 
@@ -446,6 +462,7 @@ class NucleotideLikelihoodNniTraceRow:
     branch_reoptimization_converged: bool | None
     branch_optimization_pass_count: int
     branch_function_evaluation_count: int
+    boundary_warning_messages: list[str]
     stopping_reason: str | None
 
 
@@ -499,6 +516,7 @@ class NucleotideLikelihoodSprTraceRow:
     branch_reoptimization_converged: bool | None
     branch_optimization_pass_count: int
     branch_function_evaluation_count: int
+    boundary_warning_messages: list[str]
     stopping_reason: str | None
 
 
@@ -993,6 +1011,7 @@ class FixedTopologyNucleotideBranchLengthOptimizationReport:
     lower_branch_length_bound: float
     upper_branch_length_bound: float
     branches: list[BranchLengthOptimizationRow]
+    boundary_warnings: list[LikelihoodOptimizationBoundaryWarning]
 
 
 @dataclass(slots=True)
@@ -1071,6 +1090,7 @@ class FixedTopologyNucleotideJointOptimizationReport:
     lower_branch_length_bound: float
     upper_branch_length_bound: float
     update_rows: list[JointNucleotideOptimizationUpdateRow]
+    boundary_warnings: list[LikelihoodOptimizationBoundaryWarning]
     warnings: list[str]
 
 
