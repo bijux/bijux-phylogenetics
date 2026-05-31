@@ -976,6 +976,61 @@ class NucleotideLikelihoodTreeInferenceReport:
 
 
 @dataclass(slots=True)
+class NucleotideLikelihoodBootstrapReplicateRow:
+    """One site-resampled native ML tree-inference replicate."""
+
+    replicate_index: int
+    sampled_site_indices: list[int]
+    replicate_start_tree_seed: int
+    selected_model_name: str
+    best_run_source_label: str
+    final_tree_newick: str
+    final_log_likelihood: float
+    final_topology_fingerprint: str
+    accepted_move_count: int
+    search_iteration_count: int
+
+
+@dataclass(slots=True)
+class NucleotideLikelihoodBootstrapCladeSupportRow:
+    """One reference-tree bootstrap support row mapped by descendant-tip set."""
+
+    branch_id: str
+    node_label: str | None
+    descendant_taxa: list[str]
+    supporting_tree_count: int
+    clade_frequency: float
+    support_percent: float
+
+
+@dataclass(slots=True)
+class NucleotideLikelihoodBootstrapTreeInferenceReport:
+    """Native nucleotide ML bootstrap inference summary over one alignment."""
+
+    algorithm: str
+    alignment_path: str | None
+    requested_model_name: str
+    model_selection_strategy: str
+    model_selection_criterion: str | None
+    selected_reference_model_name: str
+    search_method: str
+    branch_reoptimization_policy: str
+    taxon_count: int
+    site_count: int
+    pattern_count: int
+    start_tree_count: int
+    start_tree_seed: int
+    replicate_count: int
+    bootstrap_seed: int
+    reference_tree_newick: str
+    reference_log_likelihood: float
+    reference_topology_fingerprint: str
+    reference_best_run_source_label: str
+    replicate_rows: list[NucleotideLikelihoodBootstrapReplicateRow]
+    clade_support_rows: list[NucleotideLikelihoodBootstrapCladeSupportRow]
+
+
+@dataclass(slots=True)
 class NucleotideLikelihoodSearchTraceReplayStep:
     """One accepted search-trace step replayed against the evolving tree."""
 
