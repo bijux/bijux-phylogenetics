@@ -122,11 +122,16 @@ from bijux_phylogenetics.bayesian import (
     JointTopologyDnaPosteriorRow,
     JointTopologyDnaProposalSchedule,
     JointTopologyDnaRunReport,
+    PosteriorContinuousTraitNodeSummaryRow,
+    PosteriorContinuousTraitReport,
     PosteriorAncestralSequenceDefinition,
     PosteriorAncestralSequenceRecord,
     PosteriorAncestralSequenceReport,
     PosteriorAncestralSiteSummaryRow,
     PosteriorAncestralStateProbabilityRow,
+    PosteriorDiscreteTraitNodeSummaryRow,
+    PosteriorDiscreteTraitReport,
+    PosteriorDiscreteTraitStateProbabilityRow,
     MetropolisHastingsProposal,
     MetropolisHastingsRunReport,
     MetropolisHastingsStepRow,
@@ -276,8 +281,12 @@ from bijux_phylogenetics.bayesian import (
     simulate_prior_only_phylogenetic_states,
     strip_partition_model_parameter_state,
     summarize_beast_log,
+    summarize_brownian_continuous_trait_posterior_ancestral_states,
+    summarize_continuous_trait_posterior_ancestral_states,
+    summarize_discrete_trait_mk_posterior_ancestral_states,
     summarize_mrbayes_posterior_trees,
     summarize_nucleotide_posterior_ancestral_sequences,
+    summarize_ornstein_uhlenbeck_continuous_trait_posterior_ancestral_states,
     validate_partition_substitution_model_name,
     validate_tree_topology_prior_taxa,
     write_beast_log_summary_table,
@@ -1346,6 +1355,20 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.PosteriorAncestralStateProbabilityRow
         is PosteriorAncestralStateProbabilityRow
     )
+    assert (
+        bayesian_api.PosteriorContinuousTraitNodeSummaryRow
+        is PosteriorContinuousTraitNodeSummaryRow
+    )
+    assert bayesian_api.PosteriorContinuousTraitReport is PosteriorContinuousTraitReport
+    assert (
+        bayesian_api.PosteriorDiscreteTraitNodeSummaryRow
+        is PosteriorDiscreteTraitNodeSummaryRow
+    )
+    assert bayesian_api.PosteriorDiscreteTraitReport is PosteriorDiscreteTraitReport
+    assert (
+        bayesian_api.PosteriorDiscreteTraitStateProbabilityRow
+        is PosteriorDiscreteTraitStateProbabilityRow
+    )
     assert bayesian_api.BayesianStateBranchRow is BayesianStateBranchRow
     assert bayesian_api.BayesianTreeState is BayesianTreeState
     assert bayesian_api.BayesianModelParameterState is BayesianModelParameterState
@@ -1756,8 +1779,24 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is run_joint_topology_dna_metropolis_hastings
     )
     assert (
+        bayesian_api.summarize_brownian_continuous_trait_posterior_ancestral_states
+        is summarize_brownian_continuous_trait_posterior_ancestral_states
+    )
+    assert (
+        bayesian_api.summarize_continuous_trait_posterior_ancestral_states
+        is summarize_continuous_trait_posterior_ancestral_states
+    )
+    assert (
+        bayesian_api.summarize_discrete_trait_mk_posterior_ancestral_states
+        is summarize_discrete_trait_mk_posterior_ancestral_states
+    )
+    assert (
         bayesian_api.summarize_nucleotide_posterior_ancestral_sequences
         is summarize_nucleotide_posterior_ancestral_sequences
+    )
+    assert (
+        bayesian_api.summarize_ornstein_uhlenbeck_continuous_trait_posterior_ancestral_states
+        is summarize_ornstein_uhlenbeck_continuous_trait_posterior_ancestral_states
     )
     assert (
         bayesian_api.sample_prior_only_phylogenetic_state
