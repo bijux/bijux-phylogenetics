@@ -164,3 +164,33 @@ def test_hky85_site_rows_match_jc69_under_uniform_unit_parameters() -> None:
     assert len(jc69.site_log_likelihoods) == len(hky85.site_log_likelihoods)
     for left, right in zip(_site_log_likelihood_vector(jc69), _site_log_likelihood_vector(hky85), strict=True):
         _assert_likelihood_match(left, right)
+
+
+def test_gtr_site_rows_match_jc69_under_uniform_parameters() -> None:
+    jc69 = evaluate_nucleotide_site_log_likelihoods_from_alignment(
+        fixture("trees", "likelihood_site_pattern_tree_4_taxa.nwk"),
+        fixture("alignments", "jc69_site_pattern_alignment.fasta"),
+        model_name="jc69",
+    )
+    gtr = evaluate_nucleotide_site_log_likelihoods_from_alignment(
+        fixture("trees", "likelihood_site_pattern_tree_4_taxa.nwk"),
+        fixture("alignments", "jc69_site_pattern_alignment.fasta"),
+        model_name="gtr",
+        exchangeabilities={
+            "AC": 1.0,
+            "AG": 1.0,
+            "AT": 1.0,
+            "CG": 1.0,
+            "CT": 1.0,
+            "GT": 1.0,
+        },
+        base_frequencies=_UNIFORM_BASE_FREQUENCIES,
+    )
+
+    assert len(jc69.site_log_likelihoods) == len(gtr.site_log_likelihoods)
+    for left, right in zip(
+        _site_log_likelihood_vector(jc69),
+        _site_log_likelihood_vector(gtr),
+        strict=True,
+    ):
+        _assert_likelihood_match(left, right)
