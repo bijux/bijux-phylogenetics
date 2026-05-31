@@ -210,6 +210,7 @@ def write_wagner_node_cost_table(path: Path, report: WagnerScoreReport) -> Path:
 
 def write_wagner_run_json(path: Path, report: WagnerScoreReport) -> Path:
     """Write one machine-readable ordered Wagner run payload."""
+    validation_warnings = getattr(report, "validation_warnings", [])
     return write_json_artifact(
         path,
         {
@@ -232,7 +233,7 @@ def write_wagner_run_json(path: Path, report: WagnerScoreReport) -> Path:
                     "message": warning.message,
                     "details": warning.details,
                 }
-                for warning in report.validation_warnings
+                for warning in validation_warnings
             ],
             "step_rows": [
                 {
