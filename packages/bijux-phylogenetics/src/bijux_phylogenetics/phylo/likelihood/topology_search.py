@@ -13,6 +13,7 @@ from bijux_phylogenetics.phylo.likelihood.dna import normalize_unambiguous_dna_r
 from bijux_phylogenetics.phylo.likelihood.fixed_topology_branch_lengths import (
     BranchReoptimizationResult,
     evaluate_selected_nucleotide_log_likelihood_from_patterns,
+    optimize_selected_nucleotide_branch_length_subset,
     optimize_selected_nucleotide_branch_lengths,
 )
 from bijux_phylogenetics.phylo.likelihood.nucleotide_models import (
@@ -257,6 +258,30 @@ def reoptimize_nucleotide_topology_tree(
         tree,
         compressed_patterns,
         specification=resolved_surface.specification,
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
+        improvement_tolerance=improvement_tolerance,
+        max_coordinate_passes=max_coordinate_passes,
+    )
+
+
+def reoptimize_nucleotide_topology_tree_branch_subset(
+    tree: PhyloTree,
+    *,
+    compressed_patterns: CompressedAlignmentSitePatterns,
+    resolved_surface: ResolvedNucleotideTopologySearchSurface,
+    optimized_branch_ids: list[str],
+    lower_branch_length_bound: float,
+    upper_branch_length_bound: float,
+    improvement_tolerance: float,
+    max_coordinate_passes: int,
+) -> BranchReoptimizationResult:
+    """Reoptimize one declared subset of branch lengths on one topology-search tree."""
+    return optimize_selected_nucleotide_branch_length_subset(
+        tree,
+        compressed_patterns,
+        specification=resolved_surface.specification,
+        optimized_branch_ids=optimized_branch_ids,
         lower_branch_length_bound=lower_branch_length_bound,
         upper_branch_length_bound=upper_branch_length_bound,
         improvement_tolerance=improvement_tolerance,

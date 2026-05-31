@@ -49,6 +49,7 @@ class BranchReoptimizationResult:
     optimization_pass_count: int
     function_evaluation_count: int
     converged: bool
+    optimized_branch_ids: list[str]
 
 
 def validate_fixed_topology_nucleotide_branch_length_model(model_name: str) -> str:
@@ -497,6 +498,7 @@ def optimize_selected_nucleotide_branch_length_subset(
         optimization_pass_count=search_result.optimization_pass_count,
         function_evaluation_count=search_result.function_evaluation_count,
         converged=search_result.converged,
+        optimized_branch_ids=list(target_branch_ids),
     )
 
 
