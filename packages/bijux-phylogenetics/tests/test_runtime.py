@@ -722,6 +722,8 @@ from bijux_phylogenetics.trees import (
     BranchLengthAggregate,
     BranchLengthDistributionReport,
     CladeTableReport,
+    PosteriorBranchLengthSummaryReport,
+    PosteriorBranchLengthSummaryRow,
     TREE_SET_SPLIT_FREQUENCY_POLICIES,
     TreeShapeReport,
     TreeSetCredibleCladeRow,
@@ -749,6 +751,7 @@ from bijux_phylogenetics.trees import (
     extract_tree_clades,
     extract_tree_set_clades,
     load_tree_set,
+    summarize_posterior_branch_lengths,
     summarize_clade_credibility_conflicts,
     summarize_tree_set_shapes,
     summarize_tree_shape,
@@ -761,6 +764,7 @@ from bijux_phylogenetics.trees import (
     write_credible_clade_set_included_table,
     write_maximum_clade_credibility_artifacts,
     write_maximum_clade_credibility_score_table,
+    write_posterior_branch_length_summary_table,
     write_tree_set_split_frequency_table,
     write_topology_cluster_table,
     write_tree_shape_table,
@@ -952,6 +956,11 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert trees_api.BranchLengthAggregate is BranchLengthAggregate
     assert trees_api.BranchLengthDistributionReport is BranchLengthDistributionReport
     assert trees_api.CladeTableReport is CladeTableReport
+    assert trees_api.PosteriorBranchLengthSummaryRow is PosteriorBranchLengthSummaryRow
+    assert (
+        trees_api.PosteriorBranchLengthSummaryReport
+        is PosteriorBranchLengthSummaryReport
+    )
     assert trees_api.TREE_SET_SPLIT_FREQUENCY_POLICIES is TREE_SET_SPLIT_FREQUENCY_POLICIES
     assert trees_api.TreeShapeReport is TreeShapeReport
     assert trees_api.TreeSetCredibleCladeRow is TreeSetCredibleCladeRow
@@ -981,6 +990,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is compute_maximum_clade_credibility_tree
     )
     assert (
+        trees_api.summarize_posterior_branch_lengths
+        is summarize_posterior_branch_lengths
+    )
+    assert (
         trees_api.compute_tree_set_split_frequency_table
         is compute_tree_set_split_frequency_table
     )
@@ -1005,6 +1018,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         trees_api.write_maximum_clade_credibility_score_table
         is write_maximum_clade_credibility_score_table
+    )
+    assert (
+        trees_api.write_posterior_branch_length_summary_table
+        is write_posterior_branch_length_summary_table
     )
     assert (
         trees_api.write_tree_set_split_frequency_table
@@ -2486,6 +2503,18 @@ def test_compute_credible_clade_set_reports_expected_95_percent_membership() -> 
     assert report.excluded_clade_count == 7
     assert report.included_cumulative_frequency == 1.0
     assert [row.clade for row in report.included_clades] == ["A|B", "A|B|C"]
+
+
+def test_summarize_posterior_branch_lengths_matches_clades_across_topologies() -> None:
+    report = summarize_posterior_branch_lengths(
+        fixture("posterior_branch_length_summary_tree_set.nwk")
+    )
+
+    assert report.tree_count == 4
+    assert report.shared_taxa == ["A", "B", "C", "D", "E"]
+    assert report.rows[0].clade == "A|B"
+    assert report.rows[0].matched_tree_count == 4
+    assert report.rows[0].mean_branch_length == pytest.approx(0.25)
 
 
 def test_compute_consensus_tree_returns_majority_rule_consensus() -> None:
@@ -10438,6 +10467,48 @@ def test_cli_tree_set_credible_clade_set_includes_manifest(
         str(output_dir),
         "--credible-threshold",
         "0.95",
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_set_path)]
+
+
+def test_cli_tree_set_posterior_branch_lengths_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    output_path = tmp_path / "posterior-branch-lengths.tsv"
+    manifest = tmp_path / "posterior-branch-lengths.manifest.json"
+    tree_set_path = fixture("posterior_branch_length_summary_tree_set.nwk")
+
+    exit_code = main(
+        [
+            "tree-set",
+            "posterior-branch-lengths",
+            str(tree_set_path),
+            "--out",
+            str(output_path),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["branch_summary_count"] == 6
+    assert payload["outputs"][:-1] == [str(output_path)]
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "tree-set"
+    assert manifest_payload["arguments"] == [
+        "tree-set",
+        "posterior-branch-lengths",
+        str(tree_set_path),
+        "--out",
+        str(output_path),
         "--json",
         "--manifest",
         str(manifest),
