@@ -205,6 +205,18 @@ from .fixed_topology_relaxed_clock import (
     build_fixed_topology_relaxed_clock_proposal_schedule,
     run_fixed_topology_relaxed_clock_metropolis_hastings,
 )
+from .fixed_topology_strict_clock import (
+    FIXED_TOPOLOGY_STRICT_CLOCK_MODELS,
+    FixedTopologyStrictClockModelDefinition,
+    FixedTopologyStrictClockNodeAgeSummary,
+    FixedTopologyStrictClockPosteriorRow,
+    FixedTopologyStrictClockProposalSchedule,
+    FixedTopologyStrictClockRateSummary,
+    FixedTopologyStrictClockRunReport,
+    build_fixed_topology_strict_clock_model_definition,
+    build_fixed_topology_strict_clock_proposal_schedule,
+    run_fixed_topology_strict_clock_metropolis_hastings,
+)
 from .independent_chains import (
     IndependentMetropolisHastingsChainComparisonRow,
     IndependentMetropolisHastingsChainDefinition,
