@@ -122,6 +122,11 @@ from bijux_phylogenetics.bayesian import (
     JointTopologyDnaPosteriorRow,
     JointTopologyDnaProposalSchedule,
     JointTopologyDnaRunReport,
+    PosteriorAncestralSequenceDefinition,
+    PosteriorAncestralSequenceRecord,
+    PosteriorAncestralSequenceReport,
+    PosteriorAncestralSiteSummaryRow,
+    PosteriorAncestralStateProbabilityRow,
     MetropolisHastingsProposal,
     MetropolisHastingsRunReport,
     MetropolisHastingsStepRow,
@@ -190,6 +195,7 @@ from bijux_phylogenetics.bayesian import (
     build_partition_model_prior_bundle,
     build_partition_model_parameter_state,
     build_partition_parameter_linkage_plan,
+    build_posterior_ancestral_sequence_definition,
     build_partition_substitution_model_definition,
     build_bayesian_model_parameter_state,
     build_bayesian_phylogenetic_state,
@@ -271,10 +277,13 @@ from bijux_phylogenetics.bayesian import (
     strip_partition_model_parameter_state,
     summarize_beast_log,
     summarize_mrbayes_posterior_trees,
+    summarize_nucleotide_posterior_ancestral_sequences,
     validate_partition_substitution_model_name,
     validate_tree_topology_prior_taxa,
     write_beast_log_summary_table,
     write_mrbayes_parameter_summary_table,
+    write_posterior_ancestral_sequence_fasta,
+    write_posterior_ancestral_state_probability_table,
     write_posterior_tree_subsample,
     write_supplementary_bayesian_diagnostics_table,
 )
@@ -1317,6 +1326,26 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is JointTopologyDnaProposalSchedule
     )
     assert bayesian_api.JointTopologyDnaRunReport is JointTopologyDnaRunReport
+    assert (
+        bayesian_api.PosteriorAncestralSequenceDefinition
+        is PosteriorAncestralSequenceDefinition
+    )
+    assert (
+        bayesian_api.PosteriorAncestralSequenceRecord
+        is PosteriorAncestralSequenceRecord
+    )
+    assert (
+        bayesian_api.PosteriorAncestralSequenceReport
+        is PosteriorAncestralSequenceReport
+    )
+    assert (
+        bayesian_api.PosteriorAncestralSiteSummaryRow
+        is PosteriorAncestralSiteSummaryRow
+    )
+    assert (
+        bayesian_api.PosteriorAncestralStateProbabilityRow
+        is PosteriorAncestralStateProbabilityRow
+    )
     assert bayesian_api.BayesianStateBranchRow is BayesianStateBranchRow
     assert bayesian_api.BayesianTreeState is BayesianTreeState
     assert bayesian_api.BayesianModelParameterState is BayesianModelParameterState
@@ -1592,6 +1621,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is build_partition_parameter_linkage_plan
     )
     assert (
+        bayesian_api.build_posterior_ancestral_sequence_definition
+        is build_posterior_ancestral_sequence_definition
+    )
+    assert (
         bayesian_api.build_partition_substitution_model_definition
         is build_partition_substitution_model_definition
     )
@@ -1721,6 +1754,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.run_joint_topology_dna_metropolis_hastings
         is run_joint_topology_dna_metropolis_hastings
+    )
+    assert (
+        bayesian_api.summarize_nucleotide_posterior_ancestral_sequences
+        is summarize_nucleotide_posterior_ancestral_sequences
     )
     assert (
         bayesian_api.sample_prior_only_phylogenetic_state
@@ -1873,6 +1910,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.write_mrbayes_parameter_summary_table
         is write_mrbayes_parameter_summary_table
+    )
+    assert (
+        bayesian_api.write_posterior_ancestral_sequence_fasta
+        is write_posterior_ancestral_sequence_fasta
+    )
+    assert (
+        bayesian_api.write_posterior_ancestral_state_probability_table
+        is write_posterior_ancestral_state_probability_table
     )
     assert bayesian_api.write_posterior_tree_subsample is write_posterior_tree_subsample
     assert (
