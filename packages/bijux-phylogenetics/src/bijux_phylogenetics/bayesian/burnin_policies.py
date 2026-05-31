@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from bijux_phylogenetics.bayesian.independent_chains import (
+    IndependentMetropolisHastingsChainReport,
+    IndependentMetropolisHastingsRunReport,
+)
 from bijux_phylogenetics.bayesian.metropolis_hastings import MetropolisHastingsRunReport
 from bijux_phylogenetics.bayesian.posterior_sets.diagnostics import (
     standardized_mean_shift,
@@ -72,6 +76,24 @@ class MetropolisHastingsBurninDiagnosticReport:
     selected_discarded_sample_count: int
     stabilized_tail_found: bool
     candidate_rows: list[MetropolisHastingsBurninDiagnosticCandidate]
+
+
+@dataclass(frozen=True, slots=True)
+class IndependentMetropolisHastingsChainBurninReport:
+    """One named applied burn-in policy over one independent chain."""
+
+    chain_name: str
+    burnin_report: MetropolisHastingsBurninReport
+
+
+@dataclass(frozen=True, slots=True)
+class IndependentMetropolisHastingsBurninReport:
+    """One applied burn-in policy over one independent-chain run collection."""
+
+    policy: MetropolisHastingsBurninPolicy
+    chain_reports: list[IndependentMetropolisHastingsChainBurninReport]
+    minimum_retained_sample_count: int
+    maximum_retained_sample_count: int
 
 
 def build_metropolis_hastings_burnin_policy(
@@ -304,6 +326,44 @@ def diagnose_metropolis_hastings_burnin(
         selected_discarded_sample_count=selected_candidate.discarded_sample_count,
         stabilized_tail_found=stabilized_tail_found,
         candidate_rows=candidate_rows,
+    )
+
+
+def apply_independent_metropolis_hastings_burnin_policy(
+    *,
+    run_report: IndependentMetropolisHastingsRunReport,
+    policy: MetropolisHastingsBurninPolicy,
+) -> IndependentMetropolisHastingsBurninReport:
+    """Apply one burn-in policy over every chain in one independent-chain run."""
+    if not isinstance(run_report, IndependentMetropolisHastingsRunReport):
+        raise PhylogeneticsError(
+            "independent metropolis-hastings burn-in policy application requires one IndependentMetropolisHastingsRunReport",
+            code="independent_metropolis_hastings_burnin_run_report_type_invalid",
+        )
+    if not isinstance(policy, MetropolisHastingsBurninPolicy):
+        raise PhylogeneticsError(
+            "independent metropolis-hastings burn-in policy application requires one MetropolisHastingsBurninPolicy",
+            code="independent_metropolis_hastings_burnin_policy_type_invalid",
+        )
+    chain_reports = [
+        IndependentMetropolisHastingsChainBurninReport(
+            chain_name=chain_report.chain_name,
+            burnin_report=apply_metropolis_hastings_burnin_policy(
+                chain_report=chain_report.chain_report,
+                policy=policy,
+            ),
+        )
+        for chain_report in run_report.chain_reports
+    ]
+    retained_sample_counts = [
+        chain_report.burnin_report.retained_sample_count
+        for chain_report in chain_reports
+    ]
+    return IndependentMetropolisHastingsBurninReport(
+        policy=policy,
+        chain_reports=chain_reports,
+        minimum_retained_sample_count=min(retained_sample_counts),
+        maximum_retained_sample_count=max(retained_sample_counts),
     )
 
 
