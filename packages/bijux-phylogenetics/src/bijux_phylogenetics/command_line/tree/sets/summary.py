@@ -17,6 +17,7 @@ from bijux_phylogenetics.trees import (
     compute_gene_tree_quartet_concordance_factors,
     compute_majority_rule_extended_consensus,
     compute_maximum_clade_credibility_tree,
+    compute_posterior_clade_correlation_matrix,
     compute_reference_tree_clade_support,
     compute_reference_tree_quartet_support,
     compute_strict_consensus_tree,
@@ -37,6 +38,7 @@ from bijux_phylogenetics.trees import (
     write_majority_rule_extended_consensus_artifacts,
     write_maximum_clade_credibility_artifacts,
     write_posterior_agreement_subtree_artifacts,
+    write_posterior_clade_correlation_artifacts,
     write_posterior_branch_length_summary_table,
     write_posterior_node_age_summary_table,
     write_quartet_puzzling_artifacts,
@@ -187,6 +189,19 @@ def add_tree_set_summary_commands(tree_set_subparsers: Any) -> None:
         help="Emit the posterior agreement-subtree report as JSON.",
     )
     _add_manifest_argument(tree_set_posterior_agreement_subtree)
+
+    tree_set_posterior_clade_correlation = tree_set_subparsers.add_parser(
+        "posterior-clade-correlation-matrix",
+        help="Compute informative clade co-occurrence and binary correlation across one posterior tree set.",
+    )
+    tree_set_posterior_clade_correlation.add_argument("tree_set", type=Path)
+    tree_set_posterior_clade_correlation.add_argument("--out-dir", required=True, type=Path)
+    tree_set_posterior_clade_correlation.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the posterior clade-correlation report as JSON.",
+    )
+    _add_manifest_argument(tree_set_posterior_clade_correlation)
 
     tree_set_support_map = tree_set_subparsers.add_parser(
         "support-map",
@@ -660,6 +675,40 @@ def run_tree_set_summary_command(args: Any) -> int | None:
                     "agreement_removed_taxon_count": len(
                         report.agreement_removed_taxa
                     ),
+                },
+                data=report,
+            ),
+            json_output=args.json,
+        )
+        return 0
+
+    if args.tree_set_command == "posterior-clade-correlation-matrix":
+        report = compute_posterior_clade_correlation_matrix(args.tree_set)
+        output_paths = write_posterior_clade_correlation_artifacts(
+            args.out_dir,
+            report,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="tree-set",
+            inputs=[args.tree_set],
+            outputs=list(output_paths.values()),
+        )
+        _print_result(
+            build_command_result(
+                command="tree-set",
+                inputs=[args.tree_set],
+                outputs=outputs,
+                metrics={
+                    "tree_count": report.tree_count,
+                    "runtime_seconds": report.processing.runtime_seconds,
+                    "peak_memory_bytes": report.processing.peak_memory_bytes,
+                    "skipped_malformed_tree_count": (
+                        report.processing.skipped_malformed_tree_count
+                    ),
+                    "shared_taxon_count": len(report.shared_taxa),
+                    "clade_count": report.clade_count,
+                    "pair_count": report.pair_count,
                 },
                 data=report,
             ),
