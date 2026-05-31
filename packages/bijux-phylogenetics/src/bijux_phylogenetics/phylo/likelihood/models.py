@@ -443,6 +443,7 @@ class NucleotideLikelihoodNniTraceRow:
     branch_reoptimization_scope: str
     optimized_branch_count: int
     optimized_branch_clade_ids: list[str]
+    branch_reoptimization_converged: bool | None
     branch_optimization_pass_count: int
     branch_function_evaluation_count: int
     stopping_reason: str | None
@@ -495,6 +496,7 @@ class NucleotideLikelihoodSprTraceRow:
     affected_branch_clade_ids: list[str]
     optimized_branch_count: int
     optimized_branch_clade_ids: list[str]
+    branch_reoptimization_converged: bool | None
     branch_optimization_pass_count: int
     branch_function_evaluation_count: int
     stopping_reason: str | None
