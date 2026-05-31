@@ -730,6 +730,9 @@ from bijux_phylogenetics.trees import (
     PosteriorBranchLengthSummaryRow,
     PosteriorNodeAgeSummaryReport,
     PosteriorNodeAgeSummaryRow,
+    PosteriorTreeDistanceDiagnosticRow,
+    PosteriorTreeDistanceDiagnosticsReport,
+    PosteriorTreeDistanceDistributionRow,
     TREE_SET_SPLIT_FREQUENCY_POLICIES,
     TreeShapeReport,
     TreeSetCredibleCladeRow,
@@ -749,6 +752,7 @@ from bijux_phylogenetics.trees import (
     compute_credible_clade_set,
     compute_maximum_clade_credibility_tree,
     compute_posterior_clade_correlation_matrix,
+    compute_posterior_tree_distance_diagnostics,
     compute_strict_consensus_tree,
     compute_tree_set_split_frequency_table,
     compute_tree_distance_matrix,
@@ -782,6 +786,9 @@ from bijux_phylogenetics.trees import (
     write_posterior_clade_correlation_pair_table,
     write_posterior_branch_length_summary_table,
     write_posterior_node_age_summary_table,
+    write_posterior_tree_distance_artifacts,
+    write_posterior_tree_distance_diagnostic_table,
+    write_posterior_tree_distance_distribution_table,
     write_tree_set_split_frequency_table,
     write_topology_cluster_table,
     write_tree_shape_table,
@@ -989,6 +996,18 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     )
     assert trees_api.PosteriorNodeAgeSummaryRow is PosteriorNodeAgeSummaryRow
     assert trees_api.PosteriorNodeAgeSummaryReport is PosteriorNodeAgeSummaryReport
+    assert (
+        trees_api.PosteriorTreeDistanceDiagnosticRow
+        is PosteriorTreeDistanceDiagnosticRow
+    )
+    assert (
+        trees_api.PosteriorTreeDistanceDiagnosticsReport
+        is PosteriorTreeDistanceDiagnosticsReport
+    )
+    assert (
+        trees_api.PosteriorTreeDistanceDistributionRow
+        is PosteriorTreeDistanceDistributionRow
+    )
     assert trees_api.TREE_SET_SPLIT_FREQUENCY_POLICIES is TREE_SET_SPLIT_FREQUENCY_POLICIES
     assert trees_api.TreeShapeReport is TreeShapeReport
     assert trees_api.TreeSetCredibleCladeRow is TreeSetCredibleCladeRow
@@ -1020,6 +1039,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         trees_api.compute_posterior_clade_correlation_matrix
         is compute_posterior_clade_correlation_matrix
+    )
+    assert (
+        trees_api.compute_posterior_tree_distance_diagnostics
+        is compute_posterior_tree_distance_diagnostics
     )
     assert (
         trees_api.summarize_posterior_agreement_subtree
@@ -1083,6 +1106,18 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         trees_api.write_posterior_clade_correlation_pair_table
         is write_posterior_clade_correlation_pair_table
+    )
+    assert (
+        trees_api.write_posterior_tree_distance_artifacts
+        is write_posterior_tree_distance_artifacts
+    )
+    assert (
+        trees_api.write_posterior_tree_distance_diagnostic_table
+        is write_posterior_tree_distance_diagnostic_table
+    )
+    assert (
+        trees_api.write_posterior_tree_distance_distribution_table
+        is write_posterior_tree_distance_distribution_table
     )
     assert (
         trees_api.write_posterior_branch_length_summary_table
@@ -2599,6 +2634,20 @@ def test_compute_posterior_clade_correlation_matrix_reports_negative_conflict() 
     assert row_map[("A|B", "A|C")].binary_correlation == pytest.approx(
         -0.577350269189626
     )
+
+
+def test_compute_posterior_tree_distance_diagnostics_ranks_mcc_outliers() -> None:
+    report = compute_posterior_tree_distance_diagnostics(
+        fixture("maximum_clade_credibility_tree_set.nwk")
+    )
+    rows = {row.source_tree_index: row for row in report.rows}
+
+    assert report.maximum_clade_credibility_tree_index == 2
+    assert report.row_count == 5
+    assert report.distribution_row_count == 19
+    assert rows[4].mcc_outlier_rank == 1
+    assert rows[5].mcc_outlier_rank == 2
+    assert rows[2].mcc_branch_score_distance == 0.0
 
 
 def test_summarize_posterior_branch_lengths_matches_clades_across_topologies() -> None:
@@ -10708,6 +10757,55 @@ def test_cli_tree_set_posterior_clade_correlation_matrix_includes_manifest(
     assert manifest_payload["arguments"] == [
         "tree-set",
         "posterior-clade-correlation-matrix",
+        str(tree_set_path),
+        "--out-dir",
+        str(output_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_set_path)]
+
+
+def test_cli_tree_set_posterior_tree_distance_diagnostics_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    output_dir = tmp_path / "posterior-tree-distance-diagnostics"
+    manifest = tmp_path / "posterior-tree-distance-diagnostics.manifest.json"
+    tree_set_path = fixture("maximum_clade_credibility_tree_set.nwk")
+
+    exit_code = main(
+        [
+            "tree-set",
+            "posterior-tree-distance-diagnostics",
+            str(tree_set_path),
+            "--out-dir",
+            str(output_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["row_count"] == 5
+    assert payload["metrics"]["distribution_row_count"] == 19
+    assert payload["metrics"]["maximum_clade_credibility_tree_index"] == 2
+    assert sorted(Path(path).name for path in payload["outputs"][:-1]) == [
+        "consensus-tree.nwk",
+        "maximum-clade-credibility-tree.nwk",
+        "posterior-tree-distance-diagnostics.tsv",
+        "posterior-tree-distance-distribution.tsv",
+    ]
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "tree-set"
+    assert manifest_payload["arguments"] == [
+        "tree-set",
+        "posterior-tree-distance-diagnostics",
         str(tree_set_path),
         "--out-dir",
         str(output_dir),
