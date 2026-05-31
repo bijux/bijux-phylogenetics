@@ -1023,6 +1023,58 @@ class FixedTopologyNucleotideSingleBranchOptimizationReport:
 
 
 @dataclass(slots=True)
+class JointNucleotideOptimizationUpdateRow:
+    """One branch or substitution update inside a joint fixed-topology optimization run."""
+
+    joint_pass_index: int
+    update_kind: str
+    starting_log_likelihood: float
+    optimized_log_likelihood: float
+    log_likelihood_delta: float
+    function_evaluation_count: int
+    optimization_pass_count: int
+    converged: bool
+    optimized_branch_count: int
+    optimized_branch_ids: list[str]
+    updated_parameter_names: list[str]
+
+
+@dataclass(slots=True)
+class FixedTopologyNucleotideJointOptimizationReport:
+    """Joint fixed-topology branch-and-model optimization summary for one nucleotide model."""
+
+    model_name: str
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    branch_count: int
+    initial_tree_newick: str
+    optimized_tree_newick: str
+    state_count: int
+    observation_policy: str
+    root_prior_source: str
+    parameter_count: int
+    base_frequency_source: str | None
+    base_frequency_a: float | None
+    base_frequency_c: float | None
+    base_frequency_g: float | None
+    base_frequency_t: float | None
+    fixed_parameter_values: dict[str, float]
+    parameter_rows: list[SubstitutionParameterOptimizationRow]
+    branch_rows: list[BranchLengthOptimizationRow]
+    initial_log_likelihood: float
+    optimized_log_likelihood: float
+    function_evaluation_count: int
+    joint_optimization_pass_count: int
+    converged: bool
+    convergence_reason: str
+    lower_branch_length_bound: float
+    upper_branch_length_bound: float
+    update_rows: list[JointNucleotideOptimizationUpdateRow]
+    warnings: list[str]
+
+
+@dataclass(slots=True)
 class ProteinEmpiricalBranchLengthOptimizationReport:
     """Fixed-topology branch-length optimization summary for one empirical protein model."""
 
