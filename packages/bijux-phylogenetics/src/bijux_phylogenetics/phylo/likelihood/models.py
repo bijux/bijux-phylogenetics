@@ -1001,6 +1001,7 @@ class FixedTopologyNucleotideBranchLengthOptimizationReport:
     state_count: int
     observation_policy: str
     root_prior_source: str
+    root_prior_values: list[float]
     parameter_count: int
     fixed_parameter_values: dict[str, float]
     initial_log_likelihood: float
@@ -1028,6 +1029,7 @@ class FixedTopologyNucleotideSingleBranchOptimizationReport:
     state_count: int
     observation_policy: str
     root_prior_source: str
+    root_prior_values: list[float]
     parameter_count: int
     fixed_parameter_values: dict[str, float]
     selected_branch: BranchLengthOptimizationRow
@@ -1072,6 +1074,7 @@ class FixedTopologyNucleotideJointOptimizationReport:
     state_count: int
     observation_policy: str
     root_prior_source: str
+    root_prior_values: list[float]
     parameter_count: int
     base_frequency_source: str | None
     base_frequency_a: float | None
@@ -1122,6 +1125,27 @@ class FixedTopologyNucleotideJointOptimizationRestartReport:
     selected_solution_reason: str
     selected_report: FixedTopologyNucleotideJointOptimizationReport
     attempt_rows: list[JointNucleotideOptimizationRestartAttemptRow]
+
+
+@dataclass(slots=True)
+class NucleotideLikelihoodOptimizationEquivalenceReport:
+    """Independent rescore comparison for one optimized fixed-topology nucleotide result."""
+
+    optimization_surface: str
+    model_name: str
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    optimized_tree_newick: str
+    parameter_values: dict[str, float]
+    root_prior_source: str | None
+    stored_log_likelihood: float
+    independently_rescored_log_likelihood: float
+    absolute_difference: float
+    relative_difference: float
+    absolute_tolerance: float
+    relative_tolerance: float
+    equivalent: bool
 
 
 @dataclass(slots=True)

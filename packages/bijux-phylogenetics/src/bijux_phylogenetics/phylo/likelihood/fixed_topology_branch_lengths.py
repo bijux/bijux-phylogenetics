@@ -184,6 +184,7 @@ def optimize_fixed_topology_nucleotide_branch_lengths(
         state_count=specification.state_count,
         observation_policy=specification.observation_policy,
         root_prior_source=specification.root_prior_source,
+        root_prior_values=specification.root_prior.tolist(),
         parameter_count=len(specification.parameter_values),
         fixed_parameter_values=dict(specification.parameter_values),
         initial_log_likelihood=initial_log_likelihood,
@@ -336,6 +337,7 @@ def optimize_fixed_topology_nucleotide_single_branch_length(
         state_count=specification.state_count,
         observation_policy=specification.observation_policy,
         root_prior_source=specification.root_prior_source,
+        root_prior_values=specification.root_prior.tolist(),
         parameter_count=len(specification.parameter_values),
         fixed_parameter_values=dict(specification.parameter_values),
         selected_branch=BranchLengthOptimizationRow(

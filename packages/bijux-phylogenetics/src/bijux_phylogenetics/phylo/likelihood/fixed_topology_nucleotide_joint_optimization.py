@@ -517,6 +517,7 @@ def optimize_fixed_topology_nucleotide_branches_and_model(
         state_count=latest_branch_report.state_count,
         observation_policy=latest_branch_report.observation_policy,
         root_prior_source=latest_branch_report.root_prior_source,
+        root_prior_values=list(latest_branch_report.root_prior_values),
         parameter_count=latest_model_report.parameter_count,
         base_frequency_source=latest_model_report.base_frequency_source,
         base_frequency_a=latest_model_report.base_frequency_a,
