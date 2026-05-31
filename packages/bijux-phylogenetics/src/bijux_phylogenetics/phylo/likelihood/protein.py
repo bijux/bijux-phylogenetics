@@ -55,23 +55,37 @@ UNIFORM_PROTEIN_ROOT_PRIOR = numpy.full(
 )
 PROTEIN_GAP_CHARACTER = "-"
 PROTEIN_MISSING_CHARACTER = "?"
-_PROTEIN_ALLOWED_POLICY_VALUES = frozenset({"treat-as-missing", "reject"})
+PROTEIN_AMBIGUITY_STATES_BY_SYMBOL = {
+    "B": ("D", "N"),
+    "J": ("I", "L"),
+    "X": PROTEIN_STATE_ORDER,
+    "Z": ("E", "Q"),
+}
+_PROTEIN_ALLOWED_ABSENCE_POLICY_VALUES = frozenset({"treat-as-missing", "reject"})
+_PROTEIN_ALLOWED_AMBIGUITY_POLICY_VALUES = frozenset(
+    {"ambiguity-vector", "treat-as-missing", "reject"}
+)
 
 
-def normalize_unambiguous_protein_records(
+def normalize_protein_likelihood_records(
     records: list[AlignmentRecord],
     *,
     model_name: str,
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
+    ambiguity_policy: str = "reject",
 ) -> list[AlignmentRecord]:
-    """Uppercase aligned protein records and apply explicit gap and missing policy."""
+    """Uppercase aligned protein records and apply explicit observation policy."""
     validated_gap_policy = validate_protein_gap_policy(
         gap_policy,
         model_name=model_name,
     )
     validated_missing_policy = validate_protein_missing_policy(
         missing_policy,
+        model_name=model_name,
+    )
+    validated_ambiguity_policy = validate_protein_ambiguity_policy(
+        ambiguity_policy,
         model_name=model_name,
     )
     normalized_records: list[AlignmentRecord] = []
@@ -93,11 +107,17 @@ def normalize_unambiguous_protein_records(
                         f"{model_name} likelihood missing-state policy rejects '?' in record '{record.identifier}'"
                     )
                 continue
+            if state in PROTEIN_AMBIGUITY_STATES_BY_SYMBOL:
+                if validated_ambiguity_policy == "reject":
+                    raise InvalidAlignmentError(
+                        f"{model_name} likelihood ambiguity policy rejects '{state}' in record '{record.identifier}'"
+                    )
+                continue
             invalid_states.add(state)
         if invalid_states:
             joined_states = ", ".join(sorted(invalid_states))
             raise InvalidAlignmentError(
-                f"{model_name} likelihood currently requires unambiguous amino-acid states plus explicit gap/missing policy; "
+                f"{model_name} likelihood currently requires standard amino-acid states plus explicit gap, missing, and ambiguity policy; "
                 f"record '{record.identifier}' contains {joined_states}"
             )
         normalized_records.append(
@@ -109,14 +129,32 @@ def normalize_unambiguous_protein_records(
     return normalized_records
 
 
+def normalize_unambiguous_protein_records(
+    records: list[AlignmentRecord],
+    *,
+    model_name: str,
+    gap_policy: str = "treat-as-missing",
+    missing_policy: str = "treat-as-missing",
+    ambiguity_policy: str = "reject",
+) -> list[AlignmentRecord]:
+    """Backward-compatible wrapper around the owned protein observation normalizer."""
+    return normalize_protein_likelihood_records(
+        records,
+        model_name=model_name,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
+    )
+
+
 def validate_protein_gap_policy(
     gap_policy: str,
     *,
     model_name: str,
 ) -> str:
-    if gap_policy not in _PROTEIN_ALLOWED_POLICY_VALUES:
+    if gap_policy not in _PROTEIN_ALLOWED_ABSENCE_POLICY_VALUES:
         raise ValueError(
-            f"{model_name} protein gap policy must be one of {sorted(_PROTEIN_ALLOWED_POLICY_VALUES)}"
+            f"{model_name} protein gap policy must be one of {sorted(_PROTEIN_ALLOWED_ABSENCE_POLICY_VALUES)}"
         )
     return gap_policy
 
@@ -126,11 +164,23 @@ def validate_protein_missing_policy(
     *,
     model_name: str,
 ) -> str:
-    if missing_policy not in _PROTEIN_ALLOWED_POLICY_VALUES:
+    if missing_policy not in _PROTEIN_ALLOWED_ABSENCE_POLICY_VALUES:
         raise ValueError(
-            f"{model_name} protein missing-state policy must be one of {sorted(_PROTEIN_ALLOWED_POLICY_VALUES)}"
+            f"{model_name} protein missing-state policy must be one of {sorted(_PROTEIN_ALLOWED_ABSENCE_POLICY_VALUES)}"
         )
     return missing_policy
+
+
+def validate_protein_ambiguity_policy(
+    ambiguity_policy: str,
+    *,
+    model_name: str,
+) -> str:
+    if ambiguity_policy not in _PROTEIN_ALLOWED_AMBIGUITY_POLICY_VALUES:
+        raise ValueError(
+            f"{model_name} protein ambiguity policy must be one of {sorted(_PROTEIN_ALLOWED_AMBIGUITY_POLICY_VALUES)}"
+        )
+    return ambiguity_policy
 
 
 def validate_protein_root_prior(
@@ -210,8 +260,9 @@ def protein_leaf_likelihood_vector(
     node_name: str | None,
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
+    ambiguity_policy: str = "reject",
 ) -> numpy.ndarray:
-    """Return a one-hot or all-states-allowed vector for one protein tip state."""
+    """Return a one-hot, ambiguity, or all-states-allowed vector for one protein tip state."""
     if node_name is None:
         raise AlignmentTaxonMismatchError(
             f"{model_name} likelihood requires named tree tips for alignment lookup"
@@ -239,6 +290,21 @@ def protein_leaf_likelihood_vector(
                 f"{model_name} likelihood missing-state policy rejects '?' at taxon '{node_name}'"
             )
         return numpy.ones(len(PROTEIN_STATE_ORDER), dtype=float)
+    if state in PROTEIN_AMBIGUITY_STATES_BY_SYMBOL:
+        validated_ambiguity_policy = validate_protein_ambiguity_policy(
+            ambiguity_policy,
+            model_name=model_name,
+        )
+        if validated_ambiguity_policy == "reject":
+            raise InvalidAlignmentError(
+                f"{model_name} likelihood ambiguity policy rejects '{state}' at taxon '{node_name}'"
+            )
+        if validated_ambiguity_policy == "treat-as-missing":
+            return numpy.ones(len(PROTEIN_STATE_ORDER), dtype=float)
+        vector = numpy.zeros(len(PROTEIN_STATE_ORDER), dtype=float)
+        for compatible_state in PROTEIN_AMBIGUITY_STATES_BY_SYMBOL[state]:
+            vector[PROTEIN_STATE_INDEX[compatible_state]] = 1.0
+        return vector
     raise InvalidAlignmentError(
         f"{model_name} likelihood encountered unsupported amino-acid state '{state}' at taxon '{node_name}'"
     )
@@ -253,6 +319,7 @@ def evaluate_fixed_topology_protein_likelihood_from_patterns(
     transition_matrix_for_child: Callable[[object], numpy.ndarray],
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
+    ambiguity_policy: str = "reject",
 ) -> float:
     """Evaluate one fixed-topology protein CTMC likelihood on compressed patterns."""
     validate_explicit_branch_lengths(tree, model_name=model_name)
@@ -278,6 +345,7 @@ def evaluate_fixed_topology_protein_likelihood_from_patterns(
                 transition_matrix_for_child=transition_matrix_for_child,
                 gap_policy=gap_policy,
                 missing_policy=missing_policy,
+                ambiguity_policy=ambiguity_policy,
             )
         ),
     )
@@ -293,6 +361,7 @@ def evaluate_fixed_topology_protein_site_log_likelihood(
     transition_matrix_for_child: Callable[[object], numpy.ndarray],
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
+    ambiguity_policy: str = "reject",
 ) -> float:
     """Evaluate one protein site log likelihood on one fixed topology."""
     states_by_taxon = dict(zip(taxon_order, states, strict=True))
@@ -309,6 +378,7 @@ def evaluate_fixed_topology_protein_site_log_likelihood(
             node_name=node.name,
             gap_policy=gap_policy,
             missing_policy=missing_policy,
+            ambiguity_policy=ambiguity_policy,
         ),
         transition_matrix_for_child=transition_matrix_for_child,
     )

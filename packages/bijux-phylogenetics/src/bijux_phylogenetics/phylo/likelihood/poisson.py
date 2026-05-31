@@ -20,7 +20,7 @@ from bijux_phylogenetics.phylo.likelihood.protein import (
     PROTEIN_STATE_ORDER,
     UNIFORM_PROTEIN_ROOT_PRIOR,
     evaluate_fixed_topology_protein_site_log_likelihood,
-    normalize_unambiguous_protein_records,
+    normalize_protein_likelihood_records,
 )
 from bijux_phylogenetics.phylo.likelihood.sites import (
     expanded_site_log_likelihood_rows_from_patterns,
@@ -64,13 +64,15 @@ def evaluate_protein_poisson_tree_likelihood(
     *,
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
+    ambiguity_policy: str = "reject",
 ) -> ProteinPoissonTreeLikelihoodReport:
     """Evaluate one fixed-topology protein Poisson likelihood from aligned amino acids."""
-    normalized_records = normalize_unambiguous_protein_records(
+    normalized_records = normalize_protein_likelihood_records(
         records,
         model_name="protein Poisson",
         gap_policy=gap_policy,
         missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
     )
     compressed_patterns = compress_alignment_site_patterns_from_records(
         normalized_records
@@ -80,6 +82,7 @@ def evaluate_protein_poisson_tree_likelihood(
         compressed_patterns,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
     )
 
 
@@ -89,6 +92,7 @@ def evaluate_protein_poisson_tree_likelihood_from_alignment(
     *,
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
+    ambiguity_policy: str = "reject",
 ) -> ProteinPoissonTreeLikelihoodReport:
     """Evaluate one fixed-topology protein Poisson likelihood from paths."""
     return evaluate_protein_poisson_tree_likelihood(
@@ -96,6 +100,7 @@ def evaluate_protein_poisson_tree_likelihood_from_alignment(
         load_fasta_alignment(alignment_path),
         gap_policy=gap_policy,
         missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
     )
 
 
@@ -105,6 +110,7 @@ def _evaluate_protein_poisson_tree_likelihood_from_patterns(
     *,
     gap_policy: str,
     missing_policy: str,
+    ambiguity_policy: str,
 ) -> ProteinPoissonTreeLikelihoodReport:
     transition_by_node_id = {
         child.node_id: protein_poisson_transition_probability_matrix(
@@ -127,6 +133,7 @@ def _evaluate_protein_poisson_tree_likelihood_from_patterns(
                     ],
                     gap_policy=gap_policy,
                     missing_policy=missing_policy,
+                    ambiguity_policy=ambiguity_policy,
                 )
             ),
         )
@@ -140,6 +147,7 @@ def _evaluate_protein_poisson_tree_likelihood_from_patterns(
         state_count=len(PROTEIN_STATE_ORDER),
         gap_policy=gap_policy,
         missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
         log_likelihood=log_likelihood,
         site_log_likelihoods=site_log_likelihoods,
     )

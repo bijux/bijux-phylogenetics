@@ -43,6 +43,7 @@ def test_protein_poisson_fixed_tree_likelihood_matches_two_tip_analytical_fixtur
     assert report.state_count == 20
     assert report.gap_policy == "treat-as-missing"
     assert report.missing_policy == "treat-as-missing"
+    assert report.ambiguity_policy == "reject"
     assert math.isclose(
         report.log_likelihood,
         math.log(expected_probability),
@@ -79,6 +80,49 @@ def test_protein_poisson_missing_policy_can_reject_missing_states() -> None:
             alignment_path,
             missing_policy="reject",
         )
+
+
+def test_protein_poisson_ambiguity_policy_can_reject_ambiguity_codes() -> None:
+    tree_path = fixture("trees", "protein_poisson_likelihood_tree_2_taxa.nwk")
+    alignment_path = fixture(
+        "alignments", "protein_poisson_likelihood_alignment_ambiguity_2_taxa.fasta"
+    )
+
+    with pytest.raises(InvalidAlignmentError, match="ambiguity policy rejects 'B'"):
+        evaluate_protein_poisson_tree_likelihood_from_alignment(
+            tree_path,
+            alignment_path,
+            ambiguity_policy="reject",
+        )
+
+
+def test_protein_poisson_ambiguity_policies_change_likelihood() -> None:
+    tree_path = fixture("trees", "protein_poisson_likelihood_tree_2_taxa.nwk")
+    alignment_path = fixture(
+        "alignments", "protein_poisson_likelihood_alignment_ambiguity_2_taxa.fasta"
+    )
+
+    missing_report = evaluate_protein_poisson_tree_likelihood_from_alignment(
+        tree_path,
+        alignment_path,
+        ambiguity_policy="treat-as-missing",
+    )
+    ambiguity_report = evaluate_protein_poisson_tree_likelihood_from_alignment(
+        tree_path,
+        alignment_path,
+        ambiguity_policy="ambiguity-vector",
+    )
+
+    assert missing_report.ambiguity_policy == "treat-as-missing"
+    assert ambiguity_report.ambiguity_policy == "ambiguity-vector"
+    assert math.isfinite(missing_report.log_likelihood)
+    assert math.isfinite(ambiguity_report.log_likelihood)
+    assert not math.isclose(
+        missing_report.log_likelihood,
+        ambiguity_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
 
 
 def test_protein_poisson_likelihood_does_not_reuse_dna_alphabet_surface() -> None:
