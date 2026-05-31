@@ -23,6 +23,12 @@ from .consensus import (
     compute_strict_consensus_tree,
     write_consensus_tree,
 )
+from .credible_clades import (
+    compute_credible_clade_set,
+    write_credible_clade_set_artifacts,
+    write_credible_clade_set_excluded_table,
+    write_credible_clade_set_included_table,
+)
 from .contracts import (
     CandidateTreeQuartetScoreReport,
     CladeCompatibilityEdgeRow,
@@ -39,6 +45,8 @@ from .contracts import (
     QuartetPuzzlingAssemblyRow,
     QuartetPuzzlingReport,
     QuartetTopologyScoreRow,
+    TreeSetCredibleCladeRow,
+    TreeSetCredibleCladeSetReport,
     TreeDistanceMatrixReport,
     TreeDistancePair,
     TreeSetCladeSupportReport,
@@ -98,6 +106,8 @@ __all__ = [
     "CladeCompatibilityGraphReport",
     "CladeCompatibilityNodeRow",
     "ConsensusTreeReport",
+    "TreeSetCredibleCladeRow",
+    "TreeSetCredibleCladeSetReport",
     "GeneTreeQuartetConcordanceReport",
     "GeneTreeQuartetConcordanceRow",
     "MajorityRuleExtendedAcceptedCladeRow",
@@ -129,6 +139,7 @@ __all__ = [
     "compute_clade_compatibility_graph",
     "compute_clade_frequency_table",
     "compute_consensus_tree",
+    "compute_credible_clade_set",
     "compute_gene_tree_quartet_concordance_factors",
     "compute_majority_rule_extended_consensus",
     "compute_maximum_clade_credibility_tree",
@@ -146,6 +157,9 @@ __all__ = [
     "write_clade_compatibility_node_table",
     "write_clade_frequency_table",
     "write_consensus_tree",
+    "write_credible_clade_set_artifacts",
+    "write_credible_clade_set_excluded_table",
+    "write_credible_clade_set_included_table",
     "write_gene_tree_quartet_concordance_table",
     "write_majority_rule_extended_consensus_artifacts",
     "write_majority_rule_extended_consensus_inclusion_table",
