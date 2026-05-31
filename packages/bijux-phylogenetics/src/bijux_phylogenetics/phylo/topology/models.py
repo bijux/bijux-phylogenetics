@@ -307,6 +307,36 @@ class RootedSprNeighborhoodReport:
     neighbor_rows: list[RootedSprNeighborRow]
 
 
+@dataclass(slots=True)
+class RootedSprMoveApplicationReport:
+    """Explicit record of one rooted SPR move application over a binary rooted tree."""
+
+    algorithm: str
+    input_tree_path: Path | None
+    input_tree_newick: str
+    input_topology_fingerprint: str
+    selected_move_index: int
+    available_move_count: int
+    selected_pruned_node_id: str
+    selected_pruned_clade_id: str
+    selected_pruned_descendant_taxa: list[str]
+    selected_regraft_target_branch_id: str
+    selected_regraft_target_descendant_taxa: list[str] | None
+    moved_tree_newick: str
+    moved_topology_fingerprint: str
+    moved_topology_changed: bool
+    tip_count: int
+    internal_node_count: int
+    rooted: bool | None
+    strictly_bifurcating: bool
+    missing_tip_taxa: list[str]
+    unexpected_tip_taxa: list[str]
+    moved_validation_errors: list[str]
+    affected_clade_ids: list[str]
+    pruned_edge_id: str
+    regraft_edge_id: str
+
+
 @dataclass(frozen=True, slots=True)
 class RootedTbrNeighborRow:
     """One rooted TBR neighbor with a representative cut and reconnection."""

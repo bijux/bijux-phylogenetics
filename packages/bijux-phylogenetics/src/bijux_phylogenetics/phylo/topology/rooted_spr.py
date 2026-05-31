@@ -8,9 +8,11 @@ from bijux_phylogenetics.io.newick import load_newick, loads_newick, write_newic
 from bijux_phylogenetics.phylo.topology.clades import (
     canonical_clade_id,
     rooted_topology_fingerprint,
+    rooted_topology_signature_ids,
 )
 from bijux_phylogenetics.phylo.topology.models import (
     RootedSprEnumerationBudget,
+    RootedSprMoveApplicationReport,
     RootedSprNeighborRow,
     RootedSprNeighborhoodReport,
 )
@@ -204,6 +206,81 @@ def apply_rooted_spr_move(
     return remainder_tree.refresh()
 
 
+def resolve_rooted_spr_move_candidate(
+    tree: PhyloTree | Path,
+    move_index: int,
+    *,
+    budget: RootedSprEnumerationBudget | None = None,
+) -> tuple[RootedSprMoveCandidate, int]:
+    """Resolve one 1-indexed rooted SPR move candidate from a validated tree."""
+    resolved_tree, _input_tree_path = _resolve_rooted_spr_tree(tree)
+    validate_rooted_spr_tree(resolved_tree)
+    candidates = list(iter_rooted_spr_move_candidates(resolved_tree, budget=budget))
+    if move_index < 1 or move_index > len(candidates):
+        raise ValueError(
+            f"rooted SPR move index must be between 1 and {len(candidates)}"
+        )
+    return candidates[move_index - 1], len(candidates)
+
+
+def summarize_rooted_spr_move_application(
+    tree: PhyloTree | Path,
+    move_index: int,
+    *,
+    budget: RootedSprEnumerationBudget | None = None,
+) -> RootedSprMoveApplicationReport:
+    """Apply one rooted SPR move and report the resulting valid transformed tree."""
+    resolved_tree, input_tree_path = _resolve_rooted_spr_tree(tree)
+    validate_rooted_spr_tree(resolved_tree)
+    selected_candidate, available_move_count = resolve_rooted_spr_move_candidate(
+        resolved_tree,
+        move_index,
+        budget=budget,
+    )
+    moved_tree = apply_rooted_spr_move(resolved_tree, selected_candidate)
+    input_tip_taxa = set(resolved_tree.tip_names)
+    moved_tip_taxa = set(moved_tree.tip_names)
+    input_topology_fingerprint = rooted_topology_fingerprint(resolved_tree)
+    moved_topology_fingerprint = rooted_topology_fingerprint(moved_tree)
+    affected_clade_ids = _rooted_spr_affected_clade_ids(
+        resolved_tree,
+        moved_tree,
+        selected_candidate,
+    )
+    report = RootedSprMoveApplicationReport(
+        algorithm="rooted-spr-move-application",
+        input_tree_path=input_tree_path,
+        input_tree_newick=resolved_tree.to_newick(),
+        input_topology_fingerprint=input_topology_fingerprint,
+        selected_move_index=move_index,
+        available_move_count=available_move_count,
+        selected_pruned_node_id=selected_candidate.pruned_node_id,
+        selected_pruned_clade_id=selected_candidate.pruned_clade_id,
+        selected_pruned_descendant_taxa=list(selected_candidate.pruned_descendant_taxa),
+        selected_regraft_target_branch_id=selected_candidate.regraft_target_branch_id,
+        selected_regraft_target_descendant_taxa=(
+            None
+            if selected_candidate.regraft_target_descendant_taxa is None
+            else list(selected_candidate.regraft_target_descendant_taxa)
+        ),
+        moved_tree_newick=moved_tree.to_newick(),
+        moved_topology_fingerprint=moved_topology_fingerprint,
+        moved_topology_changed=moved_topology_fingerprint != input_topology_fingerprint,
+        tip_count=resolved_tree.tip_count,
+        internal_node_count=resolved_tree.internal_node_count,
+        rooted=resolved_tree.rooted,
+        strictly_bifurcating=True,
+        missing_tip_taxa=sorted(input_tip_taxa - moved_tip_taxa),
+        unexpected_tip_taxa=sorted(moved_tip_taxa - input_tip_taxa),
+        moved_validation_errors=moved_tree.validation_errors(),
+        affected_clade_ids=affected_clade_ids,
+        pruned_edge_id=selected_candidate.pruned_clade_id,
+        regraft_edge_id=selected_candidate.regraft_target_branch_id,
+    )
+    _validate_rooted_spr_move_application_report(report)
+    return report
+
+
 def prune_rooted_spr_subtree(
     tree: PhyloTree,
     prune_node_id: str,
@@ -394,6 +471,22 @@ def _candidate_is_self_regraft(candidate: RootedSprMoveCandidate) -> bool:
     )
 
 
+def _rooted_spr_affected_clade_ids(
+    original_tree: PhyloTree,
+    moved_tree: PhyloTree,
+    candidate: RootedSprMoveCandidate,
+) -> list[str]:
+    changed_clade_ids = sorted(
+        set(rooted_topology_signature_ids(original_tree))
+        ^ set(rooted_topology_signature_ids(moved_tree))
+    )
+    affected = set(changed_clade_ids)
+    affected.add(candidate.pruned_clade_id)
+    if candidate.regraft_target_branch_id != _ROOT_REGRAFT_BRANCH_ID:
+        affected.add(candidate.regraft_target_branch_id)
+    return sorted(affected)
+
+
 def _validate_rooted_spr_neighbor_report(
     report: RootedSprNeighborhoodReport,
 ) -> None:
@@ -410,6 +503,21 @@ def _validate_rooted_spr_neighbor_report(
     ]
     if invalid_neighbor_rows:
         raise ValueError("rooted SPR enumeration generated invalid neighbor trees")
+
+
+def _validate_rooted_spr_move_application_report(
+    report: RootedSprMoveApplicationReport,
+) -> None:
+    if not report.moved_topology_changed:
+        raise ValueError("rooted SPR move application did not change the topology")
+    if report.missing_tip_taxa or report.unexpected_tip_taxa:
+        raise ValueError("rooted SPR move application changed the input taxon set")
+    if report.moved_validation_errors:
+        raise ValueError("rooted SPR move application generated an invalid tree")
+    if not report.affected_clade_ids:
+        raise ValueError(
+            "rooted SPR move application did not report any affected clades"
+        )
 
 
 def write_rooted_spr_neighbor_table(
