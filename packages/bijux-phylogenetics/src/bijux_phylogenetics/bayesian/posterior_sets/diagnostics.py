@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from math import ceil
 from pathlib import Path
 from statistics import mean, median, stdev
+
+from bijux_phylogenetics.bayesian.trace_posterior_intervals import (
+    compute_highest_posterior_density_interval,
+)
+from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 
 @dataclass(slots=True)
@@ -107,23 +111,14 @@ def highest_posterior_density_interval(
         raise ValueError("HPD interval requires at least one sampled value")
     if not 0.0 < mass_fraction <= 1.0:
         raise ValueError("HPD mass fraction must be in the interval (0, 1]")
-    if len(series) == 1:
-        return series[0], series[0]
-    sorted_values = sorted(series)
-    window_size = max(1, ceil(mass_fraction * len(sorted_values)))
-    if window_size >= len(sorted_values):
-        return sorted_values[0], sorted_values[-1]
-    best_start = 0
-    best_width = sorted_values[window_size - 1] - sorted_values[0]
-    for start in range(1, len(sorted_values) - window_size + 1):
-        width = sorted_values[start + window_size - 1] - sorted_values[start]
-        if width < best_width:
-            best_start = start
-            best_width = width
-    return (
-        sorted_values[best_start],
-        sorted_values[best_start + window_size - 1],
-    )
+    try:
+        interval = compute_highest_posterior_density_interval(
+            series,
+            mass_fraction=mass_fraction,
+        )
+    except PhylogeneticsError as error:
+        raise ValueError(str(error)) from error
+    return interval.lower_bound, interval.upper_bound
 
 
 def summarize_trace_parameters(
