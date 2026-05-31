@@ -722,6 +722,8 @@ from bijux_phylogenetics.trees import (
     BranchLengthAggregate,
     BranchLengthDistributionReport,
     CladeTableReport,
+    PosteriorAgreementSubtreeCandidateRow,
+    PosteriorAgreementSubtreeReport,
     PosteriorBranchLengthSummaryReport,
     PosteriorBranchLengthSummaryRow,
     PosteriorNodeAgeSummaryReport,
@@ -753,6 +755,7 @@ from bijux_phylogenetics.trees import (
     extract_tree_clades,
     extract_tree_set_clades,
     load_tree_set,
+    summarize_posterior_agreement_subtree,
     summarize_posterior_branch_lengths,
     summarize_posterior_node_ages,
     summarize_clade_credibility_conflicts,
@@ -767,6 +770,10 @@ from bijux_phylogenetics.trees import (
     write_credible_clade_set_included_table,
     write_maximum_clade_credibility_artifacts,
     write_maximum_clade_credibility_score_table,
+    write_posterior_agreement_subtree_artifacts,
+    write_posterior_agreement_subtree_removed_taxa_table,
+    write_posterior_agreement_subtree_search_table,
+    write_posterior_agreement_subtree_summary_table,
     write_posterior_branch_length_summary_table,
     write_posterior_node_age_summary_table,
     write_tree_set_split_frequency_table,
@@ -960,6 +967,13 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert trees_api.BranchLengthAggregate is BranchLengthAggregate
     assert trees_api.BranchLengthDistributionReport is BranchLengthDistributionReport
     assert trees_api.CladeTableReport is CladeTableReport
+    assert (
+        trees_api.PosteriorAgreementSubtreeCandidateRow
+        is PosteriorAgreementSubtreeCandidateRow
+    )
+    assert (
+        trees_api.PosteriorAgreementSubtreeReport is PosteriorAgreementSubtreeReport
+    )
     assert trees_api.PosteriorBranchLengthSummaryRow is PosteriorBranchLengthSummaryRow
     assert (
         trees_api.PosteriorBranchLengthSummaryReport
@@ -996,6 +1010,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
         is compute_maximum_clade_credibility_tree
     )
     assert (
+        trees_api.summarize_posterior_agreement_subtree
+        is summarize_posterior_agreement_subtree
+    )
+    assert (
         trees_api.summarize_posterior_branch_lengths
         is summarize_posterior_branch_lengths
     )
@@ -1025,6 +1043,22 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert (
         trees_api.write_maximum_clade_credibility_score_table
         is write_maximum_clade_credibility_score_table
+    )
+    assert (
+        trees_api.write_posterior_agreement_subtree_artifacts
+        is write_posterior_agreement_subtree_artifacts
+    )
+    assert (
+        trees_api.write_posterior_agreement_subtree_removed_taxa_table
+        is write_posterior_agreement_subtree_removed_taxa_table
+    )
+    assert (
+        trees_api.write_posterior_agreement_subtree_search_table
+        is write_posterior_agreement_subtree_search_table
+    )
+    assert (
+        trees_api.write_posterior_agreement_subtree_summary_table
+        is write_posterior_agreement_subtree_summary_table
     )
     assert (
         trees_api.write_posterior_branch_length_summary_table
@@ -2514,6 +2548,19 @@ def test_compute_credible_clade_set_reports_expected_95_percent_membership() -> 
     assert report.excluded_clade_count == 7
     assert report.included_cumulative_frequency == 1.0
     assert [row.clade for row in report.included_clades] == ["A|B", "A|B|C"]
+
+
+def test_summarize_posterior_agreement_subtree_finds_stable_retained_topology() -> None:
+    tree, report = summarize_posterior_agreement_subtree(
+        fixture("posterior_agreement_subtree_tree_set.nwk")
+    )
+
+    assert dumps_newick(tree) == "((A:1,B:1):2,(D:1,E:1):2);"
+    assert report.tree_count == 3
+    assert report.retained_taxa == ["A", "B", "D", "E"]
+    assert report.agreement_removed_taxa == ["C"]
+    assert report.evaluated_candidate_count == 4
+    assert report.candidate_rows[-1].stable_topology_reached is True
 
 
 def test_summarize_posterior_branch_lengths_matches_clades_across_topologies() -> None:
@@ -10532,6 +10579,54 @@ def test_cli_tree_set_posterior_branch_lengths_includes_manifest(
         str(tree_set_path),
         "--out",
         str(output_path),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_set_path)]
+
+
+def test_cli_tree_set_posterior_agreement_subtree_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    output_dir = tmp_path / "posterior-agreement-subtree"
+    manifest = tmp_path / "posterior-agreement-subtree.manifest.json"
+    tree_set_path = fixture("posterior_agreement_subtree_tree_set.nwk")
+
+    exit_code = main(
+        [
+            "tree-set",
+            "posterior-agreement-subtree",
+            str(tree_set_path),
+            "--out-dir",
+            str(output_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["retained_taxon_count"] == 4
+    assert payload["metrics"]["agreement_removed_taxon_count"] == 1
+    assert sorted(Path(path).name for path in payload["outputs"][:-1]) == [
+        "posterior-agreement-subtree-removed-taxa.tsv",
+        "posterior-agreement-subtree-search.tsv",
+        "posterior-agreement-subtree-summary.tsv",
+        "posterior-agreement-subtree.nwk",
+    ]
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "tree-set"
+    assert manifest_payload["arguments"] == [
+        "tree-set",
+        "posterior-agreement-subtree",
+        str(tree_set_path),
+        "--out-dir",
+        str(output_dir),
         "--json",
         "--manifest",
         str(manifest),
