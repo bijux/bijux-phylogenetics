@@ -232,10 +232,11 @@ def summarize_rooted_spr_move_application(
     """Apply one rooted SPR move and report the resulting valid transformed tree."""
     resolved_tree, input_tree_path = _resolve_rooted_spr_tree(tree)
     validate_rooted_spr_tree(resolved_tree)
+    normalized_budget = validate_rooted_spr_enumeration_budget(budget)
     selected_candidate, available_move_count = resolve_rooted_spr_move_candidate(
         resolved_tree,
         move_index,
-        budget=budget,
+        budget=normalized_budget,
     )
     moved_tree = apply_rooted_spr_move(resolved_tree, selected_candidate)
     input_tip_taxa = set(resolved_tree.tip_names)
@@ -254,6 +255,10 @@ def summarize_rooted_spr_move_application(
         input_topology_fingerprint=input_topology_fingerprint,
         selected_move_index=move_index,
         available_move_count=available_move_count,
+        max_pruned_clade_count=normalized_budget.max_pruned_clade_count,
+        max_regraft_target_count_per_pruned_clade=(
+            normalized_budget.max_regraft_target_count_per_pruned_clade
+        ),
         selected_pruned_node_id=selected_candidate.pruned_node_id,
         selected_pruned_clade_id=selected_candidate.pruned_clade_id,
         selected_pruned_descendant_taxa=list(selected_candidate.pruned_descendant_taxa),
@@ -640,5 +645,74 @@ def write_rooted_spr_artifacts(
     return {
         "input_tree_path": input_tree_path,
         "neighbors_path": neighbors_path,
+        "run_json_path": run_json_path,
+    }
+
+
+def write_rooted_spr_move_run_json(
+    path: Path,
+    report: RootedSprMoveApplicationReport,
+) -> Path:
+    """Write one machine-readable rooted SPR move-application payload."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "algorithm": report.algorithm,
+        "input_tree_path": (
+            None if report.input_tree_path is None else str(report.input_tree_path)
+        ),
+        "input_tree_newick": report.input_tree_newick,
+        "input_topology_fingerprint": report.input_topology_fingerprint,
+        "selected_move_index": report.selected_move_index,
+        "available_move_count": report.available_move_count,
+        "max_pruned_clade_count": report.max_pruned_clade_count,
+        "max_regraft_target_count_per_pruned_clade": (
+            report.max_regraft_target_count_per_pruned_clade
+        ),
+        "selected_pruned_node_id": report.selected_pruned_node_id,
+        "selected_pruned_clade_id": report.selected_pruned_clade_id,
+        "selected_pruned_descendant_taxa": report.selected_pruned_descendant_taxa,
+        "selected_regraft_target_branch_id": report.selected_regraft_target_branch_id,
+        "selected_regraft_target_descendant_taxa": (
+            report.selected_regraft_target_descendant_taxa
+        ),
+        "moved_tree_newick": report.moved_tree_newick,
+        "moved_topology_fingerprint": report.moved_topology_fingerprint,
+        "moved_topology_changed": report.moved_topology_changed,
+        "tip_count": report.tip_count,
+        "internal_node_count": report.internal_node_count,
+        "rooted": report.rooted,
+        "strictly_bifurcating": report.strictly_bifurcating,
+        "missing_tip_taxa": report.missing_tip_taxa,
+        "unexpected_tip_taxa": report.unexpected_tip_taxa,
+        "moved_validation_errors": report.moved_validation_errors,
+        "affected_clade_ids": report.affected_clade_ids,
+        "pruned_edge_id": report.pruned_edge_id,
+        "regraft_edge_id": report.regraft_edge_id,
+    }
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def write_rooted_spr_move_artifacts(
+    out_dir: Path,
+    report: RootedSprMoveApplicationReport,
+) -> dict[str, Path]:
+    """Write the governed artifact family for one rooted SPR move application."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    input_tree_path = write_newick(
+        out_dir / "input_tree.nwk",
+        loads_newick(report.input_tree_newick),
+    )
+    moved_tree_path = write_newick(
+        out_dir / "moved_tree.nwk",
+        loads_newick(report.moved_tree_newick),
+    )
+    run_json_path = write_rooted_spr_move_run_json(out_dir / "run.json", report)
+    return {
+        "input_tree_path": input_tree_path,
+        "moved_tree_path": moved_tree_path,
         "run_json_path": run_json_path,
     }

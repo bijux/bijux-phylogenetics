@@ -317,6 +317,8 @@ class RootedSprMoveApplicationReport:
     input_topology_fingerprint: str
     selected_move_index: int
     available_move_count: int
+    max_pruned_clade_count: int | None
+    max_regraft_target_count_per_pruned_clade: int | None
     selected_pruned_node_id: str
     selected_pruned_clade_id: str
     selected_pruned_descendant_taxa: list[str]
