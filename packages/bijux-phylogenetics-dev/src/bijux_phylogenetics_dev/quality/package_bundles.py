@@ -152,7 +152,12 @@ def _archive_members(path: Path) -> set[str]:
         with tarfile.open(path, "r:gz") as archive:
             members = set()
             for member in archive.getmembers():
-                if member.name and not member.isdir() and not member.issym() and not member.islnk():
+                if (
+                    member.name
+                    and not member.isdir()
+                    and not member.issym()
+                    and not member.islnk()
+                ):
                     _, _, relative = member.name.partition("/")
                     members.add(relative)
             return members

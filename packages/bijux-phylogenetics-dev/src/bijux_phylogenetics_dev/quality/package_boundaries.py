@@ -307,9 +307,7 @@ def _resolve_symbol_exports(
                     module_path, module, argument.id
                 )
                 if imported_symbol is None:
-                    return _resolve_symbol_exports(
-                        module_path, argument.id, seen=seen
-                    )
+                    return _resolve_symbol_exports(module_path, argument.id, seen=seen)
                 imported_module_path, imported_name = imported_symbol
                 return _resolve_symbol_exports(
                     imported_module_path, imported_name, seen=seen

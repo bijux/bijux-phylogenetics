@@ -147,17 +147,18 @@ def test_validate_example_input_probe_rejects_source_tree_paths(
     )
     copied_dir = source_root / "resources" / "examples" / "copied"
     copied_dir.mkdir(parents=True, exist_ok=True)
+    copied_paths = {
+        "alignment": (copied_dir / "example_alignment.fasta").as_posix(),
+        "alt_tree": (copied_dir / "example_tree_alt.nwk").as_posix(),
+        "metadata": (copied_dir / "example_metadata.tsv").as_posix(),
+        "traits": (copied_dir / "example_traits.tsv").as_posix(),
+        "tree": (copied_dir / "example_tree.nwk").as_posix(),
+    }
     report = {
         "destination": copied_dir.as_posix(),
-        "copied_paths": {
-            "alignment": (copied_dir / "example_alignment.fasta").as_posix(),
-            "alt_tree": (copied_dir / "example_tree_alt.nwk").as_posix(),
-            "metadata": (copied_dir / "example_metadata.tsv").as_posix(),
-            "traits": (copied_dir / "example_traits.tsv").as_posix(),
-            "tree": (copied_dir / "example_tree.nwk").as_posix(),
-        },
+        "copied_paths": copied_paths,
     }
-    for path in report["copied_paths"].values():
+    for path in copied_paths.values():
         Path(path).write_text("sentinel\n", encoding="utf-8")
 
     issues = validate_example_input_probe(report, repo_root)

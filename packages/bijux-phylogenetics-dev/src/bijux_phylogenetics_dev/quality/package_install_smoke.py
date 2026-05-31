@@ -259,12 +259,15 @@ def validate_resource_probe(report: JsonObject, repo_root: Path) -> list[SmokeIs
     return issues
 
 
-def validate_example_input_probe(report: JsonObject, repo_root: Path) -> list[SmokeIssue]:
+def validate_example_input_probe(
+    report: JsonObject, repo_root: Path
+) -> list[SmokeIssue]:
     """Validate that installed example-copy helpers create usable writable inputs."""
     issues: list[SmokeIssue] = []
     source_root = (repo_root / _RUNTIME_SOURCE_ROOT).resolve()
     copied_paths = {
-        name: _as_str(path) for name, path in _as_dict(report.get("copied_paths")).items()
+        name: _as_str(path)
+        for name, path in _as_dict(report.get("copied_paths")).items()
     }
     for input_name in _EXPECTED_EXAMPLE_INPUTS:
         path_text = copied_paths.get(input_name, "")

@@ -131,14 +131,12 @@ def should_count_name(name: str, config: CoverageConfig) -> bool:
     )
     if config.ignore_private and is_private:
         return False
-    if config.ignore_semiprivate and is_semiprivate:
-        return False
-    return True
+    return not (config.ignore_semiprivate and is_semiprivate)
 
 
 def iter_documentable_nodes(
     body: Sequence[ast.stmt], config: CoverageConfig
-) -> Iterable[ast.AST]:
+) -> Iterable[ast.FunctionDef | ast.ClassDef]:
     """Yield documentable nodes in source order."""
     for statement in body:
         if isinstance(statement, (ast.FunctionDef, ast.ClassDef)):
@@ -202,12 +200,13 @@ def emit_report(
     print(f"RESULT: {verdict} ({overall:.1f}%)")
     return 0 if passed else 1
 
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Run the docstring coverage measurement command."""
     args = parse_args(argv)
     root = Path.cwd().resolve()
     config = load_config(Path(args.pyproject).resolve(), args.fail_under)
-    files = iter_python_files((Path(path).resolve() for path in args.paths))
+    files = iter_python_files(Path(path).resolve() for path in args.paths)
     records = [analyze_file(path, config) for path in files]
     return emit_report(records, config, root)
 
