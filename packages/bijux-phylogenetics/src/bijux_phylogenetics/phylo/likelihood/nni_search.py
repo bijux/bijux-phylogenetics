@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy
 
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick, write_newick
+from bijux_phylogenetics.phylo.topology.clades import canonical_clade_id, split_sort_key
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.models import (
     NucleotideLikelihoodNniSearchReport,
@@ -15,18 +16,24 @@ from bijux_phylogenetics.phylo.likelihood.topology_search import (
     BranchReoptimizationResult,
     normalize_nucleotide_topology_search_records,
     prefer_higher_likelihood,
+    reoptimize_nucleotide_topology_tree_branch_subset,
     reoptimize_nucleotide_topology_tree,
     resolve_nucleotide_topology_search_records,
     resolve_nucleotide_topology_search_surface,
     resolve_nucleotide_topology_search_tree,
-    validate_branch_reoptimization_policy,
     validate_nucleotide_topology_search_tree,
 )
 from bijux_phylogenetics.phylo.topology.rooted_nni import (
     apply_rooted_nni_move,
     iter_rooted_nni_move_candidates,
+    require_rooted_nni_node_id,
+    rooted_nni_node_sort_key,
 )
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, descendant_taxa
+
+_SUPPORTED_NNI_BRANCH_REOPTIMIZATION_POLICIES = frozenset(
+    {"coordinate-branch-lengths", "nni-local-affected-branches"}
+)
 
 
 def search_nucleotide_likelihood_nni(
@@ -58,7 +65,7 @@ def search_nucleotide_likelihood_nni(
     resolved_records, resolved_alignment_path = resolve_nucleotide_topology_search_records(
         records
     )
-    validated_branch_reoptimization_policy = validate_branch_reoptimization_policy(
+    validated_branch_reoptimization_policy = validate_nucleotide_likelihood_nni_branch_reoptimization_policy(
         branch_reoptimization_policy
     )
     validate_nucleotide_topology_search_tree(
@@ -85,7 +92,7 @@ def search_nucleotide_likelihood_nni(
         resolved_tree,
         compressed_patterns=compressed_patterns,
         resolved_surface=resolved_surface,
-        branch_reoptimization_policy=validated_branch_reoptimization_policy,
+        branch_reoptimization_policy="coordinate-branch-lengths",
         lower_branch_length_bound=lower_branch_length_bound,
         upper_branch_length_bound=upper_branch_length_bound,
         improvement_tolerance=improvement_tolerance,
@@ -108,6 +115,12 @@ def search_nucleotide_likelihood_nni(
             sibling_clade_id=None,
             exchanged_clade_id=None,
             branch_reoptimization_policy=validated_branch_reoptimization_policy,
+            branch_reoptimization_scope="all-branches",
+            optimized_branch_count=len(start_result.optimized_branch_ids),
+            optimized_branch_clade_ids=resolve_optimized_branch_clade_ids(
+                current_tree,
+                start_result.optimized_branch_ids,
+            ),
             branch_optimization_pass_count=start_result.optimization_pass_count,
             branch_function_evaluation_count=start_result.function_evaluation_count,
             stopping_reason=None,
@@ -123,16 +136,32 @@ def search_nucleotide_likelihood_nni(
         improving_newick: str | None = None
         for candidate in iter_rooted_nni_move_candidates(current_tree):
             neighbor_tree = apply_rooted_nni_move(current_tree, candidate)
-            neighbor_result = reoptimize_nucleotide_topology_tree(
-                neighbor_tree,
-                compressed_patterns=compressed_patterns,
-                resolved_surface=resolved_surface,
-                branch_reoptimization_policy=validated_branch_reoptimization_policy,
-                lower_branch_length_bound=lower_branch_length_bound,
-                upper_branch_length_bound=upper_branch_length_bound,
-                improvement_tolerance=improvement_tolerance,
-                max_coordinate_passes=max_coordinate_passes,
-            )
+            if validated_branch_reoptimization_policy == "coordinate-branch-lengths":
+                neighbor_result = reoptimize_nucleotide_topology_tree(
+                    neighbor_tree,
+                    compressed_patterns=compressed_patterns,
+                    resolved_surface=resolved_surface,
+                    branch_reoptimization_policy=validated_branch_reoptimization_policy,
+                    lower_branch_length_bound=lower_branch_length_bound,
+                    upper_branch_length_bound=upper_branch_length_bound,
+                    improvement_tolerance=improvement_tolerance,
+                    max_coordinate_passes=max_coordinate_passes,
+                )
+            else:
+                neighbor_result = reoptimize_nucleotide_topology_tree_branch_subset(
+                    neighbor_tree,
+                    compressed_patterns=compressed_patterns,
+                    resolved_surface=resolved_surface,
+                    optimized_branch_ids=resolve_nni_local_branch_ids(
+                        current_tree,
+                        neighbor_tree,
+                        candidate,
+                    ),
+                    lower_branch_length_bound=lower_branch_length_bound,
+                    upper_branch_length_bound=upper_branch_length_bound,
+                    improvement_tolerance=improvement_tolerance,
+                    max_coordinate_passes=max_coordinate_passes,
+                )
             evaluated_neighbor_count += 1
             neighbor_newick = dumps_newick(neighbor_result.optimized_tree)
             total_branch_optimization_pass_count += (
@@ -178,6 +207,14 @@ def search_nucleotide_likelihood_nni(
                 sibling_clade_id=improving_candidate.sibling_clade_id,
                 exchanged_clade_id=improving_candidate.exchanged_clade_id,
                 branch_reoptimization_policy=validated_branch_reoptimization_policy,
+                branch_reoptimization_scope=resolve_nni_branch_reoptimization_scope(
+                    validated_branch_reoptimization_policy
+                ),
+                optimized_branch_count=len(improving_result.optimized_branch_ids),
+                optimized_branch_clade_ids=resolve_optimized_branch_clade_ids(
+                    current_tree,
+                    improving_result.optimized_branch_ids,
+                ),
                 branch_optimization_pass_count=improving_result.optimization_pass_count,
                 branch_function_evaluation_count=improving_result.function_evaluation_count,
                 stopping_reason=None,
@@ -197,6 +234,9 @@ def search_nucleotide_likelihood_nni(
             sibling_clade_id=None,
             exchanged_clade_id=None,
             branch_reoptimization_policy=validated_branch_reoptimization_policy,
+            branch_reoptimization_scope="none",
+            optimized_branch_count=0,
+            optimized_branch_clade_ids=[],
             branch_optimization_pass_count=0,
             branch_function_evaluation_count=0,
             stopping_reason=stopping_reason,
@@ -273,6 +313,120 @@ def search_nucleotide_likelihood_nni_from_alignment(
     )
 
 
+def validate_nucleotide_likelihood_nni_branch_reoptimization_policy(policy: str) -> str:
+    """Validate one rooted likelihood NNI branch-reoptimization policy."""
+    normalized_policy = policy.strip().lower()
+    if normalized_policy not in _SUPPORTED_NNI_BRANCH_REOPTIMIZATION_POLICIES:
+        raise ValueError(
+            "branch_reoptimization_policy must be one of "
+            + ", ".join(sorted(_SUPPORTED_NNI_BRANCH_REOPTIMIZATION_POLICIES))
+        )
+    return normalized_policy
+
+
+def resolve_nni_branch_reoptimization_scope(policy: str) -> str:
+    """Render one durable recomputation-scope label for rooted likelihood NNI moves."""
+    if policy == "coordinate-branch-lengths":
+        return "all-branches"
+    if policy == "nni-local-affected-branches":
+        return "local-nni-neighborhood"
+    raise ValueError(f"unsupported rooted likelihood NNI reoptimization policy '{policy}'")
+
+
+def resolve_nni_local_branch_ids(
+    original_tree: PhyloTree,
+    moved_tree: PhyloTree,
+    candidate,
+) -> list[str]:
+    """Resolve the local moved-branch neighborhood reoptimized after one rooted NNI move."""
+    original_parent = original_tree.node_by_id(candidate.parent_node_id)
+    original_child = original_tree.node_by_id(candidate.child_node_id)
+    original_sibling = original_tree.node_by_id(candidate.sibling_node_id)
+    original_exchanged_child = original_tree.node_by_id(candidate.exchanged_child_node_id)
+    original_remaining_child = next(
+        child
+        for child in original_child.children
+        if child is not original_exchanged_child
+    )
+    moved_parent = (
+        None
+        if original_parent is original_tree.root
+        else _find_branch_node_by_signature(
+            moved_tree,
+            frozenset(descendant_taxa(original_parent)),
+        )
+    )
+    moved_child = _find_branch_node_by_signature(
+        moved_tree,
+        frozenset(
+            [
+                *descendant_taxa(original_remaining_child),
+                *descendant_taxa(original_sibling),
+            ]
+        ),
+    )
+    moved_sibling = _find_branch_node_by_signature(
+        moved_tree,
+        frozenset(descendant_taxa(original_sibling)),
+    )
+    moved_exchanged_child = _find_branch_node_by_signature(
+        moved_tree,
+        frozenset(descendant_taxa(original_exchanged_child)),
+    )
+    remaining_child = next(
+        child for child in moved_child.children if child is not moved_sibling
+    )
+    candidate_nodes = [
+        moved_child,
+        moved_sibling,
+        moved_exchanged_child,
+        remaining_child,
+    ]
+    if moved_parent is not None:
+        candidate_nodes.append(moved_parent)
+    node_by_id = {
+        require_rooted_nni_node_id(node): node
+        for node in candidate_nodes
+    }
+    return [
+        node_id
+        for node_id, _node in sorted(
+            node_by_id.items(),
+            key=lambda item: (
+                rooted_nni_node_sort_key(item[1]),
+                item[0],
+            ),
+        )
+    ]
+
+
+def _find_branch_node_by_signature(
+    tree: PhyloTree,
+    signature: frozenset[str],
+):
+    for node in tree.iter_nodes(order="preorder"):
+        if node is tree.root:
+            continue
+        if frozenset(descendant_taxa(node)) == signature:
+            return node
+    raise ValueError(f"tree does not contain branch clade '{canonical_clade_id(signature)}'")
+
+
+def resolve_optimized_branch_clade_ids(
+    tree: PhyloTree,
+    optimized_branch_ids: list[str],
+) -> list[str]:
+    """Render one deterministic optimized-branch clade ledger for a rooted likelihood search."""
+    signatures = [
+        frozenset(descendant_taxa(tree.node_by_id(branch_id)))
+        for branch_id in optimized_branch_ids
+    ]
+    return [
+        canonical_clade_id(signature)
+        for signature in sorted(signatures, key=split_sort_key)
+    ]
+
+
 def write_nucleotide_likelihood_nni_trace_table(
     path: Path,
     report: NucleotideLikelihoodNniSearchReport,
@@ -292,6 +446,9 @@ def write_nucleotide_likelihood_nni_trace_table(
         "sibling_clade_id",
         "exchanged_clade_id",
         "branch_reoptimization_policy",
+        "branch_reoptimization_scope",
+        "optimized_branch_count",
+        "optimized_branch_clade_ids",
         "branch_optimization_pass_count",
         "branch_function_evaluation_count",
         "stopping_reason",
@@ -311,6 +468,9 @@ def write_nucleotide_likelihood_nni_trace_table(
             row.sibling_clade_id,
             row.exchanged_clade_id,
             row.branch_reoptimization_policy,
+            row.branch_reoptimization_scope,
+            row.optimized_branch_count,
+            ",".join(row.optimized_branch_clade_ids),
             row.branch_optimization_pass_count,
             row.branch_function_evaluation_count,
             row.stopping_reason,
@@ -371,6 +531,9 @@ def write_nucleotide_likelihood_nni_run_json(
                 "sibling_clade_id": row.sibling_clade_id,
                 "exchanged_clade_id": row.exchanged_clade_id,
                 "branch_reoptimization_policy": row.branch_reoptimization_policy,
+                "branch_reoptimization_scope": row.branch_reoptimization_scope,
+                "optimized_branch_count": row.optimized_branch_count,
+                "optimized_branch_clade_ids": row.optimized_branch_clade_ids,
                 "branch_optimization_pass_count": row.branch_optimization_pass_count,
                 "branch_function_evaluation_count": row.branch_function_evaluation_count,
                 "stopping_reason": row.stopping_reason,
