@@ -199,7 +199,9 @@ def _resolve_optimized_parameter_values(
             FixedTopologyNucleotideSingleBranchOptimizationReport,
         ),
     ):
-        return dict(optimization_report.fixed_parameter_values)
+        return _normalize_parameter_names(
+            optimization_report.fixed_parameter_values
+        )
     parameter_values = dict(optimization_report.fixed_parameter_values)
     if optimization_report.base_frequency_source is not None:
         parameter_values.update(
@@ -213,6 +215,23 @@ def _resolve_optimized_parameter_values(
     for row in optimization_report.parameter_rows:
         parameter_values[row.parameter_name] = row.optimized_value
     return parameter_values
+
+
+def _normalize_parameter_names(
+    parameter_values: dict[str, float],
+) -> dict[str, float]:
+    normalized_parameter_values: dict[str, float] = {}
+    for parameter_name, value in parameter_values.items():
+        if parameter_name.startswith("base_frequency_"):
+            normalized_parameter_values[parameter_name.removeprefix("base_frequency_").upper()] = value
+            continue
+        if parameter_name.startswith("exchangeability_"):
+            normalized_parameter_values[
+                parameter_name.removeprefix("exchangeability_").upper()
+            ] = value
+            continue
+        normalized_parameter_values[parameter_name] = value
+    return normalized_parameter_values
 
 
 def _independently_rescore_optimized_report(
