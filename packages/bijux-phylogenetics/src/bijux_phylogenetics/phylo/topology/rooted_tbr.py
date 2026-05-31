@@ -678,6 +678,86 @@ def write_rooted_tbr_artifacts(
     }
 
 
+def write_rooted_tbr_move_run_json(
+    path: Path,
+    report: RootedTbrMoveApplicationReport,
+) -> Path:
+    """Write one machine-readable rooted TBR move-application payload."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "algorithm": report.algorithm,
+        "input_tree_path": (
+            None if report.input_tree_path is None else str(report.input_tree_path)
+        ),
+        "input_tree_newick": report.input_tree_newick,
+        "input_topology_fingerprint": report.input_topology_fingerprint,
+        "selected_move_index": report.selected_move_index,
+        "available_move_count": report.available_move_count,
+        "selected_cut_parent_node_id": report.selected_cut_parent_node_id,
+        "selected_cut_child_node_id": report.selected_cut_child_node_id,
+        "selected_cut_edge_id": report.selected_cut_edge_id,
+        "selected_cut_descendant_taxa": report.selected_cut_descendant_taxa,
+        "left_component_tip_count": report.left_component_tip_count,
+        "right_component_tip_count": report.right_component_tip_count,
+        "selected_left_attachment_branch_id": (
+            report.selected_left_attachment_branch_id
+        ),
+        "selected_left_attachment_descendant_taxa": (
+            report.selected_left_attachment_descendant_taxa
+        ),
+        "selected_right_attachment_branch_id": (
+            report.selected_right_attachment_branch_id
+        ),
+        "selected_right_attachment_descendant_taxa": (
+            report.selected_right_attachment_descendant_taxa
+        ),
+        "moved_tree_newick": report.moved_tree_newick,
+        "moved_topology_fingerprint": report.moved_topology_fingerprint,
+        "moved_topology_changed": report.moved_topology_changed,
+        "reverse_move_available": report.reverse_move_available,
+        "reverse_available_move_count": report.reverse_available_move_count,
+        "reverse_cut_edge_id": report.reverse_cut_edge_id,
+        "reverse_left_attachment_branch_id": report.reverse_left_attachment_branch_id,
+        "reverse_right_attachment_branch_id": (
+            report.reverse_right_attachment_branch_id
+        ),
+        "tip_count": report.tip_count,
+        "internal_node_count": report.internal_node_count,
+        "rooted": report.rooted,
+        "strictly_bifurcating": report.strictly_bifurcating,
+        "missing_tip_taxa": report.missing_tip_taxa,
+        "unexpected_tip_taxa": report.unexpected_tip_taxa,
+        "moved_validation_errors": report.moved_validation_errors,
+    }
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def write_rooted_tbr_move_artifacts(
+    out_dir: Path,
+    report: RootedTbrMoveApplicationReport,
+) -> dict[str, Path]:
+    """Write the governed artifact family for one rooted TBR move application."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    input_tree_path = write_newick(
+        out_dir / "input_tree.nwk",
+        loads_newick(report.input_tree_newick),
+    )
+    moved_tree_path = write_newick(
+        out_dir / "moved_tree.nwk",
+        loads_newick(report.moved_tree_newick),
+    )
+    run_json_path = write_rooted_tbr_move_run_json(out_dir / "run.json", report)
+    return {
+        "input_tree_path": input_tree_path,
+        "moved_tree_path": moved_tree_path,
+        "run_json_path": run_json_path,
+    }
+
+
 def _build_rooted_tbr_graph(tree: PhyloTree) -> _RootedTbrGraph:
     working_tree = tree.copy().refresh()
     node_labels: dict[str, str | None] = {}
