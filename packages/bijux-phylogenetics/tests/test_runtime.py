@@ -157,6 +157,11 @@ from bijux_phylogenetics.bayesian import (
     BayesianRunManifestReplayReport,
     BayesianRunPriorRow,
     BurninSampleRow,
+    TraceAutocorrelationLagRow,
+    TraceAutocorrelationParameterReport,
+    MetropolisHastingsTraceAutocorrelationReport,
+    IndependentMetropolisHastingsChainTraceAutocorrelationReport,
+    IndependentMetropolisHastingsTraceAutocorrelationReport,
     IndependentMetropolisHastingsBurninReport,
     IndependentMetropolisHastingsChainBurninReport,
     MetropolisHastingsBurninDiagnosticCandidate,
@@ -197,6 +202,7 @@ from bijux_phylogenetics.bayesian import (
     build_adaptive_tuning_window_row,
     build_bayesian_evidence_package,
     build_metropolis_hastings_burnin_policy,
+    compute_trace_autocorrelation,
     build_bayesian_posterior_tree_sample,
     build_bayesian_posterior_tree_sample_archive,
     build_brownian_continuous_trait_model_definition,
@@ -348,8 +354,10 @@ from bijux_phylogenetics.bayesian import (
     load_bayesian_run_manifest,
     replay_fixed_topology_dna_run_manifest,
     summarize_metropolis_hastings_model_averaged_estimates,
+    summarize_metropolis_hastings_trace_autocorrelation,
     summarize_posterior_model_averaged_estimates,
     summarize_posterior_predictive_p_values,
+    summarize_independent_metropolis_hastings_trace_autocorrelation,
     simulate_prior_only_phylogenetic_states,
     strip_partition_model_parameter_state,
     summarize_beast_log,
@@ -2214,6 +2222,23 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         == METROPOLIS_HASTINGS_BURNIN_POLICY_NAMES
     )
     assert bayesian_api.BurninSampleRow is BurninSampleRow
+    assert bayesian_api.TraceAutocorrelationLagRow is TraceAutocorrelationLagRow
+    assert (
+        bayesian_api.TraceAutocorrelationParameterReport
+        is TraceAutocorrelationParameterReport
+    )
+    assert (
+        bayesian_api.MetropolisHastingsTraceAutocorrelationReport
+        is MetropolisHastingsTraceAutocorrelationReport
+    )
+    assert (
+        bayesian_api.IndependentMetropolisHastingsChainTraceAutocorrelationReport
+        is IndependentMetropolisHastingsChainTraceAutocorrelationReport
+    )
+    assert (
+        bayesian_api.IndependentMetropolisHastingsTraceAutocorrelationReport
+        is IndependentMetropolisHastingsTraceAutocorrelationReport
+    )
     assert (
         bayesian_api.IndependentMetropolisHastingsBurninReport
         is IndependentMetropolisHastingsBurninReport
@@ -2245,8 +2270,19 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is build_metropolis_hastings_burnin_policy
     )
     assert (
+        bayesian_api.compute_trace_autocorrelation is compute_trace_autocorrelation
+    )
+    assert (
         bayesian_api.diagnose_metropolis_hastings_burnin
         is diagnose_metropolis_hastings_burnin
+    )
+    assert (
+        bayesian_api.summarize_independent_metropolis_hastings_trace_autocorrelation
+        is summarize_independent_metropolis_hastings_trace_autocorrelation
+    )
+    assert (
+        bayesian_api.summarize_metropolis_hastings_trace_autocorrelation
+        is summarize_metropolis_hastings_trace_autocorrelation
     )
     assert bayesian_api.BAYESIAN_BURNIN_POLICY_NAMES == BAYESIAN_BURNIN_POLICY_NAMES
     assert (
