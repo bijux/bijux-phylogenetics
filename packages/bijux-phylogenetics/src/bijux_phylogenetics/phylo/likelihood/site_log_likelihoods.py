@@ -27,6 +27,7 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
 )
 from bijux_phylogenetics.phylo.likelihood.sites import (
     expanded_site_log_likelihood_rows_from_patterns,
+    validate_site_log_likelihood_reconstruction,
 )
 from bijux_phylogenetics.phylo.likelihood.validation import (
     validate_explicit_branch_lengths,
@@ -172,6 +173,13 @@ def evaluate_selected_dna_site_log_likelihoods_from_patterns(
                 )
             ),
         )
+    )
+    validate_site_log_likelihood_reconstruction(
+        site_log_likelihoods,
+        expected_total_log_likelihood=total_log_likelihood,
+        expected_site_count=compressed_patterns.alignment_length,
+        expected_pattern_count=compressed_patterns.pattern_count,
+        owner_name=f"{model_name} site log likelihood export",
     )
     return FixedTopologySiteLogLikelihoodReport(
         model_name=model_name,
