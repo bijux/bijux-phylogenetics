@@ -116,6 +116,8 @@ _EXPORTS = {
     "validate_rooted_spr_enumeration_budget": "rooted_spr",
     "validate_rooted_spr_tree": "rooted_spr",
     "write_rooted_spr_artifacts": "rooted_spr",
+    "write_rooted_spr_move_artifacts": "rooted_spr",
+    "write_rooted_spr_move_run_json": "rooted_spr",
     "write_rooted_spr_neighbor_table": "rooted_spr",
     "write_rooted_spr_run_json": "rooted_spr",
     "enumerate_rooted_tbr_neighbors": "rooted_tbr",
