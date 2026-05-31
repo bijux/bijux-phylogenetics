@@ -98,6 +98,8 @@ _EXPORTS = {
     "summarize_rooted_nni_move_application": "rooted_nni",
     "validate_rooted_nni_tree": "rooted_nni",
     "write_rooted_nni_artifacts": "rooted_nni",
+    "write_rooted_nni_move_artifacts": "rooted_nni",
+    "write_rooted_nni_move_run_json": "rooted_nni",
     "write_rooted_nni_neighbor_table": "rooted_nni",
     "write_rooted_nni_run_json": "rooted_nni",
     "apply_rooted_spr_move": "rooted_spr",

@@ -545,3 +545,90 @@ def write_rooted_nni_artifacts(
         "neighbors_path": neighbors_path,
         "run_json_path": run_json_path,
     }
+
+
+def write_rooted_nni_move_run_json(
+    path: Path,
+    report: RootedNniMoveApplicationReport,
+) -> Path:
+    """Write one machine-readable rooted NNI move-application payload."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "algorithm": report.algorithm,
+        "input_tree_path": (
+            None if report.input_tree_path is None else str(report.input_tree_path)
+        ),
+        "input_tree_newick": report.input_tree_newick,
+        "input_topology_fingerprint": report.input_topology_fingerprint,
+        "selected_move_index": report.selected_move_index,
+        "available_move_count": report.available_move_count,
+        "selected_move": {
+            "parent_node_id": report.selected_parent_node_id,
+            "child_node_id": report.selected_child_node_id,
+            "sibling_node_id": report.selected_sibling_node_id,
+            "exchanged_child_node_id": report.selected_exchanged_child_node_id,
+            "pivot_branch_id": report.selected_pivot_branch_id,
+            "sibling_clade_id": report.selected_sibling_clade_id,
+            "exchanged_clade_id": report.selected_exchanged_clade_id,
+        },
+        "moved_tree_newick": report.moved_tree_newick,
+        "moved_topology_fingerprint": report.moved_topology_fingerprint,
+        "moved_topology_changed": report.moved_topology_changed,
+        "reverse_move": {
+            "parent_node_id": report.reverse_parent_node_id,
+            "child_node_id": report.reverse_child_node_id,
+            "sibling_node_id": report.reverse_sibling_node_id,
+            "exchanged_child_node_id": report.reverse_exchanged_child_node_id,
+            "pivot_branch_id": report.reverse_pivot_branch_id,
+            "sibling_clade_id": report.reverse_sibling_clade_id,
+            "exchanged_clade_id": report.reverse_exchanged_clade_id,
+        },
+        "reversed_tree_newick": report.reversed_tree_newick,
+        "reversed_topology_fingerprint": report.reversed_topology_fingerprint,
+        "reverse_restores_original_topology": report.reverse_restores_original_topology,
+        "tip_count": report.tip_count,
+        "internal_node_count": report.internal_node_count,
+        "rooted": report.rooted,
+        "strictly_bifurcating": report.strictly_bifurcating,
+        "missing_tip_taxa": report.missing_tip_taxa,
+        "unexpected_tip_taxa": report.unexpected_tip_taxa,
+        "moved_validation_errors": report.moved_validation_errors,
+        "reversed_validation_errors": report.reversed_validation_errors,
+        "node_names_preserved": report.node_names_preserved,
+        "node_metadata_preserved": report.node_metadata_preserved,
+        "edge_metadata_preserved": report.edge_metadata_preserved,
+        "branch_lengths_preserved": report.branch_lengths_preserved,
+        "total_branch_length_preserved": report.total_branch_length_preserved,
+    }
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def write_rooted_nni_move_artifacts(
+    out_dir: Path,
+    report: RootedNniMoveApplicationReport,
+) -> dict[str, Path]:
+    """Write the governed artifact family for one rooted NNI move application."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    input_tree_path = write_newick(
+        out_dir / "input_tree.nwk",
+        loads_newick(report.input_tree_newick),
+    )
+    moved_tree_path = write_newick(
+        out_dir / "moved_tree.nwk",
+        loads_newick(report.moved_tree_newick),
+    )
+    reversed_tree_path = write_newick(
+        out_dir / "reversed_tree.nwk",
+        loads_newick(report.reversed_tree_newick),
+    )
+    run_json_path = write_rooted_nni_move_run_json(out_dir / "run.json", report)
+    return {
+        "input_tree_path": input_tree_path,
+        "moved_tree_path": moved_tree_path,
+        "reversed_tree_path": reversed_tree_path,
+        "run_json_path": run_json_path,
+    }
