@@ -130,6 +130,33 @@ def summarize_metropolis_hastings_trace_effective_sample_size(
     )
 
 
+def summarize_independent_metropolis_hastings_trace_effective_sample_size(
+    *,
+    run_report: IndependentMetropolisHastingsRunReport,
+    maximum_lag: int | None = None,
+) -> IndependentMetropolisHastingsTraceEffectiveSampleSizeReport:
+    """Summarize autocorrelation-time ESS across named independent chains."""
+    if not isinstance(run_report, IndependentMetropolisHastingsRunReport):
+        raise PhylogeneticsError(
+            "independent metropolis-hastings trace effective sample size summary requires one IndependentMetropolisHastingsRunReport",
+            code="trace_effective_sample_size_independent_run_report_type_invalid",
+        )
+    return IndependentMetropolisHastingsTraceEffectiveSampleSizeReport(
+        chain_reports=[
+            IndependentMetropolisHastingsChainTraceEffectiveSampleSizeReport(
+                chain_name=chain_report.chain_name,
+                effective_sample_size_report=(
+                    summarize_metropolis_hastings_trace_effective_sample_size(
+                        chain_report=chain_report.chain_report,
+                        maximum_lag=maximum_lag,
+                    )
+                ),
+            )
+            for chain_report in run_report.chain_reports
+        ]
+    )
+
+
 def _validate_numeric_series(values: Sequence[float]) -> list[float]:
     validated_values = list(values)
     if not validated_values:
