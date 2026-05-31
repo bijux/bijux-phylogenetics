@@ -44,6 +44,7 @@ from bijux_phylogenetics.bayesian import (
     DISCRETE_TRAIT_RATE_PRIOR_MODELS,
     FIXED_TOPOLOGY_DNA_SUBSTITUTION_MODELS,
     FIXED_TOPOLOGY_RELAXED_CLOCK_MODELS,
+    FIXED_TOPOLOGY_STRICT_CLOCK_MODELS,
     JOINT_TOPOLOGY_DNA_TOPOLOGY_MOVE_KINDS,
     BROWNIAN_CONTINUOUS_TRAIT_MODELS,
     ORNSTEIN_UHLENBECK_CONTINUOUS_TRAIT_MODELS,
@@ -105,6 +106,12 @@ from bijux_phylogenetics.bayesian import (
     FixedTopologyRelaxedClockPosteriorRow,
     FixedTopologyRelaxedClockProposalSchedule,
     FixedTopologyRelaxedClockRunReport,
+    FixedTopologyStrictClockModelDefinition,
+    FixedTopologyStrictClockNodeAgeSummary,
+    FixedTopologyStrictClockPosteriorRow,
+    FixedTopologyStrictClockProposalSchedule,
+    FixedTopologyStrictClockRateSummary,
+    FixedTopologyStrictClockRunReport,
     JointTopologyDnaModelDefinition,
     JointTopologyDnaPosteriorRow,
     JointTopologyDnaProposalSchedule,
@@ -149,6 +156,8 @@ from bijux_phylogenetics.bayesian import (
     build_fixed_topology_dna_proposal_schedule,
     build_fixed_topology_relaxed_clock_model_definition,
     build_fixed_topology_relaxed_clock_proposal_schedule,
+    build_fixed_topology_strict_clock_model_definition,
+    build_fixed_topology_strict_clock_proposal_schedule,
     build_fixed_continuous_trait_location_prior,
     build_fixed_continuous_trait_probability_prior,
     build_fixed_continuous_trait_scalar_prior,
@@ -220,6 +229,7 @@ from bijux_phylogenetics.bayesian import (
     run_discrete_trait_mk_metropolis_hastings,
     run_fixed_topology_dna_metropolis_hastings,
     run_fixed_topology_relaxed_clock_metropolis_hastings,
+    run_fixed_topology_strict_clock_metropolis_hastings,
     run_joint_topology_dna_metropolis_hastings,
     run_mrbayes_posterior_inference,
     deserialize_bayesian_phylogenetic_state,
@@ -1245,6 +1255,30 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is FixedTopologyRelaxedClockRunReport
     )
     assert (
+        bayesian_api.FixedTopologyStrictClockModelDefinition
+        is FixedTopologyStrictClockModelDefinition
+    )
+    assert (
+        bayesian_api.FixedTopologyStrictClockNodeAgeSummary
+        is FixedTopologyStrictClockNodeAgeSummary
+    )
+    assert (
+        bayesian_api.FixedTopologyStrictClockPosteriorRow
+        is FixedTopologyStrictClockPosteriorRow
+    )
+    assert (
+        bayesian_api.FixedTopologyStrictClockProposalSchedule
+        is FixedTopologyStrictClockProposalSchedule
+    )
+    assert (
+        bayesian_api.FixedTopologyStrictClockRateSummary
+        is FixedTopologyStrictClockRateSummary
+    )
+    assert (
+        bayesian_api.FixedTopologyStrictClockRunReport
+        is FixedTopologyStrictClockRunReport
+    )
+    assert (
         bayesian_api.JointTopologyDnaModelDefinition
         is JointTopologyDnaModelDefinition
     )
@@ -1324,6 +1358,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is FIXED_TOPOLOGY_RELAXED_CLOCK_MODELS
     )
     assert (
+        bayesian_api.FIXED_TOPOLOGY_STRICT_CLOCK_MODELS
+        is FIXED_TOPOLOGY_STRICT_CLOCK_MODELS
+    )
+    assert (
         bayesian_api.build_beta_continuous_trait_probability_prior
         is build_beta_continuous_trait_probability_prior
     )
@@ -1386,6 +1424,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.build_fixed_topology_relaxed_clock_proposal_schedule
         is build_fixed_topology_relaxed_clock_proposal_schedule
+    )
+    assert (
+        bayesian_api.build_fixed_topology_strict_clock_model_definition
+        is build_fixed_topology_strict_clock_model_definition
+    )
+    assert (
+        bayesian_api.build_fixed_topology_strict_clock_proposal_schedule
+        is build_fixed_topology_strict_clock_proposal_schedule
     )
     assert (
         bayesian_api.build_fixed_continuous_trait_location_prior
@@ -1626,6 +1672,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.run_fixed_topology_relaxed_clock_metropolis_hastings
         is run_fixed_topology_relaxed_clock_metropolis_hastings
+    )
+    assert (
+        bayesian_api.run_fixed_topology_strict_clock_metropolis_hastings
+        is run_fixed_topology_strict_clock_metropolis_hastings
     )
     assert (
         bayesian_api.run_joint_topology_dna_metropolis_hastings
