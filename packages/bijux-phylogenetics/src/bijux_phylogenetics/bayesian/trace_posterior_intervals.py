@@ -114,6 +114,50 @@ def compute_equal_tail_interval(
     )
 
 
+def summarize_metropolis_hastings_trace_posterior_intervals(
+    *,
+    chain_report: MetropolisHastingsRunReport,
+    mass_fraction: float = 0.95,
+) -> MetropolisHastingsTracePosteriorIntervalReport:
+    """Summarize HPD and equal-tail intervals per scalar parameter for one chain."""
+    if not isinstance(chain_report, MetropolisHastingsRunReport):
+        raise PhylogeneticsError(
+            "metropolis-hastings trace posterior interval summary requires one MetropolisHastingsRunReport",
+            code="trace_posterior_interval_chain_report_type_invalid",
+        )
+    validated_mass_fraction = _validate_mass_fraction(mass_fraction)
+    parameter_names = _resolve_scalar_parameter_names(chain_report)
+    parameter_rows = []
+    for parameter_name in parameter_names:
+        values = _extract_scalar_parameter_trace(
+            chain_report=chain_report,
+            parameter_name=parameter_name,
+        )
+        hpd_interval = compute_highest_posterior_density_interval(
+            values,
+            mass_fraction=validated_mass_fraction,
+        )
+        equal_tail_interval = compute_equal_tail_interval(
+            values,
+            mass_fraction=validated_mass_fraction,
+        )
+        parameter_rows.append(
+            TracePosteriorIntervalRow(
+                parameter_name=parameter_name,
+                sample_count=len(values),
+                mass_fraction=validated_mass_fraction,
+                hpd_lower_bound=hpd_interval.lower_bound,
+                hpd_upper_bound=hpd_interval.upper_bound,
+                equal_tail_lower_bound=equal_tail_interval[0],
+                equal_tail_upper_bound=equal_tail_interval[1],
+            )
+        )
+    return MetropolisHastingsTracePosteriorIntervalReport(
+        sample_every=chain_report.sample_every,
+        parameter_rows=parameter_rows,
+    )
+
+
 def _validate_numeric_series(values: Sequence[float]) -> list[float]:
     validated_values = list(values)
     if not validated_values:
@@ -128,6 +172,46 @@ def _validate_numeric_series(values: Sequence[float]) -> list[float]:
                 code="trace_posterior_interval_series_value_type_invalid",
             )
     return [float(value) for value in validated_values]
+
+
+def _resolve_scalar_parameter_names(
+    chain_report: MetropolisHastingsRunReport,
+) -> list[str]:
+    sampled_states = list(chain_report.sampled_states)
+    if not sampled_states:
+        raise PhylogeneticsError(
+            "metropolis-hastings trace posterior interval summary requires at least one sampled state",
+            code="trace_posterior_interval_sampled_states_empty",
+        )
+    first_parameter_names = set(sampled_states[0].model_parameters.scalar_parameters)
+    if not first_parameter_names:
+        raise PhylogeneticsError(
+            "metropolis-hastings trace posterior interval summary requires at least one scalar model parameter",
+            code="trace_posterior_interval_scalar_parameters_empty",
+        )
+    for sampled_state in sampled_states[1:]:
+        parameter_names = set(sampled_state.model_parameters.scalar_parameters)
+        if parameter_names != first_parameter_names:
+            raise PhylogeneticsError(
+                "metropolis-hastings trace posterior interval summary requires the same scalar parameter set across sampled states",
+                code="trace_posterior_interval_scalar_parameter_set_inconsistent",
+                details={
+                    "expected_scalar_parameters": sorted(first_parameter_names),
+                    "observed_scalar_parameters": sorted(parameter_names),
+                },
+            )
+    return sorted(first_parameter_names)
+
+
+def _extract_scalar_parameter_trace(
+    *,
+    chain_report: MetropolisHastingsRunReport,
+    parameter_name: str,
+) -> list[float]:
+    return [
+        float(sampled_state.model_parameters.scalar_parameters[parameter_name])
+        for sampled_state in chain_report.sampled_states
+    ]
 
 
 def _validate_mass_fraction(value: float) -> float:
