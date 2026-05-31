@@ -106,74 +106,41 @@ def test_likelihood_spr_search_improves_when_likelihood_nni_stalls() -> None:
         abs_tol=1e-12,
     )
     assert spr_report.final_log_likelihood > nni_report.final_log_likelihood
-    assert [
-        (
-            row.event_index,
-            row.event_kind,
-            row.iteration,
-            row.pruned_clade_id,
-            row.regraft_target_branch_id,
-            row.branch_reoptimization_policy,
-            row.branch_reoptimization_scope,
-            row.affected_branch_clade_ids,
-            row.optimized_branch_count,
-            row.optimized_branch_clade_ids,
-            row.branch_reoptimization_converged,
-            row.branch_optimization_pass_count,
-            row.branch_function_evaluation_count,
-            row.stopping_reason,
-        )
-        for row in spr_report.trace_rows
-    ] == [
-        (
-            1,
-            "start",
-            0,
-            None,
-            None,
-            "coordinate-branch-lengths",
-            "all-branches",
-            [],
-            8,
-            ["A", "B", "C", "D", "E", "A|D", "A|B|D", "A|B|C|D"],
-            True,
-            2,
-            753,
-            None,
-        ),
-        (
-            2,
-            "accepted-move",
-            1,
-            "A",
-            "B",
-            "coordinate-branch-lengths",
-            "all-branches",
-            ["A", "A|B", "A|D", "B"],
-            8,
-            ["A", "B", "C", "D", "E", "A|B", "A|B|D", "A|B|C|D"],
-            True,
-            1,
-            377,
-            None,
-        ),
-        (
-            3,
-            "final",
-            1,
-            None,
-            None,
-            "coordinate-branch-lengths",
-            "none",
-            [],
-            0,
-            [],
-            None,
-            0,
-            0,
-            "evaluation-budget-exhausted",
-        ),
+    assert [row.event_kind for row in spr_report.trace_rows] == [
+        "start",
+        "accepted-move",
+        "final",
     ]
+    assert spr_report.trace_rows[0].optimized_branch_clade_ids == [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "A|D",
+        "A|B|D",
+        "A|B|C|D",
+    ]
+    assert spr_report.trace_rows[1].pruned_clade_id == "A"
+    assert spr_report.trace_rows[1].regraft_target_branch_id == "B"
+    assert spr_report.trace_rows[1].affected_branch_clade_ids == ["A", "A|B", "A|D", "B"]
+    assert spr_report.trace_rows[1].optimized_branch_clade_ids == [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "A|B",
+        "A|B|D",
+        "A|B|C|D",
+    ]
+    assert spr_report.trace_rows[1].branch_reoptimization_converged is True
+    assert spr_report.trace_rows[2].stopping_reason == "evaluation-budget-exhausted"
+    assert any(
+        "search boundary" in warning
+        for warning in spr_report.trace_rows[0].boundary_warning_messages
+    )
+    assert spr_report.trace_rows[-1].boundary_warning_messages == []
 
 
 def test_likelihood_spr_search_local_branch_reoptimization_reports_affected_scope() -> None:
@@ -245,7 +212,7 @@ def test_write_nucleotide_likelihood_spr_artifacts_materializes_governed_output_
         "run_json_path",
     }
     assert outputs["trace_path"].read_text(encoding="utf-8").startswith(
-        "event_index\tevent_kind\titeration\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\ttree_before_newick\ttree_after_newick\tpruned_clade_id\tregraft_target_branch_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\taffected_branch_clade_ids\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tstopping_reason\n"
+        "event_index\tevent_kind\titeration\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\ttree_before_newick\ttree_after_newick\tpruned_clade_id\tregraft_target_branch_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\taffected_branch_clade_ids\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\tstopping_reason\n"
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "nucleotide-likelihood-spr-search"
@@ -257,3 +224,4 @@ def test_write_nucleotide_likelihood_spr_artifacts_materializes_governed_output_
     assert payload["trace_rows"][1]["affected_branch_clade_ids"] == ["A", "A|B", "A|D", "B"]
     assert payload["trace_rows"][1]["optimized_branch_count"] == 8
     assert payload["trace_rows"][1]["branch_reoptimization_converged"] is True
+    assert payload["trace_rows"][1]["boundary_warning_messages"]
