@@ -116,9 +116,9 @@ def test_likelihood_spr_search_improves_when_likelihood_nni_stalls() -> None:
             row.branch_reoptimization_policy,
             row.branch_reoptimization_scope,
             row.affected_branch_clade_ids,
-            row.branch_reoptimization_converged,
             row.optimized_branch_count,
             row.optimized_branch_clade_ids,
+            row.branch_reoptimization_converged,
             row.branch_optimization_pass_count,
             row.branch_function_evaluation_count,
             row.stopping_reason,
@@ -134,9 +134,9 @@ def test_likelihood_spr_search_improves_when_likelihood_nni_stalls() -> None:
             "coordinate-branch-lengths",
             "all-branches",
             [],
-            True,
             8,
             ["A", "B", "C", "D", "E", "A|D", "A|B|D", "A|B|C|D"],
+            True,
             2,
             753,
             None,
@@ -150,9 +150,9 @@ def test_likelihood_spr_search_improves_when_likelihood_nni_stalls() -> None:
             "coordinate-branch-lengths",
             "all-branches",
             ["A", "A|B", "A|D", "B"],
-            True,
             8,
             ["A", "B", "C", "D", "E", "A|B", "A|B|D", "A|B|C|D"],
+            True,
             1,
             377,
             None,
@@ -166,9 +166,9 @@ def test_likelihood_spr_search_improves_when_likelihood_nni_stalls() -> None:
             "coordinate-branch-lengths",
             "none",
             [],
-            None,
             0,
             [],
+            None,
             0,
             0,
             "evaluation-budget-exhausted",
@@ -198,8 +198,8 @@ def test_likelihood_spr_search_local_branch_reoptimization_reports_affected_scop
 
     assert local_report.branch_reoptimization_policy == "spr-local-affected-branches"
     assert local_report.trace_rows[0].branch_reoptimization_scope == "all-branches"
-    accepted_rows = [
     assert local_report.trace_rows[0].branch_reoptimization_converged is True
+    accepted_rows = [
         row for row in local_report.trace_rows if row.event_kind == "accepted-move"
     ]
     assert accepted_rows
@@ -207,9 +207,9 @@ def test_likelihood_spr_search_local_branch_reoptimization_reports_affected_scop
     assert accepted_rows[0].affected_branch_clade_ids == ["A", "A|B", "A|D", "B"]
     assert accepted_rows[0].optimized_branch_clade_ids == ["A", "B", "A|B"]
     assert accepted_rows[0].optimized_branch_count == 3
+    assert accepted_rows[0].branch_reoptimization_converged is True
     assert (
         accepted_rows[0].optimized_branch_count
-    assert accepted_rows[0].branch_reoptimization_converged is True
         < full_report.trace_rows[1].optimized_branch_count
     )
     assert local_report.total_branch_function_evaluation_count < full_report.total_branch_function_evaluation_count
