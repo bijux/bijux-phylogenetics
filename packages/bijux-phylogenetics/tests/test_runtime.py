@@ -722,7 +722,10 @@ from bijux_phylogenetics.trees import (
     BranchLengthAggregate,
     BranchLengthDistributionReport,
     CladeTableReport,
+    TREE_SET_SPLIT_FREQUENCY_POLICIES,
     TreeShapeReport,
+    TreeSetSplitFrequencyReport,
+    TreeSetSplitFrequencyRow,
     analyze_branch_length_distribution,
     analyze_tree_set_branch_lengths,
     cluster_trees_by_topology,
@@ -732,6 +735,7 @@ from bijux_phylogenetics.trees import (
     compute_clade_frequency_table,
     compute_consensus_tree,
     compute_strict_consensus_tree,
+    compute_tree_set_split_frequency_table,
     compute_tree_distance_matrix,
     detect_posterior_topology_multimodality,
     detect_unstable_clades,
@@ -746,6 +750,7 @@ from bijux_phylogenetics.trees import (
     write_branch_length_table,
     write_clade_credibility_conflict_table,
     write_clade_table,
+    write_tree_set_split_frequency_table,
     write_topology_cluster_table,
     write_tree_shape_table,
     write_uncertainty_conclusion_table,
@@ -936,7 +941,10 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert trees_api.BranchLengthAggregate is BranchLengthAggregate
     assert trees_api.BranchLengthDistributionReport is BranchLengthDistributionReport
     assert trees_api.CladeTableReport is CladeTableReport
+    assert trees_api.TREE_SET_SPLIT_FREQUENCY_POLICIES is TREE_SET_SPLIT_FREQUENCY_POLICIES
     assert trees_api.TreeShapeReport is TreeShapeReport
+    assert trees_api.TreeSetSplitFrequencyRow is TreeSetSplitFrequencyRow
+    assert trees_api.TreeSetSplitFrequencyReport is TreeSetSplitFrequencyReport
     assert (
         trees_api.analyze_branch_length_distribution
         is analyze_branch_length_distribution
@@ -946,8 +954,16 @@ def test_public_package_exports_alignment_and_topology_workflows() -> None:
     assert trees_api.extract_tree_set_clades is extract_tree_set_clades
     assert trees_api.summarize_tree_shape is summarize_tree_shape
     assert trees_api.summarize_tree_set_shapes is summarize_tree_set_shapes
+    assert (
+        trees_api.compute_tree_set_split_frequency_table
+        is compute_tree_set_split_frequency_table
+    )
     assert trees_api.write_branch_length_table is write_branch_length_table
     assert trees_api.write_clade_table is write_clade_table
+    assert (
+        trees_api.write_tree_set_split_frequency_table
+        is write_tree_set_split_frequency_table
+    )
     assert trees_api.write_tree_shape_table is write_tree_shape_table
 
     assert branching_times_api.TreeBranchingTimeReport is TreeBranchingTimeReport
@@ -2375,6 +2391,32 @@ def test_compute_clade_frequency_table_counts_informative_clades() -> None:
         ("B|D", 1, 0.333333333333333),
         ("C|D", 2, 0.666666666666667),
     ]
+
+
+def test_compute_tree_set_split_frequency_table_distinguishes_rooting_policies() -> None:
+    rooted_report = compute_tree_set_split_frequency_table(
+        fixture("example_tree_set_rooting_only_difference.nwk"),
+        split_policy="rooted",
+    )
+    unrooted_report = compute_tree_set_split_frequency_table(
+        fixture("example_tree_set_rooting_only_difference.nwk"),
+        split_policy="unrooted",
+    )
+
+    assert rooted_report.split_policy == "rooted"
+    assert unrooted_report.split_policy == "unrooted"
+    assert [
+        (row.split, row.tree_count, row.frequency)
+        for row in rooted_report.split_frequencies
+    ] == [
+        ("A|B", 2, 1.0),
+        ("A|B|C", 1, 0.5),
+        ("C|D", 1, 0.5),
+    ]
+    assert [
+        (row.split, row.tree_count, row.frequency)
+        for row in unrooted_report.split_frequencies
+    ] == [("A|B", 2, 1.0)]
 
 
 def test_compute_consensus_tree_returns_majority_rule_consensus() -> None:
