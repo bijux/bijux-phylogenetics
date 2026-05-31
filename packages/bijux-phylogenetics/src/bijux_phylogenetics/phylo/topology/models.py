@@ -380,6 +380,43 @@ class RootedTbrNeighborhoodReport:
     neighbor_rows: list[RootedTbrNeighborRow]
 
 
+@dataclass(slots=True)
+class RootedTbrMoveApplicationReport:
+    """Explicit record of one rooted TBR move application over a binary rooted tree."""
+
+    algorithm: str
+    input_tree_path: Path | None
+    input_tree_newick: str
+    input_topology_fingerprint: str
+    selected_move_index: int
+    available_move_count: int
+    selected_cut_parent_node_id: str
+    selected_cut_child_node_id: str
+    selected_cut_edge_id: str
+    selected_cut_descendant_taxa: list[str]
+    left_component_tip_count: int
+    right_component_tip_count: int
+    selected_left_attachment_branch_id: str
+    selected_left_attachment_descendant_taxa: list[str]
+    selected_right_attachment_branch_id: str
+    selected_right_attachment_descendant_taxa: list[str]
+    moved_tree_newick: str
+    moved_topology_fingerprint: str
+    moved_topology_changed: bool
+    reverse_move_available: bool
+    reverse_available_move_count: int
+    reverse_cut_edge_id: str | None
+    reverse_left_attachment_branch_id: str | None
+    reverse_right_attachment_branch_id: str | None
+    tip_count: int
+    internal_node_count: int
+    rooted: bool | None
+    strictly_bifurcating: bool
+    missing_tip_taxa: list[str]
+    unexpected_tip_taxa: list[str]
+    moved_validation_errors: list[str]
+
+
 @dataclass(frozen=True, slots=True)
 class StepwiseAdditionCandidateScore:
     """One evaluated insertion edge for one greedy stepwise-addition step."""

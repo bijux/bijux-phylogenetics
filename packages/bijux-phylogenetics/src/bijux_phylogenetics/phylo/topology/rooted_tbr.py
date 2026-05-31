@@ -11,6 +11,7 @@ from bijux_phylogenetics.phylo.topology.clades import (
     rooted_topology_fingerprint,
 )
 from bijux_phylogenetics.phylo.topology.models import (
+    RootedTbrMoveApplicationReport,
     RootedTbrNeighborRow,
     RootedTbrNeighborhoodReport,
 )
@@ -34,6 +35,24 @@ class _RootedTbrAttachmentBranchCandidate:
     right_node_id: str
     branch_id: str
     descendant_taxa: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class RootedTbrMoveCandidate:
+    """One deterministic rooted TBR reconnection over a binary rooted tree."""
+
+    cut_parent_node_id: str
+    cut_child_node_id: str
+    cut_edge_id: str
+    cut_descendant_taxa: tuple[str, ...]
+    left_attachment_left_node_id: str
+    left_attachment_right_node_id: str
+    left_attachment_branch_id: str
+    left_attachment_descendant_taxa: tuple[str, ...]
+    right_attachment_left_node_id: str
+    right_attachment_right_node_id: str
+    right_attachment_branch_id: str
+    right_attachment_descendant_taxa: tuple[str, ...]
 
 
 @dataclass(slots=True)
@@ -231,6 +250,163 @@ def enumerate_rooted_tbr_neighbors(
     return report
 
 
+def iter_rooted_tbr_move_candidates(tree: PhyloTree):
+    """Yield deterministic legal rooted TBR reconnection moves for one rooted tree."""
+    input_topology_fingerprint = rooted_topology_fingerprint(tree)
+    for cut_candidate in iter_rooted_tbr_cut_edge_candidates(tree):
+        left_component, right_component = bisect_rooted_tbr_edge(
+            tree,
+            cut_candidate.parent_node_id,
+            cut_candidate.child_node_id,
+        )
+        for left_attachment in iter_rooted_tbr_attachment_branch_candidates(
+            left_component
+        ):
+            for right_attachment in iter_rooted_tbr_attachment_branch_candidates(
+                right_component
+            ):
+                candidate = RootedTbrMoveCandidate(
+                    cut_parent_node_id=cut_candidate.parent_node_id,
+                    cut_child_node_id=cut_candidate.child_node_id,
+                    cut_edge_id=cut_candidate.cut_edge_id,
+                    cut_descendant_taxa=cut_candidate.cut_descendant_taxa,
+                    left_attachment_left_node_id=left_attachment.left_node_id,
+                    left_attachment_right_node_id=left_attachment.right_node_id,
+                    left_attachment_branch_id=left_attachment.branch_id,
+                    left_attachment_descendant_taxa=left_attachment.descendant_taxa,
+                    right_attachment_left_node_id=right_attachment.left_node_id,
+                    right_attachment_right_node_id=right_attachment.right_node_id,
+                    right_attachment_branch_id=right_attachment.branch_id,
+                    right_attachment_descendant_taxa=right_attachment.descendant_taxa,
+                )
+                moved_tree = apply_rooted_tbr_move(tree, candidate)
+                if rooted_topology_fingerprint(moved_tree) == input_topology_fingerprint:
+                    continue
+                yield candidate
+
+
+def apply_rooted_tbr_move(
+    tree: PhyloTree,
+    candidate: RootedTbrMoveCandidate,
+) -> PhyloTree:
+    """Return one copied rooted tree with the selected TBR reconnection applied."""
+    left_component, right_component = bisect_rooted_tbr_edge(
+        tree,
+        candidate.cut_parent_node_id,
+        candidate.cut_child_node_id,
+    )
+    return reconnect_rooted_tbr_components(
+        left_component,
+        right_component,
+        left_attachment=_RootedTbrAttachmentBranchCandidate(
+            left_node_id=candidate.left_attachment_left_node_id,
+            right_node_id=candidate.left_attachment_right_node_id,
+            branch_id=candidate.left_attachment_branch_id,
+            descendant_taxa=candidate.left_attachment_descendant_taxa,
+        ),
+        right_attachment=_RootedTbrAttachmentBranchCandidate(
+            left_node_id=candidate.right_attachment_left_node_id,
+            right_node_id=candidate.right_attachment_right_node_id,
+            branch_id=candidate.right_attachment_branch_id,
+            descendant_taxa=candidate.right_attachment_descendant_taxa,
+        ),
+        reconnection_index=1,
+    )
+
+
+def resolve_rooted_tbr_move_candidate(
+    tree: PhyloTree | Path,
+    move_index: int,
+) -> tuple[RootedTbrMoveCandidate, int]:
+    """Resolve one 1-indexed rooted TBR move candidate from a validated tree."""
+    resolved_tree, _input_tree_path = _resolve_rooted_tbr_tree(tree)
+    validate_rooted_tbr_tree(resolved_tree)
+    candidates = list(iter_rooted_tbr_move_candidates(resolved_tree))
+    if move_index < 1 or move_index > len(candidates):
+        raise ValueError(
+            f"rooted TBR move index must be between 1 and {len(candidates)}"
+        )
+    return candidates[move_index - 1], len(candidates)
+
+
+def summarize_rooted_tbr_move_application(
+    tree: PhyloTree | Path,
+    move_index: int,
+) -> RootedTbrMoveApplicationReport:
+    """Apply one rooted TBR move and report the resulting valid transformed tree."""
+    resolved_tree, input_tree_path = _resolve_rooted_tbr_tree(tree)
+    validate_rooted_tbr_tree(resolved_tree)
+    selected_candidate, available_move_count = resolve_rooted_tbr_move_candidate(
+        resolved_tree,
+        move_index,
+    )
+    moved_tree = apply_rooted_tbr_move(resolved_tree, selected_candidate)
+    input_tip_taxa = set(resolved_tree.tip_names)
+    moved_tip_taxa = set(moved_tree.tip_names)
+    input_topology_fingerprint = rooted_topology_fingerprint(resolved_tree)
+    moved_topology_fingerprint = rooted_topology_fingerprint(moved_tree)
+    reverse_candidates = [
+        candidate
+        for candidate in iter_rooted_tbr_move_candidates(moved_tree)
+        if rooted_topology_fingerprint(apply_rooted_tbr_move(moved_tree, candidate))
+        == input_topology_fingerprint
+    ]
+    reverse_candidate = reverse_candidates[0] if reverse_candidates else None
+    report = RootedTbrMoveApplicationReport(
+        algorithm="rooted-tbr-move-application",
+        input_tree_path=input_tree_path,
+        input_tree_newick=resolved_tree.to_newick(),
+        input_topology_fingerprint=input_topology_fingerprint,
+        selected_move_index=move_index,
+        available_move_count=available_move_count,
+        selected_cut_parent_node_id=selected_candidate.cut_parent_node_id,
+        selected_cut_child_node_id=selected_candidate.cut_child_node_id,
+        selected_cut_edge_id=selected_candidate.cut_edge_id,
+        selected_cut_descendant_taxa=list(selected_candidate.cut_descendant_taxa),
+        left_component_tip_count=len(selected_candidate.cut_descendant_taxa),
+        right_component_tip_count=(
+            resolved_tree.tip_count - len(selected_candidate.cut_descendant_taxa)
+        ),
+        selected_left_attachment_branch_id=selected_candidate.left_attachment_branch_id,
+        selected_left_attachment_descendant_taxa=list(
+            selected_candidate.left_attachment_descendant_taxa
+        ),
+        selected_right_attachment_branch_id=(
+            selected_candidate.right_attachment_branch_id
+        ),
+        selected_right_attachment_descendant_taxa=list(
+            selected_candidate.right_attachment_descendant_taxa
+        ),
+        moved_tree_newick=moved_tree.to_newick(),
+        moved_topology_fingerprint=moved_topology_fingerprint,
+        moved_topology_changed=moved_topology_fingerprint != input_topology_fingerprint,
+        reverse_move_available=bool(reverse_candidates),
+        reverse_available_move_count=len(reverse_candidates),
+        reverse_cut_edge_id=(
+            None if reverse_candidate is None else reverse_candidate.cut_edge_id
+        ),
+        reverse_left_attachment_branch_id=(
+            None
+            if reverse_candidate is None
+            else reverse_candidate.left_attachment_branch_id
+        ),
+        reverse_right_attachment_branch_id=(
+            None
+            if reverse_candidate is None
+            else reverse_candidate.right_attachment_branch_id
+        ),
+        tip_count=resolved_tree.tip_count,
+        internal_node_count=resolved_tree.internal_node_count,
+        rooted=resolved_tree.rooted,
+        strictly_bifurcating=True,
+        missing_tip_taxa=sorted(input_tip_taxa - moved_tip_taxa),
+        unexpected_tip_taxa=sorted(moved_tip_taxa - input_tip_taxa),
+        moved_validation_errors=moved_tree.validation_errors(),
+    )
+    _validate_rooted_tbr_move_application_report(report)
+    return report
+
+
 def iter_rooted_tbr_cut_edge_candidates(tree: PhyloTree):
     """Yield deterministic internal cut edges for rooted TBR enumeration."""
     sorted_internal_nodes = sorted(
@@ -364,6 +540,17 @@ def _validate_rooted_tbr_neighbor_report(
     ]
     if invalid_neighbor_rows:
         raise ValueError("rooted TBR enumeration generated invalid neighbor trees")
+
+
+def _validate_rooted_tbr_move_application_report(
+    report: RootedTbrMoveApplicationReport,
+) -> None:
+    if not report.moved_topology_changed:
+        raise ValueError("rooted TBR move application did not change the topology")
+    if report.missing_tip_taxa or report.unexpected_tip_taxa:
+        raise ValueError("rooted TBR move application changed the input taxon set")
+    if report.moved_validation_errors:
+        raise ValueError("rooted TBR move application generated an invalid tree")
 
 
 def write_rooted_tbr_neighbor_table(
