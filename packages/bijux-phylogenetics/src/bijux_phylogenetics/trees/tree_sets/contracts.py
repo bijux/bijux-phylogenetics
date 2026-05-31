@@ -66,6 +66,23 @@ class CladeFrequencyReport:
 
 
 @dataclass(frozen=True, slots=True)
+class TreeSetSplitFrequencyRow:
+    split: str
+    tree_count: int
+    frequency: float
+
+
+@dataclass(slots=True)
+class TreeSetSplitFrequencyReport:
+    path: Path
+    tree_count: int
+    processing: TreeSetProcessingSummary
+    shared_taxa: list[str]
+    split_policy: str
+    split_frequencies: list[TreeSetSplitFrequencyRow]
+
+
+@dataclass(frozen=True, slots=True)
 class CladeCompatibilityNodeRow:
     clade: str
     tree_count: int
