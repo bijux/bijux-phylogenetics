@@ -16,8 +16,8 @@ from .contracts import (
     HostSwitchCountRow,
     HostSwitchExclusionRow,
     HostSwitchFitRow,
-    HostSwitchSummary,
     HostSwitchingReport,
+    HostSwitchSummary,
     UnsupportedHostSwitchClaimRow,
 )
 

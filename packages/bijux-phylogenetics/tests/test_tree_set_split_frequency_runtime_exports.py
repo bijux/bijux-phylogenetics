@@ -12,8 +12,7 @@ from bijux_phylogenetics.trees import (
 
 def test_public_runtime_exports_tree_set_split_frequency_surface() -> None:
     assert (
-        trees_api.TREE_SET_SPLIT_FREQUENCY_POLICIES
-        is TREE_SET_SPLIT_FREQUENCY_POLICIES
+        trees_api.TREE_SET_SPLIT_FREQUENCY_POLICIES is TREE_SET_SPLIT_FREQUENCY_POLICIES
     )
     assert trees_api.TreeSetSplitFrequencyRow is TreeSetSplitFrequencyRow
     assert trees_api.TreeSetSplitFrequencyReport is TreeSetSplitFrequencyReport

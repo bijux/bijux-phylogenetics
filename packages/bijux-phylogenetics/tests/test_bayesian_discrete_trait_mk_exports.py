@@ -46,10 +46,7 @@ from bijux_phylogenetics.bayesian.discrete_trait_mk import (
 
 def test_bayesian_exports_discrete_trait_mk_surface() -> None:
     assert DISCRETE_TRAIT_MK_MODELS == DISCRETE_TRAIT_MK_MODELS_IMPL
-    assert (
-        DISCRETE_TRAIT_MK_ROOT_PRIOR_MODES
-        == DISCRETE_TRAIT_MK_ROOT_PRIOR_MODES_IMPL
-    )
+    assert DISCRETE_TRAIT_MK_ROOT_PRIOR_MODES == DISCRETE_TRAIT_MK_ROOT_PRIOR_MODES_IMPL
     assert DiscreteTraitMkModelDefinition is DiscreteTraitMkModelDefinitionImpl
     assert DiscreteTraitMkNodeStateSummary is DiscreteTraitMkNodeStateSummaryImpl
     assert DiscreteTraitMkPosteriorRow is DiscreteTraitMkPosteriorRowImpl

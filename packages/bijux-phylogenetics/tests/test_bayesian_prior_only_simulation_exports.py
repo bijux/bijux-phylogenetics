@@ -30,7 +30,9 @@ from bijux_phylogenetics.bayesian.prior_sampling import (
 
 def test_bayesian_exports_prior_only_simulation_surface() -> None:
     assert PriorOnlySampledBranchRow is PriorOnlySampledBranchRowImpl
-    assert PriorOnlySubstitutionParameterState is PriorOnlySubstitutionParameterStateImpl
+    assert (
+        PriorOnlySubstitutionParameterState is PriorOnlySubstitutionParameterStateImpl
+    )
     assert PriorOnlyPhylogeneticSample is PriorOnlyPhylogeneticSampleImpl
     assert (
         PriorOnlyPhylogeneticSimulationReport

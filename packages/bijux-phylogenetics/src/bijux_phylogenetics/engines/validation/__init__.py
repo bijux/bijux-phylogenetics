@@ -137,10 +137,10 @@ from .preflight import (
     WorkflowPreflightStatus as WorkflowPreflightStatus,
 )
 from .preflight import (
-    inspect_external_engine_surface as inspect_external_engine_surface,
+    inspect_external_engine_preflight as inspect_external_engine_preflight,
 )
 from .preflight import (
-    inspect_external_engine_preflight as inspect_external_engine_preflight,
+    inspect_external_engine_surface as inspect_external_engine_surface,
 )
 from .preflight import (
     list_external_engine_workflows as list_external_engine_workflows,

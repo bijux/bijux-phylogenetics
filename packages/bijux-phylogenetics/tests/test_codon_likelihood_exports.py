@@ -41,7 +41,9 @@ def test_phylo_likelihood_exports_codon_ctmc_surface() -> None:
         build_equal_rate_codon_ctmc_rate_matrix
         is build_equal_rate_codon_ctmc_rate_matrix_impl
     )
-    assert evaluate_codon_ctmc_tree_likelihood is evaluate_codon_ctmc_tree_likelihood_impl
+    assert (
+        evaluate_codon_ctmc_tree_likelihood is evaluate_codon_ctmc_tree_likelihood_impl
+    )
     assert (
         evaluate_codon_ctmc_tree_likelihood_from_alignment
         is evaluate_codon_ctmc_tree_likelihood_from_alignment_impl

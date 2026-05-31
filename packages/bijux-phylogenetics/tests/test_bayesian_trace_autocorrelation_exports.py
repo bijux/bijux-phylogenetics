@@ -51,8 +51,7 @@ def test_bayesian_exports_trace_autocorrelation_surface() -> None:
     )
     assert TraceAutocorrelationLagRow is TraceAutocorrelationLagRowImpl
     assert (
-        TraceAutocorrelationParameterReport
-        is TraceAutocorrelationParameterReportImpl
+        TraceAutocorrelationParameterReport is TraceAutocorrelationParameterReportImpl
     )
     assert compute_trace_autocorrelation is compute_trace_autocorrelation_impl
     assert (

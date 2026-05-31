@@ -15,7 +15,10 @@ def test_public_runtime_exports_spr_search_budget_surface() -> None:
         likelihood_api.NucleotideLikelihoodSprSearchBudget
         is NucleotideLikelihoodSprSearchBudget
     )
-    assert likelihood_api.search_nucleotide_likelihood_spr is search_nucleotide_likelihood_spr
+    assert (
+        likelihood_api.search_nucleotide_likelihood_spr
+        is search_nucleotide_likelihood_spr
+    )
     assert (
         likelihood_api.search_nucleotide_likelihood_spr_from_alignment
         is search_nucleotide_likelihood_spr_from_alignment

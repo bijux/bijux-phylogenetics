@@ -91,8 +91,7 @@ def test_bayesian_exports_continuous_trait_model_prior_surface() -> None:
     assert CONTINUOUS_TRAIT_PRIOR_TARGETS == CONTINUOUS_TRAIT_PRIOR_TARGETS_IMPL
     assert ContinuousTraitScalarPriorModel is ContinuousTraitScalarPriorModelImpl
     assert (
-        ContinuousTraitProbabilityPriorModel
-        is ContinuousTraitProbabilityPriorModelImpl
+        ContinuousTraitProbabilityPriorModel is ContinuousTraitProbabilityPriorModelImpl
     )
     assert ContinuousTraitModelPriorBundle is ContinuousTraitModelPriorBundleImpl
     assert (
@@ -140,4 +139,3 @@ def test_bayesian_exports_continuous_trait_model_prior_surface() -> None:
         evaluate_continuous_trait_model_log_prior
         is evaluate_continuous_trait_model_log_prior_impl
     )
-

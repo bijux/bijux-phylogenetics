@@ -3,102 +3,258 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.phylo.alignment import DnaBinAlignment
-from bijux_phylogenetics.phylo.topology.bionj import build_bionj_tree as _build_bionj_tree_impl
+from bijux_phylogenetics.phylo.topology.bionj import (
+    build_bionj_tree as _build_bionj_tree_impl,
+)
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
+from .complete_linkage import (
+    CompleteLinkageBuildReport as CompleteLinkageBuildReport,
+)
+from .complete_linkage import (
+    CompleteLinkageClusterHeightRow as CompleteLinkageClusterHeightRow,
+)
+from .complete_linkage import (
+    CompleteLinkageMergeRow as CompleteLinkageMergeRow,
+)
 from .models import (
     AmbiguityPolicy as AmbiguityPolicy,
-    DistanceAdditivityDiagnosticsReport as DistanceAdditivityDiagnosticsReport,
+)
+from .models import (
     BalancedMinimumEvolutionNniSearchReport as BalancedMinimumEvolutionNniSearchReport,
+)
+from .models import (
     BalancedMinimumEvolutionNniTraceRow as BalancedMinimumEvolutionNniTraceRow,
+)
+from .models import (
+    DistanceAdditivityDiagnosticsReport as DistanceAdditivityDiagnosticsReport,
+)
+from .models import (
     DistanceBootstrapReplicateRow as DistanceBootstrapReplicateRow,
+)
+from .models import (
     DistanceBootstrapReport as DistanceBootstrapReport,
+)
+from .models import (
     DistanceBootstrapSupportSummary as DistanceBootstrapSupportSummary,
+)
+from .models import (
     DistanceFourPointViolation as DistanceFourPointViolation,
+)
+from .models import (
     DistanceGapPolicySensitivityReport as DistanceGapPolicySensitivityReport,
+)
+from .models import (
     DistanceMatrixQualityReport as DistanceMatrixQualityReport,
+)
+from .models import (
     DistanceMethodAssessment as DistanceMethodAssessment,
-    DistanceMethodComparisonReport as DistanceMethodComparisonReport,
-    DistanceMethodComparisonRow as DistanceMethodComparisonRow,
+)
+from .models import (
     DistanceMethodAssumptionReport as DistanceMethodAssumptionReport,
+)
+from .models import (
+    DistanceMethodComparisonReport as DistanceMethodComparisonReport,
+)
+from .models import (
+    DistanceMethodComparisonRow as DistanceMethodComparisonRow,
+)
+from .models import (
     DistanceMethodMaturityGateReport as DistanceMethodMaturityGateReport,
+)
+from .models import (
     DistanceMethodReport as DistanceMethodReport,
+)
+from .models import (
     DistanceMethodRfRow as DistanceMethodRfRow,
-    DistanceModel as DistanceModel,
-    DistanceModelComparisonReport as DistanceModelComparisonReport,
+)
+from .models import (
     DistanceMethodWarningRow as DistanceMethodWarningRow,
+)
+from .models import (
+    DistanceModel as DistanceModel,
+)
+from .models import (
+    DistanceModelComparisonReport as DistanceModelComparisonReport,
+)
+from .models import (
     DistanceOutlierPair as DistanceOutlierPair,
+)
+from .models import (
     DistanceReferenceObservation as DistanceReferenceObservation,
+)
+from .models import (
     DistanceReferenceValidationReport as DistanceReferenceValidationReport,
+)
+from .models import (
     DistanceReproducibilityBundleReport as DistanceReproducibilityBundleReport,
-    DistanceTreeBuildReport as DistanceTreeBuildReport,
-    DistanceTreeMethodPolicy as DistanceTreeMethodPolicy,
-    DistanceTreeReferenceComparisonReport as DistanceTreeReferenceComparisonReport,
-    DistanceTreeReferenceObservation as DistanceTreeReferenceObservation,
-    DistanceTaxonJackknifeReport as DistanceTaxonJackknifeReport,
-    DistanceTaxonJackknifeRow as DistanceTaxonJackknifeRow,
-    DistanceTaxonInfluenceReport as DistanceTaxonInfluenceReport,
-    DistanceTaxonInfluenceRow as DistanceTaxonInfluenceRow,
-    DistanceTreeTopologyComparison as DistanceTreeTopologyComparison,
-    DistanceUltrametricityDiagnosticsReport as DistanceUltrametricityDiagnosticsReport,
-    DistanceUltrametricityViolation as DistanceUltrametricityViolation,
-    FitchMargoliashBranchFit as FitchMargoliashBranchFit,
-    FitchMargoliashFitReport as FitchMargoliashFitReport,
-    GapHandlingMode as GapHandlingMode,
-    GeneticDistanceMatrix as GeneticDistanceMatrix,
-    GeneticDistanceModelParameters as GeneticDistanceModelParameters,
-    ImportedDistanceEntry as ImportedDistanceEntry,
-    ImportedDistanceMatrixQualityReport as ImportedDistanceMatrixQualityReport,
-    ImportedDistanceMatrixReport as ImportedDistanceMatrixReport,
-    ImportedDistanceTreeBuildReport as ImportedDistanceTreeBuildReport,
+)
+from .models import (
     DistanceSaturationDiagnosticsReport as DistanceSaturationDiagnosticsReport,
+)
+from .models import (
     DistanceSaturationWarning as DistanceSaturationWarning,
+)
+from .models import (
+    DistanceTaxonInfluenceReport as DistanceTaxonInfluenceReport,
+)
+from .models import (
+    DistanceTaxonInfluenceRow as DistanceTaxonInfluenceRow,
+)
+from .models import (
+    DistanceTaxonJackknifeReport as DistanceTaxonJackknifeReport,
+)
+from .models import (
+    DistanceTaxonJackknifeRow as DistanceTaxonJackknifeRow,
+)
+from .models import (
+    DistanceTreeBuildReport as DistanceTreeBuildReport,
+)
+from .models import (
+    DistanceTreeMethodPolicy as DistanceTreeMethodPolicy,
+)
+from .models import (
+    DistanceTreeReferenceComparisonReport as DistanceTreeReferenceComparisonReport,
+)
+from .models import (
+    DistanceTreeReferenceObservation as DistanceTreeReferenceObservation,
+)
+from .models import (
+    DistanceTreeTopologyComparison as DistanceTreeTopologyComparison,
+)
+from .models import (
+    DistanceUltrametricityDiagnosticsReport as DistanceUltrametricityDiagnosticsReport,
+)
+from .models import (
+    DistanceUltrametricityViolation as DistanceUltrametricityViolation,
+)
+from .models import (
+    FitchMargoliashBranchFit as FitchMargoliashBranchFit,
+)
+from .models import (
+    FitchMargoliashFitReport as FitchMargoliashFitReport,
+)
+from .models import (
+    GapHandlingMode as GapHandlingMode,
+)
+from .models import (
+    GeneticDistanceMatrix as GeneticDistanceMatrix,
+)
+from .models import (
+    GeneticDistanceModelParameters as GeneticDistanceModelParameters,
+)
+from .models import (
+    ImportedDistanceEntry as ImportedDistanceEntry,
+)
+from .models import (
+    ImportedDistanceMatrixQualityReport as ImportedDistanceMatrixQualityReport,
+)
+from .models import (
+    ImportedDistanceMatrixReport as ImportedDistanceMatrixReport,
+)
+from .models import (
+    ImportedDistanceTreeBuildReport as ImportedDistanceTreeBuildReport,
+)
+from .models import (
     LowInformationPair as LowInformationPair,
-    MissingDistanceImputation as MissingDistanceImputation,
-    MissingDistancePolicy as MissingDistancePolicy,
-    MissingDistancePolicyReport as MissingDistancePolicyReport,
+)
+from .models import (
     MinimumEvolutionBranchFit as MinimumEvolutionBranchFit,
+)
+from .models import (
     MinimumEvolutionScoreReport as MinimumEvolutionScoreReport,
+)
+from .models import (
+    MissingDistanceImputation as MissingDistanceImputation,
+)
+from .models import (
+    MissingDistancePolicy as MissingDistancePolicy,
+)
+from .models import (
+    MissingDistancePolicyReport as MissingDistancePolicyReport,
+)
+from .models import (
     NonMetricDistanceObservation as NonMetricDistanceObservation,
+)
+from .models import (
     NonnegativeLeastSquaresActiveConstraint as NonnegativeLeastSquaresActiveConstraint,
+)
+from .models import (
     NonnegativeLeastSquaresBranchFit as NonnegativeLeastSquaresBranchFit,
+)
+from .models import (
     NonnegativeLeastSquaresFitReport as NonnegativeLeastSquaresFitReport,
+)
+from .models import (
     OrdinaryLeastSquaresBranchFit as OrdinaryLeastSquaresBranchFit,
+)
+from .models import (
     OrdinaryLeastSquaresFitReport as OrdinaryLeastSquaresFitReport,
+)
+from .models import (
     PatristicResidualDiagnosticsReport as PatristicResidualDiagnosticsReport,
+)
+from .models import (
     PatristicResidualRow as PatristicResidualRow,
+)
+from .models import (
     SaturatedDistancePair as SaturatedDistancePair,
+)
+from .models import (
     UPGMAUltrametricViolation as UPGMAUltrametricViolation,
 )
 from .shared import (
     _allowed_models_for_alphabet as _allowed_models_for_alphabet,
-    _file_sha256 as _file_sha256,
-    _iter_ultrametric_violations as _iter_ultrametric_violations,
-    _normalize_distance_model as _normalize_distance_model,
-    _pair_key as _pair_key,
-    _require_supported_distance_tree_method as _require_supported_distance_tree_method,
-    _unique_genetic_distance_pairs as _unique_genetic_distance_pairs,
-    list_distance_tree_method_policies as list_distance_tree_method_policies,
-    resolve_distance_tree_method_policy as resolve_distance_tree_method_policy,
 )
-from .upgma import (
-    UPGMABuildReport as UPGMABuildReport,
-    UPGMAClusterHeightRow as UPGMAClusterHeightRow,
-    UPGMAMergeRow as UPGMAMergeRow,
+from .shared import (
+    _file_sha256 as _file_sha256,
+)
+from .shared import (
+    _iter_ultrametric_violations as _iter_ultrametric_violations,
+)
+from .shared import (
+    _normalize_distance_model as _normalize_distance_model,
+)
+from .shared import (
+    _pair_key as _pair_key,
+)
+from .shared import (
+    _require_supported_distance_tree_method as _require_supported_distance_tree_method,
+)
+from .shared import (
+    _unique_genetic_distance_pairs as _unique_genetic_distance_pairs,
+)
+from .shared import (
+    list_distance_tree_method_policies as list_distance_tree_method_policies,
+)
+from .shared import (
+    resolve_distance_tree_method_policy as resolve_distance_tree_method_policy,
 )
 from .single_linkage import (
     SingleLinkageBuildReport as SingleLinkageBuildReport,
+)
+from .single_linkage import (
     SingleLinkageClusterHeightRow as SingleLinkageClusterHeightRow,
+)
+from .single_linkage import (
     SingleLinkageMergeRow as SingleLinkageMergeRow,
 )
-from .complete_linkage import (
-    CompleteLinkageBuildReport as CompleteLinkageBuildReport,
-    CompleteLinkageClusterHeightRow as CompleteLinkageClusterHeightRow,
-    CompleteLinkageMergeRow as CompleteLinkageMergeRow,
+from .upgma import (
+    UPGMABuildReport as UPGMABuildReport,
+)
+from .upgma import (
+    UPGMAClusterHeightRow as UPGMAClusterHeightRow,
+)
+from .upgma import (
+    UPGMAMergeRow as UPGMAMergeRow,
 )
 from .wpgma import (
     WPGMABuildReport as WPGMABuildReport,
+)
+from .wpgma import (
     WPGMAClusterHeightRow as WPGMAClusterHeightRow,
+)
+from .wpgma import (
     WPGMAMergeRow as WPGMAMergeRow,
 )
 
@@ -366,7 +522,9 @@ def diagnose_imported_distance_matrix_additivity(
     *,
     tolerance: float = 1e-6,
 ) -> DistanceAdditivityDiagnosticsReport:
-    from .additivity import diagnose_imported_distance_matrix_additivity as diagnose_impl
+    from .additivity import (
+        diagnose_imported_distance_matrix_additivity as diagnose_impl,
+    )
 
     return diagnose_impl(path, tolerance=tolerance)
 
@@ -630,7 +788,9 @@ def score_balanced_minimum_evolution(
     identifiers: list[str],
     distance_lookup: dict[tuple[str, str], float],
 ) -> float:
-    from .balanced_minimum_evolution import score_balanced_minimum_evolution as score_impl
+    from .balanced_minimum_evolution import (
+        score_balanced_minimum_evolution as score_impl,
+    )
 
     return score_impl(tree, identifiers, distance_lookup)
 

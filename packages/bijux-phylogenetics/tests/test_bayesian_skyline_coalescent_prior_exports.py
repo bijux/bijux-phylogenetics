@@ -41,7 +41,9 @@ def test_bayesian_exports_skyline_coalescent_prior_surface() -> None:
         SkylineCoalescentPriorEvaluationReport
         is SkylineCoalescentPriorEvaluationReportImpl
     )
-    assert build_skyline_coalescent_tree_prior is build_skyline_coalescent_tree_prior_impl
+    assert (
+        build_skyline_coalescent_tree_prior is build_skyline_coalescent_tree_prior_impl
+    )
     assert (
         evaluate_skyline_coalescent_tree_log_prior
         is evaluate_skyline_coalescent_tree_log_prior_impl

@@ -40,7 +40,9 @@ def test_bayesian_exports_adaptive_tuning_surface() -> None:
     assert AdaptiveTuningController is AdaptiveTuningControllerImpl
     assert AdaptiveTuningWindowRow is AdaptiveTuningWindowRowImpl
     assert AdaptiveTuningReport is AdaptiveTuningReportImpl
-    assert AdaptiveMetropolisHastingsRunReport is AdaptiveMetropolisHastingsRunReportImpl
+    assert (
+        AdaptiveMetropolisHastingsRunReport is AdaptiveMetropolisHastingsRunReportImpl
+    )
     assert build_adaptive_tuning_controller is build_adaptive_tuning_controller_impl
     assert build_adaptive_tuning_window_row is build_adaptive_tuning_window_row_impl
     assert build_adaptive_tuning_report is build_adaptive_tuning_report_impl

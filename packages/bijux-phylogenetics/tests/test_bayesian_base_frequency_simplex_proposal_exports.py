@@ -8,6 +8,5 @@ from bijux_phylogenetics.bayesian.metropolis_hastings import (
 
 def test_bayesian_exports_base_frequency_simplex_proposal_surface() -> None:
     assert (
-        propose_base_frequency_simplex_move
-        is propose_base_frequency_simplex_move_impl
+        propose_base_frequency_simplex_move is propose_base_frequency_simplex_move_impl
     )

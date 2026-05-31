@@ -20,7 +20,9 @@ from bijux_phylogenetics.phylo.likelihood.models import (
 )
 
 
-def test_likelihood_exports_fixed_topology_nucleotide_branch_optimization_surface() -> None:
+def test_likelihood_exports_fixed_topology_nucleotide_branch_optimization_surface() -> (
+    None
+):
     assert (
         FixedTopologyNucleotideBranchLengthOptimizationReport
         is FixedTopologyNucleotideBranchLengthOptimizationReportImpl

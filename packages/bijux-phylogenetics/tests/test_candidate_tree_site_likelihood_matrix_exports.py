@@ -21,7 +21,9 @@ def test_public_likelihood_exports_candidate_tree_comparison_surface() -> None:
         likelihood_api.CandidateTreeSiteLikelihoodSummary
         is CandidateTreeSiteLikelihoodSummary
     )
-    assert likelihood_api.CandidateTreeSiteLikelihoodRow is CandidateTreeSiteLikelihoodRow
+    assert (
+        likelihood_api.CandidateTreeSiteLikelihoodRow is CandidateTreeSiteLikelihoodRow
+    )
     assert (
         likelihood_api.CandidateTreeSiteLikelihoodMatrixReport
         is CandidateTreeSiteLikelihoodMatrixReport
@@ -38,7 +40,9 @@ def test_public_likelihood_exports_candidate_tree_comparison_surface() -> None:
         likelihood_api.resolve_candidate_tree_alignment_records
         is resolve_candidate_tree_alignment_records
     )
-    assert likelihood_api.resolve_candidate_tree_records is resolve_candidate_tree_records
+    assert (
+        likelihood_api.resolve_candidate_tree_records is resolve_candidate_tree_records
+    )
     assert (
         likelihood_api.write_candidate_tree_likelihood_summary_table
         is write_candidate_tree_likelihood_summary_table

@@ -42,8 +42,7 @@ def test_bayesian_exports_relaxed_lognormal_clock_prior_surface() -> None:
     )
     assert RelaxedLognormalClockModel is RelaxedLognormalClockModelImpl
     assert (
-        build_relaxed_lognormal_clock_model
-        is build_relaxed_lognormal_clock_model_impl
+        build_relaxed_lognormal_clock_model is build_relaxed_lognormal_clock_model_impl
     )
     assert (
         evaluate_relaxed_lognormal_clock_tree_log_prior

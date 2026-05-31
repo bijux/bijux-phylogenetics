@@ -23,9 +23,7 @@ _PUBLIC_SURFACES = (
     ),
     (
         "clade_ages",
-        (
-            "compare_clade_ages",
-        ),
+        ("compare_clade_ages",),
     ),
     (
         "comparison",
@@ -41,15 +39,11 @@ _PUBLIC_SURFACES = (
     ),
     (
         "deep_coalescence",
-        (
-            "count_deep_coalescences",
-        ),
+        ("count_deep_coalescences",),
     ),
     (
         "reconciliation",
-        (
-            "reconcile_duplication_loss_transfer",
-        ),
+        ("reconcile_duplication_loss_transfer",),
     ),
     (
         "distance",

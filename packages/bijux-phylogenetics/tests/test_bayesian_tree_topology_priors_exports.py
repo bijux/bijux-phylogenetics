@@ -35,10 +35,7 @@ from bijux_phylogenetics.bayesian.tree_topology_priors import (
 def test_bayesian_exports_tree_topology_prior_surface() -> None:
     assert TREE_TOPOLOGY_PRIOR_FAMILIES == TREE_TOPOLOGY_PRIOR_FAMILIES_IMPL
     assert TreeTopologyPriorModel is TreeTopologyPriorModelImpl
-    assert (
-        TreeTopologyPriorEvaluationReport
-        is TreeTopologyPriorEvaluationReportImpl
-    )
+    assert TreeTopologyPriorEvaluationReport is TreeTopologyPriorEvaluationReportImpl
     assert (
         build_uniform_rooted_tree_topology_prior
         is build_uniform_rooted_tree_topology_prior_impl

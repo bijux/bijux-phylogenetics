@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import bijux_phylogenetics.trees as trees_api
-
 from bijux_phylogenetics.trees import (
     PosteriorTreeDistanceDiagnosticRow,
     PosteriorTreeDistanceDiagnosticsReport,
@@ -14,7 +13,10 @@ from bijux_phylogenetics.trees import (
 
 
 def test_package_tree_gateway_exports_posterior_tree_distance_surface() -> None:
-    assert trees_api.PosteriorTreeDistanceDiagnosticRow is PosteriorTreeDistanceDiagnosticRow
+    assert (
+        trees_api.PosteriorTreeDistanceDiagnosticRow
+        is PosteriorTreeDistanceDiagnosticRow
+    )
     assert (
         trees_api.PosteriorTreeDistanceDiagnosticsReport
         is PosteriorTreeDistanceDiagnosticsReport

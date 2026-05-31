@@ -42,8 +42,7 @@ from bijux_phylogenetics.bayesian.posterior_ancestral_sequences import (
 
 def test_bayesian_exports_posterior_ancestral_sequence_surface() -> None:
     assert (
-        PosteriorAncestralSequenceDefinition
-        is PosteriorAncestralSequenceDefinitionImpl
+        PosteriorAncestralSequenceDefinition is PosteriorAncestralSequenceDefinitionImpl
     )
     assert PosteriorAncestralSequenceRecord is PosteriorAncestralSequenceRecordImpl
     assert PosteriorAncestralSequenceReport is PosteriorAncestralSequenceReportImpl

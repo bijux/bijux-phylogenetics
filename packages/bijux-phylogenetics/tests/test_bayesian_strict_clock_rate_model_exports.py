@@ -33,8 +33,7 @@ def test_bayesian_exports_strict_clock_rate_model_surface() -> None:
     assert StrictClockRateBranchRow is StrictClockRateBranchRowImpl
     assert StrictClockRateModel is StrictClockRateModelImpl
     assert (
-        StrictClockRateModelEvaluationReport
-        is StrictClockRateModelEvaluationReportImpl
+        StrictClockRateModelEvaluationReport is StrictClockRateModelEvaluationReportImpl
     )
     assert build_strict_clock_rate_model is build_strict_clock_rate_model_impl
     assert (

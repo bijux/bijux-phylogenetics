@@ -51,8 +51,7 @@ def test_bayesian_exports_trace_effective_sample_size_surface() -> None:
         is IndependentMetropolisHastingsTraceEffectiveSampleSizeReportImpl
     )
     assert (
-        compute_trace_effective_sample_size
-        is compute_trace_effective_sample_size_impl
+        compute_trace_effective_sample_size is compute_trace_effective_sample_size_impl
     )
     assert (
         compute_trace_integrated_autocorrelation_time

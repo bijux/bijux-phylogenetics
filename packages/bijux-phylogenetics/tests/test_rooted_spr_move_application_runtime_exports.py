@@ -11,10 +11,7 @@ from bijux_phylogenetics.phylo.topology import (
 
 
 def test_public_runtime_exports_rooted_spr_move_application_surface() -> None:
-    assert (
-        topology_api.RootedSprMoveApplicationReport
-        is RootedSprMoveApplicationReport
-    )
+    assert topology_api.RootedSprMoveApplicationReport is RootedSprMoveApplicationReport
     assert (
         topology_api.resolve_rooted_spr_move_candidate
         is resolve_rooted_spr_move_candidate
@@ -23,5 +20,7 @@ def test_public_runtime_exports_rooted_spr_move_application_surface() -> None:
         topology_api.summarize_rooted_spr_move_application
         is summarize_rooted_spr_move_application
     )
-    assert topology_api.write_rooted_spr_move_artifacts is write_rooted_spr_move_artifacts
+    assert (
+        topology_api.write_rooted_spr_move_artifacts is write_rooted_spr_move_artifacts
+    )
     assert topology_api.write_rooted_spr_move_run_json is write_rooted_spr_move_run_json

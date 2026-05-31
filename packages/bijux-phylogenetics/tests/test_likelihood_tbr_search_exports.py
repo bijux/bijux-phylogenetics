@@ -15,8 +15,14 @@ def test_public_likelihood_exports_tbr_search_surface() -> None:
         likelihood_api.NucleotideLikelihoodTbrSearchReport
         is NucleotideLikelihoodTbrSearchReport
     )
-    assert likelihood_api.NucleotideLikelihoodTbrTraceRow is NucleotideLikelihoodTbrTraceRow
-    assert likelihood_api.search_nucleotide_likelihood_tbr is search_nucleotide_likelihood_tbr
+    assert (
+        likelihood_api.NucleotideLikelihoodTbrTraceRow
+        is NucleotideLikelihoodTbrTraceRow
+    )
+    assert (
+        likelihood_api.search_nucleotide_likelihood_tbr
+        is search_nucleotide_likelihood_tbr
+    )
     assert (
         likelihood_api.search_nucleotide_likelihood_tbr_from_alignment
         is search_nucleotide_likelihood_tbr_from_alignment

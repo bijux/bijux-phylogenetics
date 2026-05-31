@@ -54,10 +54,7 @@ from bijux_phylogenetics.phylo.likelihood.simplex_coordinates import (
 
 def test_phylo_likelihood_exports_simplex_coordinate_surface() -> None:
     assert DNA_EXCHANGEABILITY_LABELS is dna_exchangeability_labels_impl
-    assert (
-        SimplexCoordinateParameterization
-        is simplex_coordinate_parameterization_impl
-    )
+    assert SimplexCoordinateParameterization is simplex_coordinate_parameterization_impl
     assert parameterize_named_simplex is parameterize_named_simplex_impl
     assert (
         parameterize_dna_base_frequency_simplex

@@ -61,7 +61,9 @@ def test_bayesian_exports_fixed_topology_partitioned_dna_surface() -> None:
         FixedTopologyPartitionedDnaProposalSchedule
         is FixedTopologyPartitionedDnaProposalScheduleImpl
     )
-    assert FixedTopologyPartitionedDnaRunReport is FixedTopologyPartitionedDnaRunReportImpl
+    assert (
+        FixedTopologyPartitionedDnaRunReport is FixedTopologyPartitionedDnaRunReportImpl
+    )
     assert (
         build_fixed_topology_partitioned_dna_model_definition
         is build_fixed_topology_partitioned_dna_model_definition_impl

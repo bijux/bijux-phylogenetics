@@ -34,21 +34,16 @@ from bijux_phylogenetics.bayesian.time_tree_priors import (
 
 def test_bayesian_exports_birth_death_tree_prior_surface() -> None:
     assert BIRTH_DEATH_TREE_PRIOR_FAMILIES == BIRTH_DEATH_TREE_PRIOR_FAMILIES_IMPL
-    assert (
-        TIME_TREE_PRIOR_CONDITIONING_MODES
-        == TIME_TREE_PRIOR_CONDITIONING_MODES_IMPL
-    )
+    assert TIME_TREE_PRIOR_CONDITIONING_MODES == TIME_TREE_PRIOR_CONDITIONING_MODES_IMPL
     assert BirthDeathTreePriorModel is BirthDeathTreePriorModelImpl
     assert BirthDeathTreePriorBranchingRow is BirthDeathTreePriorBranchingRowImpl
     assert (
-        BirthDeathTreePriorEvaluationReport
-        is BirthDeathTreePriorEvaluationReportImpl
+        BirthDeathTreePriorEvaluationReport is BirthDeathTreePriorEvaluationReportImpl
     )
     assert (
         build_crown_conditioned_birth_death_tree_prior
         is build_crown_conditioned_birth_death_tree_prior_impl
     )
     assert (
-        evaluate_birth_death_tree_log_prior
-        is evaluate_birth_death_tree_log_prior_impl
+        evaluate_birth_death_tree_log_prior is evaluate_birth_death_tree_log_prior_impl
     )

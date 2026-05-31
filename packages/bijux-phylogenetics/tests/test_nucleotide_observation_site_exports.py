@@ -20,7 +20,9 @@ def fixture(group: str, name: str) -> Path:
 def test_site_log_likelihood_export_supports_fifth_state_observation_policy() -> None:
     direct_report = evaluate_jc69_tree_likelihood(
         load_tree(fixture("trees", "jc69_joint_ancestral_difference_tree_3_taxa.nwk")),
-        load_fasta_alignment(fixture("alignments", "example_alignment_ambiguity.fasta")),
+        load_fasta_alignment(
+            fixture("alignments", "example_alignment_ambiguity.fasta")
+        ),
         observation_policy="fifth-state",
     )
     site_report = evaluate_nucleotide_site_log_likelihoods_from_alignment(

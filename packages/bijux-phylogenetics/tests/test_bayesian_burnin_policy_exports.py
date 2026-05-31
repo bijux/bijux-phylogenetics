@@ -89,6 +89,5 @@ def test_bayesian_exports_burnin_policy_surface() -> None:
         is build_metropolis_hastings_burnin_policy_impl
     )
     assert (
-        diagnose_metropolis_hastings_burnin
-        is diagnose_metropolis_hastings_burnin_impl
+        diagnose_metropolis_hastings_burnin is diagnose_metropolis_hastings_burnin_impl
     )

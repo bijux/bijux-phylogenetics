@@ -40,13 +40,18 @@ def test_bayesian_exports_clock_model_scalar_prior_surface() -> None:
         is build_exponential_clock_model_scalar_prior_impl
     )
     assert (
-        build_fixed_clock_model_scalar_prior is build_fixed_clock_model_scalar_prior_impl
+        build_fixed_clock_model_scalar_prior
+        is build_fixed_clock_model_scalar_prior_impl
     )
     assert (
-        build_gamma_clock_model_scalar_prior is build_gamma_clock_model_scalar_prior_impl
+        build_gamma_clock_model_scalar_prior
+        is build_gamma_clock_model_scalar_prior_impl
     )
     assert (
         build_lognormal_clock_model_scalar_prior
         is build_lognormal_clock_model_scalar_prior_impl
     )
-    assert evaluate_clock_model_scalar_log_prior is evaluate_clock_model_scalar_log_prior_impl
+    assert (
+        evaluate_clock_model_scalar_log_prior
+        is evaluate_clock_model_scalar_log_prior_impl
+    )

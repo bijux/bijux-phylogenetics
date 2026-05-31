@@ -55,8 +55,7 @@ def test_bayesian_exports_branch_length_prior_surface() -> None:
     )
     assert build_gamma_branch_length_prior is build_gamma_branch_length_prior_impl
     assert (
-        build_lognormal_branch_length_prior
-        is build_lognormal_branch_length_prior_impl
+        build_lognormal_branch_length_prior is build_lognormal_branch_length_prior_impl
     )
     assert build_fixed_branch_length_prior is build_fixed_branch_length_prior_impl
     assert evaluate_branch_length_log_prior is evaluate_branch_length_log_prior_impl

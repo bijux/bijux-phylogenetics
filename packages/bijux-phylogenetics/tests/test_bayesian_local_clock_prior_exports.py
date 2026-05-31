@@ -54,10 +54,8 @@ def test_bayesian_exports_local_clock_prior_surface() -> None:
     assert LocalClockRegimeDefinition is LocalClockRegimeDefinitionImpl
     assert build_local_clock_rate_model is build_local_clock_rate_model_impl
     assert (
-        evaluate_local_clock_tree_log_prior
-        is evaluate_local_clock_tree_log_prior_impl
+        evaluate_local_clock_tree_log_prior is evaluate_local_clock_tree_log_prior_impl
     )
     assert (
-        load_local_clock_regime_definitions
-        is load_local_clock_regime_definitions_impl
+        load_local_clock_regime_definitions is load_local_clock_regime_definitions_impl
     )

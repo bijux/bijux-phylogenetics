@@ -101,13 +101,21 @@ def test_bayesian_exports_posterior_missing_data_surface() -> None:
         PosteriorMissingContinuousTraitDefinition
         is PosteriorMissingContinuousTraitDefinitionImpl
     )
-    assert PosteriorMissingContinuousTraitReport is PosteriorMissingContinuousTraitReportImpl
+    assert (
+        PosteriorMissingContinuousTraitReport
+        is PosteriorMissingContinuousTraitReportImpl
+    )
     assert (
         PosteriorMissingContinuousTraitTaxonSummaryRow
         is PosteriorMissingContinuousTraitTaxonSummaryRowImpl
     )
-    assert PosteriorMissingDiscreteTraitDefinition is PosteriorMissingDiscreteTraitDefinitionImpl
-    assert PosteriorMissingDiscreteTraitReport is PosteriorMissingDiscreteTraitReportImpl
+    assert (
+        PosteriorMissingDiscreteTraitDefinition
+        is PosteriorMissingDiscreteTraitDefinitionImpl
+    )
+    assert (
+        PosteriorMissingDiscreteTraitReport is PosteriorMissingDiscreteTraitReportImpl
+    )
     assert (
         PosteriorMissingDiscreteTraitStateProbabilityRow
         is PosteriorMissingDiscreteTraitStateProbabilityRowImpl
@@ -116,7 +124,9 @@ def test_bayesian_exports_posterior_missing_data_surface() -> None:
         PosteriorMissingDiscreteTraitTaxonSummaryRow
         is PosteriorMissingDiscreteTraitTaxonSummaryRowImpl
     )
-    assert PosteriorMissingNucleotideDefinition is PosteriorMissingNucleotideDefinitionImpl
+    assert (
+        PosteriorMissingNucleotideDefinition is PosteriorMissingNucleotideDefinitionImpl
+    )
     assert PosteriorMissingNucleotideReport is PosteriorMissingNucleotideReportImpl
     assert (
         PosteriorMissingNucleotideSequenceRecord

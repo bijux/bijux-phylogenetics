@@ -132,11 +132,11 @@ from ..state import (
     _write_coding_exclusion_table,
     _write_coding_summary_table,
 )
-from .partitions import _prepare_iqtree_partitions
-from .bootstrap_support import run_bootstrap_support_estimation
 from .bootstrap_consensus import run_bootstrap_consensus_tree
+from .bootstrap_support import run_bootstrap_support_estimation
 from .maximum_likelihood import run_maximum_likelihood_tree_inference
 from .model_selection import run_model_selection
+from .partitions import _prepare_iqtree_partitions
 from .sh_alrt_support import run_sh_alrt_support_estimation
 from .shared import (
     _build_iqtree_model_selection_summary,

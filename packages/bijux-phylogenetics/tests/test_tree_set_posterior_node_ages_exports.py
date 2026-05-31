@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import bijux_phylogenetics.trees as trees_api
-
 from bijux_phylogenetics.trees import (
     PosteriorNodeAgeSummaryReport,
     PosteriorNodeAgeSummaryRow,

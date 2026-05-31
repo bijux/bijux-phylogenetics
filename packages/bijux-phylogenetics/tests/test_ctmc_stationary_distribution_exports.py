@@ -20,6 +20,5 @@ def test_phylo_likelihood_exports_ctmc_stationary_distribution_surface() -> None
     assert SolvedCtmcStationaryDistribution is SolvedCtmcStationaryDistributionImpl
     assert solve_ctmc_stationary_distribution is solve_ctmc_stationary_distribution_impl
     assert (
-        verify_ctmc_stationary_distribution
-        is verify_ctmc_stationary_distribution_impl
+        verify_ctmc_stationary_distribution is verify_ctmc_stationary_distribution_impl
     )

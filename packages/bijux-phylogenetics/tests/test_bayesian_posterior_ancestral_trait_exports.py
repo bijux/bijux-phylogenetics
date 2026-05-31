@@ -47,8 +47,7 @@ def test_bayesian_exports_posterior_ancestral_trait_surface() -> None:
     )
     assert PosteriorContinuousTraitReport is PosteriorContinuousTraitReportImpl
     assert (
-        PosteriorDiscreteTraitNodeSummaryRow
-        is PosteriorDiscreteTraitNodeSummaryRowImpl
+        PosteriorDiscreteTraitNodeSummaryRow is PosteriorDiscreteTraitNodeSummaryRowImpl
     )
     assert PosteriorDiscreteTraitReport is PosteriorDiscreteTraitReportImpl
     assert (

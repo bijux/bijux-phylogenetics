@@ -45,10 +45,7 @@ from bijux_phylogenetics.bayesian.discrete_trait_rate_priors import (
 
 
 def test_bayesian_exports_discrete_trait_rate_prior_surface() -> None:
-    assert (
-        DISCRETE_TRAIT_RATE_PRIOR_FAMILIES
-        == DISCRETE_TRAIT_RATE_PRIOR_FAMILIES_IMPL
-    )
+    assert DISCRETE_TRAIT_RATE_PRIOR_FAMILIES == DISCRETE_TRAIT_RATE_PRIOR_FAMILIES_IMPL
     assert DISCRETE_TRAIT_RATE_PRIOR_MODELS == DISCRETE_TRAIT_RATE_PRIOR_MODELS_IMPL
     assert DiscreteTraitRatePriorModel is DiscreteTraitRatePriorModelImpl
     assert (

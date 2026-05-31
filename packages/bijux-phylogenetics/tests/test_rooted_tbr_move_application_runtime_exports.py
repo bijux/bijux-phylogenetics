@@ -13,10 +13,7 @@ from bijux_phylogenetics.phylo.topology import (
 
 
 def test_public_runtime_exports_rooted_tbr_move_application_surface() -> None:
-    assert (
-        topology_api.RootedTbrMoveApplicationReport
-        is RootedTbrMoveApplicationReport
-    )
+    assert topology_api.RootedTbrMoveApplicationReport is RootedTbrMoveApplicationReport
     assert topology_api.RootedTbrMoveCandidate is RootedTbrMoveCandidate
     assert topology_api.apply_rooted_tbr_move is apply_rooted_tbr_move
     assert (
@@ -27,5 +24,7 @@ def test_public_runtime_exports_rooted_tbr_move_application_surface() -> None:
         topology_api.summarize_rooted_tbr_move_application
         is summarize_rooted_tbr_move_application
     )
-    assert topology_api.write_rooted_tbr_move_artifacts is write_rooted_tbr_move_artifacts
+    assert (
+        topology_api.write_rooted_tbr_move_artifacts is write_rooted_tbr_move_artifacts
+    )
     assert topology_api.write_rooted_tbr_move_run_json is write_rooted_tbr_move_run_json

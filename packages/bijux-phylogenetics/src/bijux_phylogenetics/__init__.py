@@ -51,8 +51,8 @@ if TYPE_CHECKING:
         datasets,
         distance,
         evidence,
-        parsimony,
         parity,
+        parsimony,
         phylo,
         trees,
     )

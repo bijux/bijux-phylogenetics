@@ -13,7 +13,9 @@ def test_public_runtime_exports_topology_neighborhood_summary_surface() -> None:
         topology_api.TopologyNeighborhoodSummaryReport
         is TopologyNeighborhoodSummaryReport
     )
-    assert topology_api.summarize_topology_neighborhood is summarize_topology_neighborhood
+    assert (
+        topology_api.summarize_topology_neighborhood is summarize_topology_neighborhood
+    )
     assert (
         topology_api.write_topology_neighborhood_summary_table
         is write_topology_neighborhood_summary_table

@@ -26,7 +26,10 @@ def test_public_likelihood_exports_tree_inference_surface() -> None:
         likelihood_api.default_nucleotide_likelihood_tree_inference_model_candidates
         is default_nucleotide_likelihood_tree_inference_model_candidates
     )
-    assert likelihood_api.infer_nucleotide_likelihood_tree is infer_nucleotide_likelihood_tree
+    assert (
+        likelihood_api.infer_nucleotide_likelihood_tree
+        is infer_nucleotide_likelihood_tree
+    )
     assert (
         likelihood_api.infer_nucleotide_likelihood_tree_from_alignment
         is infer_nucleotide_likelihood_tree_from_alignment

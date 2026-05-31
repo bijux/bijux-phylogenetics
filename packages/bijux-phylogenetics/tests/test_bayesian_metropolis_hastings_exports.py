@@ -85,10 +85,7 @@ def test_bayesian_exports_metropolis_hastings_surface() -> None:
         build_metropolis_hastings_checkpoint
         is build_metropolis_hastings_checkpoint_impl
     )
-    assert (
-        build_metropolis_hastings_proposal
-        is build_metropolis_hastings_proposal_impl
-    )
+    assert build_metropolis_hastings_proposal is build_metropolis_hastings_proposal_impl
     assert (
         build_metropolis_hastings_random_state
         is build_metropolis_hastings_random_state_impl
@@ -101,19 +98,13 @@ def test_bayesian_exports_metropolis_hastings_surface() -> None:
         deserialize_metropolis_hastings_checkpoint_json
         is deserialize_metropolis_hastings_checkpoint_json_impl
     )
-    assert (
-        resume_metropolis_hastings_sampler
-        is resume_metropolis_hastings_sampler_impl
-    )
+    assert resume_metropolis_hastings_sampler is resume_metropolis_hastings_sampler_impl
     assert (
         run_checkpointed_metropolis_hastings_sampler
         is run_checkpointed_metropolis_hastings_sampler_impl
     )
     assert run_metropolis_hastings_sampler is run_metropolis_hastings_sampler_impl
-    assert (
-        score_bayesian_phylogenetic_state
-        is score_bayesian_phylogenetic_state_impl
-    )
+    assert score_bayesian_phylogenetic_state is score_bayesian_phylogenetic_state_impl
     assert (
         serialize_metropolis_hastings_checkpoint
         is serialize_metropolis_hastings_checkpoint_impl

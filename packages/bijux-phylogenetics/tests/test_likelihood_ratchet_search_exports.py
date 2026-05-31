@@ -25,9 +25,18 @@ def test_public_likelihood_exports_ratchet_search_surface() -> None:
         likelihood_api.NucleotideLikelihoodRatchetBestTreeHistory
         is NucleotideLikelihoodRatchetBestTreeHistory
     )
-    assert likelihood_api.NucleotideLikelihoodRatchetCycle is NucleotideLikelihoodRatchetCycle
-    assert likelihood_api.NucleotideLikelihoodRatchetReport is NucleotideLikelihoodRatchetReport
-    assert likelihood_api.search_nucleotide_likelihood_ratchet is search_nucleotide_likelihood_ratchet
+    assert (
+        likelihood_api.NucleotideLikelihoodRatchetCycle
+        is NucleotideLikelihoodRatchetCycle
+    )
+    assert (
+        likelihood_api.NucleotideLikelihoodRatchetReport
+        is NucleotideLikelihoodRatchetReport
+    )
+    assert (
+        likelihood_api.search_nucleotide_likelihood_ratchet
+        is search_nucleotide_likelihood_ratchet
+    )
     assert (
         likelihood_api.search_nucleotide_likelihood_ratchet_from_alignment
         is search_nucleotide_likelihood_ratchet_from_alignment

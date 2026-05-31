@@ -32,15 +32,8 @@ def test_bayesian_exports_calibration_prior_surface() -> None:
     assert CALIBRATION_PRIOR_FAMILIES == CALIBRATION_PRIOR_FAMILIES_IMPL
     assert CalibrationPriorDefinition is CalibrationPriorDefinitionImpl
     assert CalibrationPriorRow is CalibrationPriorRowImpl
+    assert CalibrationPriorEvaluationReport is CalibrationPriorEvaluationReportImpl
+    assert load_calibration_prior_definitions is load_calibration_prior_definitions_impl
     assert (
-        CalibrationPriorEvaluationReport
-        is CalibrationPriorEvaluationReportImpl
-    )
-    assert (
-        load_calibration_prior_definitions
-        is load_calibration_prior_definitions_impl
-    )
-    assert (
-        evaluate_calibration_tree_log_prior
-        is evaluate_calibration_tree_log_prior_impl
+        evaluate_calibration_tree_log_prior is evaluate_calibration_tree_log_prior_impl
     )

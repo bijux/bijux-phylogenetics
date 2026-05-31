@@ -66,11 +66,17 @@ def test_bayesian_exports_partition_model_prior_surface() -> None:
     )
     assert PARTITION_MODEL_PRIOR_TARGETS == PARTITION_MODEL_PRIOR_TARGETS_IMPL
     assert PARTITION_SUBSTITUTION_BASE_MODELS == PARTITION_SUBSTITUTION_BASE_MODELS_IMPL
-    assert PartitionSubstitutionModelDefinition is PartitionSubstitutionModelDefinitionImpl
-    assert PartitionSubstitutionParameterState is PartitionSubstitutionParameterStateImpl
+    assert (
+        PartitionSubstitutionModelDefinition is PartitionSubstitutionModelDefinitionImpl
+    )
+    assert (
+        PartitionSubstitutionParameterState is PartitionSubstitutionParameterStateImpl
+    )
     assert PartitionParameterLinkagePlan is PartitionParameterLinkagePlanImpl
     assert PartitionModelPriorBundle is PartitionModelPriorBundleImpl
-    assert PartitionModelPriorEvaluationReport is PartitionModelPriorEvaluationReportImpl
+    assert (
+        PartitionModelPriorEvaluationReport is PartitionModelPriorEvaluationReportImpl
+    )
     assert PartitionModelPriorRow is PartitionModelPriorRowImpl
     assert (
         build_partition_substitution_model_definition

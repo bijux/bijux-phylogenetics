@@ -15,10 +15,7 @@ def test_public_likelihood_exports_optimizer_boundary_warning_surface() -> None:
         likelihood_api.LikelihoodOptimizationBoundaryWarning
         is LikelihoodOptimizationBoundaryWarning
     )
-    assert (
-        likelihood_api.boundary_warning_messages
-        is boundary_warning_messages
-    )
+    assert likelihood_api.boundary_warning_messages is boundary_warning_messages
     assert (
         likelihood_api.build_base_frequency_boundary_warnings
         is build_base_frequency_boundary_warnings

@@ -46,8 +46,7 @@ from bijux_phylogenetics.bayesian.fixed_topology_relaxed_clock import (
 
 def test_bayesian_exports_fixed_topology_relaxed_clock_surface() -> None:
     assert (
-        FIXED_TOPOLOGY_RELAXED_CLOCK_MODELS
-        == FIXED_TOPOLOGY_RELAXED_CLOCK_MODELS_IMPL
+        FIXED_TOPOLOGY_RELAXED_CLOCK_MODELS == FIXED_TOPOLOGY_RELAXED_CLOCK_MODELS_IMPL
     )
     assert (
         FixedTopologyRelaxedClockBranchRateSummary

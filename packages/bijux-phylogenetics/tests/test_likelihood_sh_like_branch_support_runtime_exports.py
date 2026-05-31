@@ -18,7 +18,10 @@ from bijux_phylogenetics.phylo.likelihood import (
 
 
 def test_public_runtime_exports_sh_like_branch_support_surface() -> None:
-    assert likelihood_api.NucleotideShLikeBranchSupportRow is NucleotideShLikeBranchSupportRow
+    assert (
+        likelihood_api.NucleotideShLikeBranchSupportRow
+        is NucleotideShLikeBranchSupportRow
+    )
     assert (
         likelihood_api.NucleotideShLikeBranchSupportLocalTopologyRow
         is NucleotideShLikeBranchSupportLocalTopologyRow

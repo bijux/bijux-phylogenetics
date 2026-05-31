@@ -55,14 +55,15 @@ def test_bayesian_exports_fixed_topology_strict_clock_surface() -> None:
         is FixedTopologyStrictClockNodeAgeSummaryImpl
     )
     assert (
-        FixedTopologyStrictClockPosteriorRow
-        is FixedTopologyStrictClockPosteriorRowImpl
+        FixedTopologyStrictClockPosteriorRow is FixedTopologyStrictClockPosteriorRowImpl
     )
     assert (
         FixedTopologyStrictClockProposalSchedule
         is FixedTopologyStrictClockProposalScheduleImpl
     )
-    assert FixedTopologyStrictClockRateSummary is FixedTopologyStrictClockRateSummaryImpl
+    assert (
+        FixedTopologyStrictClockRateSummary is FixedTopologyStrictClockRateSummaryImpl
+    )
     assert FixedTopologyStrictClockRunReport is FixedTopologyStrictClockRunReportImpl
     assert (
         build_fixed_topology_strict_clock_model_definition

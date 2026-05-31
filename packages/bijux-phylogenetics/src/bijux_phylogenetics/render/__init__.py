@@ -10,13 +10,13 @@ from .reproducibility import (
     build_figure_reproducibility_manifest,
     write_figure_reproducibility_manifest,
 )
-from .tree_svg import AnnotationStrip, TreeRenderResult, render_tree_svg
 from .time_tree_svg import (
     TimeTreeNodeInterval,
     TimeTreeRenderResult,
     render_time_tree_svg,
 )
 from .tree_figure_package import TreeFigurePackageResult, build_tree_figure_package
+from .tree_svg import AnnotationStrip, TreeRenderResult, render_tree_svg
 
 __all__ = [
     "AnnotationStrip",

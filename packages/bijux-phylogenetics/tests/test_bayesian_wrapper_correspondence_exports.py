@@ -33,7 +33,9 @@ def test_bayesian_exports_wrapper_correspondence_surface() -> None:
         BayesianWrapperCorrespondenceObservation
         is BayesianWrapperCorrespondenceObservationImpl
     )
-    assert BayesianWrapperCorrespondenceReport is BayesianWrapperCorrespondenceReportImpl
+    assert (
+        BayesianWrapperCorrespondenceReport is BayesianWrapperCorrespondenceReportImpl
+    )
     assert (
         BayesianWrapperCorrespondenceSummaryRow
         is BayesianWrapperCorrespondenceSummaryRowImpl

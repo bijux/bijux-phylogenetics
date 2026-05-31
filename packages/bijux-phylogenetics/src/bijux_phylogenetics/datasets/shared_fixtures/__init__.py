@@ -1,10 +1,5 @@
 """Governed reusable fixture catalogs for parity, validation, and tests."""
 
-from .comparative import (
-    SharedPhytoolsComparativeFixture,
-    get_shared_phytools_comparative_fixture,
-    list_shared_phytools_comparative_fixtures,
-)
 from .beast_posteriors import (
     SharedBeastPosteriorBurninReference,
     SharedBeastPosteriorConsensusReference,
@@ -14,6 +9,11 @@ from .beast_posteriors import (
     SharedBeastPosteriorReference,
     get_shared_beast_posterior_fixture,
     list_shared_beast_posterior_fixtures,
+)
+from .comparative import (
+    SharedPhytoolsComparativeFixture,
+    get_shared_phytools_comparative_fixture,
+    list_shared_phytools_comparative_fixtures,
 )
 from .distance_matrices import (
     SharedDistanceMatrixFixture,
