@@ -9,6 +9,11 @@ from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.codon_observation_policies import (
+    resolve_codon_observation_leaf_vector,
+    validate_codon_observation_policy,
+    validate_codon_observation_state,
+)
 from bijux_phylogenetics.phylo.likelihood.codon_states import (
     CodonStateSpace,
     build_equal_rate_codon_ctmc_rate_matrix,
@@ -37,8 +42,6 @@ from bijux_phylogenetics.runtime.errors import (
     InvalidAlignmentError,
 )
 
-_CODON_DNA_BASES = frozenset({"A", "C", "G", "T"})
-
 
 def evaluate_codon_ctmc_tree_likelihood(
     tree: PhyloTree,
@@ -50,11 +53,13 @@ def evaluate_codon_ctmc_tree_likelihood(
     | tuple[float, ...]
     | None = None,
     genetic_code: int | str | None = None,
+    observation_policy: str = "reject",
 ) -> CodonCtmcTreeLikelihoodReport:
     """Evaluate one fixed-topology codon CTMC likelihood on an aligned coding matrix."""
     compressed_patterns = compress_codon_site_patterns_from_records(
         records,
         genetic_code=genetic_code,
+        observation_policy=observation_policy,
     )
     state_space, rate_matrix, frequencies, frequency_source = (
         build_equal_rate_codon_ctmc_rate_matrix(
@@ -68,6 +73,7 @@ def evaluate_codon_ctmc_tree_likelihood(
         state_space=state_space,
         rate_matrix=rate_matrix,
         root_prior=frequencies,
+        observation_policy=observation_policy,
     )
     return CodonCtmcTreeLikelihoodReport(
         taxa=compressed_patterns.taxon_order,
@@ -81,6 +87,10 @@ def evaluate_codon_ctmc_tree_likelihood(
         genetic_code_id=state_space.genetic_code_id,
         genetic_code_name=state_space.genetic_code_name,
         codon_frequency_source=frequency_source,
+        observation_policy=validate_codon_observation_policy(
+            observation_policy,
+            owner_name="codon CTMC likelihood",
+        ),
         log_likelihood=log_likelihood,
     )
 
@@ -95,6 +105,7 @@ def evaluate_codon_ctmc_tree_likelihood_from_alignment(
     | tuple[float, ...]
     | None = None,
     genetic_code: int | str | None = None,
+    observation_policy: str = "reject",
 ) -> CodonCtmcTreeLikelihoodReport:
     """Evaluate one fixed-topology codon CTMC likelihood from tree and alignment paths."""
     return evaluate_codon_ctmc_tree_likelihood(
@@ -102,6 +113,7 @@ def evaluate_codon_ctmc_tree_likelihood_from_alignment(
         load_fasta_alignment(alignment_path),
         codon_frequencies=codon_frequencies,
         genetic_code=genetic_code,
+        observation_policy=observation_policy,
     )
 
 
@@ -109,12 +121,14 @@ def compress_codon_site_patterns_from_records(
     records: list[AlignmentRecord],
     *,
     genetic_code: int | str | None = None,
+    observation_policy: str = "reject",
     source_path: Path | None = None,
 ) -> CompressedAlignmentSitePatterns:
     """Compress identical aligned codon sites while preserving stable taxon order."""
     normalized_records = normalize_codon_likelihood_records(
         records,
         genetic_code=genetic_code,
+        observation_policy=observation_policy,
     )
     codon_count = len(normalized_records[0].sequence) // 3
     codon_sequences = [
@@ -148,6 +162,7 @@ def normalize_codon_likelihood_records(
     records: list[AlignmentRecord],
     *,
     genetic_code: int | str | None = None,
+    observation_policy: str = "reject",
 ) -> list[AlignmentRecord]:
     """Normalize one aligned coding matrix into unambiguous sense codons only."""
     state_space = resolve_codon_state_space(genetic_code)
@@ -172,21 +187,15 @@ def normalize_codon_likelihood_records(
             _iter_record_codons(normalized_sequence),
             start=1,
         ):
-            if set(codon) - _CODON_DNA_BASES:
-                raise InvalidAlignmentError(
-                    "codon CTMC likelihood currently requires unambiguous DNA codons; "
-                    f"record '{record.identifier}' contains '{codon}' at codon site {codon_index}"
-                )
-            if codon in state_space.stop_codons:
-                raise InvalidAlignmentError(
-                    "codon CTMC likelihood excludes stop codon states; "
-                    f"record '{record.identifier}' contains stop codon '{codon}' at codon site {codon_index}"
-                )
-            if codon not in state_space.state_index:
-                raise InvalidAlignmentError(
-                    "codon CTMC likelihood requires codons in the resolved sense-codon state order; "
-                    f"record '{record.identifier}' contains '{codon}' at codon site {codon_index}"
-                )
+            validate_codon_observation_state(
+                codon,
+                codon_index=codon_index,
+                genetic_code_name=state_space.genetic_code_name,
+                owner_name="codon CTMC likelihood",
+                observation_policy=observation_policy,
+                record_identifier=record.identifier,
+                stop_codons=frozenset(state_space.stop_codons),
+            )
         normalized_records.append(
             AlignmentRecord(
                 identifier=record.identifier,
@@ -203,6 +212,7 @@ def _evaluate_codon_ctmc_tree_likelihood_from_patterns(
     state_space: CodonStateSpace,
     rate_matrix: numpy.ndarray,
     root_prior: numpy.ndarray,
+    observation_policy: str,
 ) -> float:
     validate_explicit_branch_lengths(tree, model_name="codon CTMC")
     validate_tree_taxa_against_patterns(
@@ -220,6 +230,7 @@ def _evaluate_codon_ctmc_tree_likelihood_from_patterns(
             state_space=state_space,
             root_prior=root_prior,
             transition_evaluator=transition_evaluator,
+            observation_policy=observation_policy,
         ),
     )
 
@@ -232,6 +243,7 @@ def _evaluate_codon_site_log_likelihood(
     state_space: CodonStateSpace,
     root_prior: numpy.ndarray,
     transition_evaluator,
+    observation_policy: str,
 ) -> float:
     states_by_taxon = dict(zip(taxon_order, states, strict=True))
     pruning_pass = postorder_conditional_likelihoods(
@@ -241,6 +253,7 @@ def _evaluate_codon_site_log_likelihood(
             states_by_taxon,
             state_space=state_space,
             node_name=node.name,
+            observation_policy=observation_policy,
         ),
         transition_matrix_for_child=lambda child: (
             transition_evaluator.transition_probability_matrix(
@@ -260,15 +273,21 @@ def _codon_leaf_likelihood_vector(
     *,
     state_space: CodonStateSpace,
     node_name: str | None,
+    observation_policy: str,
 ) -> numpy.ndarray:
     if node_name is None:
         raise AlignmentTaxonMismatchError(
             "codon CTMC likelihood requires named tree tips for alignment lookup"
         )
     codon = states_by_taxon[node_name]
-    vector = numpy.zeros(len(state_space.state_order), dtype=float)
-    vector[state_space.state_index[codon]] = 1.0
-    return vector
+    return resolve_codon_observation_leaf_vector(
+        codon,
+        model_name="codon CTMC",
+        node_name=node_name,
+        observation_policy=observation_policy,
+        state_order=state_space.state_order,
+        state_index=state_space.state_index,
+    )
 
 
 def _iter_record_codons(sequence: str) -> tuple[str, ...]:
