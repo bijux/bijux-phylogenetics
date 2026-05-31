@@ -7,6 +7,9 @@ from bijux_phylogenetics.phylo.likelihood.pruning import (
     build_transition_matrix_evaluator,
     postorder_conditional_likelihoods,
 )
+from bijux_phylogenetics.phylo.likelihood.discrete_observation_policies import (
+    resolve_discrete_observation_leaf_vector,
+)
 
 from .likelihood_math import branch_length
 
@@ -18,6 +21,7 @@ def estimate_marginal_state_probabilities(
     state_order: list[str],
     rate_matrix: numpy.ndarray,
     root_prior: numpy.ndarray,
+    observation_policy: str = "reject",
 ) -> dict[str, dict[str, float]]:
     """Estimate governed internal-node state probabilities for one discrete Mk fit.
 
@@ -31,9 +35,9 @@ def estimate_marginal_state_probabilities(
         state_count=len(state_order),
         leaf_likelihood=lambda node: _leaf_likelihood_vector(
             states_by_taxon,
-            state_index=state_index,
-            state_count=len(state_order),
+            state_order=state_order,
             node_name=node.name,
+            observation_policy=observation_policy,
         ),
         transition_matrix_for_child=lambda child: (
             transition_evaluator.transition_probability_matrix(branch_length(child))
@@ -100,9 +104,9 @@ def estimate_marginal_state_probabilities(
                     if not current_node.is_leaf()
                     else _leaf_likelihood_vector(
                         states_by_taxon,
-                        state_index=state_index,
-                        state_count=len(state_order),
+                        state_order=state_order,
                         node_name=current_node.name,
+                        observation_policy=observation_policy,
                     )
                 ),
                 strict=True,
@@ -116,15 +120,19 @@ def estimate_marginal_state_probabilities(
 def _leaf_likelihood_vector(
     states_by_taxon: dict[str, str],
     *,
-    state_index: dict[str, int],
-    state_count: int,
+    state_order: list[str],
     node_name: str | None,
+    observation_policy: str,
 ) -> numpy.ndarray:
     if node_name is None:
         raise ValueError("leaf nodes in a discrete likelihood tree must be named")
-    likelihood = numpy.zeros(state_count, dtype=float)
-    likelihood[state_index[states_by_taxon[node_name]]] = 1.0
-    return likelihood
+    return resolve_discrete_observation_leaf_vector(
+        states_by_taxon[node_name],
+        model_name="discrete ancestral posterior",
+        node_name=node_name,
+        state_order=state_order,
+        observation_policy=observation_policy,
+    )
 
 
 def _normalize_probability_row(probability_row: numpy.ndarray) -> numpy.ndarray:
