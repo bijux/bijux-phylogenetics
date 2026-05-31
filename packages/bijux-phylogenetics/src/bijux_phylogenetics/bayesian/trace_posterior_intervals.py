@@ -158,6 +158,33 @@ def summarize_metropolis_hastings_trace_posterior_intervals(
     )
 
 
+def summarize_independent_metropolis_hastings_trace_posterior_intervals(
+    *,
+    run_report: IndependentMetropolisHastingsRunReport,
+    mass_fraction: float = 0.95,
+) -> IndependentMetropolisHastingsTracePosteriorIntervalReport:
+    """Summarize posterior intervals across named independent chains."""
+    if not isinstance(run_report, IndependentMetropolisHastingsRunReport):
+        raise PhylogeneticsError(
+            "independent metropolis-hastings trace posterior interval summary requires one IndependentMetropolisHastingsRunReport",
+            code="trace_posterior_interval_independent_run_report_type_invalid",
+        )
+    return IndependentMetropolisHastingsTracePosteriorIntervalReport(
+        chain_reports=[
+            IndependentMetropolisHastingsChainTracePosteriorIntervalReport(
+                chain_name=chain_report.chain_name,
+                posterior_interval_report=(
+                    summarize_metropolis_hastings_trace_posterior_intervals(
+                        chain_report=chain_report.chain_report,
+                        mass_fraction=mass_fraction,
+                    )
+                ),
+            )
+            for chain_report in run_report.chain_reports
+        ]
+    )
+
+
 def _validate_numeric_series(values: Sequence[float]) -> list[float]:
     validated_values = list(values)
     if not validated_values:
