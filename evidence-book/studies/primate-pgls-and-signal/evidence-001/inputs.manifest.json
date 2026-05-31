@@ -24,7 +24,7 @@
       "label": "results/rdata-reload-semantics.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/results/rdata-reload-semantics.json",
       "read_only": false,
-      "sha256": "f76e4b9e7baaafccfc5932042799c0255d8cbc71a1463cb2dbe0af81067968c3"
+      "sha256": "d7ce324ae23fc9f8d389d5d0f2bc16e914eb99a75d6c48e81bf528a0dc86e2c3"
     },
     {
       "input_id": "local-input-004",
@@ -48,7 +48,7 @@
       "label": "results/scalar-parity-table.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/results/scalar-parity-table.json",
       "read_only": false,
-      "sha256": "3f14c4fde3fc99e9fc5db51ff65fb50d9328104a7022a232c119a5845808275e"
+      "sha256": "2b4c013e5d4bb81b1c2991ec5a8f370afa397a8f7501680126932213fd20de8b"
     },
     {
       "input_id": "local-input-007",
@@ -56,7 +56,7 @@
       "label": "results/scalar-parity-table.md",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-001/results/scalar-parity-table.md",
       "read_only": false,
-      "sha256": "58b132aa7943de152c4b3fda698762fc6ac6e5b896ad75a58352c38f50ee307c"
+      "sha256": "c1e84065e16fd347681abe15c417a2c0bea7389df5f2204fadae5ff7f537314e"
     }
   ],
   "local_input_count": 0,
@@ -94,7 +94,7 @@
       "label": "R reference results for the PGLS and signal study",
       "locator": "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
       "read_only": true,
-      "sha256": "d7b74a5da5e73a3cdff702d2d86b2936a3ad96f77dc45b5cb95df2af611b9ed9"
+      "sha256": "e9a03655d093bfeab1247e0683105a9df43b2d3ff216a2687e318d7ceed4c22e"
     },
     {
       "input_id": "source-input-005",

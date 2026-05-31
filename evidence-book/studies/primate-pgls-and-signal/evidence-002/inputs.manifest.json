@@ -16,7 +16,7 @@
       "label": "results/baseline-gls-parity.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-002/results/baseline-gls-parity.json",
       "read_only": false,
-      "sha256": "7449bbd3c07572ee25a4f75f67b35ce9fc69bd3499b6e200a2136dd1cf8d0a7d"
+      "sha256": "0988e164bb8f1b805b595eea4a06c321481cdc9bb4f673e55d55055eff77f3c7"
     },
     {
       "input_id": "local-input-003",
@@ -78,7 +78,7 @@
       "label": "R reference results for the PGLS and signal study",
       "locator": "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
       "read_only": true,
-      "sha256": "d7b74a5da5e73a3cdff702d2d86b2936a3ad96f77dc45b5cb95df2af611b9ed9"
+      "sha256": "e9a03655d093bfeab1247e0683105a9df43b2d3ff216a2687e318d7ceed4c22e"
     },
     {
       "input_id": "source-input-005",

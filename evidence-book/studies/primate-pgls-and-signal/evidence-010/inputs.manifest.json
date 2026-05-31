@@ -16,7 +16,7 @@
       "label": "results/coverage-boundaries.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-010/results/coverage-boundaries.json",
       "read_only": false,
-      "sha256": "45a81cc218768421a34a903d267ff094c24b0812f324c35d7dea1a96b5a3d071"
+      "sha256": "567b1bc0a5bd130edba11a09b3a5d494ca351c2690bae410349e5d93c9853a91"
     },
     {
       "input_id": "local-input-003",
@@ -78,7 +78,7 @@
       "label": "R reference results for the PGLS and signal study",
       "locator": "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
       "read_only": true,
-      "sha256": "d7b74a5da5e73a3cdff702d2d86b2936a3ad96f77dc45b5cb95df2af611b9ed9"
+      "sha256": "e9a03655d093bfeab1247e0683105a9df43b2d3ff216a2687e318d7ceed4c22e"
     },
     {
       "input_id": "source-input-005",
