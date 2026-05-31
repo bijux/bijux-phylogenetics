@@ -138,6 +138,17 @@ def test_rooted_nni_move_application_report_preserves_labels_metadata_and_branch
     assert report.unexpected_tip_taxa == []
     assert report.moved_validation_errors == []
     assert report.reversed_validation_errors == []
+    assert report.affected_subtree_report.affected_branch_clade_ids == [
+        "A|B|C",
+        "A|C|D",
+    ]
+    assert report.affected_subtree_report.unaffected_branch_clade_ids == [
+        "A",
+        "B",
+        "C",
+        "D",
+        "A|C",
+    ]
     assert report.input_topology_fingerprint == original_topology_fingerprint
     assert report.reversed_topology_fingerprint == original_topology_fingerprint
     assert tree.to_newick() == original_newick

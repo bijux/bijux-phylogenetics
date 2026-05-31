@@ -46,7 +46,12 @@ def test_write_rooted_nni_move_artifacts_materializes_governed_outputs(
     assert payload["available_move_count"] == 4
     assert payload["moved_topology_changed"] is True
     assert payload["reverse_restores_original_topology"] is True
+    assert payload["affected_subtrees"]["affected_branch_clade_ids"] == (
+        report.affected_subtree_report.affected_branch_clade_ids
+    )
+    assert payload["affected_subtrees"]["unaffected_branch_clade_ids"] == (
+        report.affected_subtree_report.unaffected_branch_clade_ids
+    )
     assert payload["node_metadata_preserved"] is True
     assert payload["edge_metadata_preserved"] is True
     assert payload["branch_lengths_preserved"] is True
-
