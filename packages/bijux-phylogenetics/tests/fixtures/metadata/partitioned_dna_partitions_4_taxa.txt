@@ -1,0 +1,2 @@
+DNA, gene_alpha = 1-6;
+DNA, gene_beta = 7-12;
