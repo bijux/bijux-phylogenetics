@@ -157,6 +157,56 @@ def test_empirical_protein_large_gamma_alpha_approaches_equal_rate_surface() -> 
     )
 
 
+def test_empirical_protein_large_gamma_alpha_with_zero_invariant_approaches_equal_rate_surface() -> (
+    None
+):
+    fixed_rate_report = evaluate_empirical_protein_tree_likelihood_from_alignment(
+        fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+        fixture(
+            "alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"
+        ),
+        rate_matrix=_compact_polar_rate_matrix(),
+        root_prior=_biased_root_prior(),
+        matrix_label="compact-polar",
+    )
+    large_alpha_gamma_invariant_report = (
+        evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
+            fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+            fixture(
+                "alignments",
+                "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
+            ),
+            rate_matrix=_compact_polar_rate_matrix(),
+            root_prior=_biased_root_prior(),
+            matrix_label="compact-polar",
+            alpha=10_000.0,
+            category_count=4,
+            invariant_proportion=0.0,
+        )
+    )
+
+    assert large_alpha_gamma_invariant_report.invariant_proportion == 0.0
+    assert all(
+        math.isclose(category.rate, 1.0, rel_tol=0.0, abs_tol=0.03)
+        for category in large_alpha_gamma_invariant_report.category_rates
+    )
+    assert math.isclose(
+        large_alpha_gamma_invariant_report.log_likelihood,
+        fixed_rate_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=6e-5,
+    )
+    assert all(
+        math.isclose(
+            row.variable_component_likelihood,
+            row.mixture_likelihood,
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        )
+        for row in large_alpha_gamma_invariant_report.site_likelihoods
+    )
+
+
 def _compact_polar_rate_matrix() -> numpy.ndarray:
     return _build_empirical_rate_matrix(
         boosted_pairs={
