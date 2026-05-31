@@ -7,6 +7,10 @@ import numpy
 
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick, write_newick
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.search_convergence import (
+    resolve_nucleotide_likelihood_search_convergence_decision,
+    validate_nucleotide_likelihood_search_improvement_tolerance,
+)
 from bijux_phylogenetics.phylo.likelihood.models import (
     NucleotideLikelihoodTbrSearchReport,
     NucleotideLikelihoodTbrTraceRow,
@@ -58,6 +62,7 @@ def search_nucleotide_likelihood_tbr(
     lower_branch_length_bound: float = 0.0,
     upper_branch_length_bound: float = 5.0,
     improvement_tolerance: float = 1e-9,
+    search_improvement_tolerance: float = 0.0,
     max_coordinate_passes: int = 12,
 ) -> NucleotideLikelihoodTbrSearchReport:
     """Search one rooted binary nucleotide tree by likelihood-improving rooted TBR moves."""
@@ -68,6 +73,11 @@ def search_nucleotide_likelihood_tbr(
     validated_branch_reoptimization_policy = (
         validate_nucleotide_likelihood_tbr_branch_reoptimization_policy(
             branch_reoptimization_policy
+        )
+    )
+    validated_search_improvement_tolerance = (
+        validate_nucleotide_likelihood_search_improvement_tolerance(
+            search_improvement_tolerance
         )
     )
     validate_nucleotide_topology_search_tree(
@@ -137,13 +147,22 @@ def search_nucleotide_likelihood_tbr(
     evaluated_neighbor_count = 0
     total_branch_optimization_pass_count = start_result.optimization_pass_count
     total_branch_function_evaluation_count = start_result.function_evaluation_count
+    seen_topology_fingerprints = {rooted_topology_fingerprint(current_tree)}
     while True:
         improving_candidate: RootedTbrMoveCandidate | None = None
         improving_result: BranchReoptimizationResult | None = None
         improving_newick: str | None = None
+        improving_topology_fingerprint: str | None = None
+        best_positive_delta: float | None = None
+        best_positive_newick: str | None = None
         seen_neighbor_fingerprints: set[str] = set()
+        failure_detected = False
         for candidate in iter_rooted_tbr_move_candidates(current_tree):
-            moved_tree = apply_rooted_tbr_move(current_tree, candidate)
+            try:
+                moved_tree = apply_rooted_tbr_move(current_tree, candidate)
+            except Exception:
+                failure_detected = True
+                break
             moved_fingerprint = rooted_topology_fingerprint(moved_tree)
             if moved_fingerprint in seen_neighbor_fingerprints:
                 continue
@@ -153,16 +172,20 @@ def search_nucleotide_likelihood_tbr(
                 lower_branch_length_bound=lower_branch_length_bound,
                 upper_branch_length_bound=upper_branch_length_bound,
             )
-            neighbor_result = reoptimize_nucleotide_topology_tree(
-                initialized_neighbor_tree,
-                compressed_patterns=compressed_patterns,
-                resolved_surface=resolved_surface,
-                branch_reoptimization_policy=validated_branch_reoptimization_policy,
-                lower_branch_length_bound=lower_branch_length_bound,
-                upper_branch_length_bound=upper_branch_length_bound,
-                improvement_tolerance=improvement_tolerance,
-                max_coordinate_passes=max_coordinate_passes,
-            )
+            try:
+                neighbor_result = reoptimize_nucleotide_topology_tree(
+                    initialized_neighbor_tree,
+                    compressed_patterns=compressed_patterns,
+                    resolved_surface=resolved_surface,
+                    branch_reoptimization_policy=validated_branch_reoptimization_policy,
+                    lower_branch_length_bound=lower_branch_length_bound,
+                    upper_branch_length_bound=upper_branch_length_bound,
+                    improvement_tolerance=improvement_tolerance,
+                    max_coordinate_passes=max_coordinate_passes,
+                )
+            except Exception:
+                failure_detected = True
+                break
             evaluated_neighbor_count += 1
             total_branch_optimization_pass_count += (
                 neighbor_result.optimization_pass_count
@@ -171,7 +194,25 @@ def search_nucleotide_likelihood_tbr(
                 neighbor_result.function_evaluation_count
             )
             optimized_neighbor_newick = dumps_newick(neighbor_result.optimized_tree)
+            optimized_neighbor_topology_fingerprint = rooted_topology_fingerprint(
+                neighbor_result.optimized_tree
+            )
+            log_likelihood_delta = neighbor_result.log_likelihood - current_log_likelihood
+            if log_likelihood_delta > 0.0 and (
+                best_positive_delta is None
+                or best_positive_newick is None
+                or prefer_higher_likelihood(
+                    neighbor_result.log_likelihood,
+                    optimized_neighbor_newick,
+                    current_log_likelihood + best_positive_delta,
+                    best_positive_newick,
+                )
+            ):
+                best_positive_delta = log_likelihood_delta
+                best_positive_newick = optimized_neighbor_newick
             if neighbor_result.log_likelihood <= current_log_likelihood:
+                continue
+            if log_likelihood_delta <= validated_search_improvement_tolerance:
                 continue
             if (
                 improving_result is None
@@ -186,14 +227,27 @@ def search_nucleotide_likelihood_tbr(
                 improving_candidate = candidate
                 improving_result = neighbor_result
                 improving_newick = optimized_neighbor_newick
-        if improving_candidate is None or improving_result is None or improving_newick is None:
-            stopping_reason = "no-improving-neighbor"
+                improving_topology_fingerprint = optimized_neighbor_topology_fingerprint
+        convergence_decision = resolve_nucleotide_likelihood_search_convergence_decision(
+            best_improving_delta=(
+                best_positive_delta
+                if improving_result is None
+                else improving_result.log_likelihood - current_log_likelihood
+            ),
+            improvement_tolerance=validated_search_improvement_tolerance,
+            candidate_topology_fingerprint=improving_topology_fingerprint,
+            seen_topology_fingerprints=seen_topology_fingerprints,
+            failure_detected=failure_detected,
+        )
+        if convergence_decision.should_stop:
+            stopping_reason = convergence_decision.stopping_reason or "search-failure"
             break
         accepted_move_count += 1
         log_likelihood_before = current_log_likelihood
         tree_before_newick = dumps_newick(current_tree)
         current_tree = improving_result.optimized_tree.copy().refresh()
         current_log_likelihood = improving_result.log_likelihood
+        seen_topology_fingerprints.add(rooted_topology_fingerprint(current_tree))
         trace_rows.append(
             NucleotideLikelihoodTbrTraceRow(
                 event_index=len(trace_rows) + 1,
@@ -295,6 +349,7 @@ def search_nucleotide_likelihood_tbr_from_alignment(
     lower_branch_length_bound: float = 0.0,
     upper_branch_length_bound: float = 5.0,
     improvement_tolerance: float = 1e-9,
+    search_improvement_tolerance: float = 0.0,
     max_coordinate_passes: int = 12,
 ) -> NucleotideLikelihoodTbrSearchReport:
     """Search one rooted binary nucleotide tree path by likelihood-improving rooted TBR moves."""
@@ -312,6 +367,7 @@ def search_nucleotide_likelihood_tbr_from_alignment(
         lower_branch_length_bound=lower_branch_length_bound,
         upper_branch_length_bound=upper_branch_length_bound,
         improvement_tolerance=improvement_tolerance,
+        search_improvement_tolerance=search_improvement_tolerance,
         max_coordinate_passes=max_coordinate_passes,
     )
 
