@@ -3,6 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from bijux_phylogenetics.bayesian.metropolis_hastings import MetropolisHastingsRunReport
+from bijux_phylogenetics.bayesian.posterior_sets.diagnostics import (
+    standardized_mean_shift,
+)
 from bijux_phylogenetics.bayesian.state import BayesianPhylogeneticState
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
@@ -46,6 +49,29 @@ class MetropolisHastingsBurninReport:
     retained_sample_count: int
     discarded_rows: list[BurninSampleRow]
     retained_rows: list[BurninSampleRow]
+    diagnostic_report: "MetropolisHastingsBurninDiagnosticReport | None" = None
+
+
+@dataclass(frozen=True, slots=True)
+class MetropolisHastingsBurninDiagnosticCandidate:
+    """One candidate retained tail evaluated by the diagnostic burn-in heuristic."""
+
+    discarded_sample_count: int
+    retained_sample_count: int
+    maximum_mean_shift: float
+    parameter_mean_shifts: dict[str, float]
+    acceptable: bool
+
+
+@dataclass(frozen=True, slots=True)
+class MetropolisHastingsBurninDiagnosticReport:
+    """One diagnostic suggestion ledger over one native sampled trace."""
+
+    mean_shift_threshold: float
+    minimum_retained_sample_count: int
+    selected_discarded_sample_count: int
+    stabilized_tail_found: bool
+    candidate_rows: list[MetropolisHastingsBurninDiagnosticCandidate]
 
 
 def build_metropolis_hastings_burnin_policy(
@@ -165,6 +191,7 @@ def apply_metropolis_hastings_burnin_policy(
             code="metropolis_hastings_burnin_policy_type_invalid",
         )
     sample_rows = _build_sample_rows(chain_report)
+    diagnostic_report: MetropolisHastingsBurninDiagnosticReport | None = None
     if policy.policy_name == "none":
         discarded_sample_count = 0
     elif policy.policy_name == "fixed-count":
@@ -174,10 +201,12 @@ def apply_metropolis_hastings_burnin_policy(
             len(sample_rows) * (policy.discarded_fraction or 0.0)
         )
     else:
-        raise PhylogeneticsError(
-            "diagnostic-suggested burn-in policy requires diagnostic suggestion support",
-            code="metropolis_hastings_burnin_policy_diagnostic_support_missing",
+        diagnostic_report = diagnose_metropolis_hastings_burnin(
+            chain_report=chain_report,
+            mean_shift_threshold=policy.mean_shift_threshold or 0.5,
+            minimum_retained_sample_count=policy.minimum_retained_sample_count or 4,
         )
+        discarded_sample_count = diagnostic_report.selected_discarded_sample_count
     _validate_retained_sample_count(
         total_sample_count=len(sample_rows),
         discarded_sample_count=discarded_sample_count,
@@ -192,6 +221,89 @@ def apply_metropolis_hastings_burnin_policy(
         retained_sample_count=len(retained_rows),
         discarded_rows=discarded_rows,
         retained_rows=retained_rows,
+        diagnostic_report=diagnostic_report,
+    )
+
+
+def diagnose_metropolis_hastings_burnin(
+    *,
+    chain_report: MetropolisHastingsRunReport,
+    mean_shift_threshold: float = 0.5,
+    minimum_retained_sample_count: int = 4,
+) -> MetropolisHastingsBurninDiagnosticReport:
+    """Diagnose one burn-in suggestion from scalar trace stabilization."""
+    if not isinstance(chain_report, MetropolisHastingsRunReport):
+        raise PhylogeneticsError(
+            "metropolis-hastings burn-in diagnostic requires one MetropolisHastingsRunReport",
+            code="metropolis_hastings_burnin_diagnostic_chain_report_type_invalid",
+        )
+    validated_mean_shift_threshold = _validate_optional_positive_float(
+        value=mean_shift_threshold,
+        field_name="mean_shift_threshold",
+    )
+    validated_minimum_retained_sample_count = _validate_optional_positive_integer(
+        value=minimum_retained_sample_count,
+        field_name="minimum_retained_sample_count",
+    )
+    if validated_mean_shift_threshold is None:
+        raise PhylogeneticsError(
+            "metropolis-hastings burn-in diagnostic requires one positive mean_shift_threshold",
+            code="metropolis_hastings_burnin_diagnostic_mean_shift_threshold_missing",
+        )
+    if validated_minimum_retained_sample_count is None:
+        raise PhylogeneticsError(
+            "metropolis-hastings burn-in diagnostic requires one positive minimum_retained_sample_count",
+            code="metropolis_hastings_burnin_diagnostic_minimum_retained_sample_count_missing",
+        )
+    sample_rows = _build_sample_rows(chain_report)
+    if validated_minimum_retained_sample_count > len(sample_rows):
+        raise PhylogeneticsError(
+            "metropolis-hastings burn-in diagnostic requires minimum_retained_sample_count to fit within the sampled trace length",
+            code="metropolis_hastings_burnin_diagnostic_minimum_retained_sample_count_too_large",
+            details={
+                "minimum_retained_sample_count": validated_minimum_retained_sample_count,
+                "total_sample_count": len(sample_rows),
+            },
+        )
+    diagnostic_series = _build_diagnostic_series(chain_report)
+    candidate_rows: list[MetropolisHastingsBurninDiagnosticCandidate] = []
+    maximum_discard_count = len(sample_rows) - validated_minimum_retained_sample_count
+    for discarded_sample_count in range(maximum_discard_count + 1):
+        parameter_mean_shifts = {
+            parameter_name: standardized_mean_shift(values[discarded_sample_count:])
+            for parameter_name, values in diagnostic_series.items()
+        }
+        maximum_mean_shift = max(parameter_mean_shifts.values(), default=0.0)
+        candidate_rows.append(
+            MetropolisHastingsBurninDiagnosticCandidate(
+                discarded_sample_count=discarded_sample_count,
+                retained_sample_count=len(sample_rows) - discarded_sample_count,
+                maximum_mean_shift=maximum_mean_shift,
+                parameter_mean_shifts=parameter_mean_shifts,
+                acceptable=maximum_mean_shift <= validated_mean_shift_threshold,
+            )
+        )
+    acceptable_candidates = [
+        candidate_row for candidate_row in candidate_rows if candidate_row.acceptable
+    ]
+    if acceptable_candidates:
+        selected_candidate = acceptable_candidates[0]
+        stabilized_tail_found = True
+    else:
+        selected_candidate = min(
+            candidate_rows,
+            key=lambda candidate_row: (
+                candidate_row.maximum_mean_shift,
+                candidate_row.discarded_sample_count,
+            ),
+        )
+        stabilized_tail_found = False
+    return MetropolisHastingsBurninDiagnosticReport(
+        mean_shift_threshold=validated_mean_shift_threshold,
+        minimum_retained_sample_count=validated_minimum_retained_sample_count,
+        selected_discarded_sample_count=selected_candidate.discarded_sample_count,
+        stabilized_tail_found=stabilized_tail_found,
+        candidate_rows=candidate_rows,
     )
 
 
@@ -271,6 +383,31 @@ def _validate_retained_sample_count(
                 "discarded_sample_count": discarded_sample_count,
             },
         )
+
+
+def _build_diagnostic_series(
+    chain_report: MetropolisHastingsRunReport,
+) -> dict[str, list[float]]:
+    scalar_parameter_names = sorted(
+        {
+            parameter_name
+            for sampled_state in chain_report.sampled_states
+            for parameter_name in sampled_state.model_parameters.scalar_parameters
+        }
+    )
+    diagnostic_series = {
+        parameter_name: [
+            sampled_state.model_parameters.scalar_parameters[parameter_name]
+            for sampled_state in chain_report.sampled_states
+            if parameter_name in sampled_state.model_parameters.scalar_parameters
+        ]
+        for parameter_name in scalar_parameter_names
+    }
+    diagnostic_series["posterior-log-score"] = [
+        sampled_state.posterior_log_score
+        for sampled_state in chain_report.sampled_states
+    ]
+    return diagnostic_series
 
 
 def _validate_nonblank_string(value: str, *, field_name: str) -> str:
