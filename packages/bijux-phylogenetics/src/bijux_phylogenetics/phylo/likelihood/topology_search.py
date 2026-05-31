@@ -384,6 +384,7 @@ def evaluate_selected_nucleotide_log_likelihood_from_patterns(
             pattern.states,
             taxon_order=compressed_patterns.taxon_order,
             model_name=specification.model_name,
+            observation_policy=specification.observation_policy,
             root_prior=specification.root_prior,
             transition_matrix_for_child=lambda child: (
                 specification.transition_matrix_for_branch_length(
