@@ -202,14 +202,18 @@ def test_write_nucleotide_likelihood_nni_artifacts_materializes_governed_output_
     )
 
     assert set(outputs) == {
+        "best_tree_path",
+        "candidate_table_path",
         "input_tree_path",
         "start_tree_path",
         "final_tree_path",
         "trace_path",
         "run_json_path",
     }
+    assert outputs["best_tree_path"].name == "best_trees.nwk"
+    assert outputs["candidate_table_path"].name == "candidate_table.tsv"
     assert outputs["trace_path"].read_text(encoding="utf-8").startswith(
-        "event_index\tevent_kind\titeration\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\ttree_before_newick\ttree_after_newick\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\tstopping_reason\n"
+        "event_index\tevent_kind\titeration\tmove_type\tcandidate_topology_fingerprint\tlog_likelihood_before\tlog_likelihood_after\tlog_likelihood_delta\taccepted_move\ttrace_reason\ttree_before_newick\ttree_after_newick\tpivot_branch_id\tsibling_clade_id\texchanged_clade_id\tbranch_reoptimization_policy\tbranch_reoptimization_scope\toptimized_branch_count\toptimized_branch_clade_ids\tbranch_reoptimization_converged\tbranch_optimization_pass_count\tbranch_function_evaluation_count\tboundary_warning_messages\tstopping_reason\n"
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["algorithm"] == "nucleotide-likelihood-nni-search"
