@@ -43,6 +43,7 @@ from bijux_phylogenetics.bayesian import (
     DISCRETE_TRAIT_RATE_PRIOR_FAMILIES,
     DISCRETE_TRAIT_RATE_PRIOR_MODELS,
     FIXED_TOPOLOGY_DNA_SUBSTITUTION_MODELS,
+    FIXED_TOPOLOGY_PARTITIONED_DNA_SUBSTITUTION_MODELS,
     FIXED_TOPOLOGY_RELAXED_CLOCK_MODELS,
     FIXED_TOPOLOGY_STRICT_CLOCK_MODELS,
     JOINT_TOPOLOGY_DNA_TOPOLOGY_MOVE_KINDS,
@@ -100,6 +101,11 @@ from bijux_phylogenetics.bayesian import (
     FixedTopologyDnaPosteriorRow,
     FixedTopologyDnaProposalSchedule,
     FixedTopologyDnaRunReport,
+    FixedTopologyPartitionedDnaModelDefinition,
+    FixedTopologyPartitionedDnaPartitionRow,
+    FixedTopologyPartitionedDnaPosteriorRow,
+    FixedTopologyPartitionedDnaProposalSchedule,
+    FixedTopologyPartitionedDnaRunReport,
     FixedTopologyRelaxedClockBranchRateSummary,
     FixedTopologyRelaxedClockModelDefinition,
     FixedTopologyRelaxedClockNodeAgeSummary,
@@ -154,6 +160,8 @@ from bijux_phylogenetics.bayesian import (
     build_fixed_clock_model_scalar_prior,
     build_fixed_topology_dna_model_definition,
     build_fixed_topology_dna_proposal_schedule,
+    build_fixed_topology_partitioned_dna_model_definition,
+    build_fixed_topology_partitioned_dna_proposal_schedule,
     build_fixed_topology_relaxed_clock_model_definition,
     build_fixed_topology_relaxed_clock_proposal_schedule,
     build_fixed_topology_strict_clock_model_definition,
@@ -228,6 +236,7 @@ from bijux_phylogenetics.bayesian import (
     run_ornstein_uhlenbeck_continuous_trait_metropolis_hastings,
     run_discrete_trait_mk_metropolis_hastings,
     run_fixed_topology_dna_metropolis_hastings,
+    run_fixed_topology_partitioned_dna_metropolis_hastings,
     run_fixed_topology_relaxed_clock_metropolis_hastings,
     run_fixed_topology_strict_clock_metropolis_hastings,
     run_joint_topology_dna_metropolis_hastings,
@@ -1231,6 +1240,26 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     )
     assert bayesian_api.FixedTopologyDnaRunReport is FixedTopologyDnaRunReport
     assert (
+        bayesian_api.FixedTopologyPartitionedDnaModelDefinition
+        is FixedTopologyPartitionedDnaModelDefinition
+    )
+    assert (
+        bayesian_api.FixedTopologyPartitionedDnaPartitionRow
+        is FixedTopologyPartitionedDnaPartitionRow
+    )
+    assert (
+        bayesian_api.FixedTopologyPartitionedDnaPosteriorRow
+        is FixedTopologyPartitionedDnaPosteriorRow
+    )
+    assert (
+        bayesian_api.FixedTopologyPartitionedDnaProposalSchedule
+        is FixedTopologyPartitionedDnaProposalSchedule
+    )
+    assert (
+        bayesian_api.FixedTopologyPartitionedDnaRunReport
+        is FixedTopologyPartitionedDnaRunReport
+    )
+    assert (
         bayesian_api.FixedTopologyRelaxedClockBranchRateSummary
         is FixedTopologyRelaxedClockBranchRateSummary
     )
@@ -1416,6 +1445,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.build_fixed_topology_dna_proposal_schedule
         is build_fixed_topology_dna_proposal_schedule
+    )
+    assert (
+        bayesian_api.build_fixed_topology_partitioned_dna_model_definition
+        is build_fixed_topology_partitioned_dna_model_definition
+    )
+    assert (
+        bayesian_api.build_fixed_topology_partitioned_dna_proposal_schedule
+        is build_fixed_topology_partitioned_dna_proposal_schedule
     )
     assert (
         bayesian_api.build_fixed_topology_relaxed_clock_model_definition
@@ -1670,6 +1707,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is run_fixed_topology_dna_metropolis_hastings
     )
     assert (
+        bayesian_api.run_fixed_topology_partitioned_dna_metropolis_hastings
+        is run_fixed_topology_partitioned_dna_metropolis_hastings
+    )
+    assert (
         bayesian_api.run_fixed_topology_relaxed_clock_metropolis_hastings
         is run_fixed_topology_relaxed_clock_metropolis_hastings
     )
@@ -1748,6 +1789,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.FIXED_TOPOLOGY_DNA_SUBSTITUTION_MODELS
         is FIXED_TOPOLOGY_DNA_SUBSTITUTION_MODELS
+    )
+    assert (
+        bayesian_api.FIXED_TOPOLOGY_PARTITIONED_DNA_SUBSTITUTION_MODELS
+        is FIXED_TOPOLOGY_PARTITIONED_DNA_SUBSTITUTION_MODELS
     )
     assert (
         bayesian_api.JOINT_TOPOLOGY_DNA_TOPOLOGY_MOVE_KINDS
