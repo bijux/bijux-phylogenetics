@@ -1031,6 +1031,86 @@ class NucleotideLikelihoodBootstrapTreeInferenceReport:
 
 
 @dataclass(slots=True)
+class NucleotideShLikeBranchSupportRow:
+    """One native SH-like local support summary for a rooted internal branch."""
+
+    branch_id: str
+    node_label: str | None
+    descendant_taxa: list[str]
+    alternative_arrangement_count: int
+    reference_log_likelihood: float
+    best_alternative_tree_id: str
+    best_alternative_tree_label: str
+    best_alternative_topology_fingerprint: str
+    best_alternative_log_likelihood: float
+    observed_delta_log_likelihood: float
+    reference_is_observed_best: bool
+    support_replicate_count: int
+    support_fraction: float
+    support_percent: float
+    caution_label: str
+
+
+@dataclass(slots=True)
+class NucleotideShLikeBranchSupportLocalTopologyRow:
+    """One local rooted-NNI arrangement scored for SH-like branch support."""
+
+    branch_id: str
+    node_label: str | None
+    descendant_taxa: list[str]
+    candidate_tree_id: str
+    candidate_tree_label: str
+    local_arrangement_kind: str
+    tree_newick: str
+    topology_fingerprint: str
+    observed_log_likelihood: float
+    observed_delta_log_likelihood: float
+    observed_best_local_arrangement: bool
+
+
+@dataclass(slots=True)
+class NucleotideShLikeBranchSupportResamplingRow:
+    """One site-resampled local branch-support comparison against NNI alternatives."""
+
+    branch_id: str
+    descendant_taxa: list[str]
+    replicate_index: int
+    reference_resampled_log_likelihood: float
+    best_local_tree_id: str
+    best_local_tree_label: str
+    best_local_resampled_log_likelihood: float
+    best_alternative_tree_id: str
+    best_alternative_tree_label: str
+    best_alternative_resampled_log_likelihood: float
+    reference_delta_log_likelihood: float
+    reference_matches_or_beats_alternatives: bool
+
+
+@dataclass(slots=True)
+class NucleotideShLikeBranchSupportReport:
+    """Native SH-like approximate local branch support over one rooted tree."""
+
+    algorithm: str
+    tree_path: str | None
+    alignment_path: str | None
+    model_name: str
+    taxa: list[str]
+    branch_count: int
+    site_count: int
+    pattern_count: int
+    compression_used: bool
+    parameter_values: dict[str, float]
+    reference_tree_newick: str
+    resampling_method: str
+    resampling_replicate_count: int
+    resampling_seed: int
+    caution_label: str
+    branch_support_rows: list[NucleotideShLikeBranchSupportRow]
+    local_topology_rows: list[NucleotideShLikeBranchSupportLocalTopologyRow]
+    resampling_rows: list[NucleotideShLikeBranchSupportResamplingRow]
+
+
+@dataclass(slots=True)
 class NucleotideLikelihoodSearchTraceReplayStep:
     """One accepted search-trace step replayed against the evolving tree."""
 
