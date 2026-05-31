@@ -4,7 +4,7 @@ import math
 
 import numpy
 
-from bijux_phylogenetics.bayesian.probability import logsumexp
+from bijux_phylogenetics.phylo.likelihood.logspace import logsumexp
 from bijux_phylogenetics.phylo.likelihood.pruning import (
     build_transition_matrix_evaluator,
     log_likelihood_from_root_prior,
