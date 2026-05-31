@@ -83,6 +83,31 @@ class TreeSetSplitFrequencyReport:
 
 
 @dataclass(frozen=True, slots=True)
+class TreeSetMaximumCladeCredibilityCandidateRow:
+    score_rank: int
+    source_tree_index: int
+    rooted_topology_id: str
+    raw_tree_count: int
+    raw_tree_frequency: float
+    clade_credibility_score: float
+    candidate_newick: str
+
+
+@dataclass(slots=True)
+class TreeSetMaximumCladeCredibilityReport:
+    path: Path
+    tree_count: int
+    processing: TreeSetProcessingSummary
+    shared_taxa: list[str]
+    rooted_topology_count: int
+    selected_tree_index: int
+    selected_rooted_topology_id: str
+    clade_credibility_score: float
+    maximum_clade_credibility_newick: str
+    rows: list[TreeSetMaximumCladeCredibilityCandidateRow]
+
+
+@dataclass(frozen=True, slots=True)
 class CladeCompatibilityNodeRow:
     clade: str
     tree_count: int
