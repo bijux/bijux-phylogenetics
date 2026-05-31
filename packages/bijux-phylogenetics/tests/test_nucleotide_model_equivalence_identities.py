@@ -6,6 +6,7 @@ from pathlib import Path
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.likelihood import (
+    evaluate_gtr_tree_likelihood,
     evaluate_hky85_tree_likelihood,
     evaluate_jc69_tree_likelihood,
     evaluate_k80_tree_likelihood,
@@ -79,3 +80,45 @@ def test_hky85_with_nonunit_parameters_diverges_from_jc69() -> None:
     )
 
     _assert_likelihood_mismatch(hky85.log_likelihood, jc69.log_likelihood)
+
+
+def test_gtr_with_uniform_exchangeabilities_and_frequencies_matches_jc69() -> None:
+    tree, records = _load_reference_fixture()
+
+    jc69 = evaluate_jc69_tree_likelihood(tree, records)
+    gtr = evaluate_gtr_tree_likelihood(
+        tree,
+        records,
+        exchangeabilities={
+            "AC": 1.0,
+            "AG": 1.0,
+            "AT": 1.0,
+            "CG": 1.0,
+            "CT": 1.0,
+            "GT": 1.0,
+        },
+        base_frequencies=_UNIFORM_BASE_FREQUENCIES,
+    )
+
+    _assert_likelihood_match(gtr.log_likelihood, jc69.log_likelihood)
+
+
+def test_gtr_with_nonunit_parameters_diverges_from_jc69() -> None:
+    tree, records = _load_reference_fixture()
+
+    jc69 = evaluate_jc69_tree_likelihood(tree, records)
+    gtr = evaluate_gtr_tree_likelihood(
+        tree,
+        records,
+        exchangeabilities={
+            "AC": 1.0,
+            "AG": 4.5,
+            "AT": 0.8,
+            "CG": 1.6,
+            "CT": 2.4,
+            "GT": 3.1,
+        },
+        base_frequencies={"A": 0.4, "C": 0.1, "G": 0.2, "T": 0.3},
+    )
+
+    _assert_likelihood_mismatch(gtr.log_likelihood, jc69.log_likelihood)
