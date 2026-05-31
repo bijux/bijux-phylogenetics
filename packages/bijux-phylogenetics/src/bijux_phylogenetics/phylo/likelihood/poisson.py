@@ -24,6 +24,7 @@ from bijux_phylogenetics.phylo.likelihood.protein import (
 )
 from bijux_phylogenetics.phylo.likelihood.sites import (
     expanded_site_log_likelihood_rows_from_patterns,
+    validate_site_log_likelihood_reconstruction,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
@@ -137,6 +138,13 @@ def _evaluate_protein_poisson_tree_likelihood_from_patterns(
                 )
             ),
         )
+    )
+    validate_site_log_likelihood_reconstruction(
+        site_log_likelihoods,
+        expected_total_log_likelihood=log_likelihood,
+        expected_site_count=compressed_patterns.alignment_length,
+        expected_pattern_count=compressed_patterns.pattern_count,
+        owner_name="protein Poisson likelihood",
     )
     return ProteinPoissonTreeLikelihoodReport(
         taxa=compressed_patterns.taxon_order,

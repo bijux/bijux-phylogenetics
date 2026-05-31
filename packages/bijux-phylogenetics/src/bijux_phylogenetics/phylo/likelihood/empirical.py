@@ -47,12 +47,14 @@ from bijux_phylogenetics.phylo.likelihood.protein import (
     UNIFORM_PROTEIN_ROOT_PRIOR,
     evaluate_fixed_topology_protein_site_log_likelihood,
     normalize_protein_likelihood_records,
+    normalize_unambiguous_protein_records,
     validate_empirical_protein_rate_matrix,
     validate_protein_root_prior,
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
 from bijux_phylogenetics.phylo.likelihood.sites import (
     expanded_site_log_likelihood_rows_from_patterns,
+    validate_site_log_likelihood_reconstruction,
 )
 from bijux_phylogenetics.phylo.likelihood.validation import (
     validate_explicit_branch_lengths,
@@ -945,6 +947,13 @@ def _evaluate_empirical_protein_tree_likelihood_from_patterns(
             ),
         )
     )
+    validate_site_log_likelihood_reconstruction(
+        site_log_likelihoods,
+        expected_total_log_likelihood=log_likelihood,
+        expected_site_count=compressed_patterns.alignment_length,
+        expected_pattern_count=compressed_patterns.pattern_count,
+        owner_name="empirical protein matrix likelihood",
+    )
     return ProteinEmpiricalMatrixTreeLikelihoodReport(
         taxa=compressed_patterns.taxon_order,
         site_count=compressed_patterns.alignment_length,
@@ -1032,6 +1041,7 @@ def _evaluate_empirical_protein_branch_optimization_objective(
             matrix_label="empirical",
             gap_policy=gap_policy,
             missing_policy=missing_policy,
+            ambiguity_policy="reject",
         ).log_likelihood
     if likelihood_model == "discrete-gamma":
         if alpha is None:
@@ -1278,6 +1288,13 @@ def _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_pattern
                 )
             )
         total_log_likelihood += pattern.weight * pattern_log_likelihood
+    validate_site_log_likelihood_reconstruction(
+        site_likelihoods,
+        expected_total_log_likelihood=total_log_likelihood,
+        expected_site_count=compressed_patterns.alignment_length,
+        expected_pattern_count=compressed_patterns.pattern_count,
+        owner_name="empirical protein matrix +G likelihood",
+    )
     return ProteinEmpiricalDiscreteGammaTreeLikelihoodReport(
         taxa=compressed_patterns.taxon_order,
         site_count=compressed_patterns.alignment_length,
@@ -1371,6 +1388,13 @@ def _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invarian
                 )
             )
         total_log_likelihood += pattern.weight * pattern_log_likelihood
+    validate_site_log_likelihood_reconstruction(
+        site_likelihoods,
+        expected_total_log_likelihood=total_log_likelihood,
+        expected_site_count=compressed_patterns.alignment_length,
+        expected_pattern_count=compressed_patterns.pattern_count,
+        owner_name="empirical protein matrix +G+I likelihood",
+    )
     if emit_boundary_warnings:
         (
             hit_lower_invariant_proportion_boundary,
@@ -1474,6 +1498,13 @@ def _evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_patt
                 )
             )
         total_log_likelihood += pattern.weight * pattern_log_likelihood
+    validate_site_log_likelihood_reconstruction(
+        site_likelihoods,
+        expected_total_log_likelihood=total_log_likelihood,
+        expected_site_count=compressed_patterns.alignment_length,
+        expected_pattern_count=compressed_patterns.pattern_count,
+        owner_name="empirical protein matrix +I likelihood",
+    )
     return ProteinEmpiricalInvariantMixtureTreeLikelihoodReport(
         taxa=compressed_patterns.taxon_order,
         site_count=compressed_patterns.alignment_length,
