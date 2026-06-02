@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass
 import json
+import math
 from pathlib import Path
 
 from bijux_phylogenetics.io.newick import load_newick, loads_newick, write_newick
@@ -244,9 +245,18 @@ def summarize_rooted_nni_move_application(
         branch_lengths_preserved=_rooted_nni_branch_length_multiset(resolved_tree)
         == _rooted_nni_branch_length_multiset(moved_tree)
         == _rooted_nni_branch_length_multiset(reversed_tree),
-        total_branch_length_preserved=resolved_tree.total_branch_length()
-        == moved_tree.total_branch_length()
-        == reversed_tree.total_branch_length(),
+        total_branch_length_preserved=math.isclose(
+            resolved_tree.total_branch_length(),
+            moved_tree.total_branch_length(),
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        )
+        and math.isclose(
+            moved_tree.total_branch_length(),
+            reversed_tree.total_branch_length(),
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        ),
     )
     _validate_rooted_nni_move_application_report(report)
     return report
