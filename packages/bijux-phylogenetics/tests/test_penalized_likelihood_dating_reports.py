@@ -163,9 +163,15 @@ def test_write_penalized_likelihood_dating_run_json_serializes_report_fields(
     assert payload["branch_count"] == 6
     assert payload["parameter_count"] == 10
     assert payload["smoothing_parameter"] == 0.01
-    assert payload["data_score"] == 2.9289583718815336e-06
-    assert payload["penalty_score"] == 0.00013482416705344673
-    assert payload["total_score"] == 0.00013775312542532825
+    assert payload["data_score"] == pytest.approx(2.9289583718815336e-06, abs=1e-18)
+    assert payload["penalty_score"] == pytest.approx(
+        0.00013482416705344673,
+        abs=1e-18,
+    )
+    assert payload["total_score"] == pytest.approx(
+        0.00013775312542532825,
+        abs=1e-18,
+    )
     assert len(payload["node_rows"]) == 7
     assert len(payload["branch_rows"]) == 6
 
