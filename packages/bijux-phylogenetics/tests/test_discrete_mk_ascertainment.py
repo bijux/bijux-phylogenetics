@@ -3,6 +3,8 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.ancestral.common import load_discrete_dataset
 from bijux_phylogenetics.comparative.discrete_mk import (
     compare_discrete_mk_model_ranking,
@@ -85,6 +87,7 @@ def test_discrete_mk_lewis_ascertainment_dataset_surface_matches_path_surface() 
     )
 
 
+@pytest.mark.slow
 def test_discrete_mk_model_ranking_carries_ascertainment_policy() -> None:
     report = compare_discrete_mk_model_ranking(
         fixture("trees", "example_tree.nwk"),

@@ -438,6 +438,7 @@ def test_comparative_discrete_mk_cli_reports_kappa_transform_metrics(
     assert payload["metrics"]["transform_warning_count"] >= 1
 
 
+@pytest.mark.slow
 def test_comparative_discrete_mk_cli_reports_delta_transform_metrics(
     capsys,
 ) -> None:
@@ -472,6 +473,7 @@ def test_comparative_discrete_mk_cli_reports_delta_transform_metrics(
     assert payload["metrics"]["transform_warning_count"] >= 0
 
 
+@pytest.mark.slow
 def test_comparative_discrete_mk_cli_reports_early_burst_transform_metrics(
     capsys,
 ) -> None:

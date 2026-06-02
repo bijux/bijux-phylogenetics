@@ -1581,6 +1581,7 @@ def test_run_ml_bootstrap_consensus_and_fast_tree_workflows(tmp_path: Path) -> N
     assert consensus_report.iqtree_summary.support_value_count == 2
 
 
+@pytest.mark.slow
 def test_run_fast_tree_inference_supports_nucleotide_and_protein_modes(
     tmp_path: Path,
 ) -> None:

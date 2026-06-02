@@ -96,6 +96,7 @@ def test_run_alignment_trimming_with_real_trimal_on_small_dataset(
     assert len(trimmed_records[0].sequence) < len(input_records[0].sequence)
 
 
+@pytest.mark.slow
 def test_run_iqtree_backend_with_real_executable_on_small_dataset(
     tmp_path: Path,
 ) -> None:
@@ -254,6 +255,7 @@ def test_run_tree_inference_comparison_with_real_executables_on_small_alignment(
     assert report.engine_comparison.support.shared_taxa
 
 
+@pytest.mark.slow
 def test_run_inference_reproducibility_check_with_real_iqtree_on_small_alignment(
     tmp_path: Path,
 ) -> None:

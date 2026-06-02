@@ -11195,6 +11195,7 @@ def test_cli_phylo_likelihood_strict_clock_includes_branch_diagnostic_output(
     assert manifest_payload["input_checksums"][str(alignment_path)]
 
 
+@pytest.mark.slow
 def test_cli_phylo_likelihood_placement_includes_manifest(
     tmp_path: Path,
     capsys,

@@ -154,6 +154,7 @@ def test_fit_discrete_mk_model_reports_multistate_equal_rates_surface() -> None:
     assert _single_allowed_rate(report) > 0.0
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_reports_multistate_symmetric_surface() -> None:
     report = fit_discrete_mk_model(
         fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk"),
@@ -307,6 +308,7 @@ def test_fit_discrete_mk_model_reports_pruned_missing_values() -> None:
     assert len(report.transition_rate_rows) == 6
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_reports_symmetric_pruned_missing_values() -> None:
     report = fit_discrete_mk_model(
         fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk"),
@@ -422,6 +424,7 @@ def test_fit_discrete_mk_model_matches_governed_geiger_er_binary_surface() -> No
     )
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_matches_governed_geiger_er_lambda_surface() -> None:
     fixture_entry = get_shared_geiger_discrete_fixture(
         "geiger_discrete_er_binary_twenty_four_taxa"
@@ -462,6 +465,7 @@ def test_fit_discrete_mk_model_matches_governed_geiger_er_lambda_surface() -> No
     assert report.transform_fit.refinement_start_count == 1
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_marks_governed_geiger_lambda_weak_signal_surface() -> (
     None
 ):
@@ -493,6 +497,7 @@ def test_fit_discrete_mk_model_marks_governed_geiger_lambda_weak_signal_surface(
     )
 
 
+@pytest.mark.slow
 def test_write_discrete_mk_summary_table_reports_shared_transform_search_audit(
     tmp_path: Path,
 ) -> None:
@@ -554,6 +559,7 @@ def test_compare_discrete_mk_model_ranking_reports_ranked_model_surface() -> Non
     assert "equal-rates" in report.uncertainty_language
 
 
+@pytest.mark.slow
 def test_compare_discrete_mk_model_ranking_from_dataset_matches_path_surface() -> None:
     dataset = load_discrete_dataset(
         fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk"),
@@ -582,6 +588,7 @@ def test_compare_discrete_mk_model_ranking_from_dataset_matches_path_surface() -
     ]
 
 
+@pytest.mark.slow
 def test_compare_discrete_mk_model_ranking_marks_infinite_aicc_rows_noncomparable(
     tmp_path: Path,
 ) -> None:
@@ -619,6 +626,7 @@ def test_compare_discrete_mk_model_ranking_marks_infinite_aicc_rows_noncomparabl
     )
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_matches_governed_geiger_er_kappa_surface() -> None:
     fixture_entry = get_shared_geiger_discrete_fixture(
         "geiger_discrete_kappa_branch_sensitive_twenty_four_taxa"
@@ -655,6 +663,7 @@ def test_fit_discrete_mk_model_matches_governed_geiger_er_kappa_surface() -> Non
     )
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_marks_governed_geiger_kappa_weak_signal_surface() -> (
     None
 ):
@@ -727,6 +736,7 @@ def test_fit_discrete_mk_model_matches_governed_geiger_sym_kappa_missing_surface
     )
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_matches_governed_geiger_er_delta_boundary_surface() -> (
     None
 ):
@@ -761,6 +771,7 @@ def test_fit_discrete_mk_model_matches_governed_geiger_er_delta_boundary_surface
     )
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_reports_delta_time_sensitive_review_surface() -> None:
     fixture_entry = get_shared_geiger_discrete_fixture(
         "geiger_discrete_delta_time_sensitive_twenty_four_taxa"
@@ -849,6 +860,7 @@ def test_fit_discrete_mk_model_matches_governed_geiger_sym_delta_missing_surface
     )
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_matches_governed_geiger_er_early_burst_surface() -> None:
     fixture_entry = get_shared_geiger_discrete_fixture(
         "geiger_discrete_early_burst_early_change_twenty_four_taxa"
@@ -886,6 +898,7 @@ def test_fit_discrete_mk_model_matches_governed_geiger_er_early_burst_surface() 
     )
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_marks_governed_geiger_early_burst_weak_signal_surface() -> (
     None
 ):
@@ -917,6 +930,7 @@ def test_fit_discrete_mk_model_marks_governed_geiger_early_burst_weak_signal_sur
     )
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_reports_governed_geiger_early_burst_late_change_surface() -> (
     None
 ):
@@ -943,6 +957,7 @@ def test_fit_discrete_mk_model_reports_governed_geiger_early_burst_late_change_s
     assert math.isfinite(report.log_likelihood)
 
 
+@pytest.mark.slow
 def test_fit_discrete_mk_model_reports_governed_geiger_early_burst_missing_surface() -> (
     None
 ):
