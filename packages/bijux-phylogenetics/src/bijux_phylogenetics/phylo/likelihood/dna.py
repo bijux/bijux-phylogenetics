@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from typing import cast
 
 import numpy
 
@@ -184,23 +185,21 @@ def validate_dna_exchangeabilities(
 ) -> numpy.ndarray:
     if isinstance(exchangeabilities, dict):
         if set(exchangeabilities) == set(DNA_EXCHANGEABILITY_ORDER):
-            vector = numpy.array(
-                [
-                    float(exchangeabilities[pair])
-                    for pair in DNA_EXCHANGEABILITY_ORDER
-                ],
-                dtype=float,
-            )
+            paired_exchangeabilities = cast(dict[tuple[str, str], float], exchangeabilities)
+            ordered_exchangeabilities = [
+                float(paired_exchangeabilities[pair])
+                for pair in DNA_EXCHANGEABILITY_ORDER
+            ]
+            vector = numpy.asarray(ordered_exchangeabilities, dtype=float)
         elif set(exchangeabilities) == {
             "".join(pair) for pair in DNA_EXCHANGEABILITY_ORDER
         }:
-            vector = numpy.array(
-                [
-                    float(exchangeabilities["".join(pair)])
-                    for pair in DNA_EXCHANGEABILITY_ORDER
-                ],
-                dtype=float,
-            )
+            named_exchangeabilities = cast(dict[str, float], exchangeabilities)
+            ordered_exchangeabilities = [
+                float(named_exchangeabilities["".join(pair)])
+                for pair in DNA_EXCHANGEABILITY_ORDER
+            ]
+            vector = numpy.asarray(ordered_exchangeabilities, dtype=float)
         else:
             raise InvalidAlignmentError(
                 f"{model_name} likelihood requires exchangeabilities for exactly AC, AG, AT, CG, CT, and GT"
@@ -338,6 +337,7 @@ def evaluate_fixed_topology_dna_site_log_likelihood(
         resolve_dna_observation_leaf_vector,
     )
 
+    validated_root_prior = numpy.asarray(root_prior, dtype=float)
     states_by_taxon = dict(zip(taxon_order, states, strict=True))
     state_count = len(dna_observation_state_order(observation_policy=observation_policy))
     pruning_pass = postorder_conditional_likelihoods(
@@ -354,7 +354,7 @@ def evaluate_fixed_topology_dna_site_log_likelihood(
     return log_likelihood_from_root_prior(
         tree,
         pruning_pass,
-        root_prior=root_prior,
+        root_prior=validated_root_prior,
     )
 
 

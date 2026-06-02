@@ -211,6 +211,7 @@ def evaluate_protein_poisson_branch_likelihood_diagnostics(
             compressed_patterns,
             gap_policy=gap_policy,
             missing_policy=missing_policy,
+            ambiguity_policy="reject",
         ).log_likelihood
 
     baseline_log_likelihood = evaluate_tree_log_likelihood(tree)
@@ -298,6 +299,7 @@ def evaluate_empirical_protein_branch_likelihood_diagnostics(
                 matrix_label=matrix_label,
                 gap_policy=gap_policy,
                 missing_policy=missing_policy,
+                ambiguity_policy="reject",
             ).log_likelihood
         if validated_likelihood_model == "discrete-gamma":
             if alpha is None:
