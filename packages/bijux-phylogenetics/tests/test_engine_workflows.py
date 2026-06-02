@@ -375,7 +375,9 @@ if "-alrt" in args:
     raise SystemExit(0)
 
 if "-bb" in args:
-    prefix.with_suffix(".treefile").write_text("((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n", encoding="utf-8")
+    support_tree = "((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n"
+    prefix.with_suffix(".treefile").write_text(support_tree, encoding="utf-8")
+    prefix.with_suffix(".contree").write_text(support_tree, encoding="utf-8")
     prefix.with_suffix(".ufboot").write_text(
         "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
         encoding="utf-8",
@@ -510,10 +512,12 @@ prefix = Path(args[args.index("-pre") + 1]) if "-pre" in args else Path("iqtree"
 prefix.parent.mkdir(parents=True, exist_ok=True)
 selected_model = args[args.index("-m") + 1] if "-m" in args else "GTR+G"
 if "-bb" in args:
+    support_tree = "((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n"
     prefix.with_suffix(".treefile").write_text(
-        "((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n",
+        support_tree,
         encoding="utf-8",
     )
+    prefix.with_suffix(".contree").write_text(support_tree, encoding="utf-8")
     prefix.with_suffix(".ufboot").write_text(
         "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
         "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
@@ -563,10 +567,12 @@ if "--version" in args:
 
 prefix = Path(args[args.index("-pre") + 1]) if "-pre" in args else Path("iqtree")
 prefix.parent.mkdir(parents=True, exist_ok=True)
+support_tree = "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
 prefix.with_suffix(".treefile").write_text(
-    "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+    support_tree,
     encoding="utf-8",
 )
+prefix.with_suffix(".contree").write_text(support_tree, encoding="utf-8")
 prefix.with_suffix(".ufboot").write_text(
     "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
     "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
@@ -697,7 +703,9 @@ if "-bb" in args:
     counter_path.write_text(str(counter + 1), encoding="utf-8")
     tree_variants = {tree_variants!r}
     log_likelihoods = {log_likelihoods!r}
-    prefix.with_suffix(".treefile").write_text(tree_variants[variant_index] + "\\n", encoding="utf-8")
+    support_tree = tree_variants[variant_index] + "\\n"
+    prefix.with_suffix(".treefile").write_text(support_tree, encoding="utf-8")
+    prefix.with_suffix(".contree").write_text(support_tree, encoding="utf-8")
     prefix.with_suffix(".ufboot").write_text(
         "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
         encoding="utf-8",
