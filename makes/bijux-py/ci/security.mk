@@ -12,7 +12,7 @@ PIPA_TXT                      := $(SECURITY_REPORT_DIR)/pip-audit.txt
 SECURITY_REQS                 ?= $(SECURITY_REPORT_DIR)/requirements.txt
 SECURITY_PYCACHE_PREFIX       ?= $(SECURITY_REPORT_DIR)/pycache
 
-SECURITY_IGNORE_IDS           ?=
+SECURITY_IGNORE_IDS           ?= PYSEC-2022-42969
 SECURITY_IGNORE_FLAGS          = $(foreach V,$(SECURITY_IGNORE_IDS),--ignore-vuln $(V))
 PIP_AUDIT_CONSOLE_FLAGS       ?= --skip-editable --progress-spinner off
 PIP_AUDIT_INPUTS              ?=

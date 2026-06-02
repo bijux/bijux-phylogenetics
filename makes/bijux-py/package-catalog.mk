@@ -60,7 +60,7 @@ SBOM_PACKAGES ?= $(call packages_in_group,sbom)
 
 VALID_PACKAGE_VALUES := $(ALL_PACKAGES) $(foreach mapping,$(PACKAGE_ALIASES),$(word 1,$(subst =, ,$(mapping))))
 ROOT_PACKAGE_DIRS := $(addprefix $(CURDIR)/packages/,$(ALL_PACKAGES))
-ROOT_DISCOVERED_PACKAGE_DIRS := $(sort $(patsubst %/pyproject.toml,%,$(wildcard $(CURDIR)/packages/*/pyproject.toml)))
+ROOT_DISCOVERED_PACKAGE_DIRS := $(sort $(wildcard $(CURDIR)/packages/*))
 ROOT_DECLARED_PACKAGE_PROFILE_FILES := $(foreach package,$(ALL_PACKAGES),$(PACKAGE_PROFILE_$(package)))
 ROOT_MISSING_PACKAGE_DIRS := $(filter-out $(ROOT_DISCOVERED_PACKAGE_DIRS),$(ROOT_PACKAGE_DIRS))
 ROOT_MISSING_PACKAGE_PROFILE_FILES := $(foreach file,$(ROOT_DECLARED_PACKAGE_PROFILE_FILES),$(if $(wildcard $(file)),,$(file)))

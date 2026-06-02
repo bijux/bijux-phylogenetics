@@ -21,11 +21,11 @@ QUALITY_DEPTRY_COMMAND         ?= $(DEPTRY) --config "$(DEPTRY_CONFIG)" "$(QUALI
 QUALITY_DEPTRY_VERSION_COMMAND ?= $(DEPTRY) --version
 QUALITY_INTERROGATE_FLAGS      ?=
 QUALITY_SELF_MAKE              ?= $(SELF_MAKE)
-DOCSTRING_COVERAGE            ?= $(VENV_PYTHON) -m bijux_phylogenetics_dev.quality.docstring_coverage
 
 PYTHON      ?= $(shell command -v python3 || command -v python)
 VULTURE     ?= $(VENV_PYTHON) -m vulture
 DEPTRY      ?= $(VENV_PYTHON) -m deptry
+INTERROGATE ?= $(VENV_PYTHON) -m interrogate
 MYPY        ?= $(VENV_PYTHON) -m mypy
 
 include $(abspath $(dir $(lastword $(MAKEFILE_LIST))))/util.mk
@@ -42,27 +42,19 @@ else
   QUALITY_ENV  :=
 endif
 
-define run_docstring_coverage_report
+define run_interrogate_report
 	echo "→ Generating docstring coverage report (<100%)"; \
 	mkdir -p "$(QUALITY_ARTIFACTS_DIR)"; \
 	set +e; \
-	  OUT="$$( $(QUALITY_ENV) $(DOCSTRING_COVERAGE) $(QUALITY_INTERROGATE_FLAGS) --verbose $(INTERROGATE_PATHS) )"; \
+	  OUT="$$( $(QUALITY_ENV) $(INTERROGATE) $(QUALITY_INTERROGATE_FLAGS) --verbose $(INTERROGATE_PATHS) )"; \
 	  rc=$$?; \
-	  printf '%s\n' "$$OUT" >"$(QUALITY_ARTIFACTS_DIR)/docstring_coverage.full.txt"; \
-	  OFF="$$(printf '%s\n' "$$OUT" | awk -F' \\| ' '/^FILE: / { \
-	    name=$$1; sub(/^FILE: /, "", name); cov=$$2; \
-	    gsub(/^[ \t]+|[ \t]+$$/, "", name); gsub(/^[ \t]+|[ \t]+$$/, "", cov); \
-	    if (cov != "100.0%" && cov != "100%") printf("  - %s (%s)\n", name, cov); \
+	  printf '%s\n' "$$OUT" >"$(QUALITY_ARTIFACTS_DIR)/interrogate.full.txt"; \
+	  OFF="$$(printf '%s\n' "$$OUT" | awk -F'|' 'NR>3 && $$0 ~ /^\|/ { \
+	    name=$$2; cov=$$6; gsub(/^[ \t]+|[ \t]+$$/, "", name); gsub(/^[ \t]+|[ \t]+$$/, "", cov); \
+	    if (name !~ /^-+$$/ && cov != "100%") printf("  - %s (%s)\n", name, cov); \
 	  }')"; \
-	  printf '%s\n' "$$OFF" >"$(QUALITY_ARTIFACTS_DIR)/docstring_coverage.offenders.txt"; \
-	  if [ $$rc -eq 0 ]; then \
-	    RESULT_LINE="$$(printf '%s\n' "$$OUT" | awk '/^RESULT: / {print; exit}')"; \
-	    if [ -n "$$RESULT_LINE" ]; then printf '%s\n' "$$RESULT_LINE"; else echo "✔ Docstring coverage passed"; fi; \
-	  elif [ -n "$$OFF" ]; then \
-	    printf '%s\n' "$$OFF"; \
-	  else \
-	    printf '%s\n' "$$OUT"; \
-	  fi; \
+	  printf '%s\n' "$$OFF" >"$(QUALITY_ARTIFACTS_DIR)/interrogate.offenders.txt"; \
+	  if [ -n "$$OFF" ]; then printf '%s\n' "$$OFF"; else echo "✔ All files 100% documented"; fi; \
 	  exit $$rc
 endef
 
@@ -101,12 +93,12 @@ quality:
 	fi
 	@set -euo pipefail; \
 	  $(MYPY) --config-file "$(QUALITY_MYPY_CONFIG)" $(QUALITY_MYPY_FLAGS) --cache-dir "$(QUALITY_MYPY_CACHE_DIR)" $(QUALITY_MYPY_TARGETS) 2>&1 | tee "$(QUALITY_ARTIFACTS_DIR)/mypy.log"
-	@echo "   - Documentation coverage"
+	@echo "   - Documentation coverage (Interrogate)"
 	@if [ "$(SKIP_INTERROGATE)" = "1" ]; then \
-	  echo "✖ Docstring coverage must remain enabled for $(PROJECT_SLUG)" | tee "$(QUALITY_ARTIFACTS_DIR)/docstring_coverage.full.txt"; \
+	  echo "✖ Interrogate must remain enabled for $(PROJECT_SLUG)" | tee "$(QUALITY_ARTIFACTS_DIR)/interrogate.full.txt"; \
 	  exit 1; \
 	fi
-	@$(call run_docstring_coverage_report)
+	@$(call run_interrogate_report)
 	$(call run_make_targets,$(QUALITY_POST_TARGETS),$(QUALITY_SELF_MAKE))
 	@if [ "$(QUALITY_RUN_MKDOCS)" = "1" ]; then \
 	  echo "   - MkDocs build"; \
@@ -117,7 +109,7 @@ quality:
 	@printf "OK\n" >"$(QUALITY_OK_MARKER)"
 
 interrogate-report:
-	$(call run_docstring_coverage_report)
+	$(call run_interrogate_report)
 
 docs-links:
 	@echo "→ docs-links is not configured for $(PROJECT_SLUG)"
@@ -128,6 +120,6 @@ quality-clean:
 
 ##@ Quality
 quality: ## Run repository quality checks and write logs to $(QUALITY_ARTIFACTS_DIR)
-interrogate-report: ## Save the full docstring coverage report and offenders list
+interrogate-report: ## Save full Interrogate table + offenders list
 docs-links: ## Run the package docs link checker when configured
 quality-clean: ## Remove quality artifacts
