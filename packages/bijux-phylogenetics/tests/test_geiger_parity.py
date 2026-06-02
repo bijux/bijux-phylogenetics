@@ -1760,7 +1760,7 @@ def test_write_geiger_parity_tables_writes_summary_and_observations(
     assert any("geiger::fitContinuous(model='OU')" in row for row in summary_rows[1:])
     with observation_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(rows) == 41
+    assert len(rows) == 48
     assert rows[0]["model_name"] in {
         "BM",
         "white",
