@@ -30,8 +30,6 @@ REQUIRED_ROOT_TARGET_SNIPPETS = {
     "check-evidence-completeness:",
     "report-evidence-governance:",
     "check-evidence-governance:",
-    "rerun-evidence-cleanroom:",
-    "rerun-governed-evidence-cleanroom:",
     "report-artifact-governance:",
     "check-artifact-governance:",
     "report-execution-surfaces:",

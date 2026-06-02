@@ -173,7 +173,7 @@ def test_root_tox_isolates_repository_evidence_and_publish_surfaces() -> None:
     assert config["testenv:evidence-governance"]["change_dir"] == "{tox_root}"
     assert (
         config["testenv:evidence-governance"]["commands"].strip()
-        == "make check-evidence-governance\nmake rerun-governed-evidence-cleanroom"
+        == "make check-evidence-governance"
     )
     assert config["testenv:evidence-completeness"]["change_dir"] == "{tox_root}"
     assert (
@@ -486,14 +486,6 @@ def test_governed_stress_tests_stay_slow_marked() -> None:
 
 def test_long_running_maintainer_governance_surfaces_stay_slow_marked() -> None:
     expected_slow_functions_by_module = {
-        REPO_ROOT
-        / "packages"
-        / "bijux-phylogenetics-dev"
-        / "tests"
-        / "test_evidence_cleanroom.py": {
-            "test_repository_cleanroom_rerun_keeps_primate_longevity_selection_clean",
-            "test_repository_selected_cleanroom_reruns_keep_governed_selections_clean",
-        },
         REPO_ROOT
         / "packages"
         / "bijux-phylogenetics-dev"

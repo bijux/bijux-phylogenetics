@@ -28,7 +28,6 @@ required_root_make_targets = [
   "report-evidence-completeness:",
   "check-execution-surfaces:",
   "report-execution-surfaces:",
-  "rerun-governed-evidence-cleanroom:",
 ]
 required_tox_envs = [
   "repository-contracts",
@@ -42,7 +41,7 @@ required_tox_envs = [
 [tool.bijux_phylogenetics.execution_surfaces.tox_commands]
 repository-contracts = ["make check-shared-bijux-py check-config-layout check-make-layout help"]
 config-ssot = ["make check-config-ssot"]
-evidence-governance = ["make check-evidence-governance", "make rerun-governed-evidence-cleanroom"]
+evidence-governance = ["make check-evidence-governance"]
 evidence-completeness = ["make check-evidence-completeness"]
 publish-readiness = ["make report-release-readiness"]
 release-readiness-gate = ["make check-release-readiness"]
@@ -63,8 +62,6 @@ report-evidence-completeness:
 check-execution-surfaces:
 \t@echo ok
 report-execution-surfaces:
-\t@echo ok
-rerun-governed-evidence-cleanroom:
 \t@echo ok
 """.strip()
         + "\n",
@@ -92,7 +89,6 @@ commands =
 [testenv:evidence-governance]
 commands =
     make check-evidence-governance
-    make rerun-governed-evidence-cleanroom
 
 [testenv:evidence-completeness]
 commands =

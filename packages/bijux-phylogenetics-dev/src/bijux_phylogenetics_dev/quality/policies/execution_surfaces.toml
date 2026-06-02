@@ -6,7 +6,6 @@ required_root_make_targets = [
   "report-evidence-completeness:",
   "check-execution-surfaces:",
   "report-execution-surfaces:",
-  "rerun-governed-evidence-cleanroom:",
 ]
 required_tox_envs = [
   "repository-contracts",
@@ -26,7 +25,6 @@ config-ssot = [
 ]
 evidence-governance = [
   "make check-evidence-governance",
-  "make rerun-governed-evidence-cleanroom",
 ]
 evidence-completeness = [
   "make check-evidence-completeness",
@@ -37,7 +35,3 @@ publish-readiness = [
 release-readiness-gate = [
   "make check-release-readiness",
 ]
-
-[[tool.bijux_phylogenetics.execution_surfaces.cleanroom_selections]]
-study_id = "primate-longevity-signal"
-evidence_ids = ["evidence-002"]

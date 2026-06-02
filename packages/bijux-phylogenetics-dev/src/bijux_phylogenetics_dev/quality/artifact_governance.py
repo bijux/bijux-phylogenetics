@@ -28,8 +28,6 @@ REQUIRED_MAKE_TARGETS = {
     "check-package-boundaries": "$(ROOT_ARTIFACTS_DIR)/package-boundaries.json",
     "report-release-readiness": "$(MAKE) report-publish-readiness",
     "check-release-readiness": "$(MAKE) check-publish-readiness",
-    "rerun-evidence-cleanroom": "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom",
-    "rerun-governed-evidence-cleanroom": "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom",
 }
 
 

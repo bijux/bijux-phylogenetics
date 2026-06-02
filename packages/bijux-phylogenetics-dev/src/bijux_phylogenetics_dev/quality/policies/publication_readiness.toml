@@ -29,8 +29,6 @@ required_root_make_targets = [
     "check-evidence-governance:",
     "sync-evidence-artifacts:",
     "check-evidence-artifacts:",
-    "rerun-evidence-cleanroom:",
-    "rerun-governed-evidence-cleanroom:",
     "report-artifact-governance:",
     "check-artifact-governance:",
     "report-execution-surfaces:",

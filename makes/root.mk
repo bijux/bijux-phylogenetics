@@ -43,7 +43,7 @@ DOCS_SERVE_PREPARE_TARGETS := bijux-docs-sync docs-render-serve-config
 	check package-check package-smoke package-source-smoke package-verify sync-badges sync-license-assets test-goldens demo \
 	install-external-engine-runtime test-external-engines \
 	clean-root-artifacts root-check-env check-shared-bijux-py check-config-ssot \
-	list-evidence-studies build-evidence-book build-evidence-study build-evidence-unit validate-evidence-book rerun-evidence-cleanroom rerun-governed-evidence-cleanroom \
+	list-evidence-studies build-evidence-book build-evidence-study build-evidence-unit validate-evidence-book \
 	sync-evidence-artifacts sync-evidence-unit-artifacts check-evidence-artifacts check-evidence-unit-artifacts sync-evidence-unit-inputs check-evidence-unit-inputs report-evidence-completeness check-evidence-completeness report-evidence-governance check-evidence-governance \
 	report-artifact-governance check-artifact-governance report-execution-surfaces check-execution-surfaces \
 	report-package-boundaries check-package-boundaries report-package-bundles check-package-bundles report-publish-readiness check-publish-readiness \
@@ -172,20 +172,6 @@ check-evidence-governance: root-check-env ## Enforce evidence-only governance ch
 	@$(MAKE) check-evidence-completeness
 	@$(MAKE) check-artifact-governance
 .PHONY: check-evidence-governance
-
-rerun-evidence-cleanroom: root-check-env ## Re-run one governed evidence selection inside a detached clean-room worktree
-	@test -n "$(EVIDENCE_STUDY_ID)" || { echo "EVIDENCE_STUDY_ID is required"; exit 2; }
-	@set -- $(EVIDENCE_IDS); \
-	ids=""; \
-	for evidence_id in $$@; do \
-	  ids="$$ids --evidence-id $$evidence_id"; \
-	done; \
-	$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_cleanroom check --repo-root "$(CURDIR)" --study-id "$(EVIDENCE_STUDY_ID)" $$ids --artifacts-root "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom" --json-out "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom/$(EVIDENCE_STUDY_ID)-cleanroom.json"
-.PHONY: rerun-evidence-cleanroom
-
-rerun-governed-evidence-cleanroom: root-check-env ## Re-run the repository-governed clean-room evidence selections
-	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_cleanroom check-selected --repo-root "$(CURDIR)" --artifacts-root "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom" --json-out "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom/selected-evidence-cleanroom.json"
-.PHONY: rerun-governed-evidence-cleanroom
 
 report-artifact-governance: root-check-env ## Audit tox, make, and workflow artifact output discipline
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.artifact_governance report --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/artifact-governance.json"
