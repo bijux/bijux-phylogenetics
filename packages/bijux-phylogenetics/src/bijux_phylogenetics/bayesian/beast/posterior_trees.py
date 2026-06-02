@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import tempfile
+
 from bijux_phylogenetics.io.nexus_translate import (
     parse_nexus_translate_map,
     translate_nexus_tip_labels,
@@ -166,7 +168,10 @@ def summarize_beast_posterior_trees(
         raise EngineWorkflowError(
             f"BEAST posterior tree file is empty after burn-in filtering: {tree_set_path}"
         )
-    retained_tree_set_path = tree_set_path.with_suffix(".postburnin.nwk")
+    retained_tree_set_path = _retained_tree_set_path(
+        tree_set_path,
+        burnin_fraction=tree_set_report.burnin_fraction,
+    )
     write_beast_posterior_tree_set(retained_tree_set_path, tree_set_report)
     summary = load_tree_set(retained_tree_set_path)
     consensus_tree, consensus = compute_consensus_tree(retained_tree_set_path)
@@ -219,7 +224,10 @@ def summarize_beast_posterior_topology_diversity(
         raise EngineWorkflowError(
             f"BEAST posterior tree file is empty after burn-in filtering: {tree_set_path}"
         )
-    retained_tree_set_path = tree_set_path.with_suffix(".postburnin.nwk")
+    retained_tree_set_path = _retained_tree_set_path(
+        tree_set_path,
+        burnin_fraction=tree_set_report.burnin_fraction,
+    )
     write_beast_posterior_tree_set(retained_tree_set_path, tree_set_report)
     diversity = summarize_posterior_topology_diversity(retained_tree_set_path)
     return BeastPosteriorTopologyDiversityReport(
@@ -250,6 +258,18 @@ def _extract_beast_tree_entries(text: str) -> list[tuple[str, str]]:
         (match.group(1), match.group(2).strip())
         for match in _BEAST_TREE_PATTERN.finditer(text)
     ]
+
+
+def _retained_tree_set_path(tree_set_path: Path, *, burnin_fraction: float) -> Path:
+    fraction_token = (
+        format(burnin_fraction, ".6f").rstrip("0").rstrip(".").replace(".", "p") or "0"
+    )
+    return Path(
+        tempfile.mkstemp(
+            prefix=f"{tree_set_path.stem}.burnin-{fraction_token}-",
+            suffix=".nwk",
+        )[1]
+    )
 
 
 def _split_beast_tree_entries(

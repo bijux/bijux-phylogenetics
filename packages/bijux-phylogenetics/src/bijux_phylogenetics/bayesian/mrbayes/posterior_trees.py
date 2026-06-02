@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import re
+import tempfile
 
 from bijux_phylogenetics.io.biopython import loads_biophylo
 from bijux_phylogenetics.io.newick import dumps_newick
@@ -287,7 +288,12 @@ def summarize_mrbayes_posterior_trees(
         raise EngineWorkflowError(
             f"MrBayes posterior tree file is empty after burn-in filtering: {tree_set_path}"
         )
-    filtered_tree_set_path = tree_set_path.with_suffix(".postburnin.nwk")
+    filtered_tree_set_path = Path(
+        tempfile.mkstemp(
+            prefix=f"{tree_set_path.stem}.burnin-{_fraction_token(burnin_fraction)}-",
+            suffix=".nwk",
+        )[1]
+    )
     _write_mrbayes_posterior_tree_set(filtered_tree_set_path, trees=kept_trees)
     summary = load_tree_set(filtered_tree_set_path)
     consensus_tree, consensus = compute_consensus_tree(filtered_tree_set_path)
@@ -303,3 +309,7 @@ def summarize_mrbayes_posterior_trees(
         consensus_newick=consensus.consensus_newick,
         clade_frequency_count=len(clade_frequencies.clade_frequencies),
     )
+
+
+def _fraction_token(value: float) -> str:
+    return format(value, ".6f").rstrip("0").rstrip(".").replace(".", "p") or "0"

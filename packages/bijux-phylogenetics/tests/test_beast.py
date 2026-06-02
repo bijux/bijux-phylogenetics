@@ -1292,6 +1292,7 @@ def test_summarize_beast_posterior_trees_builds_majority_rule_consensus(
     assert report.minimum_posterior_probability == pytest.approx(2 / 3)
     assert report.maximum_posterior_probability == pytest.approx(2 / 3)
     assert report.clade_frequency_count == 4
+    assert report.retained_tree_set_path.parent != tree_path.parent
     assert (
         report.consensus_newick
         == "((A:0.1,B:0.1)0.666666666666667:0.35,(C:0.1,D:0.1)0.666666666666667:0.35);"
@@ -1425,6 +1426,7 @@ def test_summarize_beast_posterior_topology_diversity_reports_topology_metrics(
     assert report.mean_normalized_robinson_foulds_distance > 0.0
     assert report.maximum_robinson_foulds_distance >= 0
     assert report.unstable_clade_count >= 1
+    assert report.retained_tree_set_path.parent != tree_path.parent
     assert report.retained_tree_set_path.read_text(encoding="utf-8").count("\n") == 3
 
 

@@ -437,6 +437,7 @@ def test_run_mrbayes_and_summarize_posterior_outputs(tmp_path: Path) -> None:
     assert summary.kept_tree_count == 3
     assert summary.rooted_topology_count == 2
     assert summary.filtered_tree_set_path.exists()
+    assert summary.filtered_tree_set_path.parent != posterior_tree_path.parent
     assert consensus_tree.tip_count == 4
 
 
