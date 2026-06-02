@@ -31,6 +31,7 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
+@pytest.mark.slow
 def test_alignment_engine_validation_matrix_collects_real_run_metadata(
     tmp_path: Path,
 ) -> None:

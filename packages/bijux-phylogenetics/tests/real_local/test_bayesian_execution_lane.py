@@ -226,7 +226,7 @@ def test_summarize_beast_posterior_topology_diversity_with_real_executable_on_sm
     assert report.dominant_topology_frequency > 0.0
     assert report.effective_topology_count >= 1.0
 
-
+@pytest.mark.slow
 def test_run_beast_posterior_inference_resumes_verified_real_outputs(
     tmp_path: Path,
 ) -> None:
