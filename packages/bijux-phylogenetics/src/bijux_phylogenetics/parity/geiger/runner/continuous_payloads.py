@@ -57,7 +57,7 @@ def build_bijux_continuous_case_payload(
         taxon_column=case.taxon_column,
         search_controls=search_controls,
         lambda_bounds=(0.0, 1.0) if case.lambda_bounds is None else case.lambda_bounds,
-        kappa_bounds=(0.0, 1.0) if case.kappa_bounds is None else case.kappa_bounds,
+        kappa_bounds=(0.0, 3.0) if case.kappa_bounds is None else case.kappa_bounds,
         delta_bounds=(0.0, 3.0) if case.delta_bounds is None else case.delta_bounds,
         ou_bounds=(0.0, 10.0) if case.ou_bounds is None else case.ou_bounds,
         early_burst_bounds=(0.0, 50.0)

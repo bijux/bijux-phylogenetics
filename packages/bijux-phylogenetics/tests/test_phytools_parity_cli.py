@@ -38,7 +38,7 @@ def test_parity_cli_runs_live_phytools_harness_and_writes_tables(
     assert payload["status"] == "ok"
     assert payload["metrics"]["reference_source"] == "phytools-live"
     assert payload["metrics"]["case_count"] == 65
-    assert payload["metrics"]["function_count"] == 20
+    assert payload["metrics"]["function_count"] == 21
     assert payload["metrics"]["skipped_case_count"] == 0
     assert summary_path.exists()
     assert observation_path.exists()

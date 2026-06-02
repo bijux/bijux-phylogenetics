@@ -423,7 +423,7 @@ def build_continuous_fit_cases(
             taxon_column=fixture_catalog.kappa_strong_fixture.taxon_column,
             optimizer_settings=_bounded_optimizer(lower=0.0, upper=3.0),
             comparison_fields=_FITCONTINUOUS_PARAMETER_FIELDS,
-            kappa_bounds=(0.0, 1.0),
+            kappa_bounds=(0.0, 3.0),
             field_tolerances={"aicc": 2e-4},
         ),
         _fitcontinuous_case(
@@ -441,7 +441,7 @@ def build_continuous_fit_cases(
             taxon_column=fixture_catalog.kappa_weak_fixture.taxon_column,
             optimizer_settings=_bounded_optimizer(lower=0.0, upper=3.0),
             comparison_fields=_FITCONTINUOUS_PARAMETER_FIELDS,
-            kappa_bounds=(0.0, 1.0),
+            kappa_bounds=(0.0, 3.0),
             field_tolerances={"aicc": 2e-4},
         ),
         _fitcontinuous_case(
@@ -459,7 +459,7 @@ def build_continuous_fit_cases(
             taxon_column=fixture_catalog.kappa_missing_fixture.taxon_column,
             optimizer_settings=_bounded_optimizer(lower=0.0, upper=3.0),
             comparison_fields=_FITCONTINUOUS_PARAMETER_MISSING_FIELDS,
-            kappa_bounds=(0.0, 1.0),
+            kappa_bounds=(0.0, 3.0),
             field_tolerances={"aicc": 2e-4},
         ),
         _fitcontinuous_case(

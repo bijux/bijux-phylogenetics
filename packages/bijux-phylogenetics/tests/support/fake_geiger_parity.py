@@ -245,6 +245,11 @@ elif case_payload["operation"] == "compare-fitcontinuous-models":
                 "delta_aicc": row.delta_aicc,
                 "selected": row.selected,
                 "comparable": row.comparable,
+                "likelihood_constant_policy": (
+                    ""
+                    if row.likelihood_constant_policy is None
+                    else row.likelihood_constant_policy
+                ),
                 "comparability_note": "" if row.comparability_note is None else row.comparability_note,
             }
             for row in comparison.rows

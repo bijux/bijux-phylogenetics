@@ -1,8 +1,8 @@
 node	descendant_taxa	true_state	estimated_state	true_state_probability	confidence	correct	ambiguous
-SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4|SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon1,SimTaxon2,SimTaxon3,SimTaxon4,SimTaxon5,SimTaxon6,SimTaxon7,SimTaxon8	bat	bat	0.500723942334759	0.500723942334759	true	true
-SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4	SimTaxon1,SimTaxon2,SimTaxon3,SimTaxon4	bat	bat	0.612752257588979	0.612752257588979	true	true
-SimTaxon1|SimTaxon2	SimTaxon1,SimTaxon2	bat	bat	0.622832119976017	0.622832119976017	true	true
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4|SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon1,SimTaxon2,SimTaxon3,SimTaxon4,SimTaxon5,SimTaxon6,SimTaxon7,SimTaxon8	bat	bat	0.500723942334542	0.500723942334542	true	true
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4	SimTaxon1,SimTaxon2,SimTaxon3,SimTaxon4	bat	bat	0.568653380663645	0.568653380663645	true	true
+SimTaxon1|SimTaxon2	SimTaxon1,SimTaxon2	bat	bat	0.574090040463858	0.574090040463858	true	true
 SimTaxon3|SimTaxon4	SimTaxon3,SimTaxon4	bat	bat	1	1	true	false
-SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon5,SimTaxon6,SimTaxon7,SimTaxon8	bat	bat	0.631956915987874	0.631956915987874	true	true
-SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon6,SimTaxon7,SimTaxon8	bat	bat	0.634643317257722	0.634643317257722	true	true
-SimTaxon6|SimTaxon7	SimTaxon6,SimTaxon7	bat	bat	0.987480981397713	0.987480981397713	true	false
+SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon5,SimTaxon6,SimTaxon7,SimTaxon8	bat	bat	0.593207493809859	0.593207493809859	true	true
+SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon6,SimTaxon7,SimTaxon8	bat	bat	0.592976334422688	0.592976334422688	true	true
+SimTaxon6|SimTaxon7	SimTaxon6,SimTaxon7	bat	bat	0.986647624642835	0.986647624642835	true	false
