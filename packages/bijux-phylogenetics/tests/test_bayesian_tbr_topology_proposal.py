@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from random import Random
 
+import pytest
+
 from bijux_phylogenetics.bayesian.metropolis_hastings import (
     propose_tbr_topology_move,
     run_metropolis_hastings_sampler,
@@ -48,6 +50,7 @@ def test_tbr_topology_proposal_reaches_tbr_only_neighbor_without_taxon_loss() ->
     assert proposed_topology_fingerprint not in spr_topology_fingerprints
 
 
+@pytest.mark.slow
 def test_tbr_topology_sampler_scores_and_accepts_rejects_moves() -> None:
     initial_state = _build_scored_tbr_state(
         update_prior_components=_topology_preference_prior_components

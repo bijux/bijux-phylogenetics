@@ -5,6 +5,7 @@ from pathlib import Path
 from random import Random
 
 import numpy
+import pytest
 
 from bijux_phylogenetics.bayesian.metropolis_hastings import (
     propose_gamma_alpha_move,
@@ -108,6 +109,7 @@ def test_gamma_alpha_proposal_changes_category_rates_and_likelihood() -> None:
     )
 
 
+@pytest.mark.slow
 def test_sampler_uses_gamma_alpha_proposal_on_real_heterogeneity_surface() -> None:
     initial_state = _build_scored_gamma_alpha_state()
 

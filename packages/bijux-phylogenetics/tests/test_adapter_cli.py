@@ -1769,6 +1769,7 @@ def test_adapter_fasta_to_tree_cli_rejects_ufboot_replicates_below_iqtree_minimu
     )
 
 
+@pytest.mark.slow
 def test_adapter_fasta_to_tree_cli_passes_deterministic_iqtree_controls(
     tmp_path: Path, capsys
 ) -> None:

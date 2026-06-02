@@ -19,6 +19,7 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 
+@pytest.mark.slow
 def test_metropolis_hastings_recovers_standard_normal_target() -> None:
     initial_state = _build_scored_normal_target_state(0.0)
 

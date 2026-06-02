@@ -424,6 +424,7 @@ def test_discrete_reconstruction_supports_likelihood_models() -> None:
     assert isinstance(report.unstable_nodes, list)
 
 
+@pytest.mark.slow
 def test_discrete_reconstruction_matches_governed_ard_probability_fixture() -> None:
     report = reconstruct_discrete_ancestral_states(
         fixture("example_tree_six_taxa.nwk"),

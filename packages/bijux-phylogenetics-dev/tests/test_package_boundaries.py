@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics_dev.quality.package_boundaries import (
     build_package_boundary_report,
     load_package_boundary_policy,
@@ -281,6 +283,7 @@ SUPPORTED_EVIDENCE_API_LOCATORS = ("demo_runtime.api:run_pgls", "demo_runtime.ex
     assert "runtime-evidence-locator-contract-drift" not in issue_codes
 
 
+@pytest.mark.slow
 def test_repository_package_boundary_report_is_clean() -> None:
     report = build_package_boundary_report(REPO_ROOT)
 

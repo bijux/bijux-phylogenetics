@@ -59,6 +59,7 @@ def fixture(name: str) -> Path:
         ("all-rates-different", {"0->1", "1->0"}),
     ],
 )
+@pytest.mark.slow
 def test_discrete_trait_rate_proposal_changes_real_mk_likelihood(
     surface_key: str,
     expected_parameter_names: set[str],

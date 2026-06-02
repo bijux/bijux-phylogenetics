@@ -89,6 +89,7 @@ def test_equal_rates_discrete_trait_prior_collapses_to_one_shared_parameter() ->
     )
 
 
+@pytest.mark.slow
 def test_symmetric_discrete_trait_prior_scores_each_bidirectional_pair_once() -> None:
     fit_report = fit_discrete_mk_model(
         fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk"),

@@ -236,6 +236,7 @@ def test_runtime_publication_policy_allows_secured_xml_dependency() -> None:
     )
 
 
+@pytest.mark.slow
 def test_check_package_bundles_reports_target_package_policy_coverage(
     tmp_path: Path,
 ) -> None:

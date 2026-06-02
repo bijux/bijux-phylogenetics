@@ -331,6 +331,7 @@ def test_comparative_discrete_mk_cli_reports_er_metrics(capsys) -> None:
     assert payload["metrics"]["baseline_model"] is None
 
 
+@pytest.mark.slow
 def test_comparative_discrete_mk_cli_reports_symmetric_baseline_metrics(
     capsys,
 ) -> None:
@@ -362,6 +363,7 @@ def test_comparative_discrete_mk_cli_reports_symmetric_baseline_metrics(
     assert payload["metrics"]["delta_aic"] > 0.0
 
 
+@pytest.mark.slow
 def test_comparative_discrete_mk_cli_reports_lambda_transform_metrics(
     capsys,
 ) -> None:
@@ -396,6 +398,7 @@ def test_comparative_discrete_mk_cli_reports_lambda_transform_metrics(
     assert payload["metrics"]["transform_warning_count"] >= 1
 
 
+@pytest.mark.slow
 def test_comparative_discrete_mk_cli_reports_kappa_transform_metrics(
     capsys,
 ) -> None:

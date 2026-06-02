@@ -3,6 +3,8 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.bayesian.discrete_trait_rate_parameters import (
     parameterize_discrete_trait_rate_rows,
     resolve_discrete_trait_rate_rows,
@@ -47,6 +49,7 @@ def test_equal_rates_parameterization_collapses_to_one_shared_rate() -> None:
     assert len(parameterization.groups[0].transition_pairs) == 6
 
 
+@pytest.mark.slow
 def test_symmetric_parameterization_groups_bidirectional_pairs_once() -> None:
     fit_report = fit_discrete_mk_model(
         fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk"),
