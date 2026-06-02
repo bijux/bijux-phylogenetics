@@ -53,6 +53,7 @@ def test_compressed_codon_patterns_match_uncompressed_likelihood() -> None:
             state_space=state_space,
             root_prior=root_prior,
             transition_evaluator=transition_evaluator,
+            observation_policy="reject",
         )
 
     uncompressed_total = sum(
