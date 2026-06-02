@@ -1,0 +1,68 @@
+{
+  "bootstrap_support_summary": null,
+  "config": {
+    "extra_args": [],
+    "mode": "auto",
+    "timeout_seconds": null
+  },
+  "engine_name": "mafft",
+  "fasttree_support_summary": null,
+  "input_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta": "bdb47204606c5a3cec7c2cb33f6031460a09f1c9de510d57112f16d37faeb96c"
+  },
+  "input_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta"
+  ],
+  "iqtree_summary": null,
+  "log_likelihood": null,
+  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln.manifest.json",
+  "model_selection_summary": null,
+  "notes": [
+    "mafft alignment mode: auto",
+    "alignment output validated as deterministic equal-length FASTA"
+  ],
+  "output_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
+  },
+  "output_paths": {
+    "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/mafft",
+      "--auto",
+      "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta"
+    ],
+    "ended_at_utc": "2026-05-31T18:29:32Z",
+    "engine_name": "mafft",
+    "executable": "/opt/homebrew/bin/mafft",
+    "exit_code": 0,
+    "output_paths": {
+      "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln"
+    },
+    "runtime_seconds": 0.888986,
+    "started_at_utc": "2026-05-31T18:29:31Z",
+    "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln.stderr.log",
+    "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/mafft",
+        "--version"
+      ],
+      "engine_name": "mafft",
+      "executable": "/opt/homebrew/bin/mafft",
+      "text": "v7.526 (2024/Apr/26)"
+    },
+    "warning_lines": [],
+    "workflow": "multiple-sequence-alignment",
+    "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment"
+  },
+  "selected_model": null,
+  "sh_alrt_support_summary": null,
+  "trimming_summary": null,
+  "weak_backbone_report": null,
+  "workflow": "multiple-sequence-alignment"
+}

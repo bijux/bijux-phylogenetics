@@ -1,0 +1,824 @@
+{
+  "bootstrap_support_summary": null,
+  "config": {
+    "partition_path": null,
+    "seed": 1,
+    "sequence_type": "dna",
+    "threads": 1,
+    "timeout_seconds": null
+  },
+  "engine_name": "iqtree",
+  "fasttree_support_summary": null,
+  "input_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
+  },
+  "input_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln"
+  ],
+  "iqtree_summary": {
+    "log_likelihood": -9379.192,
+    "maximum_support": null,
+    "minimum_support": null,
+    "selected_model": "TPM3u+F+R2",
+    "support_value_count": 0,
+    "support_values": []
+  },
+  "log_likelihood": -9379.192,
+  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.manifest.json",
+  "model_selection_summary": {
+    "best_model_aic": "GTR+F+R2",
+    "best_model_aicc": "GTR+F+R2",
+    "best_model_bic": "TPM3u+F+R2",
+    "best_score_aic": 18781.38869,
+    "best_score_aicc": 18781.81092,
+    "best_score_bic": 18878.51305,
+    "bic_near_best_models": [
+      "TPM3u+F+R2",
+      "TPM3u+F+G4",
+      "TIM3+F+R2",
+      "TIM3+F+G4",
+      "TPM2u+F+G4",
+      "TVM+F+G4",
+      "TVM+F+R2",
+      "TPM2u+F+R2",
+      "HKY+F+G4",
+      "TIM2+F+G4",
+      "GTR+F+R2",
+      "GTR+F+G4",
+      "TPM3u+F+I+R2",
+      "HKY+F+R2",
+      "TIM2+F+R2",
+      "TN+F+G4",
+      "TIM3+F+I+R2",
+      "TN+F+R2",
+      "TPM2u+F+I+R2",
+      "K3Pu+F+G4",
+      "TVM+F+I+R2",
+      "K3Pu+F+R2",
+      "HKY+F+I+R2",
+      "TIM2+F+I+R2",
+      "GTR+F+I+R2",
+      "TIM+F+G4",
+      "TIM+F+R2",
+      "TN+F+I+R2",
+      "GTR+F+I+G4",
+      "GTR+F+R3",
+      "K3Pu+F+I+R2",
+      "TIM+F+I+R2",
+      "GTR+F+I+R3",
+      "GTR+F+I",
+      "TPM2+G4",
+      "TPM2+R2",
+      "TIM2e+G4",
+      "TIM2e+R2",
+      "TPM2+I+R2",
+      "TVMe+G4",
+      "TVMe+R2",
+      "TIM2e+I+R2",
+      "SYM+G4",
+      "SYM+R2",
+      "TVMe+I+R2",
+      "SYM+I+R2",
+      "K2P+G4",
+      "K2P+R2",
+      "TPM3+G4",
+      "TPM3+R2",
+      "TNe+G4",
+      "K3P+G4",
+      "TNe+R2",
+      "K3P+R2",
+      "K2P+I+R2",
+      "TIM3e+G4",
+      "TIM3e+R2",
+      "TIMe+G4",
+      "TPM3+I+R2",
+      "TIMe+R2",
+      "TNe+I+R2",
+      "K3P+I+R2",
+      "TIM3e+I+R2",
+      "TIMe+I+R2",
+      "GTR+F",
+      "F81+F+G4",
+      "F81+F+R2",
+      "F81+F+I+R2",
+      "JC+G4",
+      "JC+R2",
+      "JC+I+R2"
+    ],
+    "candidate_count": 71,
+    "candidates": [
+      {
+        "aic": 18790.408,
+        "aicc": 18790.709,
+        "bic": 18878.513,
+        "log_likelihood": -9379.204,
+        "model": "TPM3u+F+R2",
+        "parameter_count": 16,
+        "rank": 1
+      },
+      {
+        "aic": 18796.24,
+        "aicc": 18796.506,
+        "bic": 18878.839,
+        "log_likelihood": -9383.12,
+        "model": "TPM3u+F+G4",
+        "parameter_count": 15,
+        "rank": 2
+      },
+      {
+        "aic": 18787.431,
+        "aicc": 18787.771,
+        "bic": 18881.043,
+        "log_likelihood": -9376.716,
+        "model": "TIM3+F+R2",
+        "parameter_count": 17,
+        "rank": 3
+      },
+      {
+        "aic": 18793.922,
+        "aicc": 18794.224,
+        "bic": 18882.027,
+        "log_likelihood": -9380.961,
+        "model": "TIM3+F+G4",
+        "parameter_count": 16,
+        "rank": 4
+      },
+      {
+        "aic": 18800.051,
+        "aicc": 18800.317,
+        "bic": 18882.65,
+        "log_likelihood": -9385.026,
+        "model": "TPM2u+F+G4",
+        "parameter_count": 15,
+        "rank": 5
+      },
+      {
+        "aic": 18789.992,
+        "aicc": 18790.331,
+        "bic": 18883.604,
+        "log_likelihood": -9377.996,
+        "model": "TVM+F+G4",
+        "parameter_count": 17,
+        "rank": 6
+      },
+      {
+        "aic": 18784.524,
+        "aicc": 18784.904,
+        "bic": 18883.642,
+        "log_likelihood": -9374.262,
+        "model": "TVM+F+R2",
+        "parameter_count": 18,
+        "rank": 7
+      },
+      {
+        "aic": 18796.799,
+        "aicc": 18797.101,
+        "bic": 18884.904,
+        "log_likelihood": -9382.399,
+        "model": "TPM2u+F+R2",
+        "parameter_count": 16,
+        "rank": 8
+      },
+      {
+        "aic": 18808.493,
+        "aicc": 18808.725,
+        "bic": 18885.585,
+        "log_likelihood": -9390.246,
+        "model": "HKY+F+G4",
+        "parameter_count": 14,
+        "rank": 9
+      },
+      {
+        "aic": 18797.712,
+        "aicc": 18798.014,
+        "bic": 18885.817,
+        "log_likelihood": -9382.856,
+        "model": "TIM2+F+G4",
+        "parameter_count": 16,
+        "rank": 10
+      },
+      {
+        "aic": 18781.389,
+        "aicc": 18781.811,
+        "bic": 18886.014,
+        "log_likelihood": -9371.694,
+        "model": "GTR+F+R2",
+        "parameter_count": 19,
+        "rank": 11
+      },
+      {
+        "aic": 18787.299,
+        "aicc": 18787.679,
+        "bic": 18886.418,
+        "log_likelihood": -9375.649,
+        "model": "GTR+F+G4",
+        "parameter_count": 18,
+        "rank": 12
+      },
+      {
+        "aic": 18793.293,
+        "aicc": 18793.633,
+        "bic": 18886.905,
+        "log_likelihood": -9379.647,
+        "model": "TPM3u+F+I+R2",
+        "parameter_count": 17,
+        "rank": 13
+      },
+      {
+        "aic": 18804.767,
+        "aicc": 18805.033,
+        "bic": 18887.366,
+        "log_likelihood": -9387.383,
+        "model": "HKY+F+R2",
+        "parameter_count": 15,
+        "rank": 14
+      },
+      {
+        "aic": 18794.599,
+        "aicc": 18794.938,
+        "bic": 18888.211,
+        "log_likelihood": -9380.299,
+        "model": "TIM2+F+R2",
+        "parameter_count": 17,
+        "rank": 15
+      },
+      {
+        "aic": 18806.582,
+        "aicc": 18806.848,
+        "bic": 18889.181,
+        "log_likelihood": -9388.291,
+        "model": "TN+F+G4",
+        "parameter_count": 15,
+        "rank": 16
+      },
+      {
+        "aic": 18791.114,
+        "aicc": 18791.494,
+        "bic": 18890.233,
+        "log_likelihood": -9377.557,
+        "model": "TIM3+F+I+R2",
+        "parameter_count": 18,
+        "rank": 17
+      },
+      {
+        "aic": 18802.832,
+        "aicc": 18803.134,
+        "bic": 18890.938,
+        "log_likelihood": -9385.416,
+        "model": "TN+F+R2",
+        "parameter_count": 16,
+        "rank": 18
+      },
+      {
+        "aic": 18798.56,
+        "aicc": 18798.9,
+        "bic": 18892.172,
+        "log_likelihood": -9382.28,
+        "model": "TPM2u+F+I+R2",
+        "parameter_count": 17,
+        "rank": 19
+      },
+      {
+        "aic": 18809.834,
+        "aicc": 18810.1,
+        "bic": 18892.433,
+        "log_likelihood": -9389.917,
+        "model": "K3Pu+F+G4",
+        "parameter_count": 15,
+        "rank": 20
+      },
+      {
+        "aic": 18787.992,
+        "aicc": 18788.414,
+        "bic": 18892.617,
+        "log_likelihood": -9374.996,
+        "model": "TVM+F+I+R2",
+        "parameter_count": 19,
+        "rank": 21
+      },
+      {
+        "aic": 18806.087,
+        "aicc": 18806.389,
+        "bic": 18894.193,
+        "log_likelihood": -9387.044,
+        "model": "K3Pu+F+R2",
+        "parameter_count": 16,
+        "rank": 22
+      },
+      {
+        "aic": 18806.288,
+        "aicc": 18806.589,
+        "bic": 18894.393,
+        "log_likelihood": -9387.144,
+        "model": "HKY+F+I+R2",
+        "parameter_count": 16,
+        "rank": 23
+      },
+      {
+        "aic": 18796.507,
+        "aicc": 18796.887,
+        "bic": 18895.625,
+        "log_likelihood": -9380.253,
+        "model": "TIM2+F+I+R2",
+        "parameter_count": 18,
+        "rank": 24
+      },
+      {
+        "aic": 18785.817,
+        "aicc": 18786.284,
+        "bic": 18895.949,
+        "log_likelihood": -9372.909,
+        "model": "GTR+F+I+R2",
+        "parameter_count": 20,
+        "rank": 25
+      },
+      {
+        "aic": 18807.981,
+        "aicc": 18808.283,
+        "bic": 18896.087,
+        "log_likelihood": -9387.991,
+        "model": "TIM+F+G4",
+        "parameter_count": 16,
+        "rank": 26
+      },
+      {
+        "aic": 18804.211,
+        "aicc": 18804.55,
+        "bic": 18897.823,
+        "log_likelihood": -9385.105,
+        "model": "TIM+F+R2",
+        "parameter_count": 17,
+        "rank": 27
+      },
+      {
+        "aic": 18804.601,
+        "aicc": 18804.94,
+        "bic": 18898.213,
+        "log_likelihood": -9385.3,
+        "model": "TN+F+I+R2",
+        "parameter_count": 17,
+        "rank": 28
+      },
+      {
+        "aic": 18793.735,
+        "aicc": 18794.157,
+        "bic": 18898.36,
+        "log_likelihood": -9377.867,
+        "model": "GTR+F+I+G4",
+        "parameter_count": 19,
+        "rank": 29
+      },
+      {
+        "aic": 18785.373,
+        "aicc": 18785.887,
+        "bic": 18901.011,
+        "log_likelihood": -9371.686,
+        "model": "GTR+F+R3",
+        "parameter_count": 21,
+        "rank": 30
+      },
+      {
+        "aic": 18807.587,
+        "aicc": 18807.927,
+        "bic": 18901.199,
+        "log_likelihood": -9386.793,
+        "model": "K3Pu+F+I+R2",
+        "parameter_count": 17,
+        "rank": 31
+      },
+      {
+        "aic": 18805.93,
+        "aicc": 18806.31,
+        "bic": 18905.049,
+        "log_likelihood": -9384.965,
+        "model": "TIM+F+I+R2",
+        "parameter_count": 18,
+        "rank": 32
+      },
+      {
+        "aic": 18789.74,
+        "aicc": 18790.303,
+        "bic": 18910.885,
+        "log_likelihood": -9372.87,
+        "model": "GTR+F+I+R3",
+        "parameter_count": 22,
+        "rank": 33
+      },
+      {
+        "aic": 18865.645,
+        "aicc": 18866.025,
+        "bic": 18964.764,
+        "log_likelihood": -9414.823,
+        "model": "GTR+F+I",
+        "parameter_count": 18,
+        "rank": 34
+      },
+      {
+        "aic": 18970.727,
+        "aicc": 18970.899,
+        "bic": 19036.806,
+        "log_likelihood": -9473.363,
+        "model": "TPM2+G4",
+        "parameter_count": 12,
+        "rank": 35
+      },
+      {
+        "aic": 18967.279,
+        "aicc": 18967.481,
+        "bic": 19038.865,
+        "log_likelihood": -9470.64,
+        "model": "TPM2+R2",
+        "parameter_count": 13,
+        "rank": 36
+      },
+      {
+        "aic": 18971.281,
+        "aicc": 18971.482,
+        "bic": 19042.866,
+        "log_likelihood": -9472.64,
+        "model": "TIM2e+G4",
+        "parameter_count": 13,
+        "rank": 37
+      },
+      {
+        "aic": 18967.123,
+        "aicc": 18967.356,
+        "bic": 19044.216,
+        "log_likelihood": -9469.562,
+        "model": "TIM2e+R2",
+        "parameter_count": 14,
+        "rank": 38
+      },
+      {
+        "aic": 18969.934,
+        "aicc": 18970.167,
+        "bic": 19047.027,
+        "log_likelihood": -9470.967,
+        "model": "TPM2+I+R2",
+        "parameter_count": 14,
+        "rank": 39
+      },
+      {
+        "aic": 18971.772,
+        "aicc": 18972.005,
+        "bic": 19048.864,
+        "log_likelihood": -9471.886,
+        "model": "TVMe+G4",
+        "parameter_count": 14,
+        "rank": 40
+      },
+      {
+        "aic": 18967.452,
+        "aicc": 18967.718,
+        "bic": 19050.051,
+        "log_likelihood": -9468.726,
+        "model": "TVMe+R2",
+        "parameter_count": 15,
+        "rank": 41
+      },
+      {
+        "aic": 18970.148,
+        "aicc": 18970.414,
+        "bic": 19052.747,
+        "log_likelihood": -9470.074,
+        "model": "TIM2e+I+R2",
+        "parameter_count": 15,
+        "rank": 42
+      },
+      {
+        "aic": 18972.325,
+        "aicc": 18972.592,
+        "bic": 19054.924,
+        "log_likelihood": -9471.163,
+        "model": "SYM+G4",
+        "parameter_count": 15,
+        "rank": 43
+      },
+      {
+        "aic": 18967.594,
+        "aicc": 18967.896,
+        "bic": 19055.7,
+        "log_likelihood": -9467.797,
+        "model": "SYM+R2",
+        "parameter_count": 16,
+        "rank": 44
+      },
+      {
+        "aic": 18971.027,
+        "aicc": 18971.329,
+        "bic": 19059.132,
+        "log_likelihood": -9469.513,
+        "model": "TVMe+I+R2",
+        "parameter_count": 16,
+        "rank": 45
+      },
+      {
+        "aic": 18971.594,
+        "aicc": 18971.934,
+        "bic": 19065.206,
+        "log_likelihood": -9468.797,
+        "model": "SYM+I+R2",
+        "parameter_count": 17,
+        "rank": 46
+      },
+      {
+        "aic": 19005.043,
+        "aicc": 19005.189,
+        "bic": 19065.616,
+        "log_likelihood": -9491.522,
+        "model": "K2P+G4",
+        "parameter_count": 11,
+        "rank": 47
+      },
+      {
+        "aic": 19001.558,
+        "aicc": 19001.731,
+        "bic": 19067.637,
+        "log_likelihood": -9488.779,
+        "model": "K2P+R2",
+        "parameter_count": 12,
+        "rank": 48
+      },
+      {
+        "aic": 19004.148,
+        "aicc": 19004.321,
+        "bic": 19070.227,
+        "log_likelihood": -9490.074,
+        "model": "TPM3+G4",
+        "parameter_count": 12,
+        "rank": 49
+      },
+      {
+        "aic": 18999.771,
+        "aicc": 18999.973,
+        "bic": 19071.357,
+        "log_likelihood": -9486.886,
+        "model": "TPM3+R2",
+        "parameter_count": 13,
+        "rank": 50
+      },
+      {
+        "aic": 19005.614,
+        "aicc": 19005.786,
+        "bic": 19071.693,
+        "log_likelihood": -9490.807,
+        "model": "TNe+G4",
+        "parameter_count": 12,
+        "rank": 51
+      },
+      {
+        "aic": 19007.065,
+        "aicc": 19007.238,
+        "bic": 19073.144,
+        "log_likelihood": -9491.533,
+        "model": "K3P+G4",
+        "parameter_count": 12,
+        "rank": 52
+      },
+      {
+        "aic": 19001.621,
+        "aicc": 19001.822,
+        "bic": 19073.206,
+        "log_likelihood": -9487.81,
+        "model": "TNe+R2",
+        "parameter_count": 13,
+        "rank": 53
+      },
+      {
+        "aic": 19003.549,
+        "aicc": 19003.75,
+        "bic": 19075.135,
+        "log_likelihood": -9488.774,
+        "model": "K3P+R2",
+        "parameter_count": 13,
+        "rank": 54
+      },
+      {
+        "aic": 19003.846,
+        "aicc": 19004.047,
+        "bic": 19075.431,
+        "log_likelihood": -9488.923,
+        "model": "K2P+I+R2",
+        "parameter_count": 13,
+        "rank": 55
+      },
+      {
+        "aic": 19004.716,
+        "aicc": 19004.917,
+        "bic": 19076.302,
+        "log_likelihood": -9489.358,
+        "model": "TIM3e+G4",
+        "parameter_count": 13,
+        "rank": 56
+      },
+      {
+        "aic": 18999.978,
+        "aicc": 19000.21,
+        "bic": 19077.07,
+        "log_likelihood": -9485.989,
+        "model": "TIM3e+R2",
+        "parameter_count": 14,
+        "rank": 57
+      },
+      {
+        "aic": 19007.666,
+        "aicc": 19007.868,
+        "bic": 19079.252,
+        "log_likelihood": -9490.833,
+        "model": "TIMe+G4",
+        "parameter_count": 13,
+        "rank": 58
+      },
+      {
+        "aic": 19002.628,
+        "aicc": 19002.86,
+        "bic": 19079.72,
+        "log_likelihood": -9487.314,
+        "model": "TPM3+I+R2",
+        "parameter_count": 14,
+        "rank": 59
+      },
+      {
+        "aic": 19003.618,
+        "aicc": 19003.851,
+        "bic": 19080.71,
+        "log_likelihood": -9487.809,
+        "model": "TIMe+R2",
+        "parameter_count": 14,
+        "rank": 60
+      },
+      {
+        "aic": 19004.104,
+        "aicc": 19004.336,
+        "bic": 19081.196,
+        "log_likelihood": -9488.052,
+        "model": "TNe+I+R2",
+        "parameter_count": 14,
+        "rank": 61
+      },
+      {
+        "aic": 19005.854,
+        "aicc": 19006.087,
+        "bic": 19082.947,
+        "log_likelihood": -9488.927,
+        "model": "K3P+I+R2",
+        "parameter_count": 14,
+        "rank": 62
+      },
+      {
+        "aic": 19003.15,
+        "aicc": 19003.416,
+        "bic": 19085.749,
+        "log_likelihood": -9486.575,
+        "model": "TIM3e+I+R2",
+        "parameter_count": 15,
+        "rank": 63
+      },
+      {
+        "aic": 19006.212,
+        "aicc": 19006.478,
+        "bic": 19088.811,
+        "log_likelihood": -9488.106,
+        "model": "TIMe+I+R2",
+        "parameter_count": 15,
+        "rank": 64
+      },
+      {
+        "aic": 19113.591,
+        "aicc": 19113.93,
+        "bic": 19207.203,
+        "log_likelihood": -9539.795,
+        "model": "GTR+F",
+        "parameter_count": 17,
+        "rank": 65
+      },
+      {
+        "aic": 19205.266,
+        "aicc": 19205.467,
+        "bic": 19276.852,
+        "log_likelihood": -9589.633,
+        "model": "F81+F+G4",
+        "parameter_count": 13,
+        "rank": 66
+      },
+      {
+        "aic": 19205.64,
+        "aicc": 19205.873,
+        "bic": 19282.732,
+        "log_likelihood": -9588.82,
+        "model": "F81+F+R2",
+        "parameter_count": 14,
+        "rank": 67
+      },
+      {
+        "aic": 19207.757,
+        "aicc": 19208.023,
+        "bic": 19290.356,
+        "log_likelihood": -9588.879,
+        "model": "F81+F+I+R2",
+        "parameter_count": 15,
+        "rank": 68
+      },
+      {
+        "aic": 19396.773,
+        "aicc": 19396.894,
+        "bic": 19451.839,
+        "log_likelihood": -9688.386,
+        "model": "JC+G4",
+        "parameter_count": 10,
+        "rank": 69
+      },
+      {
+        "aic": 19397.834,
+        "aicc": 19397.98,
+        "bic": 19458.406,
+        "log_likelihood": -9687.917,
+        "model": "JC+R2",
+        "parameter_count": 11,
+        "rank": 70
+      },
+      {
+        "aic": 19399.657,
+        "aicc": 19399.83,
+        "bic": 19465.736,
+        "log_likelihood": -9687.829,
+        "model": "JC+I+R2",
+        "parameter_count": 12,
+        "rank": 71
+      }
+    ],
+    "selected_criterion": "BIC",
+    "selected_model": "TPM3u+F+R2"
+  },
+  "notes": [
+    "iqtree random seed: 1",
+    "iqtree threads: 1",
+    "best-fit substitution model parsed from engine output",
+    "parsed 71 candidate substitution models from iqtree output",
+    "model-selection workflow exposed the governing information criterion",
+    "model-selection workflow exposed a parsable log-likelihood score"
+  ],
+  "output_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.iqtree": "292e2a82d048154d496ae6c94a6263078a46052fd5f5f8083b9a6c3035ea1fd0",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.log": "7bd4c61b3377c5684a903501117a7f00d89940f2055cc1475da6720aa7d6d2cd",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.model-candidates.tsv": "f60cc978ddd842f94d3fc48e418fd5c5b336757724ddfa7084682e294667ccf1",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.model.gz": "0c5f6dccb0e407d4257a0166d2b90b6d3d751adecbf32c38bd2733c98064a649",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.selected-model.txt": "8424eae260bd0d010ab45229e6866c5ec834caa529af789cf19f6ec388c38f06"
+  },
+  "output_paths": {
+    "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.log",
+    "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.iqtree",
+    "model_candidates": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.model-candidates.tsv",
+    "model_selection_sidecar": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.model.gz",
+    "selected_model": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.selected-model.txt"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/iqtree2",
+      "-s",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln",
+      "-st",
+      "DNA",
+      "-seed",
+      "1",
+      "-nt",
+      "1",
+      "-m",
+      "MF",
+      "-pre",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection"
+    ],
+    "ended_at_utc": "2026-05-31T18:29:33Z",
+    "engine_name": "iqtree",
+    "executable": "/opt/homebrew/bin/iqtree2",
+    "exit_code": 0,
+    "output_paths": {
+      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.log",
+      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.iqtree"
+    },
+    "runtime_seconds": 0.674301,
+    "started_at_utc": "2026-05-31T18:29:32Z",
+    "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.stderr.log",
+    "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.stdout.log",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/iqtree2",
+        "--version"
+      ],
+      "engine_name": "iqtree",
+      "executable": "/opt/homebrew/bin/iqtree2",
+      "text": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+    },
+    "warning_lines": [],
+    "workflow": "model-selection",
+    "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection"
+  },
+  "selected_model": "TPM3u+F+R2",
+  "sh_alrt_support_summary": null,
+  "trimming_summary": null,
+  "weak_backbone_report": null,
+  "workflow": "model-selection"
+}

@@ -1,0 +1,337 @@
+{
+  "bootstrap_support_summary": {
+    "internal_node_count": 7,
+    "maximum_support": 97.0,
+    "median_support": 85.0,
+    "minimum_support": 59.0,
+    "nodes": [
+      {
+        "descendant_taxa": [
+          "Csa004271",
+          "Dre37936",
+          "Hsa167996",
+          "LcaH",
+          "Mmu024661",
+          "Tru14292",
+          "Xtr21234"
+        ],
+        "is_backbone": true,
+        "node": "Csa004271|Dre37936|Hsa167996|LcaH|Mmu024661|Tru14292|Xtr21234",
+        "support": 59.0,
+        "support_fraction": 0.59
+      },
+      {
+        "descendant_taxa": [
+          "Csa004271",
+          "Dre37936",
+          "Hsa167996",
+          "LcaH",
+          "Mmu024661",
+          "Xtr21234"
+        ],
+        "is_backbone": true,
+        "node": "Csa004271|Dre37936|Hsa167996|LcaH|Mmu024661|Xtr21234",
+        "support": 90.0,
+        "support_fraction": 0.9
+      },
+      {
+        "descendant_taxa": [
+          "Csa004271",
+          "Hsa167996",
+          "LcaH",
+          "Mmu024661",
+          "Xtr21234"
+        ],
+        "is_backbone": true,
+        "node": "Csa004271|Hsa167996|LcaH|Mmu024661|Xtr21234",
+        "support": 97.0,
+        "support_fraction": 0.97
+      },
+      {
+        "descendant_taxa": [
+          "Csa004271",
+          "Hsa167996",
+          "LcaH",
+          "Mmu024661"
+        ],
+        "is_backbone": true,
+        "node": "Csa004271|Hsa167996|LcaH|Mmu024661",
+        "support": 68.0,
+        "support_fraction": 0.68
+      },
+      {
+        "descendant_taxa": [
+          "Hsa167996",
+          "LcaH",
+          "Mmu024661"
+        ],
+        "is_backbone": false,
+        "node": "Hsa167996|LcaH|Mmu024661",
+        "support": 80.0,
+        "support_fraction": 0.8
+      },
+      {
+        "descendant_taxa": [
+          "Hsa167996",
+          "Mmu024661"
+        ],
+        "is_backbone": false,
+        "node": "Hsa167996|Mmu024661",
+        "support": 94.0,
+        "support_fraction": 0.94
+      }
+    ],
+    "support_histogram": {
+      "50to69": 2,
+      "70to89": 1,
+      "ge90": 3,
+      "lt50": 0
+    },
+    "supported_node_count": 6,
+    "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.treefile",
+    "warnings": [
+      "one or more internal nodes did not expose numeric support labels",
+      "one or more internal clades remain weakly supported"
+    ],
+    "weakly_supported_clade_count": 2
+  },
+  "config": {
+    "model": "TNe+G4",
+    "partition_path": null,
+    "replicates": 1000,
+    "seed": 1,
+    "sequence_type": "dna",
+    "threads": 1,
+    "timeout_seconds": null
+  },
+  "engine_name": "iqtree",
+  "fasttree_support_summary": null,
+  "input_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/trimming/trimming.trimmed.aln": "da246e1bde1362cd7fbd9ed62cdac15a1f4acfb98247fc2c24111b6a7027224c"
+  },
+  "input_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/trimming/trimming.trimmed.aln"
+  ],
+  "iqtree_summary": {
+    "log_likelihood": -3440.0991,
+    "maximum_support": 97.0,
+    "minimum_support": 59.0,
+    "selected_model": "TNe+G4",
+    "support_value_count": 6,
+    "support_values": [
+      {
+        "descendant_taxa": [
+          "Csa004271",
+          "Dre37936",
+          "Hsa167996",
+          "LcaH",
+          "Mmu024661",
+          "Tru14292",
+          "Xtr21234"
+        ],
+        "is_backbone": true,
+        "node": "Csa004271|Dre37936|Hsa167996|LcaH|Mmu024661|Tru14292|Xtr21234",
+        "support": 59.0,
+        "support_fraction": 0.59
+      },
+      {
+        "descendant_taxa": [
+          "Csa004271",
+          "Dre37936",
+          "Hsa167996",
+          "LcaH",
+          "Mmu024661",
+          "Xtr21234"
+        ],
+        "is_backbone": true,
+        "node": "Csa004271|Dre37936|Hsa167996|LcaH|Mmu024661|Xtr21234",
+        "support": 90.0,
+        "support_fraction": 0.9
+      },
+      {
+        "descendant_taxa": [
+          "Csa004271",
+          "Hsa167996",
+          "LcaH",
+          "Mmu024661",
+          "Xtr21234"
+        ],
+        "is_backbone": true,
+        "node": "Csa004271|Hsa167996|LcaH|Mmu024661|Xtr21234",
+        "support": 97.0,
+        "support_fraction": 0.97
+      },
+      {
+        "descendant_taxa": [
+          "Csa004271",
+          "Hsa167996",
+          "LcaH",
+          "Mmu024661"
+        ],
+        "is_backbone": true,
+        "node": "Csa004271|Hsa167996|LcaH|Mmu024661",
+        "support": 68.0,
+        "support_fraction": 0.68
+      },
+      {
+        "descendant_taxa": [
+          "Hsa167996",
+          "LcaH",
+          "Mmu024661"
+        ],
+        "is_backbone": false,
+        "node": "Hsa167996|LcaH|Mmu024661",
+        "support": 80.0,
+        "support_fraction": 0.8
+      },
+      {
+        "descendant_taxa": [
+          "Hsa167996",
+          "Mmu024661"
+        ],
+        "is_backbone": false,
+        "node": "Hsa167996|Mmu024661",
+        "support": 94.0,
+        "support_fraction": 0.94
+      }
+    ]
+  },
+  "log_likelihood": -3440.0991,
+  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.manifest.json",
+  "model_selection_summary": {
+    "best_model_aic": "6916.1982",
+    "best_model_aicc": "6917.4673",
+    "best_model_bic": "6994.0367",
+    "best_score_aic": null,
+    "best_score_aicc": null,
+    "best_score_bic": null,
+    "bic_near_best_models": [],
+    "candidate_count": 0,
+    "candidates": [],
+    "selected_criterion": "BIC",
+    "selected_model": "6994.0367"
+  },
+  "notes": [
+    "iqtree random seed: 1",
+    "iqtree threads: 1",
+    "bootstrap tree set retained for downstream consensus construction",
+    "log-likelihood parsed from iqtree bootstrap inference artifacts",
+    "support values parsed from the bootstrap-supported tree artifact",
+    "branch-level support table exported for bootstrap review",
+    "low-support branch ledger exported for weak-clade review",
+    "support histogram exported for reviewer-facing support distribution checks"
+  ],
+  "output_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.contree": "797db2b8123ee10839b933418381eae826ccc5d43be6ec90563e9ffeb098f761",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.iqtree": "7ee3453a6aeaea126e8052f47b49471e0a219c15bc57197b5065d185b9a12025",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.log": "001ecedf40dbc00c8b42c0b79504f4d5c0b83eb85ca764fbb294d8a2f726fd6f",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.low-support.tsv": "dff90356080b1d8c0b1377c779c1e9d949696fbe2b7f90f6838827546b8af9cb",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.support-histogram.tsv": "03073e54d3a838fb3ba594829c04c6052fd277b7b02ba3efe323cb9101fea659",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.support.tsv": "6d95953bff456d775bf108a01d096685d827c71adac775ab6b735eef32394ed1",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.treefile": "d300f53f393a4d76a37360329d0db7f53c2acba834d822fdfe990b4615886638",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.ufboot": "7b071cefe08e43ea8c0cc7c37fb9de283fd5f3cc756358794c9e1c14b64c5a57"
+  },
+  "output_paths": {
+    "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.ufboot",
+    "consensus_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.contree",
+    "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.log",
+    "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.iqtree",
+    "low_support_branches": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.low-support.tsv",
+    "support_histogram": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.support-histogram.tsv",
+    "support_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.support.tsv",
+    "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.treefile"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/iqtree2",
+      "-s",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/trimming/trimming.trimmed.aln",
+      "-st",
+      "DNA",
+      "-seed",
+      "1",
+      "-nt",
+      "1",
+      "-m",
+      "TNe+G4",
+      "-bb",
+      "1000",
+      "-wbt",
+      "-pre",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support"
+    ],
+    "ended_at_utc": "2026-05-31T18:11:41Z",
+    "engine_name": "iqtree",
+    "executable": "/opt/homebrew/bin/iqtree2",
+    "exit_code": 0,
+    "output_paths": {
+      "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.ufboot",
+      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.log",
+      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.iqtree",
+      "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.treefile"
+    },
+    "runtime_seconds": 1.671211,
+    "started_at_utc": "2026-05-31T18:11:40Z",
+    "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.stderr.log",
+    "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.stdout.log",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/iqtree2",
+        "--version"
+      ],
+      "engine_name": "iqtree",
+      "executable": "/opt/homebrew/bin/iqtree2",
+      "text": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+    },
+    "warning_lines": [],
+    "workflow": "bootstrap-support",
+    "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support"
+  },
+  "selected_model": "TNe+G4",
+  "sh_alrt_support_summary": null,
+  "trimming_summary": null,
+  "weak_backbone_report": {
+    "evaluated_backbone_node_count": 4,
+    "threshold": 70.0,
+    "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.treefile",
+    "warnings": [
+      "one or more internal nodes did not expose numeric support labels",
+      "one or more internal clades remain weakly supported",
+      "major internal branches remain weakly supported along the backbone"
+    ],
+    "weak_backbone_node_count": 2,
+    "weak_nodes": [
+      {
+        "descendant_taxa": [
+          "Csa004271",
+          "Dre37936",
+          "Hsa167996",
+          "LcaH",
+          "Mmu024661",
+          "Tru14292",
+          "Xtr21234"
+        ],
+        "is_backbone": true,
+        "node": "Csa004271|Dre37936|Hsa167996|LcaH|Mmu024661|Tru14292|Xtr21234",
+        "support": 59.0,
+        "support_fraction": 0.59
+      },
+      {
+        "descendant_taxa": [
+          "Csa004271",
+          "Hsa167996",
+          "LcaH",
+          "Mmu024661"
+        ],
+        "is_backbone": true,
+        "node": "Csa004271|Hsa167996|LcaH|Mmu024661",
+        "support": 68.0,
+        "support_fraction": 0.68
+      }
+    ]
+  },
+  "workflow": "bootstrap-support"
+}

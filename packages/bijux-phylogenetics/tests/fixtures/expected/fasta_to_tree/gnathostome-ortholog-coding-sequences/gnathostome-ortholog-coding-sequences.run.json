@@ -1,8 +1,8 @@
 {
   "arguments": [
-    "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-coding-sequences.fasta",
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-coding-sequences.fasta",
     "--out-dir",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-coding-sequences",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences",
     "--prefix",
     "gnathostome-ortholog-coding-sequences",
     "--sequence-type",
@@ -26,35 +26,37 @@
   ],
   "command": "run_fasta_to_tree_workflow",
   "dependency_versions": {
-    "bijux-phylogenetics": "0.1.1.dev706+dirty",
+    "bijux-phylogenetics": "0.1.1.dev5202+dirty",
     "biopython": "1.87"
   },
-  "host_platform": "macOS-26.4.1-arm64-arm-64bit",
+  "host_platform": "macOS-26.5-arm64-arm-64bit-Mach-O",
   "input_checksums": {
-    "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-coding-sequences.fasta": "b65a265c9bf8fd9e3b7bd0e134e67c4d29fcf650d33248145a74cb0cd25817f1"
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-coding-sequences.fasta": "b65a265c9bf8fd9e3b7bd0e134e67c4d29fcf650d33248145a74cb0cd25817f1"
   },
   "input_paths": [
-    "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-coding-sequences.fasta"
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-coding-sequences.fasta"
   ],
   "output_checksums": {
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.aln": "da246e1bde1362cd7fbd9ed62cdac15a1f4acfb98247fc2c24111b6a7027224c",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.log": "d35191cfcd120d77bea09144df9eae6699076c4eea65a22d9cdaac99f13294bf",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.manifest.json": "3ff3d0f2eb6a0cf4737ee7435edac6dbd17bf185a4481b1282c08d9f4a8b5223",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.model.tsv": "e050e6ebfeb1639266083a8b04e32d1f2e24b9b9601a9002bb5fb3bb08caf907",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.support.tsv": "7f6ccb0bc586d53c065fe34658a84be7ef98993f00ad18d783acde68daa78659",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.tree": "d300f53f393a4d76a37360329d0db7f53c2acba834d822fdfe990b4615886638",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.trimmed.aln": "da246e1bde1362cd7fbd9ed62cdac15a1f4acfb98247fc2c24111b6a7027224c"
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.aln": "da246e1bde1362cd7fbd9ed62cdac15a1f4acfb98247fc2c24111b6a7027224c",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.log": "9a8c4c0d69460e0b6ea8f749c8fa709fd3b556e80c8fd5474ba506317b752797",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.manifest.json": "ea1fee96fdec4581948bf9f2ca881d6063d7548e39b08f251e8a84e31d83a199",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.methods-summary.md": "5adca459ec061138b8f1ab6bc7874f22d20681ef04711071117e9e0085f05b8e",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.model.tsv": "e050e6ebfeb1639266083a8b04e32d1f2e24b9b9601a9002bb5fb3bb08caf907",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.support.tsv": "7f6ccb0bc586d53c065fe34658a84be7ef98993f00ad18d783acde68daa78659",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.tree": "d300f53f393a4d76a37360329d0db7f53c2acba834d822fdfe990b4615886638",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.trimmed.aln": "da246e1bde1362cd7fbd9ed62cdac15a1f4acfb98247fc2c24111b6a7027224c"
   },
   "output_paths": [
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.aln",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.trimmed.aln",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.tree",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.log",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.model.tsv",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.support.tsv",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.manifest.json"
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.aln",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.trimmed.aln",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.tree",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.log",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.methods-summary.md",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.model.tsv",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.support.tsv",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/gnathostome-ortholog-coding-sequences.manifest.json"
   ],
-  "package_version": "0.1.1.dev706+dirty",
-  "python_version": "3.11.9",
-  "timestamp_utc": "2026-05-13T04:23:08.987618+00:00"
+  "package_version": "0.1.1.dev5202+dirty",
+  "python_version": "3.13.12",
+  "timestamp_utc": "2026-05-31T18:11:44.077278+00:00"
 }

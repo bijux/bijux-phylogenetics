@@ -1,0 +1,108 @@
+{
+  "bootstrap_support_summary": null,
+  "config": {
+    "model": "Q.insect+I",
+    "partition_path": null,
+    "seed": 1,
+    "sequence_type": "protein",
+    "threads": 1,
+    "timeout_seconds": null
+  },
+  "engine_name": "iqtree",
+  "fasttree_support_summary": null,
+  "input_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+  },
+  "input_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln"
+  ],
+  "iqtree_summary": {
+    "log_likelihood": -1704.768,
+    "maximum_support": null,
+    "minimum_support": null,
+    "selected_model": "Q.insect+I",
+    "support_value_count": 0,
+    "support_values": []
+  },
+  "log_likelihood": -1704.768,
+  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.manifest.json",
+  "model_selection_summary": {
+    "best_model_aic": "3441.5359",
+    "best_model_aicc": "3444.7740",
+    "best_model_bic": "3493.0616",
+    "best_score_aic": null,
+    "best_score_aicc": null,
+    "best_score_bic": null,
+    "bic_near_best_models": [],
+    "candidate_count": 0,
+    "candidates": [],
+    "selected_criterion": "BIC",
+    "selected_model": "3493.0616"
+  },
+  "notes": [
+    "iqtree random seed: 1",
+    "iqtree threads: 1",
+    "maximum-likelihood tree validated as parseable Newick output",
+    "log-likelihood parsed from iqtree inference artifacts"
+  ],
+  "output_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.iqtree": "87e6c1cdd0f577f6dc62800266057b60e20ceefeb462a64236cbd56e3786cf72",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.log": "2a44018fdaa89baa86afa96d3debb2d302f1cebf6a7803d8b61f11c139c7f68d",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.treefile": "ede290d996d8beb1d6d65817ec676b14aa38fc5d1cf04468737e5b7e8c9277e7"
+  },
+  "output_paths": {
+    "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.log",
+    "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.iqtree",
+    "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.treefile"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/iqtree2",
+      "-s",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln",
+      "-st",
+      "AA",
+      "-seed",
+      "1",
+      "-nt",
+      "1",
+      "-m",
+      "Q.insect+I",
+      "-pre",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood"
+    ],
+    "ended_at_utc": "2026-06-02T12:39:14Z",
+    "engine_name": "iqtree",
+    "executable": "/opt/homebrew/bin/iqtree2",
+    "exit_code": 0,
+    "output_paths": {
+      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.log",
+      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.iqtree",
+      "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.treefile"
+    },
+    "runtime_seconds": 1.917249,
+    "started_at_utc": "2026-06-02T12:39:12Z",
+    "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.stderr.log",
+    "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.stdout.log",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/iqtree2",
+        "--version"
+      ],
+      "engine_name": "iqtree",
+      "executable": "/opt/homebrew/bin/iqtree2",
+      "text": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+    },
+    "warning_lines": [],
+    "workflow": "maximum-likelihood-tree",
+    "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood"
+  },
+  "selected_model": "Q.insect+I",
+  "sh_alrt_support_summary": null,
+  "trimming_summary": null,
+  "weak_backbone_report": null,
+  "workflow": "maximum-likelihood-tree"
+}

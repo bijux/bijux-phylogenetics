@@ -1,0 +1,135 @@
+IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024
+Developed by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,
+Dominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong
+
+Host:    Mac (SSE4.2, 32 GB RAM)
+Command: /opt/homebrew/bin/iqtree2 -s /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/trimming/trimming.trimmed.aln -st DNA -seed 1 -nt 1 -m MF -pre /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/model-selection/model-selection
+Seed:    1 (Using SPRNG - Scalable Parallel Random Number Generator)
+Time:    Sun May 31 20:11:38 2026
+Kernel:  SSE2 - 1 threads (10 CPU cores detected)
+
+HINT: Use -nt option to specify number of threads because your CPU has 10 cores!
+HINT: -nt AUTO will automatically determine the best number of threads to use.
+
+Reading alignment file /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/trimming/trimming.trimmed.aln ... Fasta format detected
+Reading fasta file: done in 7.79629e-05 secs using 82.09% CPU
+Alignment most likely contains DNA/RNA sequences
+Alignment has 9 sequences with 558 columns, 310 distinct patterns
+205 parsimony-informative, 143 singleton sites, 210 constant sites
+           Gap/Ambiguity  Composition  p-value
+Analyzing sequences: done in 5.96046e-06 secs using 83.89% CPU
+   1  LcaM         4.84%    passed     42.07%
+   2  LcaH         4.30%    passed     74.10%
+   3  Dre37936     5.38%    passed     79.22%
+   4  Tru14292     4.84%    passed     65.70%
+   5  Ola20972     4.84%    passed     32.67%
+   6  Xtr21234     6.45%    passed     67.77%
+   7  Hsa167996    1.08%    passed     68.90%
+   8  Mmu024661    1.61%    passed     93.00%
+   9  Csa004271   23.12%    failed      0.67%
+****  TOTAL        6.27%  1 sequences failed composition chi2 test (p-value<5%; df=3)
+
+
+Create initial parsimony tree by phylogenetic likelihood library (PLL)... 0.000 seconds
+Perform fast likelihood tree search using GTR+I+G model...
+Estimate model parameters (epsilon = 5.000)
+Perform nearest neighbor interchange...
+Estimate model parameters (epsilon = 1.000)
+1. Initial log-likelihood: -3435.007
+Optimal log-likelihood: -3434.919
+Rate parameters:  A-C: 0.84536  A-G: 1.53078  A-T: 0.90190  C-G: 0.88345  C-T: 2.94537  G-T: 1.00000
+Base frequencies:  A: 0.276  C: 0.252  G: 0.261  T: 0.211
+Proportion of invariable sites: 0.170
+Gamma shape alpha: 1.903
+Parameters optimization took 1 rounds (0.002 sec)
+Time for fast ML tree search: 0.016 seconds
+
+NOTE: ModelFinder requires 0 MB RAM!
+ModelFinder will test up to 484 DNA models (sample size: 558 epsilon: 0.100) ...
+ No. Model         -LnL         df  AIC          AICc         BIC
+  1  GTR+F         3492.300     23  7030.601     7032.668     7130.061
+  2  GTR+F+I       3445.080     24  6938.159     6940.411     7041.944
+  3  GTR+F+G4      3434.470     24  6916.941     6919.192     7020.726
+  4  GTR+F+I+G4    3434.796     25  6919.592     6922.035     7027.701
+  5  GTR+F+R2      3436.387     25  6922.775     6925.218     7030.884
+  6  GTR+F+R3      3434.844     27  6923.688     6926.541     7040.446
+ 14  GTR+F+I+R2    3434.860     26  6921.721     6924.365     7034.154
+ 15  GTR+F+I+R3    3433.737     28  6923.475     6926.545     7044.557
+ 25  SYM+G4        3439.696     21  6921.391     6923.115     7012.203
+ 26  SYM+I+G4      3440.522     22  6925.043     6926.935     7020.179
+ 47  TVM+F+G4      3443.009     23  6932.019     6934.086     7031.479
+ 48  TVM+F+I+G4    3443.464     24  6934.929     6937.180     7038.713
+ 69  TVMe+G4       3443.119     20  6926.238     6927.802     7012.725
+ 70  TVMe+I+G4     3443.794     21  6929.587     6931.311     7020.399
+ 91  TIM3+F+G4     3434.596     22  6913.193     6915.084     7008.329
+ 92  TIM3+F+I+G4   3434.665     23  6915.329     6917.396     7014.789
+113  TIM3e+G4      3439.738     19  6917.475     6918.888     6999.638
+114  TIM3e+I+G4    3440.253     20  6920.505     6922.070     7006.993
+135  TIM2+F+G4     3434.524     22  6913.047     6914.939     7008.183
+136  TIM2+F+I+G4   3434.609     23  6915.217     6917.285     7014.678
+157  TIM2e+G4      3440.092     19  6918.185     6919.598     7000.348
+158  TIM2e+I+G4    3440.435     20  6920.870     6922.435     7007.357
+179  TIM+F+G4      3434.622     22  6913.243     6915.135     7008.379
+180  TIM+F+I+G4    3434.689     23  6915.378     6917.445     7014.838
+201  TIMe+G4       3440.085     19  6918.169     6919.582     7000.332
+202  TIMe+I+G4     3440.395     20  6920.791     6922.355     7007.278
+223  TPM3u+F+G4    3443.182     21  6928.365     6930.089     7019.177
+224  TPM3u+F+I+G4  3443.389     22  6930.778     6932.669     7025.914
+245  TPM3+G4       3443.166     18  6922.332     6923.601     7000.170
+246  TPM3+I+G4     3443.595     19  6925.191     6926.604     7007.354
+267  TPM2u+F+G4    3443.111     21  6928.223     6929.947     7019.035
+268  TPM2u+F+I+G4  3443.352     22  6930.704     6932.596     7025.840
+289  TPM2+G4       3443.422     18  6922.844     6924.113     7000.682
+290  TPM2+I+G4     3443.739     19  6925.477     6926.890     7007.640
+311  K3Pu+F+G4     3443.241     21  6928.482     6930.206     7019.293
+312  K3Pu+F+I+G4   3443.456     22  6930.912     6932.803     7026.047
+333  K3P+G4        3443.415     18  6922.831     6924.100     7000.669
+334  K3P+I+G4      3443.706     19  6925.413     6926.825     7007.575
+355  TN+F+G4       3434.632     21  6911.263     6912.987     7002.075
+356  TN+F+I+G4     3434.615     22  6913.231     6915.122     7008.366
+377  TNe+G4        3440.101     18  6916.203     6917.472     6994.041
+378  TNe+I+G4      3440.299     19  6918.598     6920.011     7000.761
+399  HKY+F+G4      3443.255     20  6926.509     6928.074     7012.997
+400  HKY+F+I+G4    3443.436     21  6928.873     6930.597     7019.684
+421  K2P+G4        3443.436     17  6920.873     6922.006     6994.387
+422  K2P+I+G4      3443.689     18  6923.378     6924.647     7001.216
+443  F81+F+G4      3479.809     19  6997.619     6999.031     7079.782
+444  F81+F+I+G4    3479.896     20  6999.792     7001.356     7086.279
+465  JC+G4         3480.035     16  6992.069     6993.075     7061.259
+466  JC+I+G4       3480.196     17  6994.392     6995.525     7067.906
+Akaike Information Criterion:           TN+F+G4
+Corrected Akaike Information Criterion: TN+F+G4
+Bayesian Information Criterion:         TNe+G4
+Best-fit model: TNe+G4 chosen according to BIC
+
+All model information printed to /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/model-selection/model-selection.model.gz
+CPU time for ModelFinder: 0.321 seconds (0h:0m:0s)
+Wall-clock time for ModelFinder: 0.349 seconds (0h:0m:0s)
+
+NOTE: 0 MB RAM (0 GB) is required!
+Estimate model parameters (epsilon = 0.010)
+1. Initial log-likelihood: -3480.053
+2. Current log-likelihood: -3440.701
+3. Current log-likelihood: -3440.118
+4. Current log-likelihood: -3440.100
+Optimal log-likelihood: -3440.099
+Rate parameters:  A-C: 1.00000  A-G: 1.91209  A-T: 1.00000  C-G: 1.00000  C-T: 2.85854  G-T: 1.00000
+Base frequencies:  A: 0.250  C: 0.250  G: 0.250  T: 0.250
+Gamma shape alpha: 0.937
+Parameters optimization took 4 rounds (0.009 sec)
+Wrote distance file to... 
+BEST SCORE FOUND : -3440.099
+Total tree length: 2.180
+
+Total number of iterations: 0
+CPU time used for tree search: 0.000 sec (0h:0m:0s)
+Wall-clock time used for tree search: 0.000 sec (0h:0m:0s)
+Total CPU time used: 0.337 sec (0h:0m:0s)
+Total wall-clock time used: 0.367 sec (0h:0m:0s)
+
+Analysis results written to: 
+  IQ-TREE report:                /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/model-selection/model-selection.iqtree
+  Tree used for ModelFinder:     /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/model-selection/model-selection.treefile
+  Screen log file:               /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/model-selection/model-selection.log
+
+Date and Time: Sun May 31 20:11:38 2026

@@ -1,0 +1,152 @@
+IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024
+Developed by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,
+Dominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong
+
+Host:    Mac (SSE4.2, 32 GB RAM)
+Command: /opt/homebrew/bin/iqtree2 -s /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln -st DNA -seed 1 -nt 1 -m MF -pre /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/model-selection/model-selection
+Seed:    1 (Using SPRNG - Scalable Parallel Random Number Generator)
+Time:    Sun May 31 20:29:31 2026
+Kernel:  SSE2 - 1 threads (10 CPU cores detected)
+
+HINT: Use -nt option to specify number of threads because your CPU has 10 cores!
+HINT: -nt AUTO will automatically determine the best number of threads to use.
+
+Reading alignment file /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln ... Fasta format detected
+Reading fasta file: done in 8.70228e-05 secs using 80.44% CPU
+Alignment most likely contains DNA/RNA sequences
+Alignment has 5 sequences with 1140 columns, 49 distinct patterns
+20 parsimony-informative, 45 singleton sites, 1075 constant sites
+                           Gap/Ambiguity  Composition  p-value
+Analyzing sequences: done in 3.09944e-06 secs using 96.79% CPU
+   1  brown_bear_modern            0.00%    passed     93.98%
+   2  polar_bear_modern            0.00%    passed     99.25%
+   3  black_bear_modern            0.00%    passed     98.46%
+   4  cave_bear_ud1838_fragment   45.96%    passed     90.14%
+   5  cave_bear_wk01_fragment     70.35%    passed     60.49%
+WARNING: 1 sequences contain more than 50% gaps/ambiguity
+****  TOTAL                       23.26%  0 sequences failed composition chi2 test (p-value<5%; df=3)
+
+
+Create initial parsimony tree by phylogenetic likelihood library (PLL)... 0.000 seconds
+Perform fast likelihood tree search using GTR+I+G model...
+Estimate model parameters (epsilon = 5.000)
+Perform nearest neighbor interchange...
+Estimate model parameters (epsilon = 1.000)
+1. Initial log-likelihood: -1869.970
+Optimal log-likelihood: -1869.968
+Rate parameters:  A-C: 3.81454  A-G: 94.87272  A-T: 0.00010  C-G: 4.70388  C-T: 90.04437  G-T: 1.00000
+Warning! Some parameters hit the boundaries
+Base frequencies:  A: 0.282  C: 0.294  G: 0.150  T: 0.274
+Proportion of invariable sites: 0.471
+Gamma shape alpha: 1.393
+Parameters optimization took 1 rounds (0.001 sec)
+Time for fast ML tree search: 0.003 seconds
+
+NOTE: ModelFinder requires 0 MB RAM!
+ModelFinder will test up to 484 DNA models (sample size: 1140 epsilon: 0.100) ...
+ No. Model         -LnL         df  AIC          AICc         BIC
+  1  GTR+F         1871.314     15  3772.628     3773.056     3848.210
+  2  GTR+F+I       1870.034     16  3772.069     3772.553     3852.689
+  3  GTR+F+G4      1869.985     16  3771.971     3772.455     3852.591
+  4  GTR+F+I+G4    1869.966     17  3773.932     3774.478     3859.591
+  5  GTR+F+R2      1870.252     17  3774.504     3775.050     3860.164
++R3 reinitialized from +R2 with factor 0.500
+  6  GTR+F+R3      1870.281     19  3778.561     3779.240     3874.298
+ 14  GTR+F+I+R2    1870.114     18  3776.228     3776.839     3866.926
+ 15  GTR+F+I+R3    1869.967     20  3779.935     3780.685     3880.710
+ 23  SYM           1911.947     12  3847.894     3848.171     3908.359
+ 24  SYM+I         1910.590     13  3847.179     3847.503     3912.684
+ 25  SYM+G4        1910.545     13  3847.091     3847.414     3912.595
+ 45  TVM+F         1871.260     14  3770.521     3770.894     3841.064
+ 46  TVM+F+I       1869.958     15  3769.915     3770.342     3845.497
+ 47  TVM+F+G4      1869.869     15  3769.738     3770.165     3845.320
+ 67  TVMe          1912.477     11  3846.955     3847.189     3902.381
+ 68  TVMe+I        1911.107     12  3846.215     3846.492     3906.680
+ 69  TVMe+G4       1911.055     12  3846.109     3846.386     3906.575
+ 89  TIM3+F        1871.715     13  3769.430     3769.753     3834.934
+ 90  TIM3+F+I      1870.482     14  3768.964     3769.337     3839.506
+ 91  TIM3+F+G4     1870.437     14  3768.874     3769.247     3839.417
+111  TIM3e         1912.403     10  3844.805     3845.000     3895.193
+112  TIM3e+I       1911.050     11  3844.099     3844.333     3899.526
+113  TIM3e+G4      1911.002     11  3844.005     3844.239     3899.431
+133  TIM2+F        1872.042     13  3770.083     3770.406     3835.587
+134  TIM2+F+I      1870.878     14  3769.757     3770.130     3840.300
+135  TIM2+F+G4     1870.861     14  3769.722     3770.095     3840.265
+155  TIM2e         1912.912     10  3845.824     3846.019     3896.212
+156  TIM2e+I       1911.646     11  3845.293     3845.527     3900.719
+157  TIM2e+G4      1911.619     11  3845.238     3845.472     3900.664
+177  TIM+F         1871.728     13  3769.456     3769.780     3834.961
+178  TIM+F+I       1870.580     14  3769.160     3769.533     3839.703
+179  TIM+F+G4      1870.550     14  3769.099     3769.473     3839.642
+199  TIMe          1912.433     10  3844.867     3845.062     3895.254
+200  TIMe+I        1911.178     11  3844.356     3844.590     3899.782
+201  TIMe+G4       1911.145     11  3844.289     3844.523     3899.716
+221  TPM3u+F       1871.746     12  3767.492     3767.769     3827.957
+222  TPM3u+F+I     1870.493     13  3766.987     3767.310     3832.491
+223  TPM3u+F+G4    1870.415     13  3766.830     3767.153     3832.334
+243  TPM3          1913.110     9   3844.220     3844.379     3889.569
+244  TPM3+I        1911.634     10  3843.268     3843.463     3893.656
+245  TPM3+G4       1911.587     10  3843.174     3843.369     3893.562
+265  TPM2u+F       1872.075     12  3768.149     3768.426     3828.614
+266  TPM2u+F+I     1870.895     13  3767.790     3768.113     3833.294
+267  TPM2u+F+G4    1870.877     13  3767.755     3768.078     3833.259
+287  TPM2          1913.581     9   3845.161     3845.320     3890.510
+288  TPM2+I        1912.240     10  3844.479     3844.674     3894.867
+289  TPM2+G4       1912.218     10  3844.436     3844.631     3894.824
+309  K3Pu+F        1871.764     12  3767.529     3767.806     3827.994
+310  K3Pu+F+I      1870.596     13  3767.192     3767.515     3832.696
+311  K3Pu+F+G4     1870.566     13  3767.131     3767.454     3832.635
+331  K3P           1913.100     9   3844.201     3844.360     3889.550
+332  K3P+I         1911.783     10  3843.567     3843.762     3893.955
+333  K3P+G4        1911.757     10  3843.514     3843.709     3893.902
+353  TN+F          1872.226     12  3768.451     3768.728     3828.917
+354  TN+F+I        1871.031     13  3768.062     3768.385     3833.566
+355  TN+F+G4       1871.004     13  3768.008     3768.332     3833.512
+375  TNe           1912.932     9   3843.865     3844.024     3889.214
+376  TNe+I         1911.649     10  3843.299     3843.493     3893.686
+377  TNe+G4        1911.620     10  3843.240     3843.435     3893.628
+397  HKY+F         1872.246     11  3766.492     3766.726     3821.918
+398  HKY+F+I       1871.048     12  3766.097     3766.373     3826.562
+399  HKY+F+G4      1871.021     12  3766.041     3766.318     3826.506
+419  K2P           1913.596     8   3843.191     3843.319     3883.502
+420  K2P+I         1912.241     9   3842.482     3842.642     3887.832
+421  K2P+G4        1912.218     9   3842.436     3842.596     3887.785
+441  F81+F         1929.047     10  3878.093     3878.288     3928.481
+442  F81+F+I       1928.105     11  3878.211     3878.445     3933.637
+443  F81+F+G4      1928.112     11  3878.224     3878.458     3933.651
+463  JC            1970.533     7   3955.066     3955.165     3990.337
+464  JC+I          1969.539     8   3955.078     3955.205     3995.388
+465  JC+G4         1969.545     8   3955.090     3955.217     3995.400
+Akaike Information Criterion:           HKY+F+G4
+Corrected Akaike Information Criterion: HKY+F+G4
+Bayesian Information Criterion:         HKY+F
+Best-fit model: HKY+F chosen according to BIC
+
+All model information printed to /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/model-selection/model-selection.model.gz
+CPU time for ModelFinder: 0.041 seconds (0h:0m:0s)
+Wall-clock time for ModelFinder: 0.045 seconds (0h:0m:0s)
+
+NOTE: 0 MB RAM (0 GB) is required!
+Estimate model parameters (epsilon = 0.010)
+1. Initial log-likelihood: -1929.110
+2. Current log-likelihood: -1872.252
+Optimal log-likelihood: -1872.246
+Rate parameters:  A-C: 1.00000  A-G: 33.87988  A-T: 1.00000  C-G: 1.00000  C-T: 33.87988  G-T: 1.00000
+Base frequencies:  A: 0.282  C: 0.294  G: 0.150  T: 0.274
+Parameters optimization took 2 rounds (0.000 sec)
+Wrote distance file to... 
+BEST SCORE FOUND : -1872.246
+Total tree length: 0.087
+
+Total number of iterations: 0
+CPU time used for tree search: 0.000 sec (0h:0m:0s)
+Wall-clock time used for tree search: 0.000 sec (0h:0m:0s)
+Total CPU time used: 0.045 sec (0h:0m:0s)
+Total wall-clock time used: 0.050 sec (0h:0m:0s)
+
+Analysis results written to: 
+  IQ-TREE report:                /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/model-selection/model-selection.iqtree
+  Tree used for ModelFinder:     /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/model-selection/model-selection.treefile
+  Screen log file:               /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/model-selection/model-selection.log
+
+Date and Time: Sun May 31 20:29:32 2026

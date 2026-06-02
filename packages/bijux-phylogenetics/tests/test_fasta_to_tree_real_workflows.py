@@ -32,6 +32,7 @@ USER_FACING_SUFFIXES = (
     ".trimmed.aln",
     ".tree",
     ".log",
+    ".methods-summary.md",
     ".model.tsv",
     ".support.tsv",
     ".manifest.json",

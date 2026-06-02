@@ -1,0 +1,68 @@
+{
+  "bootstrap_support_summary": null,
+  "config": {
+    "extra_args": [],
+    "mode": "auto",
+    "timeout_seconds": null
+  },
+  "engine_name": "mafft",
+  "fasttree_support_summary": null,
+  "input_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-coding-sequences.fasta": "b65a265c9bf8fd9e3b7bd0e134e67c4d29fcf650d33248145a74cb0cd25817f1"
+  },
+  "input_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-coding-sequences.fasta"
+  ],
+  "iqtree_summary": null,
+  "log_likelihood": null,
+  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/alignment/alignment.aln.manifest.json",
+  "model_selection_summary": null,
+  "notes": [
+    "mafft alignment mode: auto",
+    "alignment output validated as deterministic equal-length FASTA"
+  ],
+  "output_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/alignment/alignment.aln": "da246e1bde1362cd7fbd9ed62cdac15a1f4acfb98247fc2c24111b6a7027224c"
+  },
+  "output_paths": {
+    "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/alignment/alignment.aln"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/mafft",
+      "--auto",
+      "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-coding-sequences.fasta"
+    ],
+    "ended_at_utc": "2026-05-31T18:11:38Z",
+    "engine_name": "mafft",
+    "executable": "/opt/homebrew/bin/mafft",
+    "exit_code": 0,
+    "output_paths": {
+      "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/alignment/alignment.aln"
+    },
+    "runtime_seconds": 0.929386,
+    "started_at_utc": "2026-05-31T18:11:37Z",
+    "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/alignment/alignment.aln.stderr.log",
+    "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/alignment/alignment.aln",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/mafft",
+        "--version"
+      ],
+      "engine_name": "mafft",
+      "executable": "/opt/homebrew/bin/mafft",
+      "text": "v7.526 (2024/Apr/26)"
+    },
+    "warning_lines": [],
+    "workflow": "multiple-sequence-alignment",
+    "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/alignment"
+  },
+  "selected_model": null,
+  "sh_alrt_support_summary": null,
+  "trimming_summary": null,
+  "weak_backbone_report": null,
+  "workflow": "multiple-sequence-alignment"
+}

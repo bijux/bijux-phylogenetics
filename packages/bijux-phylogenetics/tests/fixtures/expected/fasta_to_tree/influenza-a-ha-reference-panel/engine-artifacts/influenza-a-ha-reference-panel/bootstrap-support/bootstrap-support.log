@@ -1,0 +1,135 @@
+IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024
+Developed by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,
+Dominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong
+
+Host:    Mac (SSE4.2, 32 GB RAM)
+Command: /opt/homebrew/bin/iqtree2 -s /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln -st DNA -seed 1 -nt 1 -m TPM3u+F+R2 -bb 1000 -wbt -pre /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support
+Seed:    1 (Using SPRNG - Scalable Parallel Random Number Generator)
+Time:    Sun May 31 20:29:34 2026
+Kernel:  SSE2 - 1 threads (10 CPU cores detected)
+
+HINT: Use -nt option to specify number of threads because your CPU has 10 cores!
+HINT: -nt AUTO will automatically determine the best number of threads to use.
+
+Reading alignment file /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln ... Fasta format detected
+Reading fasta file: done in 0.000140905 secs using 84.45% CPU
+Alignment most likely contains DNA/RNA sequences
+Alignment has 6 sequences with 1820 columns, 574 distinct patterns
+575 parsimony-informative, 602 singleton sites, 643 constant sites
+                                     Gap/Ambiguity  Composition  p-value
+Analyzing sequences: done in 8.10623e-06 secs using 74.02% CPU
+   1  influenza_a_h1n1_puerto_rico_1934      2.31%    passed     97.08%
+   2  influenza_a_h1n1_texas_1991            4.67%    passed     99.68%
+   3  influenza_a_h1n1_wisconsin_2009        4.73%    passed     90.16%
+   4  influenza_a_h3n2_new_york_2004         3.19%    passed     54.48%
+   5  influenza_a_h2n2_korea_1968            2.58%    passed     87.80%
+   6  influenza_a_h5n1_chicken_jilin_2004    2.25%    passed     99.80%
+****  TOTAL                                  3.29%  0 sequences failed composition chi2 test (p-value<5%; df=3)
+
+Create initial parsimony tree by phylogenetic likelihood library (PLL)... 0.000 seconds
+Generating 1000 samples for ultrafast bootstrap (seed: 1)...
+
+NOTE: 2 MB RAM (0 GB) is required!
+Estimate model parameters (epsilon = 0.100)
+1. Initial log-likelihood: -9669.723
+2. Current log-likelihood: -9402.333
+3. Current log-likelihood: -9387.383
+4. Current log-likelihood: -9383.212
+5. Current log-likelihood: -9381.121
+6. Current log-likelihood: -9380.089
+7. Current log-likelihood: -9379.593
+8. Current log-likelihood: -9379.388
+Optimal log-likelihood: -9379.264
+Rate parameters:  A-C: 1.74783  A-G: 5.37105  A-T: 1.00000  C-G: 1.74783  C-T: 5.37105  G-T: 1.00000
+Base frequencies:  A: 0.348  C: 0.188  G: 0.226  T: 0.238
+Site proportion and rates:  (0.544,0.176) (0.456,1.984)
+Parameters optimization took 8 rounds (0.018 sec)
+Wrote distance file to... 
+Computing ML distances based on estimated model parameters...
+Calculating distance matrix: done in 7.60555e-05 secs using 95.98% CPU
+Computing ML distances took 0.000122 sec (of wall-clock time) 0.000101 sec (of CPU time)
+Setting up auxiliary I and S matrices: done in 1.3113e-05 secs using 83.89% CPU
+Computing RapidNJ tree took 0.000078 sec (of wall-clock time) 0.000039 sec (of CPU time)
+Log-likelihood of RapidNJ tree: -9379.263
+--------------------------------------------------------------------
+|             INITIALIZING CANDIDATE TREE SET                      |
+--------------------------------------------------------------------
+Generating 99 parsimony trees... 0.022 second
+Computing log-likelihood of 6 initial trees ... 0.002 seconds
+Current best score: -9379.263
+
+Do NNI search on 7 best initial trees
+Finish initializing candidate tree set (7)
+Current best tree score: -9379.263 / CPU time: 0.052
+Number of iterations: 7
+--------------------------------------------------------------------
+|               OPTIMIZING CANDIDATE TREE SET                      |
+--------------------------------------------------------------------
+Iteration 10 / LogL: -9380.463 / Time: 0h:0m:0s
+Iteration 20 / LogL: -9380.399 / Time: 0h:0m:0s
+UPDATE BEST LOG-LIKELIHOOD: -9379.262
+Iteration 30 / LogL: -9381.213 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 40 / LogL: -9382.262 / Time: 0h:0m:0s (0h:0m:0s left)
+UPDATE BEST LOG-LIKELIHOOD: -9379.262
+UPDATE BEST LOG-LIKELIHOOD: -9379.262
+Iteration 50 / LogL: -9381.033 / Time: 0h:0m:0s (0h:0m:0s left)
+Log-likelihood cutoff on original alignment: -9401.774
+UFBoot trees printed to /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.ufboot
+UPDATE BEST LOG-LIKELIHOOD: -9379.262
+Iteration 60 / LogL: -9381.034 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 70 / LogL: -9381.737 / Time: 0h:0m:0s (0h:0m:0s left)
+UPDATE BEST LOG-LIKELIHOOD: -9379.262
+Iteration 80 / LogL: -9381.078 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 90 / LogL: -9381.078 / Time: 0h:0m:0s (0h:0m:0s left)
+UPDATE BEST LOG-LIKELIHOOD: -9379.262
+Iteration 100 / LogL: -9381.000 / Time: 0h:0m:0s (0h:0m:0s left)
+Log-likelihood cutoff on original alignment: -9401.095
+NOTE: Bootstrap correlation coefficient of split occurrence frequencies: 1.000
+UFBoot trees printed to /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.ufboot
+TREE SEARCH COMPLETED AFTER 101 ITERATIONS / Time: 0h:0m:0s
+
+--------------------------------------------------------------------
+|                    FINALIZING TREE SEARCH                        |
+--------------------------------------------------------------------
+Performs final model parameters optimization
+Estimate model parameters (epsilon = 0.010)
+1. Initial log-likelihood: -9379.262
+2. Current log-likelihood: -9379.230
+3. Current log-likelihood: -9379.209
+4. Current log-likelihood: -9379.194
+Optimal log-likelihood: -9379.188
+Rate parameters:  A-C: 1.75951  A-G: 5.44378  A-T: 1.00000  C-G: 1.75951  C-T: 5.44378  G-T: 1.00000
+Base frequencies:  A: 0.348  C: 0.188  G: 0.226  T: 0.238
+Site proportion and rates:  (0.550,0.175) (0.450,2.008)
+Parameters optimization took 4 rounds (0.005 sec)
+BEST SCORE FOUND : -9379.188
+Creating bootstrap support values...
+Split supports printed to NEXUS file /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.splits.nex
+Total tree length: 3.285
+
+Total number of iterations: 101
+CPU time used for tree search: 0.539 sec (0h:0m:0s)
+Wall-clock time used for tree search: 0.553 sec (0h:0m:0s)
+Total CPU time used: 0.591 sec (0h:0m:0s)
+Total wall-clock time used: 0.607 sec (0h:0m:0s)
+UFBoot trees printed to /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.ufboot
+
+Computing bootstrap consensus tree...
+Reading input file /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.splits.nex...
+6 taxa and 17 splits.
+Consensus tree written to /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.contree
+Reading input trees file /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.contree
+Log-likelihood of consensus tree: -9379.188
+
+Analysis results written to: 
+  IQ-TREE report:                /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.iqtree
+  Maximum-likelihood tree:       /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.treefile
+  Likelihood distances:          /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.mldist
+
+Ultrafast bootstrap approximation results written to:
+  Split support values:          /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.splits.nex
+  Consensus tree:                /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.contree
+  UFBoot trees:                  /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.ufboot
+  Screen log file:               /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.log
+
+Date and Time: Sun May 31 20:29:34 2026

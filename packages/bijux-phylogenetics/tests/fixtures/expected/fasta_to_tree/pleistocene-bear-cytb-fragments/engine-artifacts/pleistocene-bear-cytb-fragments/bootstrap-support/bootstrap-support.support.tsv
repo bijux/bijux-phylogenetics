@@ -1,0 +1,3 @@
+node	descendant_taxa	support	support_fraction	is_backbone	support_bucket	low_support
+black_bear_modern|cave_bear_ud1838_fragment|cave_bear_wk01_fragment	black_bear_modern,cave_bear_ud1838_fragment,cave_bear_wk01_fragment	80	0.8	true	70to89	false
+cave_bear_ud1838_fragment|cave_bear_wk01_fragment	cave_bear_ud1838_fragment,cave_bear_wk01_fragment	100	1	true	ge90	false

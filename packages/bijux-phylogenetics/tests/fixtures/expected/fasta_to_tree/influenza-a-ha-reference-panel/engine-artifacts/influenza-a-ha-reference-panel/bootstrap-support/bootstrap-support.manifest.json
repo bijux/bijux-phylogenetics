@@ -1,0 +1,222 @@
+{
+  "bootstrap_support_summary": {
+    "internal_node_count": 4,
+    "maximum_support": 99.0,
+    "median_support": 99.0,
+    "minimum_support": 98.0,
+    "nodes": [
+      {
+        "descendant_taxa": [
+          "influenza_a_h1n1_wisconsin_2009",
+          "influenza_a_h2n2_korea_1968",
+          "influenza_a_h3n2_new_york_2004",
+          "influenza_a_h5n1_chicken_jilin_2004"
+        ],
+        "is_backbone": true,
+        "node": "influenza_a_h1n1_wisconsin_2009|influenza_a_h2n2_korea_1968|influenza_a_h3n2_new_york_2004|influenza_a_h5n1_chicken_jilin_2004",
+        "support": 99.0,
+        "support_fraction": 0.99
+      },
+      {
+        "descendant_taxa": [
+          "influenza_a_h2n2_korea_1968",
+          "influenza_a_h3n2_new_york_2004",
+          "influenza_a_h5n1_chicken_jilin_2004"
+        ],
+        "is_backbone": true,
+        "node": "influenza_a_h2n2_korea_1968|influenza_a_h3n2_new_york_2004|influenza_a_h5n1_chicken_jilin_2004",
+        "support": 98.0,
+        "support_fraction": 0.98
+      },
+      {
+        "descendant_taxa": [
+          "influenza_a_h2n2_korea_1968",
+          "influenza_a_h5n1_chicken_jilin_2004"
+        ],
+        "is_backbone": false,
+        "node": "influenza_a_h2n2_korea_1968|influenza_a_h5n1_chicken_jilin_2004",
+        "support": 99.0,
+        "support_fraction": 0.99
+      }
+    ],
+    "support_histogram": {
+      "50to69": 0,
+      "70to89": 0,
+      "ge90": 3,
+      "lt50": 0
+    },
+    "supported_node_count": 3,
+    "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.treefile",
+    "warnings": [
+      "one or more internal nodes did not expose numeric support labels"
+    ],
+    "weakly_supported_clade_count": 0
+  },
+  "config": {
+    "model": "TPM3u+F+R2",
+    "partition_path": null,
+    "replicates": 1000,
+    "seed": 1,
+    "sequence_type": "dna",
+    "threads": 1,
+    "timeout_seconds": null
+  },
+  "engine_name": "iqtree",
+  "fasttree_support_summary": null,
+  "input_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
+  },
+  "input_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln"
+  ],
+  "iqtree_summary": {
+    "log_likelihood": -9379.188,
+    "maximum_support": 99.0,
+    "minimum_support": 98.0,
+    "selected_model": "TPM3u+F+R2",
+    "support_value_count": 3,
+    "support_values": [
+      {
+        "descendant_taxa": [
+          "influenza_a_h1n1_wisconsin_2009",
+          "influenza_a_h2n2_korea_1968",
+          "influenza_a_h3n2_new_york_2004",
+          "influenza_a_h5n1_chicken_jilin_2004"
+        ],
+        "is_backbone": true,
+        "node": "influenza_a_h1n1_wisconsin_2009|influenza_a_h2n2_korea_1968|influenza_a_h3n2_new_york_2004|influenza_a_h5n1_chicken_jilin_2004",
+        "support": 99.0,
+        "support_fraction": 0.99
+      },
+      {
+        "descendant_taxa": [
+          "influenza_a_h2n2_korea_1968",
+          "influenza_a_h3n2_new_york_2004",
+          "influenza_a_h5n1_chicken_jilin_2004"
+        ],
+        "is_backbone": true,
+        "node": "influenza_a_h2n2_korea_1968|influenza_a_h3n2_new_york_2004|influenza_a_h5n1_chicken_jilin_2004",
+        "support": 98.0,
+        "support_fraction": 0.98
+      },
+      {
+        "descendant_taxa": [
+          "influenza_a_h2n2_korea_1968",
+          "influenza_a_h5n1_chicken_jilin_2004"
+        ],
+        "is_backbone": false,
+        "node": "influenza_a_h2n2_korea_1968|influenza_a_h5n1_chicken_jilin_2004",
+        "support": 99.0,
+        "support_fraction": 0.99
+      }
+    ]
+  },
+  "log_likelihood": -9379.188,
+  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.manifest.json",
+  "model_selection_summary": {
+    "best_model_aic": "18790.3760",
+    "best_model_aicc": "18790.6777",
+    "best_model_bic": "18878.4815",
+    "best_score_aic": null,
+    "best_score_aicc": null,
+    "best_score_bic": null,
+    "bic_near_best_models": [],
+    "candidate_count": 0,
+    "candidates": [],
+    "selected_criterion": "BIC",
+    "selected_model": "18878.4815"
+  },
+  "notes": [
+    "iqtree random seed: 1",
+    "iqtree threads: 1",
+    "bootstrap tree set retained for downstream consensus construction",
+    "log-likelihood parsed from iqtree bootstrap inference artifacts",
+    "support values parsed from the bootstrap-supported tree artifact",
+    "branch-level support table exported for bootstrap review",
+    "low-support branch ledger exported for weak-clade review",
+    "support histogram exported for reviewer-facing support distribution checks"
+  ],
+  "output_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.contree": "4fbd890aa058eb1862cdb2d66d5895039915d8622cc37645dd442c9d7afb65ad",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.iqtree": "58f67d47894c9455f3b6b136572d1e31ba48ed66d0a558dc1871dda3cd94f930",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.log": "a06b22e54ad98019d1ccf54caa356c4a4d22520f62bdc25390960a5d87680059",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.low-support.tsv": "3c9d1d00f9023dbb6e5f8931d91ae26afc322f0fa54385f41b12290c8b814bb7",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.support-histogram.tsv": "eb933cb37e721c8409c4dda1409de1ddae8eba623cd1927eb9efb5054c29121c",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.support.tsv": "fbe780d1a58463beca85fc241251607c54ce28a24c863cf1b5c524caf576341f",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.treefile": "a481df161f4bdbe061f4584e5e1640a031da8dbf23c6cd5c0ee088d2a11f92f7",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.ufboot": "3ecf0217475d796cc3653bfe1e17313cdd977a8f6d352a09332f425208ee5f88"
+  },
+  "output_paths": {
+    "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.ufboot",
+    "consensus_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.contree",
+    "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.log",
+    "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.iqtree",
+    "low_support_branches": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.low-support.tsv",
+    "support_histogram": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.support-histogram.tsv",
+    "support_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.support.tsv",
+    "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.treefile"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/iqtree2",
+      "-s",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln",
+      "-st",
+      "DNA",
+      "-seed",
+      "1",
+      "-nt",
+      "1",
+      "-m",
+      "TPM3u+F+R2",
+      "-bb",
+      "1000",
+      "-wbt",
+      "-pre",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support"
+    ],
+    "ended_at_utc": "2026-05-31T18:29:34Z",
+    "engine_name": "iqtree",
+    "executable": "/opt/homebrew/bin/iqtree2",
+    "exit_code": 0,
+    "output_paths": {
+      "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.ufboot",
+      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.log",
+      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.iqtree",
+      "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.treefile"
+    },
+    "runtime_seconds": 0.629442,
+    "started_at_utc": "2026-05-31T18:29:34Z",
+    "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.stderr.log",
+    "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.stdout.log",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/iqtree2",
+        "--version"
+      ],
+      "engine_name": "iqtree",
+      "executable": "/opt/homebrew/bin/iqtree2",
+      "text": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+    },
+    "warning_lines": [],
+    "workflow": "bootstrap-support",
+    "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support"
+  },
+  "selected_model": "TPM3u+F+R2",
+  "sh_alrt_support_summary": null,
+  "trimming_summary": null,
+  "weak_backbone_report": {
+    "evaluated_backbone_node_count": 2,
+    "threshold": 70.0,
+    "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.treefile",
+    "warnings": [
+      "one or more internal nodes did not expose numeric support labels"
+    ],
+    "weak_backbone_node_count": 0,
+    "weak_nodes": []
+  },
+  "workflow": "bootstrap-support"
+}

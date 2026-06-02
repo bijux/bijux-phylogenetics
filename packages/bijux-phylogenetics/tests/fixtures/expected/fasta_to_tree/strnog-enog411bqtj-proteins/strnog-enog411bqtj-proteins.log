@@ -1,11 +1,11 @@
 workflow: fasta-to-tree
-input_path: packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/strnog-enog411bqtj-proteins.fasta
-prepared_input_path: packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/strnog-enog411bqtj-proteins.fasta
+input_path: /Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/strnog-enog411bqtj-proteins.fasta
+prepared_input_path: /Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/strnog-enog411bqtj-proteins.fasta
 sequence_type: protein
 selected_model: JTTDCMut+G4
-started_at_utc: 2026-05-13T04:23:08Z
-ended_at_utc: 2026-05-13T04:26:25Z
-runtime_seconds: 196.845
+started_at_utc: 2026-06-02T12:35:12Z
+ended_at_utc: 2026-06-02T12:38:40Z
+runtime_seconds: 207.379
 run_manifest_path: strnog-enog411bqtj-proteins.run.json
 
 [input-validation]
@@ -15,7 +15,7 @@ warnings:
 
 [alignment]
 engine: mafft
-command: /opt/homebrew/bin/mafft --auto packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/strnog-enog411bqtj-proteins.fasta
+command: /opt/homebrew/bin/mafft --auto /Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/strnog-enog411bqtj-proteins.fasta
 version: v7.526 (2024/Apr/26)
 manifest: engine-artifacts/strnog-enog411bqtj-proteins/alignment/alignment.aln.manifest.json
 output.alignment: engine-artifacts/strnog-enog411bqtj-proteins/alignment/alignment.aln
@@ -26,6 +26,7 @@ command: /opt/homebrew/bin/trimal -in engine-artifacts/strnog-enog411bqtj-protei
 version: trimAl v1.5.rev0 build[2024-05-27]
 manifest: engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln.manifest.json
 output.trimmed_alignment: engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln
+output.trimming_summary: engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln.retained-sites.tsv
 
 [model_selection]
 engine: iqtree
@@ -64,13 +65,12 @@ output.iqtree_report: engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-sup
 output.iqtree_log: engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.log
 output.bootstrap_trees: engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.ufboot
 output.consensus_tree: engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.contree
-output.support_tree: engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.treefile
+output.support_tree: engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.contree
 output.support_table: engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.support.tsv
 output.low_support_branches: engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.low-support.tsv
 output.support_histogram: engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.support-histogram.tsv
 
 [support-summary]
-- one or more internal nodes did not expose numeric support labels
 - one or more internal clades remain weakly supported
 
 [notes]

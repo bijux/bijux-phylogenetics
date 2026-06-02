@@ -1,0 +1,68 @@
+{
+  "bootstrap_support_summary": null,
+  "config": {
+    "extra_args": [],
+    "mode": "auto",
+    "timeout_seconds": null
+  },
+  "engine_name": "mafft",
+  "fasttree_support_summary": null,
+  "input_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta": "abe2add0c7bd169127c31b8a459790f2215ff269f81f2327170d491086454843"
+  },
+  "input_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta"
+  ],
+  "iqtree_summary": null,
+  "log_likelihood": null,
+  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln.manifest.json",
+  "model_selection_summary": null,
+  "notes": [
+    "mafft alignment mode: auto",
+    "alignment output validated as deterministic equal-length FASTA"
+  ],
+  "output_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+  },
+  "output_paths": {
+    "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/mafft",
+      "--auto",
+      "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta"
+    ],
+    "ended_at_utc": "2026-06-02T12:27:55Z",
+    "engine_name": "mafft",
+    "executable": "/opt/homebrew/bin/mafft",
+    "exit_code": 0,
+    "output_paths": {
+      "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln"
+    },
+    "runtime_seconds": 0.174878,
+    "started_at_utc": "2026-06-02T12:27:55Z",
+    "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln.stderr.log",
+    "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/mafft",
+        "--version"
+      ],
+      "engine_name": "mafft",
+      "executable": "/opt/homebrew/bin/mafft",
+      "text": "v7.526 (2024/Apr/26)"
+    },
+    "warning_lines": [],
+    "workflow": "multiple-sequence-alignment",
+    "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment"
+  },
+  "selected_model": null,
+  "sh_alrt_support_summary": null,
+  "trimming_summary": null,
+  "weak_backbone_report": null,
+  "workflow": "multiple-sequence-alignment"
+}

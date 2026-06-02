@@ -1,0 +1,89 @@
+{
+  "bootstrap_support_summary": null,
+  "config": {
+    "gap_threshold": 0.1,
+    "mode": "gap-threshold",
+    "timeout_seconds": null
+  },
+  "engine_name": "trimal",
+  "fasttree_support_summary": null,
+  "input_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/alignment/alignment.aln": "da246e1bde1362cd7fbd9ed62cdac15a1f4acfb98247fc2c24111b6a7027224c"
+  },
+  "input_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/alignment/alignment.aln"
+  ],
+  "iqtree_summary": null,
+  "log_likelihood": null,
+  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/trimming/trimming.trimmed.aln.manifest.json",
+  "model_selection_summary": null,
+  "notes": [
+    "trimal trimming mode: gap-threshold",
+    "retained sites: 558 of 558",
+    "gap percentage: 6.272 -> 6.272",
+    "trimmed alignment validated as nonempty equal-length FASTA"
+  ],
+  "output_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/trimming/trimming.trimmed.aln": "da246e1bde1362cd7fbd9ed62cdac15a1f4acfb98247fc2c24111b6a7027224c",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/trimming/trimming.trimmed.aln.retained-sites.tsv": "224762dffdbecea65208df72dd927fb16b2446128dcc8d4ee4394a961a052e53"
+  },
+  "output_paths": {
+    "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/trimming/trimming.trimmed.aln",
+    "trimming_summary": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/trimming/trimming.trimmed.aln.retained-sites.tsv"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/trimal",
+      "-in",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/alignment/alignment.aln",
+      "-out",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/trimming/trimming.trimmed.aln",
+      "-gt",
+      "0.100000"
+    ],
+    "ended_at_utc": "2026-05-31T18:11:38Z",
+    "engine_name": "trimal",
+    "executable": "/opt/homebrew/bin/trimal",
+    "exit_code": 0,
+    "output_paths": {
+      "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/trimming/trimming.trimmed.aln"
+    },
+    "runtime_seconds": 0.008098,
+    "started_at_utc": "2026-05-31T18:11:38Z",
+    "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/trimming/trimming.trimmed.aln.stderr.log",
+    "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/trimming/trimming.trimmed.aln.stdout.log",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/trimal",
+        "--version"
+      ],
+      "engine_name": "trimal",
+      "executable": "/opt/homebrew/bin/trimal",
+      "text": "trimAl v1.5.rev0 build[2024-05-27]"
+    },
+    "warning_lines": [],
+    "workflow": "alignment-trimming",
+    "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/trimming"
+  },
+  "selected_model": null,
+  "sh_alrt_support_summary": null,
+  "trimming_summary": {
+    "gap_threshold": 0.1,
+    "input_alignment_length": 558,
+    "input_gap_fraction": 0.06272401433691756,
+    "input_gap_percentage": 6.272401433691756,
+    "mode": "gap-threshold",
+    "removed_site_count": 0,
+    "removed_site_fraction": 0.0,
+    "retained_site_count": 558,
+    "retained_site_fraction": 1.0,
+    "trimmed_alignment_length": 558,
+    "trimmed_gap_fraction": 0.06272401433691756,
+    "trimmed_gap_percentage": 6.272401433691756
+  },
+  "weak_backbone_report": null,
+  "workflow": "alignment-trimming"
+}

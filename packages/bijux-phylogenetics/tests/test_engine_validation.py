@@ -448,12 +448,35 @@ def test_summarize_bootstrap_support_distribution_reports_range_median_and_histo
 
     report = summarize_bootstrap_support_distribution(tree_path)
 
-    assert report.supported_node_count == 3
+    assert report.internal_node_count == 2
+    assert report.supported_node_count == 2
     assert report.minimum_support == 68.0
     assert report.maximum_support == 95.0
-    assert report.median_support == 72.0
+    assert report.median_support == 81.5
     assert report.weakly_supported_clade_count == 1
-    assert report.support_histogram == {"lt50": 0, "50to69": 1, "70to89": 1, "ge90": 1}
+    assert report.support_histogram == {"lt50": 0, "50to69": 1, "70to89": 0, "ge90": 1}
+
+
+def test_summarize_bootstrap_support_distribution_treats_collapsed_unlabeled_branches_as_zero_support(
+    tmp_path: Path,
+) -> None:
+    tree_path = tmp_path / "collapsed-unlabeled.nwk"
+    tree_path.write_text(
+        "(((A:0.0,B:0.0):0.000001,C:0.1)78:0.2,D:0.1)90:0.3;\n",
+        encoding="utf-8",
+    )
+
+    report = summarize_bootstrap_support_distribution(tree_path)
+
+    assert report.internal_node_count == 2
+    assert report.supported_node_count == 2
+    assert report.minimum_support == 0.0
+    assert report.maximum_support == 78.0
+    assert report.median_support == 39.0
+    assert report.weakly_supported_clade_count == 1
+    assert report.support_histogram == {"lt50": 1, "50to69": 0, "70to89": 1, "ge90": 0}
+    assert any(node.descendant_taxa == ["A", "B"] and node.support == 0.0 for node in report.nodes)
+    assert "one or more internal nodes did not expose numeric support labels" not in report.warnings
 
 
 def test_detect_weakly_supported_backbone_flags_major_internal_branches(

@@ -1,0 +1,200 @@
+{
+  "bootstrap_support_summary": {
+    "internal_node_count": 3,
+    "maximum_support": 100.0,
+    "median_support": 90.0,
+    "minimum_support": 80.0,
+    "nodes": [
+      {
+        "descendant_taxa": [
+          "black_bear_modern",
+          "cave_bear_ud1838_fragment",
+          "cave_bear_wk01_fragment"
+        ],
+        "is_backbone": true,
+        "node": "black_bear_modern|cave_bear_ud1838_fragment|cave_bear_wk01_fragment",
+        "support": 80.0,
+        "support_fraction": 0.8
+      },
+      {
+        "descendant_taxa": [
+          "cave_bear_ud1838_fragment",
+          "cave_bear_wk01_fragment"
+        ],
+        "is_backbone": true,
+        "node": "cave_bear_ud1838_fragment|cave_bear_wk01_fragment",
+        "support": 100.0,
+        "support_fraction": 1.0
+      }
+    ],
+    "support_histogram": {
+      "50to69": 0,
+      "70to89": 1,
+      "ge90": 1,
+      "lt50": 0
+    },
+    "supported_node_count": 2,
+    "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.treefile",
+    "warnings": [
+      "one or more internal nodes did not expose numeric support labels"
+    ],
+    "weakly_supported_clade_count": 0
+  },
+  "config": {
+    "model": "HKY+F",
+    "partition_path": null,
+    "replicates": 1000,
+    "seed": 1,
+    "sequence_type": "dna",
+    "threads": 1,
+    "timeout_seconds": null
+  },
+  "engine_name": "iqtree",
+  "fasttree_support_summary": null,
+  "input_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln": "90374ceb63d11789868e1f349c3768670e36a510a4450349d2b743745a1aff00"
+  },
+  "input_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln"
+  ],
+  "iqtree_summary": {
+    "log_likelihood": -1872.2463,
+    "maximum_support": 100.0,
+    "minimum_support": 80.0,
+    "selected_model": "HKY+F",
+    "support_value_count": 2,
+    "support_values": [
+      {
+        "descendant_taxa": [
+          "black_bear_modern",
+          "cave_bear_ud1838_fragment",
+          "cave_bear_wk01_fragment"
+        ],
+        "is_backbone": true,
+        "node": "black_bear_modern|cave_bear_ud1838_fragment|cave_bear_wk01_fragment",
+        "support": 80.0,
+        "support_fraction": 0.8
+      },
+      {
+        "descendant_taxa": [
+          "cave_bear_ud1838_fragment",
+          "cave_bear_wk01_fragment"
+        ],
+        "is_backbone": true,
+        "node": "cave_bear_ud1838_fragment|cave_bear_wk01_fragment",
+        "support": 100.0,
+        "support_fraction": 1.0
+      }
+    ]
+  },
+  "log_likelihood": -1872.2463,
+  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.manifest.json",
+  "model_selection_summary": {
+    "best_model_aic": "3766.4925",
+    "best_model_aicc": "3766.7266",
+    "best_model_bic": "3821.9192",
+    "best_score_aic": null,
+    "best_score_aicc": null,
+    "best_score_bic": null,
+    "bic_near_best_models": [],
+    "candidate_count": 0,
+    "candidates": [],
+    "selected_criterion": "BIC",
+    "selected_model": "3821.9192"
+  },
+  "notes": [
+    "iqtree random seed: 1",
+    "iqtree threads: 1",
+    "bootstrap tree set retained for downstream consensus construction",
+    "log-likelihood parsed from iqtree bootstrap inference artifacts",
+    "support values parsed from the bootstrap-supported tree artifact",
+    "branch-level support table exported for bootstrap review",
+    "low-support branch ledger exported for weak-clade review",
+    "support histogram exported for reviewer-facing support distribution checks"
+  ],
+  "output_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.contree": "97633a9bd339bff2e63e3d3d9c67616c33b414bdd548151ee4bb8b4ca214417a",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.iqtree": "011ec12e3d13699cb053b7c7cbd2ed493ded8e8f0ae7fc6ce3b3eda761950cc4",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.log": "64d74ac14f36b3a29c3a09814f34bdcae0b82e4ca29e73db5025426c958f2bb6",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.low-support.tsv": "3c9d1d00f9023dbb6e5f8931d91ae26afc322f0fa54385f41b12290c8b814bb7",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.support-histogram.tsv": "cccfdfafdba68631d50a9ae64b7ddd46e75c9268fbe63458acc769f349c4ed67",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.support.tsv": "fc179d3ce589c90d4e9b158e13d984fb4d6c9f68aeec2ea90eb0f50c734810dd",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.treefile": "53c8648a66a7daba2f9e4ed4d3c0dc1354a8c78ab3dd9fa9e149ee624a72dae8",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.ufboot": "eddc89ca8ee2e4d56c7e3d0e9b0453451ac6b04704d58bd51af8c09fb11bc689"
+  },
+  "output_paths": {
+    "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.ufboot",
+    "consensus_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.contree",
+    "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.log",
+    "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.iqtree",
+    "low_support_branches": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.low-support.tsv",
+    "support_histogram": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.support-histogram.tsv",
+    "support_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.support.tsv",
+    "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.treefile"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/iqtree2",
+      "-s",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln",
+      "-st",
+      "DNA",
+      "-seed",
+      "1",
+      "-nt",
+      "1",
+      "-m",
+      "HKY+F",
+      "-bb",
+      "1000",
+      "-wbt",
+      "-pre",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support"
+    ],
+    "ended_at_utc": "2026-05-31T18:29:32Z",
+    "engine_name": "iqtree",
+    "executable": "/opt/homebrew/bin/iqtree2",
+    "exit_code": 0,
+    "output_paths": {
+      "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.ufboot",
+      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.log",
+      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.iqtree",
+      "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.treefile"
+    },
+    "runtime_seconds": 0.195869,
+    "started_at_utc": "2026-05-31T18:29:32Z",
+    "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.stderr.log",
+    "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.stdout.log",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/iqtree2",
+        "--version"
+      ],
+      "engine_name": "iqtree",
+      "executable": "/opt/homebrew/bin/iqtree2",
+      "text": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+    },
+    "warning_lines": [
+      "WARNING: 1 sequences contain more than 50% gaps/ambiguity"
+    ],
+    "workflow": "bootstrap-support",
+    "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support"
+  },
+  "selected_model": "HKY+F",
+  "sh_alrt_support_summary": null,
+  "trimming_summary": null,
+  "weak_backbone_report": {
+    "evaluated_backbone_node_count": 2,
+    "threshold": 70.0,
+    "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.treefile",
+    "warnings": [
+      "one or more internal nodes did not expose numeric support labels"
+    ],
+    "weak_backbone_node_count": 0,
+    "weak_nodes": []
+  },
+  "workflow": "bootstrap-support"
+}

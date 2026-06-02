@@ -1,0 +1,126 @@
+IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024
+Developed by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,
+Dominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong
+
+Host:    Mac (SSE4.2, 32 GB RAM)
+Command: /opt/homebrew/bin/iqtree2 -s /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln -st AA -seed 1 -nt 1 -m Q.insect+I -bb 1000 -wbt -pre /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support
+Seed:    1 (Using SPRNG - Scalable Parallel Random Number Generator)
+Time:    Tue Jun  2 14:39:14 2026
+Kernel:  SSE2 - 1 threads (10 CPU cores detected)
+
+HINT: Use -nt option to specify number of threads because your CPU has 10 cores!
+HINT: -nt AUTO will automatically determine the best number of threads to use.
+
+Reading alignment file /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln ... Fasta format detected
+Reading fasta file: done in 3.91006e-05 secs using 71.61% CPU
+Alignment most likely contains protein sequences
+Alignment has 9 sequences with 185 columns, 146 distinct patterns
+64 parsimony-informative, 51 singleton sites, 70 constant sites
+           Gap/Ambiguity  Composition  p-value
+Analyzing sequences: done in 4.05312e-06 secs using 98.69% CPU
+   1  Csa004271   23.24%    passed     44.50%
+   2  Xtr21234     6.49%    passed     99.97%
+   3  LcaH         4.32%    passed     98.78%
+   4  Hsa167996    1.08%    passed     99.99%
+   5  Mmu024661    1.62%    passed    100.00%
+   6  Dre37936     5.41%    passed     99.83%
+   7  LcaM         4.86%    passed    100.00%
+   8  Tru14292     4.86%    passed    100.00%
+   9  Ola20972     4.86%    passed    100.00%
+****  TOTAL        6.31%  0 sequences failed composition chi2 test (p-value<5%; df=19)
+
+Create initial parsimony tree by phylogenetic likelihood library (PLL)... 0.000 seconds
+Generating 1000 samples for ultrafast bootstrap (seed: 1)...
+
+NOTE: 0 MB RAM (0 GB) is required!
+Estimate model parameters (epsilon = 0.100)
+1. Initial log-likelihood: -1716.679
+2. Current log-likelihood: -1705.476
+3. Current log-likelihood: -1705.344
+Optimal log-likelihood: -1705.342
+Proportion of invariable sites: 0.264
+Parameters optimization took 3 rounds (0.019 sec)
+Wrote distance file to... 
+Computing ML distances based on estimated model parameters...
+Calculating distance matrix: done in 0.00446701 secs using 98.57% CPU
+Computing ML distances took 0.004508 sec (of wall-clock time) 0.004425 sec (of CPU time)
+Setting up auxiliary I and S matrices: done in 1.00136e-05 secs using 79.89% CPU
+Computing RapidNJ tree took 0.000047 sec (of wall-clock time) 0.000028 sec (of CPU time)
+Log-likelihood of RapidNJ tree: -1704.811
+--------------------------------------------------------------------
+|             INITIALIZING CANDIDATE TREE SET                      |
+--------------------------------------------------------------------
+Generating 98 parsimony trees... 0.017 second
+Computing log-likelihood of 79 initial trees ... 0.114 seconds
+Current best score: -1704.811
+
+Do NNI search on 20 best initial trees
+Estimate model parameters (epsilon = 0.100)
+BETTER TREE FOUND at iteration 1: -1704.811
+Estimate model parameters (epsilon = 0.100)
+UPDATE BEST LOG-LIKELIHOOD: -1704.768
+Iteration 10 / LogL: -1704.770 / Time: 0h:0m:0s
+Iteration 20 / LogL: -1704.921 / Time: 0h:0m:0s
+Finish initializing candidate tree set (3)
+Current best tree score: -1704.768 / CPU time: 0.435
+Number of iterations: 20
+--------------------------------------------------------------------
+|               OPTIMIZING CANDIDATE TREE SET                      |
+--------------------------------------------------------------------
+Iteration 30 / LogL: -1704.979 / Time: 0h:0m:0s (0h:0m:1s left)
+Iteration 40 / LogL: -1704.807 / Time: 0h:0m:0s (0h:0m:1s left)
+Iteration 50 / LogL: -1704.818 / Time: 0h:0m:1s (0h:0m:1s left)
+Log-likelihood cutoff on original alignment: -1730.607
+UFBoot trees printed to /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.ufboot
+Iteration 60 / LogL: -1704.771 / Time: 0h:0m:1s (0h:0m:0s left)
+Iteration 70 / LogL: -1704.987 / Time: 0h:0m:1s (0h:0m:0s left)
+UPDATE BEST LOG-LIKELIHOOD: -1704.768
+Iteration 80 / LogL: -1704.783 / Time: 0h:0m:1s (0h:0m:0s left)
+Iteration 90 / LogL: -1708.096 / Time: 0h:0m:1s (0h:0m:0s left)
+UPDATE BEST LOG-LIKELIHOOD: -1704.768
+Iteration 100 / LogL: -1704.840 / Time: 0h:0m:1s (0h:0m:0s left)
+Log-likelihood cutoff on original alignment: -1730.607
+NOTE: Bootstrap correlation coefficient of split occurrence frequencies: 1.000
+UFBoot trees printed to /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.ufboot
+TREE SEARCH COMPLETED AFTER 102 ITERATIONS / Time: 0h:0m:2s
+
+--------------------------------------------------------------------
+|                    FINALIZING TREE SEARCH                        |
+--------------------------------------------------------------------
+Performs final model parameters optimization
+Estimate model parameters (epsilon = 0.010)
+1. Initial log-likelihood: -1704.768
+Optimal log-likelihood: -1704.768
+Proportion of invariable sites: 0.267
+Parameters optimization took 1 rounds (0.004 sec)
+BEST SCORE FOUND : -1704.768
+Creating bootstrap support values...
+Split supports printed to NEXUS file /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.splits.nex
+Total tree length: 2.037
+
+Total number of iterations: 102
+CPU time used for tree search: 1.977 sec (0h:0m:1s)
+Wall-clock time used for tree search: 2.002 sec (0h:0m:2s)
+Total CPU time used: 2.025 sec (0h:0m:2s)
+Total wall-clock time used: 2.051 sec (0h:0m:2s)
+UFBoot trees printed to /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.ufboot
+
+Computing bootstrap consensus tree...
+Reading input file /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.splits.nex...
+9 taxa and 43 splits.
+Consensus tree written to /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.contree
+Reading input trees file /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.contree
+Log-likelihood of consensus tree: -1704.812
+
+Analysis results written to: 
+  IQ-TREE report:                /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.iqtree
+  Maximum-likelihood tree:       /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.treefile
+  Likelihood distances:          /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.mldist
+
+Ultrafast bootstrap approximation results written to:
+  Split support values:          /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.splits.nex
+  Consensus tree:                /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.contree
+  UFBoot trees:                  /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.ufboot
+  Screen log file:               /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.log
+
+Date and Time: Tue Jun  2 14:39:16 2026

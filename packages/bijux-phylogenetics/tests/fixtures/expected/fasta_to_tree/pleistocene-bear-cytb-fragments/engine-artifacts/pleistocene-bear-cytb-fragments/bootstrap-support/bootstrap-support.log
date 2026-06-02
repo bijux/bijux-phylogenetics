@@ -1,0 +1,118 @@
+IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024
+Developed by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,
+Dominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong
+
+Host:    Mac (SSE4.2, 32 GB RAM)
+Command: /opt/homebrew/bin/iqtree2 -s /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln -st DNA -seed 1 -nt 1 -m HKY+F -bb 1000 -wbt -pre /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support
+Seed:    1 (Using SPRNG - Scalable Parallel Random Number Generator)
+Time:    Sun May 31 20:29:32 2026
+Kernel:  SSE2 - 1 threads (10 CPU cores detected)
+
+HINT: Use -nt option to specify number of threads because your CPU has 10 cores!
+HINT: -nt AUTO will automatically determine the best number of threads to use.
+
+Reading alignment file /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln ... Fasta format detected
+Reading fasta file: done in 7.9155e-05 secs using 82.12% CPU
+Alignment most likely contains DNA/RNA sequences
+Alignment has 5 sequences with 1140 columns, 49 distinct patterns
+20 parsimony-informative, 45 singleton sites, 1075 constant sites
+                           Gap/Ambiguity  Composition  p-value
+Analyzing sequences: done in 4.05312e-06 secs using 74.02% CPU
+   1  brown_bear_modern            0.00%    passed     93.98%
+   2  polar_bear_modern            0.00%    passed     99.25%
+   3  black_bear_modern            0.00%    passed     98.46%
+   4  cave_bear_ud1838_fragment   45.96%    passed     90.14%
+   5  cave_bear_wk01_fragment     70.35%    passed     60.49%
+WARNING: 1 sequences contain more than 50% gaps/ambiguity
+****  TOTAL                       23.26%  0 sequences failed composition chi2 test (p-value<5%; df=3)
+
+Create initial parsimony tree by phylogenetic likelihood library (PLL)... 0.000 seconds
+Generating 1000 samples for ultrafast bootstrap (seed: 1)...
+
+NOTE: 0 MB RAM (0 GB) is required!
+Estimate model parameters (epsilon = 0.100)
+1. Initial log-likelihood: -1934.089
+2. Current log-likelihood: -1872.253
+Optimal log-likelihood: -1872.246
+Rate parameters:  A-C: 1.00000  A-G: 33.88001  A-T: 1.00000  C-G: 1.00000  C-T: 33.88001  G-T: 1.00000
+Base frequencies:  A: 0.282  C: 0.294  G: 0.150  T: 0.274
+Parameters optimization took 2 rounds (0.000 sec)
+Wrote distance file to... 
+Computing ML distances based on estimated model parameters...
+Calculating distance matrix: done in 4.31538e-05 secs using 97.33% CPU
+Computing ML distances took 0.000069 sec (of wall-clock time) 0.000056 sec (of CPU time)
+Setting up auxiliary I and S matrices: done in 9.05991e-06 secs using 88.3% CPU
+Computing RapidNJ tree took 0.000042 sec (of wall-clock time) 0.000022 sec (of CPU time)
+Log-likelihood of RapidNJ tree: -1872.247
+--------------------------------------------------------------------
+|             INITIALIZING CANDIDATE TREE SET                      |
+--------------------------------------------------------------------
+Generating 99 parsimony trees... 0.004 second
+Computing log-likelihood of 4 initial trees ... 0.000 seconds
+Current best score: -1872.246
+
+Do NNI search on 5 best initial trees
+Finish initializing candidate tree set (5)
+Current best tree score: -1872.246 / CPU time: 0.007
+Number of iterations: 5
+--------------------------------------------------------------------
+|               OPTIMIZING CANDIDATE TREE SET                      |
+--------------------------------------------------------------------
+Iteration 10 / LogL: -1872.328 / Time: 0h:0m:0s
+Iteration 20 / LogL: -1872.247 / Time: 0h:0m:0s
+Iteration 30 / LogL: -1872.248 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 40 / LogL: -1872.248 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 50 / LogL: -1872.248 / Time: 0h:0m:0s (0h:0m:0s left)
+Log-likelihood cutoff on original alignment: -1877.347
+UFBoot trees printed to /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.ufboot
+Iteration 60 / LogL: -1872.247 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 70 / LogL: -1872.246 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 80 / LogL: -1872.246 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 90 / LogL: -1872.249 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 100 / LogL: -1872.247 / Time: 0h:0m:0s (0h:0m:0s left)
+Log-likelihood cutoff on original alignment: -1877.389
+NOTE: Bootstrap correlation coefficient of split occurrence frequencies: 1.000
+UFBoot trees printed to /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.ufboot
+TREE SEARCH COMPLETED AFTER 101 ITERATIONS / Time: 0h:0m:0s
+
+--------------------------------------------------------------------
+|                    FINALIZING TREE SEARCH                        |
+--------------------------------------------------------------------
+Performs final model parameters optimization
+Estimate model parameters (epsilon = 0.010)
+1. Initial log-likelihood: -1872.246
+Optimal log-likelihood: -1872.246
+Rate parameters:  A-C: 1.00000  A-G: 33.87779  A-T: 1.00000  C-G: 1.00000  C-T: 33.87779  G-T: 1.00000
+Base frequencies:  A: 0.282  C: 0.294  G: 0.150  T: 0.274
+Parameters optimization took 1 rounds (0.000 sec)
+BEST SCORE FOUND : -1872.246
+Creating bootstrap support values...
+Split supports printed to NEXUS file /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.splits.nex
+Total tree length: 0.087
+
+Total number of iterations: 101
+CPU time used for tree search: 0.159 sec (0h:0m:0s)
+Wall-clock time used for tree search: 0.165 sec (0h:0m:0s)
+Total CPU time used: 0.171 sec (0h:0m:0s)
+Total wall-clock time used: 0.178 sec (0h:0m:0s)
+UFBoot trees printed to /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.ufboot
+
+Computing bootstrap consensus tree...
+Reading input file /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.splits.nex...
+5 taxa and 9 splits.
+Consensus tree written to /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.contree
+Reading input trees file /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.contree
+Log-likelihood of consensus tree: -1872.247
+
+Analysis results written to: 
+  IQ-TREE report:                /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.iqtree
+  Maximum-likelihood tree:       /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.treefile
+  Likelihood distances:          /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.mldist
+
+Ultrafast bootstrap approximation results written to:
+  Split support values:          /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.splits.nex
+  Consensus tree:                /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.contree
+  UFBoot trees:                  /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.ufboot
+  Screen log file:               /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/bootstrap-support/bootstrap-support.log
+
+Date and Time: Sun May 31 20:29:32 2026

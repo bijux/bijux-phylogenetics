@@ -1,0 +1,312 @@
+{
+  "bootstrap_support_summary": {
+    "internal_node_count": 7,
+    "maximum_support": 93.0,
+    "median_support": 79.5,
+    "minimum_support": 45.0,
+    "nodes": [
+      {
+        "descendant_taxa": [
+          "Dre37936",
+          "Hsa167996",
+          "LcaH",
+          "LcaM",
+          "Mmu024661",
+          "Ola20972",
+          "Tru14292"
+        ],
+        "is_backbone": true,
+        "node": "Dre37936|Hsa167996|LcaH|LcaM|Mmu024661|Ola20972|Tru14292",
+        "support": 45.0,
+        "support_fraction": 0.45
+      },
+      {
+        "descendant_taxa": [
+          "Hsa167996",
+          "LcaH",
+          "Mmu024661"
+        ],
+        "is_backbone": false,
+        "node": "Hsa167996|LcaH|Mmu024661",
+        "support": 91.0,
+        "support_fraction": 0.91
+      },
+      {
+        "descendant_taxa": [
+          "Hsa167996",
+          "Mmu024661"
+        ],
+        "is_backbone": false,
+        "node": "Hsa167996|Mmu024661",
+        "support": 93.0,
+        "support_fraction": 0.93
+      },
+      {
+        "descendant_taxa": [
+          "Dre37936",
+          "LcaM",
+          "Ola20972",
+          "Tru14292"
+        ],
+        "is_backbone": true,
+        "node": "Dre37936|LcaM|Ola20972|Tru14292",
+        "support": 86.0,
+        "support_fraction": 0.86
+      },
+      {
+        "descendant_taxa": [
+          "LcaM",
+          "Ola20972",
+          "Tru14292"
+        ],
+        "is_backbone": false,
+        "node": "LcaM|Ola20972|Tru14292",
+        "support": 73.0,
+        "support_fraction": 0.73
+      },
+      {
+        "descendant_taxa": [
+          "LcaM",
+          "Tru14292"
+        ],
+        "is_backbone": false,
+        "node": "LcaM|Tru14292",
+        "support": 47.0,
+        "support_fraction": 0.47
+      }
+    ],
+    "support_histogram": {
+      "50to69": 0,
+      "70to89": 2,
+      "ge90": 2,
+      "lt50": 2
+    },
+    "supported_node_count": 6,
+    "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.contree",
+    "warnings": [
+      "one or more internal nodes did not expose numeric support labels",
+      "one or more internal clades remain weakly supported"
+    ],
+    "weakly_supported_clade_count": 2
+  },
+  "config": {
+    "model": "Q.insect+I",
+    "partition_path": null,
+    "replicates": 1000,
+    "seed": 1,
+    "sequence_type": "protein",
+    "threads": 1,
+    "timeout_seconds": null
+  },
+  "engine_name": "iqtree",
+  "fasttree_support_summary": null,
+  "input_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+  },
+  "input_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln"
+  ],
+  "iqtree_summary": {
+    "log_likelihood": -1704.768,
+    "maximum_support": 93.0,
+    "minimum_support": 45.0,
+    "selected_model": "Q.insect+I",
+    "support_value_count": 6,
+    "support_values": [
+      {
+        "descendant_taxa": [
+          "Dre37936",
+          "Hsa167996",
+          "LcaH",
+          "LcaM",
+          "Mmu024661",
+          "Ola20972",
+          "Tru14292"
+        ],
+        "is_backbone": true,
+        "node": "Dre37936|Hsa167996|LcaH|LcaM|Mmu024661|Ola20972|Tru14292",
+        "support": 45.0,
+        "support_fraction": 0.45
+      },
+      {
+        "descendant_taxa": [
+          "Hsa167996",
+          "LcaH",
+          "Mmu024661"
+        ],
+        "is_backbone": false,
+        "node": "Hsa167996|LcaH|Mmu024661",
+        "support": 91.0,
+        "support_fraction": 0.91
+      },
+      {
+        "descendant_taxa": [
+          "Hsa167996",
+          "Mmu024661"
+        ],
+        "is_backbone": false,
+        "node": "Hsa167996|Mmu024661",
+        "support": 93.0,
+        "support_fraction": 0.93
+      },
+      {
+        "descendant_taxa": [
+          "Dre37936",
+          "LcaM",
+          "Ola20972",
+          "Tru14292"
+        ],
+        "is_backbone": true,
+        "node": "Dre37936|LcaM|Ola20972|Tru14292",
+        "support": 86.0,
+        "support_fraction": 0.86
+      },
+      {
+        "descendant_taxa": [
+          "LcaM",
+          "Ola20972",
+          "Tru14292"
+        ],
+        "is_backbone": false,
+        "node": "LcaM|Ola20972|Tru14292",
+        "support": 73.0,
+        "support_fraction": 0.73
+      },
+      {
+        "descendant_taxa": [
+          "LcaM",
+          "Tru14292"
+        ],
+        "is_backbone": false,
+        "node": "LcaM|Tru14292",
+        "support": 47.0,
+        "support_fraction": 0.47
+      }
+    ]
+  },
+  "log_likelihood": -1704.768,
+  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.manifest.json",
+  "model_selection_summary": {
+    "best_model_aic": "3441.5359",
+    "best_model_aicc": "3444.7740",
+    "best_model_bic": "3493.0616",
+    "best_score_aic": null,
+    "best_score_aicc": null,
+    "best_score_bic": null,
+    "bic_near_best_models": [],
+    "candidate_count": 0,
+    "candidates": [],
+    "selected_criterion": "BIC",
+    "selected_model": "3493.0616"
+  },
+  "notes": [
+    "iqtree random seed: 1",
+    "iqtree threads: 1",
+    "bootstrap tree set retained for downstream consensus construction",
+    "log-likelihood parsed from iqtree bootstrap inference artifacts",
+    "support values parsed from the bootstrap-supported tree artifact",
+    "branch-level support table exported for bootstrap review",
+    "low-support branch ledger exported for weak-clade review",
+    "support histogram exported for reviewer-facing support distribution checks"
+  ],
+  "output_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.contree": "e493d0a8742a0d43c589154bb2bdde499b81dbdf06ffaf20678ec8d90824e71e",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.iqtree": "78ea0c413ccecc720158cc597d780f40eb17bd966ada2d427cc97bfc00488f16",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.log": "b0d39ea4f0258abee749322a2d9041669586376a95f2ae6bd9d34640678d193c",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.low-support.tsv": "780ca1c28aeadc6913fbd0efa7dfbb3c7f3c68b63bdee3548693aa42addbcd01",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.support-histogram.tsv": "5a2e9483bce134563d21d09c967fdfd2ef5cd7e21d149438c132dc3ad713e37e",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.support.tsv": "b193d0bb89d1d0a5ff346973503391e2c7b33b8be72db8e960bf562e000f7080",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.ufboot": "9ca71ea4c57f5ea65063703b40b180b75ccf0a84621223cd607125184a876c31"
+  },
+  "output_paths": {
+    "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.ufboot",
+    "consensus_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.contree",
+    "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.log",
+    "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.iqtree",
+    "low_support_branches": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.low-support.tsv",
+    "support_histogram": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.support-histogram.tsv",
+    "support_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.support.tsv",
+    "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.contree"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/iqtree2",
+      "-s",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln",
+      "-st",
+      "AA",
+      "-seed",
+      "1",
+      "-nt",
+      "1",
+      "-m",
+      "Q.insect+I",
+      "-bb",
+      "1000",
+      "-wbt",
+      "-pre",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support"
+    ],
+    "ended_at_utc": "2026-06-02T12:28:13Z",
+    "engine_name": "iqtree",
+    "executable": "/opt/homebrew/bin/iqtree2",
+    "exit_code": 0,
+    "output_paths": {
+      "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.ufboot",
+      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.log",
+      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.iqtree",
+      "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.contree"
+    },
+    "runtime_seconds": 2.083424,
+    "started_at_utc": "2026-06-02T12:28:11Z",
+    "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.stderr.log",
+    "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.stdout.log",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/iqtree2",
+        "--version"
+      ],
+      "engine_name": "iqtree",
+      "executable": "/opt/homebrew/bin/iqtree2",
+      "text": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+    },
+    "warning_lines": [],
+    "workflow": "bootstrap-support",
+    "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support"
+  },
+  "selected_model": "Q.insect+I",
+  "sh_alrt_support_summary": null,
+  "trimming_summary": null,
+  "weak_backbone_report": {
+    "evaluated_backbone_node_count": 2,
+    "threshold": 70.0,
+    "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.contree",
+    "warnings": [
+      "one or more internal nodes did not expose numeric support labels",
+      "one or more internal clades remain weakly supported",
+      "major internal branches remain weakly supported along the backbone"
+    ],
+    "weak_backbone_node_count": 1,
+    "weak_nodes": [
+      {
+        "descendant_taxa": [
+          "Dre37936",
+          "Hsa167996",
+          "LcaH",
+          "LcaM",
+          "Mmu024661",
+          "Ola20972",
+          "Tru14292"
+        ],
+        "is_backbone": true,
+        "node": "Dre37936|Hsa167996|LcaH|LcaM|Mmu024661|Ola20972|Tru14292",
+        "support": 45.0,
+        "support_fraction": 0.45
+      }
+    ]
+  },
+  "workflow": "bootstrap-support"
+}

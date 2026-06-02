@@ -2,27 +2,32 @@
   "alignment_mode": "auto",
   "alignment_workflow": {
     "bootstrap_support_summary": null,
+    "config": {
+      "extra_args": [],
+      "mode": "auto",
+      "timeout_seconds": null
+    },
     "engine_name": "mafft",
     "fasttree_support_summary": null,
     "input_checksums": {
-      "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta": "abe2add0c7bd169127c31b8a459790f2215ff269f81f2327170d491086454843"
+      "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta": "abe2add0c7bd169127c31b8a459790f2215ff269f81f2327170d491086454843"
     },
     "input_paths": [
-      "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta"
+      "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta"
     ],
     "iqtree_summary": null,
     "log_likelihood": null,
-    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln.manifest.json",
+    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln.manifest.json",
     "model_selection_summary": null,
     "notes": [
       "mafft alignment mode: auto",
       "alignment output validated as deterministic equal-length FASTA"
     ],
     "output_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
     },
     "output_paths": {
-      "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln"
+      "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln"
     },
     "resumed": false,
     "run": {
@@ -31,16 +36,17 @@
         "--auto",
         "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta"
       ],
-      "ended_at_utc": "2026-05-13T04:22:48Z",
+      "ended_at_utc": "2026-06-02T12:27:55Z",
       "engine_name": "mafft",
       "executable": "/opt/homebrew/bin/mafft",
       "exit_code": 0,
       "output_paths": {
-        "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln"
+        "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln"
       },
-      "started_at_utc": "2026-05-13T04:22:47Z",
-      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln.stderr.log",
-      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln",
+      "runtime_seconds": 0.174878,
+      "started_at_utc": "2026-06-02T12:27:55Z",
+      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln.stderr.log",
+      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln",
       "timed_out": false,
       "timeout_seconds": null,
       "version": {
@@ -54,7 +60,7 @@
       },
       "warning_lines": [],
       "workflow": "multiple-sequence-alignment",
-      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment"
+      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment"
     },
     "selected_model": null,
     "sh_alrt_support_summary": null,
@@ -68,19 +74,22 @@
       "internal_node_count": 7,
       "maximum_support": 93.0,
       "median_support": 79.5,
-      "minimum_support": 44.0,
+      "minimum_support": 45.0,
       "nodes": [
         {
           "descendant_taxa": [
+            "Dre37936",
             "Hsa167996",
             "LcaH",
+            "LcaM",
             "Mmu024661",
-            "Xtr21234"
+            "Ola20972",
+            "Tru14292"
           ],
           "is_backbone": true,
-          "node": "Hsa167996|LcaH|Mmu024661|Xtr21234",
-          "support": 44.0,
-          "support_fraction": 0.44
+          "node": "Dre37936|Hsa167996|LcaH|LcaM|Mmu024661|Ola20972|Tru14292",
+          "support": 45.0,
+          "support_fraction": 0.45
         },
         {
           "descendant_taxa": [
@@ -144,39 +153,51 @@
         "lt50": 2
       },
       "supported_node_count": 6,
-      "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.treefile",
+      "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.contree",
       "warnings": [
         "one or more internal nodes did not expose numeric support labels",
         "one or more internal clades remain weakly supported"
       ],
       "weakly_supported_clade_count": 2
     },
+    "config": {
+      "model": "Q.insect+I",
+      "partition_path": null,
+      "replicates": 1000,
+      "seed": 1,
+      "sequence_type": "protein",
+      "threads": 1,
+      "timeout_seconds": null
+    },
     "engine_name": "iqtree",
     "fasttree_support_summary": null,
     "input_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
     },
     "input_paths": [
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln"
     ],
     "iqtree_summary": {
       "log_likelihood": -1704.768,
       "maximum_support": 93.0,
-      "minimum_support": 44.0,
+      "minimum_support": 45.0,
       "selected_model": "Q.insect+I",
       "support_value_count": 6,
       "support_values": [
         {
           "descendant_taxa": [
+            "Dre37936",
             "Hsa167996",
             "LcaH",
+            "LcaM",
             "Mmu024661",
-            "Xtr21234"
+            "Ola20972",
+            "Tru14292"
           ],
           "is_backbone": true,
-          "node": "Hsa167996|LcaH|Mmu024661|Xtr21234",
-          "support": 44.0,
-          "support_fraction": 0.44
+          "node": "Dre37936|Hsa167996|LcaH|LcaM|Mmu024661|Ola20972|Tru14292",
+          "support": 45.0,
+          "support_fraction": 0.45
         },
         {
           "descendant_taxa": [
@@ -235,8 +256,20 @@
       ]
     },
     "log_likelihood": -1704.768,
-    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.manifest.json",
-    "model_selection_summary": null,
+    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.manifest.json",
+    "model_selection_summary": {
+      "best_model_aic": "3441.5359",
+      "best_model_aicc": "3444.7740",
+      "best_model_bic": "3493.0616",
+      "best_score_aic": null,
+      "best_score_aicc": null,
+      "best_score_bic": null,
+      "bic_near_best_models": [],
+      "candidate_count": 0,
+      "candidates": [],
+      "selected_criterion": "BIC",
+      "selected_model": "3493.0616"
+    },
     "notes": [
       "iqtree random seed: 1",
       "iqtree threads: 1",
@@ -248,31 +281,30 @@
       "support histogram exported for reviewer-facing support distribution checks"
     ],
     "output_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.contree": "e493d0a8742a0d43c589154bb2bdde499b81dbdf06ffaf20678ec8d90824e71e",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.iqtree": "ca378bb1058043838d508f9d686aba560112587251102aff6686bc0ea0da28c0",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.log": "895799de1f8d8b69b1ee9299e90dff44e18d3055435d23a15ddb113be164515a",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.low-support.tsv": "f97be4174640f06c286834039a4d04cfb04b6416350e90295098623c2cb34eed",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.support-histogram.tsv": "5a2e9483bce134563d21d09c967fdfd2ef5cd7e21d149438c132dc3ad713e37e",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.support.tsv": "1a746f91e2050897e0513393a2003f9daf0b7378f45041e0d87dadcb3894ccff",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.treefile": "d5a1caf24fd0ae448733f042a2052a866866241d37f01b69c294003b68f3d60f",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.ufboot": "9ca71ea4c57f5ea65063703b40b180b75ccf0a84621223cd607125184a876c31"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.contree": "e493d0a8742a0d43c589154bb2bdde499b81dbdf06ffaf20678ec8d90824e71e",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.iqtree": "78ea0c413ccecc720158cc597d780f40eb17bd966ada2d427cc97bfc00488f16",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.log": "b0d39ea4f0258abee749322a2d9041669586376a95f2ae6bd9d34640678d193c",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.low-support.tsv": "780ca1c28aeadc6913fbd0efa7dfbb3c7f3c68b63bdee3548693aa42addbcd01",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.support-histogram.tsv": "5a2e9483bce134563d21d09c967fdfd2ef5cd7e21d149438c132dc3ad713e37e",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.support.tsv": "b193d0bb89d1d0a5ff346973503391e2c7b33b8be72db8e960bf562e000f7080",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.ufboot": "9ca71ea4c57f5ea65063703b40b180b75ccf0a84621223cd607125184a876c31"
     },
     "output_paths": {
-      "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.ufboot",
-      "consensus_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.contree",
-      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.log",
-      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.iqtree",
-      "low_support_branches": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.low-support.tsv",
-      "support_histogram": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.support-histogram.tsv",
-      "support_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.support.tsv",
-      "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.treefile"
+      "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.ufboot",
+      "consensus_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.contree",
+      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.log",
+      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.iqtree",
+      "low_support_branches": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.low-support.tsv",
+      "support_histogram": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.support-histogram.tsv",
+      "support_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.support.tsv",
+      "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.contree"
     },
     "resumed": false,
     "run": {
       "command": [
         "/opt/homebrew/bin/iqtree2",
         "-s",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln",
         "-st",
         "AA",
         "-seed",
@@ -285,21 +317,22 @@
         "1000",
         "-wbt",
         "-pre",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support"
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support"
       ],
-      "ended_at_utc": "2026-05-13T04:23:06Z",
+      "ended_at_utc": "2026-06-02T12:28:13Z",
       "engine_name": "iqtree",
       "executable": "/opt/homebrew/bin/iqtree2",
       "exit_code": 0,
       "output_paths": {
-        "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.ufboot",
-        "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.log",
-        "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.iqtree",
-        "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.treefile"
+        "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.ufboot",
+        "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.log",
+        "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.iqtree",
+        "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.contree"
       },
-      "started_at_utc": "2026-05-13T04:23:03Z",
-      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.stderr.log",
-      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.stdout.log",
+      "runtime_seconds": 2.083424,
+      "started_at_utc": "2026-06-02T12:28:11Z",
+      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.stderr.log",
+      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.stdout.log",
       "timed_out": false,
       "timeout_seconds": null,
       "version": {
@@ -313,7 +346,7 @@
       },
       "warning_lines": [],
       "workflow": "bootstrap-support",
-      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support"
+      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support"
     },
     "selected_model": "Q.insect+I",
     "sh_alrt_support_summary": null,
@@ -321,7 +354,7 @@
     "weak_backbone_report": {
       "evaluated_backbone_node_count": 2,
       "threshold": 70.0,
-      "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.treefile",
+      "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.contree",
       "warnings": [
         "one or more internal nodes did not expose numeric support labels",
         "one or more internal clades remain weakly supported",
@@ -331,15 +364,18 @@
       "weak_nodes": [
         {
           "descendant_taxa": [
+            "Dre37936",
             "Hsa167996",
             "LcaH",
+            "LcaM",
             "Mmu024661",
-            "Xtr21234"
+            "Ola20972",
+            "Tru14292"
           ],
           "is_backbone": true,
-          "node": "Hsa167996|LcaH|Mmu024661|Xtr21234",
-          "support": 44.0,
-          "support_fraction": 0.44
+          "node": "Dre37936|Hsa167996|LcaH|LcaM|Mmu024661|Ola20972|Tru14292",
+          "support": 45.0,
+          "support_fraction": 0.45
         }
       ]
     },
@@ -354,7 +390,7 @@
     "bootstrap_support": [
       "/opt/homebrew/bin/iqtree2",
       "-s",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln",
       "-st",
       "AA",
       "-seed",
@@ -367,12 +403,12 @@
       "1000",
       "-wbt",
       "-pre",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support"
     ],
     "maximum_likelihood": [
       "/opt/homebrew/bin/iqtree2",
       "-s",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln",
       "-st",
       "AA",
       "-seed",
@@ -382,12 +418,12 @@
       "-m",
       "Q.insect+I",
       "-pre",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood"
     ],
     "model_selection": [
       "/opt/homebrew/bin/iqtree2",
       "-s",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln",
       "-st",
       "AA",
       "-seed",
@@ -397,20 +433,32 @@
       "-m",
       "MF",
       "-pre",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection"
     ],
     "trimming": [
       "/opt/homebrew/bin/trimal",
       "-in",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln",
       "-out",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln",
       "-gt",
       "0.100000"
     ]
   },
-  "ended_at_utc": "2026-05-13T04:23:06Z",
-  "engine_artifact_dir": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins",
+  "config": {
+    "alignment_mode": "auto",
+    "bootstrap_replicates": 1000,
+    "incomplete_run_policy": "reject",
+    "iqtree_seed": 1,
+    "iqtree_threads": 1,
+    "resume": false,
+    "sequence_type": "protein",
+    "timeout_seconds": null,
+    "trim_gap_threshold": 0.1,
+    "trimming_mode": "gap-threshold"
+  },
+  "ended_at_utc": "2026-06-02T12:28:15Z",
+  "engine_artifact_dir": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins",
   "engine_versions": {
     "iqtree_bootstrap_support": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong",
     "iqtree_maximum_likelihood": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong",
@@ -419,9 +467,9 @@
     "trimal": "trimAl v1.5.rev0 build[2024-05-27]"
   },
   "input_checksums": {
-    "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta": "abe2add0c7bd169127c31b8a459790f2215ff269f81f2327170d491086454843"
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta": "abe2add0c7bd169127c31b8a459790f2215ff269f81f2327170d491086454843"
   },
-  "input_path": "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta",
+  "input_path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta",
   "input_repair": null,
   "input_validation": {
     "duplicate_identifiers": [],
@@ -450,7 +498,7 @@
         "robust_z_score": 4.721428251372572
       }
     ],
-    "path": "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta",
+    "path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta",
     "sequence_type_report": {
       "compatible_types": [
         "protein"
@@ -459,7 +507,7 @@
       "detected_type": "protein",
       "invalid_record_count": 0,
       "note": "protein-exclusive residues were observed in the raw FASTA input",
-      "path": "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta",
+      "path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta",
       "protein_signal_record_count": 9,
       "record_count": 9,
       "selected_type": "protein",
@@ -473,7 +521,7 @@
       "max_sequence_length": 183,
       "median_sequence_length": 176.0,
       "min_sequence_length": 142,
-      "path": "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta",
+      "path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta",
       "sequence_count": 9,
       "total_residue_count": 1560,
       "unique_identifier_count": 9
@@ -484,16 +532,24 @@
   },
   "iqtree_seed": 1,
   "iqtree_threads": 1,
-  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.manifest.json",
+  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.manifest.json",
   "maximum_likelihood_workflow": {
     "bootstrap_support_summary": null,
+    "config": {
+      "model": "Q.insect+I",
+      "partition_path": null,
+      "seed": 1,
+      "sequence_type": "protein",
+      "threads": 1,
+      "timeout_seconds": null
+    },
     "engine_name": "iqtree",
     "fasttree_support_summary": null,
     "input_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
     },
     "input_paths": [
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln"
     ],
     "iqtree_summary": {
       "log_likelihood": -1704.768,
@@ -504,8 +560,20 @@
       "support_values": []
     },
     "log_likelihood": -1704.768,
-    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.manifest.json",
-    "model_selection_summary": null,
+    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.manifest.json",
+    "model_selection_summary": {
+      "best_model_aic": "3441.5359",
+      "best_model_aicc": "3444.7740",
+      "best_model_bic": "3493.0616",
+      "best_score_aic": null,
+      "best_score_aicc": null,
+      "best_score_bic": null,
+      "bic_near_best_models": [],
+      "candidate_count": 0,
+      "candidates": [],
+      "selected_criterion": "BIC",
+      "selected_model": "3493.0616"
+    },
     "notes": [
       "iqtree random seed: 1",
       "iqtree threads: 1",
@@ -513,21 +581,21 @@
       "log-likelihood parsed from iqtree inference artifacts"
     ],
     "output_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.iqtree": "9d5e13c74536221e4e60309eac9d7a5c43fa07b621d984913a57dc6949bd2ebd",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.log": "cc9250c3ded2d68d56f99aef86c4c9399a598a8daa6645620b991e2ea1b80655",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.treefile": "ede290d996d8beb1d6d65817ec676b14aa38fc5d1cf04468737e5b7e8c9277e7"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.iqtree": "bc30aa3daf008ff08159922fc13107f57366764115221e17063c05f9261262dd",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.log": "6a6fc1bc55d051d79b913e85fb384e73326e78229f2cdf474424dea8368775f9",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.treefile": "ede290d996d8beb1d6d65817ec676b14aa38fc5d1cf04468737e5b7e8c9277e7"
     },
     "output_paths": {
-      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.log",
-      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.iqtree",
-      "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.treefile"
+      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.log",
+      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.iqtree",
+      "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.treefile"
     },
     "resumed": false,
     "run": {
       "command": [
         "/opt/homebrew/bin/iqtree2",
         "-s",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln",
         "-st",
         "AA",
         "-seed",
@@ -537,20 +605,21 @@
         "-m",
         "Q.insect+I",
         "-pre",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood"
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood"
       ],
-      "ended_at_utc": "2026-05-13T04:23:03Z",
+      "ended_at_utc": "2026-06-02T12:28:11Z",
       "engine_name": "iqtree",
       "executable": "/opt/homebrew/bin/iqtree2",
       "exit_code": 0,
       "output_paths": {
-        "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.log",
-        "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.iqtree",
-        "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.treefile"
+        "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.log",
+        "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.iqtree",
+        "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.treefile"
       },
-      "started_at_utc": "2026-05-13T04:23:01Z",
-      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.stderr.log",
-      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.stdout.log",
+      "runtime_seconds": 1.963688,
+      "started_at_utc": "2026-06-02T12:28:09Z",
+      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.stderr.log",
+      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.stdout.log",
       "timed_out": false,
       "timeout_seconds": null,
       "version": {
@@ -564,7 +633,7 @@
       },
       "warning_lines": [],
       "workflow": "maximum-likelihood-tree",
-      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood"
+      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood"
     },
     "selected_model": "Q.insect+I",
     "sh_alrt_support_summary": null,
@@ -572,29 +641,49 @@
     "weak_backbone_report": null,
     "workflow": "maximum-likelihood-tree"
   },
+  "method_tier": {
+    "approximation": null,
+    "excluded_reference_surfaces": [],
+    "inference_mode": "inference",
+    "summary": "This workflow runs governed external alignment and maximum-likelihood inference with real-engine validation coverage.",
+    "surface": "fasta-to-tree",
+    "tier": "supported",
+    "validation_basis": [
+      "real-engine-validation:fasta-to-tree",
+      "artifact-schema:fasta-to-tree"
+    ],
+    "warning": null
+  },
   "model_rows": [
     {
-      "alignment_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.aln",
+      "alignment_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.aln",
       "artifact_selected_model": "Q.insect+I",
       "engine_name": "iqtree",
-      "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.manifest.json",
+      "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.manifest.json",
       "model_consistent": true,
       "report_selected_model": "Q.insect+I",
       "selected_model": "Q.insect+I",
       "sequence_type": "protein",
-      "trimmed_alignment_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.trimmed.aln",
+      "trimmed_alignment_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.trimmed.aln",
       "workflow": "model-selection"
     }
   ],
   "model_selection_workflow": {
     "bootstrap_support_summary": null,
+    "config": {
+      "partition_path": null,
+      "seed": 1,
+      "sequence_type": "protein",
+      "threads": 1,
+      "timeout_seconds": null
+    },
     "engine_name": "iqtree",
     "fasttree_support_summary": null,
     "input_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
     },
     "input_paths": [
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln"
     ],
     "iqtree_summary": {
       "log_likelihood": -1705.3423,
@@ -605,7 +694,7 @@
       "support_values": []
     },
     "log_likelihood": -1705.3423,
-    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.manifest.json",
+    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.manifest.json",
     "model_selection_summary": {
       "best_model_aic": "Q.insect+I",
       "best_model_aicc": "Q.insect+I",
@@ -3460,25 +3549,25 @@
       "model-selection workflow exposed a parsable log-likelihood score"
     ],
     "output_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.iqtree": "48ea82d4f3503bc828192ab958c5980cb623b2fa566cb7f4c19ed3552a0a8f22",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.log": "4c3fc065f6ce9217c45201c072a318598c530edd41f3f2fafaa121c7539e97d2",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.model-candidates.tsv": "7a89ac7ddcecc851b053af83ed99b74e3f3ad150c87edb1272b460d4f9160fc5",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.model.gz": "38a953851bca6aa91134ecd639e69a2bb1ffcdcd3f71d92aae21d1c650e7f0cc",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.selected-model.txt": "465106727090b08eec3f06684f860de36d04c645f02e58b9dd4995d4d0addbf4"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.iqtree": "dea246a8e44c24116c5f796614cf093cea5d766c6037e775bac1d6a385af13be",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.log": "c80a86f7790e0415c2df711b9864bcb1c02e10390609b33c72d3816673b67416",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.model-candidates.tsv": "7a89ac7ddcecc851b053af83ed99b74e3f3ad150c87edb1272b460d4f9160fc5",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.model.gz": "781fe03bfcc7a3588295f2c839545ea89bc0d080ac1a7ebe10062420f8a84e26",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.selected-model.txt": "465106727090b08eec3f06684f860de36d04c645f02e58b9dd4995d4d0addbf4"
     },
     "output_paths": {
-      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.log",
-      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.iqtree",
-      "model_candidates": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.model-candidates.tsv",
-      "model_selection_sidecar": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.model.gz",
-      "selected_model": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.selected-model.txt"
+      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.log",
+      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.iqtree",
+      "model_candidates": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.model-candidates.tsv",
+      "model_selection_sidecar": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.model.gz",
+      "selected_model": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.selected-model.txt"
     },
     "resumed": false,
     "run": {
       "command": [
         "/opt/homebrew/bin/iqtree2",
         "-s",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln",
         "-st",
         "AA",
         "-seed",
@@ -3488,19 +3577,20 @@
         "-m",
         "MF",
         "-pre",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection"
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection"
       ],
-      "ended_at_utc": "2026-05-13T04:23:01Z",
+      "ended_at_utc": "2026-06-02T12:28:09Z",
       "engine_name": "iqtree",
       "executable": "/opt/homebrew/bin/iqtree2",
       "exit_code": 0,
       "output_paths": {
-        "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.log",
-        "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.iqtree"
+        "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.log",
+        "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.iqtree"
       },
-      "started_at_utc": "2026-05-13T04:22:48Z",
-      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.stderr.log",
-      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.stdout.log",
+      "runtime_seconds": 13.723123,
+      "started_at_utc": "2026-06-02T12:27:55Z",
+      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.stderr.log",
+      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.stdout.log",
       "timed_out": false,
       "timeout_seconds": null,
       "version": {
@@ -3516,7 +3606,7 @@
         "WARNING: Normalizing state frequencies so that sum of them equals to 1"
       ],
       "workflow": "model-selection",
-      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection"
+      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection"
     },
     "selected_model": "Q.insect+I",
     "sh_alrt_support_summary": null,
@@ -3531,7 +3621,7 @@
     "best_model_bic": "Q.insect+I",
     "candidate_model_count": 283,
     "issues": [],
-    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.manifest.json",
+    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.manifest.json",
     "manifest_selected_criterion": "BIC",
     "manifest_selected_model": "Q.insect+I",
     "report_selected_criterion": "BIC",
@@ -3548,52 +3638,235 @@
     "raw sequence type detection: protein (high)",
     "protein-exclusive residues were observed in the raw FASTA input"
   ],
-  "out_dir": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins",
+  "out_dir": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins",
   "output_checksums": {
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.log": "ad3a82ff95c08605bfe0efa1526dc7f3c99dc652cd2295731960fc494c56a4f8",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.model.tsv": "637e28430956c64ece3b943d0fb5fb3fe26d9c7facc0d25de5903319daa190e5",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.support.tsv": "805245204678961388ed7cc2c59320a65e023fa21e99a84cf43f2c7bf8849dc1",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.tree": "d5a1caf24fd0ae448733f042a2052a866866241d37f01b69c294003b68f3d60f",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.log": "4a6335c73223b36cd3572f487ae8dbf6998b51f26f037afe8f93cd3d7142e8aa",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.methods-summary.md": "f5aafa871bb5884820a3bb569c54757dff9f2c680b1ad93c22882ddaec6ec007",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.model.tsv": "637e28430956c64ece3b943d0fb5fb3fe26d9c7facc0d25de5903319daa190e5",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.support.tsv": "86675935e74b2b805c7a780a014bb111147db300d0c84ff0f25ab35ec592eb8f",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.tree": "e493d0a8742a0d43c589154bb2bdde499b81dbdf06ffaf20678ec8d90824e71e",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
   },
   "output_paths": {
-    "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.aln",
-    "log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.log",
-    "manifest": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.manifest.json",
-    "model_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.model.tsv",
-    "run_manifest": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.run.json",
-    "support_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.support.tsv",
-    "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.tree",
-    "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.trimmed.aln"
+    "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.aln",
+    "log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.log",
+    "manifest": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.manifest.json",
+    "methods_summary": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.methods-summary.md",
+    "model_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.model.tsv",
+    "run_manifest": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.run.json",
+    "support_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.support.tsv",
+    "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.tree",
+    "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.trimmed.aln"
   },
   "prefix": "gnathostome-ortholog-proteins",
-  "prepared_input_path": "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta",
+  "prepared_input_path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta",
   "repaired_input_validation": null,
-  "run_manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.run.json",
-  "runtime_seconds": 18.086546,
+  "run_manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.run.json",
+  "runtime_seconds": 19.533963,
   "selected_model": "Q.insect+I",
   "sequence_type": "protein",
-  "started_at_utc": "2026-05-13T04:22:47Z",
+  "stage_fingerprints": {
+    "alignment": {
+      "config": {
+        "alignment_mode": "auto",
+        "timeout_seconds": null
+      },
+      "engine_versions": {
+        "mafft": "v7.526 (2024/Apr/26)"
+      },
+      "fingerprint": "571efe8c49b9cf0d7cb3d851df917afc3ae099f8f5497fc916f923f30ef4918f",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta": "abe2add0c7bd169127c31b8a459790f2215ff269f81f2327170d491086454843"
+      },
+      "output_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      },
+      "resumed": false,
+      "stage": "alignment",
+      "upstream_fingerprints": {
+        "fasta_validation": "5fc05d2c0f1d4764ba128adcff3ed0dff965d4e173bebfc48f809ccd8e9c912f"
+      }
+    },
+    "fasta_validation": {
+      "config": {
+        "declared_sequence_type": "protein",
+        "normalize_identifiers": false,
+        "remove_invalid_records": false
+      },
+      "engine_versions": {},
+      "fingerprint": "5fc05d2c0f1d4764ba128adcff3ed0dff965d4e173bebfc48f809ccd8e9c912f",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta": "abe2add0c7bd169127c31b8a459790f2215ff269f81f2327170d491086454843"
+      },
+      "output_checksums": {},
+      "resumed": false,
+      "stage": "fasta_validation",
+      "upstream_fingerprints": {}
+    },
+    "inference": {
+      "config": {
+        "iqtree_seed": 1,
+        "iqtree_threads": 1,
+        "selected_model": "Q.insect+I",
+        "sequence_type": "protein",
+        "timeout_seconds": null
+      },
+      "engine_versions": {
+        "iqtree_maximum_likelihood": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+      },
+      "fingerprint": "49c489680050b476225ae33e8b0690f034f130e6392ea48be13a106320467392",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      },
+      "output_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.iqtree": "bc30aa3daf008ff08159922fc13107f57366764115221e17063c05f9261262dd",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.log": "6a6fc1bc55d051d79b913e85fb384e73326e78229f2cdf474424dea8368775f9",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.treefile": "ede290d996d8beb1d6d65817ec676b14aa38fc5d1cf04468737e5b7e8c9277e7"
+      },
+      "resumed": false,
+      "stage": "inference",
+      "upstream_fingerprints": {
+        "model_selection": "2d7073d963c66481951d4e00ee4312c81769bef8b9cb3ea85b626e21538c8a4b",
+        "trimming": "e570b10f60f7ffb35976f989cd035d5c5b54cf5aae384c3772b76b8334c52373"
+      }
+    },
+    "model_selection": {
+      "config": {
+        "iqtree_seed": 1,
+        "iqtree_threads": 1,
+        "sequence_type": "protein",
+        "timeout_seconds": null
+      },
+      "engine_versions": {
+        "iqtree_model_selection": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+      },
+      "fingerprint": "2d7073d963c66481951d4e00ee4312c81769bef8b9cb3ea85b626e21538c8a4b",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      },
+      "output_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.iqtree": "dea246a8e44c24116c5f796614cf093cea5d766c6037e775bac1d6a385af13be",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.log": "c80a86f7790e0415c2df711b9864bcb1c02e10390609b33c72d3816673b67416",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.model-candidates.tsv": "7a89ac7ddcecc851b053af83ed99b74e3f3ad150c87edb1272b460d4f9160fc5",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.model.gz": "781fe03bfcc7a3588295f2c839545ea89bc0d080ac1a7ebe10062420f8a84e26",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.selected-model.txt": "465106727090b08eec3f06684f860de36d04c645f02e58b9dd4995d4d0addbf4"
+      },
+      "resumed": false,
+      "stage": "model_selection",
+      "upstream_fingerprints": {
+        "trimming": "e570b10f60f7ffb35976f989cd035d5c5b54cf5aae384c3772b76b8334c52373"
+      }
+    },
+    "report": {
+      "config": {
+        "note_count": 8,
+        "selected_model": "Q.insect+I",
+        "warning_count": 4
+      },
+      "engine_versions": {},
+      "fingerprint": "fb0bfc9031ea3dc8929f9b7ece4c5e558b67e3875805a80f4f891521a93d35bd",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.tree": "e493d0a8742a0d43c589154bb2bdde499b81dbdf06ffaf20678ec8d90824e71e",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      },
+      "output_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.log": "4a6335c73223b36cd3572f487ae8dbf6998b51f26f037afe8f93cd3d7142e8aa",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.methods-summary.md": "f5aafa871bb5884820a3bb569c54757dff9f2c680b1ad93c22882ddaec6ec007",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.model.tsv": "637e28430956c64ece3b943d0fb5fb3fe26d9c7facc0d25de5903319daa190e5",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.support.tsv": "86675935e74b2b805c7a780a014bb111147db300d0c84ff0f25ab35ec592eb8f"
+      },
+      "resumed": false,
+      "stage": "report",
+      "upstream_fingerprints": {
+        "alignment": "571efe8c49b9cf0d7cb3d851df917afc3ae099f8f5497fc916f923f30ef4918f",
+        "fasta_validation": "5fc05d2c0f1d4764ba128adcff3ed0dff965d4e173bebfc48f809ccd8e9c912f",
+        "inference": "49c489680050b476225ae33e8b0690f034f130e6392ea48be13a106320467392",
+        "model_selection": "2d7073d963c66481951d4e00ee4312c81769bef8b9cb3ea85b626e21538c8a4b",
+        "support": "8a0a14d2bd8663bea22e5b61fcfbfbc5a95d14d7a960e943664354dfd038fdf6",
+        "trimming": "e570b10f60f7ffb35976f989cd035d5c5b54cf5aae384c3772b76b8334c52373"
+      }
+    },
+    "support": {
+      "config": {
+        "bootstrap_replicates": 1000,
+        "iqtree_seed": 1,
+        "iqtree_threads": 1,
+        "selected_model": "Q.insect+I",
+        "sequence_type": "protein",
+        "timeout_seconds": null
+      },
+      "engine_versions": {
+        "iqtree_bootstrap_support": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+      },
+      "fingerprint": "8a0a14d2bd8663bea22e5b61fcfbfbc5a95d14d7a960e943664354dfd038fdf6",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      },
+      "output_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.contree": "e493d0a8742a0d43c589154bb2bdde499b81dbdf06ffaf20678ec8d90824e71e",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.iqtree": "78ea0c413ccecc720158cc597d780f40eb17bd966ada2d427cc97bfc00488f16",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.log": "b0d39ea4f0258abee749322a2d9041669586376a95f2ae6bd9d34640678d193c",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.low-support.tsv": "780ca1c28aeadc6913fbd0efa7dfbb3c7f3c68b63bdee3548693aa42addbcd01",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.support-histogram.tsv": "5a2e9483bce134563d21d09c967fdfd2ef5cd7e21d149438c132dc3ad713e37e",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.support.tsv": "b193d0bb89d1d0a5ff346973503391e2c7b33b8be72db8e960bf562e000f7080",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.ufboot": "9ca71ea4c57f5ea65063703b40b180b75ccf0a84621223cd607125184a876c31"
+      },
+      "resumed": false,
+      "stage": "support",
+      "upstream_fingerprints": {
+        "model_selection": "2d7073d963c66481951d4e00ee4312c81769bef8b9cb3ea85b626e21538c8a4b",
+        "trimming": "e570b10f60f7ffb35976f989cd035d5c5b54cf5aae384c3772b76b8334c52373"
+      }
+    },
+    "trimming": {
+      "config": {
+        "timeout_seconds": null,
+        "trim_gap_threshold": 0.1,
+        "trimming_mode": "gap-threshold"
+      },
+      "engine_versions": {
+        "trimal": "trimAl v1.5.rev0 build[2024-05-27]"
+      },
+      "fingerprint": "e570b10f60f7ffb35976f989cd035d5c5b54cf5aae384c3772b76b8334c52373",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      },
+      "output_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln.retained-sites.tsv": "c7b3477b77487ad92d21a7748db921873514c6b0c50c915dc948b274091821ef"
+      },
+      "resumed": false,
+      "stage": "trimming",
+      "upstream_fingerprints": {
+        "alignment": "571efe8c49b9cf0d7cb3d851df917afc3ae099f8f5497fc916f923f30ef4918f"
+      }
+    }
+  },
+  "started_at_utc": "2026-06-02T12:27:55Z",
   "step_manifests": {
-    "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln.manifest.json",
-    "bootstrap_support": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.manifest.json",
-    "maximum_likelihood": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.manifest.json",
-    "model_selection": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.manifest.json",
-    "trimming": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln.manifest.json"
+    "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln.manifest.json",
+    "bootstrap_support": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.manifest.json",
+    "maximum_likelihood": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/maximum-likelihood/maximum-likelihood.manifest.json",
+    "model_selection": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/model-selection/model-selection.manifest.json",
+    "trimming": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln.manifest.json"
   },
   "support_rows": [
     {
       "descendant_taxa": [
+        "Dre37936",
         "Hsa167996",
         "LcaH",
+        "LcaM",
         "Mmu024661",
-        "Xtr21234"
+        "Ola20972",
+        "Tru14292"
       ],
       "is_backbone": true,
-      "node": "Hsa167996|LcaH|Mmu024661|Xtr21234",
-      "support": 44.0,
-      "support_fraction": 0.44
+      "node": "Dre37936|Hsa167996|LcaH|LcaM|Mmu024661|Ola20972|Tru14292",
+      "support": 45.0,
+      "support_fraction": 0.45
     },
     {
       "descendant_taxa": [
@@ -3654,19 +3927,22 @@
     "internal_node_count": 7,
     "maximum_support": 93.0,
     "median_support": 79.5,
-    "minimum_support": 44.0,
+    "minimum_support": 45.0,
     "nodes": [
       {
         "descendant_taxa": [
+          "Dre37936",
           "Hsa167996",
           "LcaH",
+          "LcaM",
           "Mmu024661",
-          "Xtr21234"
+          "Ola20972",
+          "Tru14292"
         ],
         "is_backbone": true,
-        "node": "Hsa167996|LcaH|Mmu024661|Xtr21234",
-        "support": 44.0,
-        "support_fraction": 0.44
+        "node": "Dre37936|Hsa167996|LcaH|LcaM|Mmu024661|Ola20972|Tru14292",
+        "support": 45.0,
+        "support_fraction": 0.45
       },
       {
         "descendant_taxa": [
@@ -3730,7 +4006,7 @@
       "lt50": 2
     },
     "supported_node_count": 6,
-    "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.tree",
+    "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.tree",
     "warnings": [
       "one or more internal nodes did not expose numeric support labels",
       "one or more internal clades remain weakly supported"
@@ -3741,17 +4017,22 @@
   "trimming_mode": "gap-threshold",
   "trimming_workflow": {
     "bootstrap_support_summary": null,
+    "config": {
+      "gap_threshold": 0.1,
+      "mode": "gap-threshold",
+      "timeout_seconds": null
+    },
     "engine_name": "trimal",
     "fasttree_support_summary": null,
     "input_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
     },
     "input_paths": [
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln"
     ],
     "iqtree_summary": null,
     "log_likelihood": null,
-    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln.manifest.json",
+    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln.manifest.json",
     "model_selection_summary": null,
     "notes": [
       "trimal trimming mode: gap-threshold",
@@ -3760,32 +4041,35 @@
       "trimmed alignment validated as nonempty equal-length FASTA"
     ],
     "output_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln.retained-sites.tsv": "c7b3477b77487ad92d21a7748db921873514c6b0c50c915dc948b274091821ef"
     },
     "output_paths": {
-      "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln"
+      "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln",
+      "trimming_summary": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln.retained-sites.tsv"
     },
     "resumed": false,
     "run": {
       "command": [
         "/opt/homebrew/bin/trimal",
         "-in",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln",
         "-out",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln",
         "-gt",
         "0.100000"
       ],
-      "ended_at_utc": "2026-05-13T04:22:48Z",
+      "ended_at_utc": "2026-06-02T12:27:55Z",
       "engine_name": "trimal",
       "executable": "/opt/homebrew/bin/trimal",
       "exit_code": 0,
       "output_paths": {
-        "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln"
+        "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln"
       },
-      "started_at_utc": "2026-05-13T04:22:48Z",
-      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln.stderr.log",
-      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln.stdout.log",
+      "runtime_seconds": 0.003915,
+      "started_at_utc": "2026-06-02T12:27:55Z",
+      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln.stderr.log",
+      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln.stdout.log",
       "timed_out": false,
       "timeout_seconds": null,
       "version": {
@@ -3799,7 +4083,7 @@
       },
       "warning_lines": [],
       "workflow": "alignment-trimming",
-      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming"
+      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/engine-artifacts/gnathostome-ortholog-proteins/trimming"
     },
     "selected_model": null,
     "sh_alrt_support_summary": null,
@@ -3825,5 +4109,6 @@
     "one or more internal nodes did not expose numeric support labels",
     "one or more internal clades remain weakly supported",
     "input contains sequence length outliers"
-  ]
+  ],
+  "workflow": "fasta-to-tree"
 }

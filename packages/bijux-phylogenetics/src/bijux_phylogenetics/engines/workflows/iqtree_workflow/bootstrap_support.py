@@ -107,7 +107,7 @@ def run_bootstrap_support_estimation(
         raise EngineWorkflowError(
             "mixed DNA/protein partition analyses require a model-selection keyword such as MF, MFP, TEST, or TESTMERGE"
         )
-    support_tree_path = prefix_path.with_suffix(".treefile")
+    support_tree_path = prefix_path.with_suffix(".contree")
     bootstrap_tree_path = prefix_path.with_suffix(".ufboot")
     support_table_path = prefix_path.with_suffix(".support.tsv")
     low_support_branches_path = prefix_path.with_suffix(".low-support.tsv")

@@ -35,12 +35,17 @@ def summarize_bootstrap_support_distribution(
     nodes: list[BootstrapSupportNode] = []
     warnings: list[str] = []
     total_tip_count = tree.tip_count
+    internal_node_count = sum(
+        1 for node in tree.iter_nodes() if node is not tree.root and not node.is_leaf()
+    )
     for node in tree.iter_nodes():
-        if node.is_leaf():
+        if node is tree.root or node.is_leaf():
             continue
         descendant_taxa = node_descendant_taxa(node)
         support_label = _parse_iqtree_support_label(node.name)
         support = None if support_label is None else support_label.ufboot_support
+        if support is None and _is_collapsed_consensus_branch_without_label(node):
+            support = 0.0
         if support is None:
             continue
         normalized_support_fraction = support_fraction(support)
@@ -64,7 +69,7 @@ def summarize_bootstrap_support_distribution(
         "ge90": sum(1 for node in nodes if node.support >= 90.0),
     }
     supports = sorted(node.support for node in nodes)
-    if len(nodes) < sum(1 for node in tree.iter_nodes() if not node.is_leaf()):
+    if len(nodes) < internal_node_count:
         warnings.append(
             "one or more internal nodes did not expose numeric support labels"
         )
@@ -72,7 +77,7 @@ def summarize_bootstrap_support_distribution(
         warnings.append("one or more internal clades remain weakly supported")
     return BootstrapSupportSummaryReport(
         tree_path=tree_path,
-        internal_node_count=sum(1 for node in tree.iter_nodes() if not node.is_leaf()),
+        internal_node_count=internal_node_count,
         supported_node_count=len(nodes),
         minimum_support=None if not supports else supports[0],
         maximum_support=None if not supports else supports[-1],
@@ -84,6 +89,16 @@ def summarize_bootstrap_support_distribution(
         nodes=nodes,
         warnings=warnings,
     )
+
+
+def _is_collapsed_consensus_branch_without_label(node: object) -> bool:
+    branch_length = float(getattr(node, "branch_length", 0.0) or 0.0)
+    if branch_length > 1e-5:
+        return False
+    children = tuple(getattr(node, "children", ()))
+    if len(children) < 2:
+        return False
+    return all(float(getattr(child, "branch_length", 0.0) or 0.0) <= 1e-5 for child in children)
 
 
 def summarize_fasttree_support_distribution(

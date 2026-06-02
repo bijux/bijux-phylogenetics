@@ -183,7 +183,7 @@ if "-alrt" in args:
     raise SystemExit(0)
 
 if "-bb" in args:
-    prefix.with_suffix(".treefile").write_text("((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n", encoding="utf-8")
+    prefix.with_suffix(".contree").write_text("((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n", encoding="utf-8")
     prefix.with_suffix(".ufboot").write_text(
         "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
         encoding="utf-8",
@@ -242,7 +242,7 @@ if "--version" in args:
 
 prefix = Path(args[args.index("-pre") + 1]) if "-pre" in args else Path("iqtree")
 prefix.parent.mkdir(parents=True, exist_ok=True)
-prefix.with_suffix(".treefile").write_text(
+prefix.with_suffix(".contree").write_text(
     "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
     encoding="utf-8",
 )

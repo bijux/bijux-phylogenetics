@@ -1,0 +1,911 @@
+{
+  "bootstrap_support_summary": {
+    "internal_node_count": 28,
+    "maximum_support": 100.0,
+    "median_support": 80.5,
+    "minimum_support": 0.0,
+    "nodes": [
+      {
+        "descendant_taxa": [
+          "15368.BRADI3G48660.1",
+          "15368.BRADI5G14900.1",
+          "29760.VIT_09s0002g06370.t01",
+          "3694.POPTR_0001s03500.1",
+          "3702.AT1G80500.1",
+          "3711.Bra027566.1-P",
+          "3711.Bra035176.1-P",
+          "3847.GLYMA04G38461.1",
+          "3847.GLYMA06G16590.1",
+          "39946.BGIOSGA008614-PA",
+          "39946.BGIOSGA016720-PA",
+          "39946.BGIOSGA016723-PA",
+          "39947.LOC_Os02g40000.1",
+          "39947.LOC_Os04g42500.1",
+          "4081.Solyc06g068030.2.1",
+          "4113.PGSC0003DMT400073367",
+          "4113.PGSC0003DMT400073369",
+          "4513.MLOC_12967.5",
+          "4513.MLOC_67125.1",
+          "4533.OB02G31210.1",
+          "4533.OB04G25010.1",
+          "4538.ORGLA02G0207300.1",
+          "4538.ORGLA04G0149900.1",
+          "4555.Si007486m",
+          "4555.Si018666m",
+          "4558.Sb02g043460.1",
+          "4577.GRMZM2G097568_P01",
+          "4641.GSMUA_Achr10P29310_001",
+          "59689.Al_scaffold_0002_2746"
+        ],
+        "is_backbone": true,
+        "node": "15368.BRADI3G48660.1|15368.BRADI5G14900.1|29760.VIT_09s0002g06370.t01|3694.POPTR_0001s03500.1|3702.AT1G80500.1|3711.Bra027566.1-P|3711.Bra035176.1-P|3847.GLYMA04G38461.1|3847.GLYMA06G16590.1|39946.BGIOSGA008614-PA|39946.BGIOSGA016720-PA|39946.BGIOSGA016723-PA|39947.LOC_Os02g40000.1|39947.LOC_Os04g42500.1|4081.Solyc06g068030.2.1|4113.PGSC0003DMT400073367|4113.PGSC0003DMT400073369|4513.MLOC_12967.5|4513.MLOC_67125.1|4533.OB02G31210.1|4533.OB04G25010.1|4538.ORGLA02G0207300.1|4538.ORGLA04G0149900.1|4555.Si007486m|4555.Si018666m|4558.Sb02g043460.1|4577.GRMZM2G097568_P01|4641.GSMUA_Achr10P29310_001|59689.Al_scaffold_0002_2746",
+        "support": 93.0,
+        "support_fraction": 0.93
+      },
+      {
+        "descendant_taxa": [
+          "29760.VIT_09s0002g06370.t01",
+          "3694.POPTR_0001s03500.1",
+          "3702.AT1G80500.1",
+          "3711.Bra027566.1-P",
+          "3711.Bra035176.1-P",
+          "3847.GLYMA04G38461.1",
+          "3847.GLYMA06G16590.1",
+          "4081.Solyc06g068030.2.1",
+          "4113.PGSC0003DMT400073367",
+          "4113.PGSC0003DMT400073369",
+          "4641.GSMUA_Achr10P29310_001",
+          "59689.Al_scaffold_0002_2746"
+        ],
+        "is_backbone": false,
+        "node": "29760.VIT_09s0002g06370.t01|3694.POPTR_0001s03500.1|3702.AT1G80500.1|3711.Bra027566.1-P|3711.Bra035176.1-P|3847.GLYMA04G38461.1|3847.GLYMA06G16590.1|4081.Solyc06g068030.2.1|4113.PGSC0003DMT400073367|4113.PGSC0003DMT400073369|4641.GSMUA_Achr10P29310_001|59689.Al_scaffold_0002_2746",
+        "support": 57.0,
+        "support_fraction": 0.57
+      },
+      {
+        "descendant_taxa": [
+          "29760.VIT_09s0002g06370.t01",
+          "3694.POPTR_0001s03500.1",
+          "3702.AT1G80500.1",
+          "3711.Bra027566.1-P",
+          "3711.Bra035176.1-P",
+          "3847.GLYMA04G38461.1",
+          "3847.GLYMA06G16590.1",
+          "4641.GSMUA_Achr10P29310_001",
+          "59689.Al_scaffold_0002_2746"
+        ],
+        "is_backbone": false,
+        "node": "29760.VIT_09s0002g06370.t01|3694.POPTR_0001s03500.1|3702.AT1G80500.1|3711.Bra027566.1-P|3711.Bra035176.1-P|3847.GLYMA04G38461.1|3847.GLYMA06G16590.1|4641.GSMUA_Achr10P29310_001|59689.Al_scaffold_0002_2746",
+        "support": 83.0,
+        "support_fraction": 0.83
+      },
+      {
+        "descendant_taxa": [
+          "29760.VIT_09s0002g06370.t01",
+          "3702.AT1G80500.1",
+          "3711.Bra027566.1-P",
+          "3711.Bra035176.1-P",
+          "4641.GSMUA_Achr10P29310_001",
+          "59689.Al_scaffold_0002_2746"
+        ],
+        "is_backbone": false,
+        "node": "29760.VIT_09s0002g06370.t01|3702.AT1G80500.1|3711.Bra027566.1-P|3711.Bra035176.1-P|4641.GSMUA_Achr10P29310_001|59689.Al_scaffold_0002_2746",
+        "support": 45.0,
+        "support_fraction": 0.45
+      },
+      {
+        "descendant_taxa": [
+          "29760.VIT_09s0002g06370.t01",
+          "3711.Bra035176.1-P",
+          "4641.GSMUA_Achr10P29310_001"
+        ],
+        "is_backbone": false,
+        "node": "29760.VIT_09s0002g06370.t01|3711.Bra035176.1-P|4641.GSMUA_Achr10P29310_001",
+        "support": 60.0,
+        "support_fraction": 0.6
+      },
+      {
+        "descendant_taxa": [
+          "29760.VIT_09s0002g06370.t01",
+          "4641.GSMUA_Achr10P29310_001"
+        ],
+        "is_backbone": false,
+        "node": "29760.VIT_09s0002g06370.t01|4641.GSMUA_Achr10P29310_001",
+        "support": 97.0,
+        "support_fraction": 0.97
+      },
+      {
+        "descendant_taxa": [
+          "3702.AT1G80500.1",
+          "3711.Bra027566.1-P",
+          "59689.Al_scaffold_0002_2746"
+        ],
+        "is_backbone": false,
+        "node": "3702.AT1G80500.1|3711.Bra027566.1-P|59689.Al_scaffold_0002_2746",
+        "support": 41.0,
+        "support_fraction": 0.41
+      },
+      {
+        "descendant_taxa": [
+          "3702.AT1G80500.1",
+          "59689.Al_scaffold_0002_2746"
+        ],
+        "is_backbone": false,
+        "node": "3702.AT1G80500.1|59689.Al_scaffold_0002_2746",
+        "support": 51.0,
+        "support_fraction": 0.51
+      },
+      {
+        "descendant_taxa": [
+          "3694.POPTR_0001s03500.1",
+          "3847.GLYMA04G38461.1",
+          "3847.GLYMA06G16590.1"
+        ],
+        "is_backbone": false,
+        "node": "3694.POPTR_0001s03500.1|3847.GLYMA04G38461.1|3847.GLYMA06G16590.1",
+        "support": 89.0,
+        "support_fraction": 0.89
+      },
+      {
+        "descendant_taxa": [
+          "3847.GLYMA04G38461.1",
+          "3847.GLYMA06G16590.1"
+        ],
+        "is_backbone": false,
+        "node": "3847.GLYMA04G38461.1|3847.GLYMA06G16590.1",
+        "support": 99.0,
+        "support_fraction": 0.99
+      },
+      {
+        "descendant_taxa": [
+          "4081.Solyc06g068030.2.1",
+          "4113.PGSC0003DMT400073367",
+          "4113.PGSC0003DMT400073369"
+        ],
+        "is_backbone": false,
+        "node": "4081.Solyc06g068030.2.1|4113.PGSC0003DMT400073367|4113.PGSC0003DMT400073369",
+        "support": 83.0,
+        "support_fraction": 0.83
+      },
+      {
+        "descendant_taxa": [
+          "4081.Solyc06g068030.2.1",
+          "4113.PGSC0003DMT400073369"
+        ],
+        "is_backbone": false,
+        "node": "4081.Solyc06g068030.2.1|4113.PGSC0003DMT400073369",
+        "support": 52.0,
+        "support_fraction": 0.52
+      },
+      {
+        "descendant_taxa": [
+          "15368.BRADI3G48660.1",
+          "15368.BRADI5G14900.1",
+          "39946.BGIOSGA008614-PA",
+          "39946.BGIOSGA016720-PA",
+          "39946.BGIOSGA016723-PA",
+          "39947.LOC_Os02g40000.1",
+          "39947.LOC_Os04g42500.1",
+          "4513.MLOC_12967.5",
+          "4513.MLOC_67125.1",
+          "4533.OB02G31210.1",
+          "4533.OB04G25010.1",
+          "4538.ORGLA02G0207300.1",
+          "4538.ORGLA04G0149900.1",
+          "4555.Si007486m",
+          "4555.Si018666m",
+          "4558.Sb02g043460.1",
+          "4577.GRMZM2G097568_P01"
+        ],
+        "is_backbone": true,
+        "node": "15368.BRADI3G48660.1|15368.BRADI5G14900.1|39946.BGIOSGA008614-PA|39946.BGIOSGA016720-PA|39946.BGIOSGA016723-PA|39947.LOC_Os02g40000.1|39947.LOC_Os04g42500.1|4513.MLOC_12967.5|4513.MLOC_67125.1|4533.OB02G31210.1|4533.OB04G25010.1|4538.ORGLA02G0207300.1|4538.ORGLA04G0149900.1|4555.Si007486m|4555.Si018666m|4558.Sb02g043460.1|4577.GRMZM2G097568_P01",
+        "support": 99.0,
+        "support_fraction": 0.99
+      },
+      {
+        "descendant_taxa": [
+          "15368.BRADI5G14900.1",
+          "39946.BGIOSGA016720-PA",
+          "39946.BGIOSGA016723-PA",
+          "39947.LOC_Os04g42500.1",
+          "4513.MLOC_67125.1",
+          "4533.OB04G25010.1",
+          "4538.ORGLA04G0149900.1",
+          "4555.Si007486m",
+          "4555.Si018666m",
+          "4558.Sb02g043460.1",
+          "4577.GRMZM2G097568_P01"
+        ],
+        "is_backbone": false,
+        "node": "15368.BRADI5G14900.1|39946.BGIOSGA016720-PA|39946.BGIOSGA016723-PA|39947.LOC_Os04g42500.1|4513.MLOC_67125.1|4533.OB04G25010.1|4538.ORGLA04G0149900.1|4555.Si007486m|4555.Si018666m|4558.Sb02g043460.1|4577.GRMZM2G097568_P01",
+        "support": 87.0,
+        "support_fraction": 0.87
+      },
+      {
+        "descendant_taxa": [
+          "39946.BGIOSGA016720-PA",
+          "39946.BGIOSGA016723-PA",
+          "39947.LOC_Os04g42500.1",
+          "4533.OB04G25010.1",
+          "4538.ORGLA04G0149900.1"
+        ],
+        "is_backbone": false,
+        "node": "39946.BGIOSGA016720-PA|39946.BGIOSGA016723-PA|39947.LOC_Os04g42500.1|4533.OB04G25010.1|4538.ORGLA04G0149900.1",
+        "support": 94.0,
+        "support_fraction": 0.94
+      },
+      {
+        "descendant_taxa": [
+          "39946.BGIOSGA016720-PA",
+          "39946.BGIOSGA016723-PA",
+          "39947.LOC_Os04g42500.1",
+          "4538.ORGLA04G0149900.1"
+        ],
+        "is_backbone": false,
+        "node": "39946.BGIOSGA016720-PA|39946.BGIOSGA016723-PA|39947.LOC_Os04g42500.1|4538.ORGLA04G0149900.1",
+        "support": 87.0,
+        "support_fraction": 0.87
+      },
+      {
+        "descendant_taxa": [
+          "39946.BGIOSGA016723-PA",
+          "39947.LOC_Os04g42500.1",
+          "4538.ORGLA04G0149900.1"
+        ],
+        "is_backbone": false,
+        "node": "39946.BGIOSGA016723-PA|39947.LOC_Os04g42500.1|4538.ORGLA04G0149900.1",
+        "support": 100.0,
+        "support_fraction": 1.0
+      },
+      {
+        "descendant_taxa": [
+          "39947.LOC_Os04g42500.1",
+          "4538.ORGLA04G0149900.1"
+        ],
+        "is_backbone": false,
+        "node": "39947.LOC_Os04g42500.1|4538.ORGLA04G0149900.1",
+        "support": 98.0,
+        "support_fraction": 0.98
+      },
+      {
+        "descendant_taxa": [
+          "15368.BRADI5G14900.1",
+          "4513.MLOC_67125.1",
+          "4555.Si007486m",
+          "4555.Si018666m",
+          "4558.Sb02g043460.1",
+          "4577.GRMZM2G097568_P01"
+        ],
+        "is_backbone": false,
+        "node": "15368.BRADI5G14900.1|4513.MLOC_67125.1|4555.Si007486m|4555.Si018666m|4558.Sb02g043460.1|4577.GRMZM2G097568_P01",
+        "support": 68.0,
+        "support_fraction": 0.68
+      },
+      {
+        "descendant_taxa": [
+          "15368.BRADI5G14900.1",
+          "4513.MLOC_67125.1",
+          "4555.Si018666m"
+        ],
+        "is_backbone": false,
+        "node": "15368.BRADI5G14900.1|4513.MLOC_67125.1|4555.Si018666m",
+        "support": 90.0,
+        "support_fraction": 0.9
+      },
+      {
+        "descendant_taxa": [
+          "15368.BRADI5G14900.1",
+          "4555.Si018666m"
+        ],
+        "is_backbone": false,
+        "node": "15368.BRADI5G14900.1|4555.Si018666m",
+        "support": 55.0,
+        "support_fraction": 0.55
+      },
+      {
+        "descendant_taxa": [
+          "4555.Si007486m",
+          "4558.Sb02g043460.1",
+          "4577.GRMZM2G097568_P01"
+        ],
+        "is_backbone": false,
+        "node": "4555.Si007486m|4558.Sb02g043460.1|4577.GRMZM2G097568_P01",
+        "support": 70.0,
+        "support_fraction": 0.7
+      },
+      {
+        "descendant_taxa": [
+          "4555.Si007486m",
+          "4558.Sb02g043460.1"
+        ],
+        "is_backbone": false,
+        "node": "4555.Si007486m|4558.Sb02g043460.1",
+        "support": 58.0,
+        "support_fraction": 0.58
+      },
+      {
+        "descendant_taxa": [
+          "15368.BRADI3G48660.1",
+          "39946.BGIOSGA008614-PA",
+          "39947.LOC_Os02g40000.1",
+          "4513.MLOC_12967.5",
+          "4533.OB02G31210.1",
+          "4538.ORGLA02G0207300.1"
+        ],
+        "is_backbone": false,
+        "node": "15368.BRADI3G48660.1|39946.BGIOSGA008614-PA|39947.LOC_Os02g40000.1|4513.MLOC_12967.5|4533.OB02G31210.1|4538.ORGLA02G0207300.1",
+        "support": 54.0,
+        "support_fraction": 0.54
+      },
+      {
+        "descendant_taxa": [
+          "39946.BGIOSGA008614-PA",
+          "39947.LOC_Os02g40000.1",
+          "4513.MLOC_12967.5",
+          "4533.OB02G31210.1",
+          "4538.ORGLA02G0207300.1"
+        ],
+        "is_backbone": false,
+        "node": "39946.BGIOSGA008614-PA|39947.LOC_Os02g40000.1|4513.MLOC_12967.5|4533.OB02G31210.1|4538.ORGLA02G0207300.1",
+        "support": 48.0,
+        "support_fraction": 0.48
+      },
+      {
+        "descendant_taxa": [
+          "39946.BGIOSGA008614-PA",
+          "39947.LOC_Os02g40000.1",
+          "4533.OB02G31210.1",
+          "4538.ORGLA02G0207300.1"
+        ],
+        "is_backbone": false,
+        "node": "39946.BGIOSGA008614-PA|39947.LOC_Os02g40000.1|4533.OB02G31210.1|4538.ORGLA02G0207300.1",
+        "support": 87.0,
+        "support_fraction": 0.87
+      },
+      {
+        "descendant_taxa": [
+          "39946.BGIOSGA008614-PA",
+          "39947.LOC_Os02g40000.1",
+          "4538.ORGLA02G0207300.1"
+        ],
+        "is_backbone": false,
+        "node": "39946.BGIOSGA008614-PA|39947.LOC_Os02g40000.1|4538.ORGLA02G0207300.1",
+        "support": 78.0,
+        "support_fraction": 0.78
+      },
+      {
+        "descendant_taxa": [
+          "39946.BGIOSGA008614-PA",
+          "4538.ORGLA02G0207300.1"
+        ],
+        "is_backbone": false,
+        "node": "39946.BGIOSGA008614-PA|4538.ORGLA02G0207300.1",
+        "support": 0.0,
+        "support_fraction": 0.0
+      }
+    ],
+    "support_histogram": {
+      "50to69": 8,
+      "70to89": 8,
+      "ge90": 8,
+      "lt50": 4
+    },
+    "supported_node_count": 28,
+    "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.contree",
+    "warnings": [
+      "one or more internal clades remain weakly supported"
+    ],
+    "weakly_supported_clade_count": 12
+  },
+  "config": {
+    "model": "JTTDCMut+G4",
+    "partition_path": null,
+    "replicates": 1000,
+    "seed": 1,
+    "sequence_type": "protein",
+    "threads": 1,
+    "timeout_seconds": null
+  },
+  "engine_name": "iqtree",
+  "fasttree_support_summary": null,
+  "input_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln": "ab275efd30c082adc4b777e59fe6c92589425c544b74e7ea661ab066d6e75c7b"
+  },
+  "input_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln"
+  ],
+  "iqtree_summary": {
+    "log_likelihood": -1591.3727,
+    "maximum_support": 100.0,
+    "minimum_support": 0.0,
+    "selected_model": "JTTDCMut+G4",
+    "support_value_count": 28,
+    "support_values": [
+      {
+        "descendant_taxa": [
+          "15368.BRADI3G48660.1",
+          "15368.BRADI5G14900.1",
+          "29760.VIT_09s0002g06370.t01",
+          "3694.POPTR_0001s03500.1",
+          "3702.AT1G80500.1",
+          "3711.Bra027566.1-P",
+          "3711.Bra035176.1-P",
+          "3847.GLYMA04G38461.1",
+          "3847.GLYMA06G16590.1",
+          "39946.BGIOSGA008614-PA",
+          "39946.BGIOSGA016720-PA",
+          "39946.BGIOSGA016723-PA",
+          "39947.LOC_Os02g40000.1",
+          "39947.LOC_Os04g42500.1",
+          "4081.Solyc06g068030.2.1",
+          "4113.PGSC0003DMT400073367",
+          "4113.PGSC0003DMT400073369",
+          "4513.MLOC_12967.5",
+          "4513.MLOC_67125.1",
+          "4533.OB02G31210.1",
+          "4533.OB04G25010.1",
+          "4538.ORGLA02G0207300.1",
+          "4538.ORGLA04G0149900.1",
+          "4555.Si007486m",
+          "4555.Si018666m",
+          "4558.Sb02g043460.1",
+          "4577.GRMZM2G097568_P01",
+          "4641.GSMUA_Achr10P29310_001",
+          "59689.Al_scaffold_0002_2746"
+        ],
+        "is_backbone": true,
+        "node": "15368.BRADI3G48660.1|15368.BRADI5G14900.1|29760.VIT_09s0002g06370.t01|3694.POPTR_0001s03500.1|3702.AT1G80500.1|3711.Bra027566.1-P|3711.Bra035176.1-P|3847.GLYMA04G38461.1|3847.GLYMA06G16590.1|39946.BGIOSGA008614-PA|39946.BGIOSGA016720-PA|39946.BGIOSGA016723-PA|39947.LOC_Os02g40000.1|39947.LOC_Os04g42500.1|4081.Solyc06g068030.2.1|4113.PGSC0003DMT400073367|4113.PGSC0003DMT400073369|4513.MLOC_12967.5|4513.MLOC_67125.1|4533.OB02G31210.1|4533.OB04G25010.1|4538.ORGLA02G0207300.1|4538.ORGLA04G0149900.1|4555.Si007486m|4555.Si018666m|4558.Sb02g043460.1|4577.GRMZM2G097568_P01|4641.GSMUA_Achr10P29310_001|59689.Al_scaffold_0002_2746",
+        "support": 93.0,
+        "support_fraction": 0.93
+      },
+      {
+        "descendant_taxa": [
+          "29760.VIT_09s0002g06370.t01",
+          "3694.POPTR_0001s03500.1",
+          "3702.AT1G80500.1",
+          "3711.Bra027566.1-P",
+          "3711.Bra035176.1-P",
+          "3847.GLYMA04G38461.1",
+          "3847.GLYMA06G16590.1",
+          "4081.Solyc06g068030.2.1",
+          "4113.PGSC0003DMT400073367",
+          "4113.PGSC0003DMT400073369",
+          "4641.GSMUA_Achr10P29310_001",
+          "59689.Al_scaffold_0002_2746"
+        ],
+        "is_backbone": false,
+        "node": "29760.VIT_09s0002g06370.t01|3694.POPTR_0001s03500.1|3702.AT1G80500.1|3711.Bra027566.1-P|3711.Bra035176.1-P|3847.GLYMA04G38461.1|3847.GLYMA06G16590.1|4081.Solyc06g068030.2.1|4113.PGSC0003DMT400073367|4113.PGSC0003DMT400073369|4641.GSMUA_Achr10P29310_001|59689.Al_scaffold_0002_2746",
+        "support": 57.0,
+        "support_fraction": 0.57
+      },
+      {
+        "descendant_taxa": [
+          "29760.VIT_09s0002g06370.t01",
+          "3694.POPTR_0001s03500.1",
+          "3702.AT1G80500.1",
+          "3711.Bra027566.1-P",
+          "3711.Bra035176.1-P",
+          "3847.GLYMA04G38461.1",
+          "3847.GLYMA06G16590.1",
+          "4641.GSMUA_Achr10P29310_001",
+          "59689.Al_scaffold_0002_2746"
+        ],
+        "is_backbone": false,
+        "node": "29760.VIT_09s0002g06370.t01|3694.POPTR_0001s03500.1|3702.AT1G80500.1|3711.Bra027566.1-P|3711.Bra035176.1-P|3847.GLYMA04G38461.1|3847.GLYMA06G16590.1|4641.GSMUA_Achr10P29310_001|59689.Al_scaffold_0002_2746",
+        "support": 83.0,
+        "support_fraction": 0.83
+      },
+      {
+        "descendant_taxa": [
+          "29760.VIT_09s0002g06370.t01",
+          "3702.AT1G80500.1",
+          "3711.Bra027566.1-P",
+          "3711.Bra035176.1-P",
+          "4641.GSMUA_Achr10P29310_001",
+          "59689.Al_scaffold_0002_2746"
+        ],
+        "is_backbone": false,
+        "node": "29760.VIT_09s0002g06370.t01|3702.AT1G80500.1|3711.Bra027566.1-P|3711.Bra035176.1-P|4641.GSMUA_Achr10P29310_001|59689.Al_scaffold_0002_2746",
+        "support": 45.0,
+        "support_fraction": 0.45
+      },
+      {
+        "descendant_taxa": [
+          "29760.VIT_09s0002g06370.t01",
+          "3711.Bra035176.1-P",
+          "4641.GSMUA_Achr10P29310_001"
+        ],
+        "is_backbone": false,
+        "node": "29760.VIT_09s0002g06370.t01|3711.Bra035176.1-P|4641.GSMUA_Achr10P29310_001",
+        "support": 60.0,
+        "support_fraction": 0.6
+      },
+      {
+        "descendant_taxa": [
+          "29760.VIT_09s0002g06370.t01",
+          "4641.GSMUA_Achr10P29310_001"
+        ],
+        "is_backbone": false,
+        "node": "29760.VIT_09s0002g06370.t01|4641.GSMUA_Achr10P29310_001",
+        "support": 97.0,
+        "support_fraction": 0.97
+      },
+      {
+        "descendant_taxa": [
+          "3702.AT1G80500.1",
+          "3711.Bra027566.1-P",
+          "59689.Al_scaffold_0002_2746"
+        ],
+        "is_backbone": false,
+        "node": "3702.AT1G80500.1|3711.Bra027566.1-P|59689.Al_scaffold_0002_2746",
+        "support": 41.0,
+        "support_fraction": 0.41
+      },
+      {
+        "descendant_taxa": [
+          "3702.AT1G80500.1",
+          "59689.Al_scaffold_0002_2746"
+        ],
+        "is_backbone": false,
+        "node": "3702.AT1G80500.1|59689.Al_scaffold_0002_2746",
+        "support": 51.0,
+        "support_fraction": 0.51
+      },
+      {
+        "descendant_taxa": [
+          "3694.POPTR_0001s03500.1",
+          "3847.GLYMA04G38461.1",
+          "3847.GLYMA06G16590.1"
+        ],
+        "is_backbone": false,
+        "node": "3694.POPTR_0001s03500.1|3847.GLYMA04G38461.1|3847.GLYMA06G16590.1",
+        "support": 89.0,
+        "support_fraction": 0.89
+      },
+      {
+        "descendant_taxa": [
+          "3847.GLYMA04G38461.1",
+          "3847.GLYMA06G16590.1"
+        ],
+        "is_backbone": false,
+        "node": "3847.GLYMA04G38461.1|3847.GLYMA06G16590.1",
+        "support": 99.0,
+        "support_fraction": 0.99
+      },
+      {
+        "descendant_taxa": [
+          "4081.Solyc06g068030.2.1",
+          "4113.PGSC0003DMT400073367",
+          "4113.PGSC0003DMT400073369"
+        ],
+        "is_backbone": false,
+        "node": "4081.Solyc06g068030.2.1|4113.PGSC0003DMT400073367|4113.PGSC0003DMT400073369",
+        "support": 83.0,
+        "support_fraction": 0.83
+      },
+      {
+        "descendant_taxa": [
+          "4081.Solyc06g068030.2.1",
+          "4113.PGSC0003DMT400073369"
+        ],
+        "is_backbone": false,
+        "node": "4081.Solyc06g068030.2.1|4113.PGSC0003DMT400073369",
+        "support": 52.0,
+        "support_fraction": 0.52
+      },
+      {
+        "descendant_taxa": [
+          "15368.BRADI3G48660.1",
+          "15368.BRADI5G14900.1",
+          "39946.BGIOSGA008614-PA",
+          "39946.BGIOSGA016720-PA",
+          "39946.BGIOSGA016723-PA",
+          "39947.LOC_Os02g40000.1",
+          "39947.LOC_Os04g42500.1",
+          "4513.MLOC_12967.5",
+          "4513.MLOC_67125.1",
+          "4533.OB02G31210.1",
+          "4533.OB04G25010.1",
+          "4538.ORGLA02G0207300.1",
+          "4538.ORGLA04G0149900.1",
+          "4555.Si007486m",
+          "4555.Si018666m",
+          "4558.Sb02g043460.1",
+          "4577.GRMZM2G097568_P01"
+        ],
+        "is_backbone": true,
+        "node": "15368.BRADI3G48660.1|15368.BRADI5G14900.1|39946.BGIOSGA008614-PA|39946.BGIOSGA016720-PA|39946.BGIOSGA016723-PA|39947.LOC_Os02g40000.1|39947.LOC_Os04g42500.1|4513.MLOC_12967.5|4513.MLOC_67125.1|4533.OB02G31210.1|4533.OB04G25010.1|4538.ORGLA02G0207300.1|4538.ORGLA04G0149900.1|4555.Si007486m|4555.Si018666m|4558.Sb02g043460.1|4577.GRMZM2G097568_P01",
+        "support": 99.0,
+        "support_fraction": 0.99
+      },
+      {
+        "descendant_taxa": [
+          "15368.BRADI5G14900.1",
+          "39946.BGIOSGA016720-PA",
+          "39946.BGIOSGA016723-PA",
+          "39947.LOC_Os04g42500.1",
+          "4513.MLOC_67125.1",
+          "4533.OB04G25010.1",
+          "4538.ORGLA04G0149900.1",
+          "4555.Si007486m",
+          "4555.Si018666m",
+          "4558.Sb02g043460.1",
+          "4577.GRMZM2G097568_P01"
+        ],
+        "is_backbone": false,
+        "node": "15368.BRADI5G14900.1|39946.BGIOSGA016720-PA|39946.BGIOSGA016723-PA|39947.LOC_Os04g42500.1|4513.MLOC_67125.1|4533.OB04G25010.1|4538.ORGLA04G0149900.1|4555.Si007486m|4555.Si018666m|4558.Sb02g043460.1|4577.GRMZM2G097568_P01",
+        "support": 87.0,
+        "support_fraction": 0.87
+      },
+      {
+        "descendant_taxa": [
+          "39946.BGIOSGA016720-PA",
+          "39946.BGIOSGA016723-PA",
+          "39947.LOC_Os04g42500.1",
+          "4533.OB04G25010.1",
+          "4538.ORGLA04G0149900.1"
+        ],
+        "is_backbone": false,
+        "node": "39946.BGIOSGA016720-PA|39946.BGIOSGA016723-PA|39947.LOC_Os04g42500.1|4533.OB04G25010.1|4538.ORGLA04G0149900.1",
+        "support": 94.0,
+        "support_fraction": 0.94
+      },
+      {
+        "descendant_taxa": [
+          "39946.BGIOSGA016720-PA",
+          "39946.BGIOSGA016723-PA",
+          "39947.LOC_Os04g42500.1",
+          "4538.ORGLA04G0149900.1"
+        ],
+        "is_backbone": false,
+        "node": "39946.BGIOSGA016720-PA|39946.BGIOSGA016723-PA|39947.LOC_Os04g42500.1|4538.ORGLA04G0149900.1",
+        "support": 87.0,
+        "support_fraction": 0.87
+      },
+      {
+        "descendant_taxa": [
+          "39946.BGIOSGA016723-PA",
+          "39947.LOC_Os04g42500.1",
+          "4538.ORGLA04G0149900.1"
+        ],
+        "is_backbone": false,
+        "node": "39946.BGIOSGA016723-PA|39947.LOC_Os04g42500.1|4538.ORGLA04G0149900.1",
+        "support": 100.0,
+        "support_fraction": 1.0
+      },
+      {
+        "descendant_taxa": [
+          "39947.LOC_Os04g42500.1",
+          "4538.ORGLA04G0149900.1"
+        ],
+        "is_backbone": false,
+        "node": "39947.LOC_Os04g42500.1|4538.ORGLA04G0149900.1",
+        "support": 98.0,
+        "support_fraction": 0.98
+      },
+      {
+        "descendant_taxa": [
+          "15368.BRADI5G14900.1",
+          "4513.MLOC_67125.1",
+          "4555.Si007486m",
+          "4555.Si018666m",
+          "4558.Sb02g043460.1",
+          "4577.GRMZM2G097568_P01"
+        ],
+        "is_backbone": false,
+        "node": "15368.BRADI5G14900.1|4513.MLOC_67125.1|4555.Si007486m|4555.Si018666m|4558.Sb02g043460.1|4577.GRMZM2G097568_P01",
+        "support": 68.0,
+        "support_fraction": 0.68
+      },
+      {
+        "descendant_taxa": [
+          "15368.BRADI5G14900.1",
+          "4513.MLOC_67125.1",
+          "4555.Si018666m"
+        ],
+        "is_backbone": false,
+        "node": "15368.BRADI5G14900.1|4513.MLOC_67125.1|4555.Si018666m",
+        "support": 90.0,
+        "support_fraction": 0.9
+      },
+      {
+        "descendant_taxa": [
+          "15368.BRADI5G14900.1",
+          "4555.Si018666m"
+        ],
+        "is_backbone": false,
+        "node": "15368.BRADI5G14900.1|4555.Si018666m",
+        "support": 55.0,
+        "support_fraction": 0.55
+      },
+      {
+        "descendant_taxa": [
+          "4555.Si007486m",
+          "4558.Sb02g043460.1",
+          "4577.GRMZM2G097568_P01"
+        ],
+        "is_backbone": false,
+        "node": "4555.Si007486m|4558.Sb02g043460.1|4577.GRMZM2G097568_P01",
+        "support": 70.0,
+        "support_fraction": 0.7
+      },
+      {
+        "descendant_taxa": [
+          "4555.Si007486m",
+          "4558.Sb02g043460.1"
+        ],
+        "is_backbone": false,
+        "node": "4555.Si007486m|4558.Sb02g043460.1",
+        "support": 58.0,
+        "support_fraction": 0.58
+      },
+      {
+        "descendant_taxa": [
+          "15368.BRADI3G48660.1",
+          "39946.BGIOSGA008614-PA",
+          "39947.LOC_Os02g40000.1",
+          "4513.MLOC_12967.5",
+          "4533.OB02G31210.1",
+          "4538.ORGLA02G0207300.1"
+        ],
+        "is_backbone": false,
+        "node": "15368.BRADI3G48660.1|39946.BGIOSGA008614-PA|39947.LOC_Os02g40000.1|4513.MLOC_12967.5|4533.OB02G31210.1|4538.ORGLA02G0207300.1",
+        "support": 54.0,
+        "support_fraction": 0.54
+      },
+      {
+        "descendant_taxa": [
+          "39946.BGIOSGA008614-PA",
+          "39947.LOC_Os02g40000.1",
+          "4513.MLOC_12967.5",
+          "4533.OB02G31210.1",
+          "4538.ORGLA02G0207300.1"
+        ],
+        "is_backbone": false,
+        "node": "39946.BGIOSGA008614-PA|39947.LOC_Os02g40000.1|4513.MLOC_12967.5|4533.OB02G31210.1|4538.ORGLA02G0207300.1",
+        "support": 48.0,
+        "support_fraction": 0.48
+      },
+      {
+        "descendant_taxa": [
+          "39946.BGIOSGA008614-PA",
+          "39947.LOC_Os02g40000.1",
+          "4533.OB02G31210.1",
+          "4538.ORGLA02G0207300.1"
+        ],
+        "is_backbone": false,
+        "node": "39946.BGIOSGA008614-PA|39947.LOC_Os02g40000.1|4533.OB02G31210.1|4538.ORGLA02G0207300.1",
+        "support": 87.0,
+        "support_fraction": 0.87
+      },
+      {
+        "descendant_taxa": [
+          "39946.BGIOSGA008614-PA",
+          "39947.LOC_Os02g40000.1",
+          "4538.ORGLA02G0207300.1"
+        ],
+        "is_backbone": false,
+        "node": "39946.BGIOSGA008614-PA|39947.LOC_Os02g40000.1|4538.ORGLA02G0207300.1",
+        "support": 78.0,
+        "support_fraction": 0.78
+      },
+      {
+        "descendant_taxa": [
+          "39946.BGIOSGA008614-PA",
+          "4538.ORGLA02G0207300.1"
+        ],
+        "is_backbone": false,
+        "node": "39946.BGIOSGA008614-PA|4538.ORGLA02G0207300.1",
+        "support": 0.0,
+        "support_fraction": 0.0
+      }
+    ]
+  },
+  "log_likelihood": -1591.3727,
+  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.manifest.json",
+  "model_selection_summary": {
+    "best_model_aic": "3298.7455",
+    "best_model_aicc": "3378.3269",
+    "best_model_bic": "3471.3960",
+    "best_score_aic": null,
+    "best_score_aicc": null,
+    "best_score_bic": null,
+    "bic_near_best_models": [],
+    "candidate_count": 0,
+    "candidates": [],
+    "selected_criterion": "BIC",
+    "selected_model": "3471.3960"
+  },
+  "notes": [
+    "iqtree random seed: 1",
+    "iqtree threads: 1",
+    "bootstrap tree set retained for downstream consensus construction",
+    "log-likelihood parsed from iqtree bootstrap inference artifacts",
+    "support values parsed from the bootstrap-supported tree artifact",
+    "branch-level support table exported for bootstrap review",
+    "low-support branch ledger exported for weak-clade review",
+    "support histogram exported for reviewer-facing support distribution checks"
+  ],
+  "output_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.contree": "7361dc5f8f802e47856b614609e8ba578dbd751d7fe3e63ff304800f2adff693",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.iqtree": "9a1c2f2e00df0e960c3fed39156dc7967804c39b627d8b6fb7942ef7af654f28",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.log": "9b3b052ee4e4f37e4b28708c1446bd18d88b4b02a762364477e5f60d0f4cfb0b",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.low-support.tsv": "e7d9b86c98c21d1d9860cec76168472fa1516849a1d7fe8bc0c23db6f629b611",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.support-histogram.tsv": "0b033b979f15220ae2f39a0357cf753e7d32058985d6a076e7da0feb56e401d4",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.support.tsv": "2737d07f6fe6cd4dfdd6b4903288665c6bf1ed2b25a5f44ed99e34f0efa4b0e6",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.ufboot": "921e866be81d22ade1e2c2e64846762f4e95c4a4a99d11d02da35e211dd21a5f"
+  },
+  "output_paths": {
+    "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.ufboot",
+    "consensus_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.contree",
+    "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.log",
+    "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.iqtree",
+    "low_support_branches": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.low-support.tsv",
+    "support_histogram": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.support-histogram.tsv",
+    "support_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.support.tsv",
+    "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.contree"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/iqtree2",
+      "-s",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln",
+      "-st",
+      "AA",
+      "-seed",
+      "1",
+      "-nt",
+      "1",
+      "-m",
+      "JTTDCMut+G4",
+      "-bb",
+      "1000",
+      "-wbt",
+      "-pre",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support"
+    ],
+    "ended_at_utc": "2026-06-02T12:38:30Z",
+    "engine_name": "iqtree",
+    "executable": "/opt/homebrew/bin/iqtree2",
+    "exit_code": 0,
+    "output_paths": {
+      "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.ufboot",
+      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.log",
+      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.iqtree",
+      "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.contree"
+    },
+    "runtime_seconds": 69.780446,
+    "started_at_utc": "2026-06-02T12:37:20Z",
+    "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.stderr.log",
+    "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.stdout.log",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/iqtree2",
+        "--version"
+      ],
+      "engine_name": "iqtree",
+      "executable": "/opt/homebrew/bin/iqtree2",
+      "text": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+    },
+    "warning_lines": [],
+    "workflow": "bootstrap-support",
+    "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support"
+  },
+  "selected_model": "JTTDCMut+G4",
+  "sh_alrt_support_summary": null,
+  "trimming_summary": null,
+  "weak_backbone_report": {
+    "evaluated_backbone_node_count": 2,
+    "threshold": 70.0,
+    "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.contree",
+    "warnings": [
+      "one or more internal clades remain weakly supported"
+    ],
+    "weak_backbone_node_count": 0,
+    "weak_nodes": []
+  },
+  "workflow": "bootstrap-support"
+}

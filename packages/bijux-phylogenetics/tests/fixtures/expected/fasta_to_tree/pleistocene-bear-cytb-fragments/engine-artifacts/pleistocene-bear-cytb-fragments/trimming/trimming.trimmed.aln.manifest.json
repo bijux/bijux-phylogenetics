@@ -1,0 +1,89 @@
+{
+  "bootstrap_support_summary": null,
+  "config": {
+    "gap_threshold": 0.1,
+    "mode": "gap-threshold",
+    "timeout_seconds": null
+  },
+  "engine_name": "trimal",
+  "fasttree_support_summary": null,
+  "input_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/alignment/alignment.aln": "90374ceb63d11789868e1f349c3768670e36a510a4450349d2b743745a1aff00"
+  },
+  "input_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/alignment/alignment.aln"
+  ],
+  "iqtree_summary": null,
+  "log_likelihood": null,
+  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln.manifest.json",
+  "model_selection_summary": null,
+  "notes": [
+    "trimal trimming mode: gap-threshold",
+    "retained sites: 1140 of 1140",
+    "gap percentage: 20.351 -> 20.351",
+    "trimmed alignment validated as nonempty equal-length FASTA"
+  ],
+  "output_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln": "90374ceb63d11789868e1f349c3768670e36a510a4450349d2b743745a1aff00",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln.retained-sites.tsv": "f1fa6cc15673ee4829b3c761189c82a2147ff3b7f499fd09d772ab67dbd7ec85"
+  },
+  "output_paths": {
+    "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln",
+    "trimming_summary": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln.retained-sites.tsv"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/trimal",
+      "-in",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/alignment/alignment.aln",
+      "-out",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln",
+      "-gt",
+      "0.100000"
+    ],
+    "ended_at_utc": "2026-05-31T18:29:31Z",
+    "engine_name": "trimal",
+    "executable": "/opt/homebrew/bin/trimal",
+    "exit_code": 0,
+    "output_paths": {
+      "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln"
+    },
+    "runtime_seconds": 0.011212,
+    "started_at_utc": "2026-05-31T18:29:31Z",
+    "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln.stderr.log",
+    "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln.stdout.log",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/trimal",
+        "--version"
+      ],
+      "engine_name": "trimal",
+      "executable": "/opt/homebrew/bin/trimal",
+      "text": "trimAl v1.5.rev0 build[2024-05-27]"
+    },
+    "warning_lines": [],
+    "workflow": "alignment-trimming",
+    "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming"
+  },
+  "selected_model": null,
+  "sh_alrt_support_summary": null,
+  "trimming_summary": {
+    "gap_threshold": 0.1,
+    "input_alignment_length": 1140,
+    "input_gap_fraction": 0.20350877192982456,
+    "input_gap_percentage": 20.350877192982455,
+    "mode": "gap-threshold",
+    "removed_site_count": 0,
+    "removed_site_fraction": 0.0,
+    "retained_site_count": 1140,
+    "retained_site_fraction": 1.0,
+    "trimmed_alignment_length": 1140,
+    "trimmed_gap_fraction": 0.20350877192982456,
+    "trimmed_gap_percentage": 20.350877192982455
+  },
+  "weak_backbone_report": null,
+  "workflow": "alignment-trimming"
+}

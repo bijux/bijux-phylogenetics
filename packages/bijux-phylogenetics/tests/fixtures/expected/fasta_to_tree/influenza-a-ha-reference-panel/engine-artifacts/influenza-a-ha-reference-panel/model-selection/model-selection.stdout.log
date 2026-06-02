@@ -1,0 +1,167 @@
+IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024
+Developed by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,
+Dominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong
+
+Host:    Mac (SSE4.2, 32 GB RAM)
+Command: /opt/homebrew/bin/iqtree2 -s /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln -st DNA -seed 1 -nt 1 -m MF -pre /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection
+Seed:    1 (Using SPRNG - Scalable Parallel Random Number Generator)
+Time:    Sun May 31 20:29:32 2026
+Kernel:  SSE2 - 1 threads (10 CPU cores detected)
+
+HINT: Use -nt option to specify number of threads because your CPU has 10 cores!
+HINT: -nt AUTO will automatically determine the best number of threads to use.
+
+Reading alignment file /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln ... Fasta format detected
+Reading fasta file: done in 0.000143051 secs using 84.59% CPU
+Alignment most likely contains DNA/RNA sequences
+Alignment has 6 sequences with 1820 columns, 574 distinct patterns
+575 parsimony-informative, 602 singleton sites, 643 constant sites
+                                     Gap/Ambiguity  Composition  p-value
+Analyzing sequences: done in 7.86781e-06 secs using 88.97% CPU
+   1  influenza_a_h1n1_puerto_rico_1934      2.31%    passed     97.08%
+   2  influenza_a_h1n1_texas_1991            4.67%    passed     99.68%
+   3  influenza_a_h1n1_wisconsin_2009        4.73%    passed     90.16%
+   4  influenza_a_h3n2_new_york_2004         3.19%    passed     54.48%
+   5  influenza_a_h2n2_korea_1968            2.58%    passed     87.80%
+   6  influenza_a_h5n1_chicken_jilin_2004    2.25%    passed     99.80%
+****  TOTAL                                  3.29%  0 sequences failed composition chi2 test (p-value<5%; df=3)
+
+
+Create initial parsimony tree by phylogenetic likelihood library (PLL)... 0.000 seconds
+Perform fast likelihood tree search using GTR+I+G model...
+Estimate model parameters (epsilon = 5.000)
+Perform nearest neighbor interchange...
+Estimate model parameters (epsilon = 1.000)
+1. Initial log-likelihood: -9378.636
+Optimal log-likelihood: -9378.445
+Rate parameters:  A-C: 2.77863  A-G: 6.93860  A-T: 1.73607  C-G: 1.77590  C-T: 8.60423  G-T: 1.00000
+Base frequencies:  A: 0.348  C: 0.188  G: 0.226  T: 0.238
+Proportion of invariable sites: 0.157
+Gamma shape alpha: 1.110
+Parameters optimization took 1 rounds (0.002 sec)
+Time for fast ML tree search: 0.024 seconds
+
+NOTE: ModelFinder requires 1 MB RAM!
+ModelFinder will test up to 484 DNA models (sample size: 1820 epsilon: 0.100) ...
+ No. Model         -LnL         df  AIC          AICc         BIC
+  1  GTR+F         9539.795     17  19113.591    19113.930    19207.203
+  2  GTR+F+I       9414.823     18  18865.645    18866.025    18964.764
+  3  GTR+F+G4      9375.649     18  18787.299    18787.679    18886.418
+  4  GTR+F+I+G4    9377.867     19  18793.735    18794.157    18898.360
+  5  GTR+F+R2      9371.694     19  18781.389    18781.811    18886.014
++R3 reinitialized from +R2 with factor 0.500
++R3 reinitialized from +R2 with factor 0.250
++R3 reinitialized from +R2 with factor 0.125
+  6  GTR+F+R3      9371.686     21  18785.373    18785.887    18901.011
+ 14  GTR+F+I+R2    9372.909     20  18785.817    18786.284    18895.949
++I+R3 reinitialized from +I+R2 with factor 0.500
++I+R3 reinitialized from +I+R2 with factor 0.250
++I+R3 reinitialized from +I+R2 with factor 0.125
+ 15  GTR+F+I+R3    9372.870     22  18789.740    18790.303    18910.885
+ 25  SYM+G4        9471.163     15  18972.325    18972.592    19054.924
+ 27  SYM+R2        9467.797     16  18967.594    18967.896    19055.700
+ 36  SYM+I+R2      9468.797     17  18971.594    18971.934    19065.206
+ 47  TVM+F+G4      9377.996     17  18789.992    18790.331    18883.604
+ 49  TVM+F+R2      9374.262     18  18784.524    18784.904    18883.642
+ 58  TVM+F+I+R2    9374.996     19  18787.992    18788.414    18892.617
+ 69  TVMe+G4       9471.886     14  18971.772    18972.005    19048.864
+ 71  TVMe+R2       9468.726     15  18967.452    18967.718    19050.051
+ 80  TVMe+I+R2     9469.513     16  18971.027    18971.329    19059.132
+ 91  TIM3+F+G4     9380.961     16  18793.922    18794.224    18882.027
+ 93  TIM3+F+R2     9376.716     17  18787.431    18787.771    18881.043
+102  TIM3+F+I+R2   9377.557     18  18791.114    18791.494    18890.233
+113  TIM3e+G4      9489.358     13  19004.716    19004.917    19076.302
+115  TIM3e+R2      9485.989     14  18999.978    19000.210    19077.070
+124  TIM3e+I+R2    9486.575     15  19003.150    19003.416    19085.749
+135  TIM2+F+G4     9382.856     16  18797.712    18798.014    18885.817
+137  TIM2+F+R2     9380.299     17  18794.599    18794.938    18888.211
+146  TIM2+F+I+R2   9380.253     18  18796.507    18796.887    18895.625
+157  TIM2e+G4      9472.640     13  18971.281    18971.482    19042.866
+159  TIM2e+R2      9469.562     14  18967.123    18967.356    19044.216
+168  TIM2e+I+R2    9470.074     15  18970.148    18970.414    19052.747
+179  TIM+F+G4      9387.991     16  18807.981    18808.283    18896.087
+181  TIM+F+R2      9385.105     17  18804.211    18804.550    18897.823
+190  TIM+F+I+R2    9384.965     18  18805.930    18806.310    18905.049
+201  TIMe+G4       9490.833     13  19007.666    19007.868    19079.252
+203  TIMe+R2       9487.809     14  19003.618    19003.851    19080.710
+212  TIMe+I+R2     9488.106     15  19006.212    19006.478    19088.811
+223  TPM3u+F+G4    9383.120     15  18796.240    18796.506    18878.839
+225  TPM3u+F+R2    9379.204     16  18790.408    18790.709    18878.513
+234  TPM3u+F+I+R2  9379.647     17  18793.293    18793.633    18886.905
+245  TPM3+G4       9490.074     12  19004.148    19004.321    19070.227
+247  TPM3+R2       9486.886     13  18999.771    18999.973    19071.357
+256  TPM3+I+R2     9487.314     14  19002.628    19002.860    19079.720
+267  TPM2u+F+G4    9385.026     15  18800.051    18800.317    18882.650
+269  TPM2u+F+R2    9382.399     16  18796.799    18797.101    18884.904
+278  TPM2u+F+I+R2  9382.280     17  18798.560    18798.900    18892.172
+289  TPM2+G4       9473.363     12  18970.727    18970.899    19036.806
+291  TPM2+R2       9470.640     13  18967.279    18967.481    19038.865
+300  TPM2+I+R2     9470.967     14  18969.934    18970.167    19047.027
+311  K3Pu+F+G4     9389.917     15  18809.834    18810.100    18892.433
+313  K3Pu+F+R2     9387.044     16  18806.087    18806.389    18894.193
+322  K3Pu+F+I+R2   9386.793     17  18807.587    18807.927    18901.199
+333  K3P+G4        9491.533     12  19007.065    19007.238    19073.144
+335  K3P+R2        9488.774     13  19003.549    19003.750    19075.135
+344  K3P+I+R2      9488.927     14  19005.854    19006.087    19082.947
+355  TN+F+G4       9388.291     15  18806.582    18806.848    18889.181
+357  TN+F+R2       9385.416     16  18802.832    18803.134    18890.938
+366  TN+F+I+R2     9385.300     17  18804.601    18804.940    18898.213
+377  TNe+G4        9490.807     12  19005.614    19005.786    19071.693
+379  TNe+R2        9487.810     13  19001.621    19001.822    19073.206
+388  TNe+I+R2      9488.052     14  19004.104    19004.336    19081.196
+399  HKY+F+G4      9390.246     14  18808.493    18808.725    18885.585
+401  HKY+F+R2      9387.383     15  18804.767    18805.033    18887.366
+410  HKY+F+I+R2    9387.144     16  18806.288    18806.589    18894.393
+421  K2P+G4        9491.522     11  19005.043    19005.189    19065.616
+423  K2P+R2        9488.779     12  19001.558    19001.731    19067.637
+432  K2P+I+R2      9488.923     13  19003.846    19004.047    19075.431
+443  F81+F+G4      9589.633     13  19205.266    19205.467    19276.852
+445  F81+F+R2      9588.820     14  19205.640    19205.873    19282.732
+454  F81+F+I+R2    9588.879     15  19207.757    19208.023    19290.356
+465  JC+G4         9688.386     10  19396.773    19396.894    19451.839
+467  JC+R2         9687.917     11  19397.834    19397.980    19458.406
+476  JC+I+R2       9687.829     12  19399.657    19399.830    19465.736
+Akaike Information Criterion:           GTR+F+R2
+Corrected Akaike Information Criterion: GTR+F+R2
+Bayesian Information Criterion:         TPM3u+F+R2
+Best-fit model: TPM3u+F+R2 chosen according to BIC
+
+All model information printed to /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.model.gz
+CPU time for ModelFinder: 0.619 seconds (0h:0m:0s)
+Wall-clock time for ModelFinder: 0.629 seconds (0h:0m:0s)
+
+NOTE: 0 MB RAM (0 GB) is required!
+Estimate model parameters (epsilon = 0.010)
+1. Initial log-likelihood: -9589.096
+2. Current log-likelihood: -9422.705
+3. Current log-likelihood: -9381.722
+4. Current log-likelihood: -9380.267
+5. Current log-likelihood: -9379.804
+6. Current log-likelihood: -9379.550
+7. Current log-likelihood: -9379.391
+8. Current log-likelihood: -9379.306
+9. Current log-likelihood: -9379.260
+10. Current log-likelihood: -9379.234
+11. Current log-likelihood: -9379.210
+12. Current log-likelihood: -9379.199
+Optimal log-likelihood: -9379.192
+Rate parameters:  A-C: 1.75262  A-G: 5.41213  A-T: 1.00000  C-G: 1.75262  C-T: 5.41213  G-T: 1.00000
+Base frequencies:  A: 0.348  C: 0.188  G: 0.226  T: 0.238
+Site proportion and rates:  (0.552,0.178) (0.448,2.015)
+Parameters optimization took 12 rounds (0.021 sec)
+Wrote distance file to... 
+BEST SCORE FOUND : -9379.192
+Total tree length: 3.265
+
+Total number of iterations: 0
+CPU time used for tree search: 0.000 sec (0h:0m:0s)
+Wall-clock time used for tree search: 0.000 sec (0h:0m:0s)
+Total CPU time used: 0.643 sec (0h:0m:0s)
+Total wall-clock time used: 0.656 sec (0h:0m:0s)
+
+Analysis results written to: 
+  IQ-TREE report:                /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.iqtree
+  Tree used for ModelFinder:     /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.treefile
+  Screen log file:               /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.log
+
+Date and Time: Sun May 31 20:29:33 2026

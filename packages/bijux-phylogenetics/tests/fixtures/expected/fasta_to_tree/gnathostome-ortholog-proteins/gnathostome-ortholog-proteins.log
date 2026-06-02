@@ -1,11 +1,11 @@
 workflow: fasta-to-tree
-input_path: packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta
-prepared_input_path: packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta
+input_path: /Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta
+prepared_input_path: /Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta
 sequence_type: protein
 selected_model: Q.insect+I
-started_at_utc: 2026-05-13T04:22:47Z
-ended_at_utc: 2026-05-13T04:23:06Z
-runtime_seconds: 18.087
+started_at_utc: 2026-06-02T12:27:55Z
+ended_at_utc: 2026-06-02T12:28:15Z
+runtime_seconds: 19.534
 run_manifest_path: gnathostome-ortholog-proteins.run.json
 
 [input-validation]
@@ -15,7 +15,7 @@ warnings:
 
 [alignment]
 engine: mafft
-command: /opt/homebrew/bin/mafft --auto packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta
+command: /opt/homebrew/bin/mafft --auto /Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-proteins.fasta
 version: v7.526 (2024/Apr/26)
 manifest: engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln.manifest.json
 output.alignment: engine-artifacts/gnathostome-ortholog-proteins/alignment/alignment.aln
@@ -26,6 +26,7 @@ command: /opt/homebrew/bin/trimal -in engine-artifacts/gnathostome-ortholog-prot
 version: trimAl v1.5.rev0 build[2024-05-27]
 manifest: engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln.manifest.json
 output.trimmed_alignment: engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln
+output.trimming_summary: engine-artifacts/gnathostome-ortholog-proteins/trimming/trimming.trimmed.aln.retained-sites.tsv
 
 [model_selection]
 engine: iqtree
@@ -64,7 +65,7 @@ output.iqtree_report: engine-artifacts/gnathostome-ortholog-proteins/bootstrap-s
 output.iqtree_log: engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.log
 output.bootstrap_trees: engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.ufboot
 output.consensus_tree: engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.contree
-output.support_tree: engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.treefile
+output.support_tree: engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.contree
 output.support_table: engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.support.tsv
 output.low_support_branches: engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.low-support.tsv
 output.support_histogram: engine-artifacts/gnathostome-ortholog-proteins/bootstrap-support/bootstrap-support.support-histogram.tsv

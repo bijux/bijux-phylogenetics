@@ -2,27 +2,32 @@
   "alignment_mode": "auto",
   "alignment_workflow": {
     "bootstrap_support_summary": null,
+    "config": {
+      "extra_args": [],
+      "mode": "auto",
+      "timeout_seconds": null
+    },
     "engine_name": "mafft",
     "fasttree_support_summary": null,
     "input_checksums": {
-      "packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta": "bdb47204606c5a3cec7c2cb33f6031460a09f1c9de510d57112f16d37faeb96c"
+      "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta": "bdb47204606c5a3cec7c2cb33f6031460a09f1c9de510d57112f16d37faeb96c"
     },
     "input_paths": [
-      "packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta"
+      "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta"
     ],
     "iqtree_summary": null,
     "log_likelihood": null,
-    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln.manifest.json",
+    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln.manifest.json",
     "model_selection_summary": null,
     "notes": [
       "mafft alignment mode: auto",
       "alignment output validated as deterministic equal-length FASTA"
     ],
     "output_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
     },
     "output_paths": {
-      "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln"
+      "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln"
     },
     "resumed": false,
     "run": {
@@ -31,16 +36,17 @@
         "--auto",
         "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta"
       ],
-      "ended_at_utc": "2026-05-13T04:26:44Z",
+      "ended_at_utc": "2026-05-31T18:29:32Z",
       "engine_name": "mafft",
       "executable": "/opt/homebrew/bin/mafft",
       "exit_code": 0,
       "output_paths": {
-        "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln"
+        "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln"
       },
-      "started_at_utc": "2026-05-13T04:26:44Z",
-      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln.stderr.log",
-      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln",
+      "runtime_seconds": 0.888986,
+      "started_at_utc": "2026-05-31T18:29:31Z",
+      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln.stderr.log",
+      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln",
       "timed_out": false,
       "timeout_seconds": null,
       "version": {
@@ -54,7 +60,7 @@
       },
       "warning_lines": [],
       "workflow": "multiple-sequence-alignment",
-      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment"
+      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment"
     },
     "selected_model": null,
     "sh_alrt_support_summary": null,
@@ -111,19 +117,28 @@
         "lt50": 0
       },
       "supported_node_count": 3,
-      "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.treefile",
+      "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.treefile",
       "warnings": [
         "one or more internal nodes did not expose numeric support labels"
       ],
       "weakly_supported_clade_count": 0
     },
+    "config": {
+      "model": "TPM3u+F+R2",
+      "partition_path": null,
+      "replicates": 1000,
+      "seed": 1,
+      "sequence_type": "dna",
+      "threads": 1,
+      "timeout_seconds": null
+    },
     "engine_name": "iqtree",
     "fasttree_support_summary": null,
     "input_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
     },
     "input_paths": [
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln"
     ],
     "iqtree_summary": {
       "log_likelihood": -9379.188,
@@ -168,8 +183,20 @@
       ]
     },
     "log_likelihood": -9379.188,
-    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.manifest.json",
-    "model_selection_summary": null,
+    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.manifest.json",
+    "model_selection_summary": {
+      "best_model_aic": "18790.3760",
+      "best_model_aicc": "18790.6777",
+      "best_model_bic": "18878.4815",
+      "best_score_aic": null,
+      "best_score_aicc": null,
+      "best_score_bic": null,
+      "bic_near_best_models": [],
+      "candidate_count": 0,
+      "candidates": [],
+      "selected_criterion": "BIC",
+      "selected_model": "18878.4815"
+    },
     "notes": [
       "iqtree random seed: 1",
       "iqtree threads: 1",
@@ -181,31 +208,31 @@
       "support histogram exported for reviewer-facing support distribution checks"
     ],
     "output_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.contree": "4fbd890aa058eb1862cdb2d66d5895039915d8622cc37645dd442c9d7afb65ad",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.iqtree": "574f6df1b93de776aac30a38949cf7cb7c73e89344edbb1e5eb794af2e247bc0",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.log": "5ccc9bb17b2e0ed7a350df6155e56ec37ce1cf6ea9c02ce1382fdd5b23f30aca",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.low-support.tsv": "3c9d1d00f9023dbb6e5f8931d91ae26afc322f0fa54385f41b12290c8b814bb7",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.support-histogram.tsv": "eb933cb37e721c8409c4dda1409de1ddae8eba623cd1927eb9efb5054c29121c",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.support.tsv": "fbe780d1a58463beca85fc241251607c54ce28a24c863cf1b5c524caf576341f",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.treefile": "a481df161f4bdbe061f4584e5e1640a031da8dbf23c6cd5c0ee088d2a11f92f7",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.ufboot": "3ecf0217475d796cc3653bfe1e17313cdd977a8f6d352a09332f425208ee5f88"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.contree": "4fbd890aa058eb1862cdb2d66d5895039915d8622cc37645dd442c9d7afb65ad",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.iqtree": "58f67d47894c9455f3b6b136572d1e31ba48ed66d0a558dc1871dda3cd94f930",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.log": "a06b22e54ad98019d1ccf54caa356c4a4d22520f62bdc25390960a5d87680059",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.low-support.tsv": "3c9d1d00f9023dbb6e5f8931d91ae26afc322f0fa54385f41b12290c8b814bb7",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.support-histogram.tsv": "eb933cb37e721c8409c4dda1409de1ddae8eba623cd1927eb9efb5054c29121c",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.support.tsv": "fbe780d1a58463beca85fc241251607c54ce28a24c863cf1b5c524caf576341f",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.treefile": "a481df161f4bdbe061f4584e5e1640a031da8dbf23c6cd5c0ee088d2a11f92f7",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.ufboot": "3ecf0217475d796cc3653bfe1e17313cdd977a8f6d352a09332f425208ee5f88"
     },
     "output_paths": {
-      "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.ufboot",
-      "consensus_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.contree",
-      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.log",
-      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.iqtree",
-      "low_support_branches": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.low-support.tsv",
-      "support_histogram": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.support-histogram.tsv",
-      "support_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.support.tsv",
-      "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.treefile"
+      "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.ufboot",
+      "consensus_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.contree",
+      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.log",
+      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.iqtree",
+      "low_support_branches": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.low-support.tsv",
+      "support_histogram": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.support-histogram.tsv",
+      "support_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.support.tsv",
+      "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.treefile"
     },
     "resumed": false,
     "run": {
       "command": [
         "/opt/homebrew/bin/iqtree2",
         "-s",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln",
         "-st",
         "DNA",
         "-seed",
@@ -218,21 +245,22 @@
         "1000",
         "-wbt",
         "-pre",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support"
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support"
       ],
-      "ended_at_utc": "2026-05-13T04:26:47Z",
+      "ended_at_utc": "2026-05-31T18:29:34Z",
       "engine_name": "iqtree",
       "executable": "/opt/homebrew/bin/iqtree2",
       "exit_code": 0,
       "output_paths": {
-        "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.ufboot",
-        "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.log",
-        "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.iqtree",
-        "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.treefile"
+        "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.ufboot",
+        "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.log",
+        "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.iqtree",
+        "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.treefile"
       },
-      "started_at_utc": "2026-05-13T04:26:46Z",
-      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.stderr.log",
-      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.stdout.log",
+      "runtime_seconds": 0.629442,
+      "started_at_utc": "2026-05-31T18:29:34Z",
+      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.stderr.log",
+      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.stdout.log",
       "timed_out": false,
       "timeout_seconds": null,
       "version": {
@@ -246,7 +274,7 @@
       },
       "warning_lines": [],
       "workflow": "bootstrap-support",
-      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support"
+      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support"
     },
     "selected_model": "TPM3u+F+R2",
     "sh_alrt_support_summary": null,
@@ -254,7 +282,7 @@
     "weak_backbone_report": {
       "evaluated_backbone_node_count": 2,
       "threshold": 70.0,
-      "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.treefile",
+      "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.treefile",
       "warnings": [
         "one or more internal nodes did not expose numeric support labels"
       ],
@@ -272,7 +300,7 @@
     "bootstrap_support": [
       "/opt/homebrew/bin/iqtree2",
       "-s",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln",
       "-st",
       "DNA",
       "-seed",
@@ -285,12 +313,12 @@
       "1000",
       "-wbt",
       "-pre",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support"
     ],
     "maximum_likelihood": [
       "/opt/homebrew/bin/iqtree2",
       "-s",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln",
       "-st",
       "DNA",
       "-seed",
@@ -300,12 +328,12 @@
       "-m",
       "TPM3u+F+R2",
       "-pre",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood"
     ],
     "model_selection": [
       "/opt/homebrew/bin/iqtree2",
       "-s",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln",
       "-st",
       "DNA",
       "-seed",
@@ -315,20 +343,32 @@
       "-m",
       "MF",
       "-pre",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection"
     ],
     "trimming": [
       "/opt/homebrew/bin/trimal",
       "-in",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln",
       "-out",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln",
       "-gt",
       "0.100000"
     ]
   },
-  "ended_at_utc": "2026-05-13T04:26:47Z",
-  "engine_artifact_dir": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel",
+  "config": {
+    "alignment_mode": "auto",
+    "bootstrap_replicates": 1000,
+    "incomplete_run_policy": "reject",
+    "iqtree_seed": 1,
+    "iqtree_threads": 1,
+    "resume": false,
+    "sequence_type": "dna",
+    "timeout_seconds": null,
+    "trim_gap_threshold": 0.1,
+    "trimming_mode": "gap-threshold"
+  },
+  "ended_at_utc": "2026-05-31T18:29:35Z",
+  "engine_artifact_dir": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel",
   "engine_versions": {
     "iqtree_bootstrap_support": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong",
     "iqtree_maximum_likelihood": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong",
@@ -337,16 +377,16 @@
     "trimal": "trimAl v1.5.rev0 build[2024-05-27]"
   },
   "input_checksums": {
-    "packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta": "bdb47204606c5a3cec7c2cb33f6031460a09f1c9de510d57112f16d37faeb96c"
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta": "bdb47204606c5a3cec7c2cb33f6031460a09f1c9de510d57112f16d37faeb96c"
   },
-  "input_path": "packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta",
+  "input_path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta",
   "input_repair": null,
   "input_validation": {
     "duplicate_identifiers": [],
     "empty_sequences": [],
     "illegal_characters": [],
     "length_outliers": [],
-    "path": "packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta",
+    "path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta",
     "sequence_type_report": {
       "compatible_types": [
         "dna",
@@ -356,7 +396,7 @@
       "detected_type": "dna",
       "invalid_record_count": 0,
       "note": "thymine was observed and no protein-exclusive residues were found, so the raw input defaults to DNA",
-      "path": "packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta",
+      "path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta",
       "protein_signal_record_count": 0,
       "record_count": 6,
       "selected_type": "dna",
@@ -372,7 +412,7 @@
       "max_sequence_length": 1779,
       "median_sequence_length": 1767.5,
       "min_sequence_length": 1734,
-      "path": "packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta",
+      "path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta",
       "sequence_count": 6,
       "total_residue_count": 10561,
       "unique_identifier_count": 6
@@ -383,16 +423,24 @@
   },
   "iqtree_seed": 1,
   "iqtree_threads": 1,
-  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.manifest.json",
+  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.manifest.json",
   "maximum_likelihood_workflow": {
     "bootstrap_support_summary": null,
+    "config": {
+      "model": "TPM3u+F+R2",
+      "partition_path": null,
+      "seed": 1,
+      "sequence_type": "dna",
+      "threads": 1,
+      "timeout_seconds": null
+    },
     "engine_name": "iqtree",
     "fasttree_support_summary": null,
     "input_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
     },
     "input_paths": [
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln"
     ],
     "iqtree_summary": {
       "log_likelihood": -9379.188,
@@ -403,8 +451,20 @@
       "support_values": []
     },
     "log_likelihood": -9379.188,
-    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.manifest.json",
-    "model_selection_summary": null,
+    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.manifest.json",
+    "model_selection_summary": {
+      "best_model_aic": "18790.3761",
+      "best_model_aicc": "18790.6778",
+      "best_model_bic": "18878.4815",
+      "best_score_aic": null,
+      "best_score_aicc": null,
+      "best_score_bic": null,
+      "bic_near_best_models": [],
+      "candidate_count": 0,
+      "candidates": [],
+      "selected_criterion": "BIC",
+      "selected_model": "18878.4815"
+    },
     "notes": [
       "iqtree random seed: 1",
       "iqtree threads: 1",
@@ -412,21 +472,21 @@
       "log-likelihood parsed from iqtree inference artifacts"
     ],
     "output_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.iqtree": "50b8fd2dd12fc6431946e627d8db437da4c0605ff44510d230f0b05a84630618",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.log": "ff3a67ce935c830af598e9eee593e2de0ef90f4d5d79712305598939529781b2",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.treefile": "32e853a9444f1a592a5594e6ed107ec5c637f0172a28c38ba284d6c6633943f2"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.iqtree": "e8fa8d1f4ce7102144c1615b6b280cd4421d47a6ac7e804bb8407d13fd5cf9c2",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.log": "1eb27dfdfeb8dad4b49077e51d435bd80ef1899e4589bde41a813abbacab41d2",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.treefile": "32e853a9444f1a592a5594e6ed107ec5c637f0172a28c38ba284d6c6633943f2"
     },
     "output_paths": {
-      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.log",
-      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.iqtree",
-      "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.treefile"
+      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.log",
+      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.iqtree",
+      "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.treefile"
     },
     "resumed": false,
     "run": {
       "command": [
         "/opt/homebrew/bin/iqtree2",
         "-s",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln",
         "-st",
         "DNA",
         "-seed",
@@ -436,20 +496,21 @@
         "-m",
         "TPM3u+F+R2",
         "-pre",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood"
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood"
       ],
-      "ended_at_utc": "2026-05-13T04:26:46Z",
+      "ended_at_utc": "2026-05-31T18:29:33Z",
       "engine_name": "iqtree",
       "executable": "/opt/homebrew/bin/iqtree2",
       "exit_code": 0,
       "output_paths": {
-        "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.log",
-        "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.iqtree",
-        "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.treefile"
+        "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.log",
+        "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.iqtree",
+        "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.treefile"
       },
-      "started_at_utc": "2026-05-13T04:26:46Z",
-      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.stderr.log",
-      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.stdout.log",
+      "runtime_seconds": 0.382873,
+      "started_at_utc": "2026-05-31T18:29:33Z",
+      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.stderr.log",
+      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.stdout.log",
       "timed_out": false,
       "timeout_seconds": null,
       "version": {
@@ -463,7 +524,7 @@
       },
       "warning_lines": [],
       "workflow": "maximum-likelihood-tree",
-      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood"
+      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood"
     },
     "selected_model": "TPM3u+F+R2",
     "sh_alrt_support_summary": null,
@@ -471,29 +532,49 @@
     "weak_backbone_report": null,
     "workflow": "maximum-likelihood-tree"
   },
+  "method_tier": {
+    "approximation": null,
+    "excluded_reference_surfaces": [],
+    "inference_mode": "inference",
+    "summary": "This workflow runs governed external alignment and maximum-likelihood inference with real-engine validation coverage.",
+    "surface": "fasta-to-tree",
+    "tier": "supported",
+    "validation_basis": [
+      "real-engine-validation:fasta-to-tree",
+      "artifact-schema:fasta-to-tree"
+    ],
+    "warning": null
+  },
   "model_rows": [
     {
-      "alignment_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.aln",
+      "alignment_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.aln",
       "artifact_selected_model": "TPM3u+F+R2",
       "engine_name": "iqtree",
-      "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.manifest.json",
+      "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.manifest.json",
       "model_consistent": true,
       "report_selected_model": "TPM3u+F+R2",
       "selected_model": "TPM3u+F+R2",
       "sequence_type": "dna",
-      "trimmed_alignment_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.trimmed.aln",
+      "trimmed_alignment_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.trimmed.aln",
       "workflow": "model-selection"
     }
   ],
   "model_selection_workflow": {
     "bootstrap_support_summary": null,
+    "config": {
+      "partition_path": null,
+      "seed": 1,
+      "sequence_type": "dna",
+      "threads": 1,
+      "timeout_seconds": null
+    },
     "engine_name": "iqtree",
     "fasttree_support_summary": null,
     "input_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
     },
     "input_paths": [
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln"
     ],
     "iqtree_summary": {
       "log_likelihood": -9379.192,
@@ -504,7 +585,7 @@
       "support_values": []
     },
     "log_likelihood": -9379.192,
-    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.manifest.json",
+    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.manifest.json",
     "model_selection_summary": {
       "best_model_aic": "GTR+F+R2",
       "best_model_aicc": "GTR+F+R2",
@@ -1239,25 +1320,25 @@
       "model-selection workflow exposed a parsable log-likelihood score"
     ],
     "output_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.iqtree": "c54a1559dedbdc04b2cb7a54423af8c3fe663df94bbef5524804920ed6517248",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.log": "8df1410662cf3673710f663e7317bbe61f8ceff92c168f725398f0145ce208d4",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.model-candidates.tsv": "f60cc978ddd842f94d3fc48e418fd5c5b336757724ddfa7084682e294667ccf1",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.model.gz": "a81add212ccfd5ee90558367ea1d72172f1fdc2c4bfb286195f8ef90a33661c5",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.selected-model.txt": "8424eae260bd0d010ab45229e6866c5ec834caa529af789cf19f6ec388c38f06"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.iqtree": "292e2a82d048154d496ae6c94a6263078a46052fd5f5f8083b9a6c3035ea1fd0",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.log": "7bd4c61b3377c5684a903501117a7f00d89940f2055cc1475da6720aa7d6d2cd",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.model-candidates.tsv": "f60cc978ddd842f94d3fc48e418fd5c5b336757724ddfa7084682e294667ccf1",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.model.gz": "0c5f6dccb0e407d4257a0166d2b90b6d3d751adecbf32c38bd2733c98064a649",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.selected-model.txt": "8424eae260bd0d010ab45229e6866c5ec834caa529af789cf19f6ec388c38f06"
     },
     "output_paths": {
-      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.log",
-      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.iqtree",
-      "model_candidates": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.model-candidates.tsv",
-      "model_selection_sidecar": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.model.gz",
-      "selected_model": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.selected-model.txt"
+      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.log",
+      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.iqtree",
+      "model_candidates": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.model-candidates.tsv",
+      "model_selection_sidecar": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.model.gz",
+      "selected_model": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.selected-model.txt"
     },
     "resumed": false,
     "run": {
       "command": [
         "/opt/homebrew/bin/iqtree2",
         "-s",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln",
         "-st",
         "DNA",
         "-seed",
@@ -1267,19 +1348,20 @@
         "-m",
         "MF",
         "-pre",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection"
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection"
       ],
-      "ended_at_utc": "2026-05-13T04:26:46Z",
+      "ended_at_utc": "2026-05-31T18:29:33Z",
       "engine_name": "iqtree",
       "executable": "/opt/homebrew/bin/iqtree2",
       "exit_code": 0,
       "output_paths": {
-        "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.log",
-        "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.iqtree"
+        "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.log",
+        "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.iqtree"
       },
-      "started_at_utc": "2026-05-13T04:26:45Z",
-      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.stderr.log",
-      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.stdout.log",
+      "runtime_seconds": 0.674301,
+      "started_at_utc": "2026-05-31T18:29:32Z",
+      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.stderr.log",
+      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.stdout.log",
       "timed_out": false,
       "timeout_seconds": null,
       "version": {
@@ -1293,7 +1375,7 @@
       },
       "warning_lines": [],
       "workflow": "model-selection",
-      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection"
+      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection"
     },
     "selected_model": "TPM3u+F+R2",
     "sh_alrt_support_summary": null,
@@ -1308,7 +1390,7 @@
     "best_model_bic": "TPM3u+F+R2",
     "candidate_model_count": 71,
     "issues": [],
-    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.manifest.json",
+    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.manifest.json",
     "manifest_selected_criterion": "BIC",
     "manifest_selected_model": "TPM3u+F+R2",
     "report_selected_criterion": "BIC",
@@ -1325,39 +1407,220 @@
     "raw sequence type detection: dna (medium)",
     "thymine was observed and no protein-exclusive residues were found, so the raw input defaults to DNA"
   ],
-  "out_dir": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel",
+  "out_dir": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel",
   "output_checksums": {
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.log": "760ce9d198b72004311b1f5820584680ae22bbc070d49e1460509eea10661ce0",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.model.tsv": "181cacb3eac552032b9ecbc89f687d1931b78617a9c64da4e46a636e2bbe9d38",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.support.tsv": "f5296982994f23e5f14afa4b9a50aa1d2b88229da053e62410bd62179c9a453b",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.tree": "a481df161f4bdbe061f4584e5e1640a031da8dbf23c6cd5c0ee088d2a11f92f7",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.trimmed.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.log": "d3ecf9000fe2006edc87ef059aca595bffa7f5a187e12d5ed3eb07077214c924",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.methods-summary.md": "6a4c8b09cfcb994e0e8f7643d8fa5d06a3e7f1ba136fb2c1b33a0ffd75602e80",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.model.tsv": "181cacb3eac552032b9ecbc89f687d1931b78617a9c64da4e46a636e2bbe9d38",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.support.tsv": "f5296982994f23e5f14afa4b9a50aa1d2b88229da053e62410bd62179c9a453b",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.tree": "a481df161f4bdbe061f4584e5e1640a031da8dbf23c6cd5c0ee088d2a11f92f7",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.trimmed.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
   },
   "output_paths": {
-    "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.aln",
-    "log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.log",
-    "manifest": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.manifest.json",
-    "model_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.model.tsv",
-    "run_manifest": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.run.json",
-    "support_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.support.tsv",
-    "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.tree",
-    "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.trimmed.aln"
+    "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.aln",
+    "log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.log",
+    "manifest": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.manifest.json",
+    "methods_summary": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.methods-summary.md",
+    "model_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.model.tsv",
+    "run_manifest": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.run.json",
+    "support_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.support.tsv",
+    "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.tree",
+    "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.trimmed.aln"
   },
   "prefix": "influenza-a-ha-reference-panel",
-  "prepared_input_path": "packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta",
+  "prepared_input_path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta",
   "repaired_input_validation": null,
-  "run_manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.run.json",
-  "runtime_seconds": 3.172485,
+  "run_manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.run.json",
+  "runtime_seconds": 4.547471,
   "selected_model": "TPM3u+F+R2",
   "sequence_type": "dna",
-  "started_at_utc": "2026-05-13T04:26:44Z",
+  "stage_fingerprints": {
+    "alignment": {
+      "config": {
+        "alignment_mode": "auto",
+        "timeout_seconds": null
+      },
+      "engine_versions": {
+        "mafft": "v7.526 (2024/Apr/26)"
+      },
+      "fingerprint": "3daf7665e9e5768ae4ad224768f147986295ef66da512306e5e7dc2ff31d9c81",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta": "bdb47204606c5a3cec7c2cb33f6031460a09f1c9de510d57112f16d37faeb96c"
+      },
+      "output_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
+      },
+      "resumed": false,
+      "stage": "alignment",
+      "upstream_fingerprints": {
+        "fasta_validation": "9b4b6407b5bf30abd707fb48aeb9cf043dcd6ee730c57237bebb27081dd6f2a2"
+      }
+    },
+    "fasta_validation": {
+      "config": {
+        "declared_sequence_type": "dna",
+        "normalize_identifiers": false,
+        "remove_invalid_records": false
+      },
+      "engine_versions": {},
+      "fingerprint": "9b4b6407b5bf30abd707fb48aeb9cf043dcd6ee730c57237bebb27081dd6f2a2",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/viruses/influenza_a_ha_reference_panel/sequences.fasta": "bdb47204606c5a3cec7c2cb33f6031460a09f1c9de510d57112f16d37faeb96c"
+      },
+      "output_checksums": {},
+      "resumed": false,
+      "stage": "fasta_validation",
+      "upstream_fingerprints": {}
+    },
+    "inference": {
+      "config": {
+        "iqtree_seed": 1,
+        "iqtree_threads": 1,
+        "selected_model": "TPM3u+F+R2",
+        "sequence_type": "dna",
+        "timeout_seconds": null
+      },
+      "engine_versions": {
+        "iqtree_maximum_likelihood": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+      },
+      "fingerprint": "e34ff43e0b5b24e44d8540ac26e94144bf2f230917b8ba6af038f60180534650",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
+      },
+      "output_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.iqtree": "e8fa8d1f4ce7102144c1615b6b280cd4421d47a6ac7e804bb8407d13fd5cf9c2",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.log": "1eb27dfdfeb8dad4b49077e51d435bd80ef1899e4589bde41a813abbacab41d2",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.treefile": "32e853a9444f1a592a5594e6ed107ec5c637f0172a28c38ba284d6c6633943f2"
+      },
+      "resumed": false,
+      "stage": "inference",
+      "upstream_fingerprints": {
+        "model_selection": "bd58eed4741c8f32e78820327c4f455eff40d50a6bd9ebe676994a6a9649f815",
+        "trimming": "d2d8f8ca487074ac2fdde469885c4acc4f1091e8cb171f65e98abd93b365fe53"
+      }
+    },
+    "model_selection": {
+      "config": {
+        "iqtree_seed": 1,
+        "iqtree_threads": 1,
+        "sequence_type": "dna",
+        "timeout_seconds": null
+      },
+      "engine_versions": {
+        "iqtree_model_selection": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+      },
+      "fingerprint": "bd58eed4741c8f32e78820327c4f455eff40d50a6bd9ebe676994a6a9649f815",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
+      },
+      "output_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.iqtree": "292e2a82d048154d496ae6c94a6263078a46052fd5f5f8083b9a6c3035ea1fd0",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.log": "7bd4c61b3377c5684a903501117a7f00d89940f2055cc1475da6720aa7d6d2cd",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.model-candidates.tsv": "f60cc978ddd842f94d3fc48e418fd5c5b336757724ddfa7084682e294667ccf1",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.model.gz": "0c5f6dccb0e407d4257a0166d2b90b6d3d751adecbf32c38bd2733c98064a649",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.selected-model.txt": "8424eae260bd0d010ab45229e6866c5ec834caa529af789cf19f6ec388c38f06"
+      },
+      "resumed": false,
+      "stage": "model_selection",
+      "upstream_fingerprints": {
+        "trimming": "d2d8f8ca487074ac2fdde469885c4acc4f1091e8cb171f65e98abd93b365fe53"
+      }
+    },
+    "report": {
+      "config": {
+        "note_count": 8,
+        "selected_model": "TPM3u+F+R2",
+        "warning_count": 2
+      },
+      "engine_versions": {},
+      "fingerprint": "021a29f0b90bbfbe519c2554ef1a9ef42a62b9bd145a3d348852c563e311ed83",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.tree": "a481df161f4bdbe061f4584e5e1640a031da8dbf23c6cd5c0ee088d2a11f92f7",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.trimmed.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
+      },
+      "output_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.log": "d3ecf9000fe2006edc87ef059aca595bffa7f5a187e12d5ed3eb07077214c924",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.methods-summary.md": "6a4c8b09cfcb994e0e8f7643d8fa5d06a3e7f1ba136fb2c1b33a0ffd75602e80",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.model.tsv": "181cacb3eac552032b9ecbc89f687d1931b78617a9c64da4e46a636e2bbe9d38",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.support.tsv": "f5296982994f23e5f14afa4b9a50aa1d2b88229da053e62410bd62179c9a453b"
+      },
+      "resumed": false,
+      "stage": "report",
+      "upstream_fingerprints": {
+        "alignment": "3daf7665e9e5768ae4ad224768f147986295ef66da512306e5e7dc2ff31d9c81",
+        "fasta_validation": "9b4b6407b5bf30abd707fb48aeb9cf043dcd6ee730c57237bebb27081dd6f2a2",
+        "inference": "e34ff43e0b5b24e44d8540ac26e94144bf2f230917b8ba6af038f60180534650",
+        "model_selection": "bd58eed4741c8f32e78820327c4f455eff40d50a6bd9ebe676994a6a9649f815",
+        "support": "5af7f161171b748c8a28c0f44c62ba4eb14a93ba775809f0f371d498d470f2e8",
+        "trimming": "d2d8f8ca487074ac2fdde469885c4acc4f1091e8cb171f65e98abd93b365fe53"
+      }
+    },
+    "support": {
+      "config": {
+        "bootstrap_replicates": 1000,
+        "iqtree_seed": 1,
+        "iqtree_threads": 1,
+        "selected_model": "TPM3u+F+R2",
+        "sequence_type": "dna",
+        "timeout_seconds": null
+      },
+      "engine_versions": {
+        "iqtree_bootstrap_support": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+      },
+      "fingerprint": "5af7f161171b748c8a28c0f44c62ba4eb14a93ba775809f0f371d498d470f2e8",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
+      },
+      "output_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.contree": "4fbd890aa058eb1862cdb2d66d5895039915d8622cc37645dd442c9d7afb65ad",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.iqtree": "58f67d47894c9455f3b6b136572d1e31ba48ed66d0a558dc1871dda3cd94f930",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.log": "a06b22e54ad98019d1ccf54caa356c4a4d22520f62bdc25390960a5d87680059",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.low-support.tsv": "3c9d1d00f9023dbb6e5f8931d91ae26afc322f0fa54385f41b12290c8b814bb7",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.support-histogram.tsv": "eb933cb37e721c8409c4dda1409de1ddae8eba623cd1927eb9efb5054c29121c",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.support.tsv": "fbe780d1a58463beca85fc241251607c54ce28a24c863cf1b5c524caf576341f",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.treefile": "a481df161f4bdbe061f4584e5e1640a031da8dbf23c6cd5c0ee088d2a11f92f7",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.ufboot": "3ecf0217475d796cc3653bfe1e17313cdd977a8f6d352a09332f425208ee5f88"
+      },
+      "resumed": false,
+      "stage": "support",
+      "upstream_fingerprints": {
+        "model_selection": "bd58eed4741c8f32e78820327c4f455eff40d50a6bd9ebe676994a6a9649f815",
+        "trimming": "d2d8f8ca487074ac2fdde469885c4acc4f1091e8cb171f65e98abd93b365fe53"
+      }
+    },
+    "trimming": {
+      "config": {
+        "timeout_seconds": null,
+        "trim_gap_threshold": 0.1,
+        "trimming_mode": "gap-threshold"
+      },
+      "engine_versions": {
+        "trimal": "trimAl v1.5.rev0 build[2024-05-27]"
+      },
+      "fingerprint": "d2d8f8ca487074ac2fdde469885c4acc4f1091e8cb171f65e98abd93b365fe53",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
+      },
+      "output_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln.retained-sites.tsv": "6019e6a67ea2642c55b3a525b2380ccb49f35a5e61b131ad2269092db9b496c7"
+      },
+      "resumed": false,
+      "stage": "trimming",
+      "upstream_fingerprints": {
+        "alignment": "3daf7665e9e5768ae4ad224768f147986295ef66da512306e5e7dc2ff31d9c81"
+      }
+    }
+  },
+  "started_at_utc": "2026-05-31T18:29:31Z",
   "step_manifests": {
-    "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln.manifest.json",
-    "bootstrap_support": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.manifest.json",
-    "maximum_likelihood": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.manifest.json",
-    "model_selection": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.manifest.json",
-    "trimming": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln.manifest.json"
+    "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln.manifest.json",
+    "bootstrap_support": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/bootstrap-support/bootstrap-support.manifest.json",
+    "maximum_likelihood": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.manifest.json",
+    "model_selection": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/model-selection/model-selection.manifest.json",
+    "trimming": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln.manifest.json"
   },
   "support_rows": [
     {
@@ -1441,7 +1704,7 @@
       "lt50": 0
     },
     "supported_node_count": 3,
-    "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.tree",
+    "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/influenza-a-ha-reference-panel.tree",
     "warnings": [
       "one or more internal nodes did not expose numeric support labels"
     ],
@@ -1451,17 +1714,22 @@
   "trimming_mode": "gap-threshold",
   "trimming_workflow": {
     "bootstrap_support_summary": null,
+    "config": {
+      "gap_threshold": 0.1,
+      "mode": "gap-threshold",
+      "timeout_seconds": null
+    },
     "engine_name": "trimal",
     "fasttree_support_summary": null,
     "input_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
     },
     "input_paths": [
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln"
     ],
     "iqtree_summary": null,
     "log_likelihood": null,
-    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln.manifest.json",
+    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln.manifest.json",
     "model_selection_summary": null,
     "notes": [
       "trimal trimming mode: gap-threshold",
@@ -1470,32 +1738,35 @@
       "trimmed alignment validated as nonempty equal-length FASTA"
     ],
     "output_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln.retained-sites.tsv": "6019e6a67ea2642c55b3a525b2380ccb49f35a5e61b131ad2269092db9b496c7"
     },
     "output_paths": {
-      "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln"
+      "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln",
+      "trimming_summary": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln.retained-sites.tsv"
     },
     "resumed": false,
     "run": {
       "command": [
         "/opt/homebrew/bin/trimal",
         "-in",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/alignment/alignment.aln",
         "-out",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln",
         "-gt",
         "0.100000"
       ],
-      "ended_at_utc": "2026-05-13T04:26:45Z",
+      "ended_at_utc": "2026-05-31T18:29:32Z",
       "engine_name": "trimal",
       "executable": "/opt/homebrew/bin/trimal",
       "exit_code": 0,
       "output_paths": {
-        "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln"
+        "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln"
       },
-      "started_at_utc": "2026-05-13T04:26:45Z",
-      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln.stderr.log",
-      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln.stdout.log",
+      "runtime_seconds": 0.006116,
+      "started_at_utc": "2026-05-31T18:29:32Z",
+      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln.stderr.log",
+      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln.stdout.log",
       "timed_out": false,
       "timeout_seconds": null,
       "version": {
@@ -1509,7 +1780,7 @@
       },
       "warning_lines": [],
       "workflow": "alignment-trimming",
-      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming"
+      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming"
     },
     "selected_model": null,
     "sh_alrt_support_summary": null,
@@ -1533,5 +1804,6 @@
   "warnings": [
     "one or more internal nodes did not expose numeric support labels",
     "automatic sequence type defaults to dna from nucleotide-like characters that remain protein-compatible by alphabet alone"
-  ]
+  ],
+  "workflow": "fasta-to-tree"
 }
