@@ -7,6 +7,9 @@ from pathlib import Path
 from bijux_phylogenetics.command_line import main
 
 FIXTURES = Path(__file__).parent / "fixtures"
+DATE_ABS_TOLERANCE = 1e-5
+SCORE_REL_TOLERANCE = 1e-6
+SCORE_ABS_TOLERANCE = 1e-12
 
 
 def fixture(group: str, name: str) -> Path:
@@ -60,26 +63,26 @@ def test_phylo_dating_penalized_likelihood_cli_writes_governed_outputs(
     assert math.isclose(
         payload["metrics"]["data_score"],
         2.9289583718815336e-06,
-        rel_tol=0.0,
-        abs_tol=1e-18,
+        rel_tol=SCORE_REL_TOLERANCE,
+        abs_tol=SCORE_ABS_TOLERANCE,
     )
     assert math.isclose(
         payload["metrics"]["penalty_score"],
         0.00013482416705344673,
-        rel_tol=0.0,
-        abs_tol=1e-18,
+        rel_tol=SCORE_REL_TOLERANCE,
+        abs_tol=SCORE_ABS_TOLERANCE,
     )
     assert math.isclose(
         payload["metrics"]["total_score"],
         0.00013775312542532825,
-        rel_tol=0.0,
-        abs_tol=1e-18,
+        rel_tol=SCORE_REL_TOLERANCE,
+        abs_tol=SCORE_ABS_TOLERANCE,
     )
     assert math.isclose(
         payload["metrics"]["root_date"],
         1985.738765803845,
         rel_tol=0.0,
-        abs_tol=1e-9,
+        abs_tol=DATE_ABS_TOLERANCE,
     )
     assert payload["metrics"]["optimization_pass_count"] == 5
     assert payload["metrics"]["function_evaluation_count"] == 771

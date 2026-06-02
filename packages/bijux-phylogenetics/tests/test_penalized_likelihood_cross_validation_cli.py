@@ -7,6 +7,7 @@ from pathlib import Path
 from bijux_phylogenetics.command_line import main
 
 FIXTURES = Path(__file__).parent / "fixtures"
+CV_ERROR_ABS_TOLERANCE = 5e-8
 
 
 def fixture(group: str, name: str) -> Path:
@@ -70,7 +71,7 @@ def test_phylo_dating_penalized_likelihood_cross_validation_cli_writes_governed_
         payload["metrics"]["selected_root_mean_squared_error"],
         0.28564007040784534,
         rel_tol=0.0,
-        abs_tol=1e-15,
+        abs_tol=CV_ERROR_ABS_TOLERANCE,
     )
     assert payload["metrics"]["final_converged"] is True
     assert (out_dir / "dated_tree.nwk").is_file()

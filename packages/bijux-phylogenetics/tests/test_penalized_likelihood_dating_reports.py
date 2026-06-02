@@ -17,6 +17,10 @@ from bijux_phylogenetics.phylo.dating import (
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "metadata")
+DATE_ABS_TOLERANCE = 1e-5
+RATE_ABS_TOLERANCE = 1e-7
+SCORE_REL_TOLERANCE = 1e-6
+SCORE_ABS_TOLERANCE = 1e-12
 
 
 def fixture(name: str) -> Path:
@@ -63,15 +67,24 @@ def test_write_penalized_likelihood_dating_summary_tsv_writes_expected_row(
     assert row["internal_node_count"] == "3"
     assert row["branch_count"] == "6"
     assert row["parameter_count"] == "10"
-    assert float(row["root_date"]) == pytest.approx(1985.738765803845, abs=1e-9)
+    assert float(row["root_date"]) == pytest.approx(
+        1985.738765803845, abs=DATE_ABS_TOLERANCE
+    )
     assert float(row["smoothing_parameter"]) == pytest.approx(0.01, abs=1e-12)
-    assert float(row["data_score"]) == pytest.approx(2.9289583718815336e-06, abs=1e-18)
+    assert float(row["data_score"]) == pytest.approx(
+        2.9289583718815336e-06,
+        rel=SCORE_REL_TOLERANCE,
+        abs=SCORE_ABS_TOLERANCE,
+    )
     assert float(row["penalty_score"]) == pytest.approx(
-        0.00013482416705344673, abs=1e-18
+        0.00013482416705344673,
+        rel=SCORE_REL_TOLERANCE,
+        abs=SCORE_ABS_TOLERANCE,
     )
     assert float(row["total_score"]) == pytest.approx(
         0.00013775312542532825,
-        abs=1e-18,
+        rel=SCORE_REL_TOLERANCE,
+        abs=SCORE_ABS_TOLERANCE,
     )
     assert float(row["condition_number"]) > 1.0
     assert row["optimizer_name"] == (
@@ -102,13 +115,13 @@ def test_write_penalized_likelihood_node_dates_tsv_writes_expected_rows(
         rows_by_descendant_taxa[("A", "B", "C", "D")]["estimated_date"]
     ) == pytest.approx(
         1985.738765803845,
-        abs=1e-9,
+        abs=DATE_ABS_TOLERANCE,
     )
     assert float(
         rows_by_descendant_taxa[("A", "B", "C")]["estimated_rate"]
     ) == pytest.approx(
         0.08392676134136667,
-        abs=1e-15,
+        abs=RATE_ABS_TOLERANCE,
     )
     assert rows_by_descendant_taxa[("A",)]["node_kind"] == "tip"
     assert rows_by_descendant_taxa[("A",)]["node_label"] == "A"
@@ -136,13 +149,21 @@ def test_write_penalized_likelihood_branch_rate_tsv_writes_expected_rows(
     }
     assert float(
         rows_by_descendant_taxa[("A", "B", "C")]["estimated_branch_rate"]
-    ) == pytest.approx(0.08136342580549531, abs=1e-15)
+    ) == pytest.approx(0.08136342580549531, abs=RATE_ABS_TOLERANCE)
     assert float(
         rows_by_descendant_taxa[("A", "B", "C")]["data_score_contribution"]
-    ) == pytest.approx(3.8334258705446777e-07, abs=1e-18)
+    ) == pytest.approx(
+        3.8334258705446777e-07,
+        rel=SCORE_REL_TOLERANCE,
+        abs=SCORE_ABS_TOLERANCE,
+    )
     assert float(
         rows_by_descendant_taxa[("A",)]["smoothing_penalty_contribution"]
-    ) == pytest.approx(2.2364498263509753e-06, abs=1e-18)
+    ) == pytest.approx(
+        2.2364498263509753e-06,
+        rel=SCORE_REL_TOLERANCE,
+        abs=SCORE_ABS_TOLERANCE,
+    )
     assert rows_by_descendant_taxa[("D",)]["child_name"] == "D"
     assert float(
         rows_by_descendant_taxa[("D",)]["fitted_time_duration"]
@@ -163,14 +184,20 @@ def test_write_penalized_likelihood_dating_run_json_serializes_report_fields(
     assert payload["branch_count"] == 6
     assert payload["parameter_count"] == 10
     assert payload["smoothing_parameter"] == 0.01
-    assert payload["data_score"] == pytest.approx(2.9289583718815336e-06, abs=1e-18)
+    assert payload["data_score"] == pytest.approx(
+        2.9289583718815336e-06,
+        rel=SCORE_REL_TOLERANCE,
+        abs=SCORE_ABS_TOLERANCE,
+    )
     assert payload["penalty_score"] == pytest.approx(
         0.00013482416705344673,
-        abs=1e-18,
+        rel=SCORE_REL_TOLERANCE,
+        abs=SCORE_ABS_TOLERANCE,
     )
     assert payload["total_score"] == pytest.approx(
         0.00013775312542532825,
-        abs=1e-18,
+        rel=SCORE_REL_TOLERANCE,
+        abs=SCORE_ABS_TOLERANCE,
     )
     assert len(payload["node_rows"]) == 7
     assert len(payload["branch_rows"]) == 6

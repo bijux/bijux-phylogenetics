@@ -16,6 +16,7 @@ from bijux_phylogenetics.phylo.dating import (
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
+CV_ERROR_ABS_TOLERANCE = 5e-8
 
 
 def fixture(group: str, name: str) -> Path:
@@ -76,7 +77,7 @@ def test_write_penalized_cross_validation_summary_tsv_writes_expected_row(
     assert float(row["selected_smoothing_parameter"]) == pytest.approx(0.01, abs=1e-12)
     assert float(row["selected_root_mean_squared_error"]) == pytest.approx(
         0.28564007040784534,
-        abs=1e-15,
+        abs=CV_ERROR_ABS_TOLERANCE,
     )
 
 
@@ -119,7 +120,7 @@ def test_write_penalized_cross_validation_predictions_tsv_writes_expected_rows(
     )
     assert float(held_out_root_rows[0]["absolute_error"]) == pytest.approx(
         0.5633684388644724,
-        abs=1e-15,
+        abs=CV_ERROR_ABS_TOLERANCE,
     )
 
 

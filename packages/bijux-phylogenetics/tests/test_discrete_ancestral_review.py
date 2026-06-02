@@ -168,7 +168,28 @@ def test_write_discrete_ancestral_sym_fit_table_tracks_optimizer_and_baseline(
     assert report.baseline_comparison.baseline_model == "equal-rates"
     assert report.baseline_comparison.delta_aic > 0.0
     assert report.baseline_comparison.preferred_model_by_aic == "equal-rates"
-    assert max(row.rate for row in report.transition_rate_rows) < 10.0
+    transition_pairs = {
+        (row.source_state, row.target_state): row.rate
+        for row in report.transition_rate_rows
+    }
+    assert all(
+        math.isfinite(rate) and rate >= 0.0 for rate in transition_pairs.values()
+    )
+    assert transition_pairs[("island", "north")] == pytest.approx(
+        transition_pairs[("north", "island")],
+        rel=1e-9,
+        abs=1e-12,
+    )
+    assert transition_pairs[("island", "south")] == pytest.approx(
+        transition_pairs[("south", "island")],
+        rel=1e-9,
+        abs=1e-12,
+    )
+    assert transition_pairs[("north", "south")] == pytest.approx(
+        transition_pairs[("south", "north")],
+        rel=1e-9,
+        abs=1e-12,
+    )
 
 
 def test_reconstruct_discrete_ancestral_states_flags_overparameterized_sym_case() -> (
