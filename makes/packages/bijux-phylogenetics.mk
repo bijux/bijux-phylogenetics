@@ -11,7 +11,7 @@ TEST_PATHS := tests
 TEST_PATHS_UNIT := tests
 TEST_PATHS_EVALUATION = $(MONOREPO_ROOT)/packages/bijux-phylogenetics/tests
 TEST_REAL_LOCAL_PATH = $(MONOREPO_ROOT)/packages/bijux-phylogenetics/tests/real_local
-TEST_MAIN_ARGS = -m "not slow and not real_local and not evaluation"
+TEST_MAIN_ARGS = -m "not slow and not real_local and not evaluation" --maxfail=1 -q
 TEST_UNIT_DIR_ARGS = -m "not slow and not real_local and not evaluation" --maxfail=1 -q
 TEST_UNIT_FALLBACK_ARGS = -k "not e2e and not integration and not functional" -m "not slow and not real_local and not evaluation" --maxfail=1 -q
 TEST_EVALUATION_ARGS = -m "evaluation and scientific_validation and not slow" -s -p no:cov
