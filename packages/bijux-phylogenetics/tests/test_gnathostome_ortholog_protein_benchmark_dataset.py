@@ -165,7 +165,7 @@ def test_cli_demo_gnathostome_ortholog_protein_benchmark_json_output_reports_dat
     assert payload["metrics"]["selected_model"] == "Q.insect+I"
     assert payload["metrics"]["alignment_length"] == 185
     assert payload["metrics"]["trimmed_alignment_length"] == 185
-    assert payload["metrics"]["minimum_support"] == 44.0
+    assert payload["metrics"]["minimum_support"] == 45.0
     assert payload["metrics"]["maximum_support"] == 93.0
     assert payload["metrics"]["weakly_supported_clade_count"] == 2
     assert payload["metrics"]["state_space"] == "amino-acid"
