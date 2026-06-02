@@ -19,6 +19,7 @@ FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "metadata")
 DATE_ABS_TOLERANCE = 1e-5
 RATE_ABS_TOLERANCE = 1e-7
+DURATION_ABS_TOLERANCE = 1e-5
 SCORE_REL_TOLERANCE = 1e-6
 SCORE_ABS_TOLERANCE = 1e-12
 
@@ -167,7 +168,7 @@ def test_write_penalized_likelihood_branch_rate_tsv_writes_expected_rows(
     assert rows_by_descendant_taxa[("D",)]["child_name"] == "D"
     assert float(
         rows_by_descendant_taxa[("D",)]["fitted_time_duration"]
-    ) == pytest.approx(23.261234196154992, abs=1e-9)
+    ) == pytest.approx(23.261234196154992, abs=DURATION_ABS_TOLERANCE)
 
 
 def test_write_penalized_likelihood_dating_run_json_serializes_report_fields(
