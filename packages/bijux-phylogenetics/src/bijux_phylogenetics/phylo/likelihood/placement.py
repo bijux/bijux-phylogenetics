@@ -46,6 +46,8 @@ from bijux_phylogenetics.runtime.errors import (
 )
 
 _PLACEMENT_LIKELIHOOD_EQUALITY_TOLERANCE = 1e-12
+# Stable report field name; Bandit misclassifies the word "pass" here.
+_OPTIMIZATION_PASS_COUNT_FIELD = "optimization_pass_count"  # nosec B105
 
 
 class _PlacementEvaluationError(RuntimeError):
@@ -384,10 +386,9 @@ def _optimize_edge_placement(
             "pendant_length": float(pendant_search.parameter_value),
             "log_likelihood": float(pendant_search.objective_value),
             "function_evaluation_count": total_function_evaluation_count,
-            # Bandit misreads the stable report field name here as a credential.
-            "optimization_pass_count": 1,  # nosec B105
             "converged": pendant_search.converged,
             "placed_tree_newick": pendant_search.payload,
+            _OPTIMIZATION_PASS_COUNT_FIELD: 1,
         }
 
     def evaluate_coordinate_values(
@@ -436,11 +437,10 @@ def _optimize_edge_placement(
                 "distal_length": boundary_distal_length,
                 "pendant_length": float(boundary_search.parameter_value),
                 "log_likelihood": float(boundary_search.objective_value),
-                # Bandit misreads the stable report field name here as a credential.
-                "optimization_pass_count": 1,  # nosec B105
                 "converged": boundary_search.converged,
                 "placed_tree_newick": boundary_search.payload,
             }
+            best_candidate[_OPTIMIZATION_PASS_COUNT_FIELD] = 1
 
     distal_length = float(best_candidate["distal_length"])
     proximal_length = max(original_branch_length - distal_length, 0.0)
@@ -450,7 +450,7 @@ def _optimize_edge_placement(
         "pendant_length": float(best_candidate["pendant_length"]),
         "log_likelihood": float(best_candidate["log_likelihood"]),
         "function_evaluation_count": total_function_evaluation_count,
-        "optimization_pass_count": int(best_candidate["optimization_pass_count"]),
+        "optimization_pass_count": int(best_candidate[_OPTIMIZATION_PASS_COUNT_FIELD]),
         "converged": bool(best_candidate["converged"]),
         "placed_tree_newick": str(best_candidate["placed_tree_newick"]),
     }

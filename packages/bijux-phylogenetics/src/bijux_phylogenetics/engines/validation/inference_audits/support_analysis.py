@@ -176,11 +176,42 @@ def detect_weakly_supported_backbone(
     threshold: float = 70.0,
 ) -> WeakBackboneReport:
     """Flag broad internal clades whose support falls below a declared backbone threshold."""
+    from bijux_phylogenetics.ancestral.common import node_descendant_taxa
+
     summary = summarize_bootstrap_support_distribution(
         tree_path, weak_support_threshold=threshold
     )
+    tree = load_tree(tree_path)
+    total_tip_count = tree.tip_count
+    backbone_nodes = list(summary.nodes)
+    observed_backbone_labels = {
+        node.node for node in backbone_nodes if node.is_backbone
+    }
+    root = tree.root
+    if not root.is_leaf():
+        descendant_taxa = node_descendant_taxa(root)
+        support_label = _parse_iqtree_support_label(root.name)
+        support = None if support_label is None else support_label.ufboot_support
+        normalized_support_fraction = support_fraction(support)
+        if normalized_support_fraction is not None:
+            root_label = (
+                "|".join(descendant_taxa)
+                if descendant_taxa
+                else (root.name or "<unnamed>")
+            )
+            if root_label not in observed_backbone_labels:
+                backbone_nodes.append(
+                    BootstrapSupportNode(
+                        node=root_label,
+                        descendant_taxa=descendant_taxa,
+                        support=support,
+                        support_fraction=normalized_support_fraction,
+                        is_backbone=len(descendant_taxa)
+                        >= max(2, total_tip_count // 2),
+                    )
+                )
     weak_nodes = [
-        node for node in summary.nodes if node.is_backbone and node.support < threshold
+        node for node in backbone_nodes if node.is_backbone and node.support < threshold
     ]
     warnings = list(summary.warnings)
     if weak_nodes:
@@ -190,9 +221,7 @@ def detect_weakly_supported_backbone(
     return WeakBackboneReport(
         tree_path=tree_path,
         threshold=threshold,
-        evaluated_backbone_node_count=sum(
-            1 for node in summary.nodes if node.is_backbone
-        ),
+        evaluated_backbone_node_count=sum(1 for node in backbone_nodes if node.is_backbone),
         weak_backbone_node_count=len(weak_nodes),
         weak_nodes=weak_nodes,
         warnings=warnings,
