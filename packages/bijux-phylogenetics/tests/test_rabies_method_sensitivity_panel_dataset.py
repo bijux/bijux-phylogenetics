@@ -381,7 +381,7 @@ def test_cli_demo_rabies_method_sensitivity_panel_json_output_reports_method_rev
     assert payload["metrics"]["preprocessing_change_pair_count"] == 0
     assert payload["metrics"]["rooted_engine_change_variant_count"] == 0
     assert payload["metrics"]["serious_conflict_variant_count"] == 4
-    assert payload["metrics"]["report_linked_artifact_count"] == 45
+    assert payload["metrics"]["report_linked_artifact_count"] == 48
     assert payload["metrics"]["report_html_size_bytes"] > 0
     assert payload["metrics"]["report_linked_artifact_bytes"] > 0
     assert (

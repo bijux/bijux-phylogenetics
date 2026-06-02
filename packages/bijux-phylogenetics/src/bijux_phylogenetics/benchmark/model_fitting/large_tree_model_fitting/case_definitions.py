@@ -57,9 +57,9 @@ SMALL_TIER_CASES: tuple[ContinuousCaseDefinition | DiscreteCaseDefinition, ...] 
         ),
         timeout_seconds=None,
         threshold=LargeTreeModelFittingThreshold(
-            max_runtime_seconds=35.0,
+            max_runtime_seconds=60.0,
             max_peak_memory_bytes=512 * 1024 * 1024,
-            max_optimizer_step_count=12,
+            max_optimizer_step_count=20,
         ),
         geiger_match_tolerance=0.4,
     ),

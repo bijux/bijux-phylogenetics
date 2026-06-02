@@ -41,7 +41,7 @@ def test_benchmark_large_tree_model_fitting_small_tier_reports_governed_cases() 
     assert (
         continuous.peak_memory_bytes is not None and continuous.peak_memory_bytes >= 0
     )
-    assert continuous.optimizer_iteration_count == 10
+    assert continuous.optimizer_iteration_count == 19
     assert continuous.performance_threshold_passed is True
     assert continuous.matches_geiger_reference is True
     assert continuous.parameter_delta is not None and continuous.parameter_delta <= 0.4

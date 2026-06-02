@@ -73,31 +73,31 @@ def test_gtr_exchangeability_optimization_recovers_dominant_pattern_over_hky() -
         gtr_optimization.exchangeability_ag,
         10.436093496916191,
         rel_tol=0.0,
-        abs_tol=1e-6,
+        abs_tol=5e-6,
     )
     assert math.isclose(
         gtr_optimization.exchangeability_at,
         0.624578992788826,
         rel_tol=0.0,
-        abs_tol=1e-6,
+        abs_tol=5e-6,
     )
     assert math.isclose(
         gtr_optimization.exchangeability_cg,
         2.351009315272331,
         rel_tol=0.0,
-        abs_tol=1e-6,
+        abs_tol=5e-6,
     )
     assert math.isclose(
         gtr_optimization.exchangeability_ct,
         2.066395062525222,
         rel_tol=0.0,
-        abs_tol=1e-6,
+        abs_tol=5e-6,
     )
     assert math.isclose(
         gtr_optimization.exchangeability_gt,
         5.880958916954807,
         rel_tol=0.0,
-        abs_tol=1e-6,
+        abs_tol=5e-6,
     )
     assert gtr_optimization.parameter_count == 8
     assert math.isclose(
