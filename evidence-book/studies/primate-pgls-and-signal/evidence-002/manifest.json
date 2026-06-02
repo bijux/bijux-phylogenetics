@@ -15,7 +15,7 @@
     "governed_code_paths": [
       "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pgls_and_signal"
     ],
-    "last_generated_on": "2026-05-31",
+    "last_generated_on": "2026-06-02",
     "source_basis_locators": [
       "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
       "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",

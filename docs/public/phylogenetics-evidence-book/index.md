@@ -16,7 +16,7 @@ teaching, migration, and explicit coverage boundaries.
 - evidence bundles: `19`
 - teaching studies: `0`
 - migration studies: `0`
-- freshness statuses: `current=18, stale=1`
+- freshness statuses: `current=10, stale=9`
 - coverage gaps: `4` debt entries
 - foundational numerical trust: `bounded`
 - reviewer readiness: `bounded`

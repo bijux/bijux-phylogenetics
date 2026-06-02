@@ -28,7 +28,7 @@
     "governed_code_paths": [
       "packages/bijux-phylogenetics/src/bijux_phylogenetics"
     ],
-    "last_generated_on": "2026-05-16",
+    "last_generated_on": "2026-06-02",
     "source_basis_locators": [
       "external:lund/pcm1-plots-signal/script",
       "evidence-book/studies/primate-longevity-signal/reference"

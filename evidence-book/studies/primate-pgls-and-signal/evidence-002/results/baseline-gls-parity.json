@@ -6,11 +6,11 @@
       "social_group_size": 3.59115553047129
     },
     "diagnostics": {
-      "abs_residual_fitted_correlation": 0.0234397354757233,
+      "abs_residual_fitted_correlation": 0.0234397354757235,
       "max_abs_z_residual": 3.07296182239248,
       "outlier_count_abs_z_ge_2": 5,
       "qq_correlation": 0.974935270488255,
-      "residual_mean": -1.40421737645132e-09,
+      "residual_mean": -1.40419729177665e-09,
       "residual_sd": 106.90154433517,
       "residual_variance": 11427.9401812442
     },
@@ -22,7 +22,7 @@
     "r_squared": 0.257169890828586,
     "standard_errors": {
       "intercept": 16.3549789334552,
-      "social_group_size": 0.714344118870892
+      "social_group_size": 0.714344118870893
     }
   },
   "evidence_id": "evidence-002",

@@ -13,9 +13,12 @@
   "evidence_title": "Primate workbook loading parity bundle",
   "freshness": {
     "governed_code_paths": [
-      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles.py"
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles/definitions.py",
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles/study_context.py",
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles/report_payloads.py",
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles/bundle_builder.py"
     ],
-    "last_generated_on": "2026-05-16",
+    "last_generated_on": "2026-06-02",
     "source_basis_locators": [
       "external:lund/pcm1-plots-signal/data/primate_raw.xlsx",
       "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",

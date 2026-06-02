@@ -49,8 +49,8 @@
   },
   "foundational_numerical_trust_status": "bounded",
   "freshness_status_counts": {
-    "current": 18,
-    "stale": 1
+    "current": 10,
+    "stale": 9
   },
   "integrity_action_required_count": 0,
   "maturity_tier": "reviewable_but_incomplete",
