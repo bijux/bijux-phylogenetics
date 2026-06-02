@@ -5,6 +5,10 @@ from __future__ import annotations
 from importlib import import_module, metadata
 from typing import Any
 
+from bijux_phylogenetics.comparative.common import (
+    ComparativeDataset as ComparativeDataset,
+)
+
 from .runtime_alias import install_runtime_aliases
 
 _ALIAS_PACKAGE = "phylogenetic"
@@ -17,8 +21,6 @@ install_runtime_aliases(
     runtime_package=_RUNTIME_PACKAGE,
     local_submodules=_LOCAL_SUBMODULES,
 )
-
-from bijux_phylogenetics.comparative import ComparativeDataset as ComparativeDataset
 
 for _name in getattr(_runtime_module, "__all__", ()):
     if _name == "__version__":
