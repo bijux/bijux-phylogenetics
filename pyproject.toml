@@ -19,7 +19,7 @@ Security = "https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md"
 
 [dependency-groups]
 dev = [
-    "bijux-phylogenetics[dev]",
+    "bijux-phylogenetics[dev,docs]",
     "phylogenetic[dev]",
     "bijux-phylogenetics-dev[dev]",
     "mkdocs-redirects>=1.2.1,<2.0",

@@ -305,7 +305,7 @@ source = { editable = "." }
 
 [package.dev-dependencies]
 dev = [
-    { name = "bijux-phylogenetics", extra = ["dev"] },
+    { name = "bijux-phylogenetics", extra = ["dev", "docs"] },
     { name = "bijux-phylogenetics-dev", extra = ["dev"] },
     { name = "mkdocs-redirects" },
     { name = "openapi-spec-validator" },
@@ -318,7 +318,7 @@ dev = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "bijux-phylogenetics", extras = ["dev"], editable = "packages/bijux-phylogenetics" },
+    { name = "bijux-phylogenetics", extras = ["dev", "docs"], editable = "packages/bijux-phylogenetics" },
     { name = "bijux-phylogenetics-dev", extras = ["dev"], editable = "packages/bijux-phylogenetics-dev" },
     { name = "mkdocs-redirects", specifier = ">=1.2.1,<2.0" },
     { name = "openapi-spec-validator", specifier = ">=0.7.1" },
