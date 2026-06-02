@@ -109,10 +109,9 @@ if "-alrt" in args:
     )
     raise SystemExit(0)
 if "-bb" in args:
-    prefix.with_suffix(".treefile").write_text(
-        "((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n",
-        encoding="utf-8",
-    )
+    support_tree = "((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n"
+    prefix.with_suffix(".treefile").write_text(support_tree, encoding="utf-8")
+    prefix.with_suffix(".contree").write_text(support_tree, encoding="utf-8")
     prefix.with_suffix(".ufboot").write_text(
         "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
         encoding="utf-8",
@@ -475,8 +474,14 @@ def test_summarize_bootstrap_support_distribution_treats_collapsed_unlabeled_bra
     assert report.median_support == 39.0
     assert report.weakly_supported_clade_count == 1
     assert report.support_histogram == {"lt50": 1, "50to69": 0, "70to89": 1, "ge90": 0}
-    assert any(node.descendant_taxa == ["A", "B"] and node.support == 0.0 for node in report.nodes)
-    assert "one or more internal nodes did not expose numeric support labels" not in report.warnings
+    assert any(
+        node.descendant_taxa == ["A", "B"] and node.support == 0.0
+        for node in report.nodes
+    )
+    assert (
+        "one or more internal nodes did not expose numeric support labels"
+        not in report.warnings
+    )
 
 
 def test_detect_weakly_supported_backbone_flags_major_internal_branches(
