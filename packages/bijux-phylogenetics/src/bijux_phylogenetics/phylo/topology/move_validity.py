@@ -120,9 +120,7 @@ def summarize_rooted_spr_move_validity(
         _skipped_pruned,
         _skipped_regraft,
         _skipped_budget_move_candidates,
-    ) = (
-        _collect_rooted_spr_move_candidates(resolved_tree, budget=None)
-    )
+    ) = _collect_rooted_spr_move_candidates(resolved_tree, budget=None)
     if not available_candidates:
         return _build_move_validity_report(
             resolved_tree,

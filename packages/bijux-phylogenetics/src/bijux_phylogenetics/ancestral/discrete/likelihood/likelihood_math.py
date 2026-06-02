@@ -4,6 +4,9 @@ import math
 
 import numpy
 
+from bijux_phylogenetics.phylo.likelihood.discrete_observation_policies import (
+    resolve_discrete_observation_leaf_vector,
+)
 from bijux_phylogenetics.phylo.likelihood.logspace import logsumexp
 from bijux_phylogenetics.phylo.likelihood.pruning import (
     build_transition_matrix_evaluator,
@@ -12,9 +15,6 @@ from bijux_phylogenetics.phylo.likelihood.pruning import (
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import (
     transition_probability_matrix as finite_state_transition_probability_matrix,
-)
-from bijux_phylogenetics.phylo.likelihood.discrete_observation_policies import (
-    resolve_discrete_observation_leaf_vector,
 )
 
 

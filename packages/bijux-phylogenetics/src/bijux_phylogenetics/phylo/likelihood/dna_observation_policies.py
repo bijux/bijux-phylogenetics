@@ -78,11 +78,7 @@ def normalize_dna_likelihood_records(
     for record in records:
         normalized_sequence = record.sequence.upper()
         invalid_states = sorted(
-            {
-                state
-                for state in normalized_sequence
-                if state not in allowed_states
-            }
+            {state for state in normalized_sequence if state not in allowed_states}
         )
         if invalid_states:
             joined_states = ", ".join(invalid_states)
@@ -91,11 +87,7 @@ def normalize_dna_likelihood_records(
             )
         if validated_policy == "reject":
             rejected_states = sorted(
-                {
-                    state
-                    for state in normalized_sequence
-                    if state not in DNA_STATE_INDEX
-                }
+                {state for state in normalized_sequence if state not in DNA_STATE_INDEX}
             )
             if rejected_states:
                 joined_states = ", ".join(rejected_states)
@@ -202,7 +194,9 @@ def estimate_empirical_dna_base_frequencies_from_records(
                 fractional_weight = 1.0 / len(ambiguity_states)
                 for state in ambiguity_states:
                     counts[DNA_STATE_INDEX[state]] += fractional_weight
-            elif symbol in _EXPLICIT_MISSING_SYMBOLS or symbol == _FIFTH_STATE_GAP_SYMBOL:
+            elif (
+                symbol in _EXPLICIT_MISSING_SYMBOLS or symbol == _FIFTH_STATE_GAP_SYMBOL
+            ):
                 continue
             else:
                 raise InvalidAlignmentError(
@@ -246,7 +240,10 @@ def estimate_empirical_gap_state_frequency(
 
 
 def extend_dna_stationary_frequencies_with_gap_state(
-    nucleotide_frequencies: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...],
+    nucleotide_frequencies: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...],
     *,
     gap_state_frequency: float,
     model_name: str,
@@ -271,7 +268,10 @@ def extend_dna_stationary_frequencies_with_gap_state(
 def augment_dna_rate_matrix_with_gap_state(
     nucleotide_rate_matrix: numpy.ndarray,
     *,
-    nucleotide_frequencies: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...],
+    nucleotide_frequencies: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...],
     gap_state_frequency: float,
     model_name: str,
     gap_exchangeability: float = 1.0,
@@ -343,7 +343,11 @@ def resolve_default_dna_root_prior_for_observation_policy(
     owner_name: str,
     default_policy: str,
     root_prior_policy: str | None,
-    root_prior: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None,
     fixed_root_state: str | None,
     stationary_frequencies: numpy.ndarray,
     observation_policy: str,

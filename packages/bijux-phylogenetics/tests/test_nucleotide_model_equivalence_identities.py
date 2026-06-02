@@ -143,7 +143,9 @@ def test_k80_site_rows_match_jc69_when_kappa_is_one() -> None:
     )
 
     assert len(jc69.site_log_likelihoods) == len(k80.site_log_likelihoods)
-    for left, right in zip(_site_log_likelihood_vector(jc69), _site_log_likelihood_vector(k80), strict=True):
+    for left, right in zip(
+        _site_log_likelihood_vector(jc69), _site_log_likelihood_vector(k80), strict=True
+    ):
         _assert_likelihood_match(left, right)
 
 
@@ -162,7 +164,11 @@ def test_hky85_site_rows_match_jc69_under_uniform_unit_parameters() -> None:
     )
 
     assert len(jc69.site_log_likelihoods) == len(hky85.site_log_likelihoods)
-    for left, right in zip(_site_log_likelihood_vector(jc69), _site_log_likelihood_vector(hky85), strict=True):
+    for left, right in zip(
+        _site_log_likelihood_vector(jc69),
+        _site_log_likelihood_vector(hky85),
+        strict=True,
+    ):
         _assert_likelihood_match(left, right)
 
 

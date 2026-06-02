@@ -19,9 +19,7 @@ def test_load_discrete_dataset_rejects_explicit_missing_state_tokens(
 ) -> None:
     traits_path = tmp_path / "missing_states.tsv"
     traits_path.write_text(
-        "taxon\tstate\n"
-        "A\t?\n"
-        "B\t2\n",
+        "taxon\tstate\nA\t?\nB\t2\n",
         encoding="utf-8",
     )
 
@@ -42,9 +40,7 @@ def test_load_discrete_dataset_rejects_ambiguous_state_tokens(
 ) -> None:
     traits_path = tmp_path / "ambiguous_states.tsv"
     traits_path.write_text(
-        "taxon\tstate\n"
-        "A\t0|1\n"
-        "B\t2\n",
+        "taxon\tstate\nA\t0|1\nB\t2\n",
         encoding="utf-8",
     )
 

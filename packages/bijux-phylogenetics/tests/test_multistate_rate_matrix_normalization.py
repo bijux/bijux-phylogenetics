@@ -8,11 +8,11 @@ from bijux_phylogenetics.phylo.likelihood import (
     build_equal_rate_codon_ctmc_rate_matrix,
     compute_ctmc_expected_substitution_rate,
 )
-from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
-    augment_dna_rate_matrix_with_gap_state,
-)
 from bijux_phylogenetics.phylo.likelihood.dna import (
     validate_dna_base_frequencies,
+)
+from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
+    augment_dna_rate_matrix_with_gap_state,
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
 

@@ -59,17 +59,15 @@ def test_discrete_gamma_invariant_empirical_protein_deep_tree_matches_high_preci
     root_prior = _uniform_root_prior()
     categories = build_discrete_gamma_rate_categories(alpha=0.8, category_count=4)
 
-    report = (
-        evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-            tree,
-            records,
-            rate_matrix=rate_matrix,
-            root_prior=root_prior,
-            alpha=0.8,
-            category_count=4,
-            invariant_proportion=0.35,
-            matrix_label="uniform-deep-tree",
-        )
+    report = evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+        tree,
+        records,
+        rate_matrix=rate_matrix,
+        root_prior=root_prior,
+        alpha=0.8,
+        category_count=4,
+        invariant_proportion=0.35,
+        matrix_label="uniform-deep-tree",
     )
 
     category_log_likelihoods = [

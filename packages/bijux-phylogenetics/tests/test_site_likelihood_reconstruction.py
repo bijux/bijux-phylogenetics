@@ -141,17 +141,19 @@ def test_protein_poisson_site_rows_reconstruct_total_likelihood() -> None:
 
 
 def test_empirical_protein_gamma_site_rows_reconstruct_total_likelihood() -> None:
-    report = evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment(
-        fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-        fixture(
-            "alignments",
-            "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
-        ),
-        rate_matrix=_compact_polar_rate_matrix(),
-        root_prior=_biased_root_prior(),
-        alpha=0.8,
-        category_count=4,
-        matrix_label="compact-polar",
+    report = (
+        evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment(
+            fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+            fixture(
+                "alignments",
+                "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
+            ),
+            rate_matrix=_compact_polar_rate_matrix(),
+            root_prior=_biased_root_prior(),
+            alpha=0.8,
+            category_count=4,
+            matrix_label="compact-polar",
+        )
     )
 
     assert math.isclose(
@@ -249,6 +251,4 @@ def _build_empirical_rate_matrix(
 
 
 def _protein_state_index() -> dict[str, int]:
-    return {
-        state: index for index, state in enumerate("ACDEFGHIKLMNPQRSTVWY")
-    }
+    return {state: index for index, state in enumerate("ACDEFGHIKLMNPQRSTVWY")}

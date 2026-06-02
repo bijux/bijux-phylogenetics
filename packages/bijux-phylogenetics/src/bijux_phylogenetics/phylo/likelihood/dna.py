@@ -53,11 +53,7 @@ def normalize_unambiguous_dna_records(
     for record in records:
         normalized_sequence = record.sequence.upper()
         invalid_states = sorted(
-            {
-                state
-                for state in normalized_sequence
-                if state not in DNA_STATE_INDEX
-            }
+            {state for state in normalized_sequence if state not in DNA_STATE_INDEX}
         )
         if invalid_states:
             joined_states = ", ".join(invalid_states)
@@ -90,7 +86,10 @@ def estimate_empirical_dna_base_frequencies(
 
 
 def validate_dna_base_frequencies(
-    base_frequencies: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...],
+    base_frequencies: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...],
     *,
     model_name: str,
 ) -> numpy.ndarray:
@@ -185,7 +184,9 @@ def validate_dna_exchangeabilities(
 ) -> numpy.ndarray:
     if isinstance(exchangeabilities, dict):
         if set(exchangeabilities) == set(DNA_EXCHANGEABILITY_ORDER):
-            paired_exchangeabilities = cast(dict[tuple[str, str], float], exchangeabilities)
+            paired_exchangeabilities = cast(
+                dict[tuple[str, str], float], exchangeabilities
+            )
             ordered_exchangeabilities = [
                 float(paired_exchangeabilities[pair])
                 for pair in DNA_EXCHANGEABILITY_ORDER
@@ -244,7 +245,9 @@ def normalize_dna_exchangeabilities_by_anchor(
     try:
         anchor_index = DNA_EXCHANGEABILITY_ORDER.index(anchor_pair)
     except ValueError as error:
-        raise ValueError(f"unsupported DNA exchangeability anchor {anchor_pair}") from error
+        raise ValueError(
+            f"unsupported DNA exchangeability anchor {anchor_pair}"
+        ) from error
     anchor_value = float(vector[anchor_index])
     if anchor_value <= 0.0:
         raise InvalidAlignmentError(
@@ -256,7 +259,10 @@ def normalize_dna_exchangeabilities_by_anchor(
 def normalize_dna_rate_matrix(
     off_diagonal_rates: numpy.ndarray,
     *,
-    stationary_frequencies: dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...],
+    stationary_frequencies: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...],
     model_name: str,
 ) -> numpy.ndarray:
     candidate = numpy.asarray(off_diagonal_rates, dtype=float)
@@ -339,7 +345,9 @@ def evaluate_fixed_topology_dna_site_log_likelihood(
 
     validated_root_prior = numpy.asarray(root_prior, dtype=float)
     states_by_taxon = dict(zip(taxon_order, states, strict=True))
-    state_count = len(dna_observation_state_order(observation_policy=observation_policy))
+    state_count = len(
+        dna_observation_state_order(observation_policy=observation_policy)
+    )
     pruning_pass = postorder_conditional_likelihoods(
         tree,
         state_count=state_count,

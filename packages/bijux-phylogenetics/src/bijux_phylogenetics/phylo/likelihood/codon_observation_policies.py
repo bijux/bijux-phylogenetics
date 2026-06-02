@@ -77,15 +77,21 @@ def validate_codon_observation_state(
         raise InvalidAlignmentError(
             f"{owner_name} observation policy 'reject' does not allow missing or gap codon state '{codon}' in record '{record_identifier}' at codon site {codon_index}"
         )
-    if validated_policy == "reject" and codon not in stop_codons:
-        if codon not in _compatible_sense_codons(
-            codon,
-            state_index={codon: 0},
-        ):
-            raise InvalidAlignmentError(
-                f"{owner_name} observation policy 'reject' requires resolved sense codons only; "
-                f"record '{record_identifier}' contains '{codon}' at codon site {codon_index}"
+    if (
+        validated_policy == "reject"
+        and codon not in stop_codons
+        and codon
+        not in (
+            _compatible_sense_codons(
+                codon,
+                state_index={codon: 0},
             )
+        )
+    ):
+        raise InvalidAlignmentError(
+            f"{owner_name} observation policy 'reject' requires resolved sense codons only; "
+            f"record '{record_identifier}' contains '{codon}' at codon site {codon_index}"
+        )
 
 
 def resolve_codon_observation_leaf_vector(

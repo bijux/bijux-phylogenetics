@@ -54,7 +54,9 @@ def test_f81_site_log_likelihood_is_invariant_under_rate_scaling_and_branch_comp
 ):
     tree = load_tree(fixture("trees", "f81_likelihood_tree_2_taxa.nwk"))
     records = normalize_unambiguous_dna_records(
-        load_fasta_alignment(fixture("alignments", "f81_likelihood_alignment_2_taxa.fasta")),
+        load_fasta_alignment(
+            fixture("alignments", "f81_likelihood_alignment_2_taxa.fasta")
+        ),
         model_name="F81 normalization test",
     )
     taxon_order = [record.identifier for record in records]
@@ -75,7 +77,9 @@ def test_f81_site_log_likelihood_is_invariant_under_rate_scaling_and_branch_comp
     )
     scaled_rate_matrix = normalized_rate_matrix * 5.0
 
-    def total_log_likelihood(rate_matrix: numpy.ndarray, *, branch_scale: float) -> float:
+    def total_log_likelihood(
+        rate_matrix: numpy.ndarray, *, branch_scale: float
+    ) -> float:
         site_count = len(records[0].sequence)
         total = 0.0
         for site_index in range(site_count):

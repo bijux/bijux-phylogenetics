@@ -30,9 +30,7 @@ def resolve_codon_state_space(
     """Resolve one stable lexicographic sense-codon state order."""
     code_id, code_name, stop_codons = _resolve_genetic_code(genetic_code)
     state_order = tuple(
-        codon
-        for codon in _iter_lexicographic_codons()
-        if codon not in stop_codons
+        codon for codon in _iter_lexicographic_codons() if codon not in stop_codons
     )
     return CodonStateSpace(
         genetic_code_id=code_id,
@@ -69,9 +67,7 @@ def validate_codon_frequency_vector(
         if unexpected_codons or missing_codons:
             details: list[str] = []
             if unexpected_codons:
-                details.append(
-                    "unexpected codons: " + ", ".join(unexpected_codons[:8])
-                )
+                details.append("unexpected codons: " + ", ".join(unexpected_codons[:8]))
             if missing_codons:
                 details.append("missing codons: " + ", ".join(missing_codons[:8]))
             raise InvalidAlignmentError(
@@ -128,10 +124,12 @@ def build_equal_rate_codon_ctmc_rate_matrix(
                 rate_matrix[row_index, column_index] = frequencies[column_index]
         rate_matrix[row_index, row_index] = -float(rate_matrix[row_index, :].sum())
     try:
-        normalized_rate_matrix = normalize_ctmc_rate_matrix_by_expected_substitution_rate(
-            rate_matrix,
-            frequencies,
-            state_labels=state_space.state_order,
+        normalized_rate_matrix = (
+            normalize_ctmc_rate_matrix_by_expected_substitution_rate(
+                rate_matrix,
+                frequencies,
+                state_labels=state_space.state_order,
+            )
         )
     except PhylogeneticsError as error:
         raise InvalidAlignmentError(
@@ -218,4 +216,11 @@ def _iter_lexicographic_codons() -> tuple[str, ...]:
 
 
 def _single_nucleotide_difference(left: str, right: str) -> bool:
-    return sum(1 for left_base, right_base in zip(left, right, strict=True) if left_base != right_base) == 1
+    return (
+        sum(
+            1
+            for left_base, right_base in zip(left, right, strict=True)
+            if left_base != right_base
+        )
+        == 1
+    )

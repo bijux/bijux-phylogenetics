@@ -56,8 +56,7 @@ def test_compressed_codon_patterns_match_uncompressed_likelihood() -> None:
         )
 
     uncompressed_total = sum(
-        site_log_likelihood(states)
-        for states in zip(*codon_sequences, strict=True)
+        site_log_likelihood(states) for states in zip(*codon_sequences, strict=True)
     )
     compressed_total = sum_compressed_site_pattern_log_likelihoods(
         compressed_patterns,

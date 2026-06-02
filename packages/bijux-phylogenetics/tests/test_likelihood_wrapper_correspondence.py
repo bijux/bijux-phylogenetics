@@ -66,11 +66,17 @@ def test_likelihood_wrapper_correspondence_classifies_native_and_wrapper_cases(
         "observations_path",
         "run_json_path",
     }
-    assert outputs["summary_path"].read_text(encoding="utf-8").startswith(
-        "status\tcase_count\tblocking_case_count\tcase_ids\n"
+    assert (
+        outputs["summary_path"]
+        .read_text(encoding="utf-8")
+        .startswith("status\tcase_count\tblocking_case_count\tcase_ids\n")
     )
-    assert outputs["observations_path"].read_text(encoding="utf-8").startswith(
-        "case_id\twrapper_engine\tnative_surface\twrapper_surface\tcomparison_policy\tstatus\tsupported\tblocking\ttolerance\trationale\tinput_fixtures\texpected_output\tobserved_output\n"
+    assert (
+        outputs["observations_path"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "case_id\twrapper_engine\tnative_surface\twrapper_surface\tcomparison_policy\tstatus\tsupported\tblocking\ttolerance\trationale\tinput_fixtures\texpected_output\tobserved_output\n"
+        )
     )
     payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
     assert payload["case_count"] == 4

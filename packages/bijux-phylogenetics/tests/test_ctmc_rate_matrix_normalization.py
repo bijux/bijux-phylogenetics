@@ -34,11 +34,14 @@ def test_normalize_ctmc_rate_matrix_by_expected_substitution_rate_is_scale_invar
     )
 
     assert numpy.allclose(normalized, normalized_scaled, rtol=0.0, atol=1e-12)
-    assert compute_ctmc_expected_substitution_rate(
-        normalized,
-        stationary,
-        state_labels=("A", "B", "C"),
-    ) == 1.0
+    assert (
+        compute_ctmc_expected_substitution_rate(
+            normalized,
+            stationary,
+            state_labels=("A", "B", "C"),
+        )
+        == 1.0
+    )
 
 
 def test_transition_probability_matrix_matches_scaled_generator_after_branch_compensation() -> (

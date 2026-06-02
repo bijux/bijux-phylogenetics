@@ -3,12 +3,12 @@ from __future__ import annotations
 import numpy
 
 from bijux_phylogenetics.ancestral.common import node_signature
+from bijux_phylogenetics.phylo.likelihood.discrete_observation_policies import (
+    resolve_discrete_observation_leaf_vector,
+)
 from bijux_phylogenetics.phylo.likelihood.pruning import (
     build_transition_matrix_evaluator,
     postorder_conditional_likelihoods,
-)
-from bijux_phylogenetics.phylo.likelihood.discrete_observation_policies import (
-    resolve_discrete_observation_leaf_vector,
 )
 
 from .likelihood_math import branch_length
@@ -28,7 +28,6 @@ def estimate_marginal_state_probabilities(
     This follows the `ape::ace(..., type='discrete')` `lik.anc` contract that the
     repository governs against for discrete ancestral reconstruction parity.
     """
-    state_index = {state: index for index, state in enumerate(state_order)}
     transition_evaluator = build_transition_matrix_evaluator(rate_matrix)
     pruning_pass = postorder_conditional_likelihoods(
         tree,

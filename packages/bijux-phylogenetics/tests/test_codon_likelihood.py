@@ -92,7 +92,9 @@ def test_codon_ctmc_likelihood_rejects_ambiguous_codons_under_reject_policy() ->
         )
 
 
-def test_codon_ctmc_observation_policies_change_likelihood_on_ambiguity_fixture() -> None:
+def test_codon_ctmc_observation_policies_change_likelihood_on_ambiguity_fixture() -> (
+    None
+):
     missing_report = evaluate_codon_ctmc_tree_likelihood_from_alignment(
         fixture("trees", "codon_likelihood_tree_2_taxa.nwk"),
         fixture("alignments", "codon_likelihood_alignment_ambiguity_2_taxa.fasta"),
@@ -116,7 +118,9 @@ def test_codon_ctmc_observation_policies_change_likelihood_on_ambiguity_fixture(
     )
 
 
-def test_codon_ctmc_observation_policy_treats_missing_and_gap_codons_explicitly() -> None:
+def test_codon_ctmc_observation_policy_treats_missing_and_gap_codons_explicitly() -> (
+    None
+):
     records = [
         AlignmentRecord(identifier="A", sequence="ATG???GGG"),
         AlignmentRecord(identifier="B", sequence="ATG---GGG"),

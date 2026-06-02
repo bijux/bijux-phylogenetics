@@ -7,9 +7,7 @@ from bijux_phylogenetics.phylo.likelihood.ctmc import (
 )
 
 
-def test_solve_ctmc_stationary_distribution_accepts_unique_absorbing_fixture() -> (
-    None
-):
+def test_solve_ctmc_stationary_distribution_accepts_unique_absorbing_fixture() -> None:
     report = solve_ctmc_stationary_distribution(
         [
             [0.0, 0.0],

@@ -48,8 +48,10 @@ def test_compressed_nucleotide_patterns_match_uncompressed_likelihood_with_ambig
             model_name="JC69",
             observation_policy="ambiguity-vector",
             root_prior=UNIFORM_DNA_ROOT_PRIOR,
-            transition_matrix_for_child=lambda child: jc69_transition_probability_matrix(
-                max(float(child.branch_length or 0.0), 0.0)
+            transition_matrix_for_child=lambda child: (
+                jc69_transition_probability_matrix(
+                    max(float(child.branch_length or 0.0), 0.0)
+                )
             ),
         )
 

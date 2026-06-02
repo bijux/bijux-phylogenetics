@@ -33,12 +33,16 @@ def log_weighted_sum_exp(
 ) -> float:
     """Return log(sum(weight_i * exp(log_value_i))) with zero-safe weighting."""
     if len(log_values) != len(weights):
-        raise ValueError("log_weighted_sum_exp requires matching value and weight counts")
+        raise ValueError(
+            "log_weighted_sum_exp requires matching value and weight counts"
+        )
     weighted_logs: list[float] = []
     for log_value, weight in zip(log_values, weights, strict=True):
         normalized_weight = float(weight)
         if not math.isfinite(normalized_weight) or normalized_weight < 0.0:
-            raise ValueError("log_weighted_sum_exp weights must be finite and nonnegative")
+            raise ValueError(
+                "log_weighted_sum_exp weights must be finite and nonnegative"
+            )
         if normalized_weight == 0.0:
             continue
         weighted_logs.append(math.log(normalized_weight) + float(log_value))

@@ -9,11 +9,7 @@ from typing import Any
 
 _PACKAGE_DIR = Path(__file__).resolve().parent
 _MODULE_PATHS = tuple(
-    sorted(
-        path
-        for path in _PACKAGE_DIR.glob("*.py")
-        if path.name != "__init__.py"
-    )
+    sorted(path for path in _PACKAGE_DIR.glob("*.py") if path.name != "__init__.py")
 )
 _EXPORT_MODULE_CACHE: dict[str, str] = {}
 

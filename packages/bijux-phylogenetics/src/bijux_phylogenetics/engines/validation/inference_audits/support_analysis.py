@@ -98,7 +98,9 @@ def _is_collapsed_consensus_branch_without_label(node: object) -> bool:
     children = tuple(getattr(node, "children", ()))
     if len(children) < 2:
         return False
-    return all(float(getattr(child, "branch_length", 0.0) or 0.0) <= 1e-5 for child in children)
+    return all(
+        float(getattr(child, "branch_length", 0.0) or 0.0) <= 1e-5 for child in children
+    )
 
 
 def summarize_fasttree_support_distribution(
@@ -221,7 +223,9 @@ def detect_weakly_supported_backbone(
     return WeakBackboneReport(
         tree_path=tree_path,
         threshold=threshold,
-        evaluated_backbone_node_count=sum(1 for node in backbone_nodes if node.is_backbone),
+        evaluated_backbone_node_count=sum(
+            1 for node in backbone_nodes if node.is_backbone
+        ),
         weak_backbone_node_count=len(weak_nodes),
         weak_nodes=weak_nodes,
         warnings=warnings,

@@ -374,7 +374,9 @@ def _validate_stationary_distribution_uniqueness(
         probability_tolerance=probability_tolerance,
     )
     nullity = sum(
-        1 for singular_value in singular_values if float(singular_value) <= rank_tolerance
+        1
+        for singular_value in singular_values
+        if float(singular_value) <= rank_tolerance
     )
     if nullity == 1:
         return
@@ -600,7 +602,11 @@ def _stationary_rank_tolerance(
         float(numpy.linalg.norm(rate_matrix, ord=2)),
         float(numpy.max(numpy.abs(rate_matrix))),
     )
-    return max(row_sum_tolerance, probability_tolerance) * matrix_scale * rate_matrix.shape[0]
+    return (
+        max(row_sum_tolerance, probability_tolerance)
+        * matrix_scale
+        * rate_matrix.shape[0]
+    )
 
 
 def _first_invalid_entry(

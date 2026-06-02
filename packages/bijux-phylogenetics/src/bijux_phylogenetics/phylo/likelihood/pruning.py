@@ -52,7 +52,7 @@ class FiniteStateTransitionMatrixEvaluator:
         return len(self.transition_matrix_by_branch_length)
 
     @property
-    def eigendecomposition(self) -> "FiniteStateRateMatrixEigendecomposition":
+    def eigendecomposition(self) -> FiniteStateRateMatrixEigendecomposition:
         return FiniteStateRateMatrixEigendecomposition(
             eigenvalues=self.eigenvalues,
             eigenvectors=self.eigenvectors,
@@ -224,9 +224,7 @@ def _stabilize_transition_probability_matrix(
         rtol=0.0,
         atol=_TRANSITION_ROW_SUM_TOLERANCE,
     ):
-        raise ValueError(
-            "transition matrix exponentiation produced unstable row sums"
-        )
+        raise ValueError("transition matrix exponentiation produced unstable row sums")
     return stabilized
 
 

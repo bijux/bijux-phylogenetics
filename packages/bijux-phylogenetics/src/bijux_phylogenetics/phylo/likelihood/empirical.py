@@ -1190,10 +1190,7 @@ def _discrete_gamma_mixture_log_likelihood(
 ) -> float:
     return log_weighted_sum_exp(
         category_log_likelihoods,
-        weights=[
-            category.weight
-            for category in categories
-        ],
+        weights=[category.weight for category in categories],
     )
 
 

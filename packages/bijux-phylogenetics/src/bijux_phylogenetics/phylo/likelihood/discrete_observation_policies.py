@@ -86,7 +86,9 @@ def resolve_discrete_observation_leaf_vector(
             )
         if validated_policy == "treat-as-missing":
             return numpy.ones(len(state_order), dtype=float)
-        unknown_states = [state for state in ambiguous_states if state not in state_index]
+        unknown_states = [
+            state for state in ambiguous_states if state not in state_index
+        ]
         if unknown_states:
             raise InvalidAlignmentError(
                 f"{model_name} likelihood ambiguity token '{normalized_observation}' contains undeclared states {', '.join(sorted(unknown_states))}"

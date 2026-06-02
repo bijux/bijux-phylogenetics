@@ -46,7 +46,9 @@ def summarize_likelihood_wrapper_correspondence() -> (
     with tempfile.TemporaryDirectory() as temporary_directory:
         temporary_root = Path(temporary_directory)
         native_tree_path = temporary_root / "native_ml_tree.nwk"
-        write_newick(native_tree_path, loads_newick(native_report.best_final_tree_newick))
+        write_newick(
+            native_tree_path, loads_newick(native_report.best_final_tree_newick)
+        )
         observations = [
             _build_iqtree_topology_exact_observation(
                 native_report=native_report,
@@ -314,7 +316,9 @@ def _build_iqtree_branch_length_tolerance_observation(
 ) -> LikelihoodWrapperCorrespondenceObservation:
     wrapper_tree_path = _wrapper_fixture_root() / "iqtree_small_rounded.treefile"
     wrapper_tree = load_newick(wrapper_tree_path)
-    branch_score_report = compare_branch_score_distance(native_tree_path, wrapper_tree_path)
+    branch_score_report = compare_branch_score_distance(
+        native_tree_path, wrapper_tree_path
+    )
     wrapper_topology_fingerprint = rooted_topology_fingerprint(wrapper_tree)
     topology_equal = (
         native_report.best_final_topology_fingerprint == wrapper_topology_fingerprint
@@ -369,7 +373,9 @@ def _build_fasttree_expected_difference_observation(
     wrapper_tree = load_newick(wrapper_tree_path)
     wrapper_topology_fingerprint = rooted_topology_fingerprint(wrapper_tree)
     rf_report = compare_robinson_foulds(native_tree_path, wrapper_tree_path)
-    branch_score_report = compare_branch_score_distance(native_tree_path, wrapper_tree_path)
+    branch_score_report = compare_branch_score_distance(
+        native_tree_path, wrapper_tree_path
+    )
     return LikelihoodWrapperCorrespondenceObservation(
         case_id="fasttree-small-approximate-reference",
         wrapper_engine="FastTree-style",
@@ -405,7 +411,9 @@ def _build_fasttree_expected_difference_observation(
     )
 
 
-def _build_raxml_unsupported_observation() -> LikelihoodWrapperCorrespondenceObservation:
+def _build_raxml_unsupported_observation() -> (
+    LikelihoodWrapperCorrespondenceObservation
+):
     return LikelihoodWrapperCorrespondenceObservation(
         case_id="raxml-style-small-reference",
         wrapper_engine="RAxML-style",
