@@ -3,11 +3,15 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.io.trees import load_tree
 import bijux_phylogenetics.phylo.likelihood.fixed_topology_branch_lengths as branch_optimization
 import bijux_phylogenetics.phylo.likelihood.fixed_topology_nucleotide_joint_optimization as joint_optimization
 import bijux_phylogenetics.phylo.likelihood.optimization_likelihood_equivalence as optimization_equivalence
 import bijux_phylogenetics.phylo.likelihood.substitution_parameters as substitution_optimization
+
+pytestmark = pytest.mark.slow
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

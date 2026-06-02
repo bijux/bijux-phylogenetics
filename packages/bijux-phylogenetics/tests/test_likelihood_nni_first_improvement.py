@@ -3,12 +3,16 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.phylo.likelihood import (
     search_nucleotide_likelihood_nni_from_alignment,
 )
 from bijux_phylogenetics.phylo.likelihood.nni_search import (
     validate_nucleotide_likelihood_nni_improvement_policy,
 )
+
+pytestmark = pytest.mark.slow
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

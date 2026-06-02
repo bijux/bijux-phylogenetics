@@ -3,6 +3,8 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.likelihood import (
     build_nucleotide_likelihood_starting_tree_pool,
@@ -13,6 +15,8 @@ from bijux_phylogenetics.phylo.likelihood import (
 from bijux_phylogenetics.phylo.likelihood.stepwise_addition import (
     build_likelihood_stepwise_addition_tree_from_alignment,
 )
+
+pytestmark = pytest.mark.slow
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

@@ -4,12 +4,16 @@ import json
 import math
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.io.newick import load_newick_tree_set
 import bijux_phylogenetics.phylo.likelihood as likelihood_api
 from bijux_phylogenetics.phylo.likelihood import (
     infer_nucleotide_likelihood_tree_from_alignment,
     write_nucleotide_likelihood_tree_inference_artifacts,
 )
+
+pytestmark = pytest.mark.slow
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

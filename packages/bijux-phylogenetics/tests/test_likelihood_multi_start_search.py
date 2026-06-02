@@ -4,6 +4,8 @@ import json
 import math
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.io.trees import load_tree
 import bijux_phylogenetics.phylo.likelihood as likelihood_api
 from bijux_phylogenetics.phylo.likelihood import (
@@ -12,6 +14,8 @@ from bijux_phylogenetics.phylo.likelihood import (
     validate_likelihood_multi_start_evaluation_budget,
     write_nucleotide_likelihood_multi_start_artifacts,
 )
+
+pytestmark = pytest.mark.slow
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

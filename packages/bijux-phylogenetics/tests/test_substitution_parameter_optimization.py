@@ -3,6 +3,8 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.likelihood import (
@@ -11,6 +13,8 @@ from bijux_phylogenetics.phylo.likelihood import (
     evaluate_k80_tree_likelihood,
     optimize_nucleotide_substitution_parameters_from_alignment,
 )
+
+pytestmark = pytest.mark.slow
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

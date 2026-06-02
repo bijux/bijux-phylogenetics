@@ -4,6 +4,8 @@ import json
 import math
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.io.newick import loads_newick
 from bijux_phylogenetics.phylo.likelihood import (
     rooted_topology_fingerprint_from_newick,
@@ -13,6 +15,8 @@ from bijux_phylogenetics.phylo.likelihood import (
     write_nucleotide_likelihood_nni_artifacts,
 )
 from bijux_phylogenetics.phylo.topology.clades import informative_rooted_clades
+
+pytestmark = pytest.mark.slow
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

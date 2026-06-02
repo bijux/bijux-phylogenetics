@@ -3,11 +3,15 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 import bijux_phylogenetics.phylo.likelihood as likelihood_api
 from bijux_phylogenetics.phylo.likelihood import (
     summarize_likelihood_wrapper_correspondence,
     write_likelihood_wrapper_correspondence_artifacts,
 )
+
+pytestmark = pytest.mark.slow
 
 
 def test_public_likelihood_gateway_exports_wrapper_correspondence_surface() -> None:

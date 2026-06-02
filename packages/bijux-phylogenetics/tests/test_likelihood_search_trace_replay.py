@@ -3,6 +3,8 @@ from __future__ import annotations
 from copy import deepcopy
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.phylo.likelihood import (
     search_nucleotide_likelihood_nni_from_alignment,
     search_nucleotide_likelihood_spr_from_alignment,
@@ -13,6 +15,8 @@ from bijux_phylogenetics.phylo.likelihood.search_replay import (
     replay_nucleotide_likelihood_spr_search_trace,
     replay_nucleotide_likelihood_tbr_search_trace,
 )
+
+pytestmark = pytest.mark.slow
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

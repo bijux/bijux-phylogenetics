@@ -16,6 +16,8 @@ from bijux_phylogenetics.runtime.errors import (
     InvalidAlignmentError,
 )
 
+pytestmark = pytest.mark.slow
+
 FIXTURES = Path(__file__).parent / "fixtures"
 
 

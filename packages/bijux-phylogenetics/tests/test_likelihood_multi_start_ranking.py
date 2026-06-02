@@ -3,9 +3,13 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.phylo.likelihood import (
     search_nucleotide_likelihood_multi_start_from_alignment,
 )
+
+pytestmark = pytest.mark.slow
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

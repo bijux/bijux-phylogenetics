@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick
 from bijux_phylogenetics.phylo.likelihood import (
     search_nucleotide_likelihood_spr_from_alignment,
@@ -12,6 +14,8 @@ from bijux_phylogenetics.phylo.topology import (
     apply_rooted_spr_move,
     iter_rooted_spr_move_candidates,
 )
+
+pytestmark = pytest.mark.slow
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

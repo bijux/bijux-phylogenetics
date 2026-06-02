@@ -4,10 +4,14 @@ import json
 import math
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.phylo.likelihood import (
     search_nucleotide_likelihood_stochastic_topology_perturbation_from_alignment,
     write_nucleotide_likelihood_stochastic_topology_perturbation_artifacts,
 )
+
+pytestmark = pytest.mark.slow
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

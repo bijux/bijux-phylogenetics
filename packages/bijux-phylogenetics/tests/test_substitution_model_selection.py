@@ -3,10 +3,14 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.phylo.likelihood import (
     compare_nucleotide_substitution_models_from_alignment,
     default_substitution_model_selection_candidates,
 )
+
+pytestmark = pytest.mark.slow
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

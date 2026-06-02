@@ -4,11 +4,15 @@ import json
 import math
 from pathlib import Path
 
+import pytest
+
 import bijux_phylogenetics.phylo.likelihood as likelihood_api
 from bijux_phylogenetics.phylo.likelihood import (
     search_nucleotide_likelihood_ratchet_from_alignment,
     write_nucleotide_likelihood_ratchet_artifacts,
 )
+
+pytestmark = pytest.mark.slow
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

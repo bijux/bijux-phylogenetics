@@ -4,7 +4,11 @@ import json
 import math
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.command_line import main
+
+pytestmark = pytest.mark.slow
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
