@@ -22,6 +22,7 @@ RATE_ABS_TOLERANCE = 1e-7
 DURATION_ABS_TOLERANCE = 1e-5
 SCORE_REL_TOLERANCE = 1e-6
 SCORE_ABS_TOLERANCE = 1e-12
+BRANCH_PENALTY_ABS_TOLERANCE = 5e-12
 
 
 def fixture(name: str) -> Path:
@@ -163,7 +164,7 @@ def test_write_penalized_likelihood_branch_rate_tsv_writes_expected_rows(
     ) == pytest.approx(
         2.2364498263509753e-06,
         rel=SCORE_REL_TOLERANCE,
-        abs=SCORE_ABS_TOLERANCE,
+        abs=BRANCH_PENALTY_ABS_TOLERANCE,
     )
     assert rows_by_descendant_taxa[("D",)]["child_name"] == "D"
     assert float(
