@@ -1,0 +1,5 @@
+taxon	char01_gradient	char02_distance_gap
+A	low	low
+B	medium	very_high
+C	high	very_high
+D	very_high	very_high

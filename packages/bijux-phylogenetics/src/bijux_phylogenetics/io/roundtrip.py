@@ -10,9 +10,9 @@ from bijux_phylogenetics.compare.topology import (
     _compare_branch_lengths_for_trees,
     _compare_tree_objects,
 )
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
 from bijux_phylogenetics.io.biopython import tree_to_biophylo
 from bijux_phylogenetics.io.trees import TreeFormat, detect_tree_format, load_tree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 
 
 @dataclass(slots=True)
@@ -68,8 +68,11 @@ def _support_rows(tree: PhyloTree) -> list[SupportNormalizationAuditRow]:
         return sorted(taxa)
 
     def node_id(node: TreeNode) -> str:
-        taxa = descendant_taxa(node)
-        return "|".join(taxa) if taxa else (node.name or "<unnamed>")
+        return node.node_id or (
+            "|".join(descendant_taxa(node))
+            if descendant_taxa(node)
+            else (node.name or "<unnamed>")
+        )
 
     for node in tree.iter_nodes():
         if node.is_leaf() or node.name is None or not node.name.strip():

@@ -1,0 +1,2 @@
+surface	sequence_count	duplicate_identifier_count	illegal_character_count	empty_sequence_count	length_outlier_count	warning_count	detail
+repaired_sequence_input	3	0	0	0	0	0	repaired FASTA input retains only unique identifiers and records without illegal characters, empty bodies, or retained length outliers

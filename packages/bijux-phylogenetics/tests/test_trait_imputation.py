@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.trait_imputation import (
+from bijux_phylogenetics.comparative.traits.imputation import (
     summarize_trait_imputation,
     write_trait_imputation_exclusion_table,
     write_trait_imputation_holdout_table,

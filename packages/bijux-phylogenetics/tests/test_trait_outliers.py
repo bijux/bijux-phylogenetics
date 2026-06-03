@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.trait_outliers import (
+from bijux_phylogenetics.comparative.traits.outliers import (
     summarize_trait_outliers,
     write_trait_outlier_exclusion_table,
     write_trait_outlier_summary_table,

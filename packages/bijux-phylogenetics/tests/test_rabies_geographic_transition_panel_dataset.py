@@ -3,14 +3,18 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import bijux_phylogenetics
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
+import bijux_phylogenetics.datasets.rabies_geography as rabies_geography_api
 from bijux_phylogenetics.datasets.rabies_geography import (
     export_rabies_geographic_transition_panel_dataset,
     load_rabies_geographic_transition_panel_dataset,
     run_rabies_geographic_transition_panel_demo,
     run_rabies_geographic_transition_panel_workflow,
     write_rabies_geographic_transition_panel_workflow_bundle,
+)
+
+from .support.scientific_output_assertions import (
+    assert_selected_scientific_outputs_equivalent,
 )
 
 
@@ -67,10 +71,7 @@ def test_write_rabies_geographic_transition_panel_workflow_bundle_matches_packag
         ),
     }
     assert {path.name for path in expected_root.glob("*")} == set(generated)
-    for name, generated_path in generated.items():
-        assert generated_path.read_text(encoding="utf-8") == (
-            expected_root / name
-        ).read_text(encoding="utf-8")
+    assert_selected_scientific_outputs_equivalent(expected_root, generated)
 
 
 def test_run_rabies_geographic_transition_panel_demo_materializes_dataset_and_workflow(
@@ -107,23 +108,24 @@ def test_public_runtime_exports_include_rabies_geographic_transition_panel_surfa
     None
 ):
     assert (
-        bijux_phylogenetics.load_rabies_geographic_transition_panel_dataset
+        rabies_geography_api.load_rabies_geographic_transition_panel_dataset
         is load_rabies_geographic_transition_panel_dataset
     )
     assert (
-        bijux_phylogenetics.export_rabies_geographic_transition_panel_dataset
+        rabies_geography_api.export_rabies_geographic_transition_panel_dataset
         is export_rabies_geographic_transition_panel_dataset
     )
     assert (
-        bijux_phylogenetics.run_rabies_geographic_transition_panel_workflow
+        rabies_geography_api.run_rabies_geographic_transition_panel_workflow
         is run_rabies_geographic_transition_panel_workflow
     )
     assert (
-        bijux_phylogenetics.write_rabies_geographic_transition_panel_workflow_bundle
+        rabies_geography_api.write_rabies_geographic_transition_panel_workflow_bundle
         is write_rabies_geographic_transition_panel_workflow_bundle
     )
-    assert bijux_phylogenetics.run_rabies_geographic_transition_panel_demo is (
-        run_rabies_geographic_transition_panel_demo
+    assert (
+        rabies_geography_api.run_rabies_geographic_transition_panel_demo
+        is run_rabies_geographic_transition_panel_demo
     )
 
 

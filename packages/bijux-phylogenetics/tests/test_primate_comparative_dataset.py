@@ -5,14 +5,18 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_primate_comparative_dataset,
     load_primate_comparative_dataset,
     run_primate_comparative_demo,
     run_primate_comparative_workflow,
     write_primate_comparative_workflow_bundle,
+)
+import bijux_phylogenetics.datasets.primate_comparative as mammals_api
+
+from .support.scientific_output_assertions import (
+    assert_selected_scientific_outputs_equivalent,
 )
 
 
@@ -68,10 +72,7 @@ def test_write_primate_comparative_workflow_bundle_matches_packaged_expected_out
         ),
     }
     assert {path.name for path in expected_root.glob("*.tsv")} == set(generated)
-    for name, generated_path in generated.items():
-        assert generated_path.read_text(encoding="utf-8") == (
-            expected_root / name
-        ).read_text(encoding="utf-8")
+    assert_selected_scientific_outputs_equivalent(expected_root, generated)
 
 
 @pytest.mark.slow
@@ -101,24 +102,20 @@ def test_export_primate_comparative_dataset_copies_expected_outputs(
 
 def test_public_runtime_exports_include_primate_comparative_dataset_surface() -> None:
     assert (
-        bijux_phylogenetics.load_primate_comparative_dataset
-        is load_primate_comparative_dataset
+        mammals_api.load_primate_comparative_dataset is load_primate_comparative_dataset
     )
     assert (
-        bijux_phylogenetics.export_primate_comparative_dataset
+        mammals_api.export_primate_comparative_dataset
         is export_primate_comparative_dataset
     )
     assert (
-        bijux_phylogenetics.run_primate_comparative_workflow
-        is run_primate_comparative_workflow
+        mammals_api.run_primate_comparative_workflow is run_primate_comparative_workflow
     )
     assert (
-        bijux_phylogenetics.write_primate_comparative_workflow_bundle
+        mammals_api.write_primate_comparative_workflow_bundle
         is write_primate_comparative_workflow_bundle
     )
-    assert (
-        bijux_phylogenetics.run_primate_comparative_demo is run_primate_comparative_demo
-    )
+    assert mammals_api.run_primate_comparative_demo is run_primate_comparative_demo
 
 
 @pytest.mark.slow

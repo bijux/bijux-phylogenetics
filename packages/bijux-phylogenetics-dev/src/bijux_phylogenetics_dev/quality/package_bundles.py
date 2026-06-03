@@ -152,11 +152,38 @@ def _archive_members(path: Path) -> set[str]:
         with tarfile.open(path, "r:gz") as archive:
             members = set()
             for member in archive.getmembers():
-                if member.name and not member.isdir():
+                if (
+                    member.name
+                    and not member.isdir()
+                    and not member.issym()
+                    and not member.islnk()
+                ):
                     _, _, relative = member.name.partition("/")
                     members.add(relative)
             return members
     raise ValueError(f"unsupported archive type: {path}")
+
+
+def _archive_link_issues(path: Path, package_name: str) -> list[BundleIssue]:
+    if not path.name.endswith(".tar.gz"):
+        return []
+    issues: list[BundleIssue] = []
+    with tarfile.open(path, "r:gz") as archive:
+        for member in archive.getmembers():
+            if not member.name or not (member.issym() or member.islnk()):
+                continue
+            link_kind = "symbolic link" if member.issym() else "hard link"
+            issues.append(
+                BundleIssue(
+                    code="linked-archive-entry",
+                    path=path.name,
+                    message=(
+                        f"{package_name} sdist contains {link_kind} "
+                        f"{member.name} -> {member.linkname}"
+                    ),
+                )
+            )
+    return issues
 
 
 def _find_single(dist_dir: Path, pattern: str) -> Path:
@@ -178,6 +205,7 @@ def audit_package_bundle_directory(
     sdist_path = _find_single(dist_dir, "*.tar.gz")
     wheel_members = _archive_members(wheel_path)
     sdist_members = _archive_members(sdist_path)
+    issues.extend(_archive_link_issues(sdist_path, policy.package_name))
 
     for entry in policy.required_wheel_entries:
         if entry not in wheel_members:

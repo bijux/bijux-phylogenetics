@@ -1,0 +1,3 @@
+term	baseline_estimate	baseline_direction	baseline_significant	bootstrap_direction_consistency	bootstrap_significance_consistency	method_direction_consistency	method_significance_consistency	combined_score	stability_class	evidence
+host_group[livestock]	154.578389270722	positive	true	1	0.994	1	1	0.9985	stable	baseline_direction=positive; bootstrap_direction_consistency=1; method_direction_consistency=1
+host_group[canid]	144.746258822072	positive	true	1	0.994	1	1	0.9985	stable	baseline_direction=positive; bootstrap_direction_consistency=1; method_direction_consistency=1

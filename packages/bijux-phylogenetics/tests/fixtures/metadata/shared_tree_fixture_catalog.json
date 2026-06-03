@@ -1,0 +1,368 @@
+{
+  "catalog_name": "shared_tree_fixtures",
+  "fixtures": [
+    {
+      "fixture_id": "balanced_rooted_ultrametric",
+      "relative_path": "trees/example_tree.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 4,
+      "feature_tags": [
+        "balanced-binary",
+        "rooted",
+        "ultrametric"
+      ],
+      "notes": "Balanced four-tip rooted tree used as the canonical ultrametric binary baseline."
+    },
+    {
+      "fixture_id": "two_tip_rooted_ultrametric",
+      "relative_path": "trees/example_tree_two_tip_ultrametric.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 2,
+      "feature_tags": [
+        "balanced-binary",
+        "rooted",
+        "ultrametric",
+        "two-tip"
+      ],
+      "notes": "Two-tip rooted ultrametric tree used for small-crown-tree diversification boundaries."
+    },
+    {
+      "fixture_id": "pectinate_rooted_non_ultrametric",
+      "relative_path": "trees/example_tree_ladderized.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 4,
+      "feature_tags": [
+        "pectinate",
+        "rooted",
+        "non-ultrametric"
+      ],
+      "notes": "Ladderized rooted tree used for pectinate and non-ultrametric algorithms."
+    },
+    {
+      "fixture_id": "star_unrooted_polytomy",
+      "relative_path": "trees/example_tree_star.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid_with_warnings",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 5,
+      "feature_tags": [
+        "star",
+        "polytomy",
+        "unrooted",
+        "non-ultrametric"
+      ],
+      "notes": "Five-tip star tree used to stress polytomy and unrooted handling beyond four-tip examples."
+    },
+    {
+      "fixture_id": "rooted_polytomy",
+      "relative_path": "trees/example_tree_polytomy.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid_with_warnings",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 4,
+      "feature_tags": [
+        "rooted",
+        "polytomy",
+        "non-ultrametric"
+      ],
+      "notes": "Rooted internal polytomy used for rooted multifurcation behavior."
+    },
+    {
+      "fixture_id": "unrooted_branch_length_tree",
+      "relative_path": "trees/example_tree_unrooted.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid_with_warnings",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 4,
+      "feature_tags": [
+        "unrooted",
+        "non-ultrametric"
+      ],
+      "notes": "Simple unrooted tree with explicit branch lengths used for unrooted parser parity."
+    },
+    {
+      "fixture_id": "outgroup_rootable_unrooted",
+      "relative_path": "trees/example_tree_rootable.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid_with_warnings",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 4,
+      "feature_tags": [
+        "rootable",
+        "unrooted",
+        "non-ultrametric"
+      ],
+      "notes": "Four-tip branch-length tree used for explicit outgroup rooting parity."
+    },
+    {
+      "fixture_id": "outgroup_rooted_on_d",
+      "relative_path": "trees/example_tree_rooted_on_d.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 4,
+      "feature_tags": [
+        "rooted",
+        "outgroup-rooted",
+        "non-ultrametric"
+      ],
+      "notes": "Outgroup-rooted version of the rootable example used to prove already-rooted parity."
+    },
+    {
+      "fixture_id": "zero_branch_lengths",
+      "relative_path": "trees/example_tree_zero_lengths.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid_with_warnings",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 4,
+      "feature_tags": [
+        "rooted",
+        "zero-branch",
+        "non-ultrametric"
+      ],
+      "notes": "Rooted tree with explicit zero-length branches used for warning-rich branch-length behavior."
+    },
+    {
+      "fixture_id": "long_branch_outlier",
+      "relative_path": "trees/example_tree_long_branch.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 4,
+      "feature_tags": [
+        "rooted",
+        "long-branch-outlier",
+        "non-ultrametric"
+      ],
+      "notes": "Rooted tree with one branch-length outlier for long-branch diagnostics."
+    },
+    {
+      "fixture_id": "internal_node_labels",
+      "relative_path": "trees/example_tree_named_clades.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 4,
+      "feature_tags": [
+        "balanced-binary",
+        "rooted",
+        "internal-node-labels",
+        "ultrametric"
+      ],
+      "notes": "Rooted binary tree with durable internal clade labels."
+    },
+    {
+      "fixture_id": "near_ultrametric_branch_jitter",
+      "relative_path": "trees/example_tree_near_ultrametric.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 4,
+      "feature_tags": [
+        "balanced-binary",
+        "rooted",
+        "near-ultrametric"
+      ],
+      "notes": "Rooted binary tree with one tiny tip-length perturbation that stays ultrametric under ape's default tolerance but fails tighter checks."
+    },
+    {
+      "fixture_id": "branch_support_labels",
+      "relative_path": "trees/example_tree_support_iqtree_composite.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 4,
+      "feature_tags": [
+        "balanced-binary",
+        "rooted",
+        "branch-support-labels",
+        "ultrametric"
+      ],
+      "notes": "Composite IQ-TREE-style support labels used for branch-support parsing."
+    },
+    {
+      "fixture_id": "cross_pairing_rooted_four_taxon",
+      "relative_path": "trees/example_tree_topology_diff.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 4,
+      "feature_tags": [
+        "balanced-binary",
+        "rooted",
+        "non-ultrametric",
+        "cross-pairing-clades"
+      ],
+      "notes": "Rooted four-taxon tree with A|C and B|D clades for support-mapping absence checks."
+    },
+    {
+      "fixture_id": "quoted_taxon_labels",
+      "relative_path": "trees/example_tree_labels.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid_with_warnings",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 3,
+      "feature_tags": [
+        "quoted-taxon-labels",
+        "unrooted",
+        "non-ultrametric"
+      ],
+      "notes": "Quoted and punctuation-bearing taxon labels used for cross-parser label preservation."
+    },
+    {
+      "fixture_id": "larger_binary_tree",
+      "relative_path": "trees/example_tree_eight_taxa.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 8,
+      "feature_tags": [
+        "balanced-binary",
+        "rooted",
+        "ultrametric"
+      ],
+      "notes": "Eight-tip rooted ultrametric tree used so the shared suite is not limited to four-tip toy examples."
+    },
+    {
+      "fixture_id": "balanced_rooted_six_taxon",
+      "relative_path": "trees/example_tree_six_taxa.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 6,
+      "feature_tags": [
+        "balanced-binary",
+        "rooted",
+        "ultrametric",
+        "six-taxon"
+      ],
+      "notes": "Six-tip rooted ultrametric tree used as a governed posterior-support mapping reference."
+    },
+    {
+      "fixture_id": "ultrametric_zero_internal_branch",
+      "relative_path": "trees/example_tree_ultrametric_zero_internal.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 4,
+      "feature_tags": [
+        "balanced-binary",
+        "rooted",
+        "ultrametric",
+        "internal-node-labels",
+        "zero-branch"
+      ],
+      "notes": "Rooted ultrametric tree with internal labels and one zero-length internal branch for branching-time parity."
+    },
+    {
+      "fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "relative_path": "trees/example_tree_phytools_ultrametric_twenty_four_taxa.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 24,
+      "feature_tags": [
+        "balanced-binary",
+        "rooted",
+        "ultrametric",
+        "twenty-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-tip rooted ultrametric comparative tree used for governed `phytools` signal fixtures beyond the small toy corpus."
+    },
+    {
+      "fixture_id": "phytools_ultrametric_one_hundred_twenty_eight_taxa",
+      "relative_path": "trees/example_tree_phytools_ultrametric_one_hundred_twenty_eight_taxa.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 128,
+      "feature_tags": [
+        "balanced-binary",
+        "rooted",
+        "ultrametric",
+        "one-hundred-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "One-hundred-twenty-eight-tip rooted ultrametric comparative tree used so governed `phytools` fixtures include a genuinely large signal surface."
+    },
+    {
+      "fixture_id": "phytools_non_ultrametric_twenty_four_taxa",
+      "relative_path": "trees/example_tree_phytools_non_ultrametric_twenty_four_taxa.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 24,
+      "feature_tags": [
+        "balanced-binary",
+        "rooted",
+        "non-ultrametric",
+        "twenty-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-tip rooted non-ultrametric comparative tree used where the governed `phytools` method surface permits non-ultrametric branch lengths."
+    },
+    {
+      "fixture_id": "phytools_branch_edge_twenty_four_taxa",
+      "relative_path": "trees/example_tree_phytools_branch_edge_twenty_four_taxa.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "valid_with_warnings",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 24,
+      "feature_tags": [
+        "balanced-binary",
+        "rooted",
+        "non-ultrametric",
+        "twenty-plus-taxa",
+        "zero-branch",
+        "long-branch-outlier",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-tip rooted comparative tree with one zero-length internal edge and one long terminal outlier for branch-length edge-case review."
+    },
+    {
+      "fixture_id": "negative_branch_length",
+      "relative_path": "trees/example_tree_negative_length.nwk",
+      "parse_expectation": "parseable",
+      "validation_expectation": "invalid_branch_length_error",
+      "ape_read_tree_expectation": "parseable",
+      "tip_count": 3,
+      "feature_tags": [
+        "rooted",
+        "negative-branch-length",
+        "non-ultrametric"
+      ],
+      "notes": "Syntactically parseable tree with one negative branch length for semantic validation failures."
+    },
+    {
+      "fixture_id": "malformed_unbalanced_parentheses",
+      "relative_path": "trees/example_tree_malformed_unbalanced_parentheses.nwk",
+      "parse_expectation": "tree_parse_error",
+      "validation_expectation": "tree_parse_error",
+      "ape_read_tree_expectation": "tree_parse_error",
+      "tip_count": null,
+      "feature_tags": [
+        "malformed-newick"
+      ],
+      "notes": "Malformed Newick missing one closing parenthesis."
+    },
+    {
+      "fixture_id": "malformed_extra_closing_parenthesis",
+      "relative_path": "trees/example_tree_malformed_extra_closing_parenthesis.nwk",
+      "parse_expectation": "tree_parse_error",
+      "validation_expectation": "tree_parse_error",
+      "ape_read_tree_expectation": "tree_parse_error",
+      "tip_count": null,
+      "feature_tags": [
+        "malformed-newick"
+      ],
+      "notes": "Malformed Newick with one extra closing parenthesis."
+    }
+  ]
+}

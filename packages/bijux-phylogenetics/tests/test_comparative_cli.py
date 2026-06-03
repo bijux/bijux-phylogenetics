@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -63,9 +63,199 @@ def test_comparative_signal_cli_reports_lambda_and_p_value(capsys) -> None:
     assert exit_code == 0
     assert 0.0 <= payload["metrics"]["pagels_lambda"] <= 1.0
     assert 0.0 < payload["metrics"]["signal_p_value"] <= 1.0
+    assert payload["metrics"]["tree_is_ultrametric"] is True
+    assert payload["metrics"]["ultrametric_policy"] == (
+        "accept-rooted-trees-and-report-ultrametricity"
+    )
+    assert payload["metrics"]["missing_value_policy"] == (
+        "prune-overlapping-missing-values"
+    )
+    assert payload["metrics"]["pruned_missing_value_taxon_count"] == 0
+    assert payload["metrics"]["signal_seed"] == 7
     assert 0.0 <= payload["metrics"]["lambda_likelihood_ratio_p_value"] <= 1.0
     assert payload["metrics"]["permutation_row_count"] == 19
     assert len(payload["data"]["signal_test"]["permutation_rows"]) == 19
+
+
+def test_comparative_signal_cli_reports_pruned_missing_value_policy(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "signal",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_brownian_missing.tsv")),
+            "--trait",
+            "response_growth",
+            "--permutations",
+            "11",
+            "--seed",
+            "17",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["pruned_missing_value_taxon_count"] == 1
+    assert payload["metrics"]["missing_value_policy"] == (
+        "prune-overlapping-missing-values"
+    )
+    assert payload["data"]["input_audit"]["pruned_missing_value_taxa"] == ["B"]
+
+
+def test_comparative_signal_cli_reports_non_ultrametric_acceptance(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "signal",
+            str(fixture("example_tree_internal_long_branch.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--trait",
+            "response",
+            "--permutations",
+            "11",
+            "--seed",
+            "19",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["tree_is_ultrametric"] is False
+    assert payload["metrics"]["ultrametric_policy"] == (
+        "accept-rooted-trees-and-report-ultrametricity"
+    )
+
+
+def test_comparative_signal_cli_reports_lambda_optimizer_diagnostics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "signal",
+            str(fixture("example_tree_phytools_non_ultrametric_twenty_four_taxa.nwk")),
+            str(
+                fixture(
+                    "example_traits_phytools_signal_non_ultrametric_twenty_four_taxa.tsv"
+                )
+            ),
+            "--trait",
+            "signal_strong",
+            "--permutations",
+            "11",
+            "--seed",
+            "19",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["lambda_optimizer_name"] == "two-stage-grid-search"
+    assert payload["metrics"]["lambda_optimizer_function_evaluation_count"] > 0
+    assert (
+        payload["metrics"]["lambda_optimizer_function_evaluation_count"]
+        == payload["data"]["pagels_lambda"]["optimizer_diagnostics"][
+            "function_evaluation_count"
+        ]
+    )
+    assert payload["metrics"]["lambda_optimizer_hit_upper_boundary"] is True
+    assert payload["metrics"]["lambda_likelihood_ratio_statistic"] > 0.0
+    assert (
+        payload["metrics"]["lambda_log_likelihood"]
+        >= payload["data"]["pagels_lambda"]["null_log_likelihood"]
+    )
+    assert (
+        payload["metrics"]["signal_null_k_minimum"]
+        <= payload["metrics"]["signal_null_k_mean"]
+        <= payload["metrics"]["signal_null_k_maximum"]
+    )
+
+
+def test_comparative_signal_cli_rejects_constant_trait_values(
+    tmp_path: Path, capsys
+) -> None:
+    traits_path = tmp_path / "constant-traits.tsv"
+    traits_path.write_text(
+        "taxon\tresponse\nA\t2.0\nB\t2.0\nC\t2.0\nD\t2.0\n",
+        encoding="utf-8",
+    )
+    exit_code = main(
+        [
+            "comparative",
+            "signal",
+            str(fixture("example_tree.nwk")),
+            str(traits_path),
+            "--trait",
+            "response",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"] == [
+        {
+            "code": "comparative_method_error",
+            "message": (
+                "phylogenetic signal requires at least two distinct numeric trait values after pruning"
+            ),
+        }
+    ]
+
+
+def test_comparative_brownian_pgls_cli_reports_negative_branch_length_failure(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "brownian-pgls",
+            str(fixture("example_tree_negative_length.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 2
+    assert payload["errors"][0]["code"] == "comparative_method_error"
+    assert (
+        payload["errors"][0]["details"]["failure_reason"]
+        == "brownian_covariance_negative_branch_lengths"
+    )
+    assert payload["errors"][0]["details"]["evidence"]["minimum_branch_length"] < 0.0
+
+
+def test_comparative_ou_pgls_cli_reports_negative_branch_length_failure(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "ou-pgls",
+            str(fixture("example_tree_negative_length.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--alpha",
+            "1.0",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 2
+    assert payload["errors"][0]["code"] == "comparative_method_error"
+    assert (
+        payload["errors"][0]["details"]["failure_reason"]
+        == "ou_covariance_negative_branch_lengths"
+    )
+    assert payload["errors"][0]["details"]["evidence"]["minimum_branch_length"] < 0.0
 
 
 def test_comparative_signal_cli_writes_summary_and_permutation_ledgers(
@@ -95,16 +285,331 @@ def test_comparative_signal_cli_writes_summary_and_permutation_ledgers(
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["metrics"]["permutation_row_count"] == 7
+    assert (
+        payload["metrics"]["signal_null_k_minimum"]
+        <= payload["metrics"]["signal_null_k_mean"]
+        <= payload["metrics"]["signal_null_k_maximum"]
+    )
     assert summary_out.exists()
     assert permutations_out.exists()
     summary_rows = summary_out.read_text(encoding="utf-8").splitlines()
     permutation_rows = permutations_out.read_text(encoding="utf-8").splitlines()
     assert summary_rows[0].startswith("trait\ttaxon_count\tblombergs_k")
+    assert "signal_null_k_mean" in summary_rows[0]
     assert permutation_rows[0].startswith(
         "trait\tobserved_k\testimated_lambda\tpermutations"
     )
     assert len(summary_rows) == 2
     assert len(permutation_rows) == 8
+
+
+def test_comparative_discrete_mk_cli_reports_er_metrics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "discrete-mk",
+            str(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
+            str(fixture("example_traits_phytools_signal_twenty_four_taxa.tsv")),
+            "--trait",
+            "binary_state",
+            "--taxon-column",
+            "taxon",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "equal-rates"
+    assert payload["metrics"]["taxon_count"] == 24
+    assert payload["metrics"]["observed_state_count"] == 2
+    assert payload["metrics"]["parameter_count"] == 1
+    assert payload["metrics"]["aic"] < payload["metrics"]["aicc"]
+    assert payload["metrics"]["optimizer_name"] == "golden-section-search"
+    assert payload["metrics"]["optimizer_converged"] is True
+    assert payload["metrics"]["transition_rate_count"] == 2
+    assert payload["metrics"]["baseline_model"] is None
+
+
+@pytest.mark.slow
+def test_comparative_discrete_mk_cli_reports_symmetric_baseline_metrics(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "discrete-mk",
+            str(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
+            str(fixture("example_traits_phytools_signal_twenty_four_taxa.tsv")),
+            "--trait",
+            "region_state",
+            "--taxon-column",
+            "taxon",
+            "--model",
+            "symmetric",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "symmetric"
+    assert payload["metrics"]["parameter_count"] == 3
+    assert payload["metrics"]["transition_rate_count"] == 6
+    assert payload["metrics"]["optimizer_converged"] is True
+    assert payload["metrics"]["overparameterized"] is False
+    assert payload["metrics"]["baseline_model"] == "equal-rates"
+    assert payload["metrics"]["preferred_model_by_aic"] == "equal-rates"
+    assert payload["metrics"]["delta_aic"] > 0.0
+
+
+@pytest.mark.slow
+def test_comparative_discrete_mk_cli_reports_lambda_transform_metrics(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "discrete-mk",
+            str(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
+            str(
+                fixture(
+                    "example_traits_geiger_discrete_model_panel_twenty_four_taxa.tsv"
+                )
+            ),
+            "--trait",
+            "er_binary_transform_weak_signal",
+            "--taxon-column",
+            "taxon",
+            "--transform",
+            "lambda",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "equal-rates"
+    assert payload["metrics"]["transform"] == "lambda"
+    assert payload["metrics"]["parameter_count"] == 2
+    assert payload["metrics"]["transform_parameter_name"] == "lambda"
+    assert payload["metrics"]["transform_parameter_value"] == 0.0
+    assert payload["metrics"]["transform_function_evaluation_count"] == 26
+    assert payload["metrics"]["transform_warning_count"] >= 1
+
+
+@pytest.mark.slow
+def test_comparative_discrete_mk_cli_reports_kappa_transform_metrics(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "discrete-mk",
+            str(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
+            str(
+                fixture(
+                    "example_traits_geiger_discrete_model_panel_twenty_four_taxa.tsv"
+                )
+            ),
+            "--trait",
+            "er_binary_truth",
+            "--taxon-column",
+            "taxon",
+            "--transform",
+            "kappa",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "equal-rates"
+    assert payload["metrics"]["transform"] == "kappa"
+    assert payload["metrics"]["parameter_count"] == 2
+    assert payload["metrics"]["transform_parameter_name"] == "kappa"
+    assert math.isclose(
+        payload["metrics"]["transform_parameter_value"],
+        0.9011763252454394,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert payload["metrics"]["transform_function_evaluation_count"] == 26
+    assert payload["metrics"]["transform_warning_count"] >= 1
+
+
+@pytest.mark.slow
+def test_comparative_discrete_mk_cli_reports_delta_transform_metrics(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "discrete-mk",
+            str(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
+            str(
+                fixture(
+                    "example_traits_geiger_discrete_model_panel_twenty_four_taxa.tsv"
+                )
+            ),
+            "--trait",
+            "er_binary_delta_time_sensitive",
+            "--taxon-column",
+            "taxon",
+            "--transform",
+            "delta",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "equal-rates"
+    assert payload["metrics"]["transform"] == "delta"
+    assert payload["metrics"]["parameter_count"] == 2
+    assert payload["metrics"]["transform_parameter_name"] == "delta"
+    assert 0.0 < payload["metrics"]["transform_parameter_value"] < 3.0
+    assert payload["metrics"]["transform_function_evaluation_count"] == 26
+    assert payload["metrics"]["transform_warning_count"] >= 0
+
+
+@pytest.mark.slow
+def test_comparative_discrete_mk_cli_reports_early_burst_transform_metrics(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "discrete-mk",
+            str(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
+            str(
+                fixture(
+                    "example_traits_geiger_discrete_model_panel_twenty_four_taxa.tsv"
+                )
+            ),
+            "--trait",
+            "er_binary_delta_time_sensitive",
+            "--taxon-column",
+            "taxon",
+            "--transform",
+            "early-burst",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "equal-rates"
+    assert payload["metrics"]["transform"] == "early-burst"
+    assert payload["metrics"]["parameter_count"] == 2
+    assert payload["metrics"]["transform_parameter_name"] == "a"
+    assert payload["metrics"]["transform_parameter_value"] < 0.0
+    assert payload["metrics"]["transform_function_evaluation_count"] == 26
+    assert payload["metrics"]["transform_warning_count"] >= 1
+
+
+def test_comparative_discrete_mk_cli_rejects_meristic_parity_claim(
+    capsys,
+) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        main(
+            [
+                "comparative",
+                "discrete-mk",
+                str(fixture("example_tree.nwk")),
+                str(fixture("example_traits_geography.tsv")),
+                "--trait",
+                "region",
+                "--taxon-column",
+                "taxon",
+                "--model",
+                "meristic",
+                "--json",
+            ]
+        )
+
+    assert excinfo.value.code == 2
+    captured = capsys.readouterr()
+    assert "explicitly excluded this round" in captured.err
+    assert "ordered-state Mk support is not claimed as meristic parity" in (
+        captured.err
+    )
+
+
+@pytest.mark.slow
+def test_comparative_discrete_mk_cli_reports_ard_boundary_metrics(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "discrete-mk",
+            str(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
+            str(fixture("example_traits_phytools_discrete_ard_twenty_four_taxa.tsv")),
+            "--trait",
+            "region_state",
+            "--taxon-column",
+            "taxon",
+            "--model",
+            "all-rates-different",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "all-rates-different"
+    assert payload["metrics"]["parameter_count"] == 12
+    assert payload["metrics"]["transition_rate_count"] == 12
+    assert payload["metrics"]["optimizer_converged"] is False
+    assert payload["metrics"]["optimizer_hit_lower_parameter_bound"] is True
+    assert payload["metrics"]["optimizer_hit_upper_parameter_bound"] is False
+    assert payload["metrics"]["overparameterized"] is False
+    assert payload["metrics"]["baseline_model"] == "equal-rates"
+    assert payload["metrics"]["preferred_model_by_aic"] == "equal-rates"
+    assert payload["metrics"]["delta_aic"] > 0.0
+
+
+def test_comparative_discrete_mk_cli_writes_summary_and_rate_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    summary_out = tmp_path / "discrete-mk-summary.tsv"
+    rates_out = tmp_path / "discrete-mk-rates.tsv"
+
+    exit_code = main(
+        [
+            "comparative",
+            "discrete-mk",
+            str(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
+            str(
+                fixture("example_traits_phytools_discrete_missing_twenty_four_taxa.tsv")
+            ),
+            "--trait",
+            "region_state",
+            "--taxon-column",
+            "taxon",
+            "--summary-out",
+            str(summary_out),
+            "--rates-out",
+            str(rates_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["pruned_missing_value_taxon_count"] == 1
+    assert summary_out.exists()
+    assert rates_out.exists()
+    summary_rows = summary_out.read_text(encoding="utf-8").splitlines()
+    rate_rows = rates_out.read_text(encoding="utf-8").splitlines()
+    assert summary_rows[0].startswith("trait\ttaxon_column\tmodel")
+    assert "aicc" in summary_rows[0]
+    assert rate_rows[0].startswith(
+        "source_state\ttarget_state\ttransition_allowed\tstep_distance\trate"
+    )
+    assert len(summary_rows) == 2
+    assert len(rate_rows) == 7
 
 
 def test_comparative_correlated_traits_cli_reports_coupling_metrics(capsys) -> None:
@@ -134,6 +639,34 @@ def test_comparative_correlated_traits_cli_reports_coupling_metrics(capsys) -> N
         payload["metrics"]["association_measure_value"], 0.8871275993361114
     )
     assert payload["metrics"]["better_model"] == "correlated"
+
+
+def test_comparative_correlated_traits_cli_rejects_meristic_parity_claim(
+    capsys,
+) -> None:
+    try:
+        main(
+            [
+                "comparative",
+                "correlated-traits",
+                str(fixture("example_tree_eight_taxa.nwk")),
+                str(fixture("example_traits_correlated_binary_missing.tsv")),
+                "--left-trait",
+                "trait_left",
+                "--right-trait",
+                "trait_right",
+                "--analysis-kind",
+                "binary",
+                "--binary-model",
+                "meristic",
+                "--json",
+            ]
+        )
+    except SystemExit as error:
+        assert error.code == 2
+    captured = capsys.readouterr()
+    assert "explicitly excluded this round" in captured.err
+    assert "integer-state meristic contract" in captured.err
 
 
 def test_comparative_correlated_traits_cli_writes_review_ledgers(
@@ -535,9 +1068,9 @@ def test_comparative_early_burst_cli_reports_model_fit_metrics(capsys) -> None:
     assert payload["metrics"]["tree_taxon_count"] == 4
     assert payload["metrics"]["analyzed_taxon_count"] == 4
     assert payload["metrics"]["excluded_taxon_count"] == 0
-    assert payload["metrics"]["rate_change"] == 50.0
+    assert payload["metrics"]["rate_change"] == 0.0
     assert payload["metrics"]["better_model"] == "brownian"
-    assert payload["metrics"]["identifiability_warning_count"] == 4
+    assert payload["metrics"]["identifiability_warning_count"] == 3
     assert payload["metrics"]["profile_row_count"] == 161
     assert "aic" in payload["metrics"]
     assert "aicc" in payload["metrics"]
@@ -745,6 +1278,196 @@ def test_comparative_clade_traits_cli_writes_review_ledgers(
     ]
 
 
+def test_comparative_phylogenetic_residuals_cli_reports_outlier_metrics(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "phylogenetic-residuals",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_phylogenetic_residuals.tsv")),
+            "--response",
+            "brain_mass",
+            "--predictor",
+            "body_mass",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["tree_taxon_count"] == 6
+    assert payload["metrics"]["analyzed_taxon_count"] == 6
+    assert payload["metrics"]["excluded_taxon_count"] == 0
+    assert payload["metrics"]["method"] == "lambda"
+    assert payload["metrics"]["outlier_count"] >= 1
+    assert payload["metrics"]["top_outlier_taxon"] == "F"
+
+
+def test_comparative_phylogenetic_residuals_cli_writes_review_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    summary_out = tmp_path / "phylogenetic-residual-summary.tsv"
+    residuals_out = tmp_path / "phylogenetic-residuals.tsv"
+    coefficients_out = tmp_path / "phylogenetic-residual-coefficients.tsv"
+    excluded_out = tmp_path / "phylogenetic-residual-excluded.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "phylogenetic-residuals",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_phylogenetic_residuals_missing.tsv")),
+            "--response",
+            "brain_mass",
+            "--predictor",
+            "body_mass",
+            "--method",
+            "brownian",
+            "--summary-out",
+            str(summary_out),
+            "--residuals-out",
+            str(residuals_out),
+            "--coefficients-out",
+            str(coefficients_out),
+            "--excluded-taxa-out",
+            str(excluded_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["analyzed_taxon_count"] == 5
+    assert payload["metrics"]["excluded_taxon_count"] == 2
+    assert summary_out.exists()
+    assert residuals_out.exists()
+    assert coefficients_out.exists()
+    assert excluded_out.exists()
+    assert (
+        summary_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("response\tpredictor\tmethod")
+    )
+    assert (
+        residuals_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("taxon\tinput_order\ttree_tip_label\tobserved_value")
+    )
+    assert (
+        coefficients_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("name\testimate\tstandard_error\tp_value")
+    )
+    assert excluded_out.read_text(encoding="utf-8").splitlines() == [
+        "taxon\treason\tdetails",
+        "E\tmissing_value\ttaxon is missing required value(s): brain_mass",
+        "G\tabsent_from_tree\ttaxon is present in the trait table but absent from the tree",
+    ]
+
+
+def test_comparative_phylogenetic_anova_cli_reports_group_metrics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "phylogenetic-anova",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_phylogenetic_anova.tsv")),
+            "--response",
+            "trait_value",
+            "--group",
+            "habitat",
+            "--simulations",
+            "16",
+            "--seed",
+            "7",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["tree_taxon_count"] == 6
+    assert payload["metrics"]["analyzed_taxon_count"] == 6
+    assert payload["metrics"]["excluded_taxon_count"] == 0
+    assert payload["metrics"]["group_count"] == 2
+    assert payload["metrics"]["simulation_count"] == 16
+    assert 0.0 <= payload["metrics"]["p_value"] <= 1.0
+    assert payload["metrics"]["low_sample_group_count"] == 1
+
+
+def test_comparative_phylogenetic_anova_cli_writes_review_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    summary_out = tmp_path / "phylogenetic-anova-summary.tsv"
+    groups_out = tmp_path / "phylogenetic-anova-groups.tsv"
+    pairwise_out = tmp_path / "phylogenetic-anova-pairwise.tsv"
+    simulations_out = tmp_path / "phylogenetic-anova-simulations.tsv"
+    excluded_out = tmp_path / "phylogenetic-anova-excluded.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "phylogenetic-anova",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_phylogenetic_anova_missing.tsv")),
+            "--response",
+            "trait_value",
+            "--group",
+            "habitat",
+            "--simulations",
+            "16",
+            "--seed",
+            "7",
+            "--summary-out",
+            str(summary_out),
+            "--groups-out",
+            str(groups_out),
+            "--pairwise-out",
+            str(pairwise_out),
+            "--simulations-out",
+            str(simulations_out),
+            "--excluded-taxa-out",
+            str(excluded_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["analyzed_taxon_count"] == 5
+    assert payload["metrics"]["excluded_taxon_count"] == 2
+    assert summary_out.exists()
+    assert groups_out.exists()
+    assert pairwise_out.exists()
+    assert simulations_out.exists()
+    assert excluded_out.exists()
+    assert (
+        summary_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("response\tgroup\ttaxon_column")
+    )
+    assert (
+        groups_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("group\ttaxon_count\ttaxa\tmean")
+    )
+    assert (
+        pairwise_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("left_group\tright_group\tleft_taxon_count")
+    )
+    assert (
+        simulations_out.read_text(encoding="utf-8")
+        .splitlines()[0]
+        .startswith("simulation_index\tf_statistic\tat_or_above_observed")
+    )
+    assert excluded_out.read_text(encoding="utf-8").splitlines() == [
+        "taxon\treason\tdetails",
+        "F\tmissing_value\ttaxon is missing required value(s): habitat",
+        "G\tabsent_from_tree\ttaxon is present in the trait table but absent from the tree",
+    ]
+
+
 def test_comparative_trait_outliers_cli_reports_top_outlier_metrics(capsys) -> None:
     exit_code = main(
         [
@@ -897,6 +1620,178 @@ def test_comparative_trait_imputation_cli_writes_review_ledgers(
     ]
 
 
+def test_comparative_covariance_audit_cli_reports_pgls_profile_metrics(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "covariance-audit",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--analysis",
+            "pgls",
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["analysis"] == "pgls"
+    assert payload["metrics"]["covariance_model"] == "pagel-lambda"
+    assert payload["metrics"]["matrix_dimension"] == 4
+    assert payload["metrics"]["matrix_rank"] == 4
+    assert payload["metrics"]["fit_strategy"] == "exact"
+    assert payload["metrics"]["singular"] is False
+    assert payload["metrics"]["near_singular"] is False
+    assert payload["metrics"]["matched_taxon_count"] == 4
+    assert payload["metrics"]["missing_from_traits_count"] == 0
+    assert payload["metrics"]["extra_trait_taxon_count"] == 0
+    assert payload["metrics"]["analysis_taxon_count"] == 4
+    assert payload["metrics"]["zero_length_branch_count"] == 0
+    assert payload["metrics"]["negative_branch_length_count"] == 0
+    assert payload["metrics"]["candidate_row_count"] == 101
+    assert payload["metrics"]["blocker_count"] == 0
+
+
+def test_comparative_covariance_audit_cli_reports_duplicate_trait_blockers(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "covariance-audit",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative_duplicate.tsv")),
+            "--analysis",
+            "pgls",
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--lambda-value",
+            "1.0",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["fit_strategy"] == "failure"
+    assert payload["metrics"]["duplicate_trait_taxon_count"] == 1
+    assert payload["metrics"]["candidate_row_count"] == 0
+    assert payload["metrics"]["blocker_count"] == 1
+    assert payload["data"]["duplicate_trait_taxa"] == ["A"]
+    assert payload["data"]["blockers"] == ["trait table contains duplicate taxon keys"]
+
+
+def test_comparative_covariance_audit_cli_reports_taxon_overlap_metrics(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "covariance-audit",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits.tsv")),
+            "--analysis",
+            "brownian-trait",
+            "--trait",
+            "value",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["fit_strategy"] == "exact"
+    assert payload["metrics"]["matched_taxon_count"] == 3
+    assert payload["metrics"]["missing_from_traits_count"] == 1
+    assert payload["metrics"]["extra_trait_taxon_count"] == 1
+    assert payload["metrics"]["analysis_taxon_count"] == 3
+    assert payload["data"]["missing_from_traits"] == ["D"]
+    assert payload["data"]["extra_trait_taxa"] == ["E"]
+
+
+def test_comparative_covariance_audit_cli_reports_zero_length_regularization(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "covariance-audit",
+            str(fixture("example_tree_zero_lengths.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--analysis",
+            "pgls",
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--lambda-value",
+            "1.0",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["fit_strategy"] == "regularization"
+    assert payload["metrics"]["zero_length_branch_count"] == 3
+    assert payload["metrics"]["negative_branch_length_count"] == 0
+    assert payload["metrics"]["matrix_rank"] == 3
+    assert payload["metrics"]["singular"] is True
+    assert payload["metrics"]["near_singular"] is True
+    assert "tree contains zero-length branches" in payload["warnings"]
+
+
+def test_comparative_covariance_audit_cli_writes_review_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    summary_out = tmp_path / "covariance-audit-summary.tsv"
+    candidates_out = tmp_path / "covariance-audit-candidates.tsv"
+    excluded_out = tmp_path / "covariance-audit-excluded.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "covariance-audit",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative_missing_predictor.tsv")),
+            "--analysis",
+            "pgls",
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--lambda-value",
+            "1.0",
+            "--summary-out",
+            str(summary_out),
+            "--candidates-out",
+            str(candidates_out),
+            "--excluded-taxa-out",
+            str(excluded_out),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["candidate_row_count"] == 1
+    assert payload["metrics"]["blocker_count"] == 0
+    assert summary_out.exists()
+    assert candidates_out.exists()
+    assert excluded_out.exists()
+    summary_rows = summary_out.read_text(encoding="utf-8").splitlines()
+    candidate_rows = candidates_out.read_text(encoding="utf-8").splitlines()
+    excluded_rows = excluded_out.read_text(encoding="utf-8").splitlines()
+    assert summary_rows[0].startswith("analysis\tcovariance_model\tanalysis_label")
+    assert candidate_rows[0].startswith("candidate_label\tparameter_name")
+    assert excluded_rows[0] == "taxon\treason\tdetails"
+    assert len(summary_rows) == 2
+    assert len(candidate_rows) == 2
+    assert len(excluded_rows) == 2
+
+
 def test_comparative_contrasts_cli_reports_regression_metrics(capsys) -> None:
     exit_code = main(
         [
@@ -957,7 +1852,7 @@ def test_comparative_contrasts_cli_writes_review_ledgers(
     assert regression_out.exists()
     contrast_rows = contrasts_out.read_text(encoding="utf-8").splitlines()
     regression_rows = regression_out.read_text(encoding="utf-8").splitlines()
-    assert contrast_rows[0].startswith("trait\tnode\tleft_taxa\tright_taxa")
+    assert contrast_rows[0].startswith("trait\tnode_id\tnode\tleft_taxa\tright_taxa")
     assert regression_rows[0].startswith(
         "response_trait\tpredictor_trait\tnode\tpredictor_contrast"
     )
@@ -1006,6 +1901,7 @@ def test_comparative_pgls_cli_fits_multiple_predictors(capsys) -> None:
         for coefficient in payload["data"]["model"]["coefficients"]
     }
     assert exit_code == 0
+    assert payload["metrics"]["aic"] == payload["data"]["model"]["aic"]
     assert payload["metrics"]["coefficient_count"] == 3
     assert payload["metrics"]["confidence_interval_count"] == 3
     assert payload["metrics"]["residual_degrees_of_freedom"] == 1
@@ -1043,6 +1939,7 @@ def test_comparative_pgls_cli_reports_estimated_lambda_profile(capsys) -> None:
     )
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
+    assert payload["metrics"]["aic"] == payload["data"]["model"]["aic"]
     assert payload["metrics"]["lambda_estimation_mode"] == "estimated"
     assert payload["metrics"]["lambda_profile_point_count"] == 101
     assert payload["metrics"]["lambda_lower_95_confidence_interval"] == 0.0
@@ -1462,7 +2359,16 @@ def test_comparative_logistic_cli_reports_binary_metrics(capsys) -> None:
         "phylogenetic-working-correlation-gee"
     )
     assert payload["metrics"]["converged"] is True
-    assert payload["metrics"]["warning_count"] == 0
+    assert payload["metrics"]["warning_count"] == 2
+    assert payload["metrics"]["method_tier"] == "experimental"
+    assert payload["metrics"]["method_approximation"] == (
+        "phylogenetic-working-correlation-gee"
+    )
+    assert payload["metrics"]["method_excluded_reference_surfaces"] == [
+        "ape::compar.gee"
+    ]
+    assert payload["warnings"][0].startswith("experimental method tier:")
+    assert any("ape::compar.gee parity" in warning for warning in payload["warnings"])
     assert payload["metrics"]["coefficient_inference_distribution"] == "wald-normal"
     assert coefficients["body_size"] > 0.0
 
@@ -1492,6 +2398,12 @@ def test_comparative_logistic_cli_writes_review_ledgers(tmp_path: Path, capsys) 
     assert exit_code == 0
     assert payload["metrics"]["separation_detected"] is True
     assert payload["metrics"]["warning_count"] >= 1
+    assert payload["metrics"]["method_tier"] == "experimental"
+    assert any(
+        warning.startswith("experimental method tier:")
+        for warning in payload["warnings"]
+    )
+    assert any("ape::compar.gee parity" in warning for warning in payload["warnings"])
     assert coefficients_out.exists()
     assert fitted_out.exists()
     assert excluded_out.exists()
@@ -1815,6 +2727,11 @@ def test_comparative_multivariate_cli_reports_shared_taxa_and_associations(
     assert payload["metrics"]["predictor_count"] == 2
     assert payload["metrics"]["analysis_taxa"] == 6
     assert payload["metrics"]["excluded_taxa"] == 0
+    assert payload["metrics"]["residual_covariance_response_count"] == 2
+    assert payload["metrics"]["residual_covariance_matrix_rank"] == 1
+    assert math.isinf(payload["metrics"]["residual_covariance_condition_number"])
+    assert payload["metrics"]["residual_covariance_singular"] is True
+    assert payload["metrics"]["residual_covariance_near_singular"] is True
     assert payload["metrics"]["residual_covariance_row_count"] == 4
     assert payload["metrics"]["residual_correlation_row_count"] == 4
     assert payload["metrics"]["residual_association_count"] == 1
@@ -1825,6 +2742,69 @@ def test_comparative_multivariate_cli_reports_shared_taxa_and_associations(
         "shared_complete_case_across_responses_and_predictor_terms"
     )
     assert payload["data"]["numerical_tolerance"] == 1e-12
+
+
+def test_comparative_multivariate_cli_reports_full_rank_covariance_metrics(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "multivariate",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_comparative_multivariate_full_rank.tsv")),
+            "--responses",
+            "response_growth",
+            "response_range",
+            "--predictors",
+            "predictor_one",
+            "predictor_two",
+            "--lambda-value",
+            "0.0",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["residual_covariance_response_count"] == 2
+    assert payload["metrics"]["residual_covariance_matrix_rank"] == 2
+    assert math.isfinite(payload["metrics"]["residual_covariance_condition_number"])
+    assert payload["metrics"]["residual_covariance_singular"] is False
+    assert payload["metrics"]["residual_covariance_near_singular"] is False
+
+
+def test_comparative_multivariate_cli_reports_heterogeneous_lambda_warning(
+    capsys,
+) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "multivariate",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(
+                fixture(
+                    "example_traits_comparative_multivariate_heterogeneous_lambda.tsv"
+                )
+            ),
+            "--responses",
+            "response_growth",
+            "response_range",
+            "--predictors",
+            "predictor_one",
+            "predictor_two",
+            "--lambda-value",
+            "estimate",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["warning_count"] == 1
+    assert payload["data"]["response_model_rows"][0]["lambda_value"] == 1.0
+    assert payload["data"]["response_model_rows"][1]["lambda_value"] == 0.0
+    assert payload["data"]["warnings"] == [
+        "response models resolved materially different Pagel lambda values (0 to 1), so shared residual covariance and correlation compare residuals fit under different phylogenetic error assumptions"
+    ]
 
 
 def test_comparative_multivariate_cli_writes_review_ledgers(
@@ -1949,9 +2929,11 @@ def test_comparative_report_cli_can_export_full_review_package(
     assert exit_code == 0
     assert payload["metrics"]["taxon_count"] == 4
     assert payload["metrics"]["coefficient_count"] >= 2
-    assert payload["metrics"]["package_output_count"] == 10
+    assert payload["metrics"]["package_output_count"] == 12
     assert payload["data"]["output_dir"] == str(out_dir)
     assert (out_dir / "comparative-report.html").exists()
+    assert (out_dir / "comparative-methods-summary.md").exists()
+    assert (out_dir / "reviewer-audit-checklist.tsv").exists()
     assert (out_dir / "comparative-summary.tsv").exists()
     assert (out_dir / "coefficient-table.tsv").exists()
     assert (out_dir / "residual-summary.tsv").exists()
@@ -1965,6 +2947,37 @@ def test_comparative_report_cli_can_export_full_review_package(
         (out_dir / "comparative-summary.tsv").read_text(encoding="utf-8").splitlines()
     )
     assert summary_rows[0].startswith("response\tformula\tpredictor_count")
+
+
+def test_comparative_report_cli_can_export_methods_summary_markdown(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "comparative-methods-summary.md"
+    exit_code = main(
+        [
+            "comparative",
+            "report",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--response",
+            "response",
+            "--predictors",
+            "predictor_one",
+            "--lambda-value",
+            "0.0",
+            "--methods-summary-out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["package_output_count"] == 1
+    assert output_path.exists()
+    text = output_path.read_text(encoding="utf-8")
+    assert "Comparative Analysis Methods Summary" in text
+    assert "- predictor terms: `predictor_one`" in text
 
 
 def test_comparative_influence_cli_reports_taxa(capsys) -> None:

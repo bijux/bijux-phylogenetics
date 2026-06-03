@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.clade_traits import (
+from bijux_phylogenetics.comparative.clades.traits import (
     summarize_clade_traits,
     write_clade_trait_clade_table,
     write_clade_trait_exclusion_table,

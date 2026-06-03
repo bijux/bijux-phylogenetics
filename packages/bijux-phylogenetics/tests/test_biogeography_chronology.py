@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.biogeography.transition_chronology import (
+from bijux_phylogenetics.biogeography.migration import (
     summarize_biogeographic_transition_chronology,
     write_dated_biogeography_event_table,
     write_dated_biogeography_exclusion_table,
@@ -12,7 +12,7 @@ from bijux_phylogenetics.biogeography.transition_chronology import (
     write_dated_biogeography_summary_table,
     write_dated_biogeography_time_bin_table,
 )
-from bijux_phylogenetics.errors import AncestralReconstructionError
+from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

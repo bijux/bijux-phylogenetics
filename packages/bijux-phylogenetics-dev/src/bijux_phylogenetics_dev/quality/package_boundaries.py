@@ -174,6 +174,10 @@ def _iter_python_files(root: Path) -> list[Path]:
     return sorted(path for path in root.rglob("*.py") if path.is_file())
 
 
+def _is_generated_python_cache(path: Path) -> bool:
+    return "__pycache__" in path.parts or path.suffix in {".pyc", ".pyo"}
+
+
 def _repo_import_roots(path: Path, known_roots: tuple[str, ...]) -> list[str]:
     module = ast.parse(path.read_text(encoding="utf-8"))
     imports: list[str] = []
@@ -190,24 +194,158 @@ def _repo_import_roots(path: Path, known_roots: tuple[str, ...]) -> list[str]:
     return sorted(set(imports))
 
 
-def _module_exports(module_path: Path) -> set[str]:
+def _string_literal_values(node: ast.AST) -> set[str] | None:
+    if not isinstance(node, (ast.List, ast.Tuple)):
+        return None
+    return {
+        element.value
+        for element in node.elts
+        if isinstance(element, ast.Constant) and isinstance(element.value, str)
+    }
+
+
+def _relative_import_module_path(
+    module_path: Path,
+    *,
+    module: str | None,
+    level: int,
+) -> Path | None:
+    anchor = module_path.parent
+    for _ in range(max(level - 1, 0)):
+        anchor = anchor.parent
+    relative_parts = module.split(".") if module else []
+    candidate_root = anchor.joinpath(*relative_parts)
+    package_candidate = candidate_root / "__init__.py"
+    if package_candidate.is_file():
+        return package_candidate
+    module_candidate = candidate_root.with_suffix(".py")
+    return module_candidate if module_candidate.is_file() else None
+
+
+def _resolve_imported_symbol(
+    module_path: Path,
+    module: ast.Module,
+    symbol_name: str,
+) -> tuple[Path, str] | None:
+    for node in module.body:
+        if not isinstance(node, ast.ImportFrom):
+            continue
+        for alias in node.names:
+            local_name = alias.asname or alias.name
+            if local_name != symbol_name:
+                continue
+            imported_module_path = _relative_import_module_path(
+                module_path,
+                module=node.module or alias.name,
+                level=node.level,
+            )
+            if imported_module_path is None:
+                return None
+            return imported_module_path, alias.name
+    return None
+
+
+def _resolve_export_module_paths(
+    module_path: Path,
+    module: ast.Module,
+    symbol_name: str,
+) -> list[Path] | None:
+    for node in module.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        if not any(
+            isinstance(target, ast.Name) and target.id == symbol_name
+            for target in node.targets
+        ):
+            continue
+        if not isinstance(node.value, (ast.List, ast.Tuple)):
+            return None
+        module_paths: list[Path] = []
+        for element in node.value.elts:
+            if not isinstance(element, ast.Name):
+                return None
+            imported_symbol = _resolve_imported_symbol(module_path, module, element.id)
+            if imported_symbol is None:
+                return None
+            imported_module_path, _ = imported_symbol
+            module_paths.append(imported_module_path)
+        return module_paths
+    return None
+
+
+def _resolve_symbol_exports(
+    module_path: Path,
+    symbol_name: str,
+    *,
+    seen: set[tuple[Path, str]],
+) -> set[str] | None:
+    key = (module_path, symbol_name)
+    if key in seen:
+        return None
+    seen.add(key)
     module = ast.parse(module_path.read_text(encoding="utf-8"))
     for node in module.body:
         if not isinstance(node, ast.Assign):
             continue
         if not any(
-            isinstance(target, ast.Name) and target.id == "__all__"
+            isinstance(target, ast.Name) and target.id == symbol_name
             for target in node.targets
         ):
             continue
-        if not isinstance(node.value, ast.List):
-            continue
-        return {
-            element.value
-            for element in node.value.elts
-            if isinstance(element, ast.Constant) and isinstance(element.value, str)
-        }
+        literal_values = _string_literal_values(node.value)
+        if literal_values is not None:
+            return literal_values
+        if (
+            isinstance(node.value, ast.Call)
+            and isinstance(node.value.func, ast.Name)
+            and node.value.func.id in {"list", "tuple"}
+            and len(node.value.args) == 1
+        ):
+            argument = node.value.args[0]
+            if isinstance(argument, ast.Name):
+                imported_symbol = _resolve_imported_symbol(
+                    module_path, module, argument.id
+                )
+                if imported_symbol is None:
+                    return _resolve_symbol_exports(module_path, argument.id, seen=seen)
+                imported_module_path, imported_name = imported_symbol
+                return _resolve_symbol_exports(
+                    imported_module_path, imported_name, seen=seen
+                )
+            if (
+                isinstance(argument, ast.GeneratorExp)
+                and len(argument.generators) == 2
+                and isinstance(argument.generators[0].target, ast.Name)
+                and isinstance(argument.generators[0].iter, ast.Name)
+                and isinstance(argument.generators[1].iter, ast.Attribute)
+                and isinstance(argument.generators[1].iter.value, ast.Name)
+                and argument.generators[1].iter.attr == "__all__"
+                and argument.generators[0].target.id
+                == argument.generators[1].iter.value.id
+            ):
+                export_module_paths = _resolve_export_module_paths(
+                    module_path, module, argument.generators[0].iter.id
+                )
+                if export_module_paths is None:
+                    return None
+                exports: set[str] = set()
+                for export_module_path in export_module_paths:
+                    exports.update(_module_exports(export_module_path))
+                return exports
+    imported_symbol = _resolve_imported_symbol(module_path, module, symbol_name)
+    if imported_symbol is None:
+        return None
+    imported_module_path, imported_name = imported_symbol
+    return _resolve_symbol_exports(imported_module_path, imported_name, seen=seen)
+
+
+def _module_exports(module_path: Path, *, module_name: str | None = None) -> set[str]:
+    del module_name
+    resolved_exports = _resolve_symbol_exports(module_path, "__all__", seen=set())
+    if resolved_exports is not None:
+        return resolved_exports
     exports: set[str] = set()
+    module = ast.parse(module_path.read_text(encoding="utf-8"))
     for node in module.body:
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
             exports.add(node.name)
@@ -348,7 +486,7 @@ def build_package_boundary_report(repo_root: Path) -> dict[str, Any]:
     actual_alias_files = sorted(
         path.relative_to(alias_root).as_posix()
         for path in alias_root.rglob("*")
-        if path.is_file()
+        if path.is_file() and not _is_generated_python_cache(path)
     )
     allowed_alias_files = sorted(policy.alias_allowed_local_files)
     unexpected_alias_files = sorted(
@@ -453,7 +591,7 @@ def build_package_boundary_report(repo_root: Path) -> dict[str, Any]:
                 issue_code = "missing-compatibility-module"
                 message = f"cannot resolve supported API module {module_name}"
             else:
-                exports = _module_exports(module_path)
+                exports = _module_exports(module_path, module_name=module_name)
                 if attribute_name not in exports:
                     valid = False
                     issue_code = "missing-compatibility-export"

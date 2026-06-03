@@ -1,0 +1,110 @@
+{
+  "bootstrap_support_summary": null,
+  "config": {
+    "model": "HKY+F",
+    "partition_path": null,
+    "seed": 1,
+    "sequence_type": "dna",
+    "threads": 1,
+    "timeout_seconds": null
+  },
+  "engine_name": "iqtree",
+  "fasttree_support_summary": null,
+  "input_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln": "90374ceb63d11789868e1f349c3768670e36a510a4450349d2b743745a1aff00"
+  },
+  "input_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln"
+  ],
+  "iqtree_summary": {
+    "log_likelihood": -1872.2463,
+    "maximum_support": null,
+    "minimum_support": null,
+    "selected_model": "HKY+F",
+    "support_value_count": 0,
+    "support_values": []
+  },
+  "log_likelihood": -1872.2463,
+  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/maximum-likelihood/maximum-likelihood.manifest.json",
+  "model_selection_summary": {
+    "best_model_aic": "3766.4925",
+    "best_model_aicc": "3766.7266",
+    "best_model_bic": "3821.9192",
+    "best_score_aic": null,
+    "best_score_aicc": null,
+    "best_score_bic": null,
+    "bic_near_best_models": [],
+    "candidate_count": 0,
+    "candidates": [],
+    "selected_criterion": "BIC",
+    "selected_model": "3821.9192"
+  },
+  "notes": [
+    "iqtree random seed: 1",
+    "iqtree threads: 1",
+    "maximum-likelihood tree validated as parseable Newick output",
+    "log-likelihood parsed from iqtree inference artifacts"
+  ],
+  "output_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/maximum-likelihood/maximum-likelihood.iqtree": "49c82e7c09afb72ffb2fc95a67007687b50a08f8665580a77b0c881f4eefe9f4",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/maximum-likelihood/maximum-likelihood.log": "a32f1c5adfb502ad07f9d6180753b70c442518727fc68b989d9665f8ce81dab7",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/maximum-likelihood/maximum-likelihood.treefile": "92e40cd7bae5c6d5ac7bcb671ad9a0d4c31de0f67e31d7418f0149616ea00b5a"
+  },
+  "output_paths": {
+    "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/maximum-likelihood/maximum-likelihood.log",
+    "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/maximum-likelihood/maximum-likelihood.iqtree",
+    "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/maximum-likelihood/maximum-likelihood.treefile"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/iqtree2",
+      "-s",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln",
+      "-st",
+      "DNA",
+      "-seed",
+      "1",
+      "-nt",
+      "1",
+      "-m",
+      "HKY+F",
+      "-pre",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/maximum-likelihood/maximum-likelihood"
+    ],
+    "ended_at_utc": "2026-05-31T18:29:32Z",
+    "engine_name": "iqtree",
+    "executable": "/opt/homebrew/bin/iqtree2",
+    "exit_code": 0,
+    "output_paths": {
+      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/maximum-likelihood/maximum-likelihood.log",
+      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/maximum-likelihood/maximum-likelihood.iqtree",
+      "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/maximum-likelihood/maximum-likelihood.treefile"
+    },
+    "runtime_seconds": 0.049259,
+    "started_at_utc": "2026-05-31T18:29:32Z",
+    "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/maximum-likelihood/maximum-likelihood.stderr.log",
+    "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/maximum-likelihood/maximum-likelihood.stdout.log",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/iqtree2",
+        "--version"
+      ],
+      "engine_name": "iqtree",
+      "executable": "/opt/homebrew/bin/iqtree2",
+      "text": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+    },
+    "warning_lines": [
+      "WARNING: 1 sequences contain more than 50% gaps/ambiguity"
+    ],
+    "workflow": "maximum-likelihood-tree",
+    "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/maximum-likelihood"
+  },
+  "selected_model": "HKY+F",
+  "sh_alrt_support_summary": null,
+  "trimming_summary": null,
+  "weak_backbone_report": null,
+  "workflow": "maximum-likelihood-tree"
+}

@@ -1,0 +1,10 @@
+check_id	surface	status	expected	observed	detail
+storage:category-coverage	storage	passed	['logs', 'outputs', 'posterior_samples', 'reports', 'trees']	['logs', 'outputs', 'posterior_samples', 'reports', 'trees']	tree-retention policy reads the explicit storage-category surface
+tree-files:variant-coverage	tree-files	passed	['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']	['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']	tree-bearing file rows cover every configured rabies workflow variant
+storage:tree-file-count	storage	passed	16	16	storage tree file count matches the inspected tree-artifact files
+storage:tree-byte-count	storage	passed	7036	7036	storage tree byte count matches the inspected tree-artifact files
+storage:posterior-file-count	storage	passed	0	0	posterior-sample file count matches the inspected tree-bearing sample files
+storage:posterior-byte-count	storage	passed	0	0	posterior-sample byte count matches the inspected tree-bearing sample files
+output-explosion:tree-bytes	output-explosion	passed	7036	7036	output-explosion tree bytes match the tree-retention inspection surface
+output-explosion:posterior-bytes	output-explosion	passed	0	0	output-explosion posterior bytes match the tree-retention inspection surface
+policy-summary:overall-status	policy-summary	passed	no_action	no_action	overall tree-retention status matches the file-level policy counts

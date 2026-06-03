@@ -1,0 +1,7 @@
+taxon	response_growth	response_range	predictor_one	predictor_two
+A	1.6	2.9	1.0	0.0
+B	2.2	4.3	2.0	0.0
+C	2.8	4.7	3.0	1.0
+D	3.1	6.8	4.0	1.0
+E	3.9	6.7	5.0	0.0
+F	4.4	9.4	6.0	1.0

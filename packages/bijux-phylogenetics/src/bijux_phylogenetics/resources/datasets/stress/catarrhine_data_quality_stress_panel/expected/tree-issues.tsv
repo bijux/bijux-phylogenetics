@@ -1,3 +1,4 @@
 issue_code	severity	affected_taxa	affected_nodes	raw_value	action
 zero_length_branches	warning	gorilla_gorilla	gorilla_gorilla	1	apply_branch_length_floor_in_cleaned_tree
+negative_branch_lengths	warning		hylobates_lar	1	apply_branch_length_floor_in_cleaned_tree
 long_branch_outlier	warning	macaca_mulatta	macaca_mulatta	2.4	drop_taxon_from_cleaned_tree

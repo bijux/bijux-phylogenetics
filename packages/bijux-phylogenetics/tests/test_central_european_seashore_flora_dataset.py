@@ -5,14 +5,18 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_central_european_seashore_flora_dataset,
     load_central_european_seashore_flora_dataset,
     run_central_european_seashore_flora_demo,
     run_central_european_seashore_flora_workflow,
     write_central_european_seashore_flora_workflow_bundle,
+)
+import bijux_phylogenetics.datasets.central_european_seashore_flora as plants_api
+
+from .support.scientific_output_assertions import (
+    assert_selected_scientific_outputs_equivalent,
 )
 
 
@@ -76,10 +80,7 @@ def test_write_central_european_seashore_flora_workflow_bundle_matches_packaged_
         bundle.clade_exclusion_path.name: bundle.clade_exclusion_path,
     }
     assert {path.name for path in expected_root.glob("*.tsv")} == set(generated)
-    for name, generated_path in generated.items():
-        assert generated_path.read_text(encoding="utf-8") == (
-            expected_root / name
-        ).read_text(encoding="utf-8")
+    assert_selected_scientific_outputs_equivalent(expected_root, generated)
 
 
 @pytest.mark.slow
@@ -112,23 +113,24 @@ def test_public_runtime_exports_include_central_european_seashore_flora_dataset_
     None
 ):
     assert (
-        bijux_phylogenetics.load_central_european_seashore_flora_dataset
+        plants_api.load_central_european_seashore_flora_dataset
         is load_central_european_seashore_flora_dataset
     )
     assert (
-        bijux_phylogenetics.export_central_european_seashore_flora_dataset
+        plants_api.export_central_european_seashore_flora_dataset
         is export_central_european_seashore_flora_dataset
     )
     assert (
-        bijux_phylogenetics.run_central_european_seashore_flora_workflow
+        plants_api.run_central_european_seashore_flora_workflow
         is run_central_european_seashore_flora_workflow
     )
     assert (
-        bijux_phylogenetics.write_central_european_seashore_flora_workflow_bundle
+        plants_api.write_central_european_seashore_flora_workflow_bundle
         is write_central_european_seashore_flora_workflow_bundle
     )
-    assert bijux_phylogenetics.run_central_european_seashore_flora_demo is (
-        run_central_european_seashore_flora_demo
+    assert (
+        plants_api.run_central_european_seashore_flora_demo
+        is run_central_european_seashore_flora_demo
     )
 
 

@@ -1,0 +1,5 @@
+variant_id	risk_status	estimated_output_mib	estimated_storage_mib	tree_file_count	tree_byte_count	posterior_sample_file_count	posterior_sample_byte_count	report_byte_count	output_share	issue_count	issues
+auto-gap-threshold	low	1	1	4	1759	0	0	252889	0.25	0	
+auto-gappyout	low	1	1	4	1759	0	0	250036	0.25	0	
+ginsi-gap-threshold	low	1	1	4	1759	0	0	253604	0.25	0	
+ginsi-gappyout	low	1	1	4	1759	0	0	250741	0.25	0	

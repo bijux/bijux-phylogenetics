@@ -1,0 +1,52 @@
+{
+  "dataset_id": "rabies_cross_host_geography_panel",
+  "input_files": {
+    "centroids_path": {
+      "path": "region-centroids.csv",
+      "sha256": "dc036bacfd7aca41e981b772285c1d960ea3a4a96347d6245ebe928bda53981f"
+    },
+    "metadata_path": {
+      "path": "metadata.csv",
+      "sha256": "cca2178210f8c8b9850b0773228fbc5bb26d2c363db8d115b2996df9399111f2"
+    },
+    "sequences_path": {
+      "path": "sequences.fasta",
+      "sha256": "a3a401e5ab1e9c76e7b0793c86c69708186a550fadb2931fa6d66af61ceb6236"
+    }
+  },
+  "label": "Rabies cross-host geography panel",
+  "report_kind": "rabies_cross_host_geography_workflow_config",
+  "source_config": "workflow-config.json",
+  "workflow": {
+    "alignment_mode": "auto",
+    "bootstrap_consensus_threshold": 0.5,
+    "bootstrap_replicates": 1000,
+    "bootstrap_robust_support_threshold": 0.9,
+    "clade_metadata_columns": [
+      "host_species",
+      "host_group",
+      "country",
+      "region_group"
+    ],
+    "comparative_branch_length_floor": 1e-06,
+    "comparative_formula": "region_longitude ~ host_group",
+    "comparative_response": "region_longitude",
+    "geography_model": "ard",
+    "geography_trait": "region_group",
+    "host_model": "ard",
+    "host_trait": "host_group",
+    "iqtree_seed": 1,
+    "iqtree_threads": 1,
+    "max_bootstrap_tree_count": 1500,
+    "max_report_table_rows": 25,
+    "memory_warning_threshold_bytes": 67108864,
+    "outgroup_taxa": [
+      "bat_chile_rv108"
+    ],
+    "sequence_type": "dna",
+    "timeout_seconds": 300.0,
+    "trim_gap_threshold": 0.1,
+    "trimming_mode": "gap-threshold",
+    "workflow_prefix": "rabies-cross-host-geography-panel"
+  }
+}

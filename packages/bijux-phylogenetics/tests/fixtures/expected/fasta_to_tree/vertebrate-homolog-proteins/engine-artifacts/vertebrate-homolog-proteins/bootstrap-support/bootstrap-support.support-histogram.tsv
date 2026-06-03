@@ -1,0 +1,5 @@
+support_bucket	minimum_support	maximum_support	node_count
+lt50		50	2
+50to69	50	70	0
+70to89	70	90	2
+ge90	90		2

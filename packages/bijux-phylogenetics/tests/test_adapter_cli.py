@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -183,7 +183,7 @@ if "-alrt" in args:
     raise SystemExit(0)
 
 if "-bb" in args:
-    prefix.with_suffix(".treefile").write_text("((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n", encoding="utf-8")
+    prefix.with_suffix(".contree").write_text("((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n", encoding="utf-8")
     prefix.with_suffix(".ufboot").write_text(
         "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
         encoding="utf-8",
@@ -213,6 +213,56 @@ print("warning: iqtree fixture tree inference", file=sys.stderr)
     )
 
 
+def _unsupported_iqtree(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+
+if "--version" in sys.argv:
+    print("IQ-TREE multicore version 1.6.0")
+    raise SystemExit(0)
+
+raise SystemExit(1)
+""",
+    )
+
+
+def _fake_iqtree_without_support_labels(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "--version" in args:
+    print("IQ-TREE multicore version 2.9.9")
+    raise SystemExit(0)
+
+prefix = Path(args[args.index("-pre") + 1]) if "-pre" in args else Path("iqtree")
+prefix.parent.mkdir(parents=True, exist_ok=True)
+prefix.with_suffix(".contree").write_text(
+    "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".ufboot").write_text(
+    "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".iqtree").write_text(
+    "Best-fit model: GTR+G\\nLog-likelihood of the tree: -222.222\\nSupport analysis completed\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".log").write_text(
+    "IQ-TREE fixture support log\\nBEST SCORE FOUND : -222.222\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
 def _fake_fasttree(path: Path) -> Path:
     return _write_executable(
         path,
@@ -237,7 +287,7 @@ def _fake_mrbayes(path: Path) -> Path:
 import sys
 from pathlib import Path
 
-if "--version" in sys.argv[1:]:
+if "--version" in sys.argv[1:] or "-v" in sys.argv[1:]:
     print("MrBayes v3.2.7a fixture")
     raise SystemExit(0)
 
@@ -286,6 +336,89 @@ print("warning: mrbayes fixture posterior run", file=sys.stderr)
     )
 
 
+def _fake_mrbayes_malformed_outputs(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+if "--version" in sys.argv[1:] or "-v" in sys.argv[1:]:
+    print("MrBayes v3.2.7a fixture")
+    raise SystemExit(0)
+
+nexus_path = Path(sys.argv[1])
+trace_path = Path(f"{nexus_path}.run1.p")
+tree_path = Path(f"{nexus_path}.run1.t")
+mcmc_path = Path(f"{nexus_path}.mcmc")
+consensus_path = Path(f"{nexus_path}.con.tre")
+trace_path.write_text(
+    "Gen\\tLnL\\tTL\\talpha\\n"
+    "0\\t-110.0\\t0.40\\t0.90\\n"
+    "100\\tbad\\t0.41\\t0.95\\n",
+    encoding="utf-8",
+)
+tree_path.write_text(
+    "#NEXUS\\n"
+    "begin trees;\\n"
+    "tree gen1 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "end;\\n",
+    encoding="utf-8",
+)
+mcmc_path.write_text(
+    "Gen\\tMove$acc_run1\\tSwap(1<>2)$acc(1)\\tAvgStdDev(s)\\n"
+    "100\\t0.5\\t0.75\\t0.20\\n",
+    encoding="utf-8",
+)
+consensus_path.write_text(
+    "#NEXUS\\n"
+    "begin trees;\\n"
+    "tree con_50_majrule = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "end;\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
+def _fake_mrbayes_missing_consensus_output(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+if "--version" in sys.argv[1:] or "-v" in sys.argv[1:]:
+    print("MrBayes v3.2.7a fixture")
+    raise SystemExit(0)
+
+nexus_path = Path(sys.argv[1])
+trace_path = Path(f"{nexus_path}.run1.p")
+tree_path = Path(f"{nexus_path}.run1.t")
+mcmc_path = Path(f"{nexus_path}.mcmc")
+trace_path.write_text(
+    "Gen\\tLnL\\tTL\\talpha\\n"
+    "0\\t-110.0\\t0.40\\t0.90\\n"
+    "100\\t-108.0\\t0.41\\t0.95\\n",
+    encoding="utf-8",
+)
+tree_path.write_text(
+    "#NEXUS\\n"
+    "begin trees;\\n"
+    "tree gen1 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "tree gen2 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "end;\\n",
+    encoding="utf-8",
+)
+mcmc_path.write_text(
+    "Gen\\tMove$acc_run1\\tSwap(1<>2)$acc(1)\\tAvgStdDev(s)\\n"
+    "100\\t0.5\\t0.75\\t0.20\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
 def _fake_beast(path: Path) -> Path:
     return _write_executable(
         path,
@@ -317,6 +450,64 @@ tree_path.write_text(
     encoding="utf-8",
 )
 print("warning: beast fixture posterior run", file=sys.stderr)
+""",
+    )
+
+
+def _fake_beast_malformed_outputs(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "-version" in args:
+    print("BEAST v2.7.7 fixture")
+    raise SystemExit(0)
+
+xml_path = Path(args[-1])
+seed = args[args.index("-seed") + 1]
+log_path = xml_path.with_name(f"{xml_path.stem}.{seed}.log")
+tree_path = xml_path.with_name(f"{xml_path.stem}.{seed}.trees")
+log_path.write_text(
+    "Sample\\tposterior\\tlikelihood\\tprior\\ttreeHeight\\tclockRate\\tbirthRate\\n"
+    "0\\t-120.0\\t-80.0\\t-40.0\\t1.1\\t0.01\\t0.2\\n"
+    "20\\tbad\\t-79.0\\t-39.0\\t1.0\\t0.011\\t0.21\\n",
+    encoding="utf-8",
+)
+tree_path.write_text(
+    "#NEXUS\\n"
+    "Begin trees;\\n"
+    "tree STATE_0 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "End;\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
+def _fake_beast_missing_tree_output(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "-version" in args:
+    print("BEAST v2.7.7 fixture")
+    raise SystemExit(0)
+
+xml_path = Path(args[-1])
+seed = args[args.index("-seed") + 1]
+log_path = xml_path.with_name(f"{xml_path.stem}.{seed}.log")
+log_path.write_text(
+    "Sample\\tposterior\\tlikelihood\\tprior\\ttreeHeight\\tclockRate\\tbirthRate\\n"
+    "0\\t-120.0\\t-80.0\\t-40.0\\t1.1\\t0.01\\t0.2\\n"
+    "20\\t-118.0\\t-79.0\\t-39.0\\t1.0\\t0.011\\t0.21\\n",
+    encoding="utf-8",
+)
 """,
     )
 
@@ -471,6 +662,37 @@ def test_adapter_align_cli_reports_codon_aware_failures(tmp_path: Path, capsys) 
     assert exit_code == 2
     assert payload["status"] == "error"
     assert "excluded every sequence" in payload["errors"][0]["message"]
+
+
+def test_adapter_align_cli_explains_invalid_fasta_records(
+    tmp_path: Path, capsys
+) -> None:
+    executable = _fake_mafft(tmp_path / "mafft-fixture")
+    output_path = tmp_path / "aligned.fasta"
+
+    exit_code = main(
+        [
+            "adapter",
+            "align",
+            str(fixture("alignments/example_sequences_invalid_input.fasta")),
+            "--out",
+            str(output_path),
+            "--executable",
+            str(executable),
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"][0]["code"] == "invalid_alignment_error"
+    assert payload["errors"][0]["details"]["failure_reason"] == "invalid_fasta_input"
+    assert (
+        payload["errors"][0]["details"]["evidence"]["duplicate_identifier_count"] == 1
+    )
+    assert payload["errors"][0]["details"]["evidence"]["illegal_character_count"] == 1
+    assert payload["errors"][0]["details"]["evidence"]["empty_sequence_count"] == 1
 
 
 def test_adapter_align_cli_honors_configurable_genetic_code(
@@ -730,6 +952,35 @@ def test_adapter_model_select_and_compare_cli_produce_outputs(
     assert compare_exit == 0
     assert compare_payload["metrics"]["shared_taxa"] == 4
     assert comparison_path.exists()
+
+
+def test_adapter_model_select_cli_blocks_unsupported_iqtree_before_output_setup(
+    tmp_path: Path, capsys
+) -> None:
+    iqtree = _unsupported_iqtree(tmp_path / "iqtree-unsupported")
+    input_path = fixture("alignments/example_alignment.fasta")
+    out_dir = tmp_path / "blocked-model-selection"
+
+    exit_code = main(
+        [
+            "adapter",
+            "model-select",
+            str(input_path),
+            "--out-dir",
+            str(out_dir),
+            "--executable",
+            str(iqtree),
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"][0]["code"] == "engine_preflight_workflow_blocked"
+    assert payload["errors"][0]["details"]["workflow_id"] == "model-selection"
+    assert payload["errors"][0]["details"]["blocking_engines"] == ["IQ-TREE"]
+    assert out_dir.exists() is False
 
 
 def test_adapter_compare_engines_cli_reports_conflicts_and_outputs(
@@ -1094,6 +1345,38 @@ def test_adapter_bootstrap_cli_reports_support_metrics(tmp_path: Path, capsys) -
     assert Path(payload["data"]["output_paths"]["support_histogram"]).exists()
 
 
+def test_adapter_bootstrap_cli_surfaces_structured_support_validation_error(
+    tmp_path: Path, capsys
+) -> None:
+    iqtree = _fake_iqtree_without_support_labels(tmp_path / "iqtree-no-support")
+    input_path = fixture("alignments/example_alignment.fasta")
+
+    exit_code = main(
+        [
+            "adapter",
+            "bootstrap",
+            str(input_path),
+            "--out-dir",
+            str(tmp_path / "bootstrap"),
+            "--model",
+            "GTR+G",
+            "--prefix",
+            "example",
+            "--replicates",
+            "1000",
+            "--executable",
+            str(iqtree),
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 2
+    assert payload["errors"][0]["code"] == "engine_support_values_missing"
+    assert payload["errors"][0]["details"]["workflow"] == "bootstrap-support"
+    assert payload["errors"][0]["details"]["support_kind"] == "bootstrap support"
+
+
 def test_adapter_sh_alrt_cli_reports_combined_support_metrics(
     tmp_path: Path, capsys
 ) -> None:
@@ -1174,6 +1457,8 @@ def test_adapter_fasta_to_tree_cli_materializes_pipeline_outputs(
     assert exit_code == 0
     assert payload["metrics"]["selected_model"] == "GTR+G"
     assert payload["metrics"]["sequence_type"] == "dna"
+    assert payload["metrics"]["method_tier"] == "supported"
+    assert payload["metrics"]["method_inference_mode"] == "inference"
     assert payload["metrics"]["iqtree_seed"] == 1
     assert payload["metrics"]["iqtree_threads"] == 1
     assert (
@@ -1197,6 +1482,43 @@ def test_adapter_fasta_to_tree_cli_materializes_pipeline_outputs(
     }.issubset(outputs)
     assert Path(payload["data"]["output_paths"]["tree"]).exists()
     assert Path(payload["data"]["manifest_path"]).exists()
+
+
+def test_adapter_fasta_to_tree_cli_blocks_missing_iqtree_before_alignment_starts(
+    tmp_path: Path, capsys
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    missing_iqtree = tmp_path / "missing-iqtree"
+    input_path = fixture("alignments/example_sequences_raw.fasta")
+    out_dir = tmp_path / "blocked-fasta-to-tree"
+
+    exit_code = main(
+        [
+            "adapter",
+            "fasta-to-tree",
+            str(input_path),
+            "--out-dir",
+            str(out_dir),
+            "--prefix",
+            "example",
+            "--mafft-executable",
+            str(mafft),
+            "--trimal-executable",
+            str(trimal),
+            "--iqtree-executable",
+            str(missing_iqtree),
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"][0]["code"] == "engine_preflight_workflow_blocked"
+    assert payload["errors"][0]["details"]["workflow_id"] == "fasta-to-tree"
+    assert payload["errors"][0]["details"]["blocking_engines"] == ["IQ-TREE"]
+    assert out_dir.exists() is False
 
 
 def test_adapter_fasta_to_tree_cli_passes_named_mafft_mode_to_alignment_step(
@@ -1447,6 +1769,7 @@ def test_adapter_fasta_to_tree_cli_rejects_ufboot_replicates_below_iqtree_minimu
     )
 
 
+@pytest.mark.slow
 def test_adapter_fasta_to_tree_cli_passes_deterministic_iqtree_controls(
     tmp_path: Path, capsys
 ) -> None:
@@ -1713,7 +2036,165 @@ def test_adapter_mrbayes_convergence_and_posterior_report_cli_emit_metrics(
     report_payload = json.loads(capsys.readouterr().out)
     assert report_exit == 0
     assert report_payload["metrics"]["kept_tree_count"] == 3
+    assert report_payload["metrics"]["warning_count"] >= 1
+    assert report_payload["metrics"]["method_tier"] == "parser-only"
+    assert report_payload["metrics"]["method_inference_mode"] == "parser-only"
+    assert report_payload["warnings"] == [
+        "parser-only method tier: this report parses or audits external Bayesian outputs and does not itself infer posterior trees."
+    ]
     assert posterior_report_path.exists()
+
+
+def test_adapter_mrbayes_run_cli_rejects_or_cleans_incomplete_outputs(
+    tmp_path: Path, capsys
+) -> None:
+    malformed = _fake_mrbayes_malformed_outputs(tmp_path / "mb-malformed")
+    valid = _fake_mrbayes(tmp_path / "mb-valid")
+    alignment_path = fixture("alignments/example_alignment.fasta")
+    nexus_path = tmp_path / "analysis.nex"
+
+    assert (
+        main(
+            [
+                "adapter",
+                "mrbayes-prepare",
+                str(alignment_path),
+                "--out",
+                str(nexus_path),
+                "--json",
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    malformed_exit = main(
+        [
+            "adapter",
+            "mrbayes-run",
+            str(nexus_path),
+            "--executable",
+            str(malformed),
+            "--json",
+        ]
+    )
+    malformed_payload = json.loads(capsys.readouterr().out)
+    manifest_path = nexus_path.with_suffix("").with_suffix(".manifest.json")
+    marker_path = manifest_path.with_suffix(".incomplete.json")
+
+    assert malformed_exit == 2
+    assert malformed_payload["status"] == "error"
+    assert (
+        malformed_payload["errors"][0]["code"]
+        == "mrbayes_trace_invalid_parameter_value"
+    )
+    assert malformed_payload["errors"][0]["details"]["artifact_kind"] == "mrbayes-trace"
+    assert (
+        malformed_payload["errors"][0]["details"]["failure_reason"]
+        == "mrbayes_artifact_malformed"
+    )
+    assert marker_path.exists()
+
+    rejected_exit = main(
+        [
+            "adapter",
+            "mrbayes-run",
+            str(nexus_path),
+            "--executable",
+            str(valid),
+            "--resume",
+            "--incomplete-run-policy",
+            "reject",
+            "--json",
+        ]
+    )
+    rejected_payload = json.loads(capsys.readouterr().out)
+
+    assert rejected_exit == 2
+    assert rejected_payload["status"] == "error"
+    assert rejected_payload["errors"][0]["code"] == "engine_incomplete_outputs_present"
+    assert "incomplete outputs" in rejected_payload["errors"][0]["message"]
+    assert (
+        rejected_payload["errors"][0]["details"]["failure_reason"]
+        == "mrbayes_trace_invalid_parameter_value"
+    )
+    assert rejected_payload["errors"][0]["details"]["available_actions"] == [
+        "resume",
+        "clean",
+    ]
+    assert rejected_payload["errors"][0]["details"]["missing_output_names"] == []
+    assert marker_path.exists()
+
+    cleaned_exit = main(
+        [
+            "adapter",
+            "mrbayes-run",
+            str(nexus_path),
+            "--executable",
+            str(valid),
+            "--resume",
+            "--incomplete-run-policy",
+            "clean",
+            "--json",
+        ]
+    )
+    cleaned_payload = json.loads(capsys.readouterr().out)
+
+    assert cleaned_exit == 0
+    assert cleaned_payload["metrics"]["resumed"] is False
+    assert Path(cleaned_payload["data"]["output_paths"]["parameter_traces"]).exists()
+    assert marker_path.exists() is False
+
+
+def test_adapter_mrbayes_run_cli_surfaces_structured_missing_output_error(
+    tmp_path: Path, capsys
+) -> None:
+    executable = _fake_mrbayes_missing_consensus_output(
+        tmp_path / "mb-missing-consensus"
+    )
+    alignment_path = fixture("alignments/example_alignment.fasta")
+    nexus_path = tmp_path / "analysis.nex"
+
+    assert (
+        main(
+            [
+                "adapter",
+                "mrbayes-prepare",
+                str(alignment_path),
+                "--out",
+                str(nexus_path),
+                "--json",
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    exit_code = main(
+        [
+            "adapter",
+            "mrbayes-run",
+            str(nexus_path),
+            "--executable",
+            str(executable),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 2
+    assert payload["errors"][0]["code"] == "engine_required_output_missing"
+    assert payload["errors"][0]["details"]["engine_name"] == "MrBayes"
+    assert (
+        payload["errors"][0]["details"]["failure_reason"]
+        == "posterior_artifact_missing"
+    )
+    assert payload["errors"][0]["details"]["missing_outputs"] == [
+        {
+            "output_name": "consensus_tree",
+            "path": str(Path(f"{nexus_path}.con.tre")),
+        }
+    ]
 
 
 def test_adapter_mrbayes_parameters_cli_writes_burnin_aware_summary_table(
@@ -1989,6 +2470,11 @@ def test_adapter_beast_surface_and_bayesian_evidence_cli_write_outputs(
     report_payload = json.loads(capsys.readouterr().out)
     assert report_exit == 0
     assert report_payload["metrics"]["invalid_calibration_count"] == 0
+    assert report_payload["metrics"]["warning_count"] >= 1
+    assert report_payload["metrics"]["method_tier"] == "parser-only"
+    assert report_payload["warnings"] == [
+        "parser-only method tier: this report parses or audits external Bayesian outputs and does not itself infer posterior trees."
+    ]
     assert report_path.exists()
 
     diagnostics_path.write_text(
@@ -2113,6 +2599,137 @@ def test_adapter_beast_run_cli_supports_resume_timeout_and_overwrite_controls(
     assert resumed_payload["metrics"]["timeout_seconds"] == 30.0
 
 
+def test_adapter_beast_run_cli_rejects_or_cleans_incomplete_outputs(
+    tmp_path: Path, capsys
+) -> None:
+    malformed = _fake_beast_malformed_outputs(tmp_path / "beast-malformed")
+    valid = _fake_beast(tmp_path / "beast-valid")
+    analysis_path = tmp_path / "analysis.xml"
+    analysis_path.write_text(
+        '<beast version="2.7" namespace="beast.base.evolution.alignment:beast.base.evolution.tree"/>\n',
+        encoding="utf-8",
+    )
+
+    malformed_exit = main(
+        [
+            "adapter",
+            "beast-run",
+            str(analysis_path),
+            "--executable",
+            str(malformed),
+            "--seed",
+            "7",
+            "--json",
+        ]
+    )
+    malformed_payload = json.loads(capsys.readouterr().out)
+    manifest_path = analysis_path.with_suffix(".manifest.json")
+    marker_path = manifest_path.with_suffix(".incomplete.json")
+
+    assert malformed_exit == 2
+    assert malformed_payload["status"] == "error"
+    assert malformed_payload["errors"][0]["code"] == "beast_log_invalid_parameter_value"
+    assert malformed_payload["errors"][0]["details"]["artifact_kind"] == "beast-log"
+    assert (
+        malformed_payload["errors"][0]["details"]["failure_reason"]
+        == "beast_artifact_malformed"
+    )
+    assert marker_path.exists()
+
+    rejected_exit = main(
+        [
+            "adapter",
+            "beast-run",
+            str(analysis_path),
+            "--executable",
+            str(valid),
+            "--seed",
+            "7",
+            "--resume",
+            "--incomplete-run-policy",
+            "reject",
+            "--json",
+        ]
+    )
+    rejected_payload = json.loads(capsys.readouterr().out)
+
+    assert rejected_exit == 2
+    assert rejected_payload["status"] == "error"
+    assert rejected_payload["errors"][0]["code"] == "engine_incomplete_outputs_present"
+    assert "incomplete outputs" in rejected_payload["errors"][0]["message"]
+    assert (
+        rejected_payload["errors"][0]["details"]["failure_reason"]
+        == "beast_log_invalid_parameter_value"
+    )
+    assert rejected_payload["errors"][0]["details"]["available_actions"] == [
+        "resume",
+        "clean",
+    ]
+    assert rejected_payload["errors"][0]["details"]["missing_output_names"] == []
+    assert marker_path.exists()
+
+    cleaned_exit = main(
+        [
+            "adapter",
+            "beast-run",
+            str(analysis_path),
+            "--executable",
+            str(valid),
+            "--seed",
+            "7",
+            "--resume",
+            "--incomplete-run-policy",
+            "clean",
+            "--json",
+        ]
+    )
+    cleaned_payload = json.loads(capsys.readouterr().out)
+
+    assert cleaned_exit == 0
+    assert cleaned_payload["metrics"]["resumed"] is False
+    assert Path(cleaned_payload["data"]["output_paths"]["posterior_log"]).exists()
+    assert marker_path.exists() is False
+
+
+def test_adapter_beast_run_cli_surfaces_structured_missing_output_error(
+    tmp_path: Path, capsys
+) -> None:
+    executable = _fake_beast_missing_tree_output(tmp_path / "beast-missing-tree")
+    analysis_path = tmp_path / "analysis.xml"
+    analysis_path.write_text(
+        '<beast version="2.7" namespace="beast.base.evolution.alignment:beast.base.evolution.tree"/>\n',
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "adapter",
+            "beast-run",
+            str(analysis_path),
+            "--executable",
+            str(executable),
+            "--seed",
+            "7",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 2
+    assert payload["errors"][0]["code"] == "engine_required_output_missing"
+    assert payload["errors"][0]["details"]["engine_name"] == "BEAST"
+    assert (
+        payload["errors"][0]["details"]["failure_reason"]
+        == "posterior_artifact_missing"
+    )
+    assert payload["errors"][0]["details"]["missing_outputs"] == [
+        {
+            "output_name": "posterior_trees",
+            "path": str(analysis_path.with_name("analysis.7.trees")),
+        }
+    ]
+
+
 def test_tree_set_uncertainty_cli_surfaces_modes_conflicts_and_package(
     tmp_path: Path, capsys
 ) -> None:
@@ -2157,7 +2774,7 @@ def test_tree_set_uncertainty_cli_surfaces_modes_conflicts_and_package(
     )
     conflicts_payload = json.loads(capsys.readouterr().out)
     assert conflicts_exit == 0
-    assert conflicts_payload["metrics"]["conflict_count"] == 2
+    assert conflicts_payload["metrics"]["conflict_count"] == 4
 
     package_exit = main(
         [
@@ -2171,9 +2788,16 @@ def test_tree_set_uncertainty_cli_surfaces_modes_conflicts_and_package(
     )
     package_payload = json.loads(capsys.readouterr().out)
     assert package_exit == 0
-    assert package_payload["metrics"]["artifact_count"] == 7
+    assert package_payload["metrics"]["artifact_count"] == 15
+    assert package_payload["metrics"]["publication_ready"] is True
+    assert package_payload["metrics"]["support_labels_validated"] is True
     assert (package_dir / "consensus-tree.svg").exists()
-    assert (package_dir / "clade-frequency-plot.svg").exists()
+    assert (package_dir / "clade-support-plot.svg").exists()
+    assert (package_dir / "unstable-taxa-plot.svg").exists()
+    assert (package_dir / "topology-clusters-plot.svg").exists()
+    assert (package_dir / "figure-legend.tsv").exists()
+    assert (package_dir / "figure-caption.md").exists()
+    assert (package_dir / "uncertainty-review.html").exists()
 
 
 def test_adapter_bayesian_uncertainty_cli_writes_table_and_methods_text(
@@ -2299,6 +2923,35 @@ def test_adapter_beast_log_cli_writes_summary_table_with_parameter_categories(
     assert "median\tstandard_deviation" in text
     assert "prior\tprior\t3" in text
     assert "tree\tbirthRate\t3" in text
+
+
+def test_adapter_beast_log_cli_returns_structured_error_payload_for_malformed_log(
+    tmp_path: Path, capsys
+) -> None:
+    log_path = tmp_path / "malformed-beast.log"
+    log_path.write_text(
+        "# malformed BEAST log\n"
+        "state\tposterior\tlikelihood\n"
+        "0\t-100.0\t-90.0\n"
+        "10\tbad\t-89.0\n",
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "adapter",
+            "beast-log",
+            str(log_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"][0]["code"] == "beast_log_invalid_parameter_value"
+    assert payload["errors"][0]["details"]["artifact_kind"] == "beast-log"
+    assert payload["errors"][0]["details"]["column"] == "posterior"
 
 
 def test_adapter_beast_parameters_cli_reports_posterior_diagnostics(

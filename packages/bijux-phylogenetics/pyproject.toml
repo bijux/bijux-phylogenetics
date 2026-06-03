@@ -8,6 +8,7 @@ description = "Reproducible tree validation, comparison, evidence bundles, and H
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
+license-files = []
 authors = [
     { name = "Bijan Mousavi", email = "bijan@bijux.io" },
 ]
@@ -25,6 +26,7 @@ dependencies = [
     "biopython>=1.87,<2.0",
     "cairosvg>=2.9.0,<3.0",
     "defusedxml>=0.7.1,<1.0",
+    "PyYAML>=6.0,<7.0",
 ]
 
 [project.urls]
@@ -41,29 +43,31 @@ dev = [
     "pytest-cov>=6.2.1,<8.0",
     "pytest-timeout>=2.4.0,<3.0",
     "hatch>=1.14.0,<2.0",
-    "mkdocs>=1.6.1",
-    "mkdocs-autorefs>=1.4.2",
-    "mkdocs-git-revision-date-localized-plugin>=1.4.7",
-    "mkdocs-material>=9.6.12",
-    "pymdown-extensions>=10.15",
     "pydantic>=2.12,<3.0",
     "ruff>=0.13.0,<1.0",
     "mypy>=1.18.2,<3.0",
     "vulture>=2.14,<3.0",
     "deptry>=0.24.0,<1.0",
-    "interrogate>=1.7.0,<2.0",
     "bandit>=1.8.6,<2.0",
     "pip-audit>=2.9.0,<3.0",
     "build>=1.3.0,<2.0",
     "codespell>=2.4.1,<3.0",
+    "interrogate>=1.7.0,<2.0",
     "pydocstyle>=6.3.0,<7.0",
     "radon>=6.0.1,<7.0",
     "types-defusedxml>=0.7.0.20240218,<1.0",
     "twine>=6.2.0,<7.0",
 ]
+docs = [
+    "mkdocs>=1.6.1",
+    "mkdocs-autorefs>=1.4.2",
+    "mkdocs-git-revision-date-localized-plugin>=1.4.7",
+    "mkdocs-material>=9.6.12",
+    "pymdown-extensions>=10.21.3",
+]
 
 [project.scripts]
-bijux-phylogenetics = "bijux_phylogenetics.cli:main"
+bijux-phylogenetics = "bijux_phylogenetics.command_line:main"
 
 [tool.hatch.version]
 source = "vcs"
@@ -94,5 +98,6 @@ packages = ["src/bijux_phylogenetics"]
 fail-under = 58
 verbose = 0
 ignore-init-method = true
+ignore-module = true
 ignore-private = true
 ignore-semiprivate = true

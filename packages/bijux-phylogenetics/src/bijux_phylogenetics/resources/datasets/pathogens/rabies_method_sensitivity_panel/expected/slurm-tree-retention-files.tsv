@@ -1,0 +1,17 @@
+variant_id	relative_path	artifact_scope	tree_count	byte_count	thinning_policy	thinning_interval	retained_tree_count	compression_policy	recommended_suffix	issue_count	issues
+auto-gap-threshold	variants/auto-gap-threshold/fasttree.nwk	tree_artifact	1	442	not_applicable	1	1	keep_plain		1	single-tree artifact should be kept in full without thinning
+auto-gap-threshold	variants/auto-gap-threshold/iqtree-support.nwk	tree_artifact	1	442	not_applicable	1	1	keep_plain		1	single-tree artifact should be kept in full without thinning
+auto-gap-threshold	variants/auto-gap-threshold/rooted-fasttree.nwk	tree_artifact	1	437	not_applicable	1	1	keep_plain		1	single-tree artifact should be kept in full without thinning
+auto-gap-threshold	variants/auto-gap-threshold/rooted-iqtree-support.nwk	tree_artifact	1	438	not_applicable	1	1	keep_plain		1	single-tree artifact should be kept in full without thinning
+auto-gappyout	variants/auto-gappyout/fasttree.nwk	tree_artifact	1	442	not_applicable	1	1	keep_plain		1	single-tree artifact should be kept in full without thinning
+auto-gappyout	variants/auto-gappyout/iqtree-support.nwk	tree_artifact	1	442	not_applicable	1	1	keep_plain		1	single-tree artifact should be kept in full without thinning
+auto-gappyout	variants/auto-gappyout/rooted-fasttree.nwk	tree_artifact	1	437	not_applicable	1	1	keep_plain		1	single-tree artifact should be kept in full without thinning
+auto-gappyout	variants/auto-gappyout/rooted-iqtree-support.nwk	tree_artifact	1	438	not_applicable	1	1	keep_plain		1	single-tree artifact should be kept in full without thinning
+ginsi-gap-threshold	variants/ginsi-gap-threshold/fasttree.nwk	tree_artifact	1	442	not_applicable	1	1	keep_plain		1	single-tree artifact should be kept in full without thinning
+ginsi-gap-threshold	variants/ginsi-gap-threshold/iqtree-support.nwk	tree_artifact	1	442	not_applicable	1	1	keep_plain		1	single-tree artifact should be kept in full without thinning
+ginsi-gap-threshold	variants/ginsi-gap-threshold/rooted-fasttree.nwk	tree_artifact	1	437	not_applicable	1	1	keep_plain		1	single-tree artifact should be kept in full without thinning
+ginsi-gap-threshold	variants/ginsi-gap-threshold/rooted-iqtree-support.nwk	tree_artifact	1	438	not_applicable	1	1	keep_plain		1	single-tree artifact should be kept in full without thinning
+ginsi-gappyout	variants/ginsi-gappyout/fasttree.nwk	tree_artifact	1	442	not_applicable	1	1	keep_plain		1	single-tree artifact should be kept in full without thinning
+ginsi-gappyout	variants/ginsi-gappyout/iqtree-support.nwk	tree_artifact	1	442	not_applicable	1	1	keep_plain		1	single-tree artifact should be kept in full without thinning
+ginsi-gappyout	variants/ginsi-gappyout/rooted-fasttree.nwk	tree_artifact	1	437	not_applicable	1	1	keep_plain		1	single-tree artifact should be kept in full without thinning
+ginsi-gappyout	variants/ginsi-gappyout/rooted-iqtree-support.nwk	tree_artifact	1	438	not_applicable	1	1	keep_plain		1	single-tree artifact should be kept in full without thinning

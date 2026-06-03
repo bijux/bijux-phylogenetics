@@ -1,0 +1,4 @@
+# BEAST parser fixture with a non-numeric posterior value
+state	posterior	likelihood
+0	-100.0	-90.0
+10	bad	-89.0

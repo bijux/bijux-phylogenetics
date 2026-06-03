@@ -1,0 +1,6 @@
+issue_kind	identifier	detail	action
+duplicate_identifier	pan_troglodytes	occurrences=2;record_indices=2,3	normalize_identifier_collision
+illegal_character	gorilla_gorilla	record_index=4;position=57;character=*	remove_invalid_record
+empty_sequence	pongo_pygmaeus	record_index=5	remove_invalid_record
+sequence_length_outlier	hylobates_lar	raw_length=12;median_length=61;note=shorter than baseline	drop_length_outlier
+sequence_length_outlier	macaca_mulatta	raw_length=161;median_length=61;note=longer than baseline	drop_length_outlier

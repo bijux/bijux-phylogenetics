@@ -1,0 +1,5 @@
+variant_id	alignment_mode	trimming_mode	trim_gap_threshold	alignment_length	trimmed_alignment_length	selected_model	minimum_support	maximum_support	stable_clade_count	engine_specific_clade_count	serious_conflict_count	rooted_engine_rf_distance	rooted_engine_same_taxa_different_rooting
+auto-gap-threshold	auto	gap-threshold	0.1	1353	1353	TPM2u+F+G4	84	100	2	8	8	0	false
+ginsi-gap-threshold	ginsi	gap-threshold	0.1	1353	1353	TPM2u+F+G4	84	100	2	8	8	0	false
+auto-gappyout	auto	gappyout	0.1	1353	1353	TPM2u+F+G4	84	100	2	8	8	0	false
+ginsi-gappyout	ginsi	gappyout	0.1	1353	1353	TPM2u+F+G4	84	100	2	8	8	0	false

@@ -1,0 +1,72 @@
+{
+  "fixtures": [
+    {
+      "fixture_id": "rtree_rooted_six_taxon_uniform_64",
+      "simulation_model": "random-tree",
+      "reference_function": "ape::rtree",
+      "replicate_count": 64,
+      "tip_count": 6,
+      "seed": 17,
+      "branch_length_model": "uniform",
+      "population_size": null,
+      "feature_tags": [
+        "random-tree",
+        "rooted",
+        "uniform-branch-lengths",
+        "distributional-parity"
+      ],
+      "notes": "Governed rooted random-tree envelope with default ape::rtree branch-length semantics."
+    },
+    {
+      "fixture_id": "rtree_rooted_twelve_taxon_uniform_128",
+      "simulation_model": "random-tree",
+      "reference_function": "ape::rtree",
+      "replicate_count": 128,
+      "tip_count": 12,
+      "seed": 29,
+      "branch_length_model": "uniform",
+      "population_size": null,
+      "feature_tags": [
+        "random-tree",
+        "rooted",
+        "uniform-branch-lengths",
+        "distributional-parity",
+        "medium-tip-count"
+      ],
+      "notes": "Governed medium-size rooted random-tree envelope for balance and branch-length summary parity."
+    },
+    {
+      "fixture_id": "rcoal_rooted_six_taxon_64",
+      "simulation_model": "coalescent",
+      "reference_function": "ape::rcoal",
+      "replicate_count": 64,
+      "tip_count": 6,
+      "seed": 17,
+      "branch_length_model": "coalescent-waiting-times",
+      "population_size": 1.0,
+      "feature_tags": [
+        "coalescent",
+        "rooted",
+        "distributional-parity"
+      ],
+      "notes": "Governed rooted coalescent envelope with default ape::rcoal waiting-time semantics."
+    },
+    {
+      "fixture_id": "rcoal_rooted_twelve_taxon_128",
+      "simulation_model": "coalescent",
+      "reference_function": "ape::rcoal",
+      "replicate_count": 128,
+      "tip_count": 12,
+      "seed": 29,
+      "branch_length_model": "coalescent-waiting-times",
+      "population_size": 1.0,
+      "feature_tags": [
+        "coalescent",
+        "rooted",
+        "distributional-parity",
+        "medium-tip-count"
+      ],
+      "notes": "Governed medium-size rooted coalescent envelope for tree-height and shape-summary parity."
+    }
+  ]
+}

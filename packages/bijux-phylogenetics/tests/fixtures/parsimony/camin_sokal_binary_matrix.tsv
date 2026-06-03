@@ -1,0 +1,6 @@
+taxon	char01_single_gain_clade	char02_repeated_gains	char03_absent
+A	0	0	0
+B	0	1	0
+C	0	0	0
+D	1	1	0
+E	1	0	0

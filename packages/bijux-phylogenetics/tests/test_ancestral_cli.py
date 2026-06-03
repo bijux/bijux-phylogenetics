@@ -4,7 +4,9 @@ import json
 from pathlib import Path
 import shutil
 
-from bijux_phylogenetics.cli import main
+import pytest
+
+from bijux_phylogenetics.command_line import main
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -49,17 +51,98 @@ def test_ancestral_continuous_cli_can_export_table(tmp_path: Path, capsys) -> No
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert payload["metrics"]["model"] == "brownian"
+    assert payload["metrics"]["estimator"] == "ace-pic"
     assert payload["metrics"]["internal_node_count"] == 3
     assert payload["metrics"]["excluded_taxon_count"] == 0
     assert payload["metrics"]["unstable_node_count"] >= 0
+    assert payload["metrics"]["tree_is_ultrametric"] is True
+    assert payload["metrics"]["covariance_near_singular"] is False
+    assert payload["metrics"]["covariance_condition_number"] > 0.0
+    assert payload["metrics"]["log_likelihood"] is not None
+    assert payload["metrics"]["residual_sigma_squared"] > 0.0
+    assert payload["data"]["brownian_fit_diagnostics"]["covariance_model"] == (
+        "brownian-shared-path"
+    )
     assert "estimate\tstandard_error" in table_path.read_text(encoding="utf-8")
     assert summary_path.read_text(encoding="utf-8").startswith(
-        "trait\ttaxon_column\tmodel\talpha"
+        "trait\ttaxon_column\tmodel\testimator\talpha"
     )
     assert uncertainty_path.read_text(encoding="utf-8").startswith(
         "node\tnode_name\tdescendant_taxa\testimate\tstandard_error"
     )
     assert exclusions_path.read_text(encoding="utf-8") == "taxon\treason\n"
+
+
+def test_ancestral_continuous_cli_supports_fast_anc_estimator(
+    tmp_path: Path, capsys
+) -> None:
+    summary_path = tmp_path / "ancestral-summary.tsv"
+    uncertainty_path = tmp_path / "ancestral-uncertainty.tsv"
+
+    exit_code = main(
+        [
+            "ancestral",
+            "continuous",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--trait",
+            "response",
+            "--model",
+            "brownian",
+            "--estimator",
+            "fast-anc",
+            "--summary-out",
+            str(summary_path),
+            "--uncertainty-out",
+            str(uncertainty_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "brownian"
+    assert payload["metrics"]["estimator"] == "fast-anc"
+    assert "\tfast-anc\t" in summary_path.read_text(encoding="utf-8")
+    assert "A|B\t" in uncertainty_path.read_text(encoding="utf-8")
+
+
+def test_ancestral_continuous_cli_supports_anc_ml_estimator(
+    tmp_path: Path, capsys
+) -> None:
+    summary_path = tmp_path / "ancestral-summary.tsv"
+    uncertainty_path = tmp_path / "ancestral-uncertainty.tsv"
+
+    exit_code = main(
+        [
+            "ancestral",
+            "continuous",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_comparative.tsv")),
+            "--trait",
+            "response",
+            "--model",
+            "brownian",
+            "--estimator",
+            "anc-ml",
+            "--summary-out",
+            str(summary_path),
+            "--uncertainty-out",
+            str(uncertainty_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "brownian"
+    assert payload["metrics"]["estimator"] == "anc-ml"
+    assert payload["metrics"]["optimizer_name"] == "closed-form-profile-solution"
+    assert payload["metrics"]["optimizer_converged"] is True
+    assert payload["metrics"]["optimizer_iteration_count"] == 0
+    assert payload["metrics"]["optimizer_function_evaluation_count"] == 1
+    assert "\tanc-ml\t" in summary_path.read_text(encoding="utf-8")
+    assert "A|B|C|D\t" in uncertainty_path.read_text(encoding="utf-8")
 
 
 def test_ancestral_discrete_cli_reports_sparse_state_warning(capsys) -> None:
@@ -93,6 +176,7 @@ def test_ancestral_discrete_cli_can_export_probability_review(
     table_path = tmp_path / "ancestral-discrete.tsv"
     summary_path = tmp_path / "ancestral-discrete-summary.tsv"
     probabilities_path = tmp_path / "ancestral-discrete-probabilities.tsv"
+    transitions_path = tmp_path / "ancestral-discrete-transitions.tsv"
     exclusions_path = tmp_path / "ancestral-discrete-excluded.tsv"
     exit_code = main(
         [
@@ -110,6 +194,8 @@ def test_ancestral_discrete_cli_can_export_probability_review(
             str(summary_path),
             "--probabilities-out",
             str(probabilities_path),
+            "--transitions-out",
+            str(transitions_path),
             "--exclusions-out",
             str(exclusions_path),
             "--json",
@@ -122,14 +208,170 @@ def test_ancestral_discrete_cli_can_export_probability_review(
     assert payload["metrics"]["internal_node_count"] == 3
     assert payload["metrics"]["excluded_taxon_count"] == 0
     assert payload["metrics"]["unstable_node_count"] >= 0
+    assert payload["metrics"]["log_likelihood"] is not None
+    assert payload["metrics"]["parameter_count"] == 1
+    assert payload["metrics"]["aic"] is not None
+    assert payload["metrics"]["root_prior_mode"] == "equal"
+    assert payload["metrics"]["phytools_rerooting_method_comparable"] is True
+    assert payload["metrics"]["transition_rate_count"] == 6
     assert summary_path.read_text(encoding="utf-8").startswith(
         "trait\ttaxon_column\tmodel\tstate_ordering"
     )
     assert probabilities_path.read_text(encoding="utf-8").startswith(
         "node\tnode_name\tdescendant_taxa\tmost_likely_state\tstate_set"
     )
+    assert transitions_path.read_text(encoding="utf-8").startswith(
+        "source_state\ttarget_state\ttransition_allowed\tstep_distance\trate"
+    )
     assert exclusions_path.read_text(encoding="utf-8") == "taxon\treason\n"
     assert "most_likely_state\tstate_set" in table_path.read_text(encoding="utf-8")
+
+
+def test_ancestral_discrete_cli_supports_fixed_root_prior_policy(
+    tmp_path: Path, capsys
+) -> None:
+    summary_path = tmp_path / "ancestral-discrete-summary.tsv"
+    transitions_path = tmp_path / "ancestral-discrete-transitions.tsv"
+    exit_code = main(
+        [
+            "ancestral",
+            "discrete",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--model",
+            "equal-rates",
+            "--root-prior-mode",
+            "fixed",
+            "--fixed-root-state",
+            "north",
+            "--summary-out",
+            str(summary_path),
+            "--transitions-out",
+            str(transitions_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "equal-rates"
+    assert payload["metrics"]["root_prior_mode"] == "fixed"
+    assert payload["metrics"]["fixed_root_state"] == "north"
+    assert payload["metrics"]["phytools_rerooting_method_comparable"] is False
+    assert payload["metrics"]["transition_rate_count"] == 6
+    assert (
+        "phytools::rerootingMethod inherits fitMk's default equal root prior; empirical or fixed root-prior runs remain Bijux sensitivity scenarios without direct rerootingMethod parity"
+        in payload["warnings"]
+    )
+    assert "\tfixed\tnorth\t" in summary_path.read_text(encoding="utf-8")
+    assert transitions_path.read_text(encoding="utf-8").startswith(
+        "source_state\ttarget_state\ttransition_allowed\tstep_distance\trate"
+    )
+
+
+def test_ancestral_discrete_cli_reports_sym_fit_diagnostics_and_er_comparison(
+    tmp_path: Path, capsys
+) -> None:
+    summary_path = tmp_path / "ancestral-discrete-summary.tsv"
+    fit_path = tmp_path / "ancestral-discrete-fit.tsv"
+    comparison_path = tmp_path / "ancestral-discrete-comparison.tsv"
+    exit_code = main(
+        [
+            "ancestral",
+            "discrete",
+            str(fixture("example_tree_six_taxa.nwk")),
+            str(fixture("example_traits_geography_biased.tsv")),
+            "--trait",
+            "region",
+            "--model",
+            "symmetric",
+            "--compare-model",
+            "equal-rates",
+            "--summary-out",
+            str(summary_path),
+            "--fit-out",
+            str(fit_path),
+            "--comparison-out",
+            str(comparison_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "symmetric"
+    assert payload["metrics"]["optimizer_converged"] is True
+    assert payload["metrics"]["optimizer_iteration_count"] > 0
+    assert payload["metrics"]["optimizer_function_evaluation_count"] > 0
+    assert payload["metrics"]["overparameterized"] is False
+    assert payload["metrics"]["baseline_model"] == "equal-rates"
+    assert payload["metrics"]["baseline_delta_aic"] > 0.0
+    assert payload["metrics"]["preferred_model_by_aic"] == "equal-rates"
+    assert payload["metrics"]["comparison_node_count"] == 5
+    assert summary_path.read_text(encoding="utf-8").startswith(
+        "trait\ttaxon_column\tmodel\tstate_ordering"
+    )
+    assert fit_path.read_text(encoding="utf-8").startswith(
+        "model\ttaxon_count\tstate_count\tparameter_count\tlog_likelihood"
+    )
+    assert comparison_path.read_text(encoding="utf-8").startswith(
+        "node\tdescendant_taxa\tleft_model\tright_model"
+    )
+
+
+@pytest.mark.slow
+def test_ancestral_discrete_cli_reports_ard_fit_diagnostics_and_weak_fit_warning(
+    tmp_path: Path, capsys
+) -> None:
+    summary_path = tmp_path / "ancestral-discrete-summary.tsv"
+    fit_path = tmp_path / "ancestral-discrete-fit.tsv"
+    comparison_path = tmp_path / "ancestral-discrete-comparison.tsv"
+    exit_code = main(
+        [
+            "ancestral",
+            "discrete",
+            str(fixture("example_tree_ladderized.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--model",
+            "all-rates-different",
+            "--compare-model",
+            "equal-rates",
+            "--summary-out",
+            str(summary_path),
+            "--fit-out",
+            str(fit_path),
+            "--comparison-out",
+            str(comparison_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["model"] == "all-rates-different"
+    assert payload["metrics"]["phytools_rerooting_method_comparable"] is False
+    assert payload["metrics"]["optimizer_iteration_count"] > 0
+    assert payload["metrics"]["overparameterized"] is True
+    assert payload["metrics"]["baseline_model"] == "equal-rates"
+    assert payload["metrics"]["preferred_model_by_aic"] == "equal-rates"
+    assert (
+        "one or more discrete rate parameters hit an optimizer bound and should be interpreted as weakly identified"
+        in payload["warnings"]
+    )
+    assert (
+        "phytools::rerootingMethod is invalid for non-symmetric Q matrices such as all-rates-different models in phytools 2.5.2"
+        in payload["warnings"]
+    )
+    assert fit_path.read_text(encoding="utf-8").startswith(
+        "model\ttaxon_count\tstate_count\tparameter_count\tlog_likelihood"
+    )
+    assert comparison_path.read_text(encoding="utf-8").startswith(
+        "node\tdescendant_taxa\tleft_model\tright_model"
+    )
 
 
 def test_ancestral_discrete_cli_can_export_parsimony_comparison(
@@ -168,6 +410,17 @@ def test_ancestral_discrete_cli_can_export_parsimony_comparison(
     assert comparison_path.read_text(encoding="utf-8").startswith(
         "node\tdescendant_taxa\tleft_model\tright_model"
     )
+
+
+@pytest.mark.slow
+def test_ancestral_discrete_reference_cli_reports_passing_cases(capsys) -> None:
+    exit_code = main(["ancestral", "discrete-reference", "--json"])
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["case_count"] == 10
+    assert payload["metrics"]["external_case_count"] == 6
+    assert payload["metrics"]["all_passed"] is True
 
 
 def test_ancestral_confidence_cli_can_export_single_tree_review(
@@ -244,8 +497,8 @@ def test_ancestral_root_sensitivity_cli_can_export_review(
     assert payload["metrics"]["model"] == "equal-rates"
     assert payload["metrics"]["assumption_count"] == 3
     assert payload["metrics"]["compared_node_count"] == 3
-    assert payload["metrics"]["state_changed_node_count"] == 1
-    assert payload["metrics"]["support_changed_node_count"] == 2
+    assert payload["metrics"]["state_changed_node_count"] == 2
+    assert payload["metrics"]["support_changed_node_count"] == 1
     assert payload["metrics"]["top_sensitive_node"] == "A|B|C|D"
     assert payload["metrics"]["fixed_root_state"] == "island"
     assert summary_path.read_text(encoding="utf-8").startswith(
@@ -311,6 +564,7 @@ def test_ancestral_ordered_discrete_cli_can_export_review(
     )
 
 
+@pytest.mark.slow
 def test_ancestral_irreversible_discrete_cli_can_export_review(
     tmp_path: Path, capsys
 ) -> None:
@@ -745,9 +999,12 @@ def test_ancestral_report_cli_can_export_full_review_package(
     assert exit_code == 0
     assert payload["metrics"]["report_kind"] == "ancestral-report-package"
     assert payload["metrics"]["reconstruction_kind"] == "discrete"
-    assert payload["metrics"]["artifact_count"] == 11
+    assert payload["metrics"]["artifact_count"] == 13
+    assert payload["metrics"]["methods_summary_warning_count"] >= 0
     assert output_dir.exists()
     assert (output_dir / "ancestral-report.html").exists()
+    assert (output_dir / "ancestral-methods-summary.md").exists()
+    assert (output_dir / "reviewer-audit-checklist.tsv").exists()
     assert (output_dir / "ancestral-figure.svg").exists()
     assert (output_dir / "summary.tsv").exists()
     assert (output_dir / "node-table.tsv").exists()
@@ -804,10 +1061,16 @@ def test_ancestral_package_cli_writes_publication_bundle(
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
-    assert payload["metrics"]["artifact_count"] == 9
+    assert payload["metrics"]["artifact_count"] == 12
+    assert payload["metrics"]["publication_ready"] is True
+    assert payload["metrics"]["internal_state_visible"] is True
+    assert payload["metrics"]["uncertainty_visible"] is True
     assert (output_dir / "figure-manifest.json").exists()
+    assert (output_dir / "figure-reproducibility.manifest.json").exists()
     assert (output_dir / "ancestral-figure.png").exists()
     assert (output_dir / "ancestral-figure.html").exists()
+    assert (output_dir / "ancestral-figure-review.html").exists()
+    assert (output_dir / "node-uncertainty-review.tsv").exists()
 
 
 def test_ancestral_discrete_cli_rejects_ordered_fitch_model(capsys) -> None:
@@ -834,4 +1097,35 @@ def test_ancestral_discrete_cli_rejects_ordered_fitch_model(capsys) -> None:
     assert (
         "ordered ancestral discrete reconstruction requires a likelihood model"
         in captured.err
+    )
+
+
+def test_ancestral_discrete_cli_rejects_meristic_parity_claim(capsys) -> None:
+    try:
+        main(
+            [
+                "ancestral",
+                "report",
+                str(fixture("example_tree.nwk")),
+                str(fixture("example_traits_geography.tsv")),
+                "--trait",
+                "region",
+                "--kind",
+                "discrete",
+                "--model",
+                "meristic",
+                "--state-ordering",
+                "ordered",
+                "--ordered-states",
+                "north,south,island",
+                "--out",
+                "ignored.html",
+            ]
+        )
+    except SystemExit as error:
+        assert error.code == 2
+    captured = capsys.readouterr()
+    assert "explicitly excluded this round" in captured.err
+    assert "ordered-state Mk support is not claimed as meristic parity" in (
+        captured.err
     )

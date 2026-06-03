@@ -1,0 +1,8 @@
+variant_id: ginsi-gap-threshold
+label: MAFFT ginsi plus trimAl gap-threshold
+execution_mode: parallel
+alignment_mode: ginsi
+trimming_mode: gap-threshold
+trim_gap_threshold: 0.1
+status: succeeded
+output_root: variants/ginsi-gap-threshold

@@ -4,12 +4,17 @@ audience: public
 type: reference
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-13
+last_reviewed: 2026-05-16
 ---
 
 # CLI Surface
 
 The CLI is the primary operational surface for most users.
+
+For notebook and pipeline users, the workflow-level Python counterparts now
+live under `bijux_phylogenetics.api`. They return typed workflow result
+objects that wrap the same CLI-grade runtime reports used internally and add
+stable JSON plus TSV export helpers.
 
 ## Major Command Families
 
@@ -30,15 +35,68 @@ The CLI is the primary operational surface for most users.
 The public rule is simple: commands should produce explicit, reviewable outputs
 and should not hide important assumptions behind silent defaults.
 
-`parity` is the governed reference-parity validation surface. It checks the
-repository's core numerical methods against checked-in outputs from
-established external tools on small fixtures by default, with one optional
-extended suite for larger posterior-tree validation. Its JSON metrics report:
+`demo rabies-cross-host-geography-panel` is the flagship public biological
+workflow. In addition to the dataset export, workflow rerun, overview HTML,
+and package manifest, it now writes one
+`workflow/conclusion-stability/` directory with:
+
+- `conclusion-stability-summary.tsv`
+- `key-clade-stability.tsv`
+- `support-value-stability.tsv`
+- `ancestral-state-stability.tsv`
+- `comparative-coefficient-stability.tsv`
+- `conclusion-stability-report.html`
+
+Its JSON metrics also report:
+
+- `conclusion_stable_count`
+- `conclusion_weak_count`
+- `conclusion_unstable_count`
+
+## Runtime Method Tiers
+
+Serious workflow and report commands now publish one explicit method-tier
+contract in JSON output so users can distinguish validated inference from
+approximate, advisory, or parser-only surfaces.
+
+The governed tier values are:
+
+- `supported`
+- `experimental`
+- `advisory`
+- `parser-only`
+
+When present, the JSON metrics expose:
+
+- `method_tier`
+- `method_inference_mode`
+- `method_validation_basis`
+- `method_approximation`
+
+Tier meaning is strict:
+
+- `supported` requires reference parity or real-engine validation
+- `experimental` emits a clear warning and names its approximation when one is used
+- `advisory` is review output and should not be read as new inference
+- `parser-only` means the command parsed external-engine artifacts and does not claim Bijux ran the inference itself
+
+For automation and downstream notebooks, the canonical reviewer-facing TSV and
+JSON outputs now have stable tested schemas. That governed contract covers the
+major `.model.tsv`, `.support.tsv`, clade-table, branch-table,
+comparative-traits, comparative-summary, event-table, and manifest artifacts
+written by the public workflow surfaces.
+
+`parity` is the governed reference-parity validation surface. By default it
+checks the repository's core numerical methods against checked-in outputs from
+established external tools on small fixtures, with one optional extended suite
+for governed primate comparative fits and larger posterior-tree validation.
+Its JSON metrics report:
 
 - `all_passed`
 - `case_count`
 - `method_count`
 - `failed_case_count`
+- `reference_source`
 - `extended`
 
 The command can write:
@@ -56,6 +114,11 @@ contains one row per checked case with:
 - `reference_source`
 - `tolerance`
 - `tolerance_reason`
+- `expected_failure_mode`
+- `taxon_overlap_policy`
+- `shared_taxa`
+- `left_only_taxa`
+- `right_only_taxa`
 - `passed`
 - `mismatch_kind`
 - `expected_output`
@@ -65,7 +128,394 @@ The core suite covers RF distance, branch-score distance, PGLS, Pagel's
 lambda, Brownian and OU trait models, PIC, Blomberg's K, posterior clade
 frequencies, and consensus tree generation. `mismatch_kind` is intentionally a
 scientific review surface, not a generic failure flag. It distinguishes
-topology, branch length, numerical tolerance, and model-assumption mismatches.
+topology, branch length, missing-taxa policy, numerical tolerance, and
+model-assumption mismatches.
+
+`parity --reference-source ape-live` switches to the live `ape` execution
+harness. That lane runs the checked-in R parity runner through `Rscript`,
+compares structured JSON, TSV, and normalized Newick outputs against the Bijux
+runtime, and records for each governed case:
+
+- `r_version`
+- `ape_version`
+- `bijux_version`
+- `bijux_commit`
+- `function_name`
+- `input_fixture`
+- `tolerance`
+- `passed`
+- `mismatch_reason`
+- `reproducible_artifact_root`
+
+Its JSON metrics report:
+
+- `all_passed`
+- `case_count`
+- `function_count`
+- `failed_case_count`
+- `skipped_case_count`
+- `reference_source`
+
+Skipped live cases are not hidden. When `ape` or `Rscript` is unavailable, the
+observation ledger records the skip reason and the harness writes one small
+reproducible artifact bundle for that case.
+
+The governed live `ape` cases now span shared tree, DNA, and simulation
+fixtures. Today that lane covers `ape::read.tree`, `ape::write.tree`,
+`ape::consensus`, `ape::prop.clades`, `ape::root`, `ape::unroot`, `ape::drop.tip`, `ape::keep.tip`, `ape::extract.clade`, `ape::getMRCA`, `ape::is.monophyletic`, `ape::cophenetic.phylo`, `ape::dist.topo`, `ape::vcv.phylo`, `ape::node.depth.edgelength`, `ape::branching.times`, `ape::is.ultrametric`, `ape::nj`, `ape::rcoal`, `ape::rtree`, `ape::base.freq`, `ape::seg.sites`, `ape::dist.dna`, and `ape::trans`, with durable inputs
+resolved from `shared_tree_fixture_catalog.json`,
+`shared_dna_alignment_fixture_catalog.json`, and
+`shared_tree_simulation_fixture_catalog.json`. The `ape::read.tree` portion now
+compares structured clade rows and covers branch lengths, internal labels,
+support labels, quoted labels, one governed multiple-tree Newick input, and
+one governed malformed-Newick rejection case. Those cases now exercise one
+owned native Newick parser and writer on top of `PhyloTree`, including
+location-aware parse failures, rather than routing tree reads through an
+external parser. The `ape::root` portion now
+uses the same shared tree catalog for one-tip outgroups, monophyletic
+multi-tip outgroups, already-rooted trees, missing outgroups, and
+non-monophyletic outgroups, and it compares rooted clades plus branch lengths
+against live `ape::root` instead of only checking that a rooted flag changed.
+On the owned Bijux side, outgroup rooting now runs through the same native
+`PhyloTree` manipulation core as unrooting, pruning, clade extraction, MRCA
+lookup, and monophyly review rather than delegating that reroot step through
+Biopython.
+The `ape::unroot` portion now covers rooted binary trees, post-outgroup-rooting
+trees, already-unrooted inputs, and malformed input failures, and it makes the
+root-edge policy explicit by matching `ape::unroot` branch-length
+redistribution instead of silently moving the removed root-edge length into the
+expanded clade.
+The `ape::drop.tip` portion now covers rooted and unrooted exclusion cases,
+unknown excluded tip names, and root-state changes after pruning, and it keeps
+one explicit Bijux safety boundary: requests that would leave fewer than two
+retained taxa fail clearly instead of producing one-tip workflow outputs.
+The `ape::consensus` portion now covers majority-rule and strict consensus
+over governed conflicting and posterior-style tree sets, compares one
+normalized consensus topology plus one clade-frequency ledger per case, and
+fails explicitly when the input tree set does not share one exact taxon set.
+The `ape::prop.clades` portion now covers reference-tree clade support mapping
+over duplicate, reordered, posterior-style, and mismatched shared tree sets.
+It compares one `reference-tree-support.tsv` ledger keyed by descendant tip
+set instead of transient node number, and the owned `tree-set support-map`
+surface keeps one real `ape` edge case explicit: unsupported root-adjacent
+splits are left unscored instead of being mislabeled as zero support.
+On the owned Bijux side, `tree-set inspect`, `tree-set consensus`,
+`tree-set support-map`, `tree-set compare`, and the posterior tree-set review
+commands now read one native `PhyloTree` per Newick record instead of routing
+tree-set loading through an external tree object model. Plain `.nwk` and
+plain `.trees` inputs both work when the file content is one Newick record per
+tree. Strict consensus and support commands keep exact-taxon-set validation as
+an explicit hard stop, while tolerant review commands surface malformed-record
+skips in their processing metrics instead of failing silently.
+The `ape::as.DNAbin` portion now covers clean, lowercase, gap-bearing, and
+ambiguity-bearing DNA fixtures. On the owned Bijux side there is no separate
+CLI command for that matrix, but the same DNAbin-compatible nucleotide surface
+now sits underneath DNA distance, ape-style nucleotide composition,
+ape-style segregating-site review, and aligned coding translation. It
+preserves taxon order and alignment length, normalizes case, keeps gaps,
+ambiguity codes, and explicit missing states literal, writes FASTA back
+without nucleotide-state loss, and rejects unsupported symbols explicitly.
+The `ape::nj` portion now covers one governed analytical three-taxon matrix
+plus four-taxon ultrametric and non-ultrametric matrices. On the owned Bijux
+side, `alignment build-tree --method neighbor-joining` and `distance-matrix
+build-tree --method neighbor-joining` now use one in-repo deterministic NJ
+builder that validates zero-diagonal and nonnegative matrix assumptions and
+breaks tied joins by stable taxon ordering instead of delegating the NJ method
+through Biopython.
+
+`parity --reference-source phytools-live` switches to the governed live
+`phytools` execution harness. It runs one checked-in R parity runner through
+`Rscript`, writes structured JSON and TSV outputs, and records for each
+governed case:
+
+- `r_version`
+- `phytools_version`
+- `bijux_version`
+- `bijux_commit`
+- `function_name`
+- `input_fixtures`
+- `tolerance`
+- `passed`
+- `mismatch_reason`
+- `reproducible_artifact_root`
+
+Its JSON metrics report:
+
+- `all_passed`
+- `case_count`
+- `function_count`
+- `failed_case_count`
+- `skipped_case_count`
+- `reference_source`
+
+The initial live `phytools` registry is intentionally narrow for this goal. It
+currently covers `phytools::phylosig(method='lambda')`,
+`phytools::phylosig(method='K')`, `phytools::fitMk(model='ER')`,
+`phytools::fitMk(model='SYM')`, `phytools::fitMk(model='ARD')`,
+`phytools::make.simmap(model='ER')`, `phytools::make.simmap(model='SYM')`,
+`phytools::make.simmap(model='ARD')`, `phytools::countSimmap`,
+`phytools::densityMap`,
+`phytools::describe.simmap`,
+`phytools::sim.history`,
+`phytools::fastBM`,
+`phytools::sim.corrs`,
+`phytools::pgls.SEy`,
+`phytools::rerootingMethod`,
+`phytools::fastAnc`, and `phytools::anc.ML` on governed twenty-four-taxon
+comparative fixtures from the shared
+`shared_phytools_comparative_fixture_catalog.json` corpus. The live lambda
+lane now includes one non-ultrametric strong-signal fixture plus one
+ultrametric weak-signal fixture so the harness proves both a near-boundary
+high-signal fit and a near-zero-signal fit against real `phytools`
+likelihood output instead of only one easy interior case. The live K lane now
+includes strong-signal and weak-signal seeded permutation cases and compares
+the observed K scalar, permutation p-value, and null-distribution summary
+under one governed replicate count. The live `fitMk` lane now includes clean
+binary, clean multistate, binary missing-value, and multistate missing-value
+ER cases plus clean multistate and missing-value-pruned multistate SYM cases.
+It now also includes clean and missing-value-pruned binary ARD cases at full
+rate-row parity plus clean and missing-value-pruned multistate ARD cases at
+summary parity when the optimizer reports weakly identified boundary rates. It
+compares flat-root log-likelihood, AIC, AICc, excluded taxa, one explicit
+ER-versus-SYM-versus-ARD model identity summary, and the directed rate matrix
+when the governed case is identifiable against real `phytools` output.
+The same live registry now also includes one governed `phytools::pgls.SEy`
+lane for fixed-lambda Brownian covariance PGLS over one simple numeric
+regression plus one categorical and one interaction-coded regression. That
+claim stays deliberately narrow: installed `phytools 2.5.2` does not export a
+general `phytools::pgls` surface, so the live lane proves `pgls.SEy` with
+`lambda = 1.0`, while the broader exact PGLS contract for estimated lambda
+and full coefficient parity remains the checked-in `ape` plus `nlme`
+reference suite.
+The live `make.simmap` lane now includes clean binary, clean multistate, and
+missing-value-pruned binary ER cases; clean multistate and
+missing-value-pruned multistate SYM cases; and binary plus
+missing-value-pruned binary ARD cases. It also keeps governed multistate ARD
+cases on summary-envelope parity only when weakly identified boundary rates
+make row-level comparison untrustworthy across optimizers. The owned
+`discrete-evolution stochastic-map` surface now also reports fitted-model
+identity, parameter count, log-likelihood, AIC, AICc, baseline-model
+comparison, optimizer convergence, and weak-fit warnings alongside the seeded
+simulation output. The parity lane compares distributional envelopes only:
+excluded taxa, total-transition-count mean plus interval,
+transition-count summary rows, and time-in-state summary rows. It does not
+claim exact stochastic-history identity with real `phytools`. It also writes
+one flat branch-segment TSV, one per-state time-summary TSV, and one per-branch
+state-occupancy TSV on the owned Bijux side through
+`discrete-evolution stochastic-map`.
+The owned CLI now also exposes one `discrete-evolution count-maps` surface over
+saved stochastic-map collections. It writes one per-replicate count matrix,
+one aggregate transition matrix, one per-branch directional transition table,
+and one flat event ledger. The live `countSimmap` lane now covers clean
+binary, clean multistate, clean multistate SYM, and missing-value-pruned
+binary cases. It compares total-transition envelopes plus directional
+transition-count rows, including zero diagonal state pairs, without claiming
+exact stochastic-history identity.
+The same owned CLI now also exposes one `discrete-evolution density-maps`
+surface over saved stochastic-map collections. It writes one branch-probability
+table, one branch-level density envelope, one slice-level probability table at
+the requested resolution, and one report-ready HTML or SVG artifact. The live
+`densityMap` lane is intentionally narrower than the owned CLI surface: it
+currently covers binary ER collections only, including one
+missing-value-pruned case. It compares per-branch posterior probability
+summaries and branch-level uncertainty against real `phytools::densityMap`
+without claiming pixel-perfect plotting parity.
+The live `describe.simmap` lane now covers clean binary, clean multistate,
+clean multistate SYM, and missing-value-pruned binary cases. It compares the
+owned summary surface directly, including total changes, transition rows,
+time-in-state rows, and per-branch state-occupancy rows.
+The owned CLI now also exposes one `simulate history-discrete` surface for
+fixed-tree discrete-history simulation from an explicit rate matrix. It writes
+one tip-state truth table, one node-state truth table, one branch-history
+truth table, one transition-event ledger, one branch-segment ledger, and one
+parity summary table with transition-count, time-in-state, and tip-state
+frequency rows. The live `sim.history` lane now covers governed binary and
+multistate no-change plus high-rate fixed-tree cases and compares those
+distribution-summary envelopes against real `phytools::sim.history` without
+claiming exact history identity across languages.
+The owned `simulate traits-brownian` surface now accepts either `--sigma` or
+`--sigma-squared` and reports the resolved Brownian rate parameter in JSON
+output. The same simulation family now also owns one Brownian replicate-review
+surface over tip distributions and tip covariances, which underlies the live
+`phytools::fastBM` lane for governed low-variance, root-shift high-variance,
+and six-taxon fixed-tree cases. That lane compares summary envelopes and
+tip-covariance rows against real `phytools::fastBM` without claiming
+cross-language draw identity.
+The same simulation family now also owns one
+`simulate traits-brownian-correlated` surface for two or more continuous
+traits on one fixed tree from one explicit evolutionary covariance matrix. It
+accepts either repeated `--covariance-row` values directly or repeated
+`--correlation-row` values plus one `--trait-standard-deviation` per trait,
+writes one long-form replicate tip-trait ledger plus one optional summary
+ledger, and reports trait count, replicate count, and the generating
+covariance contract in JSON output. The live `phytools::sim.corrs` lane now
+covers governed low-correlation, negative-correlation root-shift, and
+three-trait six-taxon cases. It compares summary envelopes, tip-covariance
+rows, and tip-correlation rows against real `phytools::sim.corrs` without
+claiming exact cross-language draw identity.
+The live
+`rerootingMethod` lane now includes governed ER binary, ER multistate, ER
+missing-value-pruned, SYM multistate, and SYM missing-value-pruned cases. It
+compares one flat node-probability ledger keyed by stable node signature and
+state label against real `phytools` output. That claim is intentionally
+narrow: `phytools::rerootingMethod` is only governed here for ER or SYM under
+the equal root prior inherited from `fitMk`, while ARD, Fitch, ordered-state,
+empirical-root-prior, and fixed-root-prior ancestral runs remain owned Bijux
+review surfaces without a live `phytools` parity claim. The live
+`fastAnc` lane now includes ultrametric strong-signal, ultrametric
+weak-signal, non-ultrametric strong-signal, and missing-value pruning cases,
+and compares stable node-signature rows plus standard errors against real
+`phytools` output. The live `anc.ML` lane now covers the same four fixture
+shapes and compares stable node-signature rows, standard errors, 95%
+intervals, Brownian log-likelihood, and fitted sigma-squared against real
+`phytools` output.
+For this round, `bionj` is explicitly excluded. The distance-tree CLI surfaces
+therefore accept `--method bionj` only so the owned runtime can return one
+structured out-of-scope error naming `ape::bionj`, rather than failing with
+one generic parser-choice message.
+The `ape::dist.dna` portion now covers raw nucleotide distance, JC69, K80,
+F81, and TN93 distance over governed clean, gapped pairwise-deletion, gapped
+complete-deletion, ambiguity-bearing, identical-sequence, high-divergence,
+missing-data, and unequal-length-invalid fixtures. On the owned Bijux side,
+`alignment distance-matrix --model raw`, `--model jc69`, `--model k80`,
+`--model f81`, and `--model tn93` accept the ape-compatible aliases while
+keeping `p-distance`, `jukes-cantor`, `kimura-2-parameter`,
+`felsenstein-81`, and `tamura-nei-93` as the canonical internal labels.
+Saturated JC69, K80, F81, and TN93 pairs are reported explicitly as either
+undefined or infinite, `--components-out` writes one pairwise component
+ledger for review, `--parameters-out` writes one model-parameter ledger for
+reviewer-facing base-frequency and coefficient inspection, and unequal-length
+alignments fail explicitly before any matrix is written. TN93 also warns
+explicitly when the resolved alignment composition omits a nucleotide instead
+of silently degrading to JC69 or K80.
+The `ape::base.freq` portion now covers lowercase, ambiguity-bearing,
+missing-data, and all-gap-or-missing alignments. On the owned Bijux side,
+`alignment composition --base-frequency-out <table.tsv>` writes one combined
+alignment-plus-sequence TSV ledger with `scope`, `identifier`, `state`,
+`count`, and `frequency` columns, returns the same literal-state frequencies
+in JSON output, and reports composition outlier sequences beside those base
+frequency rows. Ambiguity codes, gaps, and explicit missing states are counted
+as literal states to match `ape::base.freq`, and all-gap or missing inputs
+warn explicitly instead of fabricating canonical A/C/G/T content.
+The `ape::seg.sites` portion now covers lowercase, invariant,
+one-variable-site, gap-bearing, ambiguity-bearing, missing-data, and
+all-gap-or-missing alignments. On the owned Bijux side,
+`alignment segregating-sites --site-table-out <table.tsv>` writes one
+`segregating-sites.tsv` ledger with site positions plus literal and
+ape-normalized state summaries. Leading and trailing gaps are normalized to
+`N` to match live `ape::seg.sites`, explicit missing states do not create
+segregating sites by themselves, and incompatible ambiguity states or internal
+gaps remain governed live parity cases instead of being flattened into a total
+count only.
+The `ape::trans` portion now covers valid-reading-frame, ambiguous-codon,
+internal-stop, terminal-stop, frame-truncation, and vertebrate-mitochondrial
+genetic-code fixtures. On the owned Bijux side, `alignment translate
+--codon-validation-out <table.tsv> --excluded-sequences-out <table.tsv>`
+writes one amino-acid FASTA plus codon-level validation rows. The aligned
+translation surface truncates trailing partial codons with the same explicit
+warning as live `ape::trans`, while the stricter codon-preparation surface
+still owns pre-alignment sequence exclusion for frame errors, ambiguous
+codons, and premature stop codons.
+The `ape::keep.tip` portion now covers valid rooted and unrooted keep-set
+cases, selected-tip order differences, and rootedness changes after pruning.
+Bijux keeps the workflow-facing absent-requested-taxon report and minimum-two
+retained-taxa stop as explicit product extensions rather than pretending those
+paths are live `ape::keep.tip` parity.
+The `ape::extract.clade` portion now covers rooted root-clade and internal-node
+subtree extraction plus explicit tip-node and out-of-bounds failures. Bijux
+keeps one adjacent owned surface outside the live `ape` call shape too:
+callers can extract the same subtree by exact descendant-taxa identity instead
+of only by ape-style node number.
+The `ape::getMRCA` portion now covers stable internal-node identity for
+two-tip, many-tip, full-tip-set, duplicate-tip, rooted-polytomy, and
+already-rooted-outgroup cases. Bijux keeps one adjacent workflow-side rule
+outside the live `ape` call shape too: missing requested taxa fail clearly
+instead of surfacing as a low-level parser-side error.
+The `ape::is.monophyletic` portion now covers rooted and unrooted monophyly
+calls with explicit reroot policy, full-tip-set behavior, singleton and
+mixed-missing requests, rooted-polytomy behavior, post-rooting behavior, and
+all-missing reroot failures. Bijux uses that same lane to expose matched MRCA
+node identity and extra descendant taxa when a direct clade is not cleanly
+monophyletic.
+The `ape::cophenetic.phylo` portion now covers rooted and unrooted branch-length
+trees, compares one governed long-form tip-distance ledger rather than only a
+printed matrix, and keeps the taxon order explicit in the summary payload. On
+the owned Bijux side, tip-distance calculations now reject missing branch
+lengths unless the caller opts into one explicit unit-length fallback policy.
+The `ape::dist.topo` portion now covers identical rooted trees, rooted
+child-order rotations, one-conflict rooted pairs, rooted tree-versus-polytomy
+pairs, one governed unrooted split conflict, and one governed 128-tip rooted
+pair. It compares one explicit RF-style split ledger rather than only a
+scalar distance, keeps rooted-versus-unrooted policy explicit per case, and
+aligns directly with the owned `adapter compare --split-table-out` review
+surface. Those same split rows now come from one native clade-set core shared
+with support comparison, tree-set support mapping, posterior clade summaries,
+and live `ape::dist.topo` parity rather than parallel helper
+implementations.
+The `ape::vcv.phylo` portion now covers rooted ultrametric, rooted
+non-ultrametric, unrooted branch-length, and singular zero-branch trees. It
+compares one governed long-form Brownian shared-ancestry covariance ledger,
+persists the compared covariance tables automatically when parity fails, and
+keeps the taxon order explicit in the summary payload. On the owned Bijux
+side, `summarize_brownian_covariance(...)` now rejects missing or negative
+branch lengths explicitly and reports singular-versus-near-singular state from
+the raw covariance matrix instead of silently regularizing it away.
+The `ape::node.depth.edgelength` portion now covers rooted ultrametric,
+rooted non-ultrametric, zero-branch-length, and post-outgroup-rooting trees.
+It compares one governed node-depth table keyed by stable ape-style node ids,
+and the owned Bijux surface `compute_tree_node_depths(...)` rejects incomplete
+branch lengths instead of substituting edge counts or implied zeros.
+The `ape::branching.times` portion now covers rooted ultrametric trees with
+and without internal labels, one medium ultrametric tree, and one zero-length
+internal-branch ultrametric tree. It compares one governed internal-node
+branching-time table keyed by stable ape-style node ids, and the owned Bijux
+surface `compute_tree_branching_times(...)` rejects non-ultrametric trees
+instead of forwarding the invalid negative or inconsistent node ages that
+`ape::branching.times` can still produce on those inputs.
+The `ape::gammaStat` portion now covers rooted ultrametric trees with and
+without internal labels, one medium ultrametric tree, and one zero-internal-
+branch ultrametric tree. It compares one governed one-row
+`gamma-statistic.tsv` ledger, and the owned Bijux surface
+`compute_diversification_gamma_statistic(...)` keeps two workflow-side
+boundaries explicit instead of inheriting `ape`'s looser behavior: the tree
+must stay fully bifurcating, and incomplete sampling remains a warning surface
+rather than an implicit correction.
+The `ape::is.ultrametric` portion now covers exact ultrametric,
+near-ultrametric, tight-tolerance near-ultrametric, and clearly
+non-ultrametric trees. It compares one governed tip-depth diagnostic table,
+and the owned Bijux surface `assess_tree_ultrametricity(...)` reports the
+criterion name, criterion value, tolerance, maximum tip-depth deviation,
+offending taxa, and a deterministic `ultrametric-diagnostics.tsv` ledger.
+That same ape-style surface is now reused before rooted Brownian, OU, and
+diversification workflows claim time-tree compatibility.
+The `ape::write.tree` portion
+roundtrips Bijux-written Newick through live `ape` for rooted, unrooted,
+internal-label, support-label, quoted-label, and multiple-tree cases. The DNA
+cases include lowercase input, ambiguity, missing data, identical sequences,
+high-divergence distances, and valid, ambiguous-codon, internal-stop,
+terminal-stop, frame-truncation, or alternate-genetic-code coding translation
+rows. Unequal-length DNA fixtures still stay on the diagnostic side of the
+contract for distance workflows, but frame-error coding fixtures now stay in
+the governed `ape::trans` parity-pass registry because the owned aligned
+translation surface truncates trailing partial codons with the same explicit
+warning that live `ape::trans` emits.
+
+Bijux does not silently serialize malformed trees in that lane. Unnamed tips,
+empty tree sets, and non-finite branch lengths fail on the Bijux side before
+the live `ape` comparison is attempted.
+
+Tree IO equality in that lane is structural rather than string-based. The
+governed comparison accepts reordered-but-equivalent children and emits
+specific mismatch reasons when rootedness, tip labels, clades or splits,
+branch lengths, or internal labels differ.
+
+The governed PGLS lane is not limited to one intercept-plus-slope example. The
+core suite now includes one fixed-Brownian numeric regression, one
+treatment-coded categorical regression, and one treatment-coded interaction
+regression checked against R `ape` plus `nlme` outputs for coefficients,
+standard errors, p-values, likelihood, AIC, and encoded model-matrix rows. The
+extended suite adds one governed estimated-lambda primate regression against
+the same external tool chain.
 
 `benchmark stress-suite` is the governed large-dataset resource review surface.
 It executes five owned workload families on one selected tier:
@@ -99,6 +549,26 @@ optional `1,000+` sequence and `1,000+` tree pressure check. The surface is
 explicit about scope: it measures the repository's owned workflows, not a
 synthetic micro-benchmark disconnected from user-facing outputs.
 
+`report release-truth` is the governed pre-release summary surface. It
+consumes actual pytest JUnit XML reports for the full test lane and the
+real-engine lane, reruns the owned workflow-validation, release-gate, parity,
+and stress-suite checks, and writes one HTML report plus one machine manifest.
+Its JSON metrics report:
+
+- `total_tests`
+- `total_tests_passed`
+- `total_tests_failed`
+- `total_tests_skipped`
+- `real_engine_tests`
+- `real_engine_tests_passed`
+- `real_engine_tests_failed`
+- `real_engine_tests_skipped`
+- `supported_workflow_count`
+- `experimental_workflow_count`
+- `flagship_dataset_count`
+- `reference_parity_case_count`
+- `stress_workload_count`
+
 `report tree-package` is the governed full tree review surface. It takes one
 tree and materializes a richer review directory than the older `report tree`
 diagnostic. Its JSON metrics report:
@@ -122,7 +592,8 @@ summary, support, clade, and branch-stat sections. The TSV ledgers remain the
 durable flat review contract for downstream inspection and automation. Use
 `report tree` when only the lightweight structural and forensic HTML audit is
 needed; use `report tree-package` when the image and tabular review outputs are
-required together.
+required together. Its JSON and HTML surfaces now mark the package as
+`advisory` rather than inference.
 
 `demo primate-comparative` is the governed packaged mammal dataset surface. It
 materializes the shipped primate comparative dataset into one output directory
@@ -292,6 +763,60 @@ This command requires MAFFT, trimAl, and IQ-TREE executables. Use
 `--mafft-executable`, `--trimal-executable`, and `--iqtree-executable` when
 they are not available on the default `PATH`.
 
+`demo gnathostome-ortholog-protein-benchmark` is the governed packaged protein
+sequence-to-tree surface. It materializes one shipped gnathostome ortholog
+amino-acid FASTA panel into one output directory and reruns the owned MAFFT,
+trimAl, and IQ-TREE workflow over those packaged protein inputs. Its JSON
+metrics report:
+
+- `artifact_count`
+- `sequence_count`
+- `sequence_type`
+- `selected_model`
+- `alignment_length`
+- `trimmed_alignment_length`
+- `minimum_support`
+- `maximum_support`
+- `weakly_supported_clade_count`
+- `state_space`
+- `model_selection_scope`
+- `reference_output_count`
+
+The command writes:
+
+- `dataset/README.md`
+- `dataset/sequences.fasta`
+- `dataset/expected/*`
+- `workflow/workflow-summary.tsv`
+- `workflow/molecular-assumptions.tsv`
+- `workflow/gnathostome-ortholog-protein-benchmark.aln`
+- `workflow/gnathostome-ortholog-protein-benchmark.trimmed.aln`
+- `workflow/gnathostome-ortholog-protein-benchmark.tree`
+- `workflow/gnathostome-ortholog-protein-benchmark.model.tsv`
+- `workflow/gnathostome-ortholog-protein-benchmark.support.tsv`
+- `workflow/gnathostome-ortholog-protein-benchmark.log`
+- `workflow/gnathostome-ortholog-protein-benchmark.manifest.json`
+- `overview.md`
+
+The packaged dataset carries raw unaligned amino-acid sequences and uses the
+following governed inference controls:
+
+- sequence type `protein`
+- IQ-TREE sequence keyword `AA`
+- IQ-TREE seed `1`
+- IQ-TREE threads `1`
+- bootstrap replicates `1000`
+
+This command writes one explicit molecular-assumption ledger because it is
+meant to distinguish amino-acid inference from the repository's DNA demos. The
+workflow starts from protein FASTA directly, searches protein models only, and
+does not apply coding-DNA translation, codon-position partitioning, or
+nucleotide-specific interpretation such as GC composition.
+
+This command requires MAFFT, trimAl, and IQ-TREE executables. Use
+`--mafft-executable`, `--trimal-executable`, and `--iqtree-executable` when
+they are not available on the default `PATH`.
+
 `demo pleistocene-bear-cytb-fragments` is the governed packaged ancient-DNA
 sequence-to-tree surface. It materializes the shipped degraded bear
 cytochrome b panel into one output directory and reruns the owned MAFFT,
@@ -385,16 +910,26 @@ than raw alignment generation.
 `demo catarrhine-data-quality-stress-panel` is the governed packaged dirty-data
 stress surface. It materializes the shipped catarrhine stress panel into one
 output directory and reruns the owned audit-and-cleanup workflow over its raw
-alignment, tree, and traits inputs. Its JSON metrics report:
+alignment, raw FASTA validation, coding-sequence, tree, and trait inputs. Its
+JSON metrics report:
 
 - `artifact_count`
 - `raw_taxon_count`
 - `cleaned_taxon_count`
+- `duplicate_sequence_identifier_count`
+- `illegal_character_count`
+- `empty_sequence_count`
+- `raw_sequence_length_outlier_count`
 - `duplicate_trait_taxon_count`
 - `missing_trait_value_count`
 - `sequence_outlier_count`
 - `tree_zero_length_branch_count`
+- `tree_negative_branch_count`
 - `tree_long_branch_outlier_count`
+- `coding_frame_error_count`
+- `coding_internal_stop_count`
+- `raw_trait_missing_from_traits_count`
+- `raw_trait_extra_taxon_count`
 - `dropped_taxon_count`
 - `repaired_branch_count`
 - `reference_output_count`
@@ -403,10 +938,20 @@ The command writes:
 
 - `dataset/README.md`
 - `dataset/raw/alignment.fasta`
+- `dataset/raw/sequence-input.fasta`
+- `dataset/raw/coding-sequences.fasta`
 - `dataset/raw/tree.nwk`
 - `dataset/raw/traits.csv`
+- `dataset/raw/traits-mismatch.csv`
 - `dataset/expected/*`
 - `workflow/workflow-summary.tsv`
+- `workflow/raw-sequence-findings.tsv`
+- `workflow/raw-sequence-repair.tsv`
+- `workflow/repaired-sequence-input.fasta`
+- `workflow/repaired-sequence-validation.tsv`
+- `workflow/coding-sequence-exclusions.tsv`
+- `workflow/prepared-coding-sequences.fasta`
+- `workflow/raw-trait-linkage.tsv`
 - `workflow/trait-duplicates.tsv`
 - `workflow/trait-missing-values.tsv`
 - `workflow/sequence-outliers.tsv`
@@ -422,9 +967,12 @@ The command writes:
 The packaged stress contract is explicit about scope:
 
 - the raw alignment is already aligned and is stress-tested through composition review, not alignment generation
-- the raw tree is intentionally dirty in branch lengths, not in syntax
+- the raw sequence-validation FASTA is intentionally dirty in duplicate identifiers, illegal characters, empty records, and length outliers
+- the raw coding FASTA is intentionally dirty in frame consistency and premature stop codons
+- the raw tree is intentionally dirty in zero and negative branch lengths plus one extreme long branch, not in syntax
 - the raw trait table is intentionally dirty in duplicates and missingness
-- the workflow resolves duplicates deterministically and writes one cleaned comparative subset instead of mutating the raw dataset in place
+- the raw trait-mismatch table is intentionally wrong in taxon overlap and is kept as a failure-review surface
+- the workflow resolves or excludes fixable inputs deterministically, records strict mismatch failure where repair would be dishonest, and writes one cleaned comparative subset instead of mutating raw inputs in place
 
 `demo known-answer-reference-panel` is the governed packaged known-answer
 simulation surface. It materializes the shipped deterministic simulation panel
@@ -441,8 +989,15 @@ metrics report:
 - `same_unrooted_topology`
 - `same_taxa_different_rooting`
 - `robinson_foulds_distance`
+- `parameter_row_count`
+- `threshold_pass_count`
+- `threshold_row_count`
 - `continuous_internal_node_mean_absolute_error`
 - `discrete_internal_node_accuracy`
+- `host_internal_node_accuracy`
+- `host_event_accuracy`
+- `geographic_internal_node_accuracy`
+- `geographic_event_accuracy`
 - `reference_output_count`
 
 The command writes:
@@ -451,18 +1006,57 @@ The command writes:
 - `dataset/true-tree.nwk`
 - `dataset/simulated-alignment.fasta`
 - `dataset/continuous-traits.tsv`
+- `dataset/ou-traits.tsv`
 - `dataset/discrete-traits.tsv`
+- `dataset/host-traits.tsv`
+- `dataset/geographic-traits.tsv`
 - `dataset/true-parameters.tsv`
 - `dataset/true-continuous-nodes.tsv`
+- `dataset/true-ou-nodes.tsv`
 - `dataset/true-discrete-nodes.tsv`
+- `dataset/true-host-nodes.tsv`
+- `dataset/true-geographic-nodes.tsv`
+- `dataset/true-host-switch-events.tsv`
+- `dataset/true-geographic-transition-events.tsv`
+- `dataset/recovery-thresholds.tsv`
 - `dataset/expected/*`
 - `workflow/workflow-summary.tsv`
 - `workflow/recovered-distance-tree.nwk`
 - `workflow/tree-recovery.tsv`
 - `workflow/parameter-recovery.tsv`
 - `workflow/brownian-fit-summary.tsv`
+- `workflow/ou-fit-summary.tsv`
 - `workflow/continuous-ancestral-summary.tsv`
+- `workflow/continuous-ancestral-uncertainty.tsv`
 - `workflow/continuous-node-recovery.tsv`
+- `workflow/discrete-ancestral-summary.tsv`
+- `workflow/discrete-ancestral-probabilities.tsv`
+- `workflow/discrete-node-recovery.tsv`
+- `workflow/host-switch-summary.tsv`
+- `workflow/host-state-nodes.tsv`
+- `workflow/host-switch-branches.tsv`
+- `workflow/host-node-recovery.tsv`
+- `workflow/host-event-recovery.tsv`
+- `workflow/geographic-ancestral-summary.tsv`
+- `workflow/geographic-state-probabilities.tsv`
+- `workflow/geographic-transition-summary.tsv`
+- `workflow/geographic-node-recovery.tsv`
+- `workflow/geographic-event-recovery.tsv`
+- `workflow/recovery-threshold-evaluation.tsv`
+- `overview.md`
+
+The packaged truth contract is explicit rather than inferred from one recovery
+score:
+
+- Brownian and OU parameter recovery is measured against stored generating
+  values
+- discrete, host, and geographic internal-node recovery is measured against
+  stored node truths
+- host-switch and geographic-transition recovery is measured branch by branch
+  against stored simulated events
+- recovery pass and fail thresholds are declared in
+  `dataset/recovery-thresholds.tsv` and evaluated in
+  `workflow/recovery-threshold-evaluation.tsv`
 - `workflow/discrete-ancestral-summary.tsv`
 - `workflow/discrete-node-recovery.tsv`
 - `overview.md`
@@ -478,6 +1072,73 @@ The packaged simulation contract is explicit:
 
 This command does not require external executables because both the truth
 surface and the governed recovery checks run entirely inside the owned runtime.
+
+`demo continuous-mode-recovery-panel` is the governed packaged continuous
+trait-model recovery surface. It materializes the shipped deterministic
+simulation panel into one output directory and reruns the owned Brownian,
+Ornstein-Uhlenbeck, and early-burst recovery workflow over one shared rooted
+tree and four packaged simulation cases. Its JSON metrics report:
+
+- `artifact_count`
+- `taxon_count`
+- `case_count`
+- `selection_match_count`
+- `parameter_pass_count`
+- `parameter_row_count`
+- `expected_warning_case_count`
+- `expected_warning_present_count`
+- `reference_output_count`
+
+The command writes:
+
+- `dataset/README.md`
+- `dataset/reference-tree.nwk`
+- `dataset/simulation-cases.tsv`
+- `dataset/expected/*`
+- `workflow/workflow-summary.tsv`
+- `workflow/recovery-summary.tsv`
+- `workflow/parameter-recovery.tsv`
+- `workflow/model-choice.tsv`
+- `workflow/warning-review.tsv`
+- `workflow/simulated-traits/*.tsv`
+- `overview.md`
+
+The packaged recovery contract is explicit:
+
+- Brownian cases are judged on sigma-squared recovery and Brownian model choice.
+- OU cases are judged on alpha, sigma-squared, optimum recovery, and OU model choice.
+- Early-burst cases are judged on rate-change recovery and early-burst model choice.
+- Weak OU cases are judged on warning transparency and Brownian-like model support rather than fake strong parameter certainty.
+
+`simulate traits-early-burst` is the owned continuous-trait simulator for one
+early-burst branch-rate case. It writes one tip-trait table and reports the
+declared `rate_change` in JSON output so reviewers can tie downstream recovery
+rows back to the generating parameter instead of inferring it indirectly.
+
+`simulate traits-brownian` is the owned one-trait Brownian simulator. It writes
+one tip-trait table, accepts one root state plus either `--sigma` or
+`--sigma-squared`, and reports the resolved Brownian rate in JSON output so the
+generated trait table keeps one explicit covariance-generating parameter
+contract.
+
+`simulate traits-brownian-correlated` is the owned multivariate Brownian
+simulator. It writes one long-form replicate tip-trait table, accepts one
+fixed-tree evolutionary covariance contract either directly through repeated
+`--covariance-row` values or indirectly through repeated `--correlation-row`
+values plus one `--trait-standard-deviation` per trait, and can also write one
+summary ledger over root states, evolutionary covariance, tip distributions,
+and tip covariances. Invalid covariance inputs fail explicitly instead of being
+coerced into one fallback matrix.
+
+`simulate tree-random` and `simulate tree-coalescent` are the owned governed
+tree-simulation review surfaces for random rooted trees and coalescent trees.
+They can each write one tree-set output plus one per-tree record ledger and one
+envelope ledger through `--record-table-out` and `--envelope-table-out`. The
+live `ape` parity lane now checks those envelope ledgers against governed
+`ape::rtree` and `ape::rcoal` cases from
+`shared_tree_simulation_fixture_catalog.json`, so simulation parity is tracked
+as a machine-readable distribution review surface rather than one unstable
+literal Newick target.
 
 `demo rabies-cross-host-panel` is the governed packaged pathogen
 host-switching surface. It materializes the shipped rabies nucleoprotein panel
@@ -566,6 +1227,100 @@ workflow trait:
 This command does not require external inference executables because the
 rooted rabies tree is packaged directly with the dataset.
 
+`demo rabies-method-sensitivity-panel` is the governed packaged method-sensitivity
+surface for the compact rabies nucleoprotein panel. It materializes the
+packaged FASTA, metadata, and declared workflow-config matrix into one output
+directory, reruns four alignment-and-trimming variants, compares IQ-TREE
+against FastTree on each trimmed alignment, roots both engine trees on the
+packaged outgroup, and writes one reviewer-facing bundle that separates rooted
+preprocessing stability from unrooted engine-sensitive clade differences. Its
+JSON metrics report:
+
+- `artifact_count`
+- `taxon_count`
+- `variant_count`
+- `parallel_workers`
+- `execution_mode`
+- `stable_clade_count`
+- `changed_clade_count`
+- `preprocessing_change_pair_count`
+- `rooted_engine_change_variant_count`
+- `serious_conflict_variant_count`
+- `report_linked_artifact_count`
+- `report_html_size_bytes`
+- `report_linked_artifact_bytes`
+- `report_total_output_bytes`
+- `reference_output_count`
+
+The command writes:
+
+- `dataset/README.md`
+- `dataset/workflow-config.json`
+- `dataset/sequences.fasta`
+- `dataset/metadata.csv`
+- `dataset/expected/**`
+- `workflow/workflow-summary.tsv`
+- `workflow/variant-summary.tsv`
+- `workflow/parallel-execution-summary.tsv`
+- `workflow/rabies-method-sensitivity-panel.run.json`
+- `workflow/preprocessing-rooted-comparisons.tsv`
+- `workflow/stable-clades.tsv`
+- `workflow/changed-clades.tsv`
+- `workflow/method-conclusion-summary.tsv`
+- `workflow/workflow-config.resolved.json`
+- `workflow/rabies-method-sensitivity.manifest.json`
+- `workflow/report-artifacts/rabies-method-sensitivity-report.manifest.json`
+- `workflow/rabies-method-sensitivity-report.html`
+- `workflow/parallel-logs/<variant-id>.log`
+- `workflow/variants/<variant-id>/*.aln`
+- `workflow/variants/<variant-id>/*.trimmed.aln`
+- `workflow/variants/<variant-id>/fasttree.nwk`
+- `workflow/variants/<variant-id>/iqtree-support.nwk`
+- `workflow/variants/<variant-id>/rooted-fasttree.nwk`
+- `workflow/variants/<variant-id>/rooted-iqtree-support.nwk`
+- `workflow/variants/<variant-id>/rooting-summary.tsv`
+- `workflow/variants/<variant-id>/rooted-engine-comparison.tsv`
+- `workflow/variants/<variant-id>/unrooted-comparison.tsv`
+- `workflow/variants/<variant-id>/unrooted-shared-clades.tsv`
+- `workflow/variants/<variant-id>/unrooted-conflicting-clades.tsv`
+- `workflow/variants/<variant-id>/unrooted-support-weighted-conflicts.tsv`
+- `workflow/variants/<variant-id>/unrooted-conclusions.tsv`
+- `workflow/variants/<variant-id>/unrooted-stability-summary.tsv`
+- `overview.md`
+
+The governed workflow now rejects concurrent reuse of the same `--out`
+directory while one run is still active. Parallel execution stays safe because
+each declared variant uses its own isolated output root inside that workflow
+directory, and the raw `workflow/rabies-method-sensitivity-panel.run.json`
+execution record keeps the worker count, execution mode, successful variants,
+failed variants, and per-variant task logs auditable even when one isolated
+variant task fails.
+
+The packaged workflow matrix currently declares four durable variants:
+
+- `auto-gap-threshold`
+- `ginsi-gap-threshold`
+- `auto-gappyout`
+- `ginsi-gappyout`
+
+The outgroup is fixed to `bat_chile_rv108`, and the workflow treats that
+rooting choice as explicit evidence rather than an implicit side effect of the
+engine comparison. This command depends on external `mafft`, `trimal`,
+`iqtree2`, and `FastTree` executables because it reruns the real
+sequence-to-alignment-to-tree path for each declared method combination.
+
+The HTML report is intentionally summary-first. Large ledgers remain in the
+linked TSV and JSON artifacts, while the report manifest records their
+relative paths, checksums, and byte counts.
+
+`tree-set report` now follows the same scaling contract. The HTML keeps
+top-level uncertainty summaries in-page, writes large tables to a sibling
+`<report>.artifacts/` directory, links those artifacts explicitly, and reports
+`linked_artifact_count`, `html_size_bytes`, `linked_artifact_bytes`, and
+`total_output_bytes` in JSON mode. Tree sets with `1,000+` trees switch to
+`scaled-summary` mode and replace the most expensive supplemental sensitivity
+passes with linked note artifacts instead of expanding them inline.
+
 `demo rabies-cross-host-geography-panel` is the governed packaged integrated
 pathogen workflow surface. It materializes the shipped rabies nucleoprotein
 panel into one output directory and reruns the full owned sequence-to-tree,
@@ -574,31 +1329,57 @@ metadata table. Its JSON metrics report:
 
 - `artifact_count`
 - `sequence_count`
+- `config_path`
+- `biological_question`
+- `short_answer`
 - `host_trait`
 - `geography_trait`
 - `selected_model`
+- `aligned_quality_score`
+- `trimmed_quality_score`
 - `minimum_support`
 - `maximum_support`
 - `root_host`
 - `root_region`
 - `host_switch_count`
 - `migration_event_count`
+- `clade_row_count`
+- `bootstrap_tree_count`
+- `timeout_seconds`
+- `max_bootstrap_tree_count`
+- `max_report_table_rows`
+- `budget_warning_count`
+- `comparative_formula`
+- `comparative_selected_model`
 - `reference_output_count`
 
 The command writes:
 
 - `dataset/README.md`
+- `dataset/workflow-config.json`
 - `dataset/sequences.fasta`
 - `dataset/metadata.csv`
 - `dataset/region-centroids.csv`
+- `dataset/source-accessions.tsv`
 - `dataset/expected/**`
 - `workflow/workflow-summary.tsv`
+- `workflow/input-validation.tsv`
+- `workflow/alignment-quality.tsv`
+- `workflow/alignment-sequence-ranking.tsv`
 - `workflow/rabies-cross-host-geography-panel.aln`
 - `workflow/rabies-cross-host-geography-panel.trimmed.aln`
 - `workflow/rabies-cross-host-geography-panel.rooted.tree`
 - `workflow/rabies-cross-host-geography-panel.rooting.tsv`
 - `workflow/rabies-cross-host-geography-panel.model.tsv`
 - `workflow/rabies-cross-host-geography-panel.support.tsv`
+- `workflow/clade-table.tsv`
+- `workflow/bootstrap-review/bootstrap-review.summary.tsv`
+- `workflow/bootstrap-review/bootstrap-review.consensus.nwk`
+- `workflow/bootstrap-review/bootstrap-review.clade-frequencies.tsv`
+- `workflow/bootstrap-review/bootstrap-review.unstable-branches.tsv`
+- `workflow/bootstrap-review/bootstrap-review.unstable-clades.tsv`
+- `workflow/bootstrap-review/bootstrap-review.distance-matrix.tsv`
+- `workflow/bootstrap-review/bootstrap-review.topology-clusters.tsv`
 - `workflow/host-switch-summary.tsv`
 - `workflow/host-state-nodes.tsv`
 - `workflow/host-switch-branches.tsv`
@@ -613,25 +1394,67 @@ The command writes:
 - `workflow/biogeography/region-counts.tsv`
 - `workflow/biogeography/ancestral-regions.tsv`
 - `workflow/biogeography/transition-matrix.tsv`
+
+The packaged `dataset/workflow-config.json` is also the governed resource
+budget surface for this workflow. In addition to the biological settings it
+accepts:
+
+- `iqtree_threads`
+- `timeout_seconds`
+- `max_bootstrap_tree_count`
+- `max_report_table_rows`
+- `memory_warning_threshold_bytes`
+
+When the bootstrap review or integrated HTML report exceeds one of those
+budgets, the runtime now either fails with a structured workflow-budget error
+or records one explicit warning in the workflow summary and JSON metrics.
 - `workflow/biogeography/event-table.tsv`
 - `workflow/biogeography/map-markers.tsv`
 - `workflow/biogeography/map-lines.tsv`
 - `workflow/biogeography/exclusions.tsv`
+- `workflow/comparative-traits.tsv`
+- `workflow/comparative-tree.nwk`
+- `workflow/comparative-tree-adjustments.tsv`
+- `workflow/comparative/comparative-report.html`
+- `workflow/comparative/comparative-summary.tsv`
+- `workflow/comparative/coefficient-table.tsv`
+- `workflow/comparative/residual-summary.tsv`
+- `workflow/comparative/signal-summary.tsv`
+- `workflow/comparative/model-comparison.tsv`
+- `workflow/comparative/interpretation-table.tsv`
+- `workflow/comparative/audit-table.tsv`
+- `workflow/comparative/contrast-table.tsv`
+- `workflow/comparative/model-matrix.tsv`
+- `workflow/comparative/categorical-contrasts.tsv`
+- `workflow/comparative/lambda-profile.tsv`
+- `workflow/comparative/comparative.manifest.json`
 - `workflow/rabies-cross-host-geography-report.html`
 - `workflow/rabies-cross-host-geography.manifest.json`
 - `overview.md`
+- `rabies-cross-host-geography-overview.html`
+- `rabies-cross-host-geography-package.manifest.json`
 
 The packaged dataset carries grouped workflow traits for both downstream
 biological surfaces:
 
 - host workflow trait `host_group`
 - geography workflow trait `region_group`
+- comparative formula `region_longitude ~ host_group`
 - discrete ancestral model `ard` for both state-evolution analyses
 - explicit outgroup rooting on `bat_chile_rv108`
 
+The package root is intentionally part of the public review contract.
+`dataset/source-accessions.tsv` keeps accession provenance machine-readable,
+the overview HTML states one biological question plus one short answer in
+plain language, and the package manifest records that same question and answer
+alongside config provenance, output checksums, and high-level workflow
+metrics.
+
 This command does require external `mafft`, `trimal`, and `iqtree2`
 executables because it reruns the full raw-sequence inference path instead of
-starting from a packaged rooted tree.
+starting from a packaged rooted tree. Use `--config dataset/workflow-config.json`
+against a packaged export when the exact shipped workflow settings should drive
+the rerun.
 
 `ancestral continuous` is the governed reconstruction surface for one numeric
 trait on one rooted dichotomous tree. It estimates internal-node values under
@@ -644,10 +1467,26 @@ metrics report:
 - `excluded_taxon_count`
 - `unstable_node_count`
 - `model`
+- `estimator`
+- `tree_is_ultrametric`
+- `covariance_near_singular`
+- `covariance_condition_number`
+- `log_likelihood`
+- `residual_sigma_squared`
+- `optimizer_name`
+- `optimizer_converged`
+- `optimizer_iteration_count`
+- `optimizer_function_evaluation_count`
 
 The command supports `brownian` and `ou` reconstruction modes. The Brownian
 path is aligned to the governed `ape::ace(method='pic')` reference surface with
-explicit bounded tolerance rather than an undocumented local convention.
+explicit bounded tolerance rather than an undocumented local convention. The
+optional `--estimator` flag makes the estimator surface explicit: `ace-pic`
+preserves the governed `ape::ace(type='continuous', method='pic')` lane,
+`anc-ml` switches to the governed live `phytools::anc.ML` lane with
+Brownian log-likelihood, fitted sigma-squared, and optimizer diagnostics,
+`fast-anc` switches to the governed live `phytools::fastAnc` lane, and
+`generalized-least-squares` is reserved for the `ou` model.
 
 When `--table-out` is supplied, `ancestral continuous` writes one flat node
 ledger as CSV or TSV with both tips and internal nodes. When `--summary-out` is
@@ -655,6 +1494,7 @@ supplied, it also writes one summary ledger. The summary row preserves:
 - `trait`
 - `taxon_column`
 - `model`
+- `estimator`
 - `alpha`
 - `analyzed_taxon_count`
 - `excluded_taxon_count`
@@ -662,6 +1502,17 @@ supplied, it also writes one summary ledger. The summary row preserves:
 - `non_numeric_tip_taxon_count`
 - `internal_node_count`
 - `unstable_node_count`
+- `tree_is_ultrametric`
+- `covariance_near_singular`
+- `covariance_condition_number`
+- `log_likelihood`
+- `residual_sigma_squared`
+- `optimizer_name`
+- `optimizer_converged`
+- `optimizer_iteration_count`
+- `optimizer_function_evaluation_count`
+- `log_likelihood`
+- `residual_sigma_squared`
 - `weak_support_node_count`
 - `root_node`
 - `root_estimate`
@@ -706,11 +1557,29 @@ probabilities. Its JSON metrics report:
 - `comparison_node_count`
 - `comparison_differing_node_count`
 - `model`
+- `root_prior_mode`
+- `fixed_root_state`
+- `log_likelihood`
+- `parameter_count`
+- `aic`
+- `transition_rate_count`
+- `phytools_rerooting_method_comparable`
 
-For the likelihood models, the owned runtime fits an explicit Mk rate matrix
-and reports node-level marginal probabilities. The governed parity surface is
-checked against `ape::ace` on ER, SYM, and ARD reference cases with explicit
-bounded tolerances instead of a vague compatibility claim.
+For the likelihood models, the owned runtime fits an explicit Mk rate matrix,
+reports node-level marginal probabilities, and can export one fitted directed
+transition-rate ledger. The governed parity surface is checked against
+`ape::ace` on ER, SYM, and ARD reference cases with explicit bounded
+tolerances instead of a vague compatibility claim. Within that lane, the live
+`ape::ace` discrete surface is governed explicitly for ER, SYM, and ARD,
+while root-prior controls remain an owned Bijux policy surface because
+`ape::ace` does not expose the same runtime root-prior interface. The owned
+fit surface also warns when multi-parameter likelihood fits hit optimizer
+bounds so weakly identified ARD and SYM reconstructions are reviewable instead
+of looking falsely settled. The same report now also states whether the
+requested run is comparable to live `phytools::rerootingMethod`: ER and SYM
+with `--root-prior-mode equal` are governed rerooting-parity surfaces, while
+Fitch, ordered-state, ARD, empirical-root-prior, and fixed-root-prior runs are
+flagged explicitly as non-comparable.
 
 For Fitch, the owned runtime now also reports the exact minimum parsimony
 change count for the analyzed tree and the number of parsimonious root states.
@@ -724,6 +1593,8 @@ supplied, it also writes one summary ledger. The summary row preserves:
 - `taxon_column`
 - `model`
 - `state_ordering`
+- `root_prior_mode`
+- `fixed_root_state`
 - `analyzed_taxon_count`
 - `excluded_taxon_count`
 - `internal_node_count`
@@ -737,6 +1608,10 @@ supplied, it also writes one summary ledger. The summary row preserves:
 - `root_node`
 - `root_most_likely_state`
 - `root_confidence`
+- `phytools_rerooting_method_comparable`
+- `log_likelihood`
+- `parameter_count`
+- `aic`
 - `warning_count`
 
 When `--probabilities-out` is supplied, the command writes one internal-node
@@ -751,6 +1626,14 @@ marginal-probability ledger. Each row preserves:
 - `ambiguous`
 - `unstable`
 - `interpretation`
+
+When `--transitions-out` is supplied, the command writes one directed fitted
+transition-rate ledger for likelihood models. Each row preserves:
+- `source_state`
+- `target_state`
+- `transition_allowed`
+- `step_distance`
+- `rate`
 
 When `--comparison-out` is supplied, the command writes one direct node-wise
 comparison ledger between the requested `--model` and `--compare-model`. Each
@@ -774,6 +1657,16 @@ When `--exclusions-out` is supplied, the command writes one explicit excluded
 tip ledger. Each row preserves:
 - `taxon`
 - `reason`
+
+`ancestral discrete-reference` reruns the governed discrete ancestral
+reference suite before any user dataset is interpreted. It validates
+equal-rates, symmetric, and all-rates-different likelihood reconstructions
+against checked-in `ape::ace` probability fixtures and then reruns the owned
+root-prior, ambiguity, ordered-state, and irreversible-transition policy
+surfaces on known examples. Its JSON metrics report:
+- `case_count`
+- `external_case_count`
+- `all_passed`
 
 `ancestral ordered-discrete` is the governed ordered-state comparison surface
 for one discrete likelihood ancestral reconstruction. It fits the requested
@@ -2514,15 +3407,118 @@ one explicitly named review artifact path.
 `comparative pgls` is the governed regression surface for continuous trait
 association under phylogenetic covariance. Its JSON metrics now report
 `coefficient_count`, `confidence_interval_count`,
-`residual_degrees_of_freedom`, and `coefficient_inference_distribution` so
-review tooling can distinguish a minimally identified model from one with
-meaningful residual support.
+`residual_degrees_of_freedom`, `coefficient_inference_distribution`, and `aic`
+so review tooling can distinguish a minimally identified model from one with
+meaningful residual support and can compare model fit without scraping the
+coefficient table.
+
+`comparative covariance-audit` is the governed pre-fit review surface for
+PGLS, Brownian trait evolution, and OU trait evolution. Its purpose is to
+show whether the tree-trait overlap and induced covariance matrix are safe to
+trust before coefficient or parameter interpretation starts.
+
+Its JSON metrics report:
+- `analysis`
+- `covariance_model`
+- `matrix_dimension`
+- `matrix_rank`
+- `condition_number`
+- `fit_strategy`
+- `singular`
+- `near_singular`
+- `matched_taxon_count`
+- `analysis_taxon_count`
+- `duplicate_tree_taxon_count`
+- `duplicate_trait_taxon_count`
+- `candidate_row_count`
+- `blocker_count`
+- `warning_count`
+
+The command requires `--analysis pgls`, `--analysis brownian-trait`, or
+`--analysis ou-trait`. PGLS accepts `--formula` or the
+`--response` plus `--predictors` surface. Brownian and OU trait audits accept
+`--trait`. `--lambda-value` accepts `estimate` or one numeric Pagel's lambda
+for PGLS. `--alpha` accepts `estimate` or one positive numeric OU alpha for OU
+trait audits.
+
+The command reports:
+- matched taxa
+- tree taxa missing from the trait table
+- extra trait-table taxa absent from the tree
+- duplicate tree or trait taxa
+- zero-length and negative branch counts
+- minimum and maximum branch length
+- whether the covariance is singular or near-singular
+- whether the fitting path would proceed by `exact`, `regularization`,
+  `pseudoinverse`, or `failure`
+
+The candidate-level audit is explicit rather than narrative. When the audit
+profiles estimated Pagel's lambda or OU alpha, each candidate row records its
+matrix rank, raw condition number, stabilized fit condition number,
+positive-definiteness before fitting, and the fit-strategy details used for
+that candidate.
+
+When `--summary-out` is supplied, `comparative covariance-audit` writes one
+flat summary row as CSV or TSV. The row preserves:
+- `analysis`
+- `covariance_model`
+- `analysis_label`
+- `matrix_dimension`
+- `matrix_rank`
+- `condition_number`
+- `fit_strategy`
+- `singular`
+- `near_singular`
+- `tree_taxon_count`
+- `trait_taxon_count`
+- `matched_taxon_count`
+- `analysis_taxon_count`
+- `missing_from_traits_count`
+- `extra_trait_taxon_count`
+- `duplicate_tree_taxon_count`
+- `duplicate_trait_taxon_count`
+- `empty_trait_taxon_row_count`
+- `zero_length_branch_count`
+- `negative_branch_length_count`
+- `minimum_branch_length`
+- `maximum_branch_length`
+- `blocker_count`
+- `warning_count`
+
+When `--candidates-out` is supplied, the command also writes one candidate
+ledger with:
+- `candidate_label`
+- `parameter_name`
+- `parameter_value`
+- `matrix_dimension`
+- `matrix_rank`
+- `condition_number`
+- `fit_condition_number`
+- `positive_definite_before_fit`
+- `singular`
+- `near_singular`
+- `fit_strategy`
+- `fit_strategy_details`
+
+When `--excluded-taxa-out` is supplied, the command writes one explicit
+excluded-taxa ledger with:
+- `taxon`
+- `reason`
+- `details`
+
+The fit-strategy field is intentionally honest about the current runtime. The
+governed Brownian, OU, and Pagel-lambda fitting paths currently stabilize
+covariance inversion with diagonal epsilon regularization where needed, and the
+audit reports that directly instead of implying an exact closed-form solve when
+stabilization was required.
 
 `comparative logistic` is the governed binary-response companion surface. It
 preserves the same formula and predictor-encoding contract as `comparative
 pgls`, but the fitted model is an explicit
 `phylogenetic-working-correlation-gee` approximation rather than continuous
-generalized least squares. Its JSON metrics report:
+generalized least squares. It does not currently claim `ape::compar.gee`
+parity and should not be treated as a drop-in `ape::compar.gee`
+implementation. Its JSON metrics report:
 - `taxon_count`
 - `success_count`
 - `failure_count`
@@ -2536,6 +3532,7 @@ generalized least squares. Its JSON metrics report:
 - `separation_detected`
 - `warning_count`
 - `coefficient_inference_distribution`
+- `method_excluded_reference_surfaces`
 
 The command requires the response to be encoded as `0` and `1`. One-class
 responses are rejected instead of silently producing degenerate output.
@@ -2765,11 +3762,20 @@ independent contrasts. Its JSON metrics report:
 Without `--predictor-trait`, the command returns one contrast report for the
 requested trait. When `--predictor-trait` is supplied, the command also fits a
 through-origin regression on the matched node-level contrasts and preserves
-that under `data.regression`.
+that under `data.regression`. The returned `data.contrast_report.input_audit`
+also preserves the owned input-policy surface for the run:
+- `tree_is_ultrametric`
+- `minimum_root_to_tip_depth`
+- `maximum_root_to_tip_depth`
+- `ultrametric_policy`
+- `missing_value_policy`
+- `pruned_missing_value_taxa`
+- `warnings`
 
 When `--contrasts-out` is supplied, `comparative contrasts` writes one flat
 contrast ledger as CSV or TSV. Each row preserves:
 - `trait`
+- `node_id`
 - `node`
 - `left_taxa`
 - `right_taxa`
@@ -2800,20 +3806,70 @@ or TSV. Each row preserves:
 
 The regression output is explicit rather than inferred. `--regression-out`
 without `--predictor-trait` is rejected instead of silently writing nothing.
+The owned Bijux surface now also has governed live `ape::pic` parity on
+balanced rooted ultrametric, pectinate rooted non-ultrametric, and six-taxon
+clean trait-table fixtures. Missing trait values remain an explicit owned
+pruning policy rather than a literal live-`ape` parity lane, and negative
+branch lengths are rejected as an invalid comparative-analysis boundary.
 
 `comparative signal` is the governed review surface for one-trait phylogenetic
 signal. Its JSON metrics report:
 - `taxon_count`
 - `blombergs_k`
 - `pagels_lambda`
+- `lambda_log_likelihood`
+- `lambda_likelihood_ratio_statistic`
 - `signal_p_value`
+- `tree_is_ultrametric`
+- `ultrametric_policy`
+- `missing_value_policy`
+- `pruned_missing_value_taxon_count`
+- `signal_seed`
+- `signal_null_k_minimum`
+- `signal_null_k_mean`
+- `signal_null_k_maximum`
 - `lambda_likelihood_ratio_p_value`
+- `lambda_optimizer_name`
+- `lambda_optimizer_function_evaluation_count`
+- `lambda_optimizer_hit_lower_boundary`
+- `lambda_optimizer_hit_upper_boundary`
 - `permutation_row_count`
 
-The command preserves three distinct surfaces under `data`:
+The command preserves four distinct surfaces under `data`:
+- `input_audit` for the rootedness, ultrametricity, pruning, and warning policy
 - `blombergs_k` for the fitted K summary
 - `pagels_lambda` for the fitted lambda summary
 - `signal_test` for the permutation-based K test
+
+The `signal_test` report now also preserves the seeded null-distribution
+summary that the live `phytools::phylosig(method='K')` lane compares:
+- `observed_k`
+- `p_value`
+- `permutations`
+- `seed`
+- `permuted_k_at_or_above_observed`
+- `null_distribution_minimum`
+- `null_distribution_mean`
+- `null_distribution_maximum`
+
+The `pagels_lambda` report now also preserves the fixed-lambda likelihood
+context that the live `phytools::phylosig(method='lambda')` lane compares:
+- `lambda_value`
+- `log_likelihood`
+- `null_log_likelihood`
+- `brownian_log_likelihood`
+- `likelihood_ratio_statistic`
+- `likelihood_ratio_p_value`
+- `p_value_method`
+- `optimizer_diagnostics`
+- `profile_rows`
+
+The governed signal policy is explicit rather than implicit:
+- rooted trees with branch lengths are accepted whether or not they are ultrametric
+- ultrametric status is reported, not silently assumed
+- overlapping missing trait values are pruned and reported under `input_audit`
+- permutation rows are reproducible from `--seed`
+- constant post-pruning trait vectors fail with `comparative_method_error`
 
 When `--summary-out` is supplied, `comparative signal` writes one flat summary
 ledger as CSV or TSV. The row preserves:
@@ -2849,7 +3905,77 @@ permutation ledger as CSV or TSV. Each row preserves:
 This surface exists so phylogenetic signal review does not collapse into one
 scalar. Reviewers can inspect the fitted K and lambda values, the permutation
 null distribution, and the explicit p-value contract without rerunning the
-analysis manually.
+analysis manually, while still seeing whether the fit depended on pruning or a
+non-ultrametric rooted tree.
+
+`comparative discrete-mk` is the governed standalone discrete Mk fit surface
+for one rooted tree and one categorical tip trait. Its JSON metrics report:
+- `taxon_count`
+- `model`
+- `observed_state_count`
+- `sparse_state_count`
+- `pruned_missing_value_taxon_count`
+- `log_likelihood`
+- `parameter_count`
+- `aic`
+- `aicc`
+- `optimizer_name`
+- `optimizer_converged`
+- `optimizer_iteration_count`
+- `optimizer_function_evaluation_count`
+- `optimizer_hit_lower_parameter_bound`
+- `optimizer_hit_upper_parameter_bound`
+- `overparameterized`
+- `transition_rate_count`
+- `baseline_model`
+- `baseline_aic`
+- `delta_aic`
+- `preferred_model_by_aic`
+
+The command preserves the full fit report under `data`, including:
+- `input_audit`
+- `transition_rate_rows`
+- `optimizer_diagnostics`
+- `baseline_comparison`
+
+The governed policy is explicit rather than implicit:
+- rooted trees with branch lengths are required
+- overlapping missing trait values are pruned and reported under `input_audit`
+- sparse states are surfaced explicitly instead of hidden
+- optimizer non-convergence or boundary hits remain warnings, not silent success
+- ER fits are the governed live `phytools::fitMk(model='ER')` parity surface
+- unordered multistate SYM fits are the governed live `phytools::fitMk(model='SYM')` parity surface
+
+When `--summary-out` is supplied, `comparative discrete-mk` writes one flat
+summary ledger as CSV or TSV. The row preserves:
+- `trait`
+- `taxon_column`
+- `model`
+- `state_ordering`
+- `analyzed_taxon_count`
+- `excluded_taxon_count`
+- `observed_state_count`
+- `sparse_state_count`
+- `log_likelihood`
+- `parameter_count`
+- `aic`
+- `aicc`
+- `optimizer_name`
+- `optimizer_converged`
+- `optimizer_iteration_count`
+- `optimizer_function_evaluation_count`
+- `optimizer_hit_lower_parameter_bound`
+- `optimizer_hit_upper_parameter_bound`
+- `overparameterized`
+- `warning_count`
+
+When `--rates-out` is supplied, the command also writes one directed
+rate-matrix ledger as CSV or TSV. Each row preserves:
+- `source_state`
+- `target_state`
+- `transition_allowed`
+- `step_distance`
+- `rate`
 
 `comparative brownian` is the governed standalone Brownian trait-evolution
 surface for one numeric trait on a rooted tree with branch lengths. Its JSON
@@ -3576,6 +4702,11 @@ complete-case taxon set. Its JSON metrics report:
 - `predictor_count`
 - `analysis_taxa`
 - `excluded_taxa`
+- `residual_covariance_response_count`
+- `residual_covariance_matrix_rank`
+- `residual_covariance_condition_number`
+- `residual_covariance_singular`
+- `residual_covariance_near_singular`
 - `response_model_count`
 - `coefficient_row_count`
 - `residual_covariance_row_count`
@@ -3590,6 +4721,7 @@ The command preserves:
 - `response_model_rows` with one explicit fit-summary row per response
 - `coefficient_rows` with one explicit coefficient row per response-term pair
 - `covariance_rows` with one residual covariance row per ordered response pair
+- `covariance_diagnostics` with residual covariance matrix rank, condition number, and singular-versus-near-singular state
 - `correlation_rows` with one residual correlation row per ordered response pair
 - `association_rows` with one residual association row per unique response pair
 - `excluded_taxa` with one explicit complete-case exclusion row per dropped taxon
@@ -4115,6 +5247,40 @@ silently become zero: the split is counted in `missing_length_split_count` and
 the final branch-score distance is reported as unavailable until the missing
 length is resolved.
 
+Use `topology distance-reference` when the question is whether the runtime
+still matches the governed tree-distance evidence surface instead of only one
+pair of user trees. That command reruns checked rooted RF, unrooted RF,
+normalized RF, and branch-score cases from the repository fixture set and
+reports:
+
+- `case_count`
+- `external_case_count`
+- `policy_case_count`
+- `all_passed`
+
+The governed cases cover binary trees, rooting-only disagreement, topology
+disagreement, polytomies, star-tree collapse, and shared-taxa pruning. The
+policy cases keep `--taxon-overlap-policy require-identical` explicit for both
+RF and branch-score comparisons, so a future regression cannot silently turn
+those mismatch rejections into pruning behavior.
+
+Use `topology support-reference` when the question is whether branch-support
+parsing still attaches IQ-TREE, FastTree, and posterior support values to the
+correct clades instead of only parsing one tree ad hoc. That command reruns the
+checked support fixture set and reports:
+
+- `case_count`
+- `reference_case_count`
+- `policy_case_count`
+- `all_passed`
+
+The governed cases cover plain IQ-TREE UFBoot labels, compound SH-aLRT/UFBoot
+labels, FastTree local support, and posterior clade frequencies from a checked
+tree set. The policy cases keep two review guarantees explicit: rotated trees
+with the same clades must still compare by clade rather than node order, and
+bootstrap-versus-posterior comparison must flag topology mismatch when support
+appears on clades that the other uncertainty surface does not contain.
+
 `compare support` is the governed support-aware tree-comparison surface for two
 trees over their shared taxon set. It keeps one shared-clade row for clades
 present in both trees, normalizes support values onto `0..1` fractions for
@@ -4175,12 +5341,21 @@ and writes a dedicated unstable-branch ledger for consensus branches that fall
 below the robust bootstrap threshold or conflict with alternative clades across
 the replicates.
 
+`tree-set diversity` is the compact topology-dispersion surface for one
+posterior or bootstrap tree set. It reads the tree set iteratively, buckets the
+pairwise rooted RF signal into one frequency ledger, and reports rooted
+topology count, pair count, runtime, peak memory, and skipped malformed-tree
+count without requiring the full pairwise matrix as the primary review surface.
+When `--out` is supplied, it writes one `.tsv` RF-distribution ledger with one
+row per distinct rooted RF bucket.
+
 The command writes a stable artifact bundle under `--out-dir`:
-- `.summary.tsv` with one row of tree-count, topology-diversity, threshold, and consensus summary fields
+- `.summary.tsv` with one row of tree-count, runtime, peak memory, skipped malformed-tree count, topology-diversity, threshold, and consensus summary fields
 - `.consensus.nwk` with the consensus topology labeled by bootstrap support percentages
 - `.clade-frequencies.tsv` with one row per informative clade frequency
 - `.unstable-branches.tsv` with one row per non-robust consensus branch
 - `.unstable-clades.tsv` with the broader conflicting-clade ledger across the full replicate set
+- `.rf-distribution.tsv` with one row per rooted RF bucket across distinct tree pairs
 - `.distance-matrix.tsv` and `.topology-clusters.tsv` for direct topology-variation review
 
 The unstable-branch contract is explicit. A consensus branch is omitted from the
@@ -4188,6 +5363,12 @@ unstable-branch ledger only when its replicate frequency reaches the robust
 threshold and no conflicting alternative clade is present. That keeps a
 bootstrap summary from overstating a majority-rule consensus as if every branch
 were equally stable.
+
+Both `tree-set diversity` and `tree-set bootstrap-summary` skip malformed
+line-oriented Newick tree records instead of aborting the full review surface.
+Their JSON payloads and summary ledgers record `runtime_seconds`,
+`peak_memory_bytes`, and `skipped_malformed_tree_count` so large-tree review is
+measurable instead of implicit.
 
 The topology family provides direct tree-transformation commands for already
 inferred trees. `topology root-outgroup` accepts one outgroup taxon or one
@@ -4289,10 +5470,22 @@ control contract. `adapter align`, `trim`, `model-select`, `infer-ml`,
 
 - `--timeout-seconds` for a wall-clock execution budget
 - `--resume` to reuse only one verified completed run
-- `--incomplete-run-policy reject|clean` to stop on or remove partial outputs from a failed or timed-out earlier run
+- `--incomplete-run-policy reject|clean` to stop on or remove partial outputs from a failed, timed-out, killed, or malformed-output earlier run
 
 The JSON payloads now expose the applied timeout budget and the resolved resume
 status, so automation can distinguish a fresh execution from a verified reuse.
+If the executable itself cannot be resolved, the command fails before any
+incomplete-run marker is written because no engine run started.
+
+Success on these governed adapter commands now means more than "the process
+exited and a file appeared." MAFFT and trimAl must emit non-empty valid
+alignments, IQ-TREE must emit the required `.iqtree`, `.log`, tree, model,
+and support artifacts for the selected workflow, FastTree must emit a valid
+tree with parseable local-support annotations, and BEAST or MrBayes must emit
+their full required posterior artifact sets. Missing required files, empty
+required files, missing IQ-TREE model results, and missing required support
+annotations surface stable structured error codes before manifests or
+review-facing reports are written.
 
 For coding nucleotide inputs, `adapter align --codon-aware` is the supported
 alignment entrypoint. It excludes frame-broken sequences and sequences with
@@ -4542,6 +5735,14 @@ outputs instead of re-parsing free text. The SH-aLRT command also exposes
 annotated-branch counts, SH-aLRT minima and maxima, and conflicting-signal
 counts for the combined SH-aLRT/UFBoot review surface.
 
+Those IQ-TREE commands are now also strict about bundle completeness. `adapter
+model-select` fails if the best-fit model or candidate table cannot be parsed;
+`adapter infer-ml` fails if the tree, report, log, or model result is missing
+or empty; `adapter bootstrap` fails if the bootstrap tree set is empty or the
+supported tree does not contain parseable support labels; `adapter sh-alrt`
+fails if joint SH-aLRT/UFBoot labels are missing; and `adapter consensus`
+fails if the consensus tree lacks parseable support values.
+
 `adapter fasta-to-tree` is the governed raw-FASTA workflow surface above those
 direct IQ-TREE adapters. It keeps `.aln`, `.trimmed.aln`, `.tree`, `.log`,
 `.model.tsv`, `.support.tsv`, `.manifest.json`, and `.run.json` sidecars in
@@ -4549,6 +5750,70 @@ one review bundle, while leaving the step-specific engine artifacts under
 `engine-artifacts/`. Its public validation corpus compares those reviewer-facing
 artifacts semantically rather than byte-for-byte so stable scientific results
 are not rejected because of harmless path or timestamp differences.
+
+Its JSON payload now reports the workflow as `supported`, with explicit
+real-engine validation basis, so downstream reviewers can distinguish this
+validated external-engine lane from advisory, experimental, or parser-only
+surfaces.
+
+Its composite manifest now also records `stage_fingerprints` for raw-input
+validation, alignment, trimming, model selection, inference, support, and the
+final reviewer-facing report. Those fingerprints explain the resolved resume
+state directly: a stage is reused only when the recorded inputs, config,
+command, and detected engine version still match the current run, and changed
+upstream fingerprints invalidate the downstream stages automatically.
+
+The same manifest is now the entrypoint for `phylo bundle`, which exports one
+portable workflow-result directory. That bundle keeps the copied workflow
+manifest, extracted config, bundle-local rerun ledger, reviewer-facing HTML
+report, copied inputs when still available, final workflow outputs, and
+declared step-level engine artifacts together. `phylo validate-bundle` then
+checks both checksum integrity and the required workflow entries before the
+bundle is treated as a valid handoff.
+
+`comparative logistic` intentionally reports a different trust state. It is
+`experimental`, emits a warning in JSON output, and repeats the
+`phylogenetic-working-correlation-gee` approximation method in both the direct
+metrics and the method-tier payload, together with an explicit
+`ape::compar.gee` non-claim. Bayesian report commands such as
+`adapter mrbayes-report` and `adapter beast-calibration-report` report
+`parser-only` because they summarize external posterior artifacts rather than
+claiming that Bijux executed the inference itself.
+
+`phylo run` is the governed one-command workflow-config surface above those
+manifest tools. It takes one YAML or JSON config file, validates it before
+engine preflight begins, executes the canonical `fasta-to-tree` workflow, and
+then exports one validated result bundle automatically. Its config contract
+currently supports:
+
+- one input FASTA
+- optional metadata and traits tables
+- external engine executable choices
+- alignment and trimming settings
+- inference seed, threads, and bootstrap replicates
+- output directory and optional bundle directory
+- timeout and incomplete-run policy controls
+
+Its JSON metrics report:
+
+- `workflow`
+- `selected_workflow_status`
+- `metadata_present`
+- `traits_present`
+- `alignment_mode`
+- `trimming_mode`
+- `bootstrap_replicates`
+- `iqtree_seed`
+- `iqtree_threads`
+- `timeout_seconds`
+- `bundle_file_count`
+- `bundle_validation_passed`
+
+The exported bundle now includes the resolved workflow config plus copied
+config-source, metadata, and traits files when they were supplied. Those
+auxiliary files are recorded honestly as reviewer context and downstream
+comparative inputs; the current `fasta-to-tree` execution path does not use
+metadata or traits during tree building itself.
 
 `adapter infer-fast` is the governed FastTree surface for aligned matrices when
 speed matters more than fully optimized ML search. It keeps the inferred tree
@@ -4571,6 +5836,60 @@ the recorded workflow stages. It also honors the same
 `--incomplete-run-policy reject|clean` control as the smaller external adapter
 surfaces, so stale partial FastTree outputs can be rejected or cleaned before a
 fresh rerun.
+
+Use `phylo preflight` before any external-engine workflow when you need a
+single governed compatibility scan instead of discovering missing tools halfway
+through a run. It inspects MAFFT, trimAl, IQ-TREE, FastTree, MrBayes, and
+BEAST, records the resolved executable path and native version text for each
+engine, and classifies each engine as `tested`, `untested`, `unsupported`, or
+`missing` against the package's current support policy.
+
+That same command also publishes workflow readiness for the governed
+engine-backed workflows. Each workflow row names its required engines and is
+classified as `ready`, `caution`, or `blocked`, with explicit notes when a
+missing or untested engine drives the result. When `--workflow` is supplied,
+the command fails early for blocked workflows instead of leaving the user to
+discover the missing tool inside a longer adapter run.
+
+Its JSON contract intentionally exposes both `selected_workflow_status` and
+`overall_status`. The first answers whether the chosen workflow is runnable in
+the current environment, while the second reflects the health of the broader
+external-engine inventory across all supported workflows.
+
+`phylo replay` is the governed rerun surface for any workflow manifest emitted
+by the external-engine adapters and composite workflows above. It reads the
+recorded workflow identifier, input checksums, structured config, resolved
+commands, engine versions, seeds, runtime metadata, and output checksums from
+the manifest, reruns the same workflow into a replay directory, and reports
+whether the new outputs are scientifically equivalent under workflow-specific
+comparison rules.
+
+The replay contract is intentionally strict about provenance drift. Changed
+inputs stop the replay before any engine rerun and surface the
+`manifest_replay_input_changed` error. Engine-version drift is reported in the
+structured output rather than treated as an automatic failure, because a newer
+or older executable can still reproduce the same scientific result. Replay
+equivalence is semantic rather than byte-for-byte: tree workflows compare
+topology and support, alignment workflows compare aligned records, model
+selection compares the chosen model, and reproducibility workflows compare the
+governed classification outcome.
+
+`phylo bundle` and `phylo validate-bundle` sit next to replay on that same
+manifest contract. `phylo bundle` writes one reviewer-facing result directory
+from a governed workflow manifest, while `phylo validate-bundle` fails if the
+bundle is missing its required report, workflow outputs, or declared step
+manifests even when the remaining copied files still hash correctly.
+
+Across those governed engine-backed commands, JSON error payloads now carry one
+scientific failure block instead of only a bare exception surface. The details
+include `failure_reason`, `scientific_explanation`, `likely_causes`,
+`actionable_fixes`, and `evidence`, so a blocked workflow can distinguish:
+
+- invalid FASTA record problems such as duplicate identifiers, illegal characters, empty records, or length outliers
+- trimming failures that removed every retained site versus workflows that never wrote the trimmed artifact
+- tree-inference failures that never wrote a tree versus tree-like outputs that are present but unparsable
+- comparative taxon-linkage mismatches listing tree taxa missing from the trait table and extra trait-table taxa
+- BEAST and MrBayes parser failures naming the missing file, header, sampled row, or posterior-tree block section
 
 `adapter compare-engines` is the governed side-by-side inference mode for one
 aligned matrix. It runs IQ-TREE model selection, IQ-TREE ultrafast bootstrap
@@ -4607,4 +5926,8 @@ For raw input hygiene before alignment, the alignment family now includes
 duplicate-ID, illegal-character, empty-record, length-outlier, and
 identifier-normalization contract that `adapter fasta-to-tree` uses internally,
 including the rule that mixed raw inputs must be forced with an explicit
-`--sequence-type` before the workflow can continue.
+`--sequence-type` before the workflow can continue. The raw validation path now
+scans FASTA inputs linearly instead of building one full record list just to
+answer preflight questions, and the higher-level alignment-quality surface
+reuses one loaded matrix with an explicit warning when near-duplicate pairwise
+review is skipped above the governed large-alignment threshold.

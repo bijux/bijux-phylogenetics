@@ -6,11 +6,11 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.comparative.pgls_brownian_covariance import (
+from bijux_phylogenetics.comparative.pgls.brownian_covariance import (
     summarize_brownian_covariance_pgls,
     write_brownian_covariance_table,
 )
-from bijux_phylogenetics.errors import ComparativeMethodError
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -98,6 +98,26 @@ def test_summarize_brownian_covariance_pgls_detects_invalid_covariance() -> None
         )
     assert "Brownian covariance is invalid" in str(error.value)
     assert "non-positive root-to-tip path length" in str(error.value)
+
+
+def test_summarize_brownian_covariance_pgls_reports_negative_branch_length_details() -> (
+    None
+):
+    with pytest.raises(ComparativeMethodError) as error:
+        summarize_brownian_covariance_pgls(
+            fixture("example_tree_negative_length.nwk"),
+            fixture("example_traits_comparative.tsv"),
+            response="response",
+            predictors=["predictor_one"],
+        )
+
+    assert (
+        error.value.details["failure_reason"]
+        == "brownian_covariance_negative_branch_lengths"
+    )
+    assert error.value.details["evidence"]["tree_path"].endswith(
+        "example_tree_negative_length.nwk"
+    )
 
 
 def test_write_brownian_covariance_table_writes_pairwise_rows(tmp_path: Path) -> None:

@@ -1,0 +1,7 @@
+node	descendant_taxa	support	support_fraction	is_backbone	support_bucket	low_support
+Dre37936|Hsa167996|LcaH|LcaM|Mmu024661|Ola20972|Tru14292	Dre37936,Hsa167996,LcaH,LcaM,Mmu024661,Ola20972,Tru14292	45	0.45	true	lt50	true
+Hsa167996|LcaH|Mmu024661	Hsa167996,LcaH,Mmu024661	91	0.91	false	ge90	false
+Hsa167996|Mmu024661	Hsa167996,Mmu024661	93	0.93	false	ge90	false
+Dre37936|LcaM|Ola20972|Tru14292	Dre37936,LcaM,Ola20972,Tru14292	86	0.86	true	70to89	false
+LcaM|Ola20972|Tru14292	LcaM,Ola20972,Tru14292	73	0.73	false	70to89	false
+LcaM|Tru14292	LcaM,Tru14292	47	0.47	false	lt50	true

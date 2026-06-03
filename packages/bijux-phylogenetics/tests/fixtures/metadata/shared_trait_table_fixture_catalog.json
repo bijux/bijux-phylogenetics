@@ -1,0 +1,891 @@
+{
+  "catalog_name": "shared_trait_table_fixtures",
+  "fixtures": [
+    {
+      "fixture_id": "continuous_tree_mismatch",
+      "relative_path": "metadata/example_traits.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "value"
+      ],
+      "validation_expectation": "tip-intersection-required",
+      "ape_reference_expectation": "continuous-ace-ready-after-tip-intersection",
+      "row_count": 4,
+      "feature_tags": [
+        "continuous-trait",
+        "extra-taxa-not-in-tree",
+        "tree-taxa-missing-from-trait-table"
+      ],
+      "notes": "Canonical continuous ancestral fixture with one extra taxon and one tree tip absent from the table."
+    },
+    {
+      "fixture_id": "binary_discrete_match",
+      "relative_path": "metadata/example_traits_binary.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "presence"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "discrete-ace-ready",
+      "row_count": 4,
+      "feature_tags": [
+        "binary-discrete-trait"
+      ],
+      "notes": "Minimal four-taxon binary discrete trait table used for direct Bijux-versus-ape marginal-state parity."
+    },
+    {
+      "fixture_id": "multistate_discrete_match",
+      "relative_path": "metadata/example_traits_geography.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "region"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "discrete-ace-ready",
+      "row_count": 4,
+      "feature_tags": [
+        "multistate-discrete-trait"
+      ],
+      "notes": "Canonical multistate discrete trait table used across ancestral geography and ordered-state checks."
+    },
+    {
+      "fixture_id": "ace_discrete_sym_balanced",
+      "relative_path": "metadata/example_traits_geography.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "region"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "discrete-ace-sym-ready",
+      "row_count": 4,
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "discrete-ancestral-states",
+        "symmetric-discrete-model",
+        "balanced-tree"
+      ],
+      "notes": "Canonical four-taxon multistate geography table used for governed `ape::ace(..., model='SYM')` marginal-state and symmetric-rate parity."
+    },
+    {
+      "fixture_id": "ace_discrete_sym_pectinate",
+      "relative_path": "metadata/example_traits_geography.tsv",
+      "tree_fixture_id": "pectinate_rooted_non_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "region"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "discrete-ace-sym-ready",
+      "row_count": 4,
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "discrete-ancestral-states",
+        "symmetric-discrete-model",
+        "pectinate-tree",
+        "non-ultrametric-tree"
+      ],
+      "notes": "Shared four-taxon geography table paired with the ladderized rooted tree to prove non-ultrametric SYM discrete ancestral parity."
+    },
+    {
+      "fixture_id": "ace_discrete_sym_six_taxon",
+      "relative_path": "metadata/example_traits_geography_biased.tsv",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "region"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "discrete-ace-sym-ready",
+      "row_count": 6,
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "discrete-ancestral-states",
+        "symmetric-discrete-model",
+        "six-taxon-tree"
+      ],
+      "notes": "Six-taxon multistate geography table used to prove that the governed SYM discrete ancestral lane scales beyond the smallest four-tip examples."
+    },
+    {
+      "fixture_id": "ace_discrete_sym_missing_values",
+      "relative_path": "metadata/example_traits_geography_biased_missing.tsv",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "region"
+      ],
+      "validation_expectation": "missing-values-present",
+      "ape_reference_expectation": "discrete-ace-sym-ready-after-pruning",
+      "row_count": 6,
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "discrete-ancestral-states",
+        "symmetric-discrete-model",
+        "missing-trait-values",
+        "six-taxon-tree"
+      ],
+      "notes": "Six-taxon multistate geography table with one missing tip value used to prove explicit pruning before governed live `ape::ace(..., model='SYM')` comparison."
+    },
+    {
+      "fixture_id": "ace_discrete_ard_binary_balanced",
+      "relative_path": "metadata/example_traits_comparative.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "habitat"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "discrete-ace-ard-ready",
+      "row_count": 4,
+      "feature_tags": [
+        "binary-discrete-trait",
+        "discrete-ancestral-states",
+        "all-rates-different-model",
+        "balanced-tree"
+      ],
+      "notes": "Balanced four-taxon binary habitat table used for governed `ape::ace(..., model='ARD')` parity on the smallest identified directional-rate surface."
+    },
+    {
+      "fixture_id": "ace_discrete_ard_pectinate",
+      "relative_path": "metadata/example_traits_geography.tsv",
+      "tree_fixture_id": "pectinate_rooted_non_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "region"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "discrete-ace-ard-ready",
+      "row_count": 4,
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "discrete-ancestral-states",
+        "all-rates-different-model",
+        "pectinate-tree",
+        "non-ultrametric-tree",
+        "overparameterized-fit"
+      ],
+      "notes": "Shared four-taxon geography table paired with the ladderized rooted tree to prove governed ARD parity and explicit overparameterization reporting on a weak-fit multistate surface."
+    },
+    {
+      "fixture_id": "ace_discrete_ard_six_taxon",
+      "relative_path": "metadata/example_traits_geography_biased.tsv",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "region"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "discrete-ace-ard-ready",
+      "row_count": 6,
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "discrete-ancestral-states",
+        "all-rates-different-model",
+        "six-taxon-tree"
+      ],
+      "notes": "Six-taxon multistate geography table used to prove governed directional-rate parity on a more stable ARD surface than the smallest four-tip examples."
+    },
+    {
+      "fixture_id": "ace_discrete_ard_missing_values",
+      "relative_path": "metadata/example_traits_geography_biased_missing.tsv",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "region"
+      ],
+      "validation_expectation": "missing-values-present",
+      "ape_reference_expectation": "discrete-ace-ard-ready-after-pruning",
+      "row_count": 6,
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "discrete-ancestral-states",
+        "all-rates-different-model",
+        "missing-trait-values",
+        "six-taxon-tree"
+      ],
+      "notes": "Six-taxon multistate geography table with one missing tip value used to prove explicit pruning before governed live `ape::ace(..., model='ARD')` comparison."
+    },
+    {
+      "fixture_id": "missing_trait_values",
+      "relative_path": "metadata/example_traits_comparative_missing_habitat.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response",
+        "predictor_one",
+        "predictor_two",
+        "habitat"
+      ],
+      "validation_expectation": "missing-values-present",
+      "ape_reference_expectation": "not-applicable",
+      "row_count": 4,
+      "feature_tags": [
+        "missing-trait-values",
+        "categorical-predictor-case"
+      ],
+      "notes": "Comparative table with one missing categorical predictor cell that must be pruned or blocked honestly."
+    },
+    {
+      "fixture_id": "duplicate_taxon_negative",
+      "relative_path": "metadata/example_traits_comparative_duplicate.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response",
+        "predictor_one",
+        "predictor_two",
+        "habitat"
+      ],
+      "validation_expectation": "duplicate-taxon-error",
+      "ape_reference_expectation": "not-applicable",
+      "row_count": 5,
+      "feature_tags": [
+        "duplicated-taxon-row-negative-case",
+        "categorical-predictor-case"
+      ],
+      "notes": "Comparative table with a duplicated taxon row that must fail before model fitting."
+    },
+    {
+      "fixture_id": "constant_trait_negative",
+      "relative_path": "metadata/example_traits_ancestral_single_state.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "habitat"
+      ],
+      "validation_expectation": "constant-trait-surface",
+      "ape_reference_expectation": "not-applicable",
+      "row_count": 4,
+      "feature_tags": [
+        "constant-trait-negative-case"
+      ],
+      "notes": "Single-state discrete trait table used to verify constant-trait blockers and degenerate ancestral behavior."
+    },
+    {
+      "fixture_id": "categorical_predictor_match",
+      "relative_path": "metadata/example_traits_comparative.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response",
+        "predictor_one",
+        "predictor_two",
+        "habitat"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "continuous-ace-ready",
+      "row_count": 4,
+      "feature_tags": [
+        "categorical-predictor-case"
+      ],
+      "notes": "Canonical comparative fixture with one categorical predictor and one numeric response that also serves as a clean continuous ace baseline."
+    },
+    {
+      "fixture_id": "categorical_interaction_match",
+      "relative_path": "metadata/example_traits_comparative_categorical_interaction.tsv",
+      "tree_fixture_id": "larger_binary_tree",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response",
+        "habitat",
+        "diet"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "pgls-brownian-ready",
+      "row_count": 8,
+      "feature_tags": [
+        "categorical-predictor-case",
+        "interaction-term-case",
+        "eight-taxon-tree"
+      ],
+      "notes": "Eight-taxon categorical comparative table used for governed Brownian PGLS parity over treatment-coded main effects and interaction terms."
+    },
+    {
+      "fixture_id": "categorical_predictor_misordered",
+      "relative_path": "metadata/example_traits_comparative_reordered.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response",
+        "predictor_one",
+        "predictor_two",
+        "habitat"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "not-applicable",
+      "row_count": 4,
+      "feature_tags": [
+        "categorical-predictor-case",
+        "misordered-taxon-rows"
+      ],
+      "notes": "Comparative categorical table with deliberately permuted taxon rows to prove order independence."
+    },
+    {
+      "fixture_id": "phylogenetic_residual_allometry_match",
+      "relative_path": "metadata/example_traits_phylogenetic_residuals.tsv",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "body_mass",
+        "brain_mass"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "not-applicable",
+      "row_count": 6,
+      "feature_tags": [
+        "continuous-trait",
+        "continuous-predictor-case",
+        "allometry-case",
+        "residual-diagnostics",
+        "six-taxon-tree"
+      ],
+      "notes": "Six-taxon allometry-style comparative table used for governed phylogenetic residual review with one strong body-size outlier."
+    },
+    {
+      "fixture_id": "phylogenetic_residual_allometry_missing",
+      "relative_path": "metadata/example_traits_phylogenetic_residuals_missing.tsv",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "body_mass",
+        "brain_mass"
+      ],
+      "validation_expectation": "missing-value-pruning",
+      "ape_reference_expectation": "not-applicable",
+      "row_count": 7,
+      "feature_tags": [
+        "continuous-trait",
+        "continuous-predictor-case",
+        "allometry-case",
+        "missing-trait-values",
+        "extra-taxa-not-in-tree",
+        "residual-diagnostics",
+        "six-taxon-tree"
+      ],
+      "notes": "Six-taxon allometry-style comparative table with one missing response and one extra trait-only taxon so residual pruning policy stays governed."
+    },
+    {
+      "fixture_id": "phylogenetic_anova_group_effect",
+      "relative_path": "metadata/example_traits_phylogenetic_anova.tsv",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "trait_value",
+        "habitat"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "not-applicable",
+      "row_count": 6,
+      "feature_tags": [
+        "continuous-trait",
+        "categorical-predictor-case",
+        "phylogenetic-anova",
+        "unequal-group-sizes",
+        "six-taxon-tree"
+      ],
+      "notes": "Six-taxon comparative table with one strong habitat group effect used for governed phylogenetic ANOVA review with unequal group sizes."
+    },
+    {
+      "fixture_id": "phylogenetic_anova_group_effect_missing",
+      "relative_path": "metadata/example_traits_phylogenetic_anova_missing.tsv",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "trait_value",
+        "habitat"
+      ],
+      "validation_expectation": "missing-value-pruning",
+      "ape_reference_expectation": "not-applicable",
+      "row_count": 7,
+      "feature_tags": [
+        "continuous-trait",
+        "categorical-predictor-case",
+        "phylogenetic-anova",
+        "missing-trait-values",
+        "extra-taxa-not-in-tree",
+        "unequal-group-sizes",
+        "six-taxon-tree"
+      ],
+      "notes": "Six-taxon phylogenetic ANOVA table with one missing group label and one extra trait-only taxon so pruning policy remains governed."
+    },
+    {
+      "fixture_id": "ace_continuous_balanced",
+      "relative_path": "metadata/example_traits_comparative.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "continuous-ace-pic-ready",
+      "row_count": 4,
+      "feature_tags": [
+        "continuous-trait",
+        "continuous-ancestral-states",
+        "balanced-tree"
+      ],
+      "notes": "Canonical balanced four-taxon continuous trait table used for direct Brownian `ape::ace(..., method='pic')` ancestral estimate and interval parity."
+    },
+    {
+      "fixture_id": "ace_continuous_pectinate",
+      "relative_path": "metadata/example_traits_comparative.tsv",
+      "tree_fixture_id": "pectinate_rooted_non_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "continuous-ace-pic-ready",
+      "row_count": 4,
+      "feature_tags": [
+        "continuous-trait",
+        "continuous-ancestral-states",
+        "pectinate-tree",
+        "non-ultrametric-tree"
+      ],
+      "notes": "Shared four-taxon continuous ancestral table paired with the ladderized rooted tree to prove non-ultrametric `ape::ace(..., method='pic')` parity."
+    },
+    {
+      "fixture_id": "ace_continuous_six_taxon",
+      "relative_path": "metadata/example_traits_comparative_multiple.tsv",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response_growth"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "continuous-ace-pic-ready",
+      "row_count": 6,
+      "feature_tags": [
+        "continuous-trait",
+        "continuous-ancestral-states",
+        "six-taxon-tree"
+      ],
+      "notes": "Six-taxon continuous response table used to prove that the governed Brownian ancestral lane scales beyond the smallest four-tip examples."
+    },
+    {
+      "fixture_id": "ace_continuous_missing_values",
+      "relative_path": "metadata/example_traits_brownian_missing.tsv",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response_growth"
+      ],
+      "validation_expectation": "missing-and-nonnumeric-values-present",
+      "ape_reference_expectation": "continuous-ace-ready-after-pruning",
+      "row_count": 7,
+      "feature_tags": [
+        "continuous-trait",
+        "continuous-ancestral-states",
+        "missing-trait-values",
+        "nonnumeric-trait-values",
+        "extra-taxa-not-in-tree",
+        "six-taxon-tree"
+      ],
+      "notes": "Six-taxon continuous ancestral table with one missing trait value, one nonnumeric value, and one extra taxon used to prove explicit Brownian pruning policy before live `ape::ace` comparison."
+    },
+    {
+      "fixture_id": "pic_continuous_balanced",
+      "relative_path": "metadata/example_traits_comparative.tsv",
+      "tree_fixture_id": "balanced_rooted_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "pic-ready",
+      "row_count": 4,
+      "feature_tags": [
+        "continuous-trait",
+        "phylogenetic-independent-contrasts",
+        "balanced-tree"
+      ],
+      "notes": "Canonical balanced four-taxon continuous trait table used for direct `ape::pic` contrast and variance parity."
+    },
+    {
+      "fixture_id": "pic_continuous_pectinate",
+      "relative_path": "metadata/example_traits_comparative.tsv",
+      "tree_fixture_id": "pectinate_rooted_non_ultrametric",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "pic-ready",
+      "row_count": 4,
+      "feature_tags": [
+        "continuous-trait",
+        "phylogenetic-independent-contrasts",
+        "pectinate-tree",
+        "non-ultrametric-tree"
+      ],
+      "notes": "Shared four-taxon PIC table paired with the ladderized rooted tree to prove pectinate and non-ultrametric contrast parity."
+    },
+    {
+      "fixture_id": "pic_continuous_six_taxon",
+      "relative_path": "metadata/example_traits_comparative_multiple.tsv",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response_growth"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "pic-ready",
+      "row_count": 6,
+      "feature_tags": [
+        "continuous-trait",
+        "phylogenetic-independent-contrasts",
+        "six-taxon-tree"
+      ],
+      "notes": "Six-taxon continuous response table used for broader governed PIC parity beyond the smallest four-tip examples."
+    },
+    {
+      "fixture_id": "pic_continuous_missing_values",
+      "relative_path": "metadata/example_traits_brownian_missing.tsv",
+      "tree_fixture_id": "balanced_rooted_six_taxon",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "response_growth"
+      ],
+      "validation_expectation": "missing-and-nonnumeric-values-present",
+      "ape_reference_expectation": "not-applicable",
+      "row_count": 7,
+      "feature_tags": [
+        "continuous-trait",
+        "phylogenetic-independent-contrasts",
+        "missing-trait-values",
+        "nonnumeric-trait-values",
+        "extra-taxa-not-in-tree"
+      ],
+      "notes": "Six-taxon PIC table with missing, non-numeric, and extra-taxon rows used to prove Bijux prunes overlapping invalid values explicitly before contrast calculation."
+    },
+    {
+      "fixture_id": "phytools_signal_panel_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_phytools_signal_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "signal_strong",
+        "signal_weak",
+        "binary_state",
+        "region_state"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "phytools-comparative-ready",
+      "row_count": 24,
+      "feature_tags": [
+        "continuous-trait",
+        "binary-discrete-trait",
+        "multistate-discrete-trait",
+        "strong-phylogenetic-signal",
+        "weak-phylogenetic-signal",
+        "known-truth-simulation",
+        "twenty-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-taxon governed comparative panel with BM-simulated strong signal, iid weak signal, and simulated binary and multistate discrete traits for live `phytools` method coverage."
+    },
+    {
+      "fixture_id": "geiger_continuous_model_panel_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_geiger_continuous_model_panel_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "ou_truth",
+        "early_burst_truth",
+        "trend_proxy",
+        "outlier_signal"
+      ],
+      "standard_error_columns": [
+        "ou_truth_standard_error"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "geiger-fitcontinuous-ready",
+      "row_count": 24,
+      "feature_tags": [
+        "continuous-trait",
+        "ou-known-truth",
+        "early-burst-known-truth",
+        "trend-proxy",
+        "extreme-outlier",
+        "known-truth-simulation",
+        "twenty-plus-taxa",
+        "geiger-fitcontinuous"
+      ],
+      "notes": "Twenty-four-taxon geiger continuous panel with OU and early-burst known-truth simulations plus a directional trend proxy, one explicit outlier surface, and one governed per-taxon standard-error column for future `fitContinuous(SE=...)` review."
+    },
+    {
+      "fixture_id": "phytools_signal_panel_one_hundred_twenty_eight_taxa",
+      "relative_path": "metadata/example_traits_phytools_signal_one_hundred_twenty_eight_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_one_hundred_twenty_eight_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "signal_strong",
+        "signal_weak"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "phytools-comparative-ready",
+      "row_count": 128,
+      "feature_tags": [
+        "continuous-trait",
+        "strong-phylogenetic-signal",
+        "weak-phylogenetic-signal",
+        "known-truth-simulation",
+        "one-hundred-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "One-hundred-twenty-eight-taxon governed comparative panel with BM-simulated strong signal and iid weak signal so the shared `phytools` corpus includes a genuinely large ultrametric case."
+    },
+    {
+      "fixture_id": "phytools_signal_non_ultrametric_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_phytools_signal_non_ultrametric_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_non_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "signal_strong"
+      ],
+      "validation_expectation": "clean-match",
+      "ape_reference_expectation": "phytools-comparative-ready-where-supported",
+      "row_count": 24,
+      "feature_tags": [
+        "continuous-trait",
+        "strong-phylogenetic-signal",
+        "known-truth-simulation",
+        "non-ultrametric-tree",
+        "twenty-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-taxon non-ultrametric continuous comparative panel used where the governed `phytools` method surface accepts rooted non-ultrametric trees."
+    },
+    {
+      "fixture_id": "phytools_signal_missing_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_phytools_signal_missing_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "signal_strong"
+      ],
+      "validation_expectation": "missing-and-nonnumeric-values-present",
+      "ape_reference_expectation": "phytools-ready-after-pruning",
+      "row_count": 24,
+      "feature_tags": [
+        "continuous-trait",
+        "missing-trait-values",
+        "nonnumeric-trait-values",
+        "twenty-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-taxon comparative signal table with one missing and one nonnumeric overlapping trait value for explicit pruning before live `phytools` review."
+    },
+    {
+      "fixture_id": "phytools_discrete_missing_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_phytools_discrete_missing_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "binary_state",
+        "region_state"
+      ],
+      "validation_expectation": "missing-trait-values-present",
+      "ape_reference_expectation": "phytools-ready-after-pruning",
+      "row_count": 24,
+      "feature_tags": [
+        "binary-discrete-trait",
+        "multistate-discrete-trait",
+        "missing-trait-values",
+        "twenty-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-taxon discrete comparative table with one missing binary state and one missing multistate observation so governed `phytools` Mk fits prove explicit pruning before likelihood evaluation."
+    },
+    {
+      "fixture_id": "phytools_discrete_ard_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_phytools_discrete_ard_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "binary_state",
+        "region_state"
+      ],
+      "validation_expectation": "discrete-ready",
+      "ape_reference_expectation": "phytools-ready",
+      "row_count": 24,
+      "feature_tags": [
+        "binary-discrete-trait",
+        "multistate-discrete-trait",
+        "all-rates-different-model",
+        "known-truth-simulation",
+        "twenty-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-taxon discrete comparative table simulated under directional binary and multistate ARD processes so governed `phytools::fitMk(model='ARD')` review has one non-symmetric known-truth surface."
+    },
+    {
+      "fixture_id": "phytools_discrete_ard_missing_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_phytools_discrete_ard_missing_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "binary_state",
+        "region_state"
+      ],
+      "validation_expectation": "missing-trait-values-present",
+      "ape_reference_expectation": "phytools-ready-after-pruning",
+      "row_count": 24,
+      "feature_tags": [
+        "binary-discrete-trait",
+        "multistate-discrete-trait",
+        "all-rates-different-model",
+        "missing-trait-values",
+        "twenty-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-taxon directional discrete comparative table with one missing binary state and one missing multistate observation so governed `phytools::fitMk(model='ARD')` parity proves explicit pruning before likelihood evaluation."
+    },
+    {
+      "fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_geiger_discrete_model_panel_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "er_binary_truth",
+        "er_binary_delta_time_sensitive",
+        "sym_three_state_truth",
+        "sym_four_state_truth",
+        "sym_six_state_truth",
+        "ard_binary_truth",
+        "ard_four_state_truth",
+        "constant_state"
+      ],
+      "validation_expectation": "discrete-ready",
+      "ape_reference_expectation": "geiger-fitdiscrete-ready",
+      "row_count": 24,
+      "feature_tags": [
+        "binary-discrete-trait",
+        "multistate-discrete-trait",
+        "three-state-discrete-trait",
+        "four-plus-state-discrete-trait",
+        "equal-rates-model",
+        "symmetric-discrete-model",
+        "all-rates-different-model",
+        "rare-state-case",
+        "constant-trait-negative-case",
+        "overparameterized-fit",
+        "known-truth-simulation",
+        "known-transition-matrix-metadata",
+        "weak-phylogenetic-signal-review",
+        "twenty-plus-taxa",
+        "geiger-fitdiscrete"
+      ],
+      "notes": "Twenty-four-taxon geiger discrete panel with ER, SYM, and ARD review surfaces plus one weak shared-transform review, one interior time-sensitive delta review, one constant-state blocker, and one six-state sparse overparameterization stress case for governed `fitDiscrete` parity."
+    },
+    {
+      "fixture_id": "geiger_discrete_model_panel_missing_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_geiger_discrete_model_panel_missing_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "er_binary_truth",
+        "er_binary_delta_time_sensitive",
+        "sym_three_state_truth",
+        "sym_four_state_truth",
+        "sym_six_state_truth",
+        "ard_binary_truth",
+        "ard_four_state_truth",
+        "constant_state"
+      ],
+      "validation_expectation": "missing-trait-values-present",
+      "ape_reference_expectation": "geiger-fitdiscrete-ready-after-pruning",
+      "row_count": 24,
+      "feature_tags": [
+        "binary-discrete-trait",
+        "multistate-discrete-trait",
+        "missing-trait-values",
+        "three-state-discrete-trait",
+        "four-plus-state-discrete-trait",
+        "twenty-plus-taxa",
+        "geiger-fitdiscrete"
+      ],
+      "notes": "Twenty-four-taxon geiger discrete panel with explicit missing ER, time-sensitive delta, SYM, and ARD observations so `fitDiscrete` parity must prove pruning before any likelihood comparison."
+    },
+    {
+      "fixture_id": "geiger_discrete_model_panel_mismatch_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_geiger_discrete_model_panel_mismatch_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "er_binary_truth",
+        "er_binary_transform_weak_signal",
+        "sym_three_state_truth",
+        "sym_four_state_truth",
+        "sym_six_state_truth",
+        "ard_binary_truth",
+        "ard_four_state_truth",
+        "constant_state"
+      ],
+      "validation_expectation": "tip-intersection-required",
+      "ape_reference_expectation": "geiger-fitdiscrete-ready-after-tip-intersection",
+      "row_count": 24,
+      "feature_tags": [
+        "binary-discrete-trait",
+        "multistate-discrete-trait",
+        "three-state-discrete-trait",
+        "four-plus-state-discrete-trait",
+        "extra-taxa-not-in-tree",
+        "tree-taxa-missing-from-trait-table",
+        "tree-trait-taxon-mismatch",
+        "twenty-plus-taxa",
+        "geiger-fitdiscrete"
+      ],
+      "notes": "Twenty-four-taxon geiger discrete panel with one missing tree tip and one extra trait-only row so tree-versus-table mismatch stays governed before later `fitDiscrete` parity lanes consume it."
+    },
+    {
+      "fixture_id": "phytools_signal_constant_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_phytools_signal_constant_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "signal_constant"
+      ],
+      "validation_expectation": "constant-trait-surface",
+      "ape_reference_expectation": "constant-trait-negative-case",
+      "row_count": 24,
+      "feature_tags": [
+        "continuous-trait",
+        "constant-trait-negative-case",
+        "twenty-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-taxon constant continuous trait table used to prove that governed phylogenetic-signal methods fail honestly instead of manufacturing variance."
+    },
+    {
+      "fixture_id": "phytools_signal_mismatch_twenty_four_taxa",
+      "relative_path": "metadata/example_traits_phytools_signal_mismatch_twenty_four_taxa.tsv",
+      "tree_fixture_id": "phytools_ultrametric_twenty_four_taxa",
+      "taxon_column": "taxon",
+      "primary_trait_columns": [
+        "signal_strong",
+        "signal_weak",
+        "binary_state",
+        "region_state"
+      ],
+      "validation_expectation": "tip-intersection-required",
+      "ape_reference_expectation": "phytools-ready-after-tip-intersection",
+      "row_count": 24,
+      "feature_tags": [
+        "continuous-trait",
+        "binary-discrete-trait",
+        "multistate-discrete-trait",
+        "extra-taxa-not-in-tree",
+        "tree-taxa-missing-from-trait-table",
+        "tree-trait-taxon-mismatch",
+        "twenty-plus-taxa",
+        "phytools-comparative"
+      ],
+      "notes": "Twenty-four-taxon comparative panel with one missing tree tip and one extra trait taxon so tree-versus-table mismatch stays governed instead of ad hoc."
+    }
+  ]
+}

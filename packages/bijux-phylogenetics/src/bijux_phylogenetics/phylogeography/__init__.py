@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from bijux_phylogenetics.phylogeography.continuous_coordinates import (
+from bijux_phylogenetics.phylogeography.continuous_coordinate_review import (
     CoordinateEstimateRow,
     CoordinateMovementBranchRow,
     CoordinateMovementExclusionRow,

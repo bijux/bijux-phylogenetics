@@ -1,0 +1,272 @@
+{
+  "fixtures": [
+    {
+      "fixture_id": "clean_aligned_dna",
+      "relative_path": "alignments/example_alignment_distance.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "not-coding",
+      "sequence_count": 4,
+      "alignment_length": 8,
+      "feature_tags": [
+        "clean-aligned-dna",
+        "distance-ready",
+        "composition-ready"
+      ],
+      "notes": "Canonical clean aligned DNA surface used for raw-distance parity."
+    },
+    {
+      "fixture_id": "dna_with_gaps",
+      "relative_path": "alignments/example_alignment_distance_gaps.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "not-coding",
+      "sequence_count": 4,
+      "alignment_length": 6,
+      "feature_tags": [
+        "gaps",
+        "distance-ready",
+        "composition-ready"
+      ],
+      "notes": "Aligned DNA fixture with explicit gaps and one ambiguous nucleotide."
+    },
+    {
+      "fixture_id": "dna_with_ambiguity",
+      "relative_path": "alignments/example_alignment_ambiguity.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "not-coding",
+      "sequence_count": 3,
+      "alignment_length": 6,
+      "feature_tags": [
+        "ambiguous-iupac",
+        "gaps",
+        "missing-data",
+        "distance-ready",
+        "composition-ready"
+      ],
+      "notes": "Aligned DNA fixture with IUPAC ambiguity, gaps, and explicit missing markers."
+    },
+    {
+      "fixture_id": "lowercase_aligned_dna",
+      "relative_path": "alignments/example_alignment_lowercase.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "not-coding",
+      "sequence_count": 3,
+      "alignment_length": 6,
+      "feature_tags": [
+        "lowercase-input",
+        "ambiguous-iupac",
+        "distance-ready",
+        "composition-ready"
+      ],
+      "notes": "Lowercase DNA alignment used to prove case normalization across Bijux and ape."
+    },
+    {
+      "fixture_id": "invariant_aligned_dna",
+      "relative_path": "alignments/example_alignment_invariant.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "not-coding",
+      "sequence_count": 3,
+      "alignment_length": 6,
+      "feature_tags": [
+        "invariant-alignment",
+        "composition-ready"
+      ],
+      "notes": "Aligned DNA fixture with no segregating sites for invariant ape-style site detection."
+    },
+    {
+      "fixture_id": "one_variable_site_alignment",
+      "relative_path": "alignments/example_alignment_one_variable_site.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "not-coding",
+      "sequence_count": 3,
+      "alignment_length": 6,
+      "feature_tags": [
+        "one-variable-site",
+        "composition-ready"
+      ],
+      "notes": "Aligned DNA fixture with exactly one segregating site for ape-style site-index parity."
+    },
+    {
+      "fixture_id": "identical_sequences",
+      "relative_path": "alignments/example_alignment_duplicates.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "not-coding",
+      "sequence_count": 4,
+      "alignment_length": 8,
+      "feature_tags": [
+        "identical-sequences",
+        "distance-ready",
+        "composition-ready"
+      ],
+      "notes": "Aligned DNA fixture with one identical sequence pair for zero-distance parity."
+    },
+    {
+      "fixture_id": "high_divergence_sequences",
+      "relative_path": "alignments/example_alignment_distance_saturated.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "not-coding",
+      "sequence_count": 3,
+      "alignment_length": 4,
+      "feature_tags": [
+        "high-divergence-sequences",
+        "distance-ready",
+        "composition-ready"
+      ],
+      "notes": "Short DNA fixture with raw-distance saturation at one full mismatch pair."
+    },
+    {
+      "fixture_id": "dna_with_missing_data",
+      "relative_path": "alignments/example_alignment_missingness.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "not-coding",
+      "sequence_count": 3,
+      "alignment_length": 6,
+      "feature_tags": [
+        "missing-data",
+        "ambiguous-iupac",
+        "distance-ready",
+        "composition-ready"
+      ],
+      "notes": "Aligned DNA fixture with explicit missing residues and ambiguous nucleotide content."
+    },
+    {
+      "fixture_id": "all_gap_missing_alignment",
+      "relative_path": "alignments/example_alignment_all_gap_missing.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "not-coding",
+      "sequence_count": 3,
+      "alignment_length": 6,
+      "feature_tags": [
+        "all-gap-missing",
+        "missing-data",
+        "composition-ready"
+      ],
+      "notes": "Aligned DNA fixture with only gap and explicit missing states for ape-style base-frequency edge-case parity."
+    },
+    {
+      "fixture_id": "invalid_symbol_alignment",
+      "relative_path": "alignments/example_alignment_invalid_dna.fasta",
+      "load_expectation": "invalid-symbol",
+      "ape_read_dna_expectation": "matrix-with-missing",
+      "translation_expectation": "not-coding",
+      "sequence_count": 2,
+      "alignment_length": 8,
+      "feature_tags": [
+        "invalid-symbol",
+        "dnabin-rejection"
+      ],
+      "notes": "Aligned DNA fixture with one unsupported symbol that Bijux rejects instead of silently degrading to missing data."
+    },
+    {
+      "fixture_id": "unequal_length_invalid_input",
+      "relative_path": "alignments/example_alignment_invalid_lengths.fasta",
+      "load_expectation": "unequal-length-invalid",
+      "ape_read_dna_expectation": "ragged-list",
+      "translation_expectation": "not-coding",
+      "sequence_count": 2,
+      "alignment_length": null,
+      "feature_tags": [
+        "unequal-length-invalid-input"
+      ],
+      "notes": "Ragged FASTA that Bijux rejects as an alignment and ape reads as unequal-length DNAbin data."
+    },
+    {
+      "fixture_id": "coding_valid_reading_frame",
+      "relative_path": "alignments/example_alignment_coding_valid_frame.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "valid-reading-frame",
+      "sequence_count": 3,
+      "alignment_length": 9,
+      "feature_tags": [
+        "coding-dna",
+        "valid-reading-frame",
+        "translation-ready"
+      ],
+      "notes": "Minimal coding DNA alignment with one valid open reading frame per sequence."
+    },
+    {
+      "fixture_id": "coding_frame_error",
+      "relative_path": "alignments/example_alignment_coding_frame_error.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "frame-error",
+      "sequence_count": 1,
+      "alignment_length": 8,
+      "feature_tags": [
+        "coding-dna",
+        "frame-error"
+      ],
+      "notes": "Coding DNA with a trailing partial codon that Bijux rejects and ape truncates with a warning."
+    },
+    {
+      "fixture_id": "coding_internal_stop",
+      "relative_path": "alignments/example_alignment_coding_internal_stop.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "internal-stop-codon",
+      "sequence_count": 1,
+      "alignment_length": 9,
+      "feature_tags": [
+        "coding-dna",
+        "internal-stop-codon",
+        "translation-ready"
+      ],
+      "notes": "Coding DNA with a premature stop codon in the interior of the reading frame."
+    },
+    {
+      "fixture_id": "coding_ambiguous_codon",
+      "relative_path": "alignments/example_alignment_coding_ambiguous_codon.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "ambiguous-codon",
+      "sequence_count": 1,
+      "alignment_length": 9,
+      "feature_tags": [
+        "coding-dna",
+        "ambiguous-codon",
+        "translation-ready"
+      ],
+      "notes": "Coding DNA with one ambiguous codon that translates to X under ape::trans parity."
+    },
+    {
+      "fixture_id": "coding_terminal_stop",
+      "relative_path": "alignments/example_alignment_coding_terminal_stop.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "terminal-stop-codon",
+      "sequence_count": 1,
+      "alignment_length": 9,
+      "feature_tags": [
+        "coding-dna",
+        "terminal-stop-codon",
+        "translation-ready"
+      ],
+      "notes": "Coding DNA with one terminal stop codon retained as part of the translated sequence."
+    },
+    {
+      "fixture_id": "coding_mitochondrial_triplet",
+      "relative_path": "alignments/example_alignment_coding_mitochondrial.fasta",
+      "load_expectation": "aligned",
+      "ape_read_dna_expectation": "matrix",
+      "translation_expectation": "alternate-genetic-code",
+      "sequence_count": 1,
+      "alignment_length": 9,
+      "feature_tags": [
+        "coding-dna",
+        "alternate-genetic-code",
+        "translation-ready"
+      ],
+      "notes": "Coding DNA whose second codon differs between the standard and vertebrate mitochondrial genetic codes."
+    }
+  ]
+}

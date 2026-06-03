@@ -4,14 +4,17 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics
 from bijux_phylogenetics.benchmark import (
     benchmark_alignment_site_scaling,
     benchmark_tree_set_consensus,
 )
-from bijux_phylogenetics.validation_corpus import (
+import bijux_phylogenetics.validation as validation_api
+from bijux_phylogenetics.validation import (
     build_broken_benchmark_corpus,
     build_clean_benchmark_corpus,
+    build_large_alignment_scaling_benchmark_dashboard,
+    build_large_tree_scaling_benchmark_dashboard,
+    build_large_tree_set_scaling_benchmark_dashboard,
     build_memory_benchmark_dashboard,
     build_messy_benchmark_corpus,
     build_method_accuracy_dashboard,
@@ -19,6 +22,7 @@ from bijux_phylogenetics.validation_corpus import (
     build_regression_dataset_corpus,
     build_runtime_benchmark_dashboard,
     build_scientific_validation_report,
+    build_workflow_practical_limit_dashboard,
     validate_simulation_reproducibility,
     write_validation_corpus_json,
 )
@@ -106,6 +110,101 @@ def test_benchmark_tree_set_consensus_reports_tree_count_scaling() -> None:
     assert [row.item_count for row in report.observations] == [4, 8]
 
 
+def test_build_large_tree_scaling_benchmark_dashboard_tracks_goal_221() -> None:
+    report = build_large_tree_scaling_benchmark_dashboard(
+        replicates=1,
+        tip_counts=[8, 16],
+    )
+
+    assert report.goal_id == 221
+    assert {workflow.workflow for workflow in report.workflows} == {
+        "tree-validation",
+        "tree-comparison",
+        "tree-rendering",
+        "tree-reporting",
+    }
+    assert all(
+        [row.item_count for row in workflow.observations] == [8, 16]
+        for workflow in report.workflows
+    )
+
+
+@pytest.mark.slow
+def test_build_large_alignment_scaling_benchmark_dashboard_tracks_goal_222() -> None:
+    report = build_large_alignment_scaling_benchmark_dashboard(
+        replicates=1,
+        size_classes=[
+            ("sequences-4-sites-16", 4, 16),
+            ("sequences-6-sites-24", 6, 24),
+        ],
+    )
+
+    assert report.goal_id == 222
+    assert {workflow.workflow for workflow in report.workflows} == {
+        "alignment-diagnostics",
+        "alignment-trimming",
+        "distance-analysis",
+        "alignment-readiness",
+    }
+    assert all(
+        [row.sequence_count for row in workflow.observations] == [4, 6]
+        for workflow in report.workflows
+    )
+
+
+def test_build_large_tree_set_scaling_benchmark_dashboard_tracks_goal_223() -> None:
+    report = build_large_tree_set_scaling_benchmark_dashboard(
+        replicates=1,
+        size_classes=[
+            ("trees-8-taxa-6", 8, 6),
+            ("trees-12-taxa-8", 12, 8),
+        ],
+    )
+
+    assert report.goal_id == 223
+    assert {workflow.workflow for workflow in report.workflows} == {
+        "tree-set-consensus",
+        "pairwise-rf-diversity",
+        "topology-clustering",
+        "uncertainty-summaries",
+    }
+    assert all(
+        [row.tree_count for row in workflow.observations] == [8, 12]
+        for workflow in report.workflows
+    )
+
+
+@pytest.mark.slow
+def test_build_workflow_practical_limit_dashboard_tracks_goal_224() -> None:
+    report = build_workflow_practical_limit_dashboard(
+        replicates=1,
+        tree_tip_counts=[8, 16],
+        alignment_size_classes=[
+            ("sequences-4-sites-16", 4, 16),
+            ("sequences-6-sites-24", 6, 24),
+        ],
+        tree_set_size_classes=[
+            ("trees-8-taxa-6", 8, 6),
+            ("trees-12-taxa-8", 12, 8),
+        ],
+        stress_tiers=["small"],
+    )
+
+    assert report.goal_id == 224
+    assert any(entry.workflow == "tree-validation" for entry in report.entries)
+    assert any(
+        entry.workflow == "posterior-tree-set-consensus" for entry in report.entries
+    )
+    assert (
+        max(
+            entry.tested_taxon_limit
+            for entry in report.entries
+            if entry.tested_taxon_limit is not None
+        )
+        == 256
+    )
+
+
 @pytest.mark.slow
 def test_build_method_accuracy_dashboard_summarizes_fixture_and_corpus_pass_rates() -> (
     None
@@ -170,15 +269,29 @@ def test_validate_simulation_reproducibility_confirms_same_seed_repeatability() 
 
 
 def test_package_root_exports_validation_corpus_surfaces() -> None:
+    assert validation_api.build_clean_benchmark_corpus is build_clean_benchmark_corpus
     assert (
-        bijux_phylogenetics.build_clean_benchmark_corpus is build_clean_benchmark_corpus
+        validation_api.build_large_alignment_scaling_benchmark_dashboard
+        is build_large_alignment_scaling_benchmark_dashboard
     )
     assert (
-        bijux_phylogenetics.build_method_limitation_registry
+        validation_api.build_large_tree_set_scaling_benchmark_dashboard
+        is build_large_tree_set_scaling_benchmark_dashboard
+    )
+    assert (
+        validation_api.build_workflow_practical_limit_dashboard
+        is build_workflow_practical_limit_dashboard
+    )
+    assert (
+        validation_api.build_large_tree_scaling_benchmark_dashboard
+        is build_large_tree_scaling_benchmark_dashboard
+    )
+    assert (
+        validation_api.build_method_limitation_registry
         is build_method_limitation_registry
     )
     assert (
-        bijux_phylogenetics.validate_simulation_reproducibility
+        validation_api.validate_simulation_reproducibility
         is validate_simulation_reproducibility
     )
 
@@ -194,3 +307,71 @@ def test_write_validation_corpus_json_serializes_report_payloads(
     text = path.read_text(encoding="utf-8")
     assert '"goal_id": 242' in text
     assert '"corpus": "clean-benchmark-corpus"' in text
+
+
+def test_write_validation_corpus_json_serializes_large_tree_scaling_dashboard(
+    tmp_path: Path,
+) -> None:
+    path = write_validation_corpus_json(
+        tmp_path / "large-tree-scaling.json",
+        build_large_tree_scaling_benchmark_dashboard(
+            replicates=1,
+            tip_counts=[8],
+        ),
+    )
+
+    text = path.read_text(encoding="utf-8")
+    assert '"goal_id": 221' in text
+    assert '"tree-rendering"' in text
+
+
+def test_write_validation_corpus_json_serializes_large_alignment_scaling_dashboard(
+    tmp_path: Path,
+) -> None:
+    path = write_validation_corpus_json(
+        tmp_path / "large-alignment-scaling.json",
+        build_large_alignment_scaling_benchmark_dashboard(
+            replicates=1,
+            size_classes=[("sequences-4-sites-16", 4, 16)],
+        ),
+    )
+
+    text = path.read_text(encoding="utf-8")
+    assert '"goal_id": 222' in text
+    assert '"alignment-trimming"' in text
+
+
+def test_write_validation_corpus_json_serializes_large_tree_set_scaling_dashboard(
+    tmp_path: Path,
+) -> None:
+    path = write_validation_corpus_json(
+        tmp_path / "large-tree-set-scaling.json",
+        build_large_tree_set_scaling_benchmark_dashboard(
+            replicates=1,
+            size_classes=[("trees-8-taxa-6", 8, 6)],
+        ),
+    )
+
+    text = path.read_text(encoding="utf-8")
+    assert '"goal_id": 223' in text
+    assert '"pairwise-rf-diversity"' in text
+
+
+@pytest.mark.slow
+def test_write_validation_corpus_json_serializes_workflow_practical_limit_dashboard(
+    tmp_path: Path,
+) -> None:
+    path = write_validation_corpus_json(
+        tmp_path / "workflow-practical-limits.json",
+        build_workflow_practical_limit_dashboard(
+            replicates=1,
+            tree_tip_counts=[8],
+            alignment_size_classes=[("sequences-4-sites-16", 4, 16)],
+            tree_set_size_classes=[("trees-8-taxa-6", 8, 6)],
+            stress_tiers=["small"],
+        ),
+    )
+
+    text = path.read_text(encoding="utf-8")
+    assert '"goal_id": 224' in text
+    assert '"posterior-tree-set-consensus"' in text

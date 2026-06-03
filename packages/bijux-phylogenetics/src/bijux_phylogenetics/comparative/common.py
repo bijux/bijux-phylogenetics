@@ -5,11 +5,15 @@ import math
 from pathlib import Path
 
 from bijux_phylogenetics.comparative._math import stable_covariance
-from bijux_phylogenetics.core.metadata import load_taxon_table
-from bijux_phylogenetics.core.traits import validate_traits_table
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.errors import ComparativeMethodError
+from bijux_phylogenetics.datasets.study_inputs import (
+    align_tree_and_trait_table,
+    load_taxon_table,
+    validate_traits_table,
+)
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 
 @dataclass(slots=True)
@@ -36,6 +40,8 @@ class ComparativeReadinessReport:
     rooted: bool
     binary: bool
     complete_branch_lengths: bool
+    negative_branch_lengths: bool
+    minimum_branch_length: float | None
     tree_taxa: int
     analysis_taxa: list[str]
     missing_from_traits: list[str]
@@ -74,6 +80,12 @@ def summarize_numeric_trait_readiness(
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
     if trait not in table.columns:
         raise ComparativeMethodError(f"trait table does not contain column '{trait}'")
+    alignment = align_tree_and_trait_table(
+        tree_path,
+        traits_path,
+        taxon_column=taxon_column,
+        required_trait_columns=(trait,),
+    )
     trait_report = validate_traits_table(traits_path, taxon_column=taxon_column)
     trait_column = next(
         (column for column in trait_report.trait_columns if column.name == trait), None
@@ -83,19 +95,11 @@ def summarize_numeric_trait_readiness(
             f"trait column '{trait}' is not available for validation"
         )
 
-    tree_taxa = set(tree.tip_names)
-    table_taxa = set(table.taxa)
-    missing_from_traits = sorted(tree_taxa - table_taxa)
-    extra_trait_taxa = sorted(table_taxa - tree_taxa)
-    overlapping_rows = {
-        row[table.taxon_column]: row
-        for row in table.rows
-        if row[table.taxon_column] in tree_taxa
-    }
+    overlapping_rows = {row[table.taxon_column]: row for row in alignment.rows}
     analysis_taxa: list[str] = []
     pruned_missing_value_taxa: list[str] = []
     pruned_non_numeric_taxa: list[str] = []
-    for taxon in tree.tip_names:
+    for taxon in alignment.report.aligned_taxa:
         row = overlapping_rows.get(taxon)
         if row is None:
             continue
@@ -109,6 +113,8 @@ def summarize_numeric_trait_readiness(
             pruned_non_numeric_taxa.append(taxon)
             continue
         analysis_taxa.append(taxon)
+    missing_from_traits = list(alignment.report.dropped_tree_taxa)
+    extra_trait_taxa = list(alignment.report.dropped_trait_taxa)
 
     blockers: list[str] = []
     warnings: list[str] = []
@@ -117,6 +123,10 @@ def summarize_numeric_trait_readiness(
         node.is_leaf() or len(node.children) == 2 for node in tree.iter_nodes()
     )
     complete_branch_lengths = _has_complete_branch_lengths(tree)
+    minimum_branch_length = _minimum_branch_length(tree)
+    negative_branch_lengths = (
+        minimum_branch_length is not None and minimum_branch_length < 0.0
+    )
     if trait_column.kind != "numeric":
         blockers.append(
             f"trait column '{trait}' must be numeric for comparative analysis"
@@ -126,6 +136,10 @@ def summarize_numeric_trait_readiness(
     if not complete_branch_lengths:
         blockers.append(
             "tree requires complete branch lengths for comparative analysis"
+        )
+    if negative_branch_lengths:
+        blockers.append(
+            "tree contains negative branch lengths that invalidate comparative analysis"
         )
     if len(analysis_taxa) < 3:
         blockers.append(
@@ -154,7 +168,9 @@ def summarize_numeric_trait_readiness(
         rooted=rooted,
         binary=binary,
         complete_branch_lengths=complete_branch_lengths,
-        tree_taxa=len(tree_taxa),
+        negative_branch_lengths=negative_branch_lengths,
+        minimum_branch_length=minimum_branch_length,
+        tree_taxa=alignment.report.original_tree_taxa,
         analysis_taxa=analysis_taxa,
         missing_from_traits=missing_from_traits,
         extra_trait_taxa=extra_trait_taxa,
@@ -222,10 +238,79 @@ def load_comparative_dataset(
         taxon_column=taxon_column,
     )
     if require_rooted and not readiness.rooted:
-        raise ComparativeMethodError("tree must be rooted for this comparative method")
+        raise ComparativeMethodError(
+            "tree must be rooted for this comparative method",
+            details={
+                "tree_path": str(tree_path),
+                "traits_path": str(traits_path),
+                "trait": trait,
+                "failure_reason": "comparative_tree_rooting_invalid",
+                "scientific_explanation": (
+                    "This comparative method needs a rooted phylogeny so ancestor-descendant covariance is defined."
+                ),
+                "likely_causes": [
+                    "the supplied tree is unrooted or does not expose one biological root",
+                ],
+                "actionable_fixes": [
+                    "root the tree on an explicit outgroup or midpoint policy before rerunning the comparative method",
+                ],
+                "evidence": {
+                    "analysis_taxa": readiness.analysis_taxa,
+                    "missing_from_traits": readiness.missing_from_traits,
+                    "extra_trait_taxa": readiness.extra_trait_taxa,
+                },
+            },
+        )
     if not readiness.complete_branch_lengths:
         raise ComparativeMethodError(
-            "tree must contain complete branch lengths for this comparative method"
+            "tree must contain complete branch lengths for this comparative method",
+            details={
+                "tree_path": str(tree_path),
+                "traits_path": str(traits_path),
+                "trait": trait,
+                "failure_reason": "comparative_branch_lengths_incomplete",
+                "scientific_explanation": (
+                    "Comparative covariance cannot be computed because one or more branches are missing lengths."
+                ),
+                "likely_causes": [
+                    "the tree was exported without branch lengths",
+                    "one or more internal or terminal branches have blank lengths",
+                ],
+                "actionable_fixes": [
+                    "rerun the upstream inference or tree preparation step with branch lengths preserved",
+                    "inspect the tree file for branches that lack numeric lengths",
+                ],
+                "evidence": {
+                    "analysis_taxa": readiness.analysis_taxa,
+                    "missing_from_traits": readiness.missing_from_traits,
+                    "extra_trait_taxa": readiness.extra_trait_taxa,
+                },
+            },
+        )
+    if readiness.negative_branch_lengths:
+        raise ComparativeMethodError(
+            "tree contains negative branch lengths that invalidate this comparative method",
+            details={
+                "tree_path": str(tree_path),
+                "traits_path": str(traits_path),
+                "trait": trait,
+                "failure_reason": "comparative_negative_branch_lengths",
+                "scientific_explanation": (
+                    "This comparative method treats branch length as evolutionary variance or shared path length, so negative values make the analysis scientifically invalid."
+                ),
+                "likely_causes": [
+                    "the tree file contains one or more negative branch lengths",
+                    "branch scaling or export introduced a negative value on a non-root edge",
+                ],
+                "actionable_fixes": [
+                    "repair or re-estimate the tree so every non-root branch length is non-negative",
+                    "inspect the tree for scaling or export errors before rerunning the comparative method",
+                ],
+                "evidence": {
+                    "analysis_taxa": readiness.analysis_taxa,
+                    "minimum_branch_length": readiness.minimum_branch_length,
+                },
+            },
         )
     if require_binary and not readiness.binary:
         raise ComparativeMethodError(
@@ -233,10 +318,38 @@ def load_comparative_dataset(
         )
     if len(readiness.analysis_taxa) < minimum_taxa:
         raise ComparativeMethodError(
-            f"this comparative method requires at least {minimum_taxa} taxa"
+            f"this comparative method requires at least {minimum_taxa} taxa",
+            details={
+                "tree_path": str(tree_path),
+                "traits_path": str(traits_path),
+                "trait": trait,
+                "failure_reason": "comparative_taxon_overlap_insufficient",
+                "scientific_explanation": (
+                    "Too few taxa remain after matching the tree and trait table, so the comparative fit would not be scientifically identifiable."
+                ),
+                "likely_causes": [
+                    "too many tree taxa are missing from the trait table",
+                    "too many overlapping taxa have missing or non-numeric trait values",
+                ],
+                "actionable_fixes": [
+                    "add trait values for the missing tree taxa or intentionally prune the tree",
+                    "repair missing or non-numeric trait values before rerunning the comparative method",
+                ],
+                "evidence": {
+                    "minimum_taxa": minimum_taxa,
+                    "analysis_taxa": readiness.analysis_taxa,
+                    "missing_from_traits": readiness.missing_from_traits,
+                    "extra_trait_taxa": readiness.extra_trait_taxa,
+                    "pruned_missing_value_taxa": readiness.pruned_missing_value_taxa,
+                    "pruned_non_numeric_taxa": readiness.pruned_non_numeric_taxa,
+                },
+            },
         )
 
-    tree = load_tree(tree_path)
+    tree, _pruning_report = prune_tree_to_requested_taxa(
+        tree_path,
+        readiness.analysis_taxa,
+    )
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
     values_by_taxon = {
         row[table.taxon_column]: float(row[trait])
@@ -366,10 +479,21 @@ def _has_complete_branch_lengths(tree: PhyloTree) -> bool:
     )
 
 
-def _leaf_ancestor_depths(tree: PhyloTree) -> dict[str, dict[int, float]]:
-    depths_by_leaf: dict[str, dict[int, float]] = {}
+def _minimum_branch_length(tree: PhyloTree) -> float | None:
+    branch_lengths = [
+        node.branch_length
+        for node in tree.iter_nodes()
+        if node is not tree.root and node.branch_length is not None
+    ]
+    if not branch_lengths:
+        return None
+    return min(branch_lengths)
 
-    def visit(node: TreeNode, ancestors: dict[int, float], depth: float) -> None:
+
+def _leaf_ancestor_depths(tree: PhyloTree) -> dict[str, dict[str, float]]:
+    depths_by_leaf: dict[str, dict[str, float]] = {}
+
+    def visit(node: TreeNode, ancestors: dict[str, float], depth: float) -> None:
         if node is not tree.root:
             if node.branch_length is None:
                 raise ComparativeMethodError(
@@ -377,7 +501,7 @@ def _leaf_ancestor_depths(tree: PhyloTree) -> dict[str, dict[int, float]]:
                 )
             depth += node.branch_length
         current_ancestors = dict(ancestors)
-        current_ancestors[id(node)] = depth
+        current_ancestors[node.node_id or node_signature(node)] = depth
         if node.is_leaf():
             if node.name is None:
                 raise ComparativeMethodError("tree contains an unnamed terminal taxon")

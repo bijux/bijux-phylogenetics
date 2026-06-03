@@ -1,11 +1,17 @@
-reference_tool	left_tree	right_tree	rf_mode	taxon_overlap_policy	left_split_count	right_split_count	robinson_foulds_distance	normalized_robinson_foulds
-dendropy-force-rooted	example_tree.nwk	example_tree.nwk	rooted	require-identical	2	2	0	0
-dendropy-force-unrooted	example_tree.nwk	example_tree.nwk	unrooted	require-identical	1	1	0	0
-dendropy-force-rooted	example_tree.nwk	example_tree_rooting_diff.nwk	rooted	require-identical	2	2	2	0.5
-dendropy-force-unrooted	example_tree.nwk	example_tree_rooting_diff.nwk	unrooted	require-identical	1	1	0	0
-dendropy-force-rooted	example_tree.nwk	example_tree_alt.nwk	rooted	require-identical	2	2	2	0.5
-dendropy-force-unrooted	example_tree.nwk	example_tree_alt.nwk	unrooted	require-identical	1	1	0	0
-dendropy-force-rooted	example_tree.nwk	example_tree_topology_diff.nwk	rooted	require-identical	2	2	4	1
-dendropy-force-unrooted	example_tree.nwk	example_tree_topology_diff.nwk	unrooted	require-identical	1	1	2	1
-dendropy-force-rooted	example_tree.nwk	example_tree_overlap.nwk	rooted	prune-to-shared	1	1	0	0
-dendropy-force-unrooted	example_tree.nwk	example_tree_overlap.nwk	unrooted	prune-to-shared	0	0	0	0
+case_id	reference_tool	reference_version	reference_source	left_tree	right_tree	rf_mode	taxon_overlap_policy	left_split_count	right_split_count	robinson_foulds_distance	normalized_robinson_foulds
+rf-rooted-identical	DendroPy	5.0.8	dendropy.calculate.treecompare.symmetric_difference	example_tree.nwk	example_tree.nwk	rooted	require-identical	2	2	0	0
+rf-unrooted-identical	DendroPy	5.0.8	dendropy.calculate.treecompare.symmetric_difference	example_tree.nwk	example_tree.nwk	unrooted	require-identical	1	1	0	0
+rf-rooted-rooting-difference	DendroPy	5.0.8	dendropy.calculate.treecompare.symmetric_difference	example_tree.nwk	example_tree_rooting_diff.nwk	rooted	require-identical	2	2	2	0.5
+rf-unrooted-rooting-difference	DendroPy	5.0.8	dendropy.calculate.treecompare.symmetric_difference	example_tree.nwk	example_tree_rooting_diff.nwk	unrooted	require-identical	1	1	0	0
+rf-rooted-alt-binary	DendroPy	5.0.8	dendropy.calculate.treecompare.symmetric_difference	example_tree.nwk	example_tree_alt.nwk	rooted	require-identical	2	2	2	0.5
+rf-unrooted-alt-binary	DendroPy	5.0.8	dendropy.calculate.treecompare.symmetric_difference	example_tree.nwk	example_tree_alt.nwk	unrooted	require-identical	1	1	0	0
+rf-rooted-topology-difference	DendroPy	5.0.8	dendropy.calculate.treecompare.symmetric_difference	example_tree.nwk	example_tree_topology_diff.nwk	rooted	require-identical	2	2	4	1
+rf-unrooted-topology-difference	DendroPy	5.0.8	dendropy.calculate.treecompare.symmetric_difference	example_tree.nwk	example_tree_topology_diff.nwk	unrooted	require-identical	1	1	2	1
+rf-rooted-overlap-pruned	DendroPy	5.0.8	dendropy.calculate.treecompare.symmetric_difference	example_tree.nwk	example_tree_overlap.nwk	rooted	prune-to-shared	1	1	0	0
+rf-unrooted-overlap-pruned	DendroPy	5.0.8	dendropy.calculate.treecompare.symmetric_difference	example_tree.nwk	example_tree_overlap.nwk	unrooted	prune-to-shared	0	0	0	0
+rf-rooted-polytomy-binary	DendroPy	5.0.8	dendropy.calculate.treecompare.symmetric_difference	example_tree.nwk	example_tree_polytomy.nwk	rooted	require-identical	2	1	3	1
+rf-unrooted-polytomy-binary	DendroPy	5.0.8	dendropy.calculate.treecompare.symmetric_difference	example_tree.nwk	example_tree_polytomy.nwk	unrooted	require-identical	1	0	1	1
+rf-rooted-polytomy-star	DendroPy	5.0.8	dendropy.calculate.treecompare.symmetric_difference	example_tree_polytomy.nwk	example_tree_star.nwk	rooted	prune-to-shared	1	0	1	1
+rf-unrooted-polytomy-star	DendroPy	5.0.8	dendropy.calculate.treecompare.symmetric_difference	example_tree_polytomy.nwk	example_tree_star.nwk	unrooted	prune-to-shared	0	0	0	0
+rf-rooted-polytomy-overlap-pruned	DendroPy	5.0.8	dendropy.calculate.treecompare.symmetric_difference	example_tree_polytomy.nwk	example_tree_overlap.nwk	rooted	prune-to-shared	0	1	1	1
+rf-unrooted-polytomy-overlap-pruned	DendroPy	5.0.8	dendropy.calculate.treecompare.symmetric_difference	example_tree_polytomy.nwk	example_tree_overlap.nwk	unrooted	prune-to-shared	0	0	0	0

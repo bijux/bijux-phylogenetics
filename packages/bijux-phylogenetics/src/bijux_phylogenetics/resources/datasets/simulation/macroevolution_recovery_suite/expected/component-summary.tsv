@@ -1,0 +1,4 @@
+component_id	label	bundle_root	case_count	taxon_count	selection_review_case_count	bijux_selection_match_count	geiger_selection_match_count	governed_value_pass_count	governed_value_row_count	governed_comparison_row_count	expected_warning_case_count	expected_warning_present_count	truth_threshold_pass_count	truth_threshold_row_count
+continuous_mode_recovery_panel	Continuous trait-model recovery panel	components/continuous-mode-recovery-panel	7	24	4	4	3	22	22	11	6	6	0	0
+discrete_mode_recovery_panel	Discrete trait-model recovery panel	components/discrete-mode-recovery-panel	4	24	2	2	2	20	24	12	2	2	0	0
+known_answer_reference_panel	Known-answer simulation reference panel	components/known-answer-reference-panel	11	8	0	0	0	0	0	0	0	0	10	11

@@ -4,12 +4,12 @@ import json
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.phylogenetic_signal import (
+from bijux_phylogenetics.comparative.signal import (
+    compute_phylogenetic_signal_test,
     summarize_phylogenetic_signal,
     write_phylogenetic_signal_permutation_table,
     write_phylogenetic_signal_summary_table,
 )
-from bijux_phylogenetics.comparative.signal import compute_phylogenetic_signal_test
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -41,6 +41,19 @@ def test_phylogenetic_signal_test_preserves_permutation_rows() -> None:
     assert (
         sum(1 for row in report.permutation_rows if row.at_or_above_observed)
         == report.permuted_k_at_or_above_observed
+    )
+    assert math.isclose(
+        report.null_distribution_minimum,
+        min(row.permuted_k for row in report.permutation_rows),
+    )
+    assert math.isclose(
+        report.null_distribution_mean,
+        sum(row.permuted_k for row in report.permutation_rows)
+        / len(report.permutation_rows),
+    )
+    assert math.isclose(
+        report.null_distribution_maximum,
+        max(row.permuted_k for row in report.permutation_rows),
     )
 
 

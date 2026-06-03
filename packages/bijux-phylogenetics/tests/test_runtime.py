@@ -7,148 +7,401 @@ from pathlib import Path
 import pytest
 
 import bijux_phylogenetics
-from bijux_phylogenetics.ancestral import (
-    build_ancestral_figure_package,
-    build_ancestral_report_package,
-    build_ancestral_sensitivity_report,
-    build_continuous_ancestral_confidence_rows,
-    build_continuous_ancestral_tree_set_confidence_rows,
-    build_discrete_ancestral_confidence_rows,
-    build_discrete_ancestral_tree_set_confidence_rows,
-    compare_continuous_ancestral_models,
-    compare_discrete_ancestral_reconstructions,
-    continuous_ancestral_exclusions,
-    discrete_ancestral_exclusions,
-    reconstruct_continuous_ancestral_states,
-    reconstruct_discrete_ancestral_states,
-    render_ancestral_state_report,
-    render_ancestral_state_tree,
-    render_ancestral_state_visualization,
-    summarize_ancestral_root_sensitivity,
-    summarize_ancestral_root_sensitivity_report,
-    summarize_ancestral_transition_report,
-    summarize_ancestral_transition_tree_set,
-    summarize_ancestral_transition_tree_set_report,
-    summarize_ancestral_transitions,
-    summarize_continuous_ancestral_confidence,
-    summarize_continuous_ancestral_report,
-    summarize_continuous_ancestral_tree_set,
-    summarize_continuous_ancestral_tree_set_confidence,
-    summarize_continuous_ancestral_tree_set_report,
-    summarize_continuous_change_branches,
-    summarize_continuous_change_counts,
-    summarize_discrete_ancestral_confidence,
-    summarize_discrete_ancestral_report,
-    summarize_discrete_ancestral_tree_set,
-    summarize_discrete_ancestral_tree_set_confidence,
-    summarize_discrete_ancestral_tree_set_report,
-    summarize_irreversible_discrete_reconstruction,
-    summarize_irreversible_discrete_report,
-    summarize_ordered_discrete_reconstruction,
-    summarize_ordered_discrete_report,
-    write_ancestral_confidence_summary_table,
-    write_ancestral_root_assumption_table,
-    write_ancestral_root_sensitivity_node_table,
-    write_ancestral_root_sensitivity_summary_table,
-    write_ancestral_state_table,
-    write_ancestral_transition_branch_table,
-    write_ancestral_transition_count_table,
-    write_ancestral_transition_exclusion_table,
-    write_ancestral_transition_summary_table,
-    write_ancestral_transition_tree_set_branch_table,
-    write_ancestral_transition_tree_set_count_table,
-    write_ancestral_transition_tree_set_summary_table,
-    write_ancestral_transition_tree_set_tree_table,
-    write_ancestral_tree_set_exclusion_table,
-    write_ancestral_tree_set_tree_table,
-    write_continuous_ancestral_confidence_table,
-    write_continuous_ancestral_exclusion_table,
-    write_continuous_ancestral_summary_table,
-    write_continuous_ancestral_tree_set_clade_table,
-    write_continuous_ancestral_tree_set_confidence_table,
-    write_continuous_ancestral_tree_set_node_table,
-    write_continuous_ancestral_tree_set_summary_table,
-    write_continuous_ancestral_uncertainty_table,
-    write_continuous_change_branch_table,
-    write_continuous_change_count_table,
-    write_discrete_ancestral_comparison_table,
-    write_discrete_ancestral_confidence_table,
-    write_discrete_ancestral_exclusion_table,
-    write_discrete_ancestral_probability_table,
-    write_discrete_ancestral_summary_table,
-    write_discrete_ancestral_tree_set_clade_table,
-    write_discrete_ancestral_tree_set_confidence_table,
-    write_discrete_ancestral_tree_set_node_table,
-    write_discrete_ancestral_tree_set_summary_table,
-    write_irreversible_discrete_fit_table,
-    write_irreversible_discrete_node_table,
-    write_irreversible_discrete_summary_table,
-    write_irreversible_discrete_transition_table,
-    write_ordered_discrete_fit_table,
-    write_ordered_discrete_node_table,
-    write_ordered_discrete_summary_table,
-    write_ordered_discrete_transition_table,
-)
 from bijux_phylogenetics.bayesian import (
+    BAYESIAN_BURNIN_POLICY_NAMES,
+    BAYESIAN_WRAPPER_CORRESPONDENCE_STATUSES,
+    BIRTH_DEATH_TREE_PRIOR_FAMILIES,
+    BROWNIAN_CONTINUOUS_TRAIT_MODELS,
+    CALIBRATION_PRIOR_FAMILIES,
+    CATEGORICAL_MISSING_STATE_POLICIES,
+    CLOCK_MODEL_SCALAR_PRIOR_FAMILIES,
+    CLOCK_RATE_MODEL_FAMILIES,
+    COALESCENT_TREE_PRIOR_FAMILIES,
+    CONTINUOUS_TRAIT_LOCATION_PRIOR_FAMILIES,
+    CONTINUOUS_TRAIT_PRIOR_MODES,
+    CONTINUOUS_TRAIT_PRIOR_TARGETS,
+    CONTINUOUS_TRAIT_PROBABILITY_PRIOR_FAMILIES,
+    CONTINUOUS_TRAIT_SCALAR_PRIOR_FAMILIES,
+    DISCRETE_TRAIT_MK_MODELS,
+    DISCRETE_TRAIT_MK_ROOT_PRIOR_MODES,
+    DISCRETE_TRAIT_RATE_PRIOR_FAMILIES,
+    DISCRETE_TRAIT_RATE_PRIOR_MODELS,
+    FIXED_TOPOLOGY_DNA_SUBSTITUTION_MODELS,
+    FIXED_TOPOLOGY_PARTITIONED_DNA_SUBSTITUTION_MODELS,
+    FIXED_TOPOLOGY_RELAXED_CLOCK_MODELS,
+    FIXED_TOPOLOGY_STRICT_CLOCK_MODELS,
+    JOINT_TOPOLOGY_DNA_TOPOLOGY_MOVE_KINDS,
+    LOCAL_CLOCK_RATE_MODEL_FAMILIES,
+    LOCAL_CLOCK_TARGET_KINDS,
+    METROPOLIS_HASTINGS_BURNIN_POLICY_NAMES,
+    ORNSTEIN_UHLENBECK_CONTINUOUS_TRAIT_MODELS,
+    PARTITION_MODEL_PRIOR_TARGETS,
+    PARTITION_PARAMETER_LINKAGE_POLICIES,
+    PARTITION_SUBSTITUTION_BASE_MODELS,
+    POSITIVE_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES,
+    POSTERIOR_PREDICTIVE_SAMPLE_SELECTION_POLICIES,
+    PROBABILITY_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES,
+    RELAXED_CLOCK_RATE_POLICIES,
+    SIMPLEX_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES,
+    SUBSTITUTION_PARAMETER_PRIOR_TARGETS,
+    TIME_TREE_PRIOR_CONDITIONING_MODES,
+    TREE_TOPOLOGY_PRIOR_FAMILIES,
+    YULE_TREE_PRIOR_FAMILIES,
+    AdaptiveMetropolisHastingsRunReport,
+    AdaptiveTuningController,
+    AdaptiveTuningReport,
+    AdaptiveTuningWindowRow,
+    BayesianModelParameterState,
+    BayesianPhylogeneticState,
+    BayesianPosteriorTreeSample,
+    BayesianPosteriorTreeSampleArchive,
+    BayesianPriorComponentState,
+    BayesianRunBurninPolicy,
+    BayesianRunManifest,
+    BayesianRunManifestReplayReport,
+    BayesianRunPriorRow,
+    BayesianStateBranchRow,
+    BayesianTreeState,
+    BayesianWrapperCorrespondenceObservation,
+    BayesianWrapperCorrespondenceReport,
+    BayesianWrapperCorrespondenceSummaryRow,
     BeastAnalysisXmlReport,
     BeastCalibration,
-    BeastPosteriorConsensusReport,
-    BeastPosteriorTopologyDiversityReport,
-    MrBayesBurninSensitivityReport,
-    MrBayesBurninSensitivitySlice,
+    BirthDeathTreePriorModel,
+    BrownianContinuousTraitModelDefinition,
+    BrownianContinuousTraitParameterSummary,
+    BrownianContinuousTraitPosteriorRow,
+    BrownianContinuousTraitProposalSchedule,
+    BrownianContinuousTraitRunReport,
+    BurninSampleRow,
+    CalibrationPriorDefinition,
+    CalibrationPriorEvaluationReport,
+    CalibrationPriorRow,
+    CategoricalProbabilityVector,
+    ConstantPopulationCoalescentPriorModel,
+    ContinuousTraitLocationPriorModel,
+    ContinuousTraitModelPriorBundle,
+    ContinuousTraitModelPriorEvaluationReport,
+    ContinuousTraitModelPriorRow,
+    ContinuousTraitProbabilityPriorModel,
+    ContinuousTraitScalarPriorModel,
+    DiscreteTraitMkModelDefinition,
+    DiscreteTraitMkNodeStateSummary,
+    DiscreteTraitMkPosteriorRow,
+    DiscreteTraitMkProposalSchedule,
+    DiscreteTraitMkRunReport,
+    DiscreteTraitRatePriorEvaluationReport,
+    DiscreteTraitRatePriorModel,
+    DiscreteTraitRatePriorRow,
+    FixedTopologyDnaModelDefinition,
+    FixedTopologyDnaPosteriorRow,
+    FixedTopologyDnaProposalSchedule,
+    FixedTopologyDnaRunReport,
+    FixedTopologyPartitionedDnaModelDefinition,
+    FixedTopologyPartitionedDnaPartitionRow,
+    FixedTopologyPartitionedDnaPosteriorRow,
+    FixedTopologyPartitionedDnaProposalSchedule,
+    FixedTopologyPartitionedDnaRunReport,
+    FixedTopologyRelaxedClockBranchRateSummary,
+    FixedTopologyRelaxedClockModelDefinition,
+    FixedTopologyRelaxedClockNodeAgeSummary,
+    FixedTopologyRelaxedClockPosteriorRow,
+    FixedTopologyRelaxedClockProposalSchedule,
+    FixedTopologyRelaxedClockRunReport,
+    FixedTopologyStrictClockModelDefinition,
+    FixedTopologyStrictClockNodeAgeSummary,
+    FixedTopologyStrictClockPosteriorRow,
+    FixedTopologyStrictClockProposalSchedule,
+    FixedTopologyStrictClockRateSummary,
+    FixedTopologyStrictClockRunReport,
+    HighestPosteriorDensityInterval,
+    IndependentMetropolisHastingsBurninReport,
+    IndependentMetropolisHastingsChainBurninReport,
+    IndependentMetropolisHastingsChainTraceAutocorrelationReport,
+    IndependentMetropolisHastingsChainTraceEffectiveSampleSizeReport,
+    IndependentMetropolisHastingsTraceAutocorrelationReport,
+    IndependentMetropolisHastingsTraceEffectiveSampleSizeReport,
+    JointTopologyDnaModelDefinition,
+    JointTopologyDnaPosteriorRow,
+    JointTopologyDnaProposalSchedule,
+    JointTopologyDnaRunReport,
+    LocalClockRateModel,
+    MetropolisHastingsBurninDiagnosticCandidate,
+    MetropolisHastingsBurninDiagnosticReport,
+    MetropolisHastingsBurninPolicy,
+    MetropolisHastingsBurninReport,
+    MetropolisHastingsProposal,
+    MetropolisHastingsRunReport,
+    MetropolisHastingsStepRow,
+    MetropolisHastingsTraceAutocorrelationReport,
+    MetropolisHastingsTraceEffectiveSampleSizeReport,
     MrBayesParameterDiagnosticsReport,
-    MrBayesParameterSummary,
+    OrnsteinUhlenbeckContinuousTraitIdentifiabilityWarning,
+    OrnsteinUhlenbeckContinuousTraitModelDefinition,
+    OrnsteinUhlenbeckContinuousTraitParameterSummary,
+    OrnsteinUhlenbeckContinuousTraitPosteriorRow,
+    OrnsteinUhlenbeckContinuousTraitProposalSchedule,
+    OrnsteinUhlenbeckContinuousTraitRunReport,
+    PartitionModelPriorBundle,
+    PartitionModelPriorEvaluationReport,
+    PartitionModelPriorRow,
+    PartitionParameterLinkagePlan,
+    PartitionSubstitutionModelDefinition,
+    PartitionSubstitutionParameterState,
+    PosteriorAncestralSequenceDefinition,
+    PosteriorAncestralSequenceRecord,
+    PosteriorAncestralSequenceReport,
+    PosteriorAncestralSiteSummaryRow,
+    PosteriorAncestralStateProbabilityRow,
+    PosteriorContinuousTraitNodeSummaryRow,
+    PosteriorContinuousTraitReport,
+    PosteriorDiscreteTraitNodeSummaryRow,
+    PosteriorDiscreteTraitReport,
+    PosteriorDiscreteTraitStateProbabilityRow,
+    PosteriorMissingContinuousTraitDefinition,
+    PosteriorMissingContinuousTraitReport,
+    PosteriorMissingContinuousTraitTaxonSummaryRow,
+    PosteriorMissingDiscreteTraitDefinition,
+    PosteriorMissingDiscreteTraitReport,
+    PosteriorMissingDiscreteTraitStateProbabilityRow,
+    PosteriorMissingDiscreteTraitTaxonSummaryRow,
+    PosteriorMissingNucleotideDefinition,
+    PosteriorMissingNucleotideReport,
+    PosteriorMissingNucleotideSequenceRecord,
+    PosteriorMissingNucleotideSiteSummaryRow,
+    PosteriorMissingNucleotideStateProbabilityRow,
+    PosteriorModelAveragedEstimateRow,
+    PosteriorModelAveragingReport,
+    PosteriorModelEstimateRow,
+    PosteriorModelSupportRow,
+    PosteriorPredictiveAlignmentReplicate,
+    PosteriorPredictiveAlignmentSimulationReport,
+    PosteriorPredictiveContinuousTraitReplicate,
+    PosteriorPredictiveContinuousTraitSimulationReport,
+    PosteriorPredictiveDiscreteTraitReplicate,
+    PosteriorPredictiveDiscreteTraitSimulationReport,
+    PosteriorPredictiveObservedStatisticRow,
+    PosteriorPredictivePValueReport,
+    PosteriorPredictivePValueRow,
+    PosteriorPredictiveReplicateStatisticRow,
+    PosteriorPredictiveSimulationDefinition,
+    PosteriorPredictiveStatisticSummaryRow,
+    PriorOnlyPhylogeneticSample,
+    PriorOnlyPhylogeneticSimulationReport,
+    PriorOnlySampledBranchRow,
+    PriorOnlySubstitutionParameterState,
+    RelaxedLognormalClockModel,
+    SkylineCoalescentPriorModel,
+    StrictClockRateModel,
+    SubstitutionParameterPriorBundle,
+    SubstitutionParameterPriorEvaluationReport,
+    SubstitutionParameterPriorRow,
+    TraceAutocorrelationLagRow,
+    TraceAutocorrelationParameterReport,
+    TraceEffectiveSampleSizeRow,
+    TracePosteriorIntervalRow,
+    TreeTopologyPriorModel,
+    YuleTreePriorModel,
+    apply_independent_metropolis_hastings_burnin_policy,
+    apply_metropolis_hastings_burnin_policy,
     assess_beast_burnin_sensitivity,
-    assess_beast_chain_mixing,
     assess_beast_convergence,
     assess_mrbayes_burnin_sensitivity,
     assess_mrbayes_convergence,
+    build_adaptive_tuning_controller,
+    build_adaptive_tuning_report,
+    build_adaptive_tuning_window_row,
     build_bayesian_evidence_package,
+    build_bayesian_model_parameter_state,
+    build_bayesian_phylogenetic_state,
+    build_bayesian_phylogenetic_state_from_prior_only_sample,
+    build_bayesian_posterior_tree_sample,
+    build_bayesian_posterior_tree_sample_archive,
+    build_bayesian_prior_component_state,
+    build_bayesian_run_burnin_policy,
+    build_bayesian_run_manifest,
+    build_bayesian_tree_state,
+    build_beta_continuous_trait_probability_prior,
+    build_beta_probability_substitution_parameter_prior,
+    build_brownian_continuous_trait_model_definition,
+    build_brownian_continuous_trait_proposal_schedule,
+    build_categorical_probability_vector,
+    build_constant_population_coalescent_tree_prior,
+    build_continuous_trait_model_prior_bundle,
+    build_crown_conditioned_birth_death_tree_prior,
+    build_crown_conditioned_yule_tree_prior,
+    build_dirichlet_simplex_substitution_parameter_prior,
+    build_discrete_trait_mk_model_definition,
+    build_discrete_trait_mk_proposal_schedule,
+    build_exponential_clock_model_scalar_prior,
+    build_exponential_continuous_trait_scalar_prior,
+    build_exponential_discrete_trait_rate_prior,
+    build_exponential_positive_substitution_parameter_prior,
+    build_fixed_clock_model_scalar_prior,
+    build_fixed_continuous_trait_location_prior,
+    build_fixed_continuous_trait_probability_prior,
+    build_fixed_continuous_trait_scalar_prior,
+    build_fixed_positive_substitution_parameter_prior,
+    build_fixed_probability_substitution_parameter_prior,
+    build_fixed_simplex_substitution_parameter_prior,
+    build_fixed_topology_dna_model_definition,
+    build_fixed_topology_dna_proposal_schedule,
+    build_fixed_topology_dna_run_manifest,
+    build_fixed_topology_partitioned_dna_model_definition,
+    build_fixed_topology_partitioned_dna_proposal_schedule,
+    build_fixed_topology_relaxed_clock_model_definition,
+    build_fixed_topology_relaxed_clock_proposal_schedule,
+    build_fixed_topology_strict_clock_model_definition,
+    build_fixed_topology_strict_clock_proposal_schedule,
+    build_gamma_clock_model_scalar_prior,
+    build_gamma_continuous_trait_scalar_prior,
+    build_gamma_discrete_trait_rate_prior,
+    build_gamma_positive_substitution_parameter_prior,
+    build_joint_topology_dna_model_definition,
+    build_joint_topology_dna_proposal_schedule,
+    build_local_clock_rate_model,
+    build_lognormal_clock_model_scalar_prior,
+    build_lognormal_continuous_trait_scalar_prior,
+    build_lognormal_discrete_trait_rate_prior,
+    build_lognormal_positive_substitution_parameter_prior,
+    build_metropolis_hastings_burnin_policy,
+    build_metropolis_hastings_posterior_tree_sample_archive,
+    build_metropolis_hastings_proposal,
+    build_normal_continuous_trait_location_prior,
+    build_ornstein_uhlenbeck_continuous_trait_model_definition,
+    build_ornstein_uhlenbeck_continuous_trait_proposal_schedule,
+    build_partition_model_parameter_state,
+    build_partition_model_prior_bundle,
+    build_partition_parameter_linkage_plan,
+    build_partition_substitution_model_definition,
+    build_posterior_ancestral_sequence_definition,
+    build_posterior_missing_continuous_trait_definition,
+    build_posterior_missing_discrete_trait_definition,
+    build_posterior_missing_nucleotide_definition,
+    build_posterior_predictive_simulation_definition,
     build_posterior_uncertainty_figure_package,
-    compare_bayesian_tree_sets,
-    compare_independent_bayesian_runs,
-    compare_posterior_tree_sets_by_clock,
-    compare_posterior_tree_sets_by_prior,
+    build_relaxed_lognormal_clock_model,
+    build_skyline_coalescent_tree_prior,
+    build_strict_clock_rate_model,
+    build_substitution_parameter_prior_bundle,
+    build_uniform_rooted_tree_topology_prior,
+    compare_log_probabilities,
+    compute_equal_tail_interval,
+    compute_highest_posterior_density_interval,
     compute_mrbayes_effective_sample_sizes,
-    detect_impossible_calibration_constraints,
+    compute_trace_autocorrelation,
+    compute_trace_effective_sample_size,
+    compute_trace_integrated_autocorrelation_time,
+    count_rooted_labeled_bifurcating_topologies,
+    deserialize_bayesian_phylogenetic_state,
+    deserialize_bayesian_phylogenetic_state_json,
+    diagnose_metropolis_hastings_burnin,
+    evaluate_birth_death_tree_log_prior,
+    evaluate_calibration_tree_log_prior,
+    evaluate_clock_model_scalar_log_prior,
+    evaluate_constant_population_coalescent_tree_log_prior,
+    evaluate_continuous_trait_location_log_prior,
+    evaluate_continuous_trait_model_log_prior,
+    evaluate_continuous_trait_probability_log_prior,
+    evaluate_continuous_trait_scalar_log_prior,
+    evaluate_discrete_trait_rate_log_prior,
+    evaluate_discrete_trait_rate_value_log_prior,
+    evaluate_local_clock_tree_log_prior,
+    evaluate_partition_model_log_prior,
+    evaluate_relaxed_lognormal_clock_tree_log_prior,
+    evaluate_skyline_coalescent_tree_log_prior,
+    evaluate_strict_clock_tree_log_prior,
+    evaluate_substitution_parameter_log_prior,
+    evaluate_tree_topology_log_prior,
+    evaluate_yule_tree_log_prior,
+    infer_bayesian_model_id,
+    list_metropolis_hastings_retained_sample_ids,
+    load_bayesian_posterior_tree_sample_archive,
+    load_bayesian_run_manifest,
+    load_calibration_prior_definitions,
+    load_local_clock_regime_definitions,
+    log_probability_add,
+    logsumexp,
+    normalize_log_probabilities,
     parse_beast_log,
     parse_beast_posterior_tree_samples,
     parse_mrbayes_consensus_tree,
-    parse_mrbayes_mcmc_diagnostics,
-    parse_mrbayes_parameter_traces,
-    parse_mrbayes_posterior_tree_samples,
-    prepare_beast_time_tree_analysis,
-    prepare_mrbayes_analysis,
-    render_bayesian_diagnostics_report,
-    render_bayesian_posterior_report,
-    render_bayesian_run_comparison_report,
-    render_calibration_audit_report,
+    propose_base_frequency_simplex_move,
+    propose_branch_length_scaling_move,
+    propose_clock_rate_move,
+    propose_continuous_trait_location_move,
+    propose_discrete_trait_rate_move,
+    propose_gamma_alpha_move,
+    propose_global_tree_height_scaling_move,
+    propose_gtr_exchangeability_move,
+    propose_invariant_proportion_move,
+    propose_kappa_move,
+    propose_nni_topology_move,
+    propose_node_height_sliding_move,
+    propose_partition_linking_move,
+    propose_spr_topology_move,
+    propose_tbr_topology_move,
+    replay_fixed_topology_dna_run_manifest,
+    resolve_partition_parameter_linkage_plan_from_model_parameters,
+    resolve_partition_parameter_states_from_model_parameters,
+    run_adaptive_tuned_metropolis_hastings_sampler,
     run_beast_posterior_inference,
+    run_brownian_continuous_trait_metropolis_hastings,
+    run_discrete_trait_mk_metropolis_hastings,
+    run_fixed_topology_dna_metropolis_hastings,
+    run_fixed_topology_partitioned_dna_metropolis_hastings,
+    run_fixed_topology_relaxed_clock_metropolis_hastings,
+    run_fixed_topology_strict_clock_metropolis_hastings,
+    run_joint_topology_dna_metropolis_hastings,
+    run_metropolis_hastings_sampler,
     run_mrbayes_posterior_inference,
-    subsample_beast_posterior_tree_set,
-    subsample_mrbayes_posterior_tree_set,
-    subsample_posterior_tree_set,
-    summarize_beast_analysis_xml,
+    run_ornstein_uhlenbeck_continuous_trait_metropolis_hastings,
+    sample_prior_only_phylogenetic_state,
+    score_bayesian_phylogenetic_state,
+    serialize_bayesian_phylogenetic_state,
+    serialize_bayesian_phylogenetic_state_json,
+    simulate_brownian_continuous_trait_posterior_predictive,
+    simulate_discrete_trait_mk_posterior_predictive,
+    simulate_fixed_topology_dna_posterior_predictive,
+    simulate_fixed_topology_partitioned_dna_posterior_predictive,
+    simulate_joint_topology_dna_posterior_predictive,
+    simulate_ornstein_uhlenbeck_continuous_trait_posterior_predictive,
+    simulate_prior_only_phylogenetic_states,
+    strip_partition_model_parameter_state,
+    summarize_bayesian_wrapper_correspondence,
     summarize_beast_log,
-    summarize_beast_posterior_topology_diversity,
-    summarize_beast_posterior_trees,
-    summarize_maximum_clade_credibility_tree,
-    summarize_mrbayes_parameter_diagnostics,
+    summarize_brownian_continuous_trait_posterior_ancestral_states,
+    summarize_brownian_continuous_trait_posterior_missing_values,
+    summarize_continuous_trait_posterior_ancestral_states,
+    summarize_continuous_trait_posterior_missing_values,
+    summarize_discrete_trait_mk_posterior_ancestral_states,
+    summarize_discrete_trait_mk_posterior_missing_states,
+    summarize_fixed_topology_dna_posterior_missing_states,
+    summarize_fixed_topology_partitioned_dna_posterior_missing_states,
+    summarize_independent_metropolis_hastings_trace_autocorrelation,
+    summarize_independent_metropolis_hastings_trace_effective_sample_size,
+    summarize_independent_metropolis_hastings_trace_posterior_intervals,
+    summarize_joint_topology_dna_posterior_missing_states,
+    summarize_metropolis_hastings_model_averaged_estimates,
+    summarize_metropolis_hastings_trace_autocorrelation,
+    summarize_metropolis_hastings_trace_effective_sample_size,
+    summarize_metropolis_hastings_trace_posterior_intervals,
     summarize_mrbayes_posterior_trees,
-    summarize_posterior_node_ages,
-    thin_posterior_tree_set,
-    validate_beast_analysis_xml,
-    validate_beast_posterior_log,
-    validate_fossil_calibration_table,
-    validate_tip_dating_metadata,
-    write_bayesian_methods_summary_text,
-    write_beast_burnin_sensitivity_slice_table,
+    summarize_nucleotide_posterior_ancestral_sequences,
+    summarize_nucleotide_posterior_missing_states,
+    summarize_ornstein_uhlenbeck_continuous_trait_posterior_ancestral_states,
+    summarize_ornstein_uhlenbeck_continuous_trait_posterior_missing_values,
+    summarize_posterior_model_averaged_estimates,
+    summarize_posterior_predictive_p_values,
+    validate_partition_substitution_model_name,
+    validate_tree_topology_prior_taxa,
+    write_bayesian_posterior_tree_sample_archive,
+    write_bayesian_run_manifest,
     write_beast_log_summary_table,
-    write_beast_posterior_tree_set,
-    write_mrbayes_burnin_sensitivity_slice_table,
     write_mrbayes_parameter_summary_table,
+    write_posterior_ancestral_sequence_fasta,
+    write_posterior_ancestral_state_probability_table,
     write_posterior_tree_subsample,
-    write_posterior_tree_subsample_table,
     write_supplementary_bayesian_diagnostics_table,
 )
 from bijux_phylogenetics.benchmark import (
@@ -157,201 +410,47 @@ from bijux_phylogenetics.benchmark import (
     benchmark_tree_validation,
 )
 from bijux_phylogenetics.biogeography import (
-    BiogeographyRegionCountRow,
-    BiogeographyReportExclusionRow,
-    BiogeographyReportPackageResult,
-    ConstrainedGeographicFitRow,
-    ConstrainedGeographicReport,
-    ConstrainedGeographicSummary,
-    ConstrainedGeographicTransitionRow,
-    DatedBiogeographyEventRow,
-    DatedBiogeographyNodeRow,
-    DatedBiogeographyReport,
-    DatedBiogeographySummary,
-    DatedBiogeographyTimeBinRow,
-    GeographicMigrationEventReport,
-    GeographicMigrationEventRow,
-    GeographicMigrationEventSummary,
-    GeographicMigrationTreeRow,
-    GeographicMigrationTreeSetEventRow,
-    GeographicMigrationTreeSetEventSummaryRow,
-    GeographicMigrationTreeSetReport,
-    GeographicMigrationTreeSetSummary,
-    GeographicSamplingBiasNodeRow,
-    GeographicSamplingBiasReport,
-    GeographicSamplingBiasSummary,
-    GeographicSamplingBiasTransitionRow,
-    GeographicSamplingCountRow,
     TimeBinDefinition,
-    TimeStratifiedBranchRow,
-    TimeStratifiedTransitionMatrixRow,
-    TimeStratifiedTransitionReport,
-    TimeStratifiedTransitionSummary,
-    UnsupportedGeographicTransitionClaimRow,
-    build_biogeography_report_package,
     summarize_biogeographic_transition_chronology,
-    summarize_biogeography_region_counts,
     summarize_constrained_geographic_model,
-    summarize_constrained_geographic_report,
-    summarize_geographic_migration_event_tree_set,
-    summarize_geographic_migration_events,
-    summarize_geographic_sampling_bias,
-    summarize_geographic_state_model,
-    summarize_time_stratified_geographic_transitions,
-    write_biogeography_region_count_table,
-    write_biogeography_report_exclusion_table,
-    write_constrained_geographic_exclusion_table,
-    write_constrained_geographic_fit_table,
-    write_constrained_geographic_summary_table,
-    write_constrained_geographic_transition_table,
-    write_dated_biogeography_event_table,
-    write_dated_biogeography_exclusion_table,
-    write_dated_biogeography_node_table,
-    write_dated_biogeography_summary_table,
-    write_dated_biogeography_time_bin_table,
-    write_geographic_exclusion_table,
-    write_geographic_migration_event_summary_table,
-    write_geographic_migration_event_table,
-    write_geographic_migration_exclusion_table,
-    write_geographic_migration_tree_set_event_summary_table,
-    write_geographic_migration_tree_set_event_table,
-    write_geographic_migration_tree_set_exclusion_table,
-    write_geographic_migration_tree_set_summary_table,
-    write_geographic_migration_tree_set_tree_table,
-    write_geographic_region_probability_table,
-    write_geographic_sampling_bias_exclusion_table,
-    write_geographic_sampling_bias_node_table,
-    write_geographic_sampling_bias_summary_table,
-    write_geographic_sampling_bias_transition_table,
-    write_geographic_sampling_count_table,
-    write_geographic_state_summary_table,
     write_geographic_transition_event_table,
-    write_geographic_transition_rate_table,
-    write_time_stratified_branch_table,
-    write_time_stratified_exclusion_table,
-    write_time_stratified_transition_matrix_table,
-    write_time_stratified_transition_summary_table,
-    write_unsupported_geographic_transition_claim_table,
 )
-from bijux_phylogenetics.branch_lengths import (
-    BranchLengthAggregate,
-    BranchLengthDistributionReport,
-    BranchLengthRow,
-    analyze_branch_length_distribution,
-    analyze_tree_set_branch_lengths,
-    write_branch_length_table,
-)
-from bijux_phylogenetics.clades import (
-    CladeMetadataObservation,
-    CladeTableReport,
-    CladeTableRow,
-    extract_tree_clades,
-    extract_tree_set_clades,
-    write_clade_table,
-)
-from bijux_phylogenetics.cli import main
-from bijux_phylogenetics.command_line.registry import get_command_spec
+from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.comparative import (
     BranchIdentityMetadata,
-    BrownianRegimeBranchRow,
-    BrownianRegimeExclusion,
     BrownianRegimeFitSummaryReport,
-    BrownianRegimeIdentifiabilityWarning,
-    BrownianRegimeProfileRow,
-    BrownianRegimeRateRow,
-    CladeTraitExclusion,
-    CladeTraitRow,
-    CladeTraitStateCount,
     CladeTraitSummaryReport,
-    ComparativeAnalysisSummaryRow,
-    ComparativeAuditTableRow,
-    ComparativeCladeCoefficientChangeRow,
-    ComparativeCladeResidualReport,
-    ComparativeCladeStabilityReport,
-    ComparativeCladeStabilityRow,
-    ComparativeCoefficientTableRow,
-    ComparativeInterpretationRow,
-    ComparativeRegressionModelExclusion,
-    ComparativeRegressionModelRow,
-    ComparativeRegressionModelSelectionReport,
-    ComparativeRegressionPairwiseComparisonRow,
     ComparativeReportPackageResult,
-    ComparativeResidualCladeRow,
-    ComparativeResidualTableRow,
-    ComparativeResidualTaxonRow,
-    ComparativeSignalTableRow,
-    CorrelatedTraitComparisonRow,
     CorrelatedTraitEvolutionReport,
-    CorrelatedTraitExclusion,
-    CorrelatedTraitObservationRow,
-    EarlyBurstIdentifiabilityWarning,
-    EarlyBurstRateChangeProfileRow,
-    EarlyBurstTraitEvolutionExclusion,
+    DiscreteMkFitReport,
+    DiscreteMkModelComparisonReport,
     EarlyBurstTraitEvolutionSummaryReport,
-    IndependentContrastRegressionReport,
-    IndependentContrastRegressionRow,
-    MultivariateComparativeRegressionReport,
-    MultivariateResidualAssociationRow,
-    MultivariateResidualCorrelationRow,
-    MultivariateResidualCovarianceRow,
-    MultivariateResponseCoefficientRow,
-    MultivariateResponseModelRow,
-    MultivariateTaxonExclusion,
-    PhylogeneticLogisticCoefficient,
-    PhylogeneticLogisticFittedRow,
-    PhylogeneticLogisticReport,
-    PhylogeneticLogisticWarning,
-    PhylogeneticSignalPermutation,
-    PhylogeneticSignalSummaryReport,
-    PosteriorTreePGLSCoefficientRow,
-    PosteriorTreePGLSCoefficientSummaryRow,
-    PosteriorTreePGLSReport,
-    PosteriorTreePGLSTreeFitRow,
-    TraitImputationExclusion,
-    TraitImputationHoldoutRow,
-    TraitImputationRow,
-    TraitImputationSummaryReport,
-    TraitOutlierExclusion,
+    PagelLambdaLikelihoodReport,
     TraitOutlierSummaryReport,
-    TraitOutlierTaxonRow,
-    TraitRateThroughTimeExclusion,
-    TraitRateThroughTimeIntervalRow,
-    TraitRateThroughTimeSummaryReport,
-    TraitRegimeBranchRow,
-    TraitRegimeExclusion,
     TraitRegimeMappingReport,
-    TraitRegimeNodeRow,
     analyze_comparative_clade_stability,
     analyze_comparative_residual_clades,
-    assess_comparative_method_maturity,
-    audit_comparative_parameter_uncertainty,
-    audit_ou_identifiability_reference_examples,
     build_branch_identity_lookup,
     build_comparative_report_package,
     build_pgls_model_matrix,
     compare_comparative_regression_models,
+    compare_discrete_mk_model_ranking,
     compute_blombergs_k,
     compute_phylogenetic_independent_contrasts,
-    compute_phylogenetic_signal_test,
     estimate_pagels_lambda,
+    fit_discrete_mk_model,
     inspect_pgls_inputs,
     run_multivariate_comparative_regression,
     run_pgls,
     run_posterior_tree_pgls,
+    summarize_brownian_covariance,
     summarize_brownian_covariance_pgls,
     summarize_brownian_regime_rates,
     summarize_brownian_trait_evolution,
     summarize_clade_traits,
-    summarize_comparative_analysis,
-    summarize_comparative_audit,
-    summarize_comparative_coefficients,
-    summarize_comparative_interpretation,
-    summarize_comparative_residuals,
-    summarize_comparative_signal,
     summarize_correlated_trait_evolution,
     summarize_early_burst_trait_evolution,
     summarize_independent_contrast_regression,
-    summarize_numeric_trait,
     summarize_numeric_trait_readiness,
     summarize_ou_covariance_pgls,
     summarize_ou_trait_evolution,
@@ -364,6 +463,8 @@ from bijux_phylogenetics.comparative import (
     summarize_trait_outliers,
     summarize_trait_rate_through_time,
     summarize_trait_regime_mapping,
+    write_brownian_covariance_long_table,
+    write_brownian_covariance_matrix_table,
     write_brownian_covariance_table,
     write_brownian_regime_branch_table,
     write_brownian_regime_comparison_table,
@@ -380,17 +481,12 @@ from bijux_phylogenetics.comparative import (
     write_comparative_clade_coefficient_change_table,
     write_comparative_clade_stability_table,
     write_comparative_coefficient_table,
-    write_comparative_contrast_table,
-    write_comparative_interpretation_table,
-    write_comparative_model_comparison_table,
     write_comparative_regression_excluded_taxa_table,
     write_comparative_regression_model_ranking_table,
     write_comparative_regression_pairwise_table,
     write_comparative_residual_clade_table,
-    write_comparative_residual_table,
     write_comparative_residual_taxon_table,
     write_comparative_signal_table,
-    write_comparative_summary_table,
     write_correlated_trait_comparison_table,
     write_correlated_trait_exclusion_table,
     write_correlated_trait_observation_table,
@@ -438,40 +534,33 @@ from bijux_phylogenetics.comparative import (
     write_trait_regime_node_table,
     write_trait_regime_summary_table,
 )
-from bijux_phylogenetics.comparative.evidence_contract import (
+from bijux_phylogenetics.comparative.evidence import (
     SUPPORTED_EVIDENCE_API_LOCATORS,
     resolve_supported_evidence_api,
 )
-import bijux_phylogenetics.compare as compare_api
-from bijux_phylogenetics.compare.reports import build_tree_comparison_report
-from bijux_phylogenetics.compare.taxon_influence import (
-    TaxonInfluenceReport,
-    TaxonInfluenceRow,
+from bijux_phylogenetics.compare.influence import (
     analyze_taxon_influence,
-    write_taxon_influence_table,
+)
+from bijux_phylogenetics.compare.presentation import build_tree_comparison_report
+from bijux_phylogenetics.compare.reference import (
+    validate_support_reference_examples,
+    validate_tree_distance_reference_examples,
 )
 from bijux_phylogenetics.compare.topology import (
     BranchScoreComparisonReport,
     CladeOverlapComparisonReport,
-    RobinsonFouldsComparisonReport,
-    SharedTaxaPruningReport,
-    SupportComparisonReport,
-    SupportConflictRow,
     compare_branch_lengths,
     compare_branch_score_distance,
     compare_clade_overlap,
     compare_clade_sets,
     compare_robinson_foulds,
     compare_support_values,
+    compare_topology_distance,
     compare_tree_paths,
     detect_clade_changes,
     prune_trees_to_shared_taxa,
     write_clade_overlap_table,
-    write_shared_taxa_pruning_table,
-    write_shared_taxa_removed_taxa_table,
-    write_support_comparison_table,
 )
-from bijux_phylogenetics.core.alignment import AlignmentRecord, AlignmentSummary
 from bijux_phylogenetics.core.dataset import (
     audit_dataset_inputs,
     audit_dataset_taxon_ordering,
@@ -482,55 +571,12 @@ from bijux_phylogenetics.core.dataset import (
 )
 from bijux_phylogenetics.core.demo import run_capability_demo
 from bijux_phylogenetics.core.environment import inspect_environment
-from bijux_phylogenetics.core.locus_occupancy import (
-    LocusOccupancyFilterIteration,
-    build_locus_occupancy_report,
-    filter_locus_occupancy,
-)
 from bijux_phylogenetics.core.manifest import build_run_manifest, write_run_manifest
-from bijux_phylogenetics.core.metadata import inspect_metadata_table, join_table_to_taxa
-from bijux_phylogenetics.core.partitions import (
-    build_partition_summary_report,
-    parse_locus_partitions,
-    write_locus_partitions,
-    write_partition_summary_table,
-)
-from bijux_phylogenetics.core.pruning import (
-    drop_tree_taxa,
-    prune_alignment_to_tree,
-    prune_tree_to_alignment,
-    prune_tree_to_requested_taxa,
-    prune_tree_to_taxa,
-)
-from bijux_phylogenetics.core.taxonomy import (
-    build_taxon_audit_report,
-    build_taxon_mapping_conflict_report,
-    detect_duplicate_biological_identities,
-    export_tree_accepted_names,
-    infer_taxon_rank,
-    inspect_tree_taxa_safety,
-    inspect_tree_taxon_identity,
-    inspect_tree_taxon_rank_consistency,
-    normalize_tree_taxa,
-    write_accepted_name_mapping,
-    write_taxon_mapping,
-)
-from bijux_phylogenetics.core.topology import (
-    TreeRootingReport,
-    collapse_branches_below_length,
-    extract_named_clade,
-    ladderize_tree,
-    reroot_tree_by_midpoint,
-    root_tree_on_outgroup,
-    rotate_all_internal_nodes,
-    rotate_named_node,
-    sort_tree_tips_alphabetically,
-    unroot_tree,
-    write_tree_rooting_report,
-)
-from bijux_phylogenetics.core.traits import (
+from bijux_phylogenetics.datasets.study_inputs import (
     detect_missing_trait_values,
     detect_unusable_trait_columns,
+    inspect_metadata_table,
+    join_table_to_taxa,
     link_tree_to_traits,
     prune_traits_to_tree,
     validate_traits_table,
@@ -550,139 +596,29 @@ from bijux_phylogenetics.diagnostics.validation import (
     inspect_tree_path,
     validate_tree_path,
 )
-from bijux_phylogenetics.discrete_evolution import (
-    compare_discrete_state_models,
-    detect_state_imbalance_problems,
-    estimate_ancestral_geographic_states,
-    load_stochastic_map_collection,
-    render_discrete_state_evolution_report,
-    render_tree_with_geographic_states,
-    run_discrete_state_transition_model,
-    simulate_discrete_stochastic_maps,
-    summarize_discrete_stochastic_maps,
-    validate_discrete_state_coding,
-    write_discrete_model_comparison_table,
-    write_node_state_probability_table,
-    write_stochastic_map_collection,
-    write_stochastic_map_summary_table,
-    write_transition_summary_table,
-)
 from bijux_phylogenetics.distance import (
-    assess_distance_method_maturity,
     build_distance_method_report,
     build_distance_tree,
+    build_distance_tree_from_genetic_distance_matrix,
     build_tree_from_imported_distance_matrix,
-    compare_distance_gap_policies,
     compare_distance_models,
-    compare_distance_tree_to_reference_tree,
     compare_distance_tree_topologies,
     compute_pairwise_genetic_distance_matrix,
     load_imported_distance_matrix,
     summarize_distance_bootstrap_support,
     validate_imported_distance_matrix,
 )
-from bijux_phylogenetics.diversification import (
-    compare_diversification_models,
-    compute_lineage_through_time_curve,
-    detect_diversification_outlier_clades,
-    detect_incomplete_taxon_sampling_metadata,
-    estimate_diversification_rate,
-    inspect_diversification_time_tree,
-    render_diversification_report,
-    run_trait_dependent_diversification_analysis,
-    validate_time_tree_for_diversification,
-    write_clade_diversification_table,
-    write_lineage_through_time_table,
-    write_trait_dependent_diversification_table,
-)
-from bijux_phylogenetics.ecological_niche import (
-    NicheStateNodeRow,
-    NicheTransitionBranchRow,
-    NicheTransitionCladeRow,
-    NicheTransitionCountRow,
-    NicheTransitionExclusionRow,
-    NicheTransitionRateRow,
-    NicheTransitionReport,
-    NicheTransitionSummary,
+from bijux_phylogenetics.ecology import (
+    summarize_host_switching,
     summarize_niche_transitions,
-    write_niche_state_node_table,
-    write_niche_transition_branch_table,
-    write_niche_transition_clade_table,
-    write_niche_transition_count_table,
-    write_niche_transition_exclusion_table,
-    write_niche_transition_rate_table,
+    write_host_switch_summary_table,
     write_niche_transition_summary_table,
-)
-from bijux_phylogenetics.engines import (
-    audit_alignment_inference_readiness,
-    build_inference_comparison_conclusion_rows,
-    build_inference_comparison_shared_clade_rows,
-    build_inference_comparison_weighted_conflict_rows,
-    classify_inference_workflow_failure,
-    compare_fast_and_ml_trees,
-    compare_inferred_tree_to_taxon_metadata,
-    infer_unaligned_sequence_type,
-    render_inference_workflow_report,
-    rewrite_inference_comparison_report_html,
-    run_alignment_trimming,
-    run_bootstrap_consensus_tree,
-    run_bootstrap_support_estimation,
-    run_codon_aware_multiple_sequence_alignment,
-    run_fast_tree_inference,
-    run_fasta_to_tree_workflow,
-    run_inference_reproducibility_check,
-    run_large_alignment_inference,
-    run_maximum_likelihood_tree_inference,
-    run_model_selection,
-    run_multiple_sequence_alignment,
-    run_sh_alrt_support_estimation,
-    run_tree_inference_comparison,
-    validate_bootstrap_tree_set,
-    validate_inference_engine_outputs,
-    validate_ml_tree_contains_expected_taxa,
-    validate_model_selection_against_engine_outputs,
-    write_inference_comparison_clade_table,
-    write_inference_comparison_conclusion_table,
-    write_inference_comparison_summary_table,
-    write_inference_comparison_weighted_conflict_table,
-)
-from bijux_phylogenetics.errors import (
-    AlignmentTaxonMismatchError,
-    DuplicateTaxonError,
-    EngineUnavailableError,
-    InvalidAlignmentError,
-    InvalidBranchLengthError,
-    InvalidDistanceMatrixError,
-    MetadataJoinError,
-    NonUltrametricTreeError,
-    UnnamedTipError,
-    UnrootedTreeError,
-    UnsupportedTreeFormatError,
 )
 from bijux_phylogenetics.evidence.bundles import (
     bundle_directory,
     bundle_file_paths,
     validate_bundle,
 )
-from bijux_phylogenetics.host_association import (
-    HostStateNodeRow,
-    HostSwitchBranchRow,
-    HostSwitchCountRow,
-    HostSwitchExclusionRow,
-    HostSwitchFitRow,
-    HostSwitchingReport,
-    HostSwitchSummary,
-    UnsupportedHostSwitchClaimRow,
-    summarize_host_switching,
-    write_host_state_node_table,
-    write_host_switch_branch_table,
-    write_host_switch_count_table,
-    write_host_switch_exclusion_table,
-    write_host_switch_fit_table,
-    write_host_switch_summary_table,
-    write_unsupported_host_switch_claim_table,
-)
-from bijux_phylogenetics.identity import IDENTITY
 from bijux_phylogenetics.io.fasta import (
     assess_alignment_low_information,
     build_alignment_forensic_report,
@@ -697,7 +633,6 @@ from bijux_phylogenetics.io.fasta import (
     compute_nucleotide_composition,
     compute_pairwise_sequence_identity_matrix,
     detect_composition_outlier_sequences,
-    detect_fasta_sequence_type,
     detect_identical_duplicate_sequences,
     detect_invalid_alignment_characters,
     detect_near_duplicate_sequences,
@@ -711,75 +646,84 @@ from bijux_phylogenetics.io.fasta import (
     inspect_coding_alignment,
     link_alignment_to_tree,
     list_alignment_filter_profiles,
+    load_dna_bin_alignment,
     load_fasta_alignment,
     prepare_coding_sequences_for_alignment,
     remove_all_gap_columns,
     remove_all_missing_columns,
     remove_sequences_above_missingness_threshold,
-    repair_fasta_input,
     summarise_fasta,
     summarize_alignment_readiness,
     summarize_alignment_windows,
-    summarize_fasta_input,
     translate_coding_alignment,
     trim_alignment,
     trim_columns_above_missingness_threshold,
-    validate_fasta_input,
+    write_dna_bin_alignment_fasta,
     write_fasta_alignment,
 )
-from bijux_phylogenetics.io.newick import dumps_newick, loads_newick
+from bijux_phylogenetics.io.newick import dumps_newick, loads_newick, write_newick
 from bijux_phylogenetics.io.nexus import load_nexus
 from bijux_phylogenetics.io.phyloxml import load_phyloxml
 from bijux_phylogenetics.io.roundtrip import validate_tree_roundtrip
 from bijux_phylogenetics.io.trees import detect_tree_format
+from bijux_phylogenetics.phylo.alignment import AlignmentRecord, AlignmentSummary
+from bijux_phylogenetics.phylo.branch_lengths.branching_times import (
+    TreeBranchingTimeReport,
+    compute_tree_branching_times,
+    write_tree_branching_time_table,
+)
+from bijux_phylogenetics.phylo.branch_lengths.node_depths import (
+    TreeNodeDepthReport,
+    compute_tree_node_depths,
+)
+from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
+    APE_ULTRAMETRIC_TOLERANCE,
+    TreeUltrametricReport,
+    assess_tree_ultrametricity,
+)
+from bijux_phylogenetics.phylo.pruning import (
+    drop_tree_taxa,
+    prune_alignment_to_tree,
+    prune_tree_to_alignment,
+    prune_tree_to_requested_taxa,
+    prune_tree_to_taxa,
+)
+from bijux_phylogenetics.phylo.taxa import (
+    inspect_tree_taxa_safety,
+    inspect_tree_taxon_identity,
+    normalize_tree_taxa,
+    write_taxon_mapping,
+)
+from bijux_phylogenetics.phylo.topology import (
+    assess_tree_monophyly,
+    collapse_branches_below_length,
+    extract_named_clade,
+    extract_tree_clade_by_descendant_taxa,
+    extract_tree_clade_by_node_id,
+    find_tree_mrca,
+    ladderize_tree,
+    reroot_tree_by_midpoint,
+    root_tree_on_outgroup,
+    rotate_all_internal_nodes,
+    rotate_named_node,
+    sort_tree_tips_alphabetically,
+    unroot_tree,
+    write_tree_rooting_report,
+)
+from bijux_phylogenetics.phylo.topology.tip_distances import (
+    TipDistanceMatrixReport,
+    compute_tree_tip_distance_matrix,
+    write_tree_tip_distance_matrix,
+)
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TaxonLabel, TreeNode
 from bijux_phylogenetics.phylogeography import (
-    CoordinateEstimateRow,
-    CoordinateMovementBranchRow,
-    CoordinateMovementExclusionRow,
-    CoordinateMovementOutlierRow,
-    CoordinateMovementSummary,
-    CoordinateMovementVisualization,
-    GeographicMapArtifact,
-    GeographicMapExclusionRow,
-    GeographicMapLineRow,
-    GeographicMapMarkerRow,
-    GeographicMapReport,
-    GeographicMapSummary,
-    PhylogeographicCoordinateReport,
-    render_coordinate_movement_visualization,
     render_geographic_map_html,
     summarize_continuous_phylogeography,
-    summarize_continuous_phylogeography_map,
-    summarize_discrete_region_map,
-    write_coordinate_estimate_table,
-    write_coordinate_movement_branch_table,
-    write_coordinate_movement_exclusion_table,
-    write_coordinate_movement_outlier_table,
     write_coordinate_movement_summary_table,
-    write_geographic_map_exclusion_table,
-    write_geographic_map_line_table,
-    write_geographic_map_marker_table,
-    write_geographic_map_summary_table,
 )
-from bijux_phylogenetics.reference_parity import (
-    validate_reference_parity_examples,
-    write_reference_parity_observation_table,
-    write_reference_parity_summary_table,
-)
-from bijux_phylogenetics.reference_validation import (
-    build_core_workflow_failure_gallery,
-    build_core_workflow_validation_report,
-    build_level_one_release_gate_report,
-    classify_core_workflow_maturity,
-    validate_alignment_quality_reference_fixtures,
-    validate_dataset_audit_reference_fixtures,
-    validate_figure_reference_fixtures,
-    validate_report_regression_fixtures,
-    validate_taxon_naming_reference_fixtures,
-    validate_tree_reference_fixtures,
-)
-from bijux_phylogenetics.render.package import build_tree_figure_package
-from bijux_phylogenetics.render.svg import AnnotationStrip, render_tree_svg
+from bijux_phylogenetics.render.html import write_html_report
+from bijux_phylogenetics.render.tree_figure_package import build_tree_figure_package
+from bijux_phylogenetics.render.tree_svg import AnnotationStrip, render_tree_svg
 from bijux_phylogenetics.reports.service import (
     annotate_tree_against_table,
     distance_method_limitations,
@@ -789,61 +733,119 @@ from bijux_phylogenetics.reports.service import (
     render_level_one_release_gate_report,
     render_phylo_inputs_report,
     render_phylogenetics_report,
+    render_release_truth_report,
     render_taxon_report,
     render_tree_report,
     render_tree_set_comparison_report,
     render_tree_uncertainty_report,
     render_workflow_validation_report,
 )
-from bijux_phylogenetics.simulation import (
-    simulate_birth_death_trees,
-    simulate_brownian_traits,
-    simulate_coalescent_trees,
-    simulate_discrete_traits,
-    simulate_dna_alignment,
-    simulate_ou_traits,
-    simulate_protein_alignment,
-    write_continuous_trait_table,
-    write_discrete_trait_table,
-    write_simulated_alignment,
-    write_tree_set,
+from bijux_phylogenetics.runtime.errors import (
+    AlignmentTaxonMismatchError,
+    DuplicateTaxonError,
+    EngineUnavailableError,
+    InvalidAlignmentError,
+    InvalidBranchLengthError,
+    InvalidDistanceMatrixError,
+    MetadataJoinError,
+    NonUltrametricTreeError,
+    TreeParseError,
+    TreeRootingError,
+    UnnamedTipError,
+    UnrootedTreeError,
+    UnsupportedTreeFormatError,
 )
-from bijux_phylogenetics.tree_set import (
-    BootstrapTreeSetArtifactReport,
-    BootstrapTreeSetSummaryReport,
-    BootstrapUnstableBranch,
+from bijux_phylogenetics.runtime.identity import IDENTITY
+from bijux_phylogenetics.trees import (
+    TREE_SET_SPLIT_FREQUENCY_POLICIES,
+    BranchLengthAggregate,
+    BranchLengthDistributionReport,
+    CladeTableReport,
+    PosteriorAgreementSubtreeCandidateRow,
+    PosteriorAgreementSubtreeReport,
+    PosteriorBranchLengthSummaryReport,
+    PosteriorBranchLengthSummaryRow,
+    PosteriorCladeCorrelationReport,
+    PosteriorCladeCorrelationRow,
+    PosteriorNodeAgeSummaryReport,
+    PosteriorNodeAgeSummaryRow,
+    PosteriorTreeDistanceDiagnosticRow,
+    PosteriorTreeDistanceDiagnosticsReport,
+    PosteriorTreeDistanceDistributionRow,
+    TreeSetCredibleCladeRow,
+    TreeSetCredibleCladeSetReport,
+    TreeSetMaximumCladeCredibilityCandidateRow,
+    TreeSetMaximumCladeCredibilityReport,
+    TreeSetSplitFrequencyReport,
+    TreeSetSplitFrequencyRow,
+    TreeShapeReport,
+    analyze_branch_length_distribution,
+    analyze_tree_set_branch_lengths,
     cluster_trees_by_topology,
     compare_bootstrap_and_posterior_uncertainty,
     compare_posterior_topological_diversity,
     compare_posterior_tree_sets,
     compute_clade_frequency_table,
     compute_consensus_tree,
+    compute_credible_clade_set,
+    compute_maximum_clade_credibility_tree,
+    compute_posterior_clade_correlation_matrix,
+    compute_posterior_tree_distance_diagnostics,
+    compute_strict_consensus_tree,
     compute_tree_distance_matrix,
+    compute_tree_set_split_frequency_table,
     detect_posterior_topology_multimodality,
     detect_unstable_clades,
     detect_unstable_taxa,
+    extract_tree_clades,
+    extract_tree_set_clades,
     load_tree_set,
-    summarize_bootstrap_tree_set,
     summarize_clade_credibility_conflicts,
-    summarize_uncertainty_aware_conclusions,
-    write_bootstrap_tree_set_artifacts,
-    write_bootstrap_tree_set_summary_table,
-    write_bootstrap_unstable_branch_table,
-    write_clade_credibility_conflict_table,
-    write_topology_cluster_table,
-    write_uncertainty_conclusion_table,
-)
-from bijux_phylogenetics.tree_shape import (
-    TreeShapeAggregate,
-    TreeShapeReport,
-    TreeShapeRow,
+    summarize_posterior_agreement_subtree,
+    summarize_posterior_branch_lengths,
+    summarize_posterior_node_ages,
     summarize_tree_set_shapes,
     summarize_tree_shape,
+    summarize_uncertainty_aware_conclusions,
+    write_branch_length_table,
+    write_clade_credibility_conflict_table,
+    write_clade_table,
+    write_credible_clade_set_artifacts,
+    write_credible_clade_set_excluded_table,
+    write_credible_clade_set_included_table,
+    write_maximum_clade_credibility_artifacts,
+    write_maximum_clade_credibility_score_table,
+    write_posterior_agreement_subtree_artifacts,
+    write_posterior_agreement_subtree_removed_taxa_table,
+    write_posterior_agreement_subtree_search_table,
+    write_posterior_agreement_subtree_summary_table,
+    write_posterior_branch_length_summary_table,
+    write_posterior_clade_correlation_artifacts,
+    write_posterior_clade_correlation_matrix_table,
+    write_posterior_clade_correlation_pair_table,
+    write_posterior_node_age_summary_table,
+    write_posterior_tree_distance_artifacts,
+    write_posterior_tree_distance_diagnostic_table,
+    write_posterior_tree_distance_distribution_table,
+    write_topology_cluster_table,
+    write_tree_set_split_frequency_table,
     write_tree_shape_table,
+    write_uncertainty_conclusion_table,
+)
+from bijux_phylogenetics.validation import (
+    build_core_workflow_validation_report,
+    build_level_one_release_gate_report,
+    build_release_truth_report,
+    validate_alignment_quality_reference_fixtures,
+    validate_dataset_audit_reference_fixtures,
+    validate_figure_reference_fixtures,
+    validate_report_regression_fixtures,
+    validate_taxon_naming_reference_fixtures,
+    validate_tree_reference_fixtures,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
-FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
+FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected", "parsimony")
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
@@ -856,6 +858,26 @@ def fixture(name: str) -> Path:
         if candidate.exists():
             return candidate
     raise FileNotFoundError(name)
+
+
+def _write_junit_report(
+    path: Path,
+    *,
+    suite_name: str,
+    tests: int,
+    failures: int,
+    skipped: int,
+    errors: int = 0,
+) -> Path:
+    path.write_text(
+        (
+            '<testsuites name="pytest">'
+            f'<testsuite name="{suite_name}" tests="{tests}" failures="{failures}" errors="{errors}" skipped="{skipped}" />'
+            "</testsuites>\n"
+        ),
+        encoding="utf-8",
+    )
+    return path
 
 
 def _load_robinson_foulds_reference_rows() -> list[dict[str, str]]:
@@ -881,2325 +903,1730 @@ def test_package_identity_matches_canonical_names() -> None:
     assert IDENTITY.cli_aliases == ("bijux phylo",)
 
 
+def test_package_root_exposes_curated_domain_gateways() -> None:
+    import bijux_phylogenetics.ancestral as ancestral_api
+    import bijux_phylogenetics.api as workflow_api
+    import bijux_phylogenetics.bayesian as bayesian_api
+    import bijux_phylogenetics.biogeography as biogeography_api
+    import bijux_phylogenetics.comparative as comparative_api
+    import bijux_phylogenetics.datasets as datasets_api
+    import bijux_phylogenetics.distance as distance_api
+    import bijux_phylogenetics.evidence as evidence_api
+    import bijux_phylogenetics.parity as parity_api
+    import bijux_phylogenetics.parsimony as parsimony_api
+    import bijux_phylogenetics.phylo as phylo_api
+    import bijux_phylogenetics.trees as trees_api
+
+    assert bijux_phylogenetics.__all__ == [
+        "__version__",
+        "ancestral",
+        "api",
+        "bayesian",
+        "biogeography",
+        "comparative",
+        "datasets",
+        "distance",
+        "evidence",
+        "parsimony",
+        "parity",
+        "phylo",
+        "trees",
+    ]
+    assert bijux_phylogenetics.ancestral is ancestral_api
+    assert bijux_phylogenetics.api is workflow_api
+    assert bijux_phylogenetics.bayesian is bayesian_api
+    assert bijux_phylogenetics.biogeography is biogeography_api
+    assert bijux_phylogenetics.comparative is comparative_api
+    assert bijux_phylogenetics.datasets is datasets_api
+    assert bijux_phylogenetics.distance is distance_api
+    assert bijux_phylogenetics.evidence is evidence_api
+    assert bijux_phylogenetics.parsimony is parsimony_api
+    assert bijux_phylogenetics.parity is parity_api
+    assert bijux_phylogenetics.phylo is phylo_api
+    assert bijux_phylogenetics.trees is trees_api
+    assert not hasattr(bijux_phylogenetics, "trim_alignment")
+    assert not hasattr(bijux_phylogenetics, "run_pgls")
+    assert not hasattr(bijux_phylogenetics, "bundle_directory")
+
+
 def test_public_package_exports_alignment_and_topology_workflows() -> None:
-    assert bijux_phylogenetics.summarise_fasta is summarise_fasta
+    import bijux_phylogenetics.biogeography as biogeography_api
+    import bijux_phylogenetics.compare as compare_module_api
+    import bijux_phylogenetics.distance as distance_api
+    import bijux_phylogenetics.ecology as ecology_api
+    import bijux_phylogenetics.io.fasta as fasta_api
+    import bijux_phylogenetics.phylo.branch_lengths.branching_times as branching_times_api
+    import bijux_phylogenetics.phylo.branch_lengths.node_depths as node_depth_api
+    import bijux_phylogenetics.phylo.branch_lengths.ultrametric as ultrametric_api
+    import bijux_phylogenetics.phylo.topology.tip_distances as tree_distance_api
+    import bijux_phylogenetics.phylo.topology.tree as tree_api
+    import bijux_phylogenetics.phylogeography as phylogeography_api
+    import bijux_phylogenetics.trees as trees_api
+
+    assert fasta_api.summarise_fasta is summarise_fasta
+    assert fasta_api.build_alignment_quality_report is build_alignment_quality_report
+    assert fasta_api.build_alignment_forensic_report is build_alignment_forensic_report
+    assert fasta_api.classify_alignment_sequences is classify_alignment_sequences
+    assert fasta_api.clean_alignment_with_profile is clean_alignment_with_profile
+    assert fasta_api.compare_alignment_versions is compare_alignment_versions
+
     assert (
-        bijux_phylogenetics.build_alignment_quality_report
-        is build_alignment_quality_report
-    )
-    assert (
-        bijux_phylogenetics.build_alignment_forensic_report
-        is build_alignment_forensic_report
-    )
-    assert (
-        bijux_phylogenetics.classify_alignment_sequences is classify_alignment_sequences
-    )
-    assert (
-        bijux_phylogenetics.clean_alignment_with_profile is clean_alignment_with_profile
-    )
-    assert bijux_phylogenetics.compare_alignment_versions is compare_alignment_versions
-    assert (
-        bijux_phylogenetics.compute_pairwise_genetic_distance_matrix
+        distance_api.compute_pairwise_genetic_distance_matrix
         is compute_pairwise_genetic_distance_matrix
     )
+    assert distance_api.build_distance_method_report is build_distance_method_report
+    assert distance_api.build_distance_tree is build_distance_tree
     assert (
-        bijux_phylogenetics.build_distance_method_report is build_distance_method_report
-    )
-    assert bijux_phylogenetics.build_distance_tree is build_distance_tree
-    assert (
-        bijux_phylogenetics.build_tree_from_imported_distance_matrix
+        distance_api.build_tree_from_imported_distance_matrix
         is build_tree_from_imported_distance_matrix
     )
+    assert distance_api.compare_distance_models is compare_distance_models
     assert (
-        bijux_phylogenetics.compare_distance_gap_policies
-        is compare_distance_gap_policies
-    )
-    assert bijux_phylogenetics.compare_distance_models is compare_distance_models
-    assert (
-        bijux_phylogenetics.compare_distance_tree_to_reference_tree
-        is compare_distance_tree_to_reference_tree
-    )
-    assert (
-        bijux_phylogenetics.compare_distance_tree_topologies
+        distance_api.compare_distance_tree_topologies
         is compare_distance_tree_topologies
     )
     assert (
-        bijux_phylogenetics.BranchScoreComparisonReport is BranchScoreComparisonReport
-    )
-    assert (
-        bijux_phylogenetics.CladeOverlapComparisonReport is CladeOverlapComparisonReport
-    )
-    assert bijux_phylogenetics.CladeMetadataObservation is CladeMetadataObservation
-    assert bijux_phylogenetics.BranchLengthAggregate is BranchLengthAggregate
-    assert (
-        bijux_phylogenetics.BranchLengthDistributionReport
-        is BranchLengthDistributionReport
-    )
-    assert bijux_phylogenetics.BranchLengthRow is BranchLengthRow
-    assert bijux_phylogenetics.CladeTableReport is CladeTableReport
-    assert bijux_phylogenetics.CladeTableRow is CladeTableRow
-    assert bijux_phylogenetics.TreeShapeAggregate is TreeShapeAggregate
-    assert bijux_phylogenetics.TreeShapeReport is TreeShapeReport
-    assert bijux_phylogenetics.TreeShapeRow is TreeShapeRow
-    assert bijux_phylogenetics.SharedTaxaPruningReport is SharedTaxaPruningReport
-    assert bijux_phylogenetics.SupportComparisonReport is SupportComparisonReport
-    assert bijux_phylogenetics.SupportConflictRow is SupportConflictRow
-    assert bijux_phylogenetics.TaxonInfluenceReport is TaxonInfluenceReport
-    assert bijux_phylogenetics.TaxonInfluenceRow is TaxonInfluenceRow
-    assert (
-        bijux_phylogenetics.compare_branch_score_distance
-        is compare_branch_score_distance
-    )
-    assert bijux_phylogenetics.compare_clade_overlap is compare_clade_overlap
-    assert bijux_phylogenetics.analyze_taxon_influence is analyze_taxon_influence
-    assert (
-        bijux_phylogenetics.analyze_branch_length_distribution
-        is analyze_branch_length_distribution
-    )
-    assert (
-        bijux_phylogenetics.analyze_tree_set_branch_lengths
-        is analyze_tree_set_branch_lengths
-    )
-    assert bijux_phylogenetics.extract_tree_clades is extract_tree_clades
-    assert bijux_phylogenetics.extract_tree_set_clades is extract_tree_set_clades
-    assert bijux_phylogenetics.summarize_tree_shape is summarize_tree_shape
-    assert bijux_phylogenetics.summarize_tree_set_shapes is summarize_tree_set_shapes
-    assert bijux_phylogenetics.prune_trees_to_shared_taxa is prune_trees_to_shared_taxa
-    assert bijux_phylogenetics.compare_support_values is compare_support_values
-    assert bijux_phylogenetics.write_branch_length_table is write_branch_length_table
-    assert bijux_phylogenetics.write_clade_table is write_clade_table
-    assert bijux_phylogenetics.write_tree_shape_table is write_tree_shape_table
-    assert bijux_phylogenetics.write_clade_overlap_table is write_clade_overlap_table
-    assert (
-        bijux_phylogenetics.write_shared_taxa_pruning_table
-        is write_shared_taxa_pruning_table
-    )
-    assert (
-        bijux_phylogenetics.write_shared_taxa_removed_taxa_table
-        is write_shared_taxa_removed_taxa_table
-    )
-    assert (
-        bijux_phylogenetics.write_support_comparison_table
-        is write_support_comparison_table
-    )
-    assert (
-        bijux_phylogenetics.write_taxon_influence_table is write_taxon_influence_table
-    )
-    assert (
-        bijux_phylogenetics.RobinsonFouldsComparisonReport
-        is RobinsonFouldsComparisonReport
-    )
-    assert compare_api.CladeOverlapComparisonReport is CladeOverlapComparisonReport
-    assert compare_api.SharedTaxaPruningReport is SharedTaxaPruningReport
-    assert compare_api.SupportComparisonReport is SupportComparisonReport
-    assert compare_api.SupportConflictRow is SupportConflictRow
-    assert compare_api.TaxonInfluenceReport is TaxonInfluenceReport
-    assert compare_api.TaxonInfluenceRow is TaxonInfluenceRow
-    assert compare_api.compare_clade_overlap is compare_clade_overlap
-    assert compare_api.prune_trees_to_shared_taxa is prune_trees_to_shared_taxa
-    assert compare_api.compare_support_values is compare_support_values
-    assert compare_api.analyze_taxon_influence is analyze_taxon_influence
-    assert compare_api.write_clade_overlap_table is write_clade_overlap_table
-    assert (
-        compare_api.write_shared_taxa_pruning_table is write_shared_taxa_pruning_table
-    )
-    assert (
-        compare_api.write_shared_taxa_removed_taxa_table
-        is write_shared_taxa_removed_taxa_table
-    )
-    assert compare_api.write_support_comparison_table is write_support_comparison_table
-    assert compare_api.write_taxon_influence_table is write_taxon_influence_table
-    assert compare_api.BranchScoreComparisonReport is BranchScoreComparisonReport
-    assert compare_api.compare_branch_score_distance is compare_branch_score_distance
-    assert bijux_phylogenetics.compare_robinson_foulds is compare_robinson_foulds
-    assert compare_api.RobinsonFouldsComparisonReport is RobinsonFouldsComparisonReport
-    assert compare_api.compare_robinson_foulds is compare_robinson_foulds
-    assert (
-        bijux_phylogenetics.assess_distance_method_maturity
-        is assess_distance_method_maturity
-    )
-    assert (
-        bijux_phylogenetics.summarize_distance_bootstrap_support
+        distance_api.summarize_distance_bootstrap_support
         is summarize_distance_bootstrap_support
     )
     assert (
-        bijux_phylogenetics.validate_imported_distance_matrix
+        distance_api.validate_imported_distance_matrix
         is validate_imported_distance_matrix
     )
+
+    assert compare_module_api.BranchScoreComparisonReport is BranchScoreComparisonReport
     assert (
-        bijux_phylogenetics.validate_discrete_state_coding
-        is validate_discrete_state_coding
+        compare_module_api.CladeOverlapComparisonReport is CladeOverlapComparisonReport
     )
     assert (
-        bijux_phylogenetics.detect_state_imbalance_problems
-        is detect_state_imbalance_problems
+        compare_module_api.compare_branch_score_distance
+        is compare_branch_score_distance
+    )
+    assert compare_module_api.compare_clade_overlap is compare_clade_overlap
+    assert compare_module_api.analyze_taxon_influence is analyze_taxon_influence
+    assert compare_module_api.compare_topology_distance is compare_topology_distance
+    assert compare_module_api.compare_robinson_foulds is compare_robinson_foulds
+    assert (
+        compare_module_api.validate_support_reference_examples
+        is validate_support_reference_examples
     )
     assert (
-        bijux_phylogenetics.run_discrete_state_transition_model
-        is run_discrete_state_transition_model
+        compare_module_api.validate_tree_distance_reference_examples
+        is validate_tree_distance_reference_examples
+    )
+
+    assert trees_api.BranchLengthAggregate is BranchLengthAggregate
+    assert trees_api.BranchLengthDistributionReport is BranchLengthDistributionReport
+    assert trees_api.CladeTableReport is CladeTableReport
+    assert (
+        trees_api.PosteriorAgreementSubtreeCandidateRow
+        is PosteriorAgreementSubtreeCandidateRow
+    )
+    assert trees_api.PosteriorAgreementSubtreeReport is PosteriorAgreementSubtreeReport
+    assert trees_api.PosteriorCladeCorrelationReport is PosteriorCladeCorrelationReport
+    assert trees_api.PosteriorCladeCorrelationRow is PosteriorCladeCorrelationRow
+    assert trees_api.PosteriorBranchLengthSummaryRow is PosteriorBranchLengthSummaryRow
+    assert (
+        trees_api.PosteriorBranchLengthSummaryReport
+        is PosteriorBranchLengthSummaryReport
+    )
+    assert trees_api.PosteriorNodeAgeSummaryRow is PosteriorNodeAgeSummaryRow
+    assert trees_api.PosteriorNodeAgeSummaryReport is PosteriorNodeAgeSummaryReport
+    assert (
+        trees_api.PosteriorTreeDistanceDiagnosticRow
+        is PosteriorTreeDistanceDiagnosticRow
     )
     assert (
-        bijux_phylogenetics.estimate_ancestral_geographic_states
-        is estimate_ancestral_geographic_states
+        trees_api.PosteriorTreeDistanceDiagnosticsReport
+        is PosteriorTreeDistanceDiagnosticsReport
     )
     assert (
-        bijux_phylogenetics.compare_discrete_state_models
-        is compare_discrete_state_models
+        trees_api.PosteriorTreeDistanceDistributionRow
+        is PosteriorTreeDistanceDistributionRow
     )
     assert (
-        bijux_phylogenetics.write_discrete_model_comparison_table
-        is write_discrete_model_comparison_table
+        trees_api.TREE_SET_SPLIT_FREQUENCY_POLICIES is TREE_SET_SPLIT_FREQUENCY_POLICIES
+    )
+    assert trees_api.TreeShapeReport is TreeShapeReport
+    assert trees_api.TreeSetCredibleCladeRow is TreeSetCredibleCladeRow
+    assert trees_api.TreeSetCredibleCladeSetReport is TreeSetCredibleCladeSetReport
+    assert (
+        trees_api.TreeSetMaximumCladeCredibilityCandidateRow
+        is TreeSetMaximumCladeCredibilityCandidateRow
     )
     assert (
-        bijux_phylogenetics.write_node_state_probability_table
-        is write_node_state_probability_table
+        trees_api.TreeSetMaximumCladeCredibilityReport
+        is TreeSetMaximumCladeCredibilityReport
+    )
+    assert trees_api.TreeSetSplitFrequencyRow is TreeSetSplitFrequencyRow
+    assert trees_api.TreeSetSplitFrequencyReport is TreeSetSplitFrequencyReport
+    assert (
+        trees_api.analyze_branch_length_distribution
+        is analyze_branch_length_distribution
+    )
+    assert trees_api.analyze_tree_set_branch_lengths is analyze_tree_set_branch_lengths
+    assert trees_api.extract_tree_clades is extract_tree_clades
+    assert trees_api.extract_tree_set_clades is extract_tree_set_clades
+    assert trees_api.summarize_tree_shape is summarize_tree_shape
+    assert trees_api.summarize_tree_set_shapes is summarize_tree_set_shapes
+    assert trees_api.compute_credible_clade_set is compute_credible_clade_set
+    assert (
+        trees_api.compute_maximum_clade_credibility_tree
+        is compute_maximum_clade_credibility_tree
     )
     assert (
-        bijux_phylogenetics.write_transition_summary_table
-        is write_transition_summary_table
+        trees_api.compute_posterior_clade_correlation_matrix
+        is compute_posterior_clade_correlation_matrix
     )
     assert (
-        bijux_phylogenetics.summarize_constrained_geographic_model
+        trees_api.compute_posterior_tree_distance_diagnostics
+        is compute_posterior_tree_distance_diagnostics
+    )
+    assert (
+        trees_api.summarize_posterior_agreement_subtree
+        is summarize_posterior_agreement_subtree
+    )
+    assert (
+        trees_api.summarize_posterior_branch_lengths
+        is summarize_posterior_branch_lengths
+    )
+    assert trees_api.summarize_posterior_node_ages is summarize_posterior_node_ages
+    assert (
+        trees_api.compute_tree_set_split_frequency_table
+        is compute_tree_set_split_frequency_table
+    )
+    assert trees_api.write_branch_length_table is write_branch_length_table
+    assert trees_api.write_clade_table is write_clade_table
+    assert (
+        trees_api.write_credible_clade_set_artifacts
+        is write_credible_clade_set_artifacts
+    )
+    assert (
+        trees_api.write_credible_clade_set_excluded_table
+        is write_credible_clade_set_excluded_table
+    )
+    assert (
+        trees_api.write_credible_clade_set_included_table
+        is write_credible_clade_set_included_table
+    )
+    assert (
+        trees_api.write_maximum_clade_credibility_artifacts
+        is write_maximum_clade_credibility_artifacts
+    )
+    assert (
+        trees_api.write_maximum_clade_credibility_score_table
+        is write_maximum_clade_credibility_score_table
+    )
+    assert (
+        trees_api.write_posterior_agreement_subtree_artifacts
+        is write_posterior_agreement_subtree_artifacts
+    )
+    assert (
+        trees_api.write_posterior_agreement_subtree_removed_taxa_table
+        is write_posterior_agreement_subtree_removed_taxa_table
+    )
+    assert (
+        trees_api.write_posterior_agreement_subtree_search_table
+        is write_posterior_agreement_subtree_search_table
+    )
+    assert (
+        trees_api.write_posterior_agreement_subtree_summary_table
+        is write_posterior_agreement_subtree_summary_table
+    )
+    assert (
+        trees_api.write_posterior_clade_correlation_artifacts
+        is write_posterior_clade_correlation_artifacts
+    )
+    assert (
+        trees_api.write_posterior_clade_correlation_matrix_table
+        is write_posterior_clade_correlation_matrix_table
+    )
+    assert (
+        trees_api.write_posterior_clade_correlation_pair_table
+        is write_posterior_clade_correlation_pair_table
+    )
+    assert (
+        trees_api.write_posterior_tree_distance_artifacts
+        is write_posterior_tree_distance_artifacts
+    )
+    assert (
+        trees_api.write_posterior_tree_distance_diagnostic_table
+        is write_posterior_tree_distance_diagnostic_table
+    )
+    assert (
+        trees_api.write_posterior_tree_distance_distribution_table
+        is write_posterior_tree_distance_distribution_table
+    )
+    assert (
+        trees_api.write_posterior_branch_length_summary_table
+        is write_posterior_branch_length_summary_table
+    )
+    assert (
+        trees_api.write_posterior_node_age_summary_table
+        is write_posterior_node_age_summary_table
+    )
+    assert (
+        trees_api.write_tree_set_split_frequency_table
+        is write_tree_set_split_frequency_table
+    )
+    assert trees_api.write_tree_shape_table is write_tree_shape_table
+
+    assert branching_times_api.TreeBranchingTimeReport is TreeBranchingTimeReport
+    assert (
+        branching_times_api.compute_tree_branching_times is compute_tree_branching_times
+    )
+    assert (
+        branching_times_api.write_tree_branching_time_table
+        is write_tree_branching_time_table
+    )
+    assert tree_api.PhyloTree is PhyloTree
+    assert tree_api.TaxonLabel is TaxonLabel
+    assert tree_api.TreeNode is TreeNode
+    assert node_depth_api.TreeNodeDepthReport is TreeNodeDepthReport
+    assert node_depth_api.compute_tree_node_depths is compute_tree_node_depths
+    assert ultrametric_api.APE_ULTRAMETRIC_TOLERANCE == APE_ULTRAMETRIC_TOLERANCE
+    assert ultrametric_api.TreeUltrametricReport is TreeUltrametricReport
+    assert ultrametric_api.assess_tree_ultrametricity is assess_tree_ultrametricity
+    assert tree_distance_api.TipDistanceMatrixReport is TipDistanceMatrixReport
+    assert (
+        tree_distance_api.compute_tree_tip_distance_matrix
+        is compute_tree_tip_distance_matrix
+    )
+    assert (
+        tree_distance_api.write_tree_tip_distance_matrix
+        is write_tree_tip_distance_matrix
+    )
+
+    assert biogeography_api.TimeBinDefinition is TimeBinDefinition
+    assert (
+        biogeography_api.summarize_constrained_geographic_model
         is summarize_constrained_geographic_model
     )
     assert (
-        bijux_phylogenetics.summarize_constrained_geographic_report
-        is summarize_constrained_geographic_report
-    )
-    assert (
-        bijux_phylogenetics.summarize_biogeographic_transition_chronology
+        biogeography_api.summarize_biogeographic_transition_chronology
         is summarize_biogeographic_transition_chronology
     )
     assert (
-        bijux_phylogenetics.summarize_geographic_sampling_bias
-        is summarize_geographic_sampling_bias
-    )
-    assert bijux_phylogenetics.BiogeographyRegionCountRow is BiogeographyRegionCountRow
-    assert (
-        bijux_phylogenetics.BiogeographyReportExclusionRow
-        is BiogeographyReportExclusionRow
-    )
-    assert (
-        bijux_phylogenetics.BiogeographyReportPackageResult
-        is BiogeographyReportPackageResult
-    )
-    assert (
-        bijux_phylogenetics.summarize_biogeography_region_counts
-        is summarize_biogeography_region_counts
-    )
-    assert (
-        bijux_phylogenetics.summarize_geographic_state_model
-        is summarize_geographic_state_model
-    )
-    assert (
-        bijux_phylogenetics.build_biogeography_report_package
-        is build_biogeography_report_package
-    )
-    assert (
-        bijux_phylogenetics.summarize_geographic_migration_events
-        is summarize_geographic_migration_events
-    )
-    assert (
-        bijux_phylogenetics.summarize_geographic_migration_event_tree_set
-        is summarize_geographic_migration_event_tree_set
-    )
-    assert (
-        bijux_phylogenetics.summarize_time_stratified_geographic_transitions
-        is summarize_time_stratified_geographic_transitions
-    )
-    assert (
-        bijux_phylogenetics.write_constrained_geographic_summary_table
-        is write_constrained_geographic_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_constrained_geographic_fit_table
-        is write_constrained_geographic_fit_table
-    )
-    assert (
-        bijux_phylogenetics.write_constrained_geographic_transition_table
-        is write_constrained_geographic_transition_table
-    )
-    assert (
-        bijux_phylogenetics.write_biogeography_region_count_table
-        is write_biogeography_region_count_table
-    )
-    assert (
-        bijux_phylogenetics.write_biogeography_report_exclusion_table
-        is write_biogeography_report_exclusion_table
-    )
-    assert (
-        bijux_phylogenetics.write_constrained_geographic_exclusion_table
-        is write_constrained_geographic_exclusion_table
-    )
-    assert (
-        bijux_phylogenetics.write_dated_biogeography_summary_table
-        is write_dated_biogeography_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_dated_biogeography_node_table
-        is write_dated_biogeography_node_table
-    )
-    assert (
-        bijux_phylogenetics.write_dated_biogeography_event_table
-        is write_dated_biogeography_event_table
-    )
-    assert (
-        bijux_phylogenetics.write_dated_biogeography_time_bin_table
-        is write_dated_biogeography_time_bin_table
-    )
-    assert (
-        bijux_phylogenetics.write_dated_biogeography_exclusion_table
-        is write_dated_biogeography_exclusion_table
-    )
-    assert (
-        bijux_phylogenetics.write_geographic_sampling_bias_summary_table
-        is write_geographic_sampling_bias_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_geographic_sampling_count_table
-        is write_geographic_sampling_count_table
-    )
-    assert (
-        bijux_phylogenetics.write_geographic_sampling_bias_node_table
-        is write_geographic_sampling_bias_node_table
-    )
-    assert (
-        bijux_phylogenetics.write_geographic_sampling_bias_transition_table
-        is write_geographic_sampling_bias_transition_table
-    )
-    assert (
-        bijux_phylogenetics.write_geographic_sampling_bias_exclusion_table
-        is write_geographic_sampling_bias_exclusion_table
-    )
-    assert (
-        bijux_phylogenetics.write_unsupported_geographic_transition_claim_table
-        is write_unsupported_geographic_transition_claim_table
-    )
-    assert (
-        bijux_phylogenetics.write_geographic_state_summary_table
-        is write_geographic_state_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_geographic_region_probability_table
-        is write_geographic_region_probability_table
-    )
-    assert (
-        bijux_phylogenetics.write_geographic_transition_rate_table
-        is write_geographic_transition_rate_table
-    )
-    assert (
-        bijux_phylogenetics.write_geographic_transition_event_table
+        biogeography_api.write_geographic_transition_event_table
         is write_geographic_transition_event_table
     )
+    assert ecology_api.summarize_host_switching is summarize_host_switching
     assert (
-        bijux_phylogenetics.write_geographic_exclusion_table
-        is write_geographic_exclusion_table
+        ecology_api.write_host_switch_summary_table is write_host_switch_summary_table
     )
+    assert ecology_api.summarize_niche_transitions is summarize_niche_transitions
     assert (
-        bijux_phylogenetics.write_geographic_migration_event_summary_table
-        is write_geographic_migration_event_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_geographic_migration_event_table
-        is write_geographic_migration_event_table
-    )
-    assert (
-        bijux_phylogenetics.write_geographic_migration_exclusion_table
-        is write_geographic_migration_exclusion_table
-    )
-    assert (
-        bijux_phylogenetics.write_geographic_migration_tree_set_summary_table
-        is write_geographic_migration_tree_set_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_geographic_migration_tree_set_tree_table
-        is write_geographic_migration_tree_set_tree_table
-    )
-    assert (
-        bijux_phylogenetics.write_geographic_migration_tree_set_event_table
-        is write_geographic_migration_tree_set_event_table
-    )
-    assert (
-        bijux_phylogenetics.write_geographic_migration_tree_set_event_summary_table
-        is write_geographic_migration_tree_set_event_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_geographic_migration_tree_set_exclusion_table
-        is write_geographic_migration_tree_set_exclusion_table
-    )
-    assert bijux_phylogenetics.TimeBinDefinition is TimeBinDefinition
-    assert (
-        bijux_phylogenetics.GeographicMigrationEventReport
-        is GeographicMigrationEventReport
-    )
-    assert (
-        bijux_phylogenetics.GeographicMigrationEventRow is GeographicMigrationEventRow
-    )
-    assert (
-        bijux_phylogenetics.GeographicMigrationEventSummary
-        is GeographicMigrationEventSummary
-    )
-    assert bijux_phylogenetics.GeographicMigrationTreeRow is GeographicMigrationTreeRow
-    assert (
-        bijux_phylogenetics.GeographicMigrationTreeSetEventRow
-        is GeographicMigrationTreeSetEventRow
-    )
-    assert (
-        bijux_phylogenetics.GeographicMigrationTreeSetEventSummaryRow
-        is GeographicMigrationTreeSetEventSummaryRow
-    )
-    assert (
-        bijux_phylogenetics.GeographicMigrationTreeSetReport
-        is GeographicMigrationTreeSetReport
-    )
-    assert (
-        bijux_phylogenetics.GeographicMigrationTreeSetSummary
-        is GeographicMigrationTreeSetSummary
-    )
-    assert bijux_phylogenetics.DatedBiogeographyEventRow is DatedBiogeographyEventRow
-    assert bijux_phylogenetics.DatedBiogeographyNodeRow is DatedBiogeographyNodeRow
-    assert bijux_phylogenetics.DatedBiogeographyReport is DatedBiogeographyReport
-    assert bijux_phylogenetics.DatedBiogeographySummary is DatedBiogeographySummary
-    assert (
-        bijux_phylogenetics.DatedBiogeographyTimeBinRow is DatedBiogeographyTimeBinRow
-    )
-    assert (
-        bijux_phylogenetics.GeographicSamplingBiasNodeRow
-        is GeographicSamplingBiasNodeRow
-    )
-    assert (
-        bijux_phylogenetics.GeographicSamplingBiasReport is GeographicSamplingBiasReport
-    )
-    assert (
-        bijux_phylogenetics.GeographicSamplingBiasSummary
-        is GeographicSamplingBiasSummary
-    )
-    assert (
-        bijux_phylogenetics.GeographicSamplingBiasTransitionRow
-        is GeographicSamplingBiasTransitionRow
-    )
-    assert bijux_phylogenetics.GeographicSamplingCountRow is GeographicSamplingCountRow
-    assert (
-        bijux_phylogenetics.ConstrainedGeographicFitRow is ConstrainedGeographicFitRow
-    )
-    assert (
-        bijux_phylogenetics.ConstrainedGeographicReport is ConstrainedGeographicReport
-    )
-    assert (
-        bijux_phylogenetics.ConstrainedGeographicSummary is ConstrainedGeographicSummary
-    )
-    assert (
-        bijux_phylogenetics.ConstrainedGeographicTransitionRow
-        is ConstrainedGeographicTransitionRow
-    )
-    assert bijux_phylogenetics.TimeStratifiedBranchRow is TimeStratifiedBranchRow
-    assert (
-        bijux_phylogenetics.TimeStratifiedTransitionMatrixRow
-        is TimeStratifiedTransitionMatrixRow
-    )
-    assert (
-        bijux_phylogenetics.TimeStratifiedTransitionReport
-        is TimeStratifiedTransitionReport
-    )
-    assert (
-        bijux_phylogenetics.UnsupportedGeographicTransitionClaimRow
-        is UnsupportedGeographicTransitionClaimRow
-    )
-    assert (
-        bijux_phylogenetics.TimeStratifiedTransitionSummary
-        is TimeStratifiedTransitionSummary
-    )
-    assert (
-        bijux_phylogenetics.write_time_stratified_transition_summary_table
-        is write_time_stratified_transition_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_time_stratified_transition_matrix_table
-        is write_time_stratified_transition_matrix_table
-    )
-    assert (
-        bijux_phylogenetics.write_time_stratified_branch_table
-        is write_time_stratified_branch_table
-    )
-    assert (
-        bijux_phylogenetics.write_time_stratified_exclusion_table
-        is write_time_stratified_exclusion_table
-    )
-    assert bijux_phylogenetics.summarize_host_switching is summarize_host_switching
-    assert bijux_phylogenetics.HostStateNodeRow is HostStateNodeRow
-    assert bijux_phylogenetics.HostSwitchBranchRow is HostSwitchBranchRow
-    assert bijux_phylogenetics.HostSwitchCountRow is HostSwitchCountRow
-    assert bijux_phylogenetics.HostSwitchExclusionRow is HostSwitchExclusionRow
-    assert bijux_phylogenetics.HostSwitchFitRow is HostSwitchFitRow
-    assert bijux_phylogenetics.HostSwitchSummary is HostSwitchSummary
-    assert bijux_phylogenetics.HostSwitchingReport is HostSwitchingReport
-    assert (
-        bijux_phylogenetics.UnsupportedHostSwitchClaimRow
-        is UnsupportedHostSwitchClaimRow
-    )
-    assert (
-        bijux_phylogenetics.write_host_switch_summary_table
-        is write_host_switch_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_host_state_node_table is write_host_state_node_table
-    )
-    assert (
-        bijux_phylogenetics.write_host_switch_branch_table
-        is write_host_switch_branch_table
-    )
-    assert (
-        bijux_phylogenetics.write_host_switch_count_table
-        is write_host_switch_count_table
-    )
-    assert (
-        bijux_phylogenetics.write_host_switch_fit_table is write_host_switch_fit_table
-    )
-    assert (
-        bijux_phylogenetics.write_unsupported_host_switch_claim_table
-        is write_unsupported_host_switch_claim_table
-    )
-    assert (
-        bijux_phylogenetics.write_host_switch_exclusion_table
-        is write_host_switch_exclusion_table
-    )
-    assert (
-        bijux_phylogenetics.summarize_niche_transitions is summarize_niche_transitions
-    )
-    assert bijux_phylogenetics.NicheStateNodeRow is NicheStateNodeRow
-    assert bijux_phylogenetics.NicheTransitionBranchRow is NicheTransitionBranchRow
-    assert bijux_phylogenetics.NicheTransitionCladeRow is NicheTransitionCladeRow
-    assert bijux_phylogenetics.NicheTransitionCountRow is NicheTransitionCountRow
-    assert (
-        bijux_phylogenetics.NicheTransitionExclusionRow is NicheTransitionExclusionRow
-    )
-    assert bijux_phylogenetics.NicheTransitionRateRow is NicheTransitionRateRow
-    assert bijux_phylogenetics.NicheTransitionReport is NicheTransitionReport
-    assert bijux_phylogenetics.NicheTransitionSummary is NicheTransitionSummary
-    assert (
-        bijux_phylogenetics.write_niche_transition_summary_table
+        ecology_api.write_niche_transition_summary_table
         is write_niche_transition_summary_table
     )
     assert (
-        bijux_phylogenetics.write_niche_state_node_table is write_niche_state_node_table
-    )
-    assert (
-        bijux_phylogenetics.write_niche_transition_rate_table
-        is write_niche_transition_rate_table
-    )
-    assert (
-        bijux_phylogenetics.write_niche_transition_branch_table
-        is write_niche_transition_branch_table
-    )
-    assert (
-        bijux_phylogenetics.write_niche_transition_count_table
-        is write_niche_transition_count_table
-    )
-    assert (
-        bijux_phylogenetics.write_niche_transition_clade_table
-        is write_niche_transition_clade_table
-    )
-    assert (
-        bijux_phylogenetics.write_niche_transition_exclusion_table
-        is write_niche_transition_exclusion_table
-    )
-    assert (
-        bijux_phylogenetics.summarize_continuous_phylogeography
+        phylogeography_api.summarize_continuous_phylogeography
         is summarize_continuous_phylogeography
     )
-    assert bijux_phylogenetics.CoordinateEstimateRow is CoordinateEstimateRow
+    assert phylogeography_api.render_geographic_map_html is render_geographic_map_html
     assert (
-        bijux_phylogenetics.CoordinateMovementBranchRow is CoordinateMovementBranchRow
-    )
-    assert (
-        bijux_phylogenetics.CoordinateMovementExclusionRow
-        is CoordinateMovementExclusionRow
-    )
-    assert (
-        bijux_phylogenetics.CoordinateMovementOutlierRow is CoordinateMovementOutlierRow
-    )
-    assert bijux_phylogenetics.CoordinateMovementSummary is CoordinateMovementSummary
-    assert (
-        bijux_phylogenetics.CoordinateMovementVisualization
-        is CoordinateMovementVisualization
-    )
-    assert (
-        bijux_phylogenetics.PhylogeographicCoordinateReport
-        is PhylogeographicCoordinateReport
-    )
-    assert (
-        bijux_phylogenetics.write_coordinate_movement_summary_table
+        phylogeography_api.write_coordinate_movement_summary_table
         is write_coordinate_movement_summary_table
     )
-    assert (
-        bijux_phylogenetics.write_coordinate_estimate_table
-        is write_coordinate_estimate_table
-    )
-    assert (
-        bijux_phylogenetics.write_coordinate_movement_branch_table
-        is write_coordinate_movement_branch_table
-    )
-    assert (
-        bijux_phylogenetics.write_coordinate_movement_outlier_table
-        is write_coordinate_movement_outlier_table
-    )
-    assert (
-        bijux_phylogenetics.write_coordinate_movement_exclusion_table
-        is write_coordinate_movement_exclusion_table
-    )
-    assert (
-        bijux_phylogenetics.render_coordinate_movement_visualization
-        is render_coordinate_movement_visualization
-    )
-    assert (
-        bijux_phylogenetics.summarize_continuous_phylogeography_map
-        is summarize_continuous_phylogeography_map
-    )
-    assert (
-        bijux_phylogenetics.summarize_discrete_region_map
-        is summarize_discrete_region_map
-    )
-    assert bijux_phylogenetics.GeographicMapArtifact is GeographicMapArtifact
-    assert bijux_phylogenetics.GeographicMapExclusionRow is GeographicMapExclusionRow
-    assert bijux_phylogenetics.GeographicMapLineRow is GeographicMapLineRow
-    assert bijux_phylogenetics.GeographicMapMarkerRow is GeographicMapMarkerRow
-    assert bijux_phylogenetics.GeographicMapReport is GeographicMapReport
-    assert bijux_phylogenetics.GeographicMapSummary is GeographicMapSummary
-    assert (
-        bijux_phylogenetics.write_geographic_map_summary_table
-        is write_geographic_map_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_geographic_map_marker_table
-        is write_geographic_map_marker_table
-    )
-    assert (
-        bijux_phylogenetics.write_geographic_map_line_table
-        is write_geographic_map_line_table
-    )
-    assert (
-        bijux_phylogenetics.write_geographic_map_exclusion_table
-        is write_geographic_map_exclusion_table
-    )
-    assert bijux_phylogenetics.render_geographic_map_html is render_geographic_map_html
-    assert (
-        bijux_phylogenetics.simulate_discrete_stochastic_maps
-        is simulate_discrete_stochastic_maps
-    )
-    assert (
-        bijux_phylogenetics.summarize_discrete_stochastic_maps
-        is summarize_discrete_stochastic_maps
-    )
-    assert (
-        bijux_phylogenetics.write_stochastic_map_collection
-        is write_stochastic_map_collection
-    )
-    assert (
-        bijux_phylogenetics.write_stochastic_map_summary_table
-        is write_stochastic_map_summary_table
-    )
-    assert (
-        bijux_phylogenetics.load_stochastic_map_collection
-        is load_stochastic_map_collection
-    )
-    assert (
-        bijux_phylogenetics.validate_time_tree_for_diversification
-        is validate_time_tree_for_diversification
-    )
-    assert (
-        bijux_phylogenetics.inspect_diversification_time_tree
-        is inspect_diversification_time_tree
-    )
-    assert (
-        bijux_phylogenetics.compute_lineage_through_time_curve
-        is compute_lineage_through_time_curve
-    )
-    assert (
-        bijux_phylogenetics.detect_incomplete_taxon_sampling_metadata
-        is detect_incomplete_taxon_sampling_metadata
-    )
-    assert (
-        bijux_phylogenetics.estimate_diversification_rate
-        is estimate_diversification_rate
-    )
-    assert (
-        bijux_phylogenetics.compare_diversification_models
-        is compare_diversification_models
-    )
-    assert (
-        bijux_phylogenetics.detect_diversification_outlier_clades
-        is detect_diversification_outlier_clades
-    )
-    assert (
-        bijux_phylogenetics.run_trait_dependent_diversification_analysis
-        is run_trait_dependent_diversification_analysis
-    )
-    assert (
-        bijux_phylogenetics.render_diversification_report
-        is render_diversification_report
-    )
-    assert (
-        bijux_phylogenetics.write_lineage_through_time_table
-        is write_lineage_through_time_table
-    )
-    assert (
-        bijux_phylogenetics.write_clade_diversification_table
-        is write_clade_diversification_table
-    )
-    assert (
-        bijux_phylogenetics.write_trait_dependent_diversification_table
-        is write_trait_dependent_diversification_table
-    )
-    assert (
-        bijux_phylogenetics.render_tree_with_geographic_states
-        is render_tree_with_geographic_states
-    )
-    assert (
-        bijux_phylogenetics.render_discrete_state_evolution_report
-        is render_discrete_state_evolution_report
-    )
-    assert bijux_phylogenetics.assess_tree_assumptions is assess_tree_assumptions
-    assert bijux_phylogenetics.inspect_coding_alignment is inspect_coding_alignment
-    assert (
-        bijux_phylogenetics.compute_pairwise_sequence_identity_matrix
-        is compute_pairwise_sequence_identity_matrix
-    )
-    assert (
-        bijux_phylogenetics.detect_sequence_length_outliers
-        is detect_sequence_length_outliers
-    )
-    assert (
-        bijux_phylogenetics.prepare_coding_sequences_for_alignment
-        is prepare_coding_sequences_for_alignment
-    )
-    assert bijux_phylogenetics.detect_fasta_sequence_type is detect_fasta_sequence_type
-    assert bijux_phylogenetics.validate_fasta_input is validate_fasta_input
-    assert bijux_phylogenetics.repair_fasta_input is repair_fasta_input
-    assert bijux_phylogenetics.summarize_fasta_input is summarize_fasta_input
-    assert (
-        bijux_phylogenetics.detect_over_aligned_regions is detect_over_aligned_regions
-    )
-    assert (
-        bijux_phylogenetics.run_codon_aware_multiple_sequence_alignment
-        is run_codon_aware_multiple_sequence_alignment
-    )
-    assert (
-        bijux_phylogenetics.detect_under_aligned_regions is detect_under_aligned_regions
-    )
-    assert (
-        bijux_phylogenetics.list_alignment_filter_profiles
-        is list_alignment_filter_profiles
-    )
-    assert (
-        bijux_phylogenetics.get_alignment_filter_profile is get_alignment_filter_profile
-    )
-    assert (
-        bijux_phylogenetics.summarize_alignment_windows is summarize_alignment_windows
-    )
-    assert (
-        bijux_phylogenetics.summarize_alignment_readiness
-        is summarize_alignment_readiness
-    )
-    assert bijux_phylogenetics.audit_dataset_inputs is audit_dataset_inputs
-    assert (
-        bijux_phylogenetics.audit_dataset_taxon_ordering is audit_dataset_taxon_ordering
-    )
-    assert (
-        bijux_phylogenetics.build_dataset_completeness_matrix
-        is build_dataset_completeness_matrix
-    )
-    assert bijux_phylogenetics.build_dataset_crosswalk is build_dataset_crosswalk
-    assert (
-        bijux_phylogenetics.build_dataset_mismatch_report
-        is build_dataset_mismatch_report
-    )
-    assert (
-        bijux_phylogenetics.summarize_dataset_readiness is summarize_dataset_readiness
-    )
-    assert (
-        bijux_phylogenetics.build_locus_occupancy_report is build_locus_occupancy_report
-    )
-    assert (
-        bijux_phylogenetics.LocusOccupancyFilterIteration
-        is LocusOccupancyFilterIteration
-    )
-    assert (
-        bijux_phylogenetics.build_partition_summary_report
-        is build_partition_summary_report
-    )
-    assert bijux_phylogenetics.filter_locus_occupancy is filter_locus_occupancy
-    assert bijux_phylogenetics.parse_locus_partitions is parse_locus_partitions
-    assert (
-        bijux_phylogenetics.write_partition_summary_table
-        is write_partition_summary_table
-    )
-    assert bijux_phylogenetics.write_locus_partitions is write_locus_partitions
-    assert bijux_phylogenetics.build_taxon_audit_report is build_taxon_audit_report
-    assert (
-        bijux_phylogenetics.build_taxon_mapping_conflict_report
-        is build_taxon_mapping_conflict_report
-    )
-    assert (
-        bijux_phylogenetics.detect_duplicate_biological_identities
-        is detect_duplicate_biological_identities
-    )
-    assert bijux_phylogenetics.export_tree_accepted_names is export_tree_accepted_names
-    assert bijux_phylogenetics.infer_taxon_rank is infer_taxon_rank
-    assert (
-        bijux_phylogenetics.inspect_tree_taxon_rank_consistency
-        is inspect_tree_taxon_rank_consistency
-    )
-    assert (
-        bijux_phylogenetics.write_accepted_name_mapping is write_accepted_name_mapping
-    )
-    assert bijux_phylogenetics.load_tree_set is load_tree_set
-    assert (
-        bijux_phylogenetics.BootstrapTreeSetSummaryReport
-        is BootstrapTreeSetSummaryReport
-    )
-    assert (
-        bijux_phylogenetics.BootstrapTreeSetArtifactReport
-        is BootstrapTreeSetArtifactReport
-    )
-    assert bijux_phylogenetics.BootstrapUnstableBranch is BootstrapUnstableBranch
-    assert bijux_phylogenetics.compute_consensus_tree is compute_consensus_tree
-    assert (
-        bijux_phylogenetics.compute_clade_frequency_table
-        is compute_clade_frequency_table
-    )
-    assert (
-        bijux_phylogenetics.compute_tree_distance_matrix is compute_tree_distance_matrix
-    )
-    assert bijux_phylogenetics.cluster_trees_by_topology is cluster_trees_by_topology
-    assert bijux_phylogenetics.detect_unstable_taxa is detect_unstable_taxa
-    assert bijux_phylogenetics.detect_unstable_clades is detect_unstable_clades
-    assert (
-        bijux_phylogenetics.summarize_bootstrap_tree_set is summarize_bootstrap_tree_set
-    )
-    assert (
-        bijux_phylogenetics.compare_posterior_topological_diversity
-        is compare_posterior_topological_diversity
-    )
-    assert (
-        bijux_phylogenetics.detect_posterior_topology_multimodality
-        is detect_posterior_topology_multimodality
-    )
-    assert (
-        bijux_phylogenetics.summarize_clade_credibility_conflicts
-        is summarize_clade_credibility_conflicts
-    )
-    assert (
-        bijux_phylogenetics.summarize_uncertainty_aware_conclusions
-        is summarize_uncertainty_aware_conclusions
-    )
-    assert (
-        bijux_phylogenetics.write_bootstrap_tree_set_summary_table
-        is write_bootstrap_tree_set_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_bootstrap_unstable_branch_table
-        is write_bootstrap_unstable_branch_table
-    )
-    assert (
-        bijux_phylogenetics.write_bootstrap_tree_set_artifacts
-        is write_bootstrap_tree_set_artifacts
-    )
-    assert (
-        bijux_phylogenetics.compare_posterior_tree_sets is compare_posterior_tree_sets
-    )
-    assert (
-        bijux_phylogenetics.render_tree_uncertainty_report
-        is render_tree_uncertainty_report
-    )
-    assert (
-        bijux_phylogenetics.validate_tree_reference_fixtures
-        is validate_tree_reference_fixtures
-    )
-    assert (
-        bijux_phylogenetics.validate_taxon_naming_reference_fixtures
-        is validate_taxon_naming_reference_fixtures
-    )
-    assert (
-        bijux_phylogenetics.validate_alignment_quality_reference_fixtures
-        is validate_alignment_quality_reference_fixtures
-    )
-    assert (
-        bijux_phylogenetics.validate_dataset_audit_reference_fixtures
-        is validate_dataset_audit_reference_fixtures
-    )
-    assert (
-        bijux_phylogenetics.validate_figure_reference_fixtures
-        is validate_figure_reference_fixtures
-    )
-    assert (
-        bijux_phylogenetics.validate_report_regression_fixtures
-        is validate_report_regression_fixtures
-    )
-    assert (
-        bijux_phylogenetics.build_core_workflow_validation_report
-        is build_core_workflow_validation_report
-    )
-    assert (
-        bijux_phylogenetics.build_core_workflow_failure_gallery
-        is build_core_workflow_failure_gallery
-    )
-    assert (
-        bijux_phylogenetics.classify_core_workflow_maturity
-        is classify_core_workflow_maturity
-    )
-    assert (
-        bijux_phylogenetics.build_level_one_release_gate_report
-        is build_level_one_release_gate_report
-    )
-    assert (
-        bijux_phylogenetics.validate_reference_parity_examples
-        is validate_reference_parity_examples
-    )
-    assert (
-        bijux_phylogenetics.write_reference_parity_summary_table
-        is write_reference_parity_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_reference_parity_observation_table
-        is write_reference_parity_observation_table
-    )
-    assert bijux_phylogenetics.render_tree_report is render_tree_report
-    assert (
-        bijux_phylogenetics.render_workflow_validation_report
-        is render_workflow_validation_report
-    )
-    assert (
-        bijux_phylogenetics.render_level_one_release_gate_report
-        is render_level_one_release_gate_report
-    )
-    assert bijux_phylogenetics.simulate_birth_death_trees is simulate_birth_death_trees
-    assert bijux_phylogenetics.simulate_coalescent_trees is simulate_coalescent_trees
-    assert bijux_phylogenetics.simulate_brownian_traits is simulate_brownian_traits
-    assert bijux_phylogenetics.simulate_ou_traits is simulate_ou_traits
-    assert bijux_phylogenetics.simulate_discrete_traits is simulate_discrete_traits
-    assert bijux_phylogenetics.simulate_dna_alignment is simulate_dna_alignment
-    assert bijux_phylogenetics.simulate_protein_alignment is simulate_protein_alignment
-
-
-def test_command_registry_exposes_discrete_evolution_surface() -> None:
-    spec = get_command_spec("discrete-evolution")
-
-    assert spec.domain == "discrete-state-evolution"
-    assert spec.outputs == ("discrete-state-evolution-report",)
-
-
-def test_command_registry_exposes_biogeography_surface() -> None:
-    spec = get_command_spec("biogeography")
-
-    assert spec.domain == "biogeography"
-    assert spec.outputs == ("biogeography-report",)
-
-
-def test_command_registry_exposes_host_association_surface() -> None:
-    spec = get_command_spec("host-association")
-
-    assert spec.domain == "host-association"
-    assert spec.outputs == ("host-association-report",)
-
-
-def test_command_registry_exposes_ecological_niche_surface() -> None:
-    spec = get_command_spec("ecological-niche")
-
-    assert spec.domain == "ecological-niche"
-    assert spec.outputs == ("ecological-niche-report",)
-
-
-def test_command_registry_exposes_phylogeography_surface() -> None:
-    spec = get_command_spec("phylogeography")
-
-    assert spec.domain == "geographic-reconstruction"
-    assert spec.outputs == ("geographic-reconstruction-report",)
-
-
-def test_command_registry_exposes_reference_parity_surface() -> None:
-    spec = get_command_spec("parity")
-
-    assert spec.domain == "reference-validation"
-    assert spec.outputs == ("reference-parity-report",)
-
-
-def test_command_registry_exposes_diversification_surface() -> None:
-    spec = get_command_spec("diversification")
-
-    assert spec.domain == "diversification-analysis"
-    assert spec.outputs == ("diversification-report",)
 
 
 def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
-    assert bijux_phylogenetics.BranchIdentityMetadata is BranchIdentityMetadata
+    import bijux_phylogenetics.bayesian as bayesian_api
+    import bijux_phylogenetics.benchmark as benchmark_api
+    import bijux_phylogenetics.comparative as comparative_api
+
+    assert comparative_api.BranchIdentityMetadata is BranchIdentityMetadata
     assert (
-        bijux_phylogenetics.CorrelatedTraitComparisonRow is CorrelatedTraitComparisonRow
+        comparative_api.CorrelatedTraitEvolutionReport is CorrelatedTraitEvolutionReport
     )
+    assert comparative_api.TraitRegimeMappingReport is TraitRegimeMappingReport
+    assert comparative_api.build_branch_identity_lookup is build_branch_identity_lookup
     assert (
-        bijux_phylogenetics.CorrelatedTraitEvolutionReport
-        is CorrelatedTraitEvolutionReport
-    )
-    assert bijux_phylogenetics.CorrelatedTraitExclusion is CorrelatedTraitExclusion
-    assert (
-        bijux_phylogenetics.CorrelatedTraitObservationRow
-        is CorrelatedTraitObservationRow
-    )
-    assert bijux_phylogenetics.TraitRegimeBranchRow is TraitRegimeBranchRow
-    assert bijux_phylogenetics.TraitRegimeExclusion is TraitRegimeExclusion
-    assert bijux_phylogenetics.TraitRegimeMappingReport is TraitRegimeMappingReport
-    assert bijux_phylogenetics.TraitRegimeNodeRow is TraitRegimeNodeRow
-    assert (
-        bijux_phylogenetics.build_branch_identity_lookup is build_branch_identity_lookup
-    )
-    assert bijux_phylogenetics.benchmark_tree_validation is benchmark_tree_validation
-    assert bijux_phylogenetics.benchmark_tree_comparison is benchmark_tree_comparison
-    assert (
-        bijux_phylogenetics.benchmark_alignment_diagnostics
-        is benchmark_alignment_diagnostics
-    )
-    assert (
-        bijux_phylogenetics.summarize_numeric_trait_readiness
+        comparative_api.summarize_numeric_trait_readiness
         is summarize_numeric_trait_readiness
     )
-    assert bijux_phylogenetics.summarize_numeric_trait is summarize_numeric_trait
     assert (
-        bijux_phylogenetics.compute_phylogenetic_independent_contrasts
+        comparative_api.compute_phylogenetic_independent_contrasts
         is compute_phylogenetic_independent_contrasts
     )
     assert (
-        bijux_phylogenetics.summarize_independent_contrast_regression
-        is summarize_independent_contrast_regression
-    )
-    assert (
-        bijux_phylogenetics.run_multivariate_comparative_regression
+        comparative_api.run_multivariate_comparative_regression
         is run_multivariate_comparative_regression
     )
     assert (
-        bijux_phylogenetics.summarize_correlated_trait_evolution
+        comparative_api.summarize_correlated_trait_evolution
         is summarize_correlated_trait_evolution
     )
-    assert bijux_phylogenetics.run_posterior_tree_pgls is run_posterior_tree_pgls
+    assert comparative_api.run_posterior_tree_pgls is run_posterior_tree_pgls
     assert (
-        bijux_phylogenetics.analyze_comparative_clade_stability
-        is analyze_comparative_clade_stability
-    )
-    assert (
-        bijux_phylogenetics.analyze_comparative_residual_clades
-        is analyze_comparative_residual_clades
-    )
-    assert (
-        bijux_phylogenetics.compare_comparative_regression_models
+        comparative_api.compare_comparative_regression_models
         is compare_comparative_regression_models
     )
     assert (
-        bijux_phylogenetics.summarize_phylogenetic_logistic
+        comparative_api.summarize_phylogenetic_logistic
         is summarize_phylogenetic_logistic
     )
     assert (
-        bijux_phylogenetics.summarize_phylogenetic_signal
-        is summarize_phylogenetic_signal
+        comparative_api.summarize_phylogenetic_signal is summarize_phylogenetic_signal
     )
-    assert bijux_phylogenetics.compute_blombergs_k is compute_blombergs_k
-    assert bijux_phylogenetics.estimate_pagels_lambda is estimate_pagels_lambda
+    assert comparative_api.compute_blombergs_k is compute_blombergs_k
+    assert comparative_api.fit_discrete_mk_model is fit_discrete_mk_model
     assert (
-        bijux_phylogenetics.compute_phylogenetic_signal_test
-        is compute_phylogenetic_signal_test
+        comparative_api.compare_discrete_mk_model_ranking
+        is compare_discrete_mk_model_ranking
     )
+    assert comparative_api.estimate_pagels_lambda is estimate_pagels_lambda
     assert (
-        bijux_phylogenetics.assess_comparative_method_maturity
-        is assess_comparative_method_maturity
-    )
-    assert (
-        bijux_phylogenetics.audit_comparative_parameter_uncertainty
-        is audit_comparative_parameter_uncertainty
-    )
-    assert (
-        bijux_phylogenetics.audit_ou_identifiability_reference_examples
-        is audit_ou_identifiability_reference_examples
-    )
-    assert (
-        bijux_phylogenetics.build_comparative_report_package
+        comparative_api.build_comparative_report_package
         is build_comparative_report_package
     )
-    assert bijux_phylogenetics.build_pgls_model_matrix is build_pgls_model_matrix
-    assert bijux_phylogenetics.inspect_pgls_inputs is inspect_pgls_inputs
-    assert bijux_phylogenetics.run_pgls is run_pgls
+    assert comparative_api.build_pgls_model_matrix is build_pgls_model_matrix
+    assert comparative_api.run_pgls is run_pgls
     assert (
-        bijux_phylogenetics.summarize_brownian_covariance_pgls
+        comparative_api.summarize_brownian_covariance_pgls
         is summarize_brownian_covariance_pgls
     )
     assert (
-        bijux_phylogenetics.summarize_brownian_regime_rates
+        comparative_api.summarize_brownian_regime_rates
         is summarize_brownian_regime_rates
     )
     assert (
-        bijux_phylogenetics.summarize_trait_regime_mapping
-        is summarize_trait_regime_mapping
+        comparative_api.summarize_trait_regime_mapping is summarize_trait_regime_mapping
     )
     assert (
-        bijux_phylogenetics.summarize_brownian_trait_evolution
+        comparative_api.summarize_brownian_trait_evolution
         is summarize_brownian_trait_evolution
     )
     assert (
-        bijux_phylogenetics.summarize_comparative_analysis
-        is summarize_comparative_analysis
-    )
-    assert (
-        bijux_phylogenetics.summarize_comparative_audit is summarize_comparative_audit
-    )
-    assert (
-        bijux_phylogenetics.summarize_comparative_coefficients
-        is summarize_comparative_coefficients
-    )
-    assert (
-        bijux_phylogenetics.summarize_comparative_interpretation
-        is summarize_comparative_interpretation
-    )
-    assert (
-        bijux_phylogenetics.summarize_comparative_residuals
-        is summarize_comparative_residuals
-    )
-    assert (
-        bijux_phylogenetics.summarize_comparative_signal is summarize_comparative_signal
-    )
-    assert (
-        bijux_phylogenetics.summarize_early_burst_trait_evolution
+        comparative_api.summarize_early_burst_trait_evolution
         is summarize_early_burst_trait_evolution
     )
-    assert bijux_phylogenetics.summarize_clade_traits is summarize_clade_traits
-    assert bijux_phylogenetics.summarize_trait_outliers is summarize_trait_outliers
-    assert bijux_phylogenetics.summarize_trait_imputation is summarize_trait_imputation
+    assert comparative_api.summarize_trait_outliers is summarize_trait_outliers
+    assert comparative_api.summarize_trait_imputation is summarize_trait_imputation
     assert (
-        bijux_phylogenetics.summarize_trait_rate_through_time
+        comparative_api.summarize_trait_rate_through_time
         is summarize_trait_rate_through_time
     )
+    assert comparative_api.summarize_ou_covariance_pgls is summarize_ou_covariance_pgls
+    assert comparative_api.summarize_ou_trait_evolution is summarize_ou_trait_evolution
+
+    assert benchmark_api.benchmark_tree_validation is benchmark_tree_validation
+    assert benchmark_api.benchmark_tree_comparison is benchmark_tree_comparison
     assert (
-        bijux_phylogenetics.summarize_ou_covariance_pgls is summarize_ou_covariance_pgls
+        benchmark_api.benchmark_alignment_diagnostics is benchmark_alignment_diagnostics
     )
+
+    assert bayesian_api.BeastAnalysisXmlReport is BeastAnalysisXmlReport
+    assert bayesian_api.BeastCalibration is BeastCalibration
     assert (
-        bijux_phylogenetics.summarize_ou_trait_evolution is summarize_ou_trait_evolution
+        bayesian_api.CATEGORICAL_MISSING_STATE_POLICIES
+        is CATEGORICAL_MISSING_STATE_POLICIES
     )
+    assert bayesian_api.CLOCK_RATE_MODEL_FAMILIES is CLOCK_RATE_MODEL_FAMILIES
+    assert bayesian_api.CALIBRATION_PRIOR_FAMILIES is CALIBRATION_PRIOR_FAMILIES
     assert (
-        bijux_phylogenetics.BrownianRegimeFitSummaryReport
-        is BrownianRegimeFitSummaryReport
+        bayesian_api.POSITIVE_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES
+        is POSITIVE_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES
     )
-    assert bijux_phylogenetics.BrownianRegimeBranchRow is BrownianRegimeBranchRow
-    assert bijux_phylogenetics.BrownianRegimeRateRow is BrownianRegimeRateRow
-    assert bijux_phylogenetics.BrownianRegimeProfileRow is BrownianRegimeProfileRow
-    assert bijux_phylogenetics.BrownianRegimeExclusion is BrownianRegimeExclusion
     assert (
-        bijux_phylogenetics.BrownianRegimeIdentifiabilityWarning
-        is BrownianRegimeIdentifiabilityWarning
+        bayesian_api.PROBABILITY_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES
+        is PROBABILITY_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES
     )
     assert (
-        bijux_phylogenetics.ComparativeAnalysisSummaryRow
-        is ComparativeAnalysisSummaryRow
+        bayesian_api.LOCAL_CLOCK_RATE_MODEL_FAMILIES is LOCAL_CLOCK_RATE_MODEL_FAMILIES
     )
-    assert bijux_phylogenetics.ComparativeAuditTableRow is ComparativeAuditTableRow
+    assert bayesian_api.LOCAL_CLOCK_TARGET_KINDS is LOCAL_CLOCK_TARGET_KINDS
+    assert bayesian_api.RELAXED_CLOCK_RATE_POLICIES is RELAXED_CLOCK_RATE_POLICIES
     assert (
-        bijux_phylogenetics.ComparativeCoefficientTableRow
-        is ComparativeCoefficientTableRow
+        bayesian_api.SIMPLEX_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES
+        is SIMPLEX_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES
     )
     assert (
-        bijux_phylogenetics.ComparativeInterpretationRow is ComparativeInterpretationRow
+        bayesian_api.SUBSTITUTION_PARAMETER_PRIOR_TARGETS
+        is SUBSTITUTION_PARAMETER_PRIOR_TARGETS
     )
+    assert bayesian_api.TREE_TOPOLOGY_PRIOR_FAMILIES is TREE_TOPOLOGY_PRIOR_FAMILIES
     assert (
-        bijux_phylogenetics.ComparativeReportPackageResult
-        is ComparativeReportPackageResult
+        bayesian_api.BIRTH_DEATH_TREE_PRIOR_FAMILIES is BIRTH_DEATH_TREE_PRIOR_FAMILIES
     )
+    assert bayesian_api.COALESCENT_TREE_PRIOR_FAMILIES is COALESCENT_TREE_PRIOR_FAMILIES
     assert (
-        bijux_phylogenetics.ComparativeResidualTableRow is ComparativeResidualTableRow
+        bayesian_api.CONTINUOUS_TRAIT_SCALAR_PRIOR_FAMILIES
+        is CONTINUOUS_TRAIT_SCALAR_PRIOR_FAMILIES
     )
-    assert bijux_phylogenetics.ComparativeSignalTableRow is ComparativeSignalTableRow
     assert (
-        bijux_phylogenetics.EarlyBurstTraitEvolutionSummaryReport
-        is EarlyBurstTraitEvolutionSummaryReport
+        bayesian_api.CONTINUOUS_TRAIT_LOCATION_PRIOR_FAMILIES
+        is CONTINUOUS_TRAIT_LOCATION_PRIOR_FAMILIES
     )
     assert (
-        bijux_phylogenetics.EarlyBurstTraitEvolutionExclusion
-        is EarlyBurstTraitEvolutionExclusion
+        bayesian_api.CONTINUOUS_TRAIT_PROBABILITY_PRIOR_FAMILIES
+        is CONTINUOUS_TRAIT_PROBABILITY_PRIOR_FAMILIES
     )
+    assert bayesian_api.CONTINUOUS_TRAIT_PRIOR_MODES is CONTINUOUS_TRAIT_PRIOR_MODES
+    assert bayesian_api.CONTINUOUS_TRAIT_PRIOR_TARGETS is CONTINUOUS_TRAIT_PRIOR_TARGETS
     assert (
-        bijux_phylogenetics.EarlyBurstRateChangeProfileRow
-        is EarlyBurstRateChangeProfileRow
+        bayesian_api.DISCRETE_TRAIT_RATE_PRIOR_FAMILIES
+        is DISCRETE_TRAIT_RATE_PRIOR_FAMILIES
     )
     assert (
-        bijux_phylogenetics.EarlyBurstIdentifiabilityWarning
-        is EarlyBurstIdentifiabilityWarning
+        bayesian_api.DISCRETE_TRAIT_RATE_PRIOR_MODELS
+        is DISCRETE_TRAIT_RATE_PRIOR_MODELS
     )
-    assert bijux_phylogenetics.CladeTraitSummaryReport is CladeTraitSummaryReport
-    assert bijux_phylogenetics.CladeTraitRow is CladeTraitRow
-    assert bijux_phylogenetics.CladeTraitStateCount is CladeTraitStateCount
-    assert bijux_phylogenetics.CladeTraitExclusion is CladeTraitExclusion
-    assert bijux_phylogenetics.TraitOutlierSummaryReport is TraitOutlierSummaryReport
-    assert bijux_phylogenetics.TraitOutlierTaxonRow is TraitOutlierTaxonRow
-    assert bijux_phylogenetics.TraitOutlierExclusion is TraitOutlierExclusion
+    assert bayesian_api.PARTITION_MODEL_PRIOR_TARGETS is PARTITION_MODEL_PRIOR_TARGETS
     assert (
-        bijux_phylogenetics.write_comparative_audit_table
-        is write_comparative_audit_table
+        bayesian_api.PARTITION_PARAMETER_LINKAGE_POLICIES
+        is PARTITION_PARAMETER_LINKAGE_POLICIES
     )
     assert (
-        bijux_phylogenetics.write_comparative_coefficient_table
-        is write_comparative_coefficient_table
+        bayesian_api.PARTITION_SUBSTITUTION_BASE_MODELS
+        is PARTITION_SUBSTITUTION_BASE_MODELS
     )
     assert (
-        bijux_phylogenetics.write_comparative_contrast_table
-        is write_comparative_contrast_table
+        bayesian_api.BROWNIAN_CONTINUOUS_TRAIT_MODELS
+        is BROWNIAN_CONTINUOUS_TRAIT_MODELS
     )
     assert (
-        bijux_phylogenetics.write_comparative_interpretation_table
-        is write_comparative_interpretation_table
+        bayesian_api.ORNSTEIN_UHLENBECK_CONTINUOUS_TRAIT_MODELS
+        is ORNSTEIN_UHLENBECK_CONTINUOUS_TRAIT_MODELS
     )
     assert (
-        bijux_phylogenetics.write_comparative_model_comparison_table
-        is write_comparative_model_comparison_table
+        bayesian_api.TIME_TREE_PRIOR_CONDITIONING_MODES
+        is TIME_TREE_PRIOR_CONDITIONING_MODES
     )
+    assert bayesian_api.YULE_TREE_PRIOR_FAMILIES is YULE_TREE_PRIOR_FAMILIES
+    assert bayesian_api.CategoricalProbabilityVector is CategoricalProbabilityVector
+    assert bayesian_api.BirthDeathTreePriorModel is BirthDeathTreePriorModel
+    assert bayesian_api.CalibrationPriorDefinition is CalibrationPriorDefinition
     assert (
-        bijux_phylogenetics.write_comparative_residual_table
-        is write_comparative_residual_table
+        bayesian_api.CalibrationPriorEvaluationReport
+        is CalibrationPriorEvaluationReport
     )
+    assert bayesian_api.CalibrationPriorRow is CalibrationPriorRow
     assert (
-        bijux_phylogenetics.write_comparative_signal_table
-        is write_comparative_signal_table
+        bayesian_api.ConstantPopulationCoalescentPriorModel
+        is ConstantPopulationCoalescentPriorModel
     )
     assert (
-        bijux_phylogenetics.write_comparative_summary_table
-        is write_comparative_summary_table
+        bayesian_api.ContinuousTraitLocationPriorModel
+        is ContinuousTraitLocationPriorModel
     )
     assert (
-        bijux_phylogenetics.TraitImputationSummaryReport is TraitImputationSummaryReport
+        bayesian_api.ContinuousTraitScalarPriorModel is ContinuousTraitScalarPriorModel
     )
-    assert bijux_phylogenetics.TraitImputationRow is TraitImputationRow
-    assert bijux_phylogenetics.TraitImputationHoldoutRow is TraitImputationHoldoutRow
-    assert bijux_phylogenetics.TraitImputationExclusion is TraitImputationExclusion
     assert (
-        bijux_phylogenetics.TraitRateThroughTimeSummaryReport
-        is TraitRateThroughTimeSummaryReport
+        bayesian_api.ContinuousTraitProbabilityPriorModel
+        is ContinuousTraitProbabilityPriorModel
     )
     assert (
-        bijux_phylogenetics.TraitRateThroughTimeIntervalRow
-        is TraitRateThroughTimeIntervalRow
+        bayesian_api.ContinuousTraitModelPriorBundle is ContinuousTraitModelPriorBundle
     )
     assert (
-        bijux_phylogenetics.TraitRateThroughTimeExclusion
-        is TraitRateThroughTimeExclusion
+        bayesian_api.ContinuousTraitModelPriorEvaluationReport
+        is ContinuousTraitModelPriorEvaluationReport
     )
+    assert bayesian_api.ContinuousTraitModelPriorRow is ContinuousTraitModelPriorRow
+    assert bayesian_api.DiscreteTraitRatePriorModel is DiscreteTraitRatePriorModel
     assert (
-        bijux_phylogenetics.write_brownian_regime_summary_table
-        is write_brownian_regime_summary_table
+        bayesian_api.DiscreteTraitRatePriorEvaluationReport
+        is DiscreteTraitRatePriorEvaluationReport
     )
+    assert bayesian_api.DiscreteTraitRatePriorRow is DiscreteTraitRatePriorRow
+    assert bayesian_api.DiscreteTraitMkModelDefinition is DiscreteTraitMkModelDefinition
     assert (
-        bijux_phylogenetics.write_trait_regime_branch_table
-        is write_trait_regime_branch_table
+        bayesian_api.DiscreteTraitMkNodeStateSummary is DiscreteTraitMkNodeStateSummary
     )
+    assert bayesian_api.DiscreteTraitMkPosteriorRow is DiscreteTraitMkPosteriorRow
     assert (
-        bijux_phylogenetics.write_trait_regime_exclusion_table
-        is write_trait_regime_exclusion_table
+        bayesian_api.DiscreteTraitMkProposalSchedule is DiscreteTraitMkProposalSchedule
     )
+    assert bayesian_api.DiscreteTraitMkRunReport is DiscreteTraitMkRunReport
+    assert bayesian_api.LocalClockRateModel is LocalClockRateModel
+    assert bayesian_api.RelaxedLognormalClockModel is RelaxedLognormalClockModel
+    assert bayesian_api.StrictClockRateModel is StrictClockRateModel
+    assert bayesian_api.SkylineCoalescentPriorModel is SkylineCoalescentPriorModel
+    assert bayesian_api.PartitionModelPriorBundle is PartitionModelPriorBundle
     assert (
-        bijux_phylogenetics.write_trait_regime_node_table
-        is write_trait_regime_node_table
+        bayesian_api.PartitionModelPriorEvaluationReport
+        is PartitionModelPriorEvaluationReport
     )
+    assert bayesian_api.PartitionModelPriorRow is PartitionModelPriorRow
+    assert bayesian_api.PartitionParameterLinkagePlan is PartitionParameterLinkagePlan
     assert (
-        bijux_phylogenetics.write_trait_regime_summary_table
-        is write_trait_regime_summary_table
+        bayesian_api.PartitionSubstitutionModelDefinition
+        is PartitionSubstitutionModelDefinition
     )
     assert (
-        bijux_phylogenetics.write_brownian_regime_rate_table
-        is write_brownian_regime_rate_table
+        bayesian_api.PartitionSubstitutionParameterState
+        is PartitionSubstitutionParameterState
     )
+    assert bayesian_api.AdaptiveTuningController is AdaptiveTuningController
+    assert bayesian_api.AdaptiveTuningWindowRow is AdaptiveTuningWindowRow
+    assert bayesian_api.AdaptiveTuningReport is AdaptiveTuningReport
     assert (
-        bijux_phylogenetics.write_brownian_regime_profile_table
-        is write_brownian_regime_profile_table
+        bayesian_api.AdaptiveMetropolisHastingsRunReport
+        is AdaptiveMetropolisHastingsRunReport
     )
     assert (
-        bijux_phylogenetics.write_brownian_regime_comparison_table
-        is write_brownian_regime_comparison_table
+        bayesian_api.BrownianContinuousTraitModelDefinition
+        is BrownianContinuousTraitModelDefinition
     )
     assert (
-        bijux_phylogenetics.write_brownian_regime_branch_table
-        is write_brownian_regime_branch_table
+        bayesian_api.BrownianContinuousTraitParameterSummary
+        is BrownianContinuousTraitParameterSummary
     )
     assert (
-        bijux_phylogenetics.write_brownian_regime_exclusion_table
-        is write_brownian_regime_exclusion_table
+        bayesian_api.BrownianContinuousTraitPosteriorRow
+        is BrownianContinuousTraitPosteriorRow
     )
     assert (
-        bijux_phylogenetics.write_early_burst_trait_evolution_summary_table
-        is write_early_burst_trait_evolution_summary_table
+        bayesian_api.BrownianContinuousTraitProposalSchedule
+        is BrownianContinuousTraitProposalSchedule
     )
     assert (
-        bijux_phylogenetics.write_early_burst_trait_evolution_exclusion_table
-        is write_early_burst_trait_evolution_exclusion_table
+        bayesian_api.BrownianContinuousTraitRunReport
+        is BrownianContinuousTraitRunReport
     )
     assert (
-        bijux_phylogenetics.write_early_burst_trait_evolution_comparison_table
-        is write_early_burst_trait_evolution_comparison_table
+        bayesian_api.OrnsteinUhlenbeckContinuousTraitIdentifiabilityWarning
+        is OrnsteinUhlenbeckContinuousTraitIdentifiabilityWarning
     )
     assert (
-        bijux_phylogenetics.write_early_burst_rate_change_profile_table
-        is write_early_burst_rate_change_profile_table
+        bayesian_api.OrnsteinUhlenbeckContinuousTraitModelDefinition
+        is OrnsteinUhlenbeckContinuousTraitModelDefinition
     )
     assert (
-        bijux_phylogenetics.write_clade_trait_summary_table
-        is write_clade_trait_summary_table
+        bayesian_api.OrnsteinUhlenbeckContinuousTraitParameterSummary
+        is OrnsteinUhlenbeckContinuousTraitParameterSummary
     )
     assert (
-        bijux_phylogenetics.write_clade_trait_clade_table
-        is write_clade_trait_clade_table
+        bayesian_api.OrnsteinUhlenbeckContinuousTraitPosteriorRow
+        is OrnsteinUhlenbeckContinuousTraitPosteriorRow
     )
     assert (
-        bijux_phylogenetics.write_clade_trait_exclusion_table
-        is write_clade_trait_exclusion_table
+        bayesian_api.OrnsteinUhlenbeckContinuousTraitProposalSchedule
+        is OrnsteinUhlenbeckContinuousTraitProposalSchedule
     )
     assert (
-        bijux_phylogenetics.write_trait_outlier_summary_table
-        is write_trait_outlier_summary_table
+        bayesian_api.OrnsteinUhlenbeckContinuousTraitRunReport
+        is OrnsteinUhlenbeckContinuousTraitRunReport
     )
     assert (
-        bijux_phylogenetics.write_trait_outlier_taxon_table
-        is write_trait_outlier_taxon_table
+        bayesian_api.FixedTopologyDnaModelDefinition is FixedTopologyDnaModelDefinition
     )
+    assert bayesian_api.FixedTopologyDnaPosteriorRow is FixedTopologyDnaPosteriorRow
     assert (
-        bijux_phylogenetics.write_trait_outlier_exclusion_table
-        is write_trait_outlier_exclusion_table
+        bayesian_api.FixedTopologyDnaProposalSchedule
+        is FixedTopologyDnaProposalSchedule
     )
+    assert bayesian_api.FixedTopologyDnaRunReport is FixedTopologyDnaRunReport
     assert (
-        bijux_phylogenetics.write_trait_imputation_summary_table
-        is write_trait_imputation_summary_table
+        bayesian_api.FixedTopologyPartitionedDnaModelDefinition
+        is FixedTopologyPartitionedDnaModelDefinition
     )
     assert (
-        bijux_phylogenetics.write_trait_imputation_table is write_trait_imputation_table
+        bayesian_api.FixedTopologyPartitionedDnaPartitionRow
+        is FixedTopologyPartitionedDnaPartitionRow
     )
     assert (
-        bijux_phylogenetics.write_trait_imputation_holdout_table
-        is write_trait_imputation_holdout_table
+        bayesian_api.FixedTopologyPartitionedDnaPosteriorRow
+        is FixedTopologyPartitionedDnaPosteriorRow
     )
     assert (
-        bijux_phylogenetics.write_trait_imputation_exclusion_table
-        is write_trait_imputation_exclusion_table
+        bayesian_api.FixedTopologyPartitionedDnaProposalSchedule
+        is FixedTopologyPartitionedDnaProposalSchedule
     )
     assert (
-        bijux_phylogenetics.write_trait_rate_through_time_summary_table
-        is write_trait_rate_through_time_summary_table
+        bayesian_api.FixedTopologyPartitionedDnaRunReport
+        is FixedTopologyPartitionedDnaRunReport
     )
     assert (
-        bijux_phylogenetics.write_trait_rate_through_time_interval_table
-        is write_trait_rate_through_time_interval_table
+        bayesian_api.FixedTopologyRelaxedClockBranchRateSummary
+        is FixedTopologyRelaxedClockBranchRateSummary
     )
     assert (
-        bijux_phylogenetics.write_trait_rate_through_time_exclusion_table
-        is write_trait_rate_through_time_exclusion_table
+        bayesian_api.FixedTopologyRelaxedClockModelDefinition
+        is FixedTopologyRelaxedClockModelDefinition
     )
-    assert bijux_phylogenetics.summarize_pgls_lambda_fit is summarize_pgls_lambda_fit
     assert (
-        bijux_phylogenetics.summarize_pgls_categorical_contrasts
-        is summarize_pgls_categorical_contrasts
+        bayesian_api.FixedTopologyRelaxedClockNodeAgeSummary
+        is FixedTopologyRelaxedClockNodeAgeSummary
     )
     assert (
-        bijux_phylogenetics.ComparativeCladeCoefficientChangeRow
-        is ComparativeCladeCoefficientChangeRow
+        bayesian_api.FixedTopologyRelaxedClockPosteriorRow
+        is FixedTopologyRelaxedClockPosteriorRow
     )
     assert (
-        bijux_phylogenetics.ComparativeCladeResidualReport
-        is ComparativeCladeResidualReport
+        bayesian_api.FixedTopologyRelaxedClockProposalSchedule
+        is FixedTopologyRelaxedClockProposalSchedule
     )
     assert (
-        bijux_phylogenetics.ComparativeCladeStabilityReport
-        is ComparativeCladeStabilityReport
+        bayesian_api.FixedTopologyRelaxedClockRunReport
+        is FixedTopologyRelaxedClockRunReport
     )
     assert (
-        bijux_phylogenetics.ComparativeCladeStabilityRow is ComparativeCladeStabilityRow
+        bayesian_api.FixedTopologyStrictClockModelDefinition
+        is FixedTopologyStrictClockModelDefinition
     )
     assert (
-        bijux_phylogenetics.PosteriorTreePGLSTreeFitRow is PosteriorTreePGLSTreeFitRow
+        bayesian_api.FixedTopologyStrictClockNodeAgeSummary
+        is FixedTopologyStrictClockNodeAgeSummary
     )
     assert (
-        bijux_phylogenetics.PosteriorTreePGLSCoefficientRow
-        is PosteriorTreePGLSCoefficientRow
+        bayesian_api.FixedTopologyStrictClockPosteriorRow
+        is FixedTopologyStrictClockPosteriorRow
     )
     assert (
-        bijux_phylogenetics.PosteriorTreePGLSCoefficientSummaryRow
-        is PosteriorTreePGLSCoefficientSummaryRow
+        bayesian_api.FixedTopologyStrictClockProposalSchedule
+        is FixedTopologyStrictClockProposalSchedule
     )
-    assert bijux_phylogenetics.PosteriorTreePGLSReport is PosteriorTreePGLSReport
     assert (
-        bijux_phylogenetics.ComparativeResidualTaxonRow is ComparativeResidualTaxonRow
+        bayesian_api.FixedTopologyStrictClockRateSummary
+        is FixedTopologyStrictClockRateSummary
     )
     assert (
-        bijux_phylogenetics.ComparativeResidualCladeRow is ComparativeResidualCladeRow
+        bayesian_api.FixedTopologyStrictClockRunReport
+        is FixedTopologyStrictClockRunReport
     )
     assert (
-        bijux_phylogenetics.ComparativeRegressionModelSelectionReport
-        is ComparativeRegressionModelSelectionReport
+        bayesian_api.JointTopologyDnaModelDefinition is JointTopologyDnaModelDefinition
     )
+    assert bayesian_api.JointTopologyDnaPosteriorRow is JointTopologyDnaPosteriorRow
     assert (
-        bijux_phylogenetics.ComparativeRegressionModelRow
-        is ComparativeRegressionModelRow
+        bayesian_api.JointTopologyDnaProposalSchedule
+        is JointTopologyDnaProposalSchedule
     )
+    assert bayesian_api.JointTopologyDnaRunReport is JointTopologyDnaRunReport
     assert (
-        bijux_phylogenetics.ComparativeRegressionPairwiseComparisonRow
-        is ComparativeRegressionPairwiseComparisonRow
+        bayesian_api.PosteriorAncestralSequenceDefinition
+        is PosteriorAncestralSequenceDefinition
     )
     assert (
-        bijux_phylogenetics.ComparativeRegressionModelExclusion
-        is ComparativeRegressionModelExclusion
+        bayesian_api.PosteriorAncestralSequenceRecord
+        is PosteriorAncestralSequenceRecord
     )
     assert (
-        bijux_phylogenetics.IndependentContrastRegressionReport
-        is IndependentContrastRegressionReport
+        bayesian_api.PosteriorAncestralSequenceReport
+        is PosteriorAncestralSequenceReport
     )
     assert (
-        bijux_phylogenetics.IndependentContrastRegressionRow
-        is IndependentContrastRegressionRow
+        bayesian_api.PosteriorAncestralSiteSummaryRow
+        is PosteriorAncestralSiteSummaryRow
     )
     assert (
-        bijux_phylogenetics.MultivariateComparativeRegressionReport
-        is MultivariateComparativeRegressionReport
+        bayesian_api.PosteriorAncestralStateProbabilityRow
+        is PosteriorAncestralStateProbabilityRow
     )
     assert (
-        bijux_phylogenetics.MultivariateResidualCorrelationRow
-        is MultivariateResidualCorrelationRow
+        bayesian_api.PosteriorContinuousTraitNodeSummaryRow
+        is PosteriorContinuousTraitNodeSummaryRow
     )
+    assert bayesian_api.PosteriorContinuousTraitReport is PosteriorContinuousTraitReport
     assert (
-        bijux_phylogenetics.MultivariateResidualAssociationRow
-        is MultivariateResidualAssociationRow
+        bayesian_api.PosteriorDiscreteTraitNodeSummaryRow
+        is PosteriorDiscreteTraitNodeSummaryRow
     )
+    assert bayesian_api.PosteriorDiscreteTraitReport is PosteriorDiscreteTraitReport
     assert (
-        bijux_phylogenetics.MultivariateResidualCovarianceRow
-        is MultivariateResidualCovarianceRow
+        bayesian_api.PosteriorDiscreteTraitStateProbabilityRow
+        is PosteriorDiscreteTraitStateProbabilityRow
     )
     assert (
-        bijux_phylogenetics.MultivariateResponseCoefficientRow
-        is MultivariateResponseCoefficientRow
+        bayesian_api.PosteriorMissingContinuousTraitDefinition
+        is PosteriorMissingContinuousTraitDefinition
     )
     assert (
-        bijux_phylogenetics.MultivariateResponseModelRow is MultivariateResponseModelRow
+        bayesian_api.PosteriorMissingContinuousTraitReport
+        is PosteriorMissingContinuousTraitReport
     )
-    assert bijux_phylogenetics.MultivariateTaxonExclusion is MultivariateTaxonExclusion
     assert (
-        bijux_phylogenetics.PhylogeneticLogisticCoefficient
-        is PhylogeneticLogisticCoefficient
+        bayesian_api.PosteriorMissingContinuousTraitTaxonSummaryRow
+        is PosteriorMissingContinuousTraitTaxonSummaryRow
     )
     assert (
-        bijux_phylogenetics.PhylogeneticLogisticFittedRow
-        is PhylogeneticLogisticFittedRow
+        bayesian_api.PosteriorMissingDiscreteTraitDefinition
+        is PosteriorMissingDiscreteTraitDefinition
     )
-    assert bijux_phylogenetics.PhylogeneticLogisticReport is PhylogeneticLogisticReport
     assert (
-        bijux_phylogenetics.PhylogeneticLogisticWarning is PhylogeneticLogisticWarning
+        bayesian_api.PosteriorMissingDiscreteTraitReport
+        is PosteriorMissingDiscreteTraitReport
     )
     assert (
-        bijux_phylogenetics.PhylogeneticSignalPermutation
-        is PhylogeneticSignalPermutation
+        bayesian_api.PosteriorMissingDiscreteTraitStateProbabilityRow
+        is PosteriorMissingDiscreteTraitStateProbabilityRow
     )
     assert (
-        bijux_phylogenetics.PhylogeneticSignalSummaryReport
-        is PhylogeneticSignalSummaryReport
+        bayesian_api.PosteriorMissingDiscreteTraitTaxonSummaryRow
+        is PosteriorMissingDiscreteTraitTaxonSummaryRow
     )
     assert (
-        bijux_phylogenetics.write_brownian_covariance_table
-        is write_brownian_covariance_table
+        bayesian_api.PosteriorMissingNucleotideDefinition
+        is PosteriorMissingNucleotideDefinition
     )
     assert (
-        bijux_phylogenetics.write_brownian_trait_evolution_summary_table
-        is write_brownian_trait_evolution_summary_table
+        bayesian_api.PosteriorMissingNucleotideReport
+        is PosteriorMissingNucleotideReport
     )
     assert (
-        bijux_phylogenetics.write_brownian_trait_evolution_exclusion_table
-        is write_brownian_trait_evolution_exclusion_table
+        bayesian_api.PosteriorMissingNucleotideSequenceRecord
+        is PosteriorMissingNucleotideSequenceRecord
     )
     assert (
-        bijux_phylogenetics.write_phylogenetic_logistic_coefficient_table
-        is write_phylogenetic_logistic_coefficient_table
+        bayesian_api.PosteriorMissingNucleotideSiteSummaryRow
+        is PosteriorMissingNucleotideSiteSummaryRow
     )
     assert (
-        bijux_phylogenetics.write_phylogenetic_logistic_excluded_taxa_table
-        is write_phylogenetic_logistic_excluded_taxa_table
+        bayesian_api.PosteriorMissingNucleotideStateProbabilityRow
+        is PosteriorMissingNucleotideStateProbabilityRow
     )
     assert (
-        bijux_phylogenetics.write_phylogenetic_logistic_fitted_table
-        is write_phylogenetic_logistic_fitted_table
+        bayesian_api.PosteriorModelAveragedEstimateRow
+        is PosteriorModelAveragedEstimateRow
     )
+    assert bayesian_api.PosteriorModelAveragingReport is PosteriorModelAveragingReport
+    assert bayesian_api.PosteriorModelEstimateRow is PosteriorModelEstimateRow
+    assert bayesian_api.PosteriorModelSupportRow is PosteriorModelSupportRow
+    assert bayesian_api.BayesianPosteriorTreeSample is BayesianPosteriorTreeSample
     assert (
-        bijux_phylogenetics.write_independent_contrast_table
-        is write_independent_contrast_table
+        bayesian_api.BayesianPosteriorTreeSampleArchive
+        is BayesianPosteriorTreeSampleArchive
     )
+    assert bayesian_api.BayesianRunBurninPolicy is BayesianRunBurninPolicy
+    assert bayesian_api.BayesianRunManifest is BayesianRunManifest
     assert (
-        bijux_phylogenetics.write_comparative_clade_stability_table
-        is write_comparative_clade_stability_table
+        bayesian_api.BayesianRunManifestReplayReport is BayesianRunManifestReplayReport
     )
+    assert bayesian_api.BayesianRunPriorRow is BayesianRunPriorRow
     assert (
-        bijux_phylogenetics.write_comparative_clade_coefficient_change_table
-        is write_comparative_clade_coefficient_change_table
+        bayesian_api.PosteriorPredictiveSimulationDefinition
+        is PosteriorPredictiveSimulationDefinition
     )
     assert (
-        bijux_phylogenetics.write_posterior_tree_pgls_tree_table
-        is write_posterior_tree_pgls_tree_table
+        bayesian_api.PosteriorPredictiveObservedStatisticRow
+        is PosteriorPredictiveObservedStatisticRow
     )
     assert (
-        bijux_phylogenetics.write_posterior_tree_pgls_coefficient_table
-        is write_posterior_tree_pgls_coefficient_table
+        bayesian_api.PosteriorPredictivePValueReport is PosteriorPredictivePValueReport
     )
+    assert bayesian_api.PosteriorPredictivePValueRow is PosteriorPredictivePValueRow
     assert (
-        bijux_phylogenetics.write_posterior_tree_pgls_summary_table
-        is write_posterior_tree_pgls_summary_table
+        bayesian_api.PosteriorPredictiveReplicateStatisticRow
+        is PosteriorPredictiveReplicateStatisticRow
     )
     assert (
-        bijux_phylogenetics.write_comparative_residual_taxon_table
-        is write_comparative_residual_taxon_table
+        bayesian_api.PosteriorPredictiveStatisticSummaryRow
+        is PosteriorPredictiveStatisticSummaryRow
     )
     assert (
-        bijux_phylogenetics.write_comparative_residual_clade_table
-        is write_comparative_residual_clade_table
+        bayesian_api.PosteriorPredictiveAlignmentReplicate
+        is PosteriorPredictiveAlignmentReplicate
     )
     assert (
-        bijux_phylogenetics.write_comparative_regression_model_ranking_table
-        is write_comparative_regression_model_ranking_table
+        bayesian_api.PosteriorPredictiveDiscreteTraitReplicate
+        is PosteriorPredictiveDiscreteTraitReplicate
     )
     assert (
-        bijux_phylogenetics.write_comparative_regression_pairwise_table
-        is write_comparative_regression_pairwise_table
+        bayesian_api.PosteriorPredictiveContinuousTraitReplicate
+        is PosteriorPredictiveContinuousTraitReplicate
     )
     assert (
-        bijux_phylogenetics.write_comparative_regression_excluded_taxa_table
-        is write_comparative_regression_excluded_taxa_table
+        bayesian_api.PosteriorPredictiveAlignmentSimulationReport
+        is PosteriorPredictiveAlignmentSimulationReport
     )
     assert (
-        bijux_phylogenetics.write_independent_contrast_regression_table
-        is write_independent_contrast_regression_table
+        bayesian_api.PosteriorPredictiveDiscreteTraitSimulationReport
+        is PosteriorPredictiveDiscreteTraitSimulationReport
     )
     assert (
-        bijux_phylogenetics.write_multivariate_residual_covariance_table
-        is write_multivariate_residual_covariance_table
+        bayesian_api.PosteriorPredictiveContinuousTraitSimulationReport
+        is PosteriorPredictiveContinuousTraitSimulationReport
     )
+    assert bayesian_api.BayesianStateBranchRow is BayesianStateBranchRow
+    assert bayesian_api.BayesianTreeState is BayesianTreeState
+    assert bayesian_api.BayesianModelParameterState is BayesianModelParameterState
+    assert bayesian_api.BayesianPriorComponentState is BayesianPriorComponentState
+    assert bayesian_api.BayesianPhylogeneticState is BayesianPhylogeneticState
+    assert bayesian_api.MetropolisHastingsProposal is MetropolisHastingsProposal
+    assert bayesian_api.MetropolisHastingsStepRow is MetropolisHastingsStepRow
+    assert bayesian_api.MetropolisHastingsRunReport is MetropolisHastingsRunReport
+    assert bayesian_api.PriorOnlySampledBranchRow is PriorOnlySampledBranchRow
     assert (
-        bijux_phylogenetics.write_multivariate_residual_correlation_table
-        is write_multivariate_residual_correlation_table
+        bayesian_api.PriorOnlySubstitutionParameterState
+        is PriorOnlySubstitutionParameterState
     )
+    assert bayesian_api.PriorOnlyPhylogeneticSample is PriorOnlyPhylogeneticSample
     assert (
-        bijux_phylogenetics.write_multivariate_residual_association_table
-        is write_multivariate_residual_association_table
+        bayesian_api.PriorOnlyPhylogeneticSimulationReport
+        is PriorOnlyPhylogeneticSimulationReport
     )
     assert (
-        bijux_phylogenetics.write_multivariate_response_model_table
-        is write_multivariate_response_model_table
+        bayesian_api.SubstitutionParameterPriorBundle
+        is SubstitutionParameterPriorBundle
     )
     assert (
-        bijux_phylogenetics.write_multivariate_response_coefficient_table
-        is write_multivariate_response_coefficient_table
+        bayesian_api.SubstitutionParameterPriorEvaluationReport
+        is SubstitutionParameterPriorEvaluationReport
     )
+    assert bayesian_api.SubstitutionParameterPriorRow is SubstitutionParameterPriorRow
+    assert bayesian_api.TreeTopologyPriorModel is TreeTopologyPriorModel
+    assert bayesian_api.YuleTreePriorModel is YuleTreePriorModel
     assert (
-        bijux_phylogenetics.write_multivariate_excluded_taxa_table
-        is write_multivariate_excluded_taxa_table
-    )
-    assert (
-        bijux_phylogenetics.write_phylogenetic_signal_summary_table
-        is write_phylogenetic_signal_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_phylogenetic_signal_permutation_table
-        is write_phylogenetic_signal_permutation_table
-    )
-    assert (
-        bijux_phylogenetics.write_ou_alpha_profile_table is write_ou_alpha_profile_table
-    )
-    assert (
-        bijux_phylogenetics.write_ou_trait_evolution_summary_table
-        is write_ou_trait_evolution_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_ou_trait_evolution_exclusion_table
-        is write_ou_trait_evolution_exclusion_table
-    )
-    assert bijux_phylogenetics.write_ou_covariance_table is write_ou_covariance_table
-    assert (
-        bijux_phylogenetics.write_pgls_categorical_contrast_table
-        is write_pgls_categorical_contrast_table
-    )
-    assert (
-        bijux_phylogenetics.summarize_pgls_interaction_coefficients
-        is summarize_pgls_interaction_coefficients
-    )
-    assert (
-        bijux_phylogenetics.write_pgls_interaction_coefficient_table
-        is write_pgls_interaction_coefficient_table
-    )
-    assert (
-        bijux_phylogenetics.write_pgls_lambda_profile_table
-        is write_pgls_lambda_profile_table
-    )
-    assert (
-        bijux_phylogenetics.write_pgls_model_matrix_table
-        is write_pgls_model_matrix_table
-    )
-    assert (
-        bijux_phylogenetics.reconstruct_continuous_ancestral_states
-        is reconstruct_continuous_ancestral_states
-    )
-    assert (
-        bijux_phylogenetics.summarize_continuous_ancestral_report
-        is summarize_continuous_ancestral_report
-    )
-    assert (
-        bijux_phylogenetics.summarize_continuous_ancestral_confidence
-        is summarize_continuous_ancestral_confidence
-    )
-    assert (
-        bijux_phylogenetics.summarize_continuous_change_branches
-        is summarize_continuous_change_branches
-    )
-    assert (
-        bijux_phylogenetics.summarize_continuous_change_counts
-        is summarize_continuous_change_counts
-    )
-    assert (
-        bijux_phylogenetics.continuous_ancestral_exclusions
-        is continuous_ancestral_exclusions
-    )
-    assert (
-        bijux_phylogenetics.discrete_ancestral_exclusions
-        is discrete_ancestral_exclusions
-    )
-    assert (
-        bijux_phylogenetics.reconstruct_discrete_ancestral_states
-        is reconstruct_discrete_ancestral_states
-    )
-    assert (
-        bijux_phylogenetics.summarize_discrete_ancestral_report
-        is summarize_discrete_ancestral_report
-    )
-    assert (
-        bijux_phylogenetics.summarize_discrete_ancestral_confidence
-        is summarize_discrete_ancestral_confidence
-    )
-    assert (
-        bijux_phylogenetics.build_ancestral_figure_package
-        is build_ancestral_figure_package
-    )
-    assert (
-        bijux_phylogenetics.build_ancestral_report_package
-        is build_ancestral_report_package
-    )
-    assert (
-        bijux_phylogenetics.build_ancestral_sensitivity_report
-        is build_ancestral_sensitivity_report
-    )
-    assert (
-        bijux_phylogenetics.compare_continuous_ancestral_models
-        is compare_continuous_ancestral_models
-    )
-    assert (
-        bijux_phylogenetics.compare_discrete_ancestral_reconstructions
-        is compare_discrete_ancestral_reconstructions
-    )
-    assert (
-        bijux_phylogenetics.render_ancestral_state_tree is render_ancestral_state_tree
-    )
-    assert (
-        bijux_phylogenetics.build_continuous_ancestral_confidence_rows
-        is build_continuous_ancestral_confidence_rows
-    )
-    assert (
-        bijux_phylogenetics.write_continuous_ancestral_summary_table
-        is write_continuous_ancestral_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_continuous_change_branch_table
-        is write_continuous_change_branch_table
-    )
-    assert (
-        bijux_phylogenetics.write_continuous_change_count_table
-        is write_continuous_change_count_table
-    )
-    assert (
-        bijux_phylogenetics.write_continuous_ancestral_confidence_table
-        is write_continuous_ancestral_confidence_table
-    )
-    assert (
-        bijux_phylogenetics.write_continuous_ancestral_uncertainty_table
-        is write_continuous_ancestral_uncertainty_table
-    )
-    assert (
-        bijux_phylogenetics.write_continuous_ancestral_exclusion_table
-        is write_continuous_ancestral_exclusion_table
-    )
-    assert (
-        bijux_phylogenetics.build_discrete_ancestral_confidence_rows
-        is build_discrete_ancestral_confidence_rows
-    )
-    assert (
-        bijux_phylogenetics.write_discrete_ancestral_summary_table
-        is write_discrete_ancestral_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_discrete_ancestral_confidence_table
-        is write_discrete_ancestral_confidence_table
-    )
-    assert (
-        bijux_phylogenetics.write_discrete_ancestral_probability_table
-        is write_discrete_ancestral_probability_table
-    )
-    assert (
-        bijux_phylogenetics.write_discrete_ancestral_comparison_table
-        is write_discrete_ancestral_comparison_table
-    )
-    assert (
-        bijux_phylogenetics.write_discrete_ancestral_exclusion_table
-        is write_discrete_ancestral_exclusion_table
-    )
-    assert (
-        bijux_phylogenetics.write_ancestral_confidence_summary_table
-        is write_ancestral_confidence_summary_table
-    )
-    assert (
-        bijux_phylogenetics.render_ancestral_state_report
-        is render_ancestral_state_report
-    )
-    assert (
-        bijux_phylogenetics.write_ancestral_state_table is write_ancestral_state_table
-    )
-    assert (
-        bijux_phylogenetics.render_ancestral_state_visualization
-        is render_ancestral_state_visualization
-    )
-    assert (
-        bijux_phylogenetics.summarize_continuous_ancestral_tree_set
-        is summarize_continuous_ancestral_tree_set
-    )
-    assert (
-        bijux_phylogenetics.summarize_continuous_ancestral_tree_set_confidence
-        is summarize_continuous_ancestral_tree_set_confidence
-    )
-    assert (
-        bijux_phylogenetics.summarize_continuous_ancestral_tree_set_report
-        is summarize_continuous_ancestral_tree_set_report
-    )
-    assert (
-        bijux_phylogenetics.build_continuous_ancestral_tree_set_confidence_rows
-        is build_continuous_ancestral_tree_set_confidence_rows
-    )
-    assert (
-        bijux_phylogenetics.summarize_discrete_ancestral_tree_set
-        is summarize_discrete_ancestral_tree_set
-    )
-    assert (
-        bijux_phylogenetics.summarize_discrete_ancestral_tree_set_confidence
-        is summarize_discrete_ancestral_tree_set_confidence
-    )
-    assert (
-        bijux_phylogenetics.summarize_discrete_ancestral_tree_set_report
-        is summarize_discrete_ancestral_tree_set_report
-    )
-    assert (
-        bijux_phylogenetics.build_discrete_ancestral_tree_set_confidence_rows
-        is build_discrete_ancestral_tree_set_confidence_rows
-    )
-    assert (
-        bijux_phylogenetics.summarize_irreversible_discrete_reconstruction
-        is summarize_irreversible_discrete_reconstruction
-    )
-    assert (
-        bijux_phylogenetics.summarize_irreversible_discrete_report
-        is summarize_irreversible_discrete_report
-    )
-    assert (
-        bijux_phylogenetics.summarize_ordered_discrete_reconstruction
-        is summarize_ordered_discrete_reconstruction
-    )
-    assert (
-        bijux_phylogenetics.summarize_ordered_discrete_report
-        is summarize_ordered_discrete_report
-    )
-    assert (
-        bijux_phylogenetics.summarize_ancestral_root_sensitivity
-        is summarize_ancestral_root_sensitivity
-    )
-    assert (
-        bijux_phylogenetics.summarize_ancestral_root_sensitivity_report
-        is summarize_ancestral_root_sensitivity_report
-    )
-    assert (
-        bijux_phylogenetics.summarize_ancestral_transitions
-        is summarize_ancestral_transitions
-    )
-    assert (
-        bijux_phylogenetics.summarize_ancestral_transition_report
-        is summarize_ancestral_transition_report
-    )
-    assert (
-        bijux_phylogenetics.summarize_ancestral_transition_tree_set
-        is summarize_ancestral_transition_tree_set
-    )
-    assert (
-        bijux_phylogenetics.summarize_ancestral_transition_tree_set_report
-        is summarize_ancestral_transition_tree_set_report
-    )
-    assert (
-        bijux_phylogenetics.write_irreversible_discrete_summary_table
-        is write_irreversible_discrete_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_irreversible_discrete_fit_table
-        is write_irreversible_discrete_fit_table
-    )
-    assert (
-        bijux_phylogenetics.write_irreversible_discrete_node_table
-        is write_irreversible_discrete_node_table
-    )
-    assert (
-        bijux_phylogenetics.write_irreversible_discrete_transition_table
-        is write_irreversible_discrete_transition_table
-    )
-    assert (
-        bijux_phylogenetics.write_ordered_discrete_summary_table
-        is write_ordered_discrete_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_ordered_discrete_fit_table
-        is write_ordered_discrete_fit_table
-    )
-    assert (
-        bijux_phylogenetics.write_ordered_discrete_node_table
-        is write_ordered_discrete_node_table
-    )
-    assert (
-        bijux_phylogenetics.write_ordered_discrete_transition_table
-        is write_ordered_discrete_transition_table
-    )
-    assert (
-        bijux_phylogenetics.write_ancestral_root_sensitivity_summary_table
-        is write_ancestral_root_sensitivity_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_ancestral_root_assumption_table
-        is write_ancestral_root_assumption_table
-    )
-    assert (
-        bijux_phylogenetics.write_ancestral_root_sensitivity_node_table
-        is write_ancestral_root_sensitivity_node_table
-    )
-    assert (
-        bijux_phylogenetics.write_ancestral_tree_set_tree_table
-        is write_ancestral_tree_set_tree_table
-    )
-    assert (
-        bijux_phylogenetics.write_ancestral_transition_summary_table
-        is write_ancestral_transition_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_ancestral_transition_branch_table
-        is write_ancestral_transition_branch_table
-    )
-    assert (
-        bijux_phylogenetics.write_ancestral_transition_count_table
-        is write_ancestral_transition_count_table
-    )
-    assert (
-        bijux_phylogenetics.write_ancestral_transition_exclusion_table
-        is write_ancestral_transition_exclusion_table
-    )
-    assert (
-        bijux_phylogenetics.write_ancestral_transition_tree_set_summary_table
-        is write_ancestral_transition_tree_set_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_ancestral_transition_tree_set_tree_table
-        is write_ancestral_transition_tree_set_tree_table
-    )
-    assert (
-        bijux_phylogenetics.write_ancestral_transition_tree_set_branch_table
-        is write_ancestral_transition_tree_set_branch_table
-    )
-    assert (
-        bijux_phylogenetics.write_ancestral_transition_tree_set_count_table
-        is write_ancestral_transition_tree_set_count_table
-    )
-    assert (
-        bijux_phylogenetics.write_ancestral_tree_set_exclusion_table
-        is write_ancestral_tree_set_exclusion_table
-    )
-    assert (
-        bijux_phylogenetics.write_continuous_ancestral_tree_set_summary_table
-        is write_continuous_ancestral_tree_set_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_continuous_ancestral_tree_set_confidence_table
-        is write_continuous_ancestral_tree_set_confidence_table
-    )
-    assert (
-        bijux_phylogenetics.write_continuous_ancestral_tree_set_node_table
-        is write_continuous_ancestral_tree_set_node_table
-    )
-    assert (
-        bijux_phylogenetics.write_continuous_ancestral_tree_set_clade_table
-        is write_continuous_ancestral_tree_set_clade_table
-    )
-    assert (
-        bijux_phylogenetics.write_discrete_ancestral_tree_set_summary_table
-        is write_discrete_ancestral_tree_set_summary_table
-    )
-    assert (
-        bijux_phylogenetics.write_discrete_ancestral_tree_set_confidence_table
-        is write_discrete_ancestral_tree_set_confidence_table
-    )
-    assert (
-        bijux_phylogenetics.write_discrete_ancestral_tree_set_node_table
-        is write_discrete_ancestral_tree_set_node_table
-    )
-    assert (
-        bijux_phylogenetics.write_discrete_ancestral_tree_set_clade_table
-        is write_discrete_ancestral_tree_set_clade_table
-    )
-    assert (
-        bijux_phylogenetics.run_multiple_sequence_alignment
-        is run_multiple_sequence_alignment
-    )
-    assert bijux_phylogenetics.run_alignment_trimming is run_alignment_trimming
-    assert (
-        bijux_phylogenetics.audit_alignment_inference_readiness
-        is audit_alignment_inference_readiness
-    )
-    assert bijux_phylogenetics.run_model_selection is run_model_selection
-    assert (
-        bijux_phylogenetics.validate_model_selection_against_engine_outputs
-        is validate_model_selection_against_engine_outputs
-    )
-    assert (
-        bijux_phylogenetics.run_maximum_likelihood_tree_inference
-        is run_maximum_likelihood_tree_inference
-    )
-    assert (
-        bijux_phylogenetics.validate_ml_tree_contains_expected_taxa
-        is validate_ml_tree_contains_expected_taxa
-    )
-    assert (
-        bijux_phylogenetics.run_bootstrap_support_estimation
-        is run_bootstrap_support_estimation
-    )
-    assert (
-        bijux_phylogenetics.run_sh_alrt_support_estimation
-        is run_sh_alrt_support_estimation
-    )
-    assert bijux_phylogenetics.run_fasta_to_tree_workflow is run_fasta_to_tree_workflow
-    assert (
-        bijux_phylogenetics.infer_unaligned_sequence_type
-        is infer_unaligned_sequence_type
-    )
-    assert (
-        bijux_phylogenetics.validate_bootstrap_tree_set is validate_bootstrap_tree_set
-    )
-    assert (
-        bijux_phylogenetics.run_bootstrap_consensus_tree is run_bootstrap_consensus_tree
-    )
-    assert bijux_phylogenetics.run_fast_tree_inference is run_fast_tree_inference
-    assert (
-        bijux_phylogenetics.run_large_alignment_inference
-        is run_large_alignment_inference
-    )
-    assert (
-        bijux_phylogenetics.run_inference_reproducibility_check
-        is run_inference_reproducibility_check
-    )
-    assert (
-        bijux_phylogenetics.run_tree_inference_comparison
-        is run_tree_inference_comparison
-    )
-    assert bijux_phylogenetics.compare_fast_and_ml_trees is compare_fast_and_ml_trees
-    assert (
-        bijux_phylogenetics.build_inference_comparison_shared_clade_rows
-        is build_inference_comparison_shared_clade_rows
-    )
-    assert (
-        bijux_phylogenetics.build_inference_comparison_weighted_conflict_rows
-        is build_inference_comparison_weighted_conflict_rows
-    )
-    assert (
-        bijux_phylogenetics.build_inference_comparison_conclusion_rows
-        is build_inference_comparison_conclusion_rows
-    )
-    assert (
-        bijux_phylogenetics.write_inference_comparison_clade_table
-        is write_inference_comparison_clade_table
-    )
-    assert (
-        bijux_phylogenetics.write_inference_comparison_weighted_conflict_table
-        is write_inference_comparison_weighted_conflict_table
-    )
-    assert (
-        bijux_phylogenetics.write_inference_comparison_conclusion_table
-        is write_inference_comparison_conclusion_table
-    )
-    assert (
-        bijux_phylogenetics.write_inference_comparison_summary_table
-        is write_inference_comparison_summary_table
-    )
-    assert (
-        bijux_phylogenetics.rewrite_inference_comparison_report_html
-        is rewrite_inference_comparison_report_html
-    )
-    assert (
-        bijux_phylogenetics.compare_inferred_tree_to_taxon_metadata
-        is compare_inferred_tree_to_taxon_metadata
-    )
-    assert (
-        bijux_phylogenetics.classify_inference_workflow_failure
-        is classify_inference_workflow_failure
-    )
-    assert (
-        bijux_phylogenetics.validate_inference_engine_outputs
-        is validate_inference_engine_outputs
-    )
-    assert (
-        bijux_phylogenetics.render_inference_workflow_report
-        is render_inference_workflow_report
-    )
-    assert bijux_phylogenetics.prepare_mrbayes_analysis is prepare_mrbayes_analysis
-    assert (
-        bijux_phylogenetics.run_mrbayes_posterior_inference
-        is run_mrbayes_posterior_inference
-    )
-    assert (
-        bijux_phylogenetics.summarize_mrbayes_posterior_trees
-        is summarize_mrbayes_posterior_trees
-    )
-    assert (
-        bijux_phylogenetics.parse_mrbayes_parameter_traces
-        is parse_mrbayes_parameter_traces
-    )
-    assert (
-        bijux_phylogenetics.parse_mrbayes_posterior_tree_samples
-        is parse_mrbayes_posterior_tree_samples
-    )
-    assert (
-        bijux_phylogenetics.parse_mrbayes_mcmc_diagnostics
-        is parse_mrbayes_mcmc_diagnostics
-    )
-    assert (
-        bijux_phylogenetics.parse_mrbayes_consensus_tree is parse_mrbayes_consensus_tree
-    )
-    assert (
-        bijux_phylogenetics.compute_mrbayes_effective_sample_sizes
-        is compute_mrbayes_effective_sample_sizes
-    )
-    assert (
-        bijux_phylogenetics.summarize_mrbayes_parameter_diagnostics
-        is summarize_mrbayes_parameter_diagnostics
-    )
-    assert (
-        bijux_phylogenetics.write_mrbayes_parameter_summary_table
-        is write_mrbayes_parameter_summary_table
-    )
-    assert (
-        bijux_phylogenetics.assess_mrbayes_burnin_sensitivity
-        is assess_mrbayes_burnin_sensitivity
-    )
-    assert (
-        bijux_phylogenetics.write_mrbayes_burnin_sensitivity_slice_table
-        is write_mrbayes_burnin_sensitivity_slice_table
-    )
-    assert bijux_phylogenetics.assess_mrbayes_convergence is assess_mrbayes_convergence
-    assert bijux_phylogenetics.MrBayesParameterSummary is MrBayesParameterSummary
-    assert (
-        bijux_phylogenetics.MrBayesParameterDiagnosticsReport
+        bayesian_api.MrBayesParameterDiagnosticsReport
         is MrBayesParameterDiagnosticsReport
     )
     assert (
-        bijux_phylogenetics.MrBayesBurninSensitivityReport
-        is MrBayesBurninSensitivityReport
+        bayesian_api.assess_beast_burnin_sensitivity is assess_beast_burnin_sensitivity
+    )
+    assert bayesian_api.assess_beast_convergence is assess_beast_convergence
+    assert (
+        bayesian_api.assess_mrbayes_burnin_sensitivity
+        is assess_mrbayes_burnin_sensitivity
+    )
+    assert bayesian_api.assess_mrbayes_convergence is assess_mrbayes_convergence
+    assert (
+        bayesian_api.build_bayesian_evidence_package is build_bayesian_evidence_package
     )
     assert (
-        bijux_phylogenetics.MrBayesBurninSensitivitySlice
-        is MrBayesBurninSensitivitySlice
+        bayesian_api.build_bayesian_posterior_tree_sample
+        is build_bayesian_posterior_tree_sample
     )
     assert (
-        bijux_phylogenetics.render_bayesian_posterior_report
-        is render_bayesian_posterior_report
+        bayesian_api.build_bayesian_posterior_tree_sample_archive
+        is build_bayesian_posterior_tree_sample_archive
     )
     assert (
-        bijux_phylogenetics.validate_fossil_calibration_table
-        is validate_fossil_calibration_table
+        bayesian_api.build_brownian_continuous_trait_model_definition
+        is build_brownian_continuous_trait_model_definition
     )
     assert (
-        bijux_phylogenetics.detect_impossible_calibration_constraints
-        is detect_impossible_calibration_constraints
+        bayesian_api.build_brownian_continuous_trait_proposal_schedule
+        is build_brownian_continuous_trait_proposal_schedule
     )
     assert (
-        bijux_phylogenetics.validate_tip_dating_metadata is validate_tip_dating_metadata
+        bayesian_api.build_ornstein_uhlenbeck_continuous_trait_model_definition
+        is build_ornstein_uhlenbeck_continuous_trait_model_definition
     )
     assert (
-        bijux_phylogenetics.prepare_beast_time_tree_analysis
-        is prepare_beast_time_tree_analysis
+        bayesian_api.build_ornstein_uhlenbeck_continuous_trait_proposal_schedule
+        is build_ornstein_uhlenbeck_continuous_trait_proposal_schedule
     )
     assert (
-        bijux_phylogenetics.run_beast_posterior_inference
-        is run_beast_posterior_inference
-    )
-    assert bijux_phylogenetics.BeastAnalysisXmlReport is BeastAnalysisXmlReport
-    assert bijux_phylogenetics.BeastCalibration is BeastCalibration
-    assert (
-        bijux_phylogenetics.BeastPosteriorConsensusReport
-        is BeastPosteriorConsensusReport
+        bayesian_api.CLOCK_MODEL_SCALAR_PRIOR_FAMILIES
+        is CLOCK_MODEL_SCALAR_PRIOR_FAMILIES
     )
     assert (
-        bijux_phylogenetics.BeastPosteriorTopologyDiversityReport
-        is BeastPosteriorTopologyDiversityReport
-    )
-    assert bijux_phylogenetics.parse_beast_log is parse_beast_log
-    assert (
-        bijux_phylogenetics.parse_beast_posterior_tree_samples
-        is parse_beast_posterior_tree_samples
+        bayesian_api.FIXED_TOPOLOGY_RELAXED_CLOCK_MODELS
+        is FIXED_TOPOLOGY_RELAXED_CLOCK_MODELS
     )
     assert (
-        bijux_phylogenetics.summarize_beast_analysis_xml is summarize_beast_analysis_xml
-    )
-    assert bijux_phylogenetics.summarize_beast_log is summarize_beast_log
-    assert (
-        bijux_phylogenetics.summarize_beast_posterior_trees
-        is summarize_beast_posterior_trees
+        bayesian_api.FIXED_TOPOLOGY_STRICT_CLOCK_MODELS
+        is FIXED_TOPOLOGY_STRICT_CLOCK_MODELS
     )
     assert (
-        bijux_phylogenetics.summarize_beast_posterior_topology_diversity
-        is summarize_beast_posterior_topology_diversity
-    )
-    assert bijux_phylogenetics.assess_beast_convergence is assess_beast_convergence
-    assert (
-        bijux_phylogenetics.validate_beast_analysis_xml is validate_beast_analysis_xml
+        bayesian_api.build_beta_continuous_trait_probability_prior
+        is build_beta_continuous_trait_probability_prior
     )
     assert (
-        bijux_phylogenetics.validate_beast_posterior_log is validate_beast_posterior_log
+        bayesian_api.build_beta_probability_substitution_parameter_prior
+        is build_beta_probability_substitution_parameter_prior
     )
     assert (
-        bijux_phylogenetics.assess_beast_burnin_sensitivity
-        is assess_beast_burnin_sensitivity
-    )
-    assert bijux_phylogenetics.assess_beast_chain_mixing is assess_beast_chain_mixing
-    assert (
-        bijux_phylogenetics.write_beast_burnin_sensitivity_slice_table
-        is write_beast_burnin_sensitivity_slice_table
+        bayesian_api.build_categorical_probability_vector
+        is build_categorical_probability_vector
     )
     assert (
-        bijux_phylogenetics.write_beast_log_summary_table
-        is write_beast_log_summary_table
+        bayesian_api.build_continuous_trait_model_prior_bundle
+        is build_continuous_trait_model_prior_bundle
     )
     assert (
-        bijux_phylogenetics.write_beast_posterior_tree_set
-        is write_beast_posterior_tree_set
+        bayesian_api.build_discrete_trait_mk_model_definition
+        is build_discrete_trait_mk_model_definition
     )
     assert (
-        bijux_phylogenetics.subsample_beast_posterior_tree_set
-        is subsample_beast_posterior_tree_set
+        bayesian_api.build_discrete_trait_mk_proposal_schedule
+        is build_discrete_trait_mk_proposal_schedule
     )
     assert (
-        bijux_phylogenetics.subsample_mrbayes_posterior_tree_set
-        is subsample_mrbayes_posterior_tree_set
+        bayesian_api.build_dirichlet_simplex_substitution_parameter_prior
+        is build_dirichlet_simplex_substitution_parameter_prior
     )
     assert (
-        bijux_phylogenetics.subsample_posterior_tree_set is subsample_posterior_tree_set
+        bayesian_api.build_exponential_clock_model_scalar_prior
+        is build_exponential_clock_model_scalar_prior
     )
     assert (
-        bijux_phylogenetics.summarize_maximum_clade_credibility_tree
-        is summarize_maximum_clade_credibility_tree
-    )
-    assert bijux_phylogenetics.thin_posterior_tree_set is thin_posterior_tree_set
-    assert (
-        bijux_phylogenetics.summarize_posterior_node_ages
-        is summarize_posterior_node_ages
-    )
-    assert bijux_phylogenetics.compare_bayesian_tree_sets is compare_bayesian_tree_sets
-    assert (
-        bijux_phylogenetics.compare_independent_bayesian_runs
-        is compare_independent_bayesian_runs
+        bayesian_api.build_exponential_discrete_trait_rate_prior
+        is build_exponential_discrete_trait_rate_prior
     )
     assert (
-        bijux_phylogenetics.compare_posterior_tree_sets_by_prior
-        is compare_posterior_tree_sets_by_prior
+        bayesian_api.build_exponential_continuous_trait_scalar_prior
+        is build_exponential_continuous_trait_scalar_prior
     )
     assert (
-        bijux_phylogenetics.compare_posterior_tree_sets_by_clock
-        is compare_posterior_tree_sets_by_clock
+        bayesian_api.build_exponential_positive_substitution_parameter_prior
+        is build_exponential_positive_substitution_parameter_prior
     )
     assert (
-        bijux_phylogenetics.render_bayesian_run_comparison_report
-        is render_bayesian_run_comparison_report
+        bayesian_api.build_fixed_clock_model_scalar_prior
+        is build_fixed_clock_model_scalar_prior
     )
     assert (
-        bijux_phylogenetics.render_bayesian_diagnostics_report
-        is render_bayesian_diagnostics_report
+        bayesian_api.build_fixed_topology_dna_model_definition
+        is build_fixed_topology_dna_model_definition
     )
     assert (
-        bijux_phylogenetics.build_posterior_uncertainty_figure_package
+        bayesian_api.build_fixed_topology_dna_proposal_schedule
+        is build_fixed_topology_dna_proposal_schedule
+    )
+    assert (
+        bayesian_api.build_fixed_topology_partitioned_dna_model_definition
+        is build_fixed_topology_partitioned_dna_model_definition
+    )
+    assert (
+        bayesian_api.build_fixed_topology_partitioned_dna_proposal_schedule
+        is build_fixed_topology_partitioned_dna_proposal_schedule
+    )
+    assert (
+        bayesian_api.build_fixed_topology_relaxed_clock_model_definition
+        is build_fixed_topology_relaxed_clock_model_definition
+    )
+    assert (
+        bayesian_api.build_fixed_topology_relaxed_clock_proposal_schedule
+        is build_fixed_topology_relaxed_clock_proposal_schedule
+    )
+    assert (
+        bayesian_api.build_fixed_topology_strict_clock_model_definition
+        is build_fixed_topology_strict_clock_model_definition
+    )
+    assert (
+        bayesian_api.build_fixed_topology_strict_clock_proposal_schedule
+        is build_fixed_topology_strict_clock_proposal_schedule
+    )
+    assert (
+        bayesian_api.build_fixed_continuous_trait_location_prior
+        is build_fixed_continuous_trait_location_prior
+    )
+    assert (
+        bayesian_api.build_fixed_continuous_trait_probability_prior
+        is build_fixed_continuous_trait_probability_prior
+    )
+    assert (
+        bayesian_api.build_fixed_continuous_trait_scalar_prior
+        is build_fixed_continuous_trait_scalar_prior
+    )
+    assert (
+        bayesian_api.build_fixed_positive_substitution_parameter_prior
+        is build_fixed_positive_substitution_parameter_prior
+    )
+    assert (
+        bayesian_api.build_fixed_probability_substitution_parameter_prior
+        is build_fixed_probability_substitution_parameter_prior
+    )
+    assert (
+        bayesian_api.build_fixed_simplex_substitution_parameter_prior
+        is build_fixed_simplex_substitution_parameter_prior
+    )
+    assert (
+        bayesian_api.build_gamma_discrete_trait_rate_prior
+        is build_gamma_discrete_trait_rate_prior
+    )
+    assert (
+        bayesian_api.build_gamma_clock_model_scalar_prior
+        is build_gamma_clock_model_scalar_prior
+    )
+    assert (
+        bayesian_api.build_gamma_continuous_trait_scalar_prior
+        is build_gamma_continuous_trait_scalar_prior
+    )
+    assert (
+        bayesian_api.build_gamma_positive_substitution_parameter_prior
+        is build_gamma_positive_substitution_parameter_prior
+    )
+    assert (
+        bayesian_api.build_joint_topology_dna_model_definition
+        is build_joint_topology_dna_model_definition
+    )
+    assert (
+        bayesian_api.build_joint_topology_dna_proposal_schedule
+        is build_joint_topology_dna_proposal_schedule
+    )
+    assert (
+        bayesian_api.load_calibration_prior_definitions
+        is load_calibration_prior_definitions
+    )
+    assert (
+        bayesian_api.build_lognormal_discrete_trait_rate_prior
+        is build_lognormal_discrete_trait_rate_prior
+    )
+    assert (
+        bayesian_api.build_lognormal_clock_model_scalar_prior
+        is build_lognormal_clock_model_scalar_prior
+    )
+    assert (
+        bayesian_api.build_lognormal_continuous_trait_scalar_prior
+        is build_lognormal_continuous_trait_scalar_prior
+    )
+    assert (
+        bayesian_api.build_lognormal_positive_substitution_parameter_prior
+        is build_lognormal_positive_substitution_parameter_prior
+    )
+    assert (
+        bayesian_api.build_normal_continuous_trait_location_prior
+        is build_normal_continuous_trait_location_prior
+    )
+    assert (
+        bayesian_api.build_constant_population_coalescent_tree_prior
+        is build_constant_population_coalescent_tree_prior
+    )
+    assert bayesian_api.build_local_clock_rate_model is build_local_clock_rate_model
+    assert (
+        bayesian_api.build_relaxed_lognormal_clock_model
+        is build_relaxed_lognormal_clock_model
+    )
+    assert bayesian_api.build_strict_clock_rate_model is build_strict_clock_rate_model
+    assert (
+        bayesian_api.build_skyline_coalescent_tree_prior
+        is build_skyline_coalescent_tree_prior
+    )
+    assert (
+        bayesian_api.build_crown_conditioned_birth_death_tree_prior
+        is build_crown_conditioned_birth_death_tree_prior
+    )
+    assert (
+        bayesian_api.build_uniform_rooted_tree_topology_prior
+        is build_uniform_rooted_tree_topology_prior
+    )
+    assert (
+        bayesian_api.build_crown_conditioned_yule_tree_prior
+        is build_crown_conditioned_yule_tree_prior
+    )
+    assert (
+        bayesian_api.build_partition_model_prior_bundle
+        is build_partition_model_prior_bundle
+    )
+    assert (
+        bayesian_api.build_adaptive_tuning_controller
+        is build_adaptive_tuning_controller
+    )
+    assert (
+        bayesian_api.build_adaptive_tuning_window_row
+        is build_adaptive_tuning_window_row
+    )
+    assert bayesian_api.build_adaptive_tuning_report is build_adaptive_tuning_report
+    assert (
+        bayesian_api.build_partition_model_parameter_state
+        is build_partition_model_parameter_state
+    )
+    assert (
+        bayesian_api.build_partition_parameter_linkage_plan
+        is build_partition_parameter_linkage_plan
+    )
+    assert (
+        bayesian_api.build_posterior_ancestral_sequence_definition
+        is build_posterior_ancestral_sequence_definition
+    )
+    assert (
+        bayesian_api.build_posterior_missing_continuous_trait_definition
+        is build_posterior_missing_continuous_trait_definition
+    )
+    assert (
+        bayesian_api.build_posterior_missing_discrete_trait_definition
+        is build_posterior_missing_discrete_trait_definition
+    )
+    assert (
+        bayesian_api.build_posterior_missing_nucleotide_definition
+        is build_posterior_missing_nucleotide_definition
+    )
+    assert (
+        bayesian_api.build_posterior_predictive_simulation_definition
+        is build_posterior_predictive_simulation_definition
+    )
+    assert (
+        bayesian_api.build_partition_substitution_model_definition
+        is build_partition_substitution_model_definition
+    )
+    assert (
+        bayesian_api.resolve_partition_parameter_linkage_plan_from_model_parameters
+        is resolve_partition_parameter_linkage_plan_from_model_parameters
+    )
+    assert (
+        bayesian_api.resolve_partition_parameter_states_from_model_parameters
+        is resolve_partition_parameter_states_from_model_parameters
+    )
+    assert (
+        bayesian_api.strip_partition_model_parameter_state
+        is strip_partition_model_parameter_state
+    )
+    assert bayesian_api.build_bayesian_tree_state is build_bayesian_tree_state
+    assert (
+        bayesian_api.build_bayesian_model_parameter_state
+        is build_bayesian_model_parameter_state
+    )
+    assert (
+        bayesian_api.build_bayesian_prior_component_state
+        is build_bayesian_prior_component_state
+    )
+    assert (
+        bayesian_api.build_bayesian_phylogenetic_state
+        is build_bayesian_phylogenetic_state
+    )
+    assert (
+        bayesian_api.build_bayesian_phylogenetic_state_from_prior_only_sample
+        is build_bayesian_phylogenetic_state_from_prior_only_sample
+    )
+    assert (
+        bayesian_api.build_metropolis_hastings_proposal
+        is build_metropolis_hastings_proposal
+    )
+    assert (
+        bayesian_api.propose_base_frequency_simplex_move
+        is propose_base_frequency_simplex_move
+    )
+    assert (
+        bayesian_api.propose_branch_length_scaling_move
+        is propose_branch_length_scaling_move
+    )
+    assert bayesian_api.propose_clock_rate_move is propose_clock_rate_move
+    assert (
+        bayesian_api.propose_continuous_trait_location_move
+        is propose_continuous_trait_location_move
+    )
+    assert (
+        bayesian_api.propose_discrete_trait_rate_move
+        is propose_discrete_trait_rate_move
+    )
+    assert bayesian_api.propose_gamma_alpha_move is propose_gamma_alpha_move
+    assert (
+        bayesian_api.propose_gtr_exchangeability_move
+        is propose_gtr_exchangeability_move
+    )
+    assert (
+        bayesian_api.propose_global_tree_height_scaling_move
+        is propose_global_tree_height_scaling_move
+    )
+    assert (
+        bayesian_api.propose_invariant_proportion_move
+        is propose_invariant_proportion_move
+    )
+    assert bayesian_api.propose_kappa_move is propose_kappa_move
+    assert bayesian_api.propose_nni_topology_move is propose_nni_topology_move
+    assert (
+        bayesian_api.propose_node_height_sliding_move
+        is propose_node_height_sliding_move
+    )
+    assert bayesian_api.propose_partition_linking_move is propose_partition_linking_move
+    assert bayesian_api.propose_spr_topology_move is propose_spr_topology_move
+    assert bayesian_api.propose_tbr_topology_move is propose_tbr_topology_move
+    assert (
+        bayesian_api.evaluate_continuous_trait_location_log_prior
+        is evaluate_continuous_trait_location_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_clock_model_scalar_log_prior
+        is evaluate_clock_model_scalar_log_prior
+    )
+    assert (
+        bayesian_api.run_adaptive_tuned_metropolis_hastings_sampler
+        is run_adaptive_tuned_metropolis_hastings_sampler
+    )
+    assert (
+        bayesian_api.score_bayesian_phylogenetic_state
+        is score_bayesian_phylogenetic_state
+    )
+    assert (
+        bayesian_api.run_metropolis_hastings_sampler is run_metropolis_hastings_sampler
+    )
+    assert (
+        bayesian_api.run_brownian_continuous_trait_metropolis_hastings
+        is run_brownian_continuous_trait_metropolis_hastings
+    )
+    assert (
+        bayesian_api.run_ornstein_uhlenbeck_continuous_trait_metropolis_hastings
+        is run_ornstein_uhlenbeck_continuous_trait_metropolis_hastings
+    )
+    assert (
+        bayesian_api.run_discrete_trait_mk_metropolis_hastings
+        is run_discrete_trait_mk_metropolis_hastings
+    )
+    assert (
+        bayesian_api.run_fixed_topology_dna_metropolis_hastings
+        is run_fixed_topology_dna_metropolis_hastings
+    )
+    assert (
+        bayesian_api.run_fixed_topology_partitioned_dna_metropolis_hastings
+        is run_fixed_topology_partitioned_dna_metropolis_hastings
+    )
+    assert (
+        bayesian_api.run_fixed_topology_relaxed_clock_metropolis_hastings
+        is run_fixed_topology_relaxed_clock_metropolis_hastings
+    )
+    assert (
+        bayesian_api.run_fixed_topology_strict_clock_metropolis_hastings
+        is run_fixed_topology_strict_clock_metropolis_hastings
+    )
+    assert (
+        bayesian_api.run_joint_topology_dna_metropolis_hastings
+        is run_joint_topology_dna_metropolis_hastings
+    )
+    assert (
+        bayesian_api.simulate_brownian_continuous_trait_posterior_predictive
+        is simulate_brownian_continuous_trait_posterior_predictive
+    )
+    assert (
+        bayesian_api.simulate_discrete_trait_mk_posterior_predictive
+        is simulate_discrete_trait_mk_posterior_predictive
+    )
+    assert (
+        bayesian_api.simulate_fixed_topology_dna_posterior_predictive
+        is simulate_fixed_topology_dna_posterior_predictive
+    )
+    assert (
+        bayesian_api.simulate_fixed_topology_partitioned_dna_posterior_predictive
+        is simulate_fixed_topology_partitioned_dna_posterior_predictive
+    )
+    assert (
+        bayesian_api.simulate_joint_topology_dna_posterior_predictive
+        is simulate_joint_topology_dna_posterior_predictive
+    )
+    assert (
+        bayesian_api.simulate_ornstein_uhlenbeck_continuous_trait_posterior_predictive
+        is simulate_ornstein_uhlenbeck_continuous_trait_posterior_predictive
+    )
+    assert (
+        bayesian_api.summarize_posterior_predictive_p_values
+        is summarize_posterior_predictive_p_values
+    )
+    assert (
+        bayesian_api.summarize_metropolis_hastings_model_averaged_estimates
+        is summarize_metropolis_hastings_model_averaged_estimates
+    )
+    assert (
+        bayesian_api.summarize_posterior_model_averaged_estimates
+        is summarize_posterior_model_averaged_estimates
+    )
+    assert (
+        bayesian_api.METROPOLIS_HASTINGS_BURNIN_POLICY_NAMES
+        == METROPOLIS_HASTINGS_BURNIN_POLICY_NAMES
+    )
+    assert bayesian_api.BurninSampleRow is BurninSampleRow
+    assert bayesian_api.TraceEffectiveSampleSizeRow is TraceEffectiveSampleSizeRow
+    assert (
+        bayesian_api.MetropolisHastingsTraceEffectiveSampleSizeReport
+        is MetropolisHastingsTraceEffectiveSampleSizeReport
+    )
+    assert (
+        bayesian_api.IndependentMetropolisHastingsChainTraceEffectiveSampleSizeReport
+        is IndependentMetropolisHastingsChainTraceEffectiveSampleSizeReport
+    )
+    assert (
+        bayesian_api.IndependentMetropolisHastingsTraceEffectiveSampleSizeReport
+        is IndependentMetropolisHastingsTraceEffectiveSampleSizeReport
+    )
+    assert bayesian_api.TraceAutocorrelationLagRow is TraceAutocorrelationLagRow
+    assert (
+        bayesian_api.TraceAutocorrelationParameterReport
+        is TraceAutocorrelationParameterReport
+    )
+    assert (
+        bayesian_api.MetropolisHastingsTraceAutocorrelationReport
+        is MetropolisHastingsTraceAutocorrelationReport
+    )
+    assert (
+        bayesian_api.IndependentMetropolisHastingsChainTraceAutocorrelationReport
+        is IndependentMetropolisHastingsChainTraceAutocorrelationReport
+    )
+    assert (
+        bayesian_api.IndependentMetropolisHastingsTraceAutocorrelationReport
+        is IndependentMetropolisHastingsTraceAutocorrelationReport
+    )
+    assert (
+        bayesian_api.IndependentMetropolisHastingsBurninReport
+        is IndependentMetropolisHastingsBurninReport
+    )
+    assert (
+        bayesian_api.IndependentMetropolisHastingsChainBurninReport
+        is IndependentMetropolisHastingsChainBurninReport
+    )
+    assert (
+        bayesian_api.MetropolisHastingsBurninDiagnosticCandidate
+        is MetropolisHastingsBurninDiagnosticCandidate
+    )
+    assert (
+        bayesian_api.MetropolisHastingsBurninDiagnosticReport
+        is MetropolisHastingsBurninDiagnosticReport
+    )
+    assert bayesian_api.MetropolisHastingsBurninPolicy is MetropolisHastingsBurninPolicy
+    assert bayesian_api.MetropolisHastingsBurninReport is MetropolisHastingsBurninReport
+    assert (
+        bayesian_api.apply_independent_metropolis_hastings_burnin_policy
+        is apply_independent_metropolis_hastings_burnin_policy
+    )
+    assert (
+        bayesian_api.apply_metropolis_hastings_burnin_policy
+        is apply_metropolis_hastings_burnin_policy
+    )
+    assert (
+        bayesian_api.build_metropolis_hastings_burnin_policy
+        is build_metropolis_hastings_burnin_policy
+    )
+    assert (
+        bayesian_api.BAYESIAN_WRAPPER_CORRESPONDENCE_STATUSES
+        == BAYESIAN_WRAPPER_CORRESPONDENCE_STATUSES
+    )
+    assert (
+        bayesian_api.BayesianWrapperCorrespondenceObservation
+        is BayesianWrapperCorrespondenceObservation
+    )
+    assert (
+        bayesian_api.BayesianWrapperCorrespondenceReport
+        is BayesianWrapperCorrespondenceReport
+    )
+    assert (
+        bayesian_api.BayesianWrapperCorrespondenceSummaryRow
+        is BayesianWrapperCorrespondenceSummaryRow
+    )
+    assert bayesian_api.compute_equal_tail_interval is compute_equal_tail_interval
+    assert (
+        bayesian_api.compute_highest_posterior_density_interval
+        is compute_highest_posterior_density_interval
+    )
+    assert bayesian_api.compute_trace_autocorrelation is compute_trace_autocorrelation
+    assert (
+        bayesian_api.HighestPosteriorDensityInterval is HighestPosteriorDensityInterval
+    )
+    assert (
+        bayesian_api.compute_trace_effective_sample_size
+        is compute_trace_effective_sample_size
+    )
+    assert (
+        bayesian_api.compute_trace_integrated_autocorrelation_time
+        is compute_trace_integrated_autocorrelation_time
+    )
+    assert (
+        bayesian_api.diagnose_metropolis_hastings_burnin
+        is diagnose_metropolis_hastings_burnin
+    )
+    assert (
+        bayesian_api.summarize_bayesian_wrapper_correspondence
+        is summarize_bayesian_wrapper_correspondence
+    )
+    assert (
+        bayesian_api.summarize_independent_metropolis_hastings_trace_effective_sample_size
+        is summarize_independent_metropolis_hastings_trace_effective_sample_size
+    )
+    assert (
+        bayesian_api.summarize_independent_metropolis_hastings_trace_autocorrelation
+        is summarize_independent_metropolis_hastings_trace_autocorrelation
+    )
+    assert (
+        bayesian_api.summarize_independent_metropolis_hastings_trace_posterior_intervals
+        is summarize_independent_metropolis_hastings_trace_posterior_intervals
+    )
+    assert (
+        bayesian_api.summarize_metropolis_hastings_trace_effective_sample_size
+        is summarize_metropolis_hastings_trace_effective_sample_size
+    )
+    assert (
+        bayesian_api.summarize_metropolis_hastings_trace_autocorrelation
+        is summarize_metropolis_hastings_trace_autocorrelation
+    )
+    assert (
+        bayesian_api.summarize_metropolis_hastings_trace_posterior_intervals
+        is summarize_metropolis_hastings_trace_posterior_intervals
+    )
+    assert bayesian_api.TracePosteriorIntervalRow is TracePosteriorIntervalRow
+    assert bayesian_api.BAYESIAN_BURNIN_POLICY_NAMES == BAYESIAN_BURNIN_POLICY_NAMES
+    assert (
+        bayesian_api.build_bayesian_run_burnin_policy
+        is build_bayesian_run_burnin_policy
+    )
+    assert bayesian_api.build_bayesian_run_manifest is build_bayesian_run_manifest
+    assert (
+        bayesian_api.build_fixed_topology_dna_run_manifest
+        is build_fixed_topology_dna_run_manifest
+    )
+    assert (
+        bayesian_api.build_metropolis_hastings_posterior_tree_sample_archive
+        is build_metropolis_hastings_posterior_tree_sample_archive
+    )
+    assert bayesian_api.infer_bayesian_model_id is infer_bayesian_model_id
+    assert (
+        bayesian_api.list_metropolis_hastings_retained_sample_ids
+        is list_metropolis_hastings_retained_sample_ids
+    )
+    assert (
+        bayesian_api.load_bayesian_posterior_tree_sample_archive
+        is load_bayesian_posterior_tree_sample_archive
+    )
+    assert bayesian_api.load_bayesian_run_manifest is load_bayesian_run_manifest
+    assert (
+        bayesian_api.replay_fixed_topology_dna_run_manifest
+        is replay_fixed_topology_dna_run_manifest
+    )
+    assert (
+        bayesian_api.write_bayesian_posterior_tree_sample_archive
+        is write_bayesian_posterior_tree_sample_archive
+    )
+    assert bayesian_api.write_bayesian_run_manifest is write_bayesian_run_manifest
+    assert (
+        bayesian_api.summarize_brownian_continuous_trait_posterior_ancestral_states
+        is summarize_brownian_continuous_trait_posterior_ancestral_states
+    )
+    assert (
+        bayesian_api.summarize_brownian_continuous_trait_posterior_missing_values
+        is summarize_brownian_continuous_trait_posterior_missing_values
+    )
+    assert (
+        bayesian_api.summarize_continuous_trait_posterior_ancestral_states
+        is summarize_continuous_trait_posterior_ancestral_states
+    )
+    assert (
+        bayesian_api.summarize_continuous_trait_posterior_missing_values
+        is summarize_continuous_trait_posterior_missing_values
+    )
+    assert (
+        bayesian_api.summarize_discrete_trait_mk_posterior_ancestral_states
+        is summarize_discrete_trait_mk_posterior_ancestral_states
+    )
+    assert (
+        bayesian_api.summarize_discrete_trait_mk_posterior_missing_states
+        is summarize_discrete_trait_mk_posterior_missing_states
+    )
+    assert (
+        bayesian_api.summarize_fixed_topology_dna_posterior_missing_states
+        is summarize_fixed_topology_dna_posterior_missing_states
+    )
+    assert (
+        bayesian_api.summarize_fixed_topology_partitioned_dna_posterior_missing_states
+        is summarize_fixed_topology_partitioned_dna_posterior_missing_states
+    )
+    assert (
+        bayesian_api.summarize_joint_topology_dna_posterior_missing_states
+        is summarize_joint_topology_dna_posterior_missing_states
+    )
+    assert (
+        bayesian_api.summarize_nucleotide_posterior_missing_states
+        is summarize_nucleotide_posterior_missing_states
+    )
+    assert (
+        bayesian_api.summarize_nucleotide_posterior_ancestral_sequences
+        is summarize_nucleotide_posterior_ancestral_sequences
+    )
+    assert (
+        bayesian_api.summarize_ornstein_uhlenbeck_continuous_trait_posterior_ancestral_states
+        is summarize_ornstein_uhlenbeck_continuous_trait_posterior_ancestral_states
+    )
+    assert (
+        bayesian_api.summarize_ornstein_uhlenbeck_continuous_trait_posterior_missing_values
+        is summarize_ornstein_uhlenbeck_continuous_trait_posterior_missing_values
+    )
+    assert (
+        bayesian_api.sample_prior_only_phylogenetic_state
+        is sample_prior_only_phylogenetic_state
+    )
+    assert (
+        bayesian_api.simulate_prior_only_phylogenetic_states
+        is simulate_prior_only_phylogenetic_states
+    )
+    assert (
+        bayesian_api.build_posterior_uncertainty_figure_package
         is build_posterior_uncertainty_figure_package
     )
     assert (
-        bijux_phylogenetics.write_supplementary_bayesian_diagnostics_table
+        bayesian_api.build_substitution_parameter_prior_bundle
+        is build_substitution_parameter_prior_bundle
+    )
+    assert (
+        bayesian_api.compute_mrbayes_effective_sample_sizes
+        is compute_mrbayes_effective_sample_sizes
+    )
+    assert (
+        bayesian_api.count_rooted_labeled_bifurcating_topologies
+        is count_rooted_labeled_bifurcating_topologies
+    )
+    assert bayesian_api.compare_log_probabilities is compare_log_probabilities
+    assert (
+        bayesian_api.evaluate_calibration_tree_log_prior
+        is evaluate_calibration_tree_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_continuous_trait_model_log_prior
+        is evaluate_continuous_trait_model_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_continuous_trait_probability_log_prior
+        is evaluate_continuous_trait_probability_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_continuous_trait_scalar_log_prior
+        is evaluate_continuous_trait_scalar_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_discrete_trait_rate_log_prior
+        is evaluate_discrete_trait_rate_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_discrete_trait_rate_value_log_prior
+        is evaluate_discrete_trait_rate_value_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_partition_model_log_prior
+        is evaluate_partition_model_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_substitution_parameter_log_prior
+        is evaluate_substitution_parameter_log_prior
+    )
+    assert bayesian_api.DISCRETE_TRAIT_MK_MODELS is DISCRETE_TRAIT_MK_MODELS
+    assert (
+        bayesian_api.DISCRETE_TRAIT_MK_ROOT_PRIOR_MODES
+        is DISCRETE_TRAIT_MK_ROOT_PRIOR_MODES
+    )
+    assert (
+        bayesian_api.FIXED_TOPOLOGY_DNA_SUBSTITUTION_MODELS
+        is FIXED_TOPOLOGY_DNA_SUBSTITUTION_MODELS
+    )
+    assert (
+        bayesian_api.FIXED_TOPOLOGY_PARTITIONED_DNA_SUBSTITUTION_MODELS
+        is FIXED_TOPOLOGY_PARTITIONED_DNA_SUBSTITUTION_MODELS
+    )
+    assert (
+        bayesian_api.JOINT_TOPOLOGY_DNA_TOPOLOGY_MOVE_KINDS
+        is JOINT_TOPOLOGY_DNA_TOPOLOGY_MOVE_KINDS
+    )
+    assert (
+        bayesian_api.POSTERIOR_PREDICTIVE_SAMPLE_SELECTION_POLICIES
+        is POSTERIOR_PREDICTIVE_SAMPLE_SELECTION_POLICIES
+    )
+    assert (
+        bayesian_api.evaluate_constant_population_coalescent_tree_log_prior
+        is evaluate_constant_population_coalescent_tree_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_local_clock_tree_log_prior
+        is evaluate_local_clock_tree_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_relaxed_lognormal_clock_tree_log_prior
+        is evaluate_relaxed_lognormal_clock_tree_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_strict_clock_tree_log_prior
+        is evaluate_strict_clock_tree_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_skyline_coalescent_tree_log_prior
+        is evaluate_skyline_coalescent_tree_log_prior
+    )
+    assert (
+        bayesian_api.evaluate_birth_death_tree_log_prior
+        is evaluate_birth_death_tree_log_prior
+    )
+    assert (
+        bayesian_api.serialize_bayesian_phylogenetic_state
+        is serialize_bayesian_phylogenetic_state
+    )
+    assert (
+        bayesian_api.serialize_bayesian_phylogenetic_state_json
+        is serialize_bayesian_phylogenetic_state_json
+    )
+    assert (
+        bayesian_api.deserialize_bayesian_phylogenetic_state
+        is deserialize_bayesian_phylogenetic_state
+    )
+    assert (
+        bayesian_api.deserialize_bayesian_phylogenetic_state_json
+        is deserialize_bayesian_phylogenetic_state_json
+    )
+    assert (
+        bayesian_api.evaluate_tree_topology_log_prior
+        is evaluate_tree_topology_log_prior
+    )
+    assert bayesian_api.evaluate_yule_tree_log_prior is evaluate_yule_tree_log_prior
+    assert bayesian_api.log_probability_add is log_probability_add
+    assert bayesian_api.logsumexp is logsumexp
+    assert bayesian_api.normalize_log_probabilities is normalize_log_probabilities
+    assert bayesian_api.parse_beast_log is parse_beast_log
+    assert (
+        bayesian_api.parse_beast_posterior_tree_samples
+        is parse_beast_posterior_tree_samples
+    )
+    assert (
+        bayesian_api.load_local_clock_regime_definitions
+        is load_local_clock_regime_definitions
+    )
+    assert (
+        bayesian_api.validate_partition_substitution_model_name
+        is validate_partition_substitution_model_name
+    )
+    assert bayesian_api.parse_mrbayes_consensus_tree is parse_mrbayes_consensus_tree
+    assert bayesian_api.run_beast_posterior_inference is run_beast_posterior_inference
+    assert (
+        bayesian_api.run_mrbayes_posterior_inference is run_mrbayes_posterior_inference
+    )
+    assert bayesian_api.summarize_beast_log is summarize_beast_log
+    assert (
+        bayesian_api.summarize_mrbayes_posterior_trees
+        is summarize_mrbayes_posterior_trees
+    )
+    assert bayesian_api.write_beast_log_summary_table is write_beast_log_summary_table
+    assert (
+        bayesian_api.write_mrbayes_parameter_summary_table
+        is write_mrbayes_parameter_summary_table
+    )
+    assert (
+        bayesian_api.write_posterior_ancestral_sequence_fasta
+        is write_posterior_ancestral_sequence_fasta
+    )
+    assert (
+        bayesian_api.write_posterior_ancestral_state_probability_table
+        is write_posterior_ancestral_state_probability_table
+    )
+    assert bayesian_api.write_posterior_tree_subsample is write_posterior_tree_subsample
+    assert (
+        bayesian_api.validate_tree_topology_prior_taxa
+        is validate_tree_topology_prior_taxa
+    )
+    assert (
+        bayesian_api.write_supplementary_bayesian_diagnostics_table
         is write_supplementary_bayesian_diagnostics_table
     )
+
+    assert comparative_api.PagelLambdaLikelihoodReport is PagelLambdaLikelihoodReport
+    assert comparative_api.DiscreteMkFitReport is DiscreteMkFitReport
     assert (
-        bijux_phylogenetics.write_posterior_tree_subsample
-        is write_posterior_tree_subsample
-    )
-    assert (
-        bijux_phylogenetics.write_posterior_tree_subsample_table
-        is write_posterior_tree_subsample_table
-    )
-    assert (
-        bijux_phylogenetics.write_bayesian_methods_summary_text
-        is write_bayesian_methods_summary_text
+        comparative_api.DiscreteMkModelComparisonReport
+        is DiscreteMkModelComparisonReport
     )
     assert (
-        bijux_phylogenetics.render_calibration_audit_report
-        is render_calibration_audit_report
+        comparative_api.BrownianRegimeFitSummaryReport is BrownianRegimeFitSummaryReport
     )
     assert (
-        bijux_phylogenetics.build_bayesian_evidence_package
-        is build_bayesian_evidence_package
+        comparative_api.ComparativeReportPackageResult is ComparativeReportPackageResult
     )
-
-
-def test_simulate_birth_death_trees_returns_requested_tree_and_tip_counts(
-    tmp_path: Path,
-) -> None:
-    trees, report = simulate_birth_death_trees(tree_count=2, tip_count=4, seed=7)
-    assert report.model == "birth-death"
-    assert report.tree_count == 2
-    assert report.tip_count == 4
-    assert [tree.tip_count for tree in trees] == [4, 4]
-    assert [row.newick for row in report.records] == [
-        "(((Taxon1:0,Taxon2:0):0.204697722139132,Taxon3:0.204697722139132):0.200894048820103,Taxon4:0.405591770959235);",
-        "((Taxon1:0.075806896024214,(Taxon2:0,Taxon3:0):0.075806896024214):0.054021431036002,Taxon4:0.129828327060217);",
-    ]
-    output_path = tmp_path / "birth-death.trees"
-    write_tree_set(output_path, trees)
-    assert output_path.read_text(encoding="utf-8") == (
-        "(((Taxon1:0,Taxon2:0):0.204697722139132,Taxon3:0.204697722139132):0.200894048820103,Taxon4:0.405591770959235);\n"
-        "((Taxon1:0.075806896024214,(Taxon2:0,Taxon3:0):0.075806896024214):0.054021431036002,Taxon4:0.129828327060217);\n"
+    assert (
+        comparative_api.EarlyBurstTraitEvolutionSummaryReport
+        is EarlyBurstTraitEvolutionSummaryReport
     )
-
-
-def test_simulate_coalescent_trees_returns_requested_sample_size() -> None:
-    trees, report = simulate_coalescent_trees(tree_count=1, tip_count=4, seed=7)
-    assert report.model == "coalescent"
-    assert report.tree_count == 1
-    assert report.tip_count == 4
-    assert sorted(trees[0].tip_names) == ["Taxon1", "Taxon2", "Taxon3", "Taxon4"]
-    assert report.records[0].newick == (
-        "((Taxon1:0.41605101339611,Taxon4:0.41605101339611):0.455215777552457,"
-        "(Taxon2:0.065219140705801,Taxon3:0.065219140705801):0.806047650242766);"
+    assert comparative_api.CladeTraitSummaryReport is CladeTraitSummaryReport
+    assert comparative_api.TraitOutlierSummaryReport is TraitOutlierSummaryReport
+    assert (
+        comparative_api.write_comparative_audit_table is write_comparative_audit_table
     )
-
-
-def test_simulate_brownian_traits_generates_one_value_per_tip(tmp_path: Path) -> None:
-    report = simulate_brownian_traits(
-        fixture("example_tree.nwk"), seed=7, root_state=1.0, sigma=0.5
+    assert (
+        comparative_api.write_comparative_coefficient_table
+        is write_comparative_coefficient_table
     )
-    assert report.model == "brownian-motion"
-    assert report.tip_count == 4
-    assert [(row.taxon, row.value) for row in report.traits] == [
-        ("A", 1.023647850429746),
-        ("B", 0.907034485545723),
-        ("C", 0.742224918944575),
-        ("D", 0.90248754291519),
-    ]
-    output_path = tmp_path / "brownian.tsv"
-    write_continuous_trait_table(output_path, report)
-    assert output_path.read_text(encoding="utf-8") == (
-        "taxon\tvalue\n"
-        "A\t1.02364785042975\n"
-        "B\t0.907034485545723\n"
-        "C\t0.742224918944575\n"
-        "D\t0.90248754291519\n"
+    assert (
+        comparative_api.write_comparative_signal_table is write_comparative_signal_table
     )
-    assert [row.node for row in report.node_values if not row.is_tip] == [
-        "A|B|C|D",
-        "A|B",
-        "C|D",
-    ]
-
-
-def test_simulate_ou_traits_uses_declared_parameters() -> None:
-    report = simulate_ou_traits(
-        fixture("example_tree.nwk"),
-        seed=7,
-        root_state=1.0,
-        sigma=0.5,
-        alpha=1.25,
-        theta=0.25,
+    assert (
+        comparative_api.write_trait_outlier_summary_table
+        is write_trait_outlier_summary_table
     )
-    assert report.model == "ornstein-uhlenbeck"
-    assert report.alpha == 1.25
-    assert report.theta == 0.25
-    assert [(row.taxon, row.value) for row in report.traits] == [
-        ("A", 0.796738462243473),
-        ("B", 0.687047684603513),
-        ("C", 0.544493844861481),
-        ("D", 0.68666212038887),
-    ]
-
-
-def test_simulate_discrete_traits_assigns_a_state_to_every_tip(tmp_path: Path) -> None:
-    report = simulate_discrete_traits(
-        fixture("example_tree.nwk"),
-        states=["wet", "dry", "mixed"],
-        transition_rate=8.0,
-        root_state="wet",
-        seed=3,
+    assert (
+        comparative_api.write_pgls_lambda_profile_table
+        is write_pgls_lambda_profile_table
     )
-    assert report.model == "symmetric-discrete"
-    assert report.tip_count == 4
-    assert [(row.taxon, row.state) for row in report.traits] == [
-        ("A", "wet"),
-        ("B", "dry"),
-        ("C", "wet"),
-        ("D", "mixed"),
-    ]
-    output_path = tmp_path / "discrete.tsv"
-    write_discrete_trait_table(output_path, report)
-    assert output_path.read_text(encoding="utf-8") == (
-        "taxon\tstate\nA\twet\nB\tdry\nC\twet\nD\tmixed\n"
-    )
-    assert [row.node for row in report.node_states if not row.is_tip] == [
-        "A|B|C|D",
-        "A|B",
-        "C|D",
-    ]
-
-
-def test_simulate_dna_alignment_returns_requested_taxa_and_length(
-    tmp_path: Path,
-) -> None:
-    report = simulate_dna_alignment(
-        fixture("example_tree.nwk"), sequence_length=8, substitution_rate=1.2, seed=7
-    )
-    assert report.model == "jukes-cantor-like"
-    assert report.tip_count == 4
-    assert report.sequence_length == 8
-    assert [(row.identifier, row.sequence) for row in report.records] == [
-        ("A", "ACTAACGA"),
-        ("B", "ACTAACGA"),
-        ("C", "GCTAGAAA"),
-        ("D", "GCGAAGAA"),
-    ]
-    output_path = tmp_path / "simulated-dna.fasta"
-    write_simulated_alignment(output_path, report)
-    assert output_path.read_text(encoding="utf-8") == (
-        ">A\nACTAACGA\n>B\nACTAACGA\n>C\nGCTAGAAA\n>D\nGCGAAGAA\n"
-    )
-
-
-def test_simulate_protein_alignment_returns_requested_length_and_alphabet() -> None:
-    report = simulate_protein_alignment(
-        fixture("example_tree.nwk"), sequence_length=6, substitution_rate=0.8, seed=7
-    )
-    assert report.model == "symmetric-protein"
-    assert report.inferred_alphabet == "protein"
-    assert report.sequence_length == 6
-    assert [(row.identifier, row.sequence) for row in report.records] == [
-        ("A", "MFDCDP"),
-        ("B", "MFDCDV"),
-        ("C", "MFPCDV"),
-        ("D", "MFICDV"),
-    ]
 
 
 def test_benchmark_tree_validation_reports_runtime_and_memory_by_size_class() -> None:
@@ -3268,6 +2695,122 @@ def test_compute_clade_frequency_table_counts_informative_clades() -> None:
     ]
 
 
+def test_compute_tree_set_split_frequency_table_distinguishes_rooting_policies() -> (
+    None
+):
+    rooted_report = compute_tree_set_split_frequency_table(
+        fixture("example_tree_set_rooting_only_difference.nwk"),
+        split_policy="rooted",
+    )
+    unrooted_report = compute_tree_set_split_frequency_table(
+        fixture("example_tree_set_rooting_only_difference.nwk"),
+        split_policy="unrooted",
+    )
+
+    assert rooted_report.split_policy == "rooted"
+    assert unrooted_report.split_policy == "unrooted"
+    assert [
+        (row.split, row.tree_count, row.frequency)
+        for row in rooted_report.split_frequencies
+    ] == [
+        ("A|B", 2, 1.0),
+        ("A|B|C", 1, 0.5),
+        ("C|D", 1, 0.5),
+    ]
+    assert [
+        (row.split, row.tree_count, row.frequency)
+        for row in unrooted_report.split_frequencies
+    ] == [("A|B", 2, 1.0)]
+
+
+def test_compute_maximum_clade_credibility_tree_prefers_best_scored_candidate() -> None:
+    tree, report = compute_maximum_clade_credibility_tree(
+        fixture("maximum_clade_credibility_tree_set.nwk")
+    )
+
+    assert dumps_newick(tree) == "(((A:1,B:1):1,(E:1,F:1):1):1,(C:1,D:1):2);"
+    assert report.selected_tree_index == 2
+    assert report.rows[0].source_tree_index == 2
+    assert report.rows[0].raw_tree_count == 1
+    assert max(row.raw_tree_count for row in report.rows) == 2
+
+
+def test_compute_credible_clade_set_reports_expected_95_percent_membership() -> None:
+    report = compute_credible_clade_set(
+        fixture("majority_rule_extended_consensus_tree_set.nwk")
+    )
+
+    assert report.included_clade_count == 2
+    assert report.excluded_clade_count == 7
+    assert report.included_cumulative_frequency == 1.0
+    assert [row.clade for row in report.included_clades] == ["A|B", "A|B|C"]
+
+
+def test_summarize_posterior_agreement_subtree_finds_stable_retained_topology() -> None:
+    tree, report = summarize_posterior_agreement_subtree(
+        fixture("posterior_agreement_subtree_tree_set.nwk")
+    )
+
+    assert dumps_newick(tree) == "((A:1,B:1):2,(D:1,E:1):2);"
+    assert report.tree_count == 3
+    assert report.retained_taxa == ["A", "B", "D", "E"]
+    assert report.agreement_removed_taxa == ["C"]
+    assert report.evaluated_candidate_count == 4
+    assert report.candidate_rows[-1].stable_topology_reached is True
+
+
+def test_compute_posterior_clade_correlation_matrix_reports_negative_conflict() -> None:
+    report = compute_posterior_clade_correlation_matrix(
+        fixture("posterior_clade_correlation_tree_set.nwk")
+    )
+    row_map = {(row.left_clade, row.right_clade): row for row in report.rows}
+
+    assert report.clade_order == ["A|B", "C|D", "A|C", "A|D", "B|C", "B|D"]
+    assert row_map[("A|B", "C|D")].binary_correlation == pytest.approx(1.0)
+    assert row_map[("A|B", "A|C")].cooccurrence_tree_count == 0
+    assert row_map[("A|B", "A|C")].binary_correlation == pytest.approx(
+        -0.577350269189626
+    )
+
+
+def test_compute_posterior_tree_distance_diagnostics_ranks_mcc_outliers() -> None:
+    report = compute_posterior_tree_distance_diagnostics(
+        fixture("maximum_clade_credibility_tree_set.nwk")
+    )
+    rows = {row.source_tree_index: row for row in report.rows}
+
+    assert report.maximum_clade_credibility_tree_index == 2
+    assert report.row_count == 5
+    assert report.distribution_row_count == 19
+    assert rows[4].mcc_outlier_rank == 1
+    assert rows[5].mcc_outlier_rank == 2
+    assert rows[2].mcc_branch_score_distance == 0.0
+
+
+def test_summarize_posterior_branch_lengths_matches_clades_across_topologies() -> None:
+    report = summarize_posterior_branch_lengths(
+        fixture("posterior_branch_length_summary_tree_set.nwk")
+    )
+
+    assert report.tree_count == 4
+    assert report.shared_taxa == ["A", "B", "C", "D", "E"]
+    assert report.rows[0].clade == "A|B"
+    assert report.rows[0].matched_tree_count == 4
+    assert report.rows[0].mean_branch_length == pytest.approx(0.25)
+
+
+def test_summarize_posterior_node_ages_matches_clades_across_topologies() -> None:
+    report = summarize_posterior_node_ages(
+        fixture("posterior_node_age_summary_tree_set.nwk")
+    )
+
+    assert report.tree_count == 4
+    assert report.shared_taxa == ["A", "B", "C", "D", "E"]
+    assert report.rows[0].clade == "A|B"
+    assert report.rows[0].matched_tree_count == 4
+    assert report.rows[0].mean_node_age == pytest.approx(1.75)
+
+
 def test_compute_consensus_tree_returns_majority_rule_consensus() -> None:
     tree, report = compute_consensus_tree(fixture("example_tree_set_left.nwk"))
     assert dumps_newick(tree) == (
@@ -3275,20 +2818,46 @@ def test_compute_consensus_tree_returns_majority_rule_consensus() -> None:
     )
     assert report.tree_count == 3
     assert report.shared_taxa == ["A", "B", "C", "D"]
-    assert (
-        bijux_phylogenetics.trim_columns_above_missingness_threshold
-        is trim_columns_above_missingness_threshold
+    assert report.consensus_method == "majority-rule"
+    assert report.consensus_threshold == 0.5
+    assert report.included_clade_count == 2
+
+
+def test_compute_consensus_tree_stays_native_without_biopython_bridge() -> None:
+    import bijux_phylogenetics.trees as tree_set_module
+
+    assert not hasattr(tree_set_module, "Phylo")
+    assert not hasattr(tree_set_module, "tree_from_biophylo")
+
+    tree, report = tree_set_module.compute_consensus_tree(
+        fixture("example_tree_set_left.nwk")
     )
-    assert bijux_phylogenetics.trim_alignment is trim_alignment
-    assert bijux_phylogenetics.translate_coding_alignment is translate_coding_alignment
-    assert bijux_phylogenetics.TreeRootingReport is TreeRootingReport
-    assert bijux_phylogenetics.root_tree_on_outgroup is root_tree_on_outgroup
-    assert bijux_phylogenetics.reroot_tree_by_midpoint is reroot_tree_by_midpoint
-    assert bijux_phylogenetics.rotate_named_node is rotate_named_node
-    assert bijux_phylogenetics.rotate_all_internal_nodes is rotate_all_internal_nodes
-    assert bijux_phylogenetics.unroot_tree is unroot_tree
-    assert bijux_phylogenetics.write_tree_rooting_report is write_tree_rooting_report
-    assert bijux_phylogenetics.render_phylo_inputs_report is render_phylo_inputs_report
+
+    assert dumps_newick(tree) == (
+        "((A:0.1,B:0.1)66.6666666666667:0.2,(C:0.1,D:0.1)66.6666666666667:0.2);"
+    )
+    assert report.tree_count == 3
+
+
+def test_compute_strict_consensus_tree_returns_star_when_no_clade_is_unanimous() -> (
+    None
+):
+    tree, report = compute_strict_consensus_tree(fixture("example_tree_set_left.nwk"))
+
+    assert dumps_newick(tree) == "(A:0.1,B:0.1,C:0.1,D:0.1);"
+    assert report.tree_count == 3
+    assert report.shared_taxa == ["A", "B", "C", "D"]
+    assert report.consensus_method == "strict"
+    assert report.consensus_threshold == 1.0
+    assert report.included_clade_count == 0
+
+
+def test_compute_consensus_tree_requires_identical_taxon_sets() -> None:
+    with pytest.raises(
+        InvalidAlignmentError,
+        match="share the exact same taxon set",
+    ):
+        compute_consensus_tree(fixture("example_tree_set_mismatched.nwk"))
 
 
 def test_compute_tree_distance_matrix_reports_symmetric_rf_pairs() -> None:
@@ -3484,8 +3053,16 @@ def test_summarize_clade_credibility_conflicts_reports_incompatible_high_frequen
     )
 
     assert report.high_credibility_clade_count == 4
-    assert report.conflict_count == 2
-    assert report.conflicts[0].combined_frequency == 1.0
+    assert report.conflict_count == 4
+    assert [
+        (row.left_clade, row.right_clade, row.combined_frequency)
+        for row in report.conflicts
+    ] == [
+        ("A|B", "A|C", 1.0),
+        ("A|B", "B|D", 1.0),
+        ("A|C", "C|D", 1.0),
+        ("B|D", "C|D", 1.0),
+    ]
 
 
 def test_summarize_uncertainty_aware_conclusions_separates_robust_uncertain_and_conflicting_clades() -> (
@@ -3581,8 +3158,30 @@ def test_compare_bootstrap_and_posterior_uncertainty_reports_conflicting_clades(
 
     rows = {row.clade: row for row in report.rows}
     assert report.posterior_tree_count == 3
+    assert report.topology_mismatch_detected is True
+    assert report.topology_mismatch_clade_count == 2
     assert rows["A|B"].agreement == "strong_conflict"
     assert rows["C|D"].posterior_frequency == 0.333333333333333
+
+
+def test_compare_bootstrap_and_posterior_uncertainty_uses_ufboot_from_composite_labels(
+    tmp_path: Path,
+) -> None:
+    bootstrap_tree = tmp_path / "bootstrap-support.treefile"
+    bootstrap_tree.write_text(
+        "((A:0.1,B:0.1)82/97:0.2,(C:0.1,D:0.1)79/96:0.2);\n",
+        encoding="utf-8",
+    )
+
+    report = compare_bootstrap_and_posterior_uncertainty(
+        bootstrap_tree,
+        fixture("example_tree_set_right.nwk"),
+    )
+
+    rows = {row.clade: row for row in report.rows}
+    assert rows["A|B"].bootstrap_support == 0.97
+    assert rows["C|D"].bootstrap_support == 0.96
+    assert report.topology_mismatch_detected is True
 
 
 def test_render_tree_set_comparison_report_embeds_tree_set_differences(
@@ -3795,6 +3394,9 @@ def test_traits_link_strict_mode_rejects_mismatch() -> None:
         )
     except MetadataJoinError as error:
         assert error.code == "metadata_join_error"
+        assert error.details["failure_reason"] == "tree_trait_taxon_mismatch"
+        assert error.details["missing_from_traits"] == ["D"]
+        assert error.details["extra_trait_taxa"] == ["E"]
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected MetadataJoinError")
 
@@ -3898,6 +3500,7 @@ def test_prune_tree_to_requested_taxa_reports_absent_requests() -> None:
     )
     assert tree.tip_names == ["A", "C"]
     assert dumps_newick(tree) == "(A:0.3,C:0.3);"
+    assert tree.rooted is True
     assert report.requested_taxa == ["A", "C", "Z"]
     assert report.kept_taxa == ["A", "C"]
     assert report.removed_taxa == ["B", "D"]
@@ -3910,6 +3513,40 @@ def test_prune_tree_to_requested_taxa_reports_absent_requests() -> None:
     assert report.pruning_audit.unary_internal_nodes == []
 
 
+def test_prune_tree_to_requested_taxa_ignores_input_order() -> None:
+    tree, report = prune_tree_to_requested_taxa(
+        fixture("example_tree.nwk"),
+        ["C", "A"],
+    )
+
+    assert tree.tip_names == ["A", "C"]
+    assert dumps_newick(tree) == "(A:0.3,C:0.3);"
+    assert tree.rooted is True
+    assert report.requested_taxa == ["A", "C"]
+    assert report.kept_taxa == ["A", "C"]
+    assert report.removed_taxa == ["B", "D"]
+
+
+def test_prune_tree_to_requested_taxa_marks_two_tip_outputs_rooted_like_ape() -> None:
+    tree, report = prune_tree_to_requested_taxa(
+        fixture("example_tree_unrooted.nwk"),
+        ["A", "B"],
+    )
+
+    assert dumps_newick(tree) == "(A:0.1,B:0.2);"
+    assert tree.rooted is True
+    assert report.kept_taxa == ["A", "B"]
+    assert report.removed_taxa == ["C", "D"]
+
+
+def test_prune_tree_to_requested_taxa_fails_when_fewer_than_two_taxa_remain() -> None:
+    with pytest.raises(ValueError, match="at least two retained taxa"):
+        prune_tree_to_requested_taxa(
+            fixture("example_tree.nwk"),
+            ["A"],
+        )
+
+
 def test_drop_tree_taxa_excludes_exact_requested_tips() -> None:
     tree, report = drop_tree_taxa(
         fixture("example_tree.nwk"),
@@ -3917,6 +3554,7 @@ def test_drop_tree_taxa_excludes_exact_requested_tips() -> None:
     )
     assert tree.tip_names == ["A", "C"]
     assert dumps_newick(tree) == "(A:0.3,C:0.3);"
+    assert tree.rooted is True
     assert report.requested_taxa == ["B", "D", "Z"]
     assert report.kept_taxa == ["A", "C"]
     assert report.removed_taxa == ["B", "D"]
@@ -3925,6 +3563,38 @@ def test_drop_tree_taxa_excludes_exact_requested_tips() -> None:
         ("B", "excluded_explicitly"),
         ("D", "excluded_explicitly"),
     ]
+
+
+def test_drop_tree_taxa_keeps_unrooted_three_tip_outputs_unrooted() -> None:
+    tree, report = drop_tree_taxa(
+        fixture("example_tree_unrooted.nwk"),
+        ["D"],
+    )
+
+    assert dumps_newick(tree) == "(A:0.1,B:0.2,C:0.3);"
+    assert tree.rooted is False
+    assert report.kept_taxa == ["A", "B", "C"]
+    assert report.removed_taxa == ["D"]
+
+
+def test_drop_tree_taxa_marks_two_tip_outputs_rooted_like_ape() -> None:
+    tree, report = drop_tree_taxa(
+        fixture("example_tree_unrooted.nwk"),
+        ["C", "D"],
+    )
+
+    assert dumps_newick(tree) == "(A:0.1,B:0.2);"
+    assert tree.rooted is True
+    assert report.kept_taxa == ["A", "B"]
+    assert report.removed_taxa == ["C", "D"]
+
+
+def test_drop_tree_taxa_fails_when_fewer_than_two_taxa_remain() -> None:
+    with pytest.raises(ValueError, match="at least two retained taxa"):
+        drop_tree_taxa(
+            fixture("example_tree.nwk"),
+            ["B", "C", "D"],
+        )
 
 
 def test_prune_cli_accepts_explicit_taxon_keep_lists(tmp_path: Path, capsys) -> None:
@@ -3997,6 +3667,340 @@ def test_extract_named_clade_returns_exact_descendant_subtree() -> None:
     assert report.missing_requested_descendants == []
     assert report.unexpected_retained_taxa == []
     assert report.summary.removed_taxa == ["C", "D"]
+
+
+def test_extract_tree_clade_by_node_id_returns_internal_subtree() -> None:
+    tree, report = extract_tree_clade_by_node_id(
+        fixture("example_tree_named_clades.nwk"),
+        node_id=6,
+    )
+
+    assert tree.tip_names == ["A", "B"]
+    assert dumps_newick(tree) == "(A:0.1,B:0.1)Mammals;"
+    assert report.selector_kind == "node-id"
+    assert report.requested_node_id == 6
+    assert report.matched_node_id == 6
+    assert report.matched_node_name == "Mammals"
+    assert report.taxa == ["A", "B"]
+    assert report.summary.removed_taxa == ["C", "D"]
+
+
+def test_extract_tree_clade_by_node_id_returns_root_clade() -> None:
+    tree, report = extract_tree_clade_by_node_id(
+        fixture("example_tree_named_clades.nwk"),
+        node_id=5,
+    )
+
+    assert tree.tip_names == ["A", "B", "C", "D"]
+    assert dumps_newick(tree) == (
+        "((A:0.1,B:0.1)Mammals:0.2,(C:0.2,D:0.2)Birds:0.1)Root;"
+    )
+    assert report.matched_node_name == "Root"
+    assert report.summary.removed_taxa == []
+
+
+def test_extract_tree_clade_by_descendant_taxa_returns_matching_subtree() -> None:
+    tree, report = extract_tree_clade_by_descendant_taxa(
+        fixture("example_tree_named_clades.nwk"),
+        descendant_taxa=["B", "A"],
+    )
+
+    assert tree.tip_names == ["A", "B"]
+    assert dumps_newick(tree) == "(A:0.1,B:0.1)Mammals;"
+    assert report.selector_kind == "descendant-taxa"
+    assert report.requested_taxa == ["A", "B"]
+    assert report.matched_node_id == 6
+    assert report.matched_node_name == "Mammals"
+
+
+def test_extract_tree_clade_by_descendant_taxa_returns_root_clade() -> None:
+    tree, report = extract_tree_clade_by_descendant_taxa(
+        fixture("example_tree_named_clades.nwk"),
+        descendant_taxa=["A", "B", "C", "D"],
+    )
+
+    assert tree.tip_names == ["A", "B", "C", "D"]
+    assert report.matched_node_id == 5
+    assert report.matched_node_name == "Root"
+
+
+def test_extract_tree_clade_by_node_id_rejects_tip_nodes() -> None:
+    with pytest.raises(ValueError, match="greater than the number of tips"):
+        extract_tree_clade_by_node_id(
+            fixture("example_tree_named_clades.nwk"),
+            node_id=1,
+        )
+
+
+def test_extract_tree_clade_by_node_id_rejects_out_of_bounds_nodes() -> None:
+    with pytest.raises(IndexError, match="out of bounds"):
+        extract_tree_clade_by_node_id(
+            fixture("example_tree_named_clades.nwk"),
+            node_id=8,
+        )
+
+
+def test_extract_tree_clade_by_descendant_taxa_rejects_non_monophyletic_sets() -> None:
+    with pytest.raises(ValueError, match="do not define an internal clade"):
+        extract_tree_clade_by_descendant_taxa(
+            fixture("example_tree_named_clades.nwk"),
+            descendant_taxa=["A", "C"],
+        )
+
+
+def test_find_tree_mrca_returns_internal_node_for_two_tips() -> None:
+    report = find_tree_mrca(
+        fixture("example_tree.nwk"),
+        taxa=["A", "B"],
+    )
+
+    assert report.matched_node_id == 6
+    assert report.matched_node_name is None
+    assert report.matched_taxa == ["A", "B"]
+    assert report.matched_extra_taxa == []
+    assert report.is_root is False
+
+
+def test_find_tree_mrca_returns_root_for_full_tip_set() -> None:
+    report = find_tree_mrca(
+        fixture("example_tree.nwk"),
+        taxa=["A", "B", "C", "D"],
+    )
+
+    assert report.matched_node_id == 5
+    assert report.matched_taxa == ["A", "B", "C", "D"]
+    assert report.is_root is True
+
+
+def test_find_tree_mrca_handles_duplicate_requested_tips_explicitly() -> None:
+    report = find_tree_mrca(
+        fixture("example_tree.nwk"),
+        taxa=["A", "A", "B"],
+    )
+
+    assert report.requested_taxa == ["A", "A", "B"]
+    assert report.unique_requested_taxa == ["A", "B"]
+    assert report.duplicate_requested_taxa == ["A"]
+    assert report.matched_node_id == 6
+
+
+def test_find_tree_mrca_matches_many_tip_request_on_pectinate_tree() -> None:
+    report = find_tree_mrca(
+        fixture("example_tree_ladderized.nwk"),
+        taxa=["A", "B", "C"],
+    )
+
+    assert report.matched_node_id == 6
+    assert report.matched_taxa == ["A", "B", "C"]
+    assert report.matched_extra_taxa == []
+
+
+def test_find_tree_mrca_matches_polytomy_case() -> None:
+    report = find_tree_mrca(
+        fixture("example_tree_polytomy.nwk"),
+        taxa=["A", "B", "C"],
+    )
+
+    assert report.matched_node_id == 6
+    assert report.matched_taxa == ["A", "B", "C"]
+    assert report.is_root is False
+
+
+def test_find_tree_mrca_rejects_missing_tips() -> None:
+    with pytest.raises(
+        ValueError, match="requested taxa are not present in the tree: Z"
+    ):
+        find_tree_mrca(
+            fixture("example_tree.nwk"),
+            taxa=["A", "Z"],
+        )
+
+
+def test_find_tree_mrca_requires_two_distinct_tips() -> None:
+    with pytest.raises(ValueError, match="mrca requires at least two distinct taxa"):
+        find_tree_mrca(
+            fixture("example_tree.nwk"),
+            taxa=["A", "A"],
+        )
+
+
+def test_find_tree_mrca_works_after_pruning(tmp_path: Path) -> None:
+    pruned_tree, _report = prune_tree_to_requested_taxa(
+        fixture("example_tree_rooted_on_d.nwk"),
+        ["A", "B", "C"],
+    )
+    pruned_path = tmp_path / "pruned-tree.nwk"
+    write_newick(pruned_path, pruned_tree)
+
+    report = find_tree_mrca(pruned_path, taxa=["A", "B"])
+
+    assert report.matched_node_id == 5
+    assert report.matched_taxa == ["A", "B"]
+
+
+def test_find_tree_mrca_works_after_rooting(tmp_path: Path) -> None:
+    rooted_tree, _report = root_tree_on_outgroup(
+        fixture("example_tree_rootable.nwk"),
+        outgroup_taxa=["D"],
+    )
+    rooted_path = tmp_path / "rooted-tree.nwk"
+    write_newick(rooted_path, rooted_tree)
+
+    report = find_tree_mrca(rooted_path, taxa=["A", "B", "C"])
+
+    assert report.matched_node_id == 6
+    assert report.matched_taxa == ["A", "B", "C"]
+
+
+def test_assess_tree_monophyly_matches_rooted_two_tip_clade() -> None:
+    report = assess_tree_monophyly(
+        fixture("example_tree.nwk"),
+        taxa=["A", "B"],
+    )
+
+    assert report.monophyletic is True
+    assert report.complementary_clade_used is False
+    assert report.matched_node_id == 6
+    assert report.matched_taxa == ["A", "B"]
+    assert report.matched_extra_taxa == []
+    assert report.matched_tip_count == 2
+    assert report.is_root is False
+
+
+def test_assess_tree_monophyly_reports_root_extra_taxa_for_non_monophyletic_group() -> (
+    None
+):
+    report = assess_tree_monophyly(
+        fixture("example_tree.nwk"),
+        taxa=["A", "C"],
+    )
+
+    assert report.monophyletic is False
+    assert report.complementary_clade_used is False
+    assert report.matched_node_id == 5
+    assert report.matched_taxa == ["A", "B", "C", "D"]
+    assert report.matched_extra_taxa == ["B", "D"]
+    assert report.is_root is True
+
+
+def test_assess_tree_monophyly_treats_full_tip_set_as_monophyletic() -> None:
+    report = assess_tree_monophyly(
+        fixture("example_tree.nwk"),
+        taxa=["A", "B", "C", "D"],
+    )
+
+    assert report.monophyletic is True
+    assert report.matched_node_id == 5
+    assert report.is_root is True
+
+
+def test_assess_tree_monophyly_treats_singletons_as_monophyletic() -> None:
+    report = assess_tree_monophyly(
+        fixture("example_tree.nwk"),
+        taxa=["A"],
+    )
+
+    assert report.monophyletic is True
+    assert report.matched_node_id == 1
+    assert report.matched_taxa == ["A"]
+    assert report.matched_extra_taxa == []
+    assert report.matched_tip_count == 1
+    assert report.is_root is False
+
+
+def test_assess_tree_monophyly_reports_missing_taxa_explicitly() -> None:
+    report = assess_tree_monophyly(
+        fixture("example_tree.nwk"),
+        taxa=["A", "Z"],
+    )
+
+    assert report.monophyletic is True
+    assert report.present_requested_taxa == ["A"]
+    assert report.missing_requested_taxa == ["Z"]
+    assert report.matched_node_id == 1
+
+
+def test_assess_tree_monophyly_explicitly_controls_reroot_policy() -> None:
+    default_report = assess_tree_monophyly(
+        fixture("example_tree.nwk"),
+        taxa=["A", "B", "C"],
+    )
+    rerooted_report = assess_tree_monophyly(
+        fixture("example_tree.nwk"),
+        taxa=["A", "B", "C"],
+        reroot=True,
+    )
+
+    assert default_report.monophyletic is False
+    assert default_report.complementary_clade_used is False
+    assert rerooted_report.monophyletic is True
+    assert rerooted_report.complementary_clade_used is True
+    assert rerooted_report.matched_extra_taxa == ["D"]
+
+
+def test_assess_tree_monophyly_matches_unrooted_default_reroot_false_policy() -> None:
+    report = assess_tree_monophyly(
+        fixture("example_tree_unrooted.nwk"),
+        taxa=["A", "B"],
+    )
+
+    assert report.monophyletic is False
+    assert report.rooted is False
+    assert report.matched_extra_taxa == ["C", "D"]
+
+
+def test_assess_tree_monophyly_matches_unrooted_reroot_true_policy() -> None:
+    report = assess_tree_monophyly(
+        fixture("example_tree_unrooted.nwk"),
+        taxa=["A", "B", "C"],
+        reroot=True,
+    )
+
+    assert report.monophyletic is True
+    assert report.complementary_clade_used is True
+    assert report.matched_extra_taxa == ["D"]
+
+
+def test_assess_tree_monophyly_rejects_all_missing_taxa_when_rerooting() -> None:
+    with pytest.raises(
+        ValueError, match="specified outgroup not in labels of the tree"
+    ):
+        assess_tree_monophyly(
+            fixture("example_tree_unrooted.nwk"),
+            taxa=["Z"],
+            reroot=True,
+        )
+
+
+def test_assess_tree_monophyly_works_after_pruning(tmp_path: Path) -> None:
+    pruned_tree, _report = prune_tree_to_requested_taxa(
+        fixture("example_tree_rooted_on_d.nwk"),
+        ["A", "B", "C"],
+    )
+    pruned_path = tmp_path / "pruned-tree.nwk"
+    write_newick(pruned_path, pruned_tree)
+
+    report = assess_tree_monophyly(pruned_path, taxa=["A", "B"])
+
+    assert report.monophyletic is True
+    assert report.matched_taxa == ["A", "B"]
+
+
+def test_assess_tree_monophyly_works_after_rooting(tmp_path: Path) -> None:
+    rooted_tree, _report = root_tree_on_outgroup(
+        fixture("example_tree_rootable.nwk"),
+        outgroup_taxa=["D"],
+    )
+    rooted_path = tmp_path / "rooted-tree.nwk"
+    write_newick(rooted_path, rooted_tree)
+
+    report = assess_tree_monophyly(
+        rooted_path,
+        taxa=["A", "B", "C"],
+    )
+
+    assert report.monophyletic is True
+    assert report.matched_taxa == ["A", "B", "C"]
 
 
 def test_rotate_named_node_reverses_child_order_without_changing_topology() -> None:
@@ -4081,17 +4085,18 @@ def test_root_tree_on_outgroup_reports_absent_taxa_and_roots_tree() -> None:
     assert report.warnings == [
         "one or more requested outgroup taxa were absent from the input tree"
     ]
-    assert dumps_newick(tree) == "(((A:0.2,B:0.2):0.7,C:0.1):0.1,D:0);"
+    assert dumps_newick(tree) == "(((A:0.2,B:0.2):0.7,C:0.1):0,D:0.1);"
     assert report.summary.retained_taxa == ["A", "B", "C", "D"]
     assert report.summary.removed_taxa == []
 
 
 def test_root_tree_on_outgroup_reports_monophyletic_outgroup_clade() -> None:
-    _tree, report = root_tree_on_outgroup(
+    tree, report = root_tree_on_outgroup(
         fixture("example_tree_rootable.nwk"),
         outgroup_taxa=["C", "D"],
     )
 
+    assert dumps_newick(tree) == "((A:0.2,B:0.2):0.7,(C:0.1,D:0.1):0);"
     assert report.matched_taxa == ["C", "D"]
     assert report.absent_taxa == []
     assert report.ingroup_taxa == ["A", "B"]
@@ -4103,23 +4108,54 @@ def test_root_tree_on_outgroup_reports_monophyletic_outgroup_clade() -> None:
     assert report.warnings == []
 
 
-def test_root_tree_on_outgroup_reports_non_monophyletic_outgroup_clade() -> None:
-    _tree, report = root_tree_on_outgroup(
-        fixture("example_tree_rootable.nwk"),
-        outgroup_taxa=["B", "D"],
+def test_root_tree_on_outgroup_rejects_non_monophyletic_outgroup_clade() -> None:
+    with pytest.raises(TreeRootingError) as error:
+        root_tree_on_outgroup(
+            fixture("example_tree_rootable.nwk"),
+            outgroup_taxa=["B", "D"],
+        )
+
+    assert error.value.code == "outgroup_not_monophyletic"
+    assert (
+        str(error.value)
+        == "requested outgroup taxa are not monophyletic in the input tree"
+    )
+    assert error.value.details["matched_taxa"] == ["B", "D"]
+    assert error.value.details["outgroup_mrca_taxa"] == ["A", "B", "C", "D"]
+    assert error.value.details["outgroup_mrca_extra_taxa"] == ["A", "C"]
+
+
+def test_root_tree_on_outgroup_preserves_already_rooted_outgroup_tree() -> None:
+    tree, report = root_tree_on_outgroup(
+        fixture("example_tree_rooted_on_d.nwk"),
+        outgroup_taxa=["D"],
     )
 
-    assert report.matched_taxa == ["B", "D"]
-    assert report.absent_taxa == []
-    assert report.outgroup_monophyletic is False
-    assert report.outgroup_mrca_taxa == ["A", "B", "C", "D"]
-    assert report.outgroup_mrca_extra_taxa == ["A", "C"]
-    assert report.rooted_outgroup_taxa == []
-    assert report.rooted_ingroup_taxa == ["A", "B", "C", "D"]
-    assert report.warnings == [
-        "requested outgroup taxa are not monophyletic in the input tree",
-        "rooted tree does not isolate every matched outgroup taxon on one root child",
-    ]
+    assert dumps_newick(tree) == "(((A:0.2,B:0.2):0.7,C:0.1):0,D:0.1);"
+    assert report.matched_taxa == ["D"]
+    assert report.rooted_outgroup_taxa == ["D"]
+    assert report.rooted_ingroup_taxa == ["A", "B", "C"]
+    assert report.warnings == []
+
+
+def test_root_tree_on_outgroup_stays_native_without_biopython_bridge(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import bijux_phylogenetics.phylo.topology as topology
+
+    def _bridge_unavailable(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("biopython bridge should not be used for outgroup rooting")
+
+    monkeypatch.setattr(topology, "tree_to_biophylo", _bridge_unavailable)
+    monkeypatch.setattr(topology, "tree_from_biophylo", _bridge_unavailable)
+
+    tree, report = topology.root_tree_on_outgroup(
+        fixture("example_tree_rootable.nwk"),
+        outgroup_taxa=["D"],
+    )
+
+    assert dumps_newick(tree) == "(((A:0.2,B:0.2):0.7,C:0.1):0,D:0.1);"
+    assert report.rooted_outgroup_taxa == ["D"]
 
 
 def test_write_tree_rooting_report_writes_monophyly_and_root_partition_fields(
@@ -4190,8 +4226,27 @@ def test_unroot_tree_converts_rooted_binary_tree_into_trifurcation() -> None:
     assert sorted(tree.tip_names) == ["A", "B", "C", "D"]
     assert len(tree.root.children) == 3
     assert report.strategy == "unroot"
-    assert dumps_newick(tree) == "(A:0.5,B:0.5,(C:0.1,D:0.1):0.4);"
+    assert dumps_newick(tree) == "(A:0.2,B:0.2,(C:0.1,D:0.1):0.7);"
+    assert report.warnings == [
+        "unrooting merged the removed root-edge length into the retained sibling branch to match ape::unroot"
+    ]
     assert report.summary.nodes_changed != []
+
+
+def test_unroot_tree_returns_already_unrooted_tree_unchanged() -> None:
+    tree, report = unroot_tree(fixture("example_tree_unrooted.nwk"))
+
+    assert dumps_newick(tree) == "(A:0.1,B:0.2,C:0.3,D:0.4);"
+    assert tree.rooted is False
+    assert report.warnings == [
+        "input tree already behaves as an unrooted representation; returned unchanged"
+    ]
+    assert report.summary.nodes_changed == []
+
+
+def test_unroot_tree_fails_clearly_on_invalid_tree() -> None:
+    with pytest.raises(TreeParseError):
+        unroot_tree(fixture("example_tree_malformed_unbalanced_parentheses.nwk"))
 
 
 def test_prune_alignment_to_tree_keeps_exact_tree_taxa() -> None:
@@ -4928,6 +4983,20 @@ def test_write_fasta_alignment_preserves_record_order_and_sequences(
     assert load_fasta_alignment(output) == records
 
 
+def test_write_dna_bin_alignment_fasta_preserves_normalized_nucleotide_states(
+    tmp_path: Path,
+) -> None:
+    alignment = load_dna_bin_alignment(fixture("example_alignment_ambiguity.fasta"))
+    output = tmp_path / "dnabin-alignment.fasta"
+
+    write_dna_bin_alignment_fasta(output, alignment)
+
+    assert output.read_text(encoding="utf-8") == (
+        ">A\nacgtn?\n>B\nacgtr?\n>C\nacgt-?\n"
+    )
+    assert load_dna_bin_alignment(output).records == alignment.records
+
+
 def test_alignment_detects_sequences_with_excessive_missing_data() -> None:
     rows = detect_sequences_with_excessive_missing_data(
         fixture("example_alignment_missingness.fasta"),
@@ -5098,9 +5167,29 @@ def test_translate_coding_alignment_emits_amino_acid_records() -> None:
     assert report.translated_sequence_count == 4
     assert report.source_alignment_length == 9
     assert report.translated_alignment_length == 3
-    assert report.invalid_codon_count == 0
+    assert report.invalid_codon_count == 1
     assert report.stop_codon_count == 2
-    assert report.frameshift_like_sequence_count == 1
+    assert report.internal_stop_sequence_count == 1
+    assert report.terminal_stop_sequence_count == 1
+    assert report.trailing_partial_codon_sequence_count == 0
+    assert report.dropped_trailing_nucleotide_count == 0
+    assert report.warnings == []
+    assert [
+        (
+            row.identifier,
+            row.codon_index,
+            row.codon,
+            row.amino_acid,
+            row.translation_status,
+        )
+        for row in report.codon_observations[:5]
+    ] == [
+        ("A", 1, "ATG", "M", "translated"),
+        ("A", 2, "GAA", "E", "translated"),
+        ("A", 3, "TAA", "*", "terminal-stop-codon"),
+        ("B", 1, "ATG", "M", "translated"),
+        ("B", 2, "GAA", "E", "translated"),
+    ]
 
 
 def test_prepare_coding_sequences_for_alignment_excludes_frame_and_stop_failures(
@@ -5269,6 +5358,22 @@ def test_translate_coding_alignment_honors_configurable_genetic_code_and_invalid
     assert standard_report.stop_codon_count == 1
     assert mitochondrial_report.stop_codon_count == 0
     assert mitochondrial_report.invalid_codon_count == 1
+
+
+def test_translate_coding_alignment_truncates_trailing_partial_codon_like_ape() -> None:
+    records, report = translate_coding_alignment(
+        fixture("example_alignment_coding_frame_error.fasta")
+    )
+
+    assert [(record.identifier, record.sequence) for record in records] == [
+        ("frame_error", "ME"),
+    ]
+    assert report.translated_alignment_length == 2
+    assert report.dropped_trailing_nucleotide_count == 2
+    assert report.trailing_partial_codon_sequence_count == 1
+    assert report.warnings == [
+        "sequence length not a multiple of 3: 2 nucleotides dropped"
+    ]
 
 
 def test_cli_alignment_trim_writes_trimmed_fasta_and_report(
@@ -5567,6 +5672,18 @@ def test_build_tree_from_imported_distance_matrix_constructs_neighbor_joining_tr
     assert report.taxon_count == 3
 
 
+def test_build_tree_from_imported_distance_matrix_constructs_bionj_tree() -> None:
+    tree, report = build_tree_from_imported_distance_matrix(
+        fixture("example_distance_matrix_bionj_noisy.tsv"),
+        method="bionj",
+    )
+    assert dumps_newick(tree) == (
+        "((A:2,(B:1,C:2)Inner1:5.66666666666667)Inner2:4.5,D:6.02,E:-4.02)Inner3;"
+    )
+    assert report.method == "bionj"
+    assert report.taxon_count == 5
+
+
 def test_build_tree_from_imported_distance_matrix_rejects_asymmetric_input() -> None:
     try:
         build_tree_from_imported_distance_matrix(
@@ -5581,8 +5698,9 @@ def test_build_tree_from_imported_distance_matrix_rejects_asymmetric_input() -> 
 
 def test_distance_method_limitations_explain_approximate_methods() -> None:
     limitations = distance_method_limitations()
-    assert len(limitations) == 4
+    assert len(limitations) == 5
     assert limitations[0].startswith("distance methods collapse")
+    assert "bionj remains a distance-summary method" in limitations[-1].lower()
 
 
 def test_render_distance_report_embeds_limitations_and_validation(
@@ -5614,7 +5732,7 @@ def test_render_tree_uncertainty_report_embeds_consensus_and_instability_section
     assert result.rooted_topology_count == 2
     assert result.machine_manifest["report_kind"] == "tree-uncertainty"
     assert "consensus-tree" in html
-    assert "pairwise-tree-distances" in html
+    assert "rf-distance-distribution" in html
     assert "topology-multimodality" in html
     assert "clade-credibility-conflicts" in html
     assert "unstable-clades" in html
@@ -5633,6 +5751,41 @@ def test_build_distance_tree_constructs_neighbor_joining_tree() -> None:
     assert report.taxon_count == 4
 
 
+def test_build_distance_tree_constructs_bionj_tree() -> None:
+    tree, report = build_distance_tree(
+        fixture("example_alignment_distance.fasta"),
+        method="bionj",
+    )
+    assert (
+        dumps_newick(tree)
+        == "((A:0.0625,B:0.0625)Inner1:0.4375,C:0.0625,D:0.0625)Inner2;"
+    )
+    assert report.method == "bionj"
+    assert report.taxon_count == 4
+
+
+def test_build_distance_tree_from_genetic_distance_matrix_matches_path_surface() -> (
+    None
+):
+    matrix = compute_pairwise_genetic_distance_matrix(
+        fixture("example_alignment_distance.fasta")
+    )
+    direct_tree, direct_report = build_distance_tree_from_genetic_distance_matrix(
+        matrix,
+        method="neighbor-joining",
+    )
+    path_tree, path_report = build_distance_tree(
+        fixture("example_alignment_distance.fasta"),
+        method="neighbor-joining",
+    )
+
+    assert dumps_newick(direct_tree) == dumps_newick(path_tree)
+    assert direct_report.alignment_path == path_report.alignment_path
+    assert direct_report.method == path_report.method
+    assert direct_report.method_policy == path_report.method_policy
+    assert direct_report.assumptions == path_report.assumptions
+
+
 def test_build_distance_tree_constructs_upgma_tree() -> None:
     tree, report = build_distance_tree(
         fixture("example_alignment_distance.fasta"),
@@ -5643,6 +5796,45 @@ def test_build_distance_tree_constructs_upgma_tree() -> None:
         == "((A:0.0625,B:0.0625)Inner2:0.21875,(C:0.0625,D:0.0625)Inner1:0.21875)Inner3;"
     )
     assert report.method == "upgma"
+    assert report.taxon_count == 4
+
+
+def test_build_distance_tree_constructs_wpgma_tree() -> None:
+    tree, report = build_distance_tree(
+        fixture("example_alignment_distance.fasta"),
+        method="wpgma",
+    )
+    assert (
+        dumps_newick(tree)
+        == "((A:0.0625,B:0.0625)Inner2:0.21875,(C:0.0625,D:0.0625)Inner1:0.21875)Inner3;"
+    )
+    assert report.method == "wpgma"
+    assert report.taxon_count == 4
+
+
+def test_build_distance_tree_constructs_single_linkage_tree() -> None:
+    tree, report = build_distance_tree(
+        fixture("example_alignment_distance.fasta"),
+        method="single-linkage",
+    )
+    assert (
+        dumps_newick(tree)
+        == "((A:0.0625,B:0.0625)Inner2:0.1875,(C:0.0625,D:0.0625)Inner1:0.1875)Inner3;"
+    )
+    assert report.method == "single-linkage"
+    assert report.taxon_count == 4
+
+
+def test_build_distance_tree_constructs_complete_linkage_tree() -> None:
+    tree, report = build_distance_tree(
+        fixture("example_alignment_distance.fasta"),
+        method="complete-linkage",
+    )
+    assert (
+        dumps_newick(tree)
+        == "((A:0.0625,B:0.0625)Inner2:0.25,(C:0.0625,D:0.0625)Inner1:0.25)Inner3;"
+    )
+    assert report.method == "complete-linkage"
     assert report.taxon_count == 4
 
 
@@ -5665,7 +5857,9 @@ def test_build_distance_tree_rejects_undefined_corrected_distances() -> None:
             model="jukes-cantor",
         )
     except InvalidAlignmentError as error:
-        assert "undefined entries" in error.message
+        assert "blocked before tree inference" in error.message
+        assert "A/B (undefined-corrected-distance)" in error.message
+        assert "B/C (infinite-corrected-distance)" in error.message
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected InvalidAlignmentError")
 
@@ -5691,6 +5885,102 @@ def test_cli_alignment_build_tree_writes_newick(tmp_path: Path, capsys) -> None:
         "((A:0.0625,B:0.0625)Inner2:0.21875,(C:0.0625,D:0.0625)Inner1:0.21875)Inner3;\n"
     )
     assert payload["metrics"]["method"] == "upgma"
+
+
+def test_cli_alignment_build_tree_writes_bionj_newick(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "distance-tree.nwk"
+    exit_code = main(
+        [
+            "alignment",
+            "build-tree",
+            str(fixture("example_alignment_distance.fasta")),
+            "--method",
+            "bionj",
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == (
+        "((A:0.0625,B:0.0625)Inner1:0.4375,C:0.0625,D:0.0625)Inner2;\n"
+    )
+    assert payload["metrics"]["method"] == "bionj"
+
+
+def test_cli_alignment_build_tree_writes_wpgma_newick(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "distance-tree.nwk"
+    exit_code = main(
+        [
+            "alignment",
+            "build-tree",
+            str(fixture("example_alignment_distance.fasta")),
+            "--method",
+            "wpgma",
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == (
+        "((A:0.0625,B:0.0625)Inner2:0.21875,(C:0.0625,D:0.0625)Inner1:0.21875)Inner3;\n"
+    )
+    assert payload["metrics"]["method"] == "wpgma"
+
+
+def test_cli_alignment_build_tree_writes_single_linkage_newick(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "distance-tree.nwk"
+    exit_code = main(
+        [
+            "alignment",
+            "build-tree",
+            str(fixture("example_alignment_distance.fasta")),
+            "--method",
+            "single-linkage",
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == (
+        "((A:0.0625,B:0.0625)Inner2:0.1875,(C:0.0625,D:0.0625)Inner1:0.1875)Inner3;\n"
+    )
+    assert payload["metrics"]["method"] == "single-linkage"
+
+
+def test_cli_alignment_build_tree_writes_complete_linkage_newick(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "distance-tree.nwk"
+    exit_code = main(
+        [
+            "alignment",
+            "build-tree",
+            str(fixture("example_alignment_distance.fasta")),
+            "--method",
+            "complete-linkage",
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == (
+        "((A:0.0625,B:0.0625)Inner2:0.25,(C:0.0625,D:0.0625)Inner1:0.25)Inner3;\n"
+    )
+    assert payload["metrics"]["method"] == "complete-linkage"
 
 
 def test_cli_alignment_compare_distance_trees_reports_rooting_difference(
@@ -5779,7 +6069,7 @@ def test_cli_distance_explain_reports_limitations(capsys) -> None:
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
-    assert payload["metrics"]["limitation_count"] == 4
+    assert payload["metrics"]["limitation_count"] == 5
 
 
 def test_cli_tree_set_consensus_writes_newick(tmp_path: Path, capsys) -> None:
@@ -5801,6 +6091,78 @@ def test_cli_tree_set_consensus_writes_newick(tmp_path: Path, capsys) -> None:
         "((A:0.1,B:0.1)66.6666666666667:0.2,(C:0.1,D:0.1)66.6666666666667:0.2);\n"
     )
     assert payload["metrics"]["tree_count"] == 3
+    assert payload["metrics"]["consensus_method"] == "majority-rule"
+    assert payload["metrics"]["consensus_threshold"] == 0.5
+    assert payload["metrics"]["included_clade_count"] == 2
+
+
+def test_cli_tree_set_consensus_supports_strict_mode_and_frequency_ledger(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "strict-consensus.nwk"
+    frequency_path = tmp_path / "clade-frequencies.tsv"
+
+    exit_code = main(
+        [
+            "tree-set",
+            "consensus",
+            str(fixture("example_tree_set_left.nwk")),
+            "--out",
+            str(output_path),
+            "--method",
+            "strict",
+            "--clade-frequencies-out",
+            str(frequency_path),
+            "--json",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == "(A:0.1,B:0.1,C:0.1,D:0.1);\n"
+    assert frequency_path.read_text(encoding="utf-8") == (
+        "clade\ttree_count\tfrequency\n"
+        "A|B\t2\t0.666666666666667\n"
+        "A|C\t1\t0.333333333333333\n"
+        "B|D\t1\t0.333333333333333\n"
+        "C|D\t2\t0.666666666666667\n"
+    )
+    assert payload["metrics"]["consensus_method"] == "strict"
+    assert payload["metrics"]["consensus_threshold"] == 1.0
+    assert payload["metrics"]["included_clade_count"] == 0
+
+
+def test_cli_tree_set_support_map_writes_reference_support_table(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "reference-support.tsv"
+
+    exit_code = main(
+        [
+            "tree-set",
+            "support-map",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_tree_set_left.nwk")),
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert output_path.exists()
+    assert "node_id\tnode_kind\tnode_label\tdescendant_taxa" in output_path.read_text(
+        encoding="utf-8"
+    )
+    assert payload["metrics"]["tree_count"] == 3
+    assert payload["metrics"]["supported_clade_count"] == 2
+    assert payload["metrics"]["absent_clade_count"] == 0
+    assert payload["metrics"]["unscored_clade_count"] == 0
 
 
 def test_cli_tree_set_compare_reports_shared_topologies(capsys) -> None:
@@ -5866,6 +6228,484 @@ def test_cli_simulate_birth_death_writes_tree_set(tmp_path: Path, capsys) -> Non
     assert output_path.read_text(encoding="utf-8").count(";\n") == 2
 
 
+def test_cli_simulate_random_tree_writes_envelope_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "simulated-random.trees"
+    record_path = tmp_path / "simulation-records.tsv"
+    envelope_path = tmp_path / "simulation-envelope.tsv"
+    exit_code = main(
+        [
+            "simulate",
+            "tree-random",
+            "--tree-count",
+            "2",
+            "--tip-count",
+            "4",
+            "--seed",
+            "7",
+            "--out",
+            str(output_path),
+            "--record-table-out",
+            str(record_path),
+            "--envelope-table-out",
+            str(envelope_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["tree_count"] == 2
+    assert payload["metrics"]["branch_length_model"] == "uniform"
+    assert payload["metrics"]["envelope_metric_count"] == 6
+    assert output_path.read_text(encoding="utf-8").count(";\n") == 2
+    assert "normalized_colless_imbalance" in record_path.read_text(encoding="utf-8")
+    assert "branch_length\tedge\t12\t" in envelope_path.read_text(encoding="utf-8")
+
+
+def test_cli_simulate_coalescent_writes_envelope_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "simulated-coalescent.trees"
+    record_path = tmp_path / "simulation-records.tsv"
+    envelope_path = tmp_path / "simulation-envelope.tsv"
+    exit_code = main(
+        [
+            "simulate",
+            "tree-coalescent",
+            "--tree-count",
+            "2",
+            "--tip-count",
+            "4",
+            "--population-size",
+            "2.5",
+            "--seed",
+            "7",
+            "--out",
+            str(output_path),
+            "--record-table-out",
+            str(record_path),
+            "--envelope-table-out",
+            str(envelope_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["metrics"]["tree_count"] == 2
+    assert payload["metrics"]["pooled_branch_count"] == 12
+    assert payload["metrics"]["envelope_metric_count"] == 6
+    assert output_path.read_text(encoding="utf-8").count(";\n") == 2
+    assert "tree_height_branch_length" in record_path.read_text(encoding="utf-8")
+    assert "total_branch_length\ttree\t2\t" in envelope_path.read_text(encoding="utf-8")
+
+
+def test_cli_simulate_coalescent_writes_waiting_time_ledgers(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "simulated-coalescent.trees"
+    waiting_time_path = tmp_path / "coalescent-waiting-times.tsv"
+    exit_code = main(
+        [
+            "simulate",
+            "tree-coalescent",
+            "--tree-count",
+            "64",
+            "--tip-count",
+            "5",
+            "--population-size",
+            "2.5",
+            "--waiting-time-tolerance",
+            "0.2",
+            "--seed",
+            "7",
+            "--out",
+            str(output_path),
+            "--waiting-time-table-out",
+            str(waiting_time_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["waiting_time_lineage_count"] == 4
+    assert payload["metrics"]["waiting_time_within_tolerance_count"] == 4
+    assert payload["metrics"]["waiting_time_all_within_tolerance"] is True
+    assert payload["outputs"] == [str(output_path), str(waiting_time_path)]
+    assert output_path.read_text(encoding="utf-8").count(";\n") == 64
+    assert "lineage_count\tcoalescent_rate\texpected_waiting_time" in (
+        waiting_time_path.read_text(encoding="utf-8")
+    )
+
+
+def test_cli_simulate_coalescent_includes_waiting_time_manifest(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "simulated-coalescent.trees"
+    waiting_time_path = tmp_path / "coalescent-waiting-times.tsv"
+    manifest = tmp_path / "simulate-coalescent.manifest.json"
+    exit_code = main(
+        [
+            "simulate",
+            "tree-coalescent",
+            "--tree-count",
+            "8",
+            "--tip-count",
+            "5",
+            "--population-size",
+            "2.5",
+            "--waiting-time-tolerance",
+            "0.2",
+            "--seed",
+            "7",
+            "--out",
+            str(output_path),
+            "--waiting-time-table-out",
+            str(waiting_time_path),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "simulate"
+    assert manifest_payload["arguments"] == [
+        "simulate",
+        "tree-coalescent",
+        "--tree-count",
+        "8",
+        "--tip-count",
+        "5",
+        "--population-size",
+        "2.5",
+        "--waiting-time-tolerance",
+        "0.2",
+        "--seed",
+        "7",
+        "--out",
+        str(output_path),
+        "--waiting-time-table-out",
+        str(waiting_time_path),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_paths"] == []
+    assert manifest_payload["output_paths"] == [
+        str(output_path),
+        str(waiting_time_path),
+    ]
+    assert manifest_payload["output_checksums"][str(output_path)]
+    assert manifest_payload["output_checksums"][str(waiting_time_path)]
+
+
+def test_cli_simulate_coalescent_includes_skyline_manifest(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "simulated-coalescent.trees"
+    skyline_path = tmp_path / "coalescent-skyline.tsv"
+    manifest = tmp_path / "simulate-coalescent-skyline.manifest.json"
+    exit_code = main(
+        [
+            "simulate",
+            "tree-coalescent",
+            "--tree-count",
+            "8",
+            "--tip-count",
+            "5",
+            "--population-size",
+            "2.5",
+            "--waiting-time-tolerance",
+            "0.2",
+            "--seed",
+            "19",
+            "--out",
+            str(output_path),
+            "--skyline-table-out",
+            str(skyline_path),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "simulate"
+    assert manifest_payload["arguments"] == [
+        "simulate",
+        "tree-coalescent",
+        "--tree-count",
+        "8",
+        "--tip-count",
+        "5",
+        "--population-size",
+        "2.5",
+        "--waiting-time-tolerance",
+        "0.2",
+        "--seed",
+        "19",
+        "--out",
+        str(output_path),
+        "--skyline-table-out",
+        str(skyline_path),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_paths"] == []
+    assert manifest_payload["output_paths"] == [
+        str(output_path),
+        str(skyline_path),
+    ]
+    assert manifest_payload["output_checksums"][str(output_path)]
+    assert manifest_payload["output_checksums"][str(skyline_path)]
+
+
+def test_cli_simulate_multispecies_coalescent_writes_gene_tree_ledgers(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    output_path = tmp_path / "simulated-gene-tree.nwk"
+    event_path = tmp_path / "multispecies-coalescent-events.tsv"
+    branch_path = tmp_path / "multispecies-coalescent-branches.tsv"
+
+    exit_code = main(
+        [
+            "simulate",
+            "gene-tree-multispecies-coalescent",
+            str(fixture("multispecies_coalescent_species_tree_3_taxa.nwk")),
+            "--sample-count-table",
+            str(fixture("multispecies_coalescent_sample_counts_3_taxa.tsv")),
+            "--population-size-table",
+            str(fixture("multispecies_coalescent_population_sizes_3_taxa.tsv")),
+            "--population-size",
+            "1.0",
+            "--seed",
+            "7",
+            "--out",
+            str(output_path),
+            "--event-table-out",
+            str(event_path),
+            "--branch-table-out",
+            str(branch_path),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["species_tip_count"] == 3
+    assert payload["metrics"]["gene_tip_count"] == 4
+    assert payload["metrics"]["coalescent_event_count"] == 3
+    assert payload["metrics"]["species_branch_count"] == 5
+    assert payload["metrics"]["deep_coalescence_total"] == 1
+    assert payload["outputs"] == [
+        str(output_path),
+        str(event_path),
+        str(branch_path),
+    ]
+    assert output_path.read_text(encoding="utf-8").endswith(";\n")
+    assert "\n1\tA\ttip-branch\tA\t0.05\t" in event_path.read_text(encoding="utf-8")
+    assert "\nA|B\tinternal-branch\tA|B\t1\t1000000\t2\t0\t2\t1\ttrue\n" in (
+        branch_path.read_text(encoding="utf-8")
+    )
+
+
+def test_cli_simulate_multispecies_coalescent_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    output_path = tmp_path / "simulated-gene-tree.nwk"
+    event_path = tmp_path / "multispecies-coalescent-events.tsv"
+    branch_path = tmp_path / "multispecies-coalescent-branches.tsv"
+    manifest = tmp_path / "simulate-multispecies-coalescent.manifest.json"
+
+    exit_code = main(
+        [
+            "simulate",
+            "gene-tree-multispecies-coalescent",
+            str(fixture("multispecies_coalescent_species_tree_3_taxa.nwk")),
+            "--sample-count-table",
+            str(fixture("multispecies_coalescent_sample_counts_3_taxa.tsv")),
+            "--population-size-table",
+            str(fixture("multispecies_coalescent_population_sizes_3_taxa.tsv")),
+            "--population-size",
+            "1.0",
+            "--seed",
+            "7",
+            "--out",
+            str(output_path),
+            "--event-table-out",
+            str(event_path),
+            "--branch-table-out",
+            str(branch_path),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "simulate"
+    assert manifest_payload["arguments"] == [
+        "simulate",
+        "gene-tree-multispecies-coalescent",
+        str(fixture("multispecies_coalescent_species_tree_3_taxa.nwk")),
+        "--sample-count-table",
+        str(fixture("multispecies_coalescent_sample_counts_3_taxa.tsv")),
+        "--population-size-table",
+        str(fixture("multispecies_coalescent_population_sizes_3_taxa.tsv")),
+        "--population-size",
+        "1.0",
+        "--seed",
+        "7",
+        "--out",
+        str(output_path),
+        "--event-table-out",
+        str(event_path),
+        "--branch-table-out",
+        str(branch_path),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_paths"] == [
+        str(fixture("multispecies_coalescent_species_tree_3_taxa.nwk")),
+        str(fixture("multispecies_coalescent_sample_counts_3_taxa.tsv")),
+        str(fixture("multispecies_coalescent_population_sizes_3_taxa.tsv")),
+    ]
+    assert manifest_payload["output_paths"] == [
+        str(output_path),
+        str(event_path),
+        str(branch_path),
+    ]
+    assert manifest_payload["input_checksums"][
+        str(fixture("multispecies_coalescent_species_tree_3_taxa.nwk"))
+    ]
+    assert manifest_payload["output_checksums"][str(output_path)]
+
+
+def test_cli_simulate_discrete_history_writes_truth_outputs(
+    tmp_path: Path, capsys
+) -> None:
+    tip_path = tmp_path / "history-tips.tsv"
+    node_path = tmp_path / "history-nodes.tsv"
+    branch_path = tmp_path / "history-branches.tsv"
+    event_path = tmp_path / "history-events.tsv"
+    segment_path = tmp_path / "history-segments.tsv"
+    summary_path = tmp_path / "history-summary.tsv"
+    exit_code = main(
+        [
+            "simulate",
+            "history-discrete",
+            str(fixture("example_tree.nwk")),
+            "--states",
+            "0",
+            "1",
+            "--rate",
+            "0->1=0.05",
+            "--rate",
+            "1->0=0.02",
+            "--root-state",
+            "0",
+            "--replicates",
+            "6",
+            "--seed",
+            "11",
+            "--out",
+            str(tip_path),
+            "--nodes-out",
+            str(node_path),
+            "--branches-out",
+            str(branch_path),
+            "--events-out",
+            str(event_path),
+            "--segments-out",
+            str(segment_path),
+            "--summary-out",
+            str(summary_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["replicate_count"] == 6
+    assert payload["metrics"]["state_count"] == 2
+    assert "replicate_index\ttaxon\tstate" in tip_path.read_text(encoding="utf-8")
+    assert "replicate_index\tnode\tnode_name\tis_tip" in node_path.read_text(
+        encoding="utf-8"
+    )
+    assert "start_state\tend_state\tchanged\tevent_count" in branch_path.read_text(
+        encoding="utf-8"
+    )
+    assert (
+        "source_state\ttarget_state\tevent_index\tbranch_distance"
+        in event_path.read_text(encoding="utf-8")
+    )
+    assert "state\tstart_distance\tend_distance\tduration" in segment_path.read_text(
+        encoding="utf-8"
+    )
+    assert "row_kind\tlabel\tmean_value" in summary_path.read_text(encoding="utf-8")
+
+
+def test_cli_simulate_transformed_discrete_history_reports_transform_metrics(
+    tmp_path: Path, capsys
+) -> None:
+    tip_path = tmp_path / "history-tips.tsv"
+    exit_code = main(
+        [
+            "simulate",
+            "history-discrete",
+            str(fixture("example_tree.nwk")),
+            "--states",
+            "0",
+            "1",
+            "--rate",
+            "0->1=0.05",
+            "--rate",
+            "1->0=0.02",
+            "--root-state",
+            "0",
+            "--transform",
+            "kappa",
+            "--transform-parameter-value",
+            "0.5",
+            "--replicates",
+            "2",
+            "--seed",
+            "11",
+            "--out",
+            str(tip_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["metrics"]["replicate_count"] == 2
+    assert payload["metrics"]["transform_name"] == "kappa"
+    assert payload["metrics"]["transform_parameter_value"] == 0.5
+    assert payload["data"]["transform_name"] == "kappa"
+    assert payload["data"]["simulations"][0]["transform_parameter_name"] == "kappa"
+
+
 def test_cli_simulate_dna_alignment_writes_fasta(tmp_path: Path, capsys) -> None:
     output_path = tmp_path / "simulated.fasta"
     exit_code = main(
@@ -5921,6 +6761,8 @@ def test_cli_alignment_translate_writes_amino_acid_alignment(
     tmp_path: Path, capsys
 ) -> None:
     output_path = tmp_path / "translated.fasta"
+    codon_table_path = tmp_path / "codon-validation.tsv"
+    exclusion_table_path = tmp_path / "excluded-sequences.tsv"
     exit_code = main(
         [
             "alignment",
@@ -5928,6 +6770,10 @@ def test_cli_alignment_translate_writes_amino_acid_alignment(
             str(fixture("example_alignment_coding.fasta")),
             "--out",
             str(output_path),
+            "--codon-validation-out",
+            str(codon_table_path),
+            "--excluded-sequences-out",
+            str(exclusion_table_path),
             "--json",
         ]
     )
@@ -5937,8 +6783,43 @@ def test_cli_alignment_translate_writes_amino_acid_alignment(
     assert output_path.read_text(encoding="utf-8") == (
         ">A\nME*\n>B\nMEW\n>C\nMXW\n>D\nM*W\n"
     )
+    assert codon_table_path.read_text(encoding="utf-8").splitlines()[0] == (
+        "identifier\tcodon_index\tnucleotide_start\tcodon\tamino_acid\ttranslation_status"
+    )
+    assert (
+        exclusion_table_path.read_text(encoding="utf-8") == "identifier\treason\tnote\n"
+    )
     assert payload["metrics"]["translated_sequence_count"] == 4
+    assert payload["metrics"]["invalid_codon_count"] == 1
     assert payload["metrics"]["stop_codon_count"] == 2
+    assert payload["metrics"]["internal_stop_sequence_count"] == 1
+    assert payload["metrics"]["terminal_stop_sequence_count"] == 1
+
+
+def test_cli_alignment_translate_truncates_trailing_partial_codon(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "translated.fasta"
+    exit_code = main(
+        [
+            "alignment",
+            "translate",
+            str(fixture("example_alignment_coding_frame_error.fasta")),
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == ">frame_error\nME\n"
+    assert payload["metrics"]["translated_alignment_length"] == 2
+    assert payload["metrics"]["dropped_trailing_nucleotide_count"] == 2
+    assert payload["warnings"] == [
+        "sequence length not a multiple of 3: 2 nucleotides dropped"
+    ]
 
 
 def test_cli_topology_root_outgroup_writes_rooted_tree_and_report(
@@ -5966,7 +6847,7 @@ def test_cli_topology_root_outgroup_writes_rooted_tree_and_report(
     assert exit_code == 0
     assert (
         output_path.read_text(encoding="utf-8")
-        == "(((A:0.2,B:0.2):0.7,C:0.1):0.1,D:0);\n"
+        == "(((A:0.2,B:0.2):0.7,C:0.1):0,D:0.1);\n"
     )
     report_text = report_path.read_text(encoding="utf-8")
     assert "outgroup_monophyletic" in report_text
@@ -5981,6 +6862,39 @@ def test_cli_topology_root_outgroup_writes_rooted_tree_and_report(
     assert payload["metrics"]["warning_count"] == 1
     assert payload["data"]["warnings"] == [
         "one or more requested outgroup taxa were absent from the input tree"
+    ]
+
+
+def test_cli_topology_root_outgroup_reports_non_monophyletic_error(
+    tmp_path: Path, capsys
+) -> None:
+    exit_code = main(
+        [
+            "topology",
+            "root-outgroup",
+            str(fixture("example_tree_rootable.nwk")),
+            "--taxa",
+            "B",
+            "D",
+            "--out",
+            str(tmp_path / "rooted.nwk"),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"] == [
+        {
+            "code": "outgroup_not_monophyletic",
+            "details": {
+                "matched_taxa": ["B", "D"],
+                "outgroup_mrca_extra_taxa": ["A", "C"],
+                "outgroup_mrca_taxa": ["A", "B", "C", "D"],
+            },
+            "message": "requested outgroup taxa are not monophyletic in the input tree",
+        }
     ]
 
 
@@ -6066,10 +6980,36 @@ def test_cli_topology_unroot_writes_trifurcating_tree(tmp_path: Path, capsys) ->
     payload = json.loads(captured.out)
     assert exit_code == 0
     assert (
-        output_path.read_text(encoding="utf-8") == "(A:0.5,B:0.5,(C:0.1,D:0.1):0.4);\n"
+        output_path.read_text(encoding="utf-8") == "(A:0.2,B:0.2,(C:0.1,D:0.1):0.7);\n"
     )
     assert payload["data"]["strategy"] == "unroot"
     assert payload["metrics"]["tip_count"] == 4
+    assert payload["data"]["warnings"] == [
+        "unrooting merged the removed root-edge length into the retained sibling branch to match ape::unroot"
+    ]
+
+
+def test_cli_topology_unroot_returns_already_unrooted_tree_unchanged(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "already-unrooted.nwk"
+    exit_code = main(
+        [
+            "topology",
+            "unroot",
+            str(fixture("example_tree_unrooted.nwk")),
+            "--out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert output_path.read_text(encoding="utf-8") == "(A:0.1,B:0.2,C:0.3,D:0.4);\n"
+    assert payload["data"]["warnings"] == [
+        "input tree already behaves as an unrooted representation; returned unchanged"
+    ]
 
 
 def test_build_run_manifest_captures_checksums_and_environment(tmp_path: Path) -> None:
@@ -6155,6 +7095,14 @@ def test_validate_tree_path_can_require_ultrametric_tree() -> None:
         assert error.code == "non_ultrametric_tree_error"
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected NonUltrametricTreeError")
+
+
+def test_validate_tree_path_accepts_near_ultrametric_tree_when_required() -> None:
+    report = validate_tree_path(
+        fixture("example_tree_near_ultrametric.nwk"), require_ultrametric=True
+    )
+
+    assert report.ultrametric is True
 
 
 def test_validate_tree_path_warns_for_zero_length_branches() -> None:
@@ -6593,8 +7541,31 @@ def test_newick_loader_raises_invalid_branch_length_error() -> None:
         loads_newick("((A:abc,B:0.2):0.3,C:0.4);")
     except InvalidBranchLengthError as error:
         assert error.code == "invalid_branch_length_error"
+        assert error.details == {"position": 4, "line": 1, "column": 5}
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected InvalidBranchLengthError")
+
+
+def test_newick_loader_preserves_numeric_support_metadata() -> None:
+    tree = loads_newick("((A:0.1,B:0.1)95:0.2,C:0.3)Root;")
+
+    support_node = next(
+        node
+        for node in tree.iter_internal_nodes()
+        if node is not tree.root and set(node.descendant_taxa) == {"A", "B"}
+    )
+
+    assert support_node.name == "95"
+    assert support_node.metadata["confidence"] == 95.0
+
+
+def test_newick_loader_reports_location_for_malformed_structure() -> None:
+    try:
+        loads_newick("((A:0.1,B:0.2):0.3,C:0.4")
+    except TreeParseError as error:
+        assert error.details == {"position": 24, "line": 1, "column": 25}
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("expected TreeParseError")
 
 
 def test_nexus_loader_reads_translation_block_fixture() -> None:
@@ -6838,8 +7809,11 @@ def test_compare_robinson_foulds_matches_reference_fixture_cases() -> None:
         assert report.left_split_count == int(row["left_split_count"])
         assert report.right_split_count == int(row["right_split_count"])
         assert report.robinson_foulds_distance == int(row["robinson_foulds_distance"])
-        assert report.normalized_robinson_foulds == float(
+        assert report.normalized_robinson_foulds == pytest.approx(
             row["normalized_robinson_foulds"]
+            if isinstance(row["normalized_robinson_foulds"], float)
+            else float(row["normalized_robinson_foulds"]),
+            abs=1e-12,
         )
 
 
@@ -7089,7 +8063,10 @@ def test_compare_branch_score_distance_matches_reference_fixture_cases() -> None
             taxon_overlap_policy=row["taxon_overlap_policy"],
         )
         assert report.same_taxon_set is (row["same_taxon_set"] == "true")
-        assert report.branch_score_distance == float(row["branch_score_distance"])
+        assert report.branch_score_distance == pytest.approx(
+            float(row["branch_score_distance"]),
+            abs=1e-12,
+        )
 
 
 def test_compare_branch_score_distance_enforces_identical_taxa_when_requested() -> None:
@@ -7435,6 +8412,18 @@ def test_diagnose_ultrametricity_reports_max_deviation() -> None:
     assert non_ultrametric.max_deviation == 0.2
 
 
+def test_diagnose_ultrametricity_uses_shared_default_tolerance() -> None:
+    near_default = diagnose_ultrametricity(fixture("example_tree_near_ultrametric.nwk"))
+    near_tight = diagnose_ultrametricity(
+        fixture("example_tree_near_ultrametric.nwk"),
+        tolerance=1e-12,
+    )
+
+    assert near_default.ultrametric is True
+    assert near_default.max_deviation == pytest.approx(1e-9, abs=1e-15)
+    assert near_tight.ultrametric is False
+
+
 def test_annotate_tree_against_table_finds_missing_and_extra_taxa() -> None:
     report = annotate_tree_against_table(
         fixture("example_tree.nwk"), fixture("example_traits.tsv")
@@ -7574,6 +8563,11 @@ def test_cli_traits_link_strict_mode_returns_typed_error(capsys) -> None:
     assert exit_code == 2
     assert payload["status"] == "error"
     assert payload["errors"][0]["code"] == MetadataJoinError.code
+    assert (
+        payload["errors"][0]["details"]["failure_reason"] == "tree_trait_taxon_mismatch"
+    )
+    assert payload["errors"][0]["details"]["evidence"]["missing_from_traits"] == ["D"]
+    assert payload["errors"][0]["details"]["evidence"]["extra_trait_taxa"] == ["E"]
 
 
 def test_cli_prune_writes_tree_and_pruned_taxa_report(tmp_path: Path, capsys) -> None:
@@ -8402,6 +9396,34 @@ def test_cli_compare_json_output_supports_unrooted_rf_mode(capsys) -> None:
     assert payload["data"]["same_unrooted_topology"] is True
 
 
+def test_cli_compare_writes_topology_distance_split_table(
+    tmp_path: Path, capsys
+) -> None:
+    output_path = tmp_path / "topology-distance.tsv"
+
+    exit_code = main(
+        [
+            "compare",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_tree_alt.nwk")),
+            "--split-table-out",
+            str(output_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert output_path.exists()
+    assert payload["outputs"] == [str(output_path)]
+    assert output_path.read_text(encoding="utf-8").splitlines() == [
+        "split_id\tsplit_kind\tcomparison_status\ttaxon_count\tdescendant_taxa\tleft_present\tright_present",
+        "A|B\tclade\tshared\t2\tA|B\ttrue\ttrue",
+        "C|D\tclade\tleft_only\t2\tC|D\ttrue\tfalse",
+        "A|B|C\tclade\tright_only\t3\tA|B|C\tfalse\ttrue",
+    ]
+
+
 def test_cli_compare_requires_identical_taxa_when_policy_requests_it() -> None:
     try:
         main(
@@ -8634,6 +9656,35 @@ def test_render_tree_report_writes_embedded_manifest(tmp_path: Path) -> None:
     assert result.machine_manifest_path.exists()
     assert 'id="bijux-report-manifest"' in text
     assert "Bijux Tree Report" in text
+
+
+def test_write_html_report_renders_summary_metrics_and_artifact_links(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "summary-report.html"
+    write_html_report(
+        title="Summary Report",
+        sections=[("overview", "compact reviewer summary")],
+        out_path=output,
+        embedded_json={"report_kind": "summary"},
+        summary_metrics=[("tree count", 12), ("report mode", "scaled-summary")],
+        artifact_links=[
+            (
+                "clade-frequencies",
+                "summary-report.artifacts/clade-frequencies.tsv",
+                "128 bytes",
+            ),
+            ("report-manifest", "summary-report.artifacts/summary.manifest.json", None),
+        ],
+    )
+
+    text = output.read_text(encoding="utf-8")
+    assert "<h2>summary</h2>" in text
+    assert "tree count" in text
+    assert "scaled-summary" in text
+    assert 'href="summary-report.artifacts/clade-frequencies.tsv"' in text
+    assert "128 bytes" in text
+    assert 'href="summary-report.artifacts/summary.manifest.json"' in text
 
 
 def test_render_tree_report_preserves_support_and_branch_diagnostics(
@@ -9018,6 +10069,99 @@ def test_render_level_one_release_gate_report_writes_traceability_sections(
     assert "Bijux Level 1 Release Gate Report" in text
 
 
+@pytest.mark.slow
+def test_build_release_truth_report_aggregates_test_counts_and_release_surfaces(
+    tmp_path: Path,
+) -> None:
+    total_report = _write_junit_report(
+        tmp_path / "full.xml",
+        suite_name="full",
+        tests=14,
+        failures=1,
+        skipped=2,
+    )
+    real_engine_report = _write_junit_report(
+        tmp_path / "real-engine.xml",
+        suite_name="real-engine",
+        tests=6,
+        failures=0,
+        skipped=1,
+    )
+
+    report = build_release_truth_report(
+        test_report_paths=[total_report],
+        real_engine_test_report_paths=[real_engine_report],
+        include_extended_parity=False,
+        stress_tier="small",
+    )
+
+    assert report.total_tests.total_tests == 14
+    assert report.total_tests.passed_tests == 11
+    assert report.real_engine_tests.total_tests == 6
+    assert report.real_engine_tests.passed_tests == 5
+    assert any(
+        workflow.surface == "fasta-to-tree" for workflow in report.supported_workflows
+    )
+    assert any(
+        dataset.demo_command == "rabies-cross-host-geography-panel"
+        for dataset in report.flagship_datasets
+    )
+    assert report.reference_parity.case_count > 0
+    assert len(report.stress_suite.observations) == 5
+
+
+@pytest.mark.slow
+def test_render_release_truth_report_writes_release_sections(
+    tmp_path: Path,
+) -> None:
+    total_report = _write_junit_report(
+        tmp_path / "full.xml",
+        suite_name="full",
+        tests=12,
+        failures=1,
+        skipped=1,
+    )
+    real_engine_report = _write_junit_report(
+        tmp_path / "real-engine.xml",
+        suite_name="real-engine",
+        tests=5,
+        failures=0,
+        skipped=2,
+    )
+    output = tmp_path / "release-truth.html"
+
+    result = render_release_truth_report(
+        out_path=output,
+        test_report_paths=[total_report],
+        real_engine_test_report_paths=[real_engine_report],
+        include_extended_parity=False,
+        stress_tier="small",
+    )
+
+    text = output.read_text(encoding="utf-8")
+    assert result.report_kind == "release-truth"
+    assert result.machine_manifest["sections"] == [
+        "reviewer-summary",
+        "total-tests",
+        "real-engine-tests",
+        "supported-workflows",
+        "experimental-workflows",
+        "advisory-workflows",
+        "parser-only-workflows",
+        "flagship-datasets",
+        "workflow-validation",
+        "release-gate",
+        "reference-parity",
+        "stress-suite",
+        "known-limitations",
+    ]
+    assert result.machine_manifest["metrics"]["total_tests"] == 12
+    assert result.machine_manifest["metrics"]["real_engine_tests"] == 5
+    assert result.machine_manifest["metrics"]["flagship_dataset_count"] >= 1
+    assert result.machine_manifest_path.exists()
+    assert "Bijux Release Truth Report" in text
+
+
 def test_bundle_directory_copies_files_and_manifest(tmp_path: Path) -> None:
     inputs_root = tmp_path / "inputs"
     outputs_root = tmp_path / "outputs"
@@ -9180,6 +10324,1206 @@ def test_cli_diagnose_ultrametric_reports_tolerance_and_deviation(capsys) -> Non
     assert payload["metrics"]["max_deviation"] == 0.2
 
 
+def test_cli_diagnose_root_to_tip_regression_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    out_dir = tmp_path / "root-to-tip-regression"
+    manifest = tmp_path / "root-to-tip-regression.manifest.json"
+    tree_path = fixture("root_to_tip_regression_diagnostic_tree_7_taxa.nwk")
+    metadata_path = fixture("root_to_tip_regression_dates_7_taxa.tsv")
+
+    exit_code = main(
+        [
+            "diagnose",
+            "root-to-tip-regression",
+            str(tree_path),
+            "--metadata",
+            str(metadata_path),
+            "--out-dir",
+            str(out_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["outlier_count"] == 1
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "diagnose"
+    assert manifest_payload["arguments"] == [
+        "diagnose",
+        "root-to-tip-regression",
+        str(tree_path),
+        "--metadata",
+        str(metadata_path),
+        "--out-dir",
+        str(out_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_path)]
+    assert manifest_payload["input_checksums"][str(metadata_path)]
+
+
+def test_cli_diagnose_tip_date_randomization_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    out_dir = tmp_path / "tip-date-randomization"
+    manifest = tmp_path / "tip-date-randomization.manifest.json"
+    tree_path = fixture("root_to_tip_regression_diagnostic_tree_7_taxa.nwk")
+    metadata_path = fixture("root_to_tip_regression_dates_7_taxa.tsv")
+
+    exit_code = main(
+        [
+            "diagnose",
+            "tip-date-randomization",
+            str(tree_path),
+            "--metadata",
+            str(metadata_path),
+            "--permutations",
+            "19",
+            "--seed",
+            "17",
+            "--out-dir",
+            str(out_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["p_value"] == 0.05
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "diagnose"
+    assert manifest_payload["arguments"] == [
+        "diagnose",
+        "tip-date-randomization",
+        str(tree_path),
+        "--metadata",
+        str(metadata_path),
+        "--permutations",
+        "19",
+        "--seed",
+        "17",
+        "--out-dir",
+        str(out_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_path)]
+    assert manifest_payload["input_checksums"][str(metadata_path)]
+
+
+def test_cli_compare_clade_ages_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    table_path = tmp_path / "clade-ages.tsv"
+    manifest = tmp_path / "clade-ages.manifest.json"
+    left_path = fixture("strict_clock_time_tree_4_taxa.nwk")
+    right_path = fixture("relaxed_rate_summary_dated_tree_4_taxa.nwk")
+
+    exit_code = main(
+        [
+            "compare",
+            "clade-ages",
+            str(left_path),
+            str(right_path),
+            "--out",
+            str(table_path),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["matched_clades"] == 3
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "compare"
+    assert manifest_payload["arguments"] == [
+        "compare",
+        "clade-ages",
+        str(left_path),
+        str(right_path),
+        "--out",
+        str(table_path),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(left_path)]
+    assert manifest_payload["input_checksums"][str(right_path)]
+
+
+def test_cli_compare_deep_coalescence_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    table_path = tmp_path / "deep-coalescence.tsv"
+    mapping_table_path = tmp_path / "deep-coalescence-taxon-map.tsv"
+    manifest = tmp_path / "deep-coalescence.manifest.json"
+    species_tree_path = fixture("deep_coalescence_species_tree_3_taxa.nwk")
+    gene_tree_path = fixture("deep_coalescence_gene_tree_4_tips.nwk")
+    taxon_map_path = fixture("deep_coalescence_gene_taxon_map_4_tips.tsv")
+
+    exit_code = main(
+        [
+            "compare",
+            "deep-coalescence",
+            str(species_tree_path),
+            str(gene_tree_path),
+            "--taxon-map",
+            str(taxon_map_path),
+            "--out",
+            str(table_path),
+            "--mapping-out",
+            str(mapping_table_path),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["deep_coalescence_total"] == 2
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "compare"
+    assert manifest_payload["arguments"] == [
+        "compare",
+        "deep-coalescence",
+        str(species_tree_path),
+        str(gene_tree_path),
+        "--taxon-map",
+        str(taxon_map_path),
+        "--out",
+        str(table_path),
+        "--mapping-out",
+        str(mapping_table_path),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(species_tree_path)]
+    assert manifest_payload["input_checksums"][str(gene_tree_path)]
+    assert manifest_payload["input_checksums"][str(taxon_map_path)]
+
+
+def test_cli_compare_duplication_loss_transfer_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    table_path = tmp_path / "duplication-loss-transfer.tsv"
+    mapping_table_path = tmp_path / "duplication-loss-transfer-taxon-map.tsv"
+    manifest = tmp_path / "duplication-loss-transfer.manifest.json"
+    species_tree_path = fixture("duplication_loss_transfer_species_tree_4_taxa.nwk")
+    gene_tree_path = fixture("duplication_loss_transfer_gene_tree_4_tips.nwk")
+    taxon_map_path = fixture("duplication_loss_transfer_gene_taxon_map_4_tips.tsv")
+
+    exit_code = main(
+        [
+            "compare",
+            "duplication-loss-transfer",
+            str(species_tree_path),
+            str(gene_tree_path),
+            "--taxon-map",
+            str(taxon_map_path),
+            "--out",
+            str(table_path),
+            "--mapping-out",
+            str(mapping_table_path),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["reconciliation_score"] == 6.0
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "compare"
+    assert manifest_payload["arguments"] == [
+        "compare",
+        "duplication-loss-transfer",
+        str(species_tree_path),
+        str(gene_tree_path),
+        "--taxon-map",
+        str(taxon_map_path),
+        "--out",
+        str(table_path),
+        "--mapping-out",
+        str(mapping_table_path),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(species_tree_path)]
+    assert manifest_payload["input_checksums"][str(gene_tree_path)]
+    assert manifest_payload["input_checksums"][str(taxon_map_path)]
+
+
+def test_cli_tree_set_quartet_concordance_factors_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    table_path = tmp_path / "quartet-concordance-factors.tsv"
+    manifest = tmp_path / "quartet-concordance-factors.manifest.json"
+    species_tree_path = fixture("quartet_concordance_species_tree_4_taxa.nwk")
+    gene_tree_set_path = fixture("quartet_concordance_gene_trees_4_taxa.nwk")
+
+    exit_code = main(
+        [
+            "tree-set",
+            "quartet-concordance-factors",
+            str(species_tree_path),
+            str(gene_tree_set_path),
+            "--out",
+            str(table_path),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["concordant_quartet_count"] == 2
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "tree-set"
+    assert manifest_payload["arguments"] == [
+        "tree-set",
+        "quartet-concordance-factors",
+        str(species_tree_path),
+        str(gene_tree_set_path),
+        "--out",
+        str(table_path),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(species_tree_path)]
+    assert manifest_payload["input_checksums"][str(gene_tree_set_path)]
+
+
+def test_cli_tree_set_quartet_score_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    table_path = tmp_path / "quartet-score.tsv"
+    manifest = tmp_path / "quartet-score.manifest.json"
+    candidate_tree_path = fixture("quartet_score_candidate_high_4_taxa.nwk")
+    gene_tree_set_path = fixture("quartet_concordance_gene_trees_4_taxa.nwk")
+
+    exit_code = main(
+        [
+            "tree-set",
+            "quartet-score",
+            str(candidate_tree_path),
+            str(gene_tree_set_path),
+            "--out",
+            str(table_path),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["quartet_score"] == 2
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "tree-set"
+    assert manifest_payload["arguments"] == [
+        "tree-set",
+        "quartet-score",
+        str(candidate_tree_path),
+        str(gene_tree_set_path),
+        "--out",
+        str(table_path),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(candidate_tree_path)]
+    assert manifest_payload["input_checksums"][str(gene_tree_set_path)]
+
+
+def test_cli_tree_set_maximum_clade_credibility_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    output_dir = tmp_path / "maximum-clade-credibility"
+    manifest = tmp_path / "maximum-clade-credibility.manifest.json"
+    tree_set_path = fixture("maximum_clade_credibility_tree_set.nwk")
+
+    exit_code = main(
+        [
+            "tree-set",
+            "maximum-clade-credibility",
+            str(tree_set_path),
+            "--out-dir",
+            str(output_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["selected_tree_index"] == 2
+    assert sorted(Path(path).name for path in payload["outputs"][:-1]) == [
+        "candidate-score-table.tsv",
+        "maximum-clade-credibility-tree.nwk",
+    ]
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "tree-set"
+    assert manifest_payload["arguments"] == [
+        "tree-set",
+        "maximum-clade-credibility",
+        str(tree_set_path),
+        "--out-dir",
+        str(output_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_set_path)]
+
+
+def test_cli_tree_set_credible_clade_set_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    output_dir = tmp_path / "credible-clade-set"
+    manifest = tmp_path / "credible-clade-set.manifest.json"
+    tree_set_path = fixture("majority_rule_extended_consensus_tree_set.nwk")
+
+    exit_code = main(
+        [
+            "tree-set",
+            "credible-clade-set",
+            str(tree_set_path),
+            "--out-dir",
+            str(output_dir),
+            "--credible-threshold",
+            "0.95",
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["included_clade_count"] == 2
+    assert payload["metrics"]["excluded_clade_count"] == 7
+    assert sorted(Path(path).name for path in payload["outputs"][:-1]) == [
+        "credible-clades.tsv",
+        "excluded-clades.tsv",
+    ]
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "tree-set"
+    assert manifest_payload["arguments"] == [
+        "tree-set",
+        "credible-clade-set",
+        str(tree_set_path),
+        "--out-dir",
+        str(output_dir),
+        "--credible-threshold",
+        "0.95",
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_set_path)]
+
+
+def test_cli_tree_set_posterior_branch_lengths_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    output_path = tmp_path / "posterior-branch-lengths.tsv"
+    manifest = tmp_path / "posterior-branch-lengths.manifest.json"
+    tree_set_path = fixture("posterior_branch_length_summary_tree_set.nwk")
+
+    exit_code = main(
+        [
+            "tree-set",
+            "posterior-branch-lengths",
+            str(tree_set_path),
+            "--out",
+            str(output_path),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["branch_summary_count"] == 6
+    assert payload["outputs"][:-1] == [str(output_path)]
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "tree-set"
+    assert manifest_payload["arguments"] == [
+        "tree-set",
+        "posterior-branch-lengths",
+        str(tree_set_path),
+        "--out",
+        str(output_path),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_set_path)]
+
+
+def test_cli_tree_set_posterior_agreement_subtree_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    output_dir = tmp_path / "posterior-agreement-subtree"
+    manifest = tmp_path / "posterior-agreement-subtree.manifest.json"
+    tree_set_path = fixture("posterior_agreement_subtree_tree_set.nwk")
+
+    exit_code = main(
+        [
+            "tree-set",
+            "posterior-agreement-subtree",
+            str(tree_set_path),
+            "--out-dir",
+            str(output_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["retained_taxon_count"] == 4
+    assert payload["metrics"]["agreement_removed_taxon_count"] == 1
+    assert sorted(Path(path).name for path in payload["outputs"][:-1]) == [
+        "posterior-agreement-subtree-removed-taxa.tsv",
+        "posterior-agreement-subtree-search.tsv",
+        "posterior-agreement-subtree-summary.tsv",
+        "posterior-agreement-subtree.nwk",
+    ]
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "tree-set"
+    assert manifest_payload["arguments"] == [
+        "tree-set",
+        "posterior-agreement-subtree",
+        str(tree_set_path),
+        "--out-dir",
+        str(output_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_set_path)]
+
+
+def test_cli_tree_set_posterior_clade_correlation_matrix_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    output_dir = tmp_path / "posterior-clade-correlation-matrix"
+    manifest = tmp_path / "posterior-clade-correlation-matrix.manifest.json"
+    tree_set_path = fixture("posterior_clade_correlation_tree_set.nwk")
+
+    exit_code = main(
+        [
+            "tree-set",
+            "posterior-clade-correlation-matrix",
+            str(tree_set_path),
+            "--out-dir",
+            str(output_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["clade_count"] == 6
+    assert payload["metrics"]["pair_count"] == 21
+    assert sorted(Path(path).name for path in payload["outputs"][:-1]) == [
+        "posterior-clade-correlation-matrix.tsv",
+        "posterior-clade-correlation-pairs.tsv",
+    ]
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "tree-set"
+    assert manifest_payload["arguments"] == [
+        "tree-set",
+        "posterior-clade-correlation-matrix",
+        str(tree_set_path),
+        "--out-dir",
+        str(output_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_set_path)]
+
+
+def test_cli_tree_set_posterior_tree_distance_diagnostics_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    output_dir = tmp_path / "posterior-tree-distance-diagnostics"
+    manifest = tmp_path / "posterior-tree-distance-diagnostics.manifest.json"
+    tree_set_path = fixture("maximum_clade_credibility_tree_set.nwk")
+
+    exit_code = main(
+        [
+            "tree-set",
+            "posterior-tree-distance-diagnostics",
+            str(tree_set_path),
+            "--out-dir",
+            str(output_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["row_count"] == 5
+    assert payload["metrics"]["distribution_row_count"] == 19
+    assert payload["metrics"]["maximum_clade_credibility_tree_index"] == 2
+    assert sorted(Path(path).name for path in payload["outputs"][:-1]) == [
+        "consensus-tree.nwk",
+        "maximum-clade-credibility-tree.nwk",
+        "posterior-tree-distance-diagnostics.tsv",
+        "posterior-tree-distance-distribution.tsv",
+    ]
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "tree-set"
+    assert manifest_payload["arguments"] == [
+        "tree-set",
+        "posterior-tree-distance-diagnostics",
+        str(tree_set_path),
+        "--out-dir",
+        str(output_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_set_path)]
+
+
+def test_cli_tree_set_posterior_node_ages_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    output_path = tmp_path / "posterior-node-ages.tsv"
+    manifest = tmp_path / "posterior-node-ages.manifest.json"
+    tree_set_path = fixture("posterior_node_age_summary_tree_set.nwk")
+
+    exit_code = main(
+        [
+            "tree-set",
+            "posterior-node-ages",
+            str(tree_set_path),
+            "--out",
+            str(output_path),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["node_age_summary_count"] == 7
+    assert payload["outputs"][:-1] == [str(output_path)]
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "tree-set"
+    assert manifest_payload["arguments"] == [
+        "tree-set",
+        "posterior-node-ages",
+        str(tree_set_path),
+        "--out",
+        str(output_path),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_set_path)]
+
+
+def test_cli_tree_set_gene_tree_conflicts_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    output_dir = tmp_path / "gene-tree-conflicts"
+    manifest = tmp_path / "gene-tree-conflicts.manifest.json"
+    tree_set_path = fixture("example_tree_set_left.nwk")
+
+    exit_code = main(
+        [
+            "tree-set",
+            "gene-tree-conflicts",
+            str(tree_set_path),
+            "--out-dir",
+            str(output_dir),
+            "--credibility-threshold",
+            "0.3",
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["conflict_count"] == 4
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "tree-set"
+    assert manifest_payload["arguments"] == [
+        "tree-set",
+        "gene-tree-conflicts",
+        str(tree_set_path),
+        "--out-dir",
+        str(output_dir),
+        "--credibility-threshold",
+        "0.3",
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_set_path)]
+
+
+def test_cli_phylo_dating_least_squares_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    out_dir = tmp_path / "least-squares-dating"
+    manifest = tmp_path / "least-squares-dating.manifest.json"
+    tree_path = fixture("least_squares_dating_substitution_tree_4_taxa.nwk")
+    metadata_path = fixture("least_squares_dating_tip_dates_4_taxa.tsv")
+
+    exit_code = main(
+        [
+            "phylo",
+            "dating",
+            "least-squares",
+            str(tree_path),
+            str(metadata_path),
+            "--out-dir",
+            str(out_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["taxon_count"] == 4
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "phylo"
+    assert manifest_payload["arguments"] == [
+        "phylo",
+        "dating",
+        "least-squares",
+        str(tree_path),
+        str(metadata_path),
+        "--out-dir",
+        str(out_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_path)]
+    assert manifest_payload["input_checksums"][str(metadata_path)]
+
+
+def test_cli_phylo_likelihood_local_clock_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    out_dir = tmp_path / "local-clock-likelihood"
+    manifest = tmp_path / "local-clock-likelihood.manifest.json"
+    tree_path = fixture("strict_clock_time_tree_4_taxa.nwk")
+    alignment_path = fixture("local_clock_likelihood_alignment_4_taxa.fasta")
+    regime_path = fixture("local_clock_regimes_4_taxa.tsv")
+
+    exit_code = main(
+        [
+            "phylo",
+            "likelihood",
+            "local-clock",
+            str(tree_path),
+            str(alignment_path),
+            str(regime_path),
+            "--model",
+            "jc69",
+            "--out-dir",
+            str(out_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["taxon_count"] == 4
+    assert payload["outputs"][-1] == str(manifest)
+    assert str(out_dir / "branch_likelihood_diagnostics.tsv") in payload["outputs"]
+    assert manifest_payload["command"] == "phylo"
+    assert manifest_payload["arguments"] == [
+        "phylo",
+        "likelihood",
+        "local-clock",
+        str(tree_path),
+        str(alignment_path),
+        str(regime_path),
+        "--model",
+        "jc69",
+        "--out-dir",
+        str(out_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_path)]
+    assert manifest_payload["input_checksums"][str(alignment_path)]
+    assert manifest_payload["input_checksums"][str(regime_path)]
+
+
+def test_cli_phylo_likelihood_strict_clock_includes_branch_diagnostic_output(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    out_dir = tmp_path / "strict-clock-likelihood"
+    manifest = tmp_path / "strict-clock-likelihood.manifest.json"
+    tree_path = fixture("strict_clock_time_tree_4_taxa.nwk")
+    alignment_path = fixture("strict_clock_likelihood_alignment_4_taxa.fasta")
+
+    exit_code = main(
+        [
+            "phylo",
+            "likelihood",
+            "strict-clock",
+            str(tree_path),
+            str(alignment_path),
+            "--model",
+            "jc69",
+            "--out-dir",
+            str(out_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["taxon_count"] == 4
+    assert payload["outputs"][-1] == str(manifest)
+    assert str(out_dir / "branch_likelihood_diagnostics.tsv") in payload["outputs"]
+    assert manifest_payload["command"] == "phylo"
+    assert manifest_payload["arguments"] == [
+        "phylo",
+        "likelihood",
+        "strict-clock",
+        str(tree_path),
+        str(alignment_path),
+        "--model",
+        "jc69",
+        "--out-dir",
+        str(out_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_path)]
+    assert manifest_payload["input_checksums"][str(alignment_path)]
+
+
+@pytest.mark.slow
+def test_cli_phylo_likelihood_placement_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    out_dir = tmp_path / "likelihood-placement"
+    manifest = tmp_path / "likelihood-placement.manifest.json"
+    tree_path = fixture("likelihood_placement_reference_tree_4_taxa.nwk")
+    reference_alignment_path = fixture(
+        "likelihood_placement_reference_alignment_4_taxa.fasta"
+    )
+    query_alignment_path = fixture("likelihood_placement_query_alignment_2_taxa.fasta")
+
+    exit_code = main(
+        [
+            "phylo",
+            "likelihood",
+            "placement",
+            str(tree_path),
+            str(reference_alignment_path),
+            str(query_alignment_path),
+            "--out-dir",
+            str(out_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["query_count"] == 2
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "phylo"
+    assert manifest_payload["arguments"] == [
+        "phylo",
+        "likelihood",
+        "placement",
+        str(tree_path),
+        str(reference_alignment_path),
+        str(query_alignment_path),
+        "--out-dir",
+        str(out_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_path)]
+    assert manifest_payload["input_checksums"][str(reference_alignment_path)]
+    assert manifest_payload["input_checksums"][str(query_alignment_path)]
+
+
+def test_cli_phylo_parsimony_placement_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    out_dir = tmp_path / "parsimony-placement"
+    manifest = tmp_path / "parsimony-placement.manifest.json"
+    tree_path = fixture("placement_reference_tree_4_taxa.nwk")
+    matrix_path = fixture("placement_reference_matrix.tsv")
+    query_matrix_path = fixture("placement_query_matrix.tsv")
+
+    exit_code = main(
+        [
+            "phylo",
+            "parsimony",
+            "placement",
+            str(tree_path),
+            str(matrix_path),
+            str(query_matrix_path),
+            "--method",
+            "fitch",
+            "--out-dir",
+            str(out_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["query_count"] == 2
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "phylo"
+    assert manifest_payload["arguments"] == [
+        "phylo",
+        "parsimony",
+        "placement",
+        str(tree_path),
+        str(matrix_path),
+        str(query_matrix_path),
+        "--method",
+        "fitch",
+        "--out-dir",
+        str(out_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_path)]
+    assert manifest_payload["input_checksums"][str(matrix_path)]
+    assert manifest_payload["input_checksums"][str(query_matrix_path)]
+
+
+def test_cli_phylo_dating_penalized_likelihood_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    out_dir = tmp_path / "penalized-likelihood-dating"
+    manifest = tmp_path / "penalized-likelihood-dating.manifest.json"
+    tree_path = fixture("penalized_likelihood_dating_substitution_tree_4_taxa.nwk")
+    metadata_path = fixture("penalized_likelihood_dating_tip_dates_4_taxa.tsv")
+
+    exit_code = main(
+        [
+            "phylo",
+            "dating",
+            "penalized-likelihood",
+            str(tree_path),
+            str(metadata_path),
+            "--smoothing-parameter",
+            "0.01",
+            "--out-dir",
+            str(out_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["taxon_count"] == 4
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "phylo"
+    assert manifest_payload["arguments"] == [
+        "phylo",
+        "dating",
+        "penalized-likelihood",
+        str(tree_path),
+        str(metadata_path),
+        "--smoothing-parameter",
+        "0.01",
+        "--out-dir",
+        str(out_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_path)]
+    assert manifest_payload["input_checksums"][str(metadata_path)]
+
+
+def test_cli_phylo_dating_penalized_likelihood_cross_validation_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    out_dir = tmp_path / "penalized-likelihood-cross-validation"
+    manifest = tmp_path / "penalized-likelihood-cross-validation.manifest.json"
+    tree_path = fixture(
+        "penalized_likelihood_cross_validation_substitution_tree_5_taxa.nwk"
+    )
+    metadata_path = fixture(
+        "penalized_likelihood_cross_validation_tip_dates_5_taxa.tsv"
+    )
+    calibration_path = fixture(
+        "penalized_likelihood_cross_validation_calibrations_5_taxa.tsv"
+    )
+
+    exit_code = main(
+        [
+            "phylo",
+            "dating",
+            "penalized-likelihood-cross-validation",
+            str(tree_path),
+            str(metadata_path),
+            str(calibration_path),
+            "--smoothing-parameters",
+            "0.01",
+            "0.1",
+            "1.0",
+            "10.0",
+            "100.0",
+            "--out-dir",
+            str(out_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["taxon_count"] == 5
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "phylo"
+    assert manifest_payload["arguments"] == [
+        "phylo",
+        "dating",
+        "penalized-likelihood-cross-validation",
+        str(tree_path),
+        str(metadata_path),
+        str(calibration_path),
+        "--smoothing-parameters",
+        "0.01",
+        "0.1",
+        "1.0",
+        "10.0",
+        "100.0",
+        "--out-dir",
+        str(out_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_path)]
+    assert manifest_payload["input_checksums"][str(metadata_path)]
+    assert manifest_payload["input_checksums"][str(calibration_path)]
+
+
+def test_cli_phylo_dating_calibration_constraints_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    out_dir = tmp_path / "calibration-constraints"
+    manifest = tmp_path / "calibration-constraints.manifest.json"
+    tree_path = fixture(
+        "penalized_likelihood_cross_validation_substitution_tree_5_taxa.nwk"
+    )
+    calibration_path = fixture(
+        "dating_calibration_constraints_contradictory_5_taxa.tsv"
+    )
+
+    exit_code = main(
+        [
+            "phylo",
+            "dating",
+            "calibration-constraints",
+            str(tree_path),
+            str(calibration_path),
+            "--out-dir",
+            str(out_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["taxon_count"] == 5
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "phylo"
+    assert manifest_payload["arguments"] == [
+        "phylo",
+        "dating",
+        "calibration-constraints",
+        str(tree_path),
+        str(calibration_path),
+        "--out-dir",
+        str(out_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(tree_path)]
+    assert manifest_payload["input_checksums"][str(calibration_path)]
+
+
+def test_cli_phylo_dating_relaxed_rate_summary_includes_manifest(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    out_dir = tmp_path / "relaxed-rate-summary"
+    manifest = tmp_path / "relaxed-rate-summary.manifest.json"
+    substitution_tree_path = fixture(
+        "relaxed_rate_summary_substitution_tree_4_taxa.nwk"
+    )
+    dated_tree_path = fixture("relaxed_rate_summary_dated_tree_4_taxa.nwk")
+
+    exit_code = main(
+        [
+            "phylo",
+            "dating",
+            "relaxed-rate-summary",
+            str(substitution_tree_path),
+            str(dated_tree_path),
+            "--out-dir",
+            str(out_dir),
+            "--json",
+            "--manifest",
+            str(manifest),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert payload["metrics"]["taxon_count"] == 4
+    assert payload["outputs"][-1] == str(manifest)
+    assert manifest_payload["command"] == "phylo"
+    assert manifest_payload["arguments"] == [
+        "phylo",
+        "dating",
+        "relaxed-rate-summary",
+        str(substitution_tree_path),
+        str(dated_tree_path),
+        "--out-dir",
+        str(out_dir),
+        "--json",
+        "--manifest",
+        str(manifest),
+    ]
+    assert manifest_payload["input_checksums"][str(substitution_tree_path)]
+    assert manifest_payload["input_checksums"][str(dated_tree_path)]
+
+
 def test_cli_validate_writes_run_manifest(tmp_path: Path, capsys) -> None:
     manifest = tmp_path / "validate.manifest.json"
     exit_code = main(
@@ -9238,6 +11582,7 @@ def test_cli_commands_json_lists_registered_taxonomy(capsys) -> None:
     assert payload["status"] == "ok"
     assert command_names == [
         "env",
+        "phylo",
         "metadata",
         "traits",
         "prune",
@@ -9291,6 +11636,10 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
     assert (
         resolved["bijux_phylogenetics.comparative:summarize_pgls_lambda_fit"]
         is summarize_pgls_lambda_fit
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:summarize_brownian_covariance"]
+        is summarize_brownian_covariance
     )
     assert (
         resolved["bijux_phylogenetics.comparative:summarize_brownian_covariance_pgls"]
@@ -9500,6 +11849,16 @@ def test_supported_evidence_api_contract_resolves_public_comparative_entrypoints
     assert (
         resolved["bijux_phylogenetics.comparative:write_brownian_covariance_table"]
         is write_brownian_covariance_table
+    )
+    assert (
+        resolved["bijux_phylogenetics.comparative:write_brownian_covariance_long_table"]
+        is write_brownian_covariance_long_table
+    )
+    assert (
+        resolved[
+            "bijux_phylogenetics.comparative:write_brownian_covariance_matrix_table"
+        ]
+        is write_brownian_covariance_matrix_table
     )
     assert (
         resolved["bijux_phylogenetics.comparative:write_brownian_regime_summary_table"]
@@ -10071,6 +12430,49 @@ def test_cli_report_release_gate_json_output_uses_gate_contract(
     assert payload["metrics"]["excluded_taxa"] == 3
 
 
+@pytest.mark.slow
+def test_cli_report_release_truth_json_output_uses_release_contract(
+    tmp_path: Path, capsys
+) -> None:
+    total_report = _write_junit_report(
+        tmp_path / "full.xml",
+        suite_name="full",
+        tests=10,
+        failures=1,
+        skipped=2,
+    )
+    real_engine_report = _write_junit_report(
+        tmp_path / "real-engine.xml",
+        suite_name="real-engine",
+        tests=4,
+        failures=0,
+        skipped=1,
+    )
+    output = tmp_path / "release-truth.html"
+    exit_code = main(
+        [
+            "report",
+            "release-truth",
+            "--test-report",
+            str(total_report),
+            "--real-engine-test-report",
+            str(real_engine_report),
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["command"] == "report"
+    assert payload["outputs"] == [str(output), str(output.with_suffix(".json"))]
+    assert payload["data"]["report_kind"] == "release-truth"
+    assert payload["metrics"]["total_tests"] == 10
+    assert payload["metrics"]["real_engine_tests"] == 4
+    assert payload["metrics"]["supported_workflow_count"] >= 1
+
+
 def test_cli_adapter_returns_typed_engine_error(capsys) -> None:
     exit_code = main(
         [
@@ -10087,3 +12489,60 @@ def test_cli_adapter_returns_typed_engine_error(capsys) -> None:
     assert exit_code == 2
     assert payload["status"] == "error"
     assert payload["errors"][0]["code"] == EngineUnavailableError.code
+
+
+def test_public_package_exports_python_workflow_api_surface() -> None:
+    import bijux_phylogenetics.api as workflow_api
+    from bijux_phylogenetics.api import (
+        AlignmentWorkflowResult,
+        AncestralReconstructionWorkflowResult,
+        ComparativeModelWorkflowResult,
+        ConfiguredPhyloWorkflowResult,
+        FastaValidationResult,
+        InferenceWorkflowResult,
+        ReportWorkflowResult,
+        SequenceToTreeWorkflowResult,
+        SupportWorkflowResult,
+        TreeComparisonWorkflowResult,
+        TrimmingWorkflowResult,
+        render_report_workflow,
+        run_alignment_workflow,
+        run_ancestral_reconstruction_workflow,
+        run_comparative_model_workflow,
+        run_configured_phylo_workflow,
+        run_fasta_validation_workflow,
+        run_sequence_to_tree_workflow,
+        run_support_workflow,
+        run_tree_comparison_workflow,
+        run_tree_inference_workflow,
+        run_trimming_workflow,
+    )
+
+    assert workflow_api.AlignmentWorkflowResult is AlignmentWorkflowResult
+    assert (
+        workflow_api.AncestralReconstructionWorkflowResult
+        is AncestralReconstructionWorkflowResult
+    )
+    assert workflow_api.ComparativeModelWorkflowResult is ComparativeModelWorkflowResult
+    assert workflow_api.ConfiguredPhyloWorkflowResult is ConfiguredPhyloWorkflowResult
+    assert workflow_api.FastaValidationResult is FastaValidationResult
+    assert workflow_api.InferenceWorkflowResult is InferenceWorkflowResult
+    assert workflow_api.ReportWorkflowResult is ReportWorkflowResult
+    assert workflow_api.SequenceToTreeWorkflowResult is SequenceToTreeWorkflowResult
+    assert workflow_api.SupportWorkflowResult is SupportWorkflowResult
+    assert workflow_api.TreeComparisonWorkflowResult is TreeComparisonWorkflowResult
+    assert workflow_api.TrimmingWorkflowResult is TrimmingWorkflowResult
+    assert workflow_api.run_alignment_workflow is run_alignment_workflow
+    assert (
+        workflow_api.run_ancestral_reconstruction_workflow
+        is run_ancestral_reconstruction_workflow
+    )
+    assert workflow_api.run_comparative_model_workflow is run_comparative_model_workflow
+    assert workflow_api.run_configured_phylo_workflow is run_configured_phylo_workflow
+    assert workflow_api.run_fasta_validation_workflow is run_fasta_validation_workflow
+    assert workflow_api.run_sequence_to_tree_workflow is run_sequence_to_tree_workflow
+    assert workflow_api.run_support_workflow is run_support_workflow
+    assert workflow_api.run_tree_comparison_workflow is run_tree_comparison_workflow
+    assert workflow_api.run_tree_inference_workflow is run_tree_inference_workflow
+    assert workflow_api.run_trimming_workflow is run_trimming_workflow
+    assert workflow_api.render_report_workflow is render_report_workflow

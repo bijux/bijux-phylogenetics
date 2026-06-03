@@ -10,9 +10,6 @@ from bijux_phylogenetics.ancestral.discrete import (
     DiscreteTransitionRateRow,
 )
 from bijux_phylogenetics.biogeography import (
-    constrained_geography as constrained_geography_module,
-)
-from bijux_phylogenetics.biogeography import (
     summarize_constrained_geographic_model,
     summarize_constrained_geographic_report,
     write_constrained_geographic_exclusion_table,
@@ -21,7 +18,8 @@ from bijux_phylogenetics.biogeography import (
     write_constrained_geographic_transition_table,
     write_unsupported_geographic_transition_claim_table,
 )
-from bijux_phylogenetics.errors import AncestralReconstructionError
+import bijux_phylogenetics.biogeography.state_models.constrained as constrained_geography_module
+from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -38,6 +36,7 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
+@pytest.mark.slow
 def test_summarize_constrained_geographic_model_supports_aliases() -> None:
     for model in ("er", "sym", "ard"):
         report = summarize_constrained_geographic_model(
@@ -345,6 +344,7 @@ def test_summarize_constrained_geographic_model_rejects_invalid_adjacency_matrix
         )
 
 
+@pytest.mark.slow
 def test_write_constrained_geographic_tables_emit_expected_ledgers(
     tmp_path: Path,
 ) -> None:

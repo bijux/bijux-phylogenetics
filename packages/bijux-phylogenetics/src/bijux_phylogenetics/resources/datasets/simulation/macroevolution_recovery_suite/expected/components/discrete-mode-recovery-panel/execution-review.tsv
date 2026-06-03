@@ -1,0 +1,17 @@
+case_id	recovery_engine	operation	fitted_model	fit_status	selected_model	optimizer_name	converged	hit_lower_parameter_bound	hit_upper_parameter_bound	overparameterized	warning_count	failure_reason
+er-three-state-rate-recovery	bijux	fit	equal-rates	ok		golden-section-search	true	false	false	false	0	
+er-three-state-rate-recovery	geiger	fit	equal-rates	ok		Brent	true			false	0	
+er-three-state-rate-recovery	bijux	model-comparison	candidate-set	ok	equal-rates					false	0	
+er-three-state-rate-recovery	geiger	model-comparison	candidate-set	ok	equal-rates					false	0	
+sym-three-state-rate-recovery	bijux	fit	symmetric	ok		nelder-mead	true	true	false	false	1	
+sym-three-state-rate-recovery	geiger	fit	symmetric	ok		subplex	true			false	0	
+sym-three-state-rate-recovery	bijux	model-comparison	candidate-set	ok	symmetric					false	0	
+sym-three-state-rate-recovery	geiger	model-comparison	candidate-set	ok	symmetric					false	0	
+ard-three-state-weak-identification-review	bijux	fit	all-rates-different	ok		nelder-mead	false	true	false	false	3	
+ard-three-state-weak-identification-review	geiger	fit	all-rates-different	ok		subplex	true			false	0	
+ard-three-state-weak-identification-review	bijux	model-comparison	candidate-set	ok	equal-rates					false	0	
+ard-three-state-weak-identification-review	geiger	model-comparison	candidate-set	ok	equal-rates					false	0	
+ard-five-state-overparameterized-review	bijux	fit	all-rates-different	ok		nelder-mead	false	true	false	true	4	
+ard-five-state-overparameterized-review	geiger	fit	all-rates-different	ok		subplex	true			true	1	
+ard-five-state-overparameterized-review	bijux	model-comparison	candidate-set	ok	equal-rates					false	0	
+ard-five-state-overparameterized-review	geiger	model-comparison	candidate-set	ok	all-rates-different					false	1	

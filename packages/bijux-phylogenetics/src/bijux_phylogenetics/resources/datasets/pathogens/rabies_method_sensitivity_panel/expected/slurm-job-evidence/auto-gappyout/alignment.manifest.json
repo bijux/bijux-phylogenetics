@@ -1,0 +1,68 @@
+{
+  "bootstrap_support_summary": null,
+  "config": {
+    "extra_args": [],
+    "mode": "auto",
+    "timeout_seconds": null
+  },
+  "engine_name": "mafft",
+  "fasttree_support_summary": null,
+  "input_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/pathogens/rabies_method_sensitivity_panel/sequences.fasta": "a3a401e5ab1e9c76e7b0793c86c69708186a550fadb2931fa6d66af61ceb6236"
+  },
+  "input_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/pathogens/rabies_method_sensitivity_panel/sequences.fasta"
+  ],
+  "iqtree_summary": null,
+  "log_likelihood": null,
+  "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/auto-gappyout.aln.manifest.json",
+  "model_selection_summary": null,
+  "notes": [
+    "mafft alignment mode: auto",
+    "alignment output validated as deterministic equal-length FASTA"
+  ],
+  "output_checksums": {
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/auto-gappyout.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
+  },
+  "output_paths": {
+    "alignment": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/auto-gappyout.aln"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/mafft",
+      "--auto",
+      "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/pathogens/rabies_method_sensitivity_panel/sequences.fasta"
+    ],
+    "ended_at_utc": "2026-05-18T02:33:57Z",
+    "engine_name": "mafft",
+    "executable": "/opt/homebrew/bin/mafft",
+    "exit_code": 0,
+    "output_paths": {
+      "alignment": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/auto-gappyout.aln"
+    },
+    "runtime_seconds": 0.789954,
+    "started_at_utc": "2026-05-18T02:33:56Z",
+    "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/auto-gappyout.aln.stderr.log",
+    "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/auto-gappyout.aln",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/mafft",
+        "--version"
+      ],
+      "engine_name": "mafft",
+      "executable": "/opt/homebrew/bin/mafft",
+      "text": "v7.526 (2024/Apr/26)"
+    },
+    "warning_lines": [],
+    "workflow": "multiple-sequence-alignment",
+    "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout"
+  },
+  "selected_model": null,
+  "sh_alrt_support_summary": null,
+  "trimming_summary": null,
+  "weak_backbone_report": null,
+  "workflow": "multiple-sequence-alignment"
+}

@@ -1,0 +1,25 @@
+case_id	generating_model	transform	recovery_engine	expected_selected_model	model	parameter_count	log_likelihood	aic	aicc	overparameterized	selected
+er-three-state-rate-recovery	equal-rates		bijux	equal-rates	equal-rates	1	-11.3554702182646	24.7109404365291	24.8927586183473	false	true
+er-three-state-rate-recovery	equal-rates		bijux	equal-rates	symmetric	3	-11.0295426573034	28.0590853146069	29.2590853146069	false	false
+er-three-state-rate-recovery	equal-rates		bijux	equal-rates	all-rates-different	6	-10.0243545092627	32.0487090185254	36.9898854891136	false	false
+er-three-state-rate-recovery	equal-rates		geiger	equal-rates	all-rates-different	6	-10.0241320873922	32.0482641747845	36.9894406453727	false	false
+er-three-state-rate-recovery	equal-rates		geiger	equal-rates	equal-rates	1	-11.3554700571941	24.7109401143882	24.8927582962064	false	true
+er-three-state-rate-recovery	equal-rates		geiger	equal-rates	symmetric	3	-11.0295258930593	28.0590517861186	29.2590517861186	false	false
+sym-three-state-rate-recovery	symmetric		bijux	symmetric	symmetric	3	-16.0797153777259	38.1594307554519	39.3594307554519	false	true
+sym-three-state-rate-recovery	symmetric		bijux	symmetric	equal-rates	1	-20.4291258429543	42.8582516859085	43.0400698677267	false	false
+sym-three-state-rate-recovery	symmetric		bijux	symmetric	all-rates-different	6	-15.3411970945203	42.6823941890407	47.6235706596289	false	false
+sym-three-state-rate-recovery	symmetric		geiger	symmetric	all-rates-different	6	-15.3411646945736	42.6823293891473	47.6235058597355	false	false
+sym-three-state-rate-recovery	symmetric		geiger	symmetric	equal-rates	1	-20.4291258530673	42.8582517061345	43.0400698879527	false	false
+sym-three-state-rate-recovery	symmetric		geiger	symmetric	symmetric	3	-16.07968713683	38.1593742736601	39.3593742736601	false	true
+ard-three-state-weak-identification-review	all-rates-different		bijux		equal-rates	1	-13.9470515323216	29.8941030646432	30.0759212464614	false	true
+ard-three-state-weak-identification-review	all-rates-different		bijux		symmetric	3	-12.3423875093965	30.684775018793	31.884775018793	false	false
+ard-three-state-weak-identification-review	all-rates-different		bijux		all-rates-different	6	-11.0253987968551	34.0507975937103	38.9919740642985	false	false
+ard-three-state-weak-identification-review	all-rates-different		geiger		all-rates-different	6	-11.025390616535	34.0507812330701	38.9919577036583	false	false
+ard-three-state-weak-identification-review	all-rates-different		geiger		equal-rates	1	-13.947051907559	29.8941038151181	30.0759219969362	false	true
+ard-three-state-weak-identification-review	all-rates-different		geiger		symmetric	3	-12.3421358927888	30.6842717855776	31.8842717855776	false	false
+ard-five-state-overparameterized-review	all-rates-different		bijux		equal-rates	1	-15.0379876282483	32.0759752564965	32.4759752564965	false	true
+ard-five-state-overparameterized-review	all-rates-different		bijux		symmetric	6	-12.1510430399968	36.3020860799936	53.1020860799936	false	false
+ard-five-state-overparameterized-review	all-rates-different		bijux		all-rates-different	12	-9.79640918560569	43.5928183712114	inf	false	false
+ard-five-state-overparameterized-review	all-rates-different		geiger		all-rates-different	12	-9.78008108369976	43.5601621673995	-268.4398378326	true	true
+ard-five-state-overparameterized-review	all-rates-different		geiger		equal-rates	1	-15.037987568042	32.075975136084	32.475975136084	false	false
+ard-five-state-overparameterized-review	all-rates-different		geiger		symmetric	6	-12.1508002301495	36.3016004602991	53.1016004602991	false	false

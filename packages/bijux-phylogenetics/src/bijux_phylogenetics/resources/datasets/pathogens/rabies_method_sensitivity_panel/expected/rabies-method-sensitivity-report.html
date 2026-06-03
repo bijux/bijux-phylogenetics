@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rabies Method-Sensitivity Report</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1b1f24;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --accent: #0f766e;
+      --rule: #d6dee8;
+      --mono: "SFMono-Regular", "SF Mono", Consolas, monospace;
+    }
+    body {
+      margin: 0;
+      padding: 2rem;
+      background: linear-gradient(180deg, #eef6f4 0%, var(--bg) 100%);
+      color: var(--ink);
+      font: 16px/1.5 "Iowan Old Style", "Palatino Linotype", serif;
+    }
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--panel);
+      border: 1px solid var(--rule);
+      border-radius: 18px;
+      padding: 2rem;
+      box-shadow: 0 24px 80px rgba(15, 118, 110, 0.08);
+    }
+    h1, h2 {
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      letter-spacing: 0.02em;
+    }
+    h1 {
+      margin-top: 0;
+      color: var(--accent);
+    }
+    section + section {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--rule);
+    }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: var(--mono);
+      background: #f6f8fa;
+      border-radius: 12px;
+      padding: 1rem;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+    }
+    .summary-card {
+      background: #f6fffd;
+      border: 1px solid rgba(15, 118, 110, 0.18);
+      border-radius: 14px;
+      padding: 0.9rem 1rem;
+    }
+    .summary-card dt {
+      margin: 0;
+      font: 600 0.82rem/1.2 "Avenir Next", "Segoe UI", sans-serif;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: #476b67;
+    }
+    .summary-card dd {
+      margin: 0.35rem 0 0;
+      font: 700 1.2rem/1.25 var(--mono);
+      color: var(--ink);
+    }
+
+    .artifact-list {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+    .artifact-list li + li {
+      margin-top: 0.65rem;
+    }
+    .artifact-list a {
+      color: var(--accent);
+      font-family: var(--mono);
+      text-decoration: none;
+    }
+    .artifact-list a:hover {
+      text-decoration: underline;
+    }
+    .artifact-note {
+      display: block;
+      margin-top: 0.2rem;
+      color: #51646b;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Rabies Method-Sensitivity Report</h1>
+    <script id="bijux-report-manifest" type="application/json">{
+  "changed_clade_count": 8,
+  "dataset_id": "rabies_method_sensitivity_panel",
+  "execution_mode": "parallel",
+  "parallel_workers": 2,
+  "report_manifest_path": "report-artifacts/rabies-method-sensitivity-report.manifest.json",
+  "reproducibility_check_count": 136,
+  "reproducibility_failed_check_count": 0,
+  "reproducibility_failed_variant_count": 0,
+  "reproducibility_passed": true,
+  "slurm_active_run_state": "absent",
+  "slurm_array_largest_partition_size": 2,
+  "slurm_array_partition_count": 2,
+  "slurm_array_script_count": 2,
+  "slurm_completed_job_count": 4,
+  "slurm_failed_job_count": 0,
+  "slurm_failure_recovery_blocked_job_count": 0,
+  "slurm_failure_recovery_partition_count": 0,
+  "slurm_failure_recovery_rerunnable_job_count": 0,
+  "slurm_failure_recovery_status": "clean",
+  "slurm_fresh_output_job_count": 4,
+  "slurm_job_count": 4,
+  "slurm_job_evidence_file_count": 36,
+  "slurm_job_evidence_total_output_byte_count": 168260,
+  "slurm_job_evidence_total_runtime_seconds": 17.324942,
+  "slurm_maximum_estimated_memory_mib": 1536,
+  "slurm_maximum_estimated_wallclock_minutes": 35,
+  "slurm_merge_failed_check_count": 0,
+  "slurm_merge_ready": true,
+  "slurm_merge_status": "merge-ready",
+  "slurm_mergeable_variant_count": 4,
+  "slurm_output_explosion_global_issue_count": 0,
+  "slurm_output_explosion_high_risk_variant_count": 0,
+  "slurm_output_explosion_status": "low",
+  "slurm_output_explosion_warning_variant_count": 0,
+  "slurm_output_freshness_check_count": 12,
+  "slurm_output_freshness_failed_check_count": 0,
+  "slurm_pending_job_count": 0,
+  "slurm_stale_job_count": 0,
+  "slurm_stale_output_job_count": 0,
+  "slurm_storage_largest_variant_id": "ginsi-gap-threshold",
+  "slurm_storage_log_byte_count": 900,
+  "slurm_storage_output_byte_count": 161224,
+  "slurm_storage_posterior_sample_byte_count": 0,
+  "slurm_storage_report_byte_count": 1101231,
+  "slurm_storage_total_estimated_mib": 2,
+  "slurm_storage_tree_byte_count": 7036,
+  "slurm_total_estimated_core_hours": 3.2,
+  "slurm_tree_compression_recommended_file_count": 0,
+  "slurm_tree_compression_required_file_count": 0,
+  "slurm_tree_posterior_sample_file_count": 0,
+  "slurm_tree_retention_status": "no_action",
+  "slurm_tree_set_file_count": 0,
+  "slurm_tree_thinning_recommended_file_count": 0,
+  "slurm_tree_thinning_required_file_count": 0,
+  "stable_clade_count": 2,
+  "variant_count": 4
+}</script>
+<section><h2>summary</h2><div class="summary-grid">
+<dl class="summary-card"><dt>variants</dt><dd>4</dd></dl>
+<dl class="summary-card"><dt>execution mode</dt><dd>parallel</dd></dl>
+<dl class="summary-card"><dt>parallel workers</dt><dd>2</dd></dl>
+<dl class="summary-card"><dt>stable clades</dt><dd>2</dd></dl>
+<dl class="summary-card"><dt>changed clades</dt><dd>8</dd></dl>
+<dl class="summary-card"><dt>slurm planned jobs</dt><dd>4</dd></dl>
+<dl class="summary-card"><dt>slurm max memory MiB</dt><dd>1536</dd></dl>
+<dl class="summary-card"><dt>slurm array partitions</dt><dd>2</dd></dl>
+<dl class="summary-card"><dt>slurm job evidence files</dt><dd>36</dd></dl>
+<dl class="summary-card"><dt>slurm storage MiB</dt><dd>2</dd></dl>
+<dl class="summary-card"><dt>slurm largest storage variant</dt><dd>ginsi-gap-threshold</dd></dl>
+<dl class="summary-card"><dt>slurm output explosion risk</dt><dd>low</dd></dl>
+<dl class="summary-card"><dt>slurm output explosion high-risk variants</dt><dd>0</dd></dl>
+<dl class="summary-card"><dt>slurm tree retention status</dt><dd>no_action</dd></dl>
+<dl class="summary-card"><dt>slurm tree-set files</dt><dd>0</dd></dl>
+<dl class="summary-card"><dt>slurm merge ready</dt><dd>true</dd></dl>
+<dl class="summary-card"><dt>slurm mergeable variants</dt><dd>4</dd></dl>
+<dl class="summary-card"><dt>slurm fresh output jobs</dt><dd>4</dd></dl>
+<dl class="summary-card"><dt>slurm stale output jobs</dt><dd>0</dd></dl>
+<dl class="summary-card"><dt>slurm completed jobs</dt><dd>4</dd></dl>
+<dl class="summary-card"><dt>slurm stale jobs</dt><dd>0</dd></dl>
+<dl class="summary-card"><dt>slurm recovery status</dt><dd>clean</dd></dl>
+<dl class="summary-card"><dt>slurm rerunnable jobs</dt><dd>0</dd></dl>
+<dl class="summary-card"><dt>reproducibility passed</dt><dd>true</dd></dl>
+<dl class="summary-card"><dt>reproducibility checks</dt><dd>136</dd></dl>
+<dl class="summary-card"><dt>linked artifacts</dt><dd>32</dd></dl>
+</div></section>
+<section><h2>artifacts</h2><ul class="artifact-list">
+<li>workflow-summary: <a href="workflow-summary.tsv">workflow-summary.tsv</a><span class="artifact-note">239 bytes</span></li>
+<li>variant-summary: <a href="variant-summary.tsv">variant-summary.tsv</a><span class="artifact-note">606 bytes</span></li>
+<li>parallel-summary: <a href="parallel-execution-summary.tsv">parallel-execution-summary.tsv</a><span class="artifact-note">487 bytes</span></li>
+<li>preprocessing-comparison: <a href="preprocessing-rooted-comparisons.tsv">preprocessing-rooted-comparisons.tsv</a><span class="artifact-note">497 bytes</span></li>
+<li>stable-clades: <a href="stable-clades.tsv">stable-clades.tsv</a><span class="artifact-note">439 bytes</span></li>
+<li>changed-clades: <a href="changed-clades.tsv">changed-clades.tsv</a><span class="artifact-note">1979 bytes</span></li>
+<li>conclusion-summary: <a href="method-conclusion-summary.tsv">method-conclusion-summary.tsv</a><span class="artifact-note">1645 bytes</span></li>
+<li>config: <a href="workflow-config.resolved.json">workflow-config.resolved.json</a><span class="artifact-note">1548 bytes</span></li>
+<li>execution-record: <a href="rabies-method-sensitivity-panel.run.json">rabies-method-sensitivity-panel.run.json</a><span class="artifact-note">1977 bytes</span></li>
+<li>workflow-manifest: <a href="rabies-method-sensitivity.manifest.json">rabies-method-sensitivity.manifest.json</a><span class="artifact-note">6748 bytes</span></li>
+<li>slurm-job-plan: <a href="slurm-job-plan.tsv">slurm-job-plan.tsv</a><span class="artifact-note">2240 bytes</span></li>
+<li>slurm-assumptions: <a href="slurm-estimation-assumptions.tsv">slurm-estimation-assumptions.tsv</a><span class="artifact-note">1334 bytes</span></li>
+<li>slurm-summary: <a href="slurm-planning-summary.json">slurm-planning-summary.json</a><span class="artifact-note">6834 bytes</span></li>
+<li>slurm-array-partitions: <a href="slurm-array-partitions.tsv">slurm-array-partitions.tsv</a><span class="artifact-note">739 bytes</span></li>
+<li>slurm-array-members: <a href="slurm-array-members.tsv">slurm-array-members.tsv</a><span class="artifact-note">1089 bytes</span></li>
+<li>slurm-array-strategy: <a href="slurm-array-strategy.json">slurm-array-strategy.json</a><span class="artifact-note">4177 bytes</span></li>
+<li>slurm-job-evidence-index: <a href="slurm-job-evidence.tsv">slurm-job-evidence.tsv</a><span class="artifact-note">1047 bytes</span></li>
+<li>slurm-job-evidence-summary: <a href="slurm-job-evidence-summary.json">slurm-job-evidence-summary.json</a><span class="artifact-note">9312 bytes</span></li>
+<li>slurm-storage-categories: <a href="slurm-storage-categories.tsv">slurm-storage-categories.tsv</a><span class="artifact-note">1187 bytes</span></li>
+<li>slurm-storage-variants: <a href="slurm-storage-variants.tsv">slurm-storage-variants.tsv</a><span class="artifact-note">518 bytes</span></li>
+<li>slurm-storage-summary: <a href="slurm-storage-report.json">slurm-storage-report.json</a><span class="artifact-note">6809 bytes</span></li>
+<li>slurm-storage-report: <a href="slurm-storage-report.html">slurm-storage-report.html</a><span class="artifact-note">4731 bytes</span></li>
+<li>slurm-output-explosion-checks: <a href="slurm-output-explosion-checks.tsv">slurm-output-explosion-checks.tsv</a><span class="artifact-note">1494 bytes</span></li>
+<li>slurm-output-explosion-variants: <a href="slurm-output-explosion-variants.tsv">slurm-output-explosion-variants.tsv</a><span class="artifact-note">413 bytes</span></li>
+<li>slurm-output-explosion-summary: <a href="slurm-output-explosion-report.json">slurm-output-explosion-report.json</a><span class="artifact-note">4857 bytes</span></li>
+<li>slurm-output-explosion-report: <a href="slurm-output-explosion-report.html">slurm-output-explosion-report.html</a><span class="artifact-note">4436 bytes</span></li>
+<li>slurm-tree-retention-checks: <a href="slurm-tree-retention-checks.tsv">slurm-tree-retention-checks.tsv</a><span class="artifact-note">1451 bytes</span></li>
+<li>slurm-tree-retention-files: <a href="slurm-tree-retention-files.tsv">slurm-tree-retention-files.tsv</a><span class="artifact-note">3014 bytes</span></li>
+<li>slurm-tree-retention-summary: <a href="slurm-tree-retention-policy.json">slurm-tree-retention-policy.json</a><span class="artifact-note">11773 bytes</span></li>
+<li>slurm-tree-retention-report: <a href="slurm-tree-retention-policy.html">slurm-tree-retention-policy.html</a><span class="artifact-note">4675 bytes</span></li>
+<li>slurm-merge-checks: <a href="slurm-merge-checks.tsv">slurm-merge-checks.tsv</a><span class="artifact-note">2312 bytes</span></li>
+<li>slurm-merge-variants: <a href="slurm-merge-variants.tsv">slurm-merge-variants.tsv</a><span class="artifact-note">1001 bytes</span></li>
+<li>slurm-merge-summary: <a href="slurm-merge-report.json">slurm-merge-report.json</a><span class="artifact-note">6970 bytes</span></li>
+<li>slurm-merge-report: <a href="slurm-merge-report.html">slurm-merge-report.html</a><span class="artifact-note">4327 bytes</span></li>
+<li>slurm-output-freshness: <a href="slurm-output-freshness.tsv">slurm-output-freshness.tsv</a><span class="artifact-note">734 bytes</span></li>
+<li>slurm-output-freshness-checks: <a href="slurm-output-freshness-checks.tsv">slurm-output-freshness-checks.tsv</a><span class="artifact-note">3256 bytes</span></li>
+<li>slurm-output-freshness-summary: <a href="slurm-output-freshness.json">slurm-output-freshness.json</a><span class="artifact-note">7133 bytes</span></li>
+<li>slurm-job-status: <a href="slurm-job-status.tsv">slurm-job-status.tsv</a><span class="artifact-note">1413 bytes</span></li>
+<li>slurm-partition-status: <a href="slurm-partition-status.tsv">slurm-partition-status.tsv</a><span class="artifact-note">398 bytes</span></li>
+<li>slurm-workflow-status: <a href="slurm-workflow-status.json">slurm-workflow-status.json</a><span class="artifact-note">4558 bytes</span></li>
+<li>slurm-failure-recovery-jobs: <a href="slurm-failure-recovery-jobs.tsv">slurm-failure-recovery-jobs.tsv</a><span class="artifact-note">1376 bytes</span></li>
+<li>slurm-failure-recovery-partitions: <a href="slurm-failure-recovery-partitions.tsv">slurm-failure-recovery-partitions.tsv</a><span class="artifact-note">478 bytes</span></li>
+<li>slurm-failure-recovery-summary: <a href="slurm-failure-recovery-report.json">slurm-failure-recovery-report.json</a><span class="artifact-note">4484 bytes</span></li>
+<li>slurm-failure-recovery-report: <a href="slurm-failure-recovery-report.html">slurm-failure-recovery-report.html</a><span class="artifact-note">4191 bytes</span></li>
+<li>reproducibility-checks: <a href="reproducibility-checks.tsv">reproducibility-checks.tsv</a><span class="artifact-note">30664 bytes</span></li>
+<li>reproducibility-variant-audit: <a href="reproducibility-variants.tsv">reproducibility-variants.tsv</a><span class="artifact-note">524 bytes</span></li>
+<li>reproducibility-audit: <a href="reproducibility-audit.json">reproducibility-audit.json</a><span class="artifact-note">51110 bytes</span></li>
+<li>report-manifest: <a href="report-artifacts/rabies-method-sensitivity-report.manifest.json">report-artifacts/rabies-method-sensitivity-report.manifest.json</a><span class="artifact-note">6511 bytes</span></li>
+</ul></section>
+<section><h2>workflow-summary</h2><pre>dataset: Rabies method-sensitivity panel
+variants: 4
+execution mode: parallel
+parallel workers: 2
+stable clades across variants: 2
+changed clades across variants: 8
+auto-gap-threshold: model TPM2u+F+G4; unrooted serious conflicts 8; rooted engine RF 0
+ginsi-gap-threshold: model TPM2u+F+G4; unrooted serious conflicts 8; rooted engine RF 0
+auto-gappyout: model TPM2u+F+G4; unrooted serious conflicts 8; rooted engine RF 0
+ginsi-gappyout: model TPM2u+F+G4; unrooted serious conflicts 8; rooted engine RF 0</pre></section>
+<section><h2>conclusions</h2><pre>preprocessing_rooted_iqtree_topology: stable
+claim: The rooted IQ-TREE topology stayed unchanged across every declared alignment and trimming variant.
+evidence: 6 rooted pairwise preprocessing comparisons returned RF distance 0 and no rooting-only disagreements.
+caution: This stability statement is limited to the compact nine-taxon rabies panel and the four declared preprocessing settings.
+
+preprocessing_selected_model: stable
+claim: The selected substitution model remained constant across the declared preprocessing matrix.
+evidence: selected models: TPM2u+F+G4
+caution: Model-selection stability here reflects one short rabies nucleoprotein panel rather than a general claim about all pathogen alignments.
+
+rooted_engine_agreement: stable
+claim: After explicit outgroup rooting, FastTree and IQ-TREE preserved the same rooted topology in every declared preprocessing variant.
+evidence: rooted engine comparisons over outgroup bat_chile_rv108 returned RF distance 0 in every variant.
+caution: Rooted agreement does not imply that every internal unrooted split or support value is interchangeable across engines.
+
+unrooted_engine_sensitivity: changed
+claim: Before rooting, the FastTree versus IQ-TREE comparison changed several internal clade conclusions on this rabies panel.
+evidence: serious unrooted engine conflicts ranged up to 8 per variant, while stable shared clades per variant ranged from 2 to 2.
+caution: The engine-sensitive clades are a warning against over-reading fine internal structure from one compact panel, especially when approximate and likelihood engines disagree before rooting.</pre></section>
+<section><h2>reproducibility-audit</h2><pre>all passed: true
+top-level checks: 136
+failed top-level checks: 0
+failed variants: 0</pre></section>
+<section><h2>slurm-job-planning</h2><pre>planned jobs: 4
+maximum estimated memory MiB: 1536
+maximum estimated wallclock minutes: 35
+total estimated core hours: 3.2
+total estimated scratch MiB: 1024
+total estimated output MiB: 4</pre></section>
+<section><h2>slurm-array-partitioning</h2><pre>array partitions: 2
+largest partition size: 2
+partition scripts: 2
+total array jobs: 4</pre></section>
+<section><h2>slurm-job-evidence</h2><pre>job evidence packages: 4
+job evidence artifact files: 36
+job evidence total runtime seconds: 17.324942
+job evidence total output bytes: 168260</pre></section>
+<section><h2>slurm-storage-estimate</h2><pre>estimated retained storage MiB: 2
+workflow outputs bytes: 161224
+log bytes: 900
+tree bytes: 7036
+posterior sample bytes: 0
+review artifact bytes: 1101231
+largest variant by retained bytes: ginsi-gap-threshold</pre></section>
+<section><h2>slurm-output-explosion-risk</h2><pre>overall risk status: low
+global issues: 0
+warning variants: 0
+high-risk variants: 0
+largest variant output share: 0.25
+posterior sample bytes: 0</pre></section>
+<section><h2>slurm-tree-retention-policy</h2><pre>overall policy status: no_action
+tree-set files: 0
+posterior sample files: 0
+thinning required files: 0
+compression required files: 0
+largest tree set: variants/ginsi-gappyout/iqtree-support.nwk</pre></section>
+<section><h2>slurm-merge-report</h2><pre>merge status: merge-ready
+merge ready: true
+mergeable variants: 4
+failed merge checks: 0
+merged stable clades: 2
+merged changed clades: 8</pre></section>
+<section><h2>slurm-output-freshness</h2><pre>all outputs fresh: true
+fresh jobs: 4
+stale jobs: 0
+freshness checks: 12
+failed freshness checks: 0</pre></section>
+<section><h2>slurm-workflow-status</h2><pre>workflow status: succeeded
+active run state: absent
+completed jobs: 4
+failed jobs: 0
+pending jobs: 0
+stale jobs: 0</pre></section>
+<section><h2>slurm-failure-recovery</h2><pre>overall recovery status: clean
+rerunnable jobs: 0
+blocked jobs: 0
+recovery partitions: 0
+workflow state: succeeded
+active run state: absent</pre></section>
+<section><h2>artifacts</h2><pre>workflow summary: workflow-summary.tsv
+variant summary: variant-summary.tsv
+parallel execution summary: parallel-execution-summary.tsv
+preprocessing rooted comparisons: preprocessing-rooted-comparisons.tsv
+stable clades: stable-clades.tsv
+changed clades: changed-clades.tsv
+method conclusions: method-conclusion-summary.tsv
+resolved config: workflow-config.resolved.json
+workflow manifest: rabies-method-sensitivity.manifest.json
+slurm job plan: slurm-job-plan.tsv
+slurm estimation assumptions: slurm-estimation-assumptions.tsv
+slurm planning summary: slurm-planning-summary.json
+slurm array partitions: slurm-array-partitions.tsv
+slurm array members: slurm-array-members.tsv
+slurm array strategy: slurm-array-strategy.json
+slurm job evidence index: slurm-job-evidence.tsv
+slurm job evidence summary: slurm-job-evidence-summary.json
+slurm storage categories: slurm-storage-categories.tsv
+slurm storage variants: slurm-storage-variants.tsv
+slurm storage summary: slurm-storage-report.json
+slurm storage report: slurm-storage-report.html
+slurm output explosion checks: slurm-output-explosion-checks.tsv
+slurm output explosion variants: slurm-output-explosion-variants.tsv
+slurm output explosion summary: slurm-output-explosion-report.json
+slurm output explosion report: slurm-output-explosion-report.html
+slurm tree retention checks: slurm-tree-retention-checks.tsv
+slurm tree retention files: slurm-tree-retention-files.tsv
+slurm tree retention summary: slurm-tree-retention-policy.json
+slurm tree retention report: slurm-tree-retention-policy.html
+slurm merge checks: slurm-merge-checks.tsv
+slurm merge variants: slurm-merge-variants.tsv
+slurm merge summary: slurm-merge-report.json
+slurm merge report: slurm-merge-report.html
+slurm output freshness: slurm-output-freshness.tsv
+slurm output freshness checks: slurm-output-freshness-checks.tsv
+slurm output freshness summary: slurm-output-freshness.json
+slurm job status: slurm-job-status.tsv
+slurm partition status: slurm-partition-status.tsv
+slurm workflow status: slurm-workflow-status.json
+slurm failure recovery jobs: slurm-failure-recovery-jobs.tsv
+slurm failure recovery partitions: slurm-failure-recovery-partitions.tsv
+slurm failure recovery summary: slurm-failure-recovery-report.json
+slurm failure recovery report: slurm-failure-recovery-report.html
+reproducibility checks: reproducibility-checks.tsv
+reproducibility variant audit: reproducibility-variants.tsv
+reproducibility audit: reproducibility-audit.json</pre></section>
+  </main>
+</body>
+</html>

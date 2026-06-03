@@ -1,0 +1,204 @@
+{
+  "catalog_name": "shared_tree_set_fixtures",
+  "fixtures": [
+    {
+      "fixture_id": "basic_newick_tree_set",
+      "relative_path": "trees/example_tree_set_left.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 3,
+      "shared_taxa": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "feature_tags": [
+        "multiple-trees",
+        "branch-lengths",
+        "shared-taxon-set"
+      ],
+      "notes": "Minimal rooted Newick tree set with two repeated topologies and one alternative topology for governed read.tree multiPhylo parity."
+    },
+    {
+      "fixture_id": "consensus_conflicting_four_taxon_tree_set",
+      "relative_path": "trees/example_tree_set_left.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 3,
+      "shared_taxa": ["A", "B", "C", "D"],
+      "feature_tags": ["multiple-trees", "branch-lengths", "shared-taxon-set", "consensus", "duplicate-topology", "conflicting-clades"],
+      "notes": "Three rooted trees with one duplicated topology and one conflicting topology for majority-rule and strict `ape::consensus` parity."
+    },
+    {
+      "fixture_id": "consensus_posterior_six_taxon_tree_set",
+      "relative_path": "trees/example_posterior_tree_set_six_taxa.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 5,
+      "shared_taxa": ["A", "B", "C", "D", "E", "F"],
+      "feature_tags": ["multiple-trees", "branch-lengths", "shared-taxon-set", "consensus", "posterior-like", "majority-rule"],
+      "notes": "Five rooted six-taxon trees with repeated and conflicting clades for governed majority-rule `ape::consensus` parity and clade-frequency export."
+    },
+    {
+      "fixture_id": "consensus_mismatched_taxon_tree_set",
+      "relative_path": "trees/example_tree_set_mismatched.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 2,
+      "shared_taxa": [],
+      "feature_tags": ["multiple-trees", "branch-lengths", "consensus", "mismatched-taxa", "expected-failure"],
+      "notes": "Two rooted trees with incompatible tip sets for explicit consensus taxon-compatibility failure coverage."
+    },
+    {
+      "fixture_id": "posterior_branch_length_summary_tree_set",
+      "relative_path": "trees/posterior_branch_length_summary_tree_set.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 4,
+      "shared_taxa": ["A", "B", "C", "D", "E"],
+      "feature_tags": ["multiple-trees", "branch-lengths", "shared-taxon-set", "posterior-like", "clade-identity-matching"],
+      "notes": "Four rooted five-taxon trees where repeated clades move across different topologies so posterior branch-length summaries must match branches by descendant-tip set rather than node index."
+    },
+    {
+      "fixture_id": "posterior_node_age_summary_tree_set",
+      "relative_path": "trees/posterior_node_age_summary_tree_set.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 4,
+      "shared_taxa": ["A", "B", "C", "D", "E"],
+      "feature_tags": ["multiple-trees", "branch-lengths", "shared-taxon-set", "posterior-like", "dated", "ultrametric", "clade-identity-matching"],
+      "notes": "Four rooted ultrametric five-taxon trees where repeated clades move across different dated topologies so posterior node-age summaries must match ages by descendant-tip set rather than node index."
+    },
+    {
+      "fixture_id": "posterior_agreement_subtree_tree_set",
+      "relative_path": "trees/posterior_agreement_subtree_tree_set.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 3,
+      "shared_taxa": ["A", "B", "C", "D", "E"],
+      "feature_tags": ["multiple-trees", "branch-lengths", "shared-taxon-set", "posterior-like", "agreement-subtree"],
+      "notes": "Three rooted five-taxon posterior-style trees where removing one unstable taxon yields one exact shared rooted topology across the full tree set."
+    },
+    {
+      "fixture_id": "posterior_clade_correlation_tree_set",
+      "relative_path": "trees/posterior_clade_correlation_tree_set.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 4,
+      "shared_taxa": ["A", "B", "C", "D"],
+      "feature_tags": ["multiple-trees", "shared-taxon-set", "posterior-like", "clade-correlation", "mutually-exclusive-clades"],
+      "notes": "Four rooted four-taxon posterior-style trees where one clade pair always co-occurs and one conflicting clade pair never co-occurs, so posterior clade correlation is positive for the first pair and negative for the second."
+    },
+    {
+      "fixture_id": "prop_clades_duplicate_conflict_tree_set",
+      "relative_path": "trees/example_tree_set_left.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 3,
+      "shared_taxa": ["A", "B", "C", "D"],
+      "feature_tags": ["multiple-trees", "branch-lengths", "shared-taxon-set", "prop-clades", "duplicate-topology", "conflicting-clades"],
+      "notes": "Three rooted trees with one duplicated topology and one conflicting topology for governed `ape::prop.clades` support mapping."
+    },
+    {
+      "fixture_id": "prop_clades_absent_clade_tree_set",
+      "relative_path": "trees/example_tree_set_right.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 3,
+      "shared_taxa": ["A", "B", "C", "D"],
+      "feature_tags": ["multiple-trees", "branch-lengths", "shared-taxon-set", "prop-clades", "absent-clades"],
+      "notes": "Three rooted trees whose supported clades exclude the cross-pairing A|C and B|D reference clades for absence checks."
+    },
+    {
+      "fixture_id": "prop_clades_child_order_tree_set",
+      "relative_path": "trees/example_tree_set_topology_distance_rooted_child_order.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 2,
+      "shared_taxa": ["A", "B", "C", "D"],
+      "feature_tags": ["multiple-trees", "shared-taxon-set", "prop-clades", "child-order-insensitive", "branch-support-labels"],
+      "notes": "Two rooted trees with identical clades but reversed child order for order-insensitive `ape::prop.clades` support mapping."
+    },
+    {
+      "fixture_id": "prop_clades_posterior_six_taxon_tree_set",
+      "relative_path": "trees/example_posterior_tree_set_six_taxa.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 5,
+      "shared_taxa": ["A", "B", "C", "D", "E", "F"],
+      "feature_tags": ["multiple-trees", "branch-lengths", "shared-taxon-set", "prop-clades", "posterior-like"],
+      "notes": "Five rooted six-taxon trees with repeated and conflicting clades for governed posterior-style `ape::prop.clades` mapping."
+    },
+    {
+      "fixture_id": "prop_clades_mismatched_taxon_tree_set",
+      "relative_path": "trees/example_tree_set_mismatched.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 2,
+      "shared_taxa": [],
+      "feature_tags": ["multiple-trees", "branch-lengths", "prop-clades", "mismatched-taxa", "expected-failure"],
+      "notes": "Two rooted trees with incompatible tip sets for explicit `ape::prop.clades` taxon-compatibility failure coverage."
+    },
+    {
+      "fixture_id": "topology_distance_identical_rooted_pair",
+      "relative_path": "trees/example_tree_set_topology_distance_identical_rooted.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 2,
+      "shared_taxa": ["A", "B", "C", "D"],
+      "feature_tags": ["multiple-trees", "shared-taxon-set", "topology-distance", "rooted-pair", "identical-topology"],
+      "notes": "Two identical rooted trees for zero-distance `ape::dist.topo` parity and split-ledger smoke coverage."
+    },
+    {
+      "fixture_id": "topology_distance_rooted_child_order_pair",
+      "relative_path": "trees/example_tree_set_topology_distance_rooted_child_order.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 2,
+      "shared_taxa": ["A", "B", "C", "D"],
+      "feature_tags": ["multiple-trees", "shared-taxon-set", "topology-distance", "rooted-pair", "child-order-insensitive", "branch-support-labels"],
+      "notes": "Two rooted trees with identical topology but reversed child order and branch-support labels for order-insensitive `ape::dist.topo` coverage."
+    },
+    {
+      "fixture_id": "topology_distance_rooted_conflict_pair",
+      "relative_path": "trees/example_tree_set_topology_distance_rooted_conflict.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 2,
+      "shared_taxa": ["A", "B", "C", "D"],
+      "feature_tags": ["multiple-trees", "shared-taxon-set", "topology-distance", "rooted-pair", "one-conflict"],
+      "notes": "Two rooted four-taxon trees with one conflicting informative clade for positive-distance `ape::dist.topo` parity."
+    },
+    {
+      "fixture_id": "topology_distance_rooted_polytomy_pair",
+      "relative_path": "trees/example_tree_set_topology_distance_rooted_polytomy.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 2,
+      "shared_taxa": ["A", "B", "C", "D"],
+      "feature_tags": ["multiple-trees", "shared-taxon-set", "topology-distance", "rooted-pair", "polytomy"],
+      "notes": "A rooted binary tree and a rooted polytomy with the same taxa for explicit polytomy-policy `ape::dist.topo` coverage."
+    },
+    {
+      "fixture_id": "topology_distance_unrooted_conflict_pair",
+      "relative_path": "trees/example_tree_set_topology_distance_unrooted_conflict.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 2,
+      "shared_taxa": ["A", "B", "C", "D"],
+      "feature_tags": ["multiple-trees", "shared-taxon-set", "topology-distance", "unrooted-pair", "one-conflict"],
+      "notes": "Two unrooted binary trees with one incompatible split for explicit unrooted `ape::dist.topo` parity."
+    },
+    {
+      "fixture_id": "topology_distance_large_rooted_pair",
+      "relative_path": "trees/example_tree_set_topology_distance_large_rooted.nwk",
+      "source_format": "newick",
+      "parse_expectation": "parseable-tree-set",
+      "tree_count": 2,
+      "shared_taxa": ["T001", "T002", "T003", "T004", "T005", "T006", "T007", "T008", "T009", "T010", "T011", "T012", "T013", "T014", "T015", "T016", "T017", "T018", "T019", "T020", "T021", "T022", "T023", "T024", "T025", "T026", "T027", "T028", "T029", "T030", "T031", "T032", "T033", "T034", "T035", "T036", "T037", "T038", "T039", "T040", "T041", "T042", "T043", "T044", "T045", "T046", "T047", "T048", "T049", "T050", "T051", "T052", "T053", "T054", "T055", "T056", "T057", "T058", "T059", "T060", "T061", "T062", "T063", "T064", "T065", "T066", "T067", "T068", "T069", "T070", "T071", "T072", "T073", "T074", "T075", "T076", "T077", "T078", "T079", "T080", "T081", "T082", "T083", "T084", "T085", "T086", "T087", "T088", "T089", "T090", "T091", "T092", "T093", "T094", "T095", "T096", "T097", "T098", "T099", "T100", "T101", "T102", "T103", "T104", "T105", "T106", "T107", "T108", "T109", "T110", "T111", "T112", "T113", "T114", "T115", "T116", "T117", "T118", "T119", "T120", "T121", "T122", "T123", "T124", "T125", "T126", "T127", "T128"],
+      "feature_tags": ["multiple-trees", "shared-taxon-set", "topology-distance", "rooted-pair", "large-tip-count"],
+      "notes": "Two rooted 128-tip binary trees with a localized label swap for large-tree `ape::dist.topo` parity and stress coverage."
+    }
+  ]
+}

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 
 
 def fixture(name: str) -> Path:
@@ -33,10 +33,14 @@ def test_cli_tree_set_bootstrap_summary_writes_artifact_bundle(
     assert payload["metrics"]["tree_count"] == 3
     assert payload["metrics"]["rooted_topology_count"] == 2
     assert payload["metrics"]["unstable_branch_count"] == 2
+    assert payload["metrics"]["runtime_seconds"] >= 0.0
+    assert payload["metrics"]["peak_memory_bytes"] >= 0
+    assert payload["metrics"]["skipped_malformed_tree_count"] == 0
     assert sorted(Path(path).name for path in payload["outputs"]) == [
         "bootstrap-review.clade-frequencies.tsv",
         "bootstrap-review.consensus.nwk",
         "bootstrap-review.distance-matrix.tsv",
+        "bootstrap-review.rf-distribution.tsv",
         "bootstrap-review.summary.tsv",
         "bootstrap-review.topology-clusters.tsv",
         "bootstrap-review.unstable-branches.tsv",

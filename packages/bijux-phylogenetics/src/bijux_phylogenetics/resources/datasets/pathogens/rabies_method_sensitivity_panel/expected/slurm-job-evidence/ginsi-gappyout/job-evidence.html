@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rabies Slurm Job Evidence: ginsi-gappyout</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1b1f24;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --accent: #0f766e;
+      --rule: #d6dee8;
+      --mono: "SFMono-Regular", "SF Mono", Consolas, monospace;
+    }
+    body {
+      margin: 0;
+      padding: 2rem;
+      background: linear-gradient(180deg, #eef6f4 0%, var(--bg) 100%);
+      color: var(--ink);
+      font: 16px/1.5 "Iowan Old Style", "Palatino Linotype", serif;
+    }
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--panel);
+      border: 1px solid var(--rule);
+      border-radius: 18px;
+      padding: 2rem;
+      box-shadow: 0 24px 80px rgba(15, 118, 110, 0.08);
+    }
+    h1, h2 {
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      letter-spacing: 0.02em;
+    }
+    h1 {
+      margin-top: 0;
+      color: var(--accent);
+    }
+    section + section {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--rule);
+    }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: var(--mono);
+      background: #f6f8fa;
+      border-radius: 12px;
+      padding: 1rem;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+    }
+    .summary-card {
+      background: #f6fffd;
+      border: 1px solid rgba(15, 118, 110, 0.18);
+      border-radius: 14px;
+      padding: 0.9rem 1rem;
+    }
+    .summary-card dt {
+      margin: 0;
+      font: 600 0.82rem/1.2 "Avenir Next", "Segoe UI", sans-serif;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: #476b67;
+    }
+    .summary-card dd {
+      margin: 0.35rem 0 0;
+      font: 700 1.2rem/1.25 var(--mono);
+      color: var(--ink);
+    }
+
+    .artifact-list {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+    .artifact-list li + li {
+      margin-top: 0.65rem;
+    }
+    .artifact-list a {
+      color: var(--accent);
+      font-family: var(--mono);
+      text-decoration: none;
+    }
+    .artifact-list a:hover {
+      text-decoration: underline;
+    }
+    .artifact-note {
+      display: block;
+      margin-top: 0.2rem;
+      color: #51646b;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Rabies Slurm Job Evidence: ginsi-gappyout</h1>
+    <script id="bijux-report-manifest" type="application/json">{
+  "alignment": {
+    "alignment_length": 1353,
+    "removed_site_fraction": 0.0,
+    "retained_site_fraction": 1.0,
+    "trimmed_alignment_length": 1353
+  },
+  "array_index": 1,
+  "bundle_output_root": "variants/ginsi-gappyout",
+  "commands": {
+    "alignment": [
+      "/opt/homebrew/bin/mafft",
+      "--globalpair",
+      "--maxiterate",
+      "1000",
+      "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/pathogens/rabies_method_sensitivity_panel/sequences.fasta"
+    ],
+    "fasttree": [
+      "/opt/homebrew/bin/FastTree",
+      "-gtr",
+      "-nt",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln"
+    ],
+    "iqtree_support": [
+      "/opt/homebrew/bin/iqtree2",
+      "-s",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln",
+      "-st",
+      "DNA",
+      "-seed",
+      "1",
+      "-nt",
+      "1",
+      "-m",
+      "TPM2u+F+G4",
+      "-bb",
+      "1000",
+      "-wbt",
+      "-pre",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/bootstrap-support/bootstrap-support"
+    ],
+    "model_selection": [
+      "/opt/homebrew/bin/iqtree2",
+      "-s",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln",
+      "-st",
+      "DNA",
+      "-seed",
+      "1",
+      "-nt",
+      "1",
+      "-m",
+      "MF",
+      "-pre",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection"
+    ],
+    "trimming": [
+      "/opt/homebrew/bin/trimal",
+      "-in",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.aln",
+      "-out",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln",
+      "-gappyout"
+    ]
+  },
+  "dataset_id": "rabies_method_sensitivity_panel",
+  "engine_versions": {
+    "fasttree": "FastTree 2.1.11 Double precision (No SSE3), OpenMP (10 threads):\n  FastTree protein_alignment > tree\n  FastTree < protein_alignment > tree\n  FastTree -out tree protein_alignment\n  FastTree -nt nucleotide_alignment > tree\n  FastTree -nt -gtr < nucleotide_alignment > tree\n  FastTree < nucleotide_alignment > tree\nFastTree accepts alignments in fasta or phylip interleaved formats\n\nCommon options (must be before the alignment file):\n  -quiet to suppress reporting information\n  -nopr to suppress progress indicator\n  -log logfile -- save intermediate trees, settings, and model details\n  -fastest -- speed up the neighbor joining phase & reduce memory usage\n        (recommended for >50,000 sequences)\n  -n <number> to analyze multiple alignments (phylip format only)\n        (use for global bootstrap, with seqboot and CompareToBootstrap.pl)\n  -nosupport to not compute support values\n  -intree newick_file to set the starting tree(s)\n  -intree1 newick_file to use this starting tree for all the alignments\n        (for faster global bootstrap on huge alignments)\n  -pseudo to use pseudocounts (recommended for highly gapped sequences)\n  -gtr -- generalized time-reversible model (nucleotide alignments only)\n  -lg -- Le-Gascuel 2008 model (amino acid alignments only)\n  -wag -- Whelan-And-Goldman 2001 model (amino acid alignments only)\n  -quote -- allow spaces and other restricted characters (but not ' ) in\n           sequence names and quote names in the output tree (fasta input only;\n           FastTree will not be able to read these trees back in)\n  -noml to turn off maximum-likelihood\n  -nome to turn off minimum-evolution NNIs and SPRs\n        (recommended if running additional ML NNIs with -intree)\n  -nome -mllen with -intree to optimize branch lengths for a fixed topology\n  -cat # to specify the number of rate categories of sites (default 20)\n      or -nocat to use constant rates\n  -gamma -- after optimizing the tree under the CAT approximation,\n      rescale the lengths to optimize the Gamma20 likelihood\n  -constraints constraintAlignment to constrain the topology search\n       constraintAlignment should have 1s or 0s to indicates splits\n  -expert -- see more options\nFor more information, see http://www.microbesonline.org/fasttree/",
+    "iqtree_model_selection": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong",
+    "iqtree_support": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong",
+    "mafft": "v7.526 (2024/Apr/26)",
+    "trimal": "trimAl v1.5.rev0 build[2024-05-27]"
+  },
+  "error_code": null,
+  "error_message": null,
+  "execution_mode": "parallel",
+  "execution_record_path": "rabies-method-sensitivity-panel.run.json",
+  "label": "MAFFT ginsi plus trimAl gappyout",
+  "manifests": {
+    "alignment": "slurm-job-evidence/ginsi-gappyout/alignment.manifest.json",
+    "fasttree": "slurm-job-evidence/ginsi-gappyout/fasttree.manifest.json",
+    "inference_comparison": "slurm-job-evidence/ginsi-gappyout/inference-comparison.manifest.json",
+    "iqtree_support": "slurm-job-evidence/ginsi-gappyout/iqtree-support.manifest.json",
+    "model_selection": "slurm-job-evidence/ginsi-gappyout/model-selection.manifest.json",
+    "trimming": "slurm-job-evidence/ginsi-gappyout/trimming.manifest.json"
+  },
+  "output_inventory": [
+    {
+      "relative_path": "fasttree.nwk",
+      "sha256": "0e11e0785b1a2a577da5e43b7ed4b3ec44ef7a4fc3f75cfb8727d1a9dd4795b6",
+      "size_bytes": 442
+    },
+    {
+      "relative_path": "ginsi-gappyout.aln",
+      "sha256": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8",
+      "size_bytes": 12610
+    },
+    {
+      "relative_path": "ginsi-gappyout.trimmed.aln",
+      "sha256": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8",
+      "size_bytes": 12610
+    },
+    {
+      "relative_path": "iqtree-support.nwk",
+      "sha256": "07fc4128f6d2901158464a774caea4616e0f91b14ae856dc21c277678afdff8e",
+      "size_bytes": 442
+    },
+    {
+      "relative_path": "rooted-engine-comparison.tsv",
+      "sha256": "d277d85f85161baa6279056698c3c783d77e761002be1fe982f6350729ee108b",
+      "size_bytes": 3554
+    },
+    {
+      "relative_path": "rooted-fasttree.nwk",
+      "sha256": "44c9f49562a4a93b9714b880f4aa91f1300a885edf6308cdce6e309de9e6e0fa",
+      "size_bytes": 437
+    },
+    {
+      "relative_path": "rooted-iqtree-support.nwk",
+      "sha256": "3de589f226f6595c90467bba0695a541a1c97673ae2be4e48a52d4db77dc847a",
+      "size_bytes": 438
+    },
+    {
+      "relative_path": "rooting-summary.tsv",
+      "sha256": "7bf3311777083acae725e051a2ef6a80de0c457fee369d7eec0351c0b376628e",
+      "size_bytes": 223
+    },
+    {
+      "relative_path": "unrooted-comparison.tsv",
+      "sha256": "f769b731d4f51d1124fee13b6cd7498e57b88ca67a14c152ba2118b1183f1ba5",
+      "size_bytes": 3423
+    },
+    {
+      "relative_path": "unrooted-conclusions.tsv",
+      "sha256": "5d3bbe3638e32946dfeacf72e8ee667ed0f2ffe0b5fd44c90d78121b32a59d5e",
+      "size_bytes": 2761
+    },
+    {
+      "relative_path": "unrooted-conflicting-clades.tsv",
+      "sha256": "f84ad8972d76103c2381662e1ccfdbc3c28540197038296fcd82665bc2f386f2",
+      "size_bytes": 1928
+    },
+    {
+      "relative_path": "unrooted-shared-clades.tsv",
+      "sha256": "e31182b4fccc6827b951f63471a886f1620cf0766b26ed9d98ca3cd78a2e2a9b",
+      "size_bytes": 436
+    },
+    {
+      "relative_path": "unrooted-stability-summary.tsv",
+      "sha256": "c7811c0846687032b73a77e125e3ea280aedcb876ad96cfc44fa0e848cfac021",
+      "size_bytes": 480
+    },
+    {
+      "relative_path": "unrooted-support-weighted-conflicts.tsv",
+      "sha256": "3bb2a2a9f86d95864d5989dab6ca5d36fd889ba178d9fd1278d87970732d9c4f",
+      "size_bytes": 2281
+    }
+  ],
+  "partition_id": "compact-mafft-ginsi-elevated",
+  "rooted_engine_comparison": {
+    "normalized_robinson_foulds": 0.0,
+    "robinson_foulds_distance": 0,
+    "same_taxa_different_rooting": false
+  },
+  "rooting": {
+    "fasttree": {
+      "matched_taxa": [
+        "bat_chile_rv108"
+      ],
+      "outgroup_monophyletic": true,
+      "requested_taxa": [
+        "bat_chile_rv108"
+      ],
+      "rooted_outgroup_taxa": [
+        "bat_chile_rv108"
+      ],
+      "warning_count": 0
+    },
+    "iqtree": {
+      "matched_taxa": [
+        "bat_chile_rv108"
+      ],
+      "outgroup_monophyletic": true,
+      "requested_taxa": [
+        "bat_chile_rv108"
+      ],
+      "rooted_outgroup_taxa": [
+        "bat_chile_rv108"
+      ],
+      "warning_count": 0
+    }
+  },
+  "runtimes": {
+    "alignment_seconds": 0.740829,
+    "fasttree_seconds": 0.104754,
+    "inference_seconds": 3.591685,
+    "iqtree_support_seconds": 0.7237,
+    "model_selection_seconds": 0.264384,
+    "total_seconds": 4.358954,
+    "trimming_seconds": 0.02644
+  },
+  "script_path": "slurm-arrays/compact-mafft-ginsi-elevated.sbatch",
+  "status": "succeeded",
+  "task_log_path": "slurm-job-evidence/ginsi-gappyout/task.log",
+  "unrooted_conclusion_summary": {
+    "engine_specific_clade_count": 8,
+    "serious_conflict_count": 8,
+    "stable_clade_count": 2,
+    "unstable_clade_count": 0
+  },
+  "variant": {
+    "alignment_mode": "ginsi",
+    "selected_model": "TPM2u+F+G4",
+    "trim_gap_threshold": 0.1,
+    "trimming_mode": "gappyout"
+  },
+  "variant_id": "ginsi-gappyout",
+  "warnings": [
+    "inferred topologies differ across compared workflows",
+    "compared workflows agree on unrooted splits but differ in rooting",
+    "one or more internal nodes did not expose parsable FastTree local support labels",
+    "FastTree is an approximately maximum-likelihood workflow and its SH-like local support values should be reviewed as approximate evidence"
+  ],
+  "workflow_manifest_path": "rabies-method-sensitivity.manifest.json",
+  "workflow_prefix": "rabies-method-sensitivity-panel"
+}</script>
+<section><h2>summary</h2><div class="summary-grid">
+<dl class="summary-card"><dt>variant</dt><dd>ginsi-gappyout</dd></dl>
+<dl class="summary-card"><dt>status</dt><dd>succeeded</dd></dl>
+<dl class="summary-card"><dt>selected model</dt><dd>TPM2u+F+G4</dd></dl>
+<dl class="summary-card"><dt>runtime seconds</dt><dd>4.358954</dd></dl>
+<dl class="summary-card"><dt>output files</dt><dd>14</dd></dl>
+<dl class="summary-card"><dt>warnings</dt><dd>4</dd></dl>
+<dl class="summary-card"><dt>serious conflicts</dt><dd>8</dd></dl>
+<dl class="summary-card"><dt>rooted RF</dt><dd>0</dd></dl>
+</div></section>
+<section><h2>artifacts</h2><ul class="artifact-list">
+<li>task-log: <a href="task.log">task.log</a></li>
+<li>workflow-manifest: <a href="../../rabies-method-sensitivity.manifest.json">../../rabies-method-sensitivity.manifest.json</a></li>
+<li>execution-record: <a href="../../rabies-method-sensitivity-panel.run.json">../../rabies-method-sensitivity-panel.run.json</a></li>
+<li>alignment-manifest: <a href="alignment.manifest.json">alignment.manifest.json</a></li>
+<li>trimming-manifest: <a href="trimming.manifest.json">trimming.manifest.json</a></li>
+<li>inference-comparison-manifest: <a href="inference-comparison.manifest.json">inference-comparison.manifest.json</a></li>
+<li>model-selection-manifest: <a href="model-selection.manifest.json">model-selection.manifest.json</a></li>
+<li>iqtree-support-manifest: <a href="iqtree-support.manifest.json">iqtree-support.manifest.json</a></li>
+<li>fasttree-manifest: <a href="fasttree.manifest.json">fasttree.manifest.json</a></li>
+</ul></section>
+<section><h2>job</h2><pre>variant_id: ginsi-gappyout
+label: MAFFT ginsi plus trimAl gappyout
+status: succeeded
+partition_id: compact-mafft-ginsi-elevated
+array_index: 1
+execution_mode: parallel
+script_path: slurm-arrays/compact-mafft-ginsi-elevated.sbatch</pre></section>
+<section><h2>configuration</h2><pre>alignment_mode: ginsi
+trimming_mode: gappyout
+trim_gap_threshold: 0.1
+selected_model: TPM2u+F+G4
+alignment_length: 1353
+trimmed_alignment_length: 1353</pre></section>
+<section><h2>commands</h2><pre>alignment: /opt/homebrew/bin/mafft --globalpair --maxiterate 1000 /Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/pathogens/rabies_method_sensitivity_panel/sequences.fasta
+trimming: /opt/homebrew/bin/trimal -in /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.aln -out /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln -gappyout
+model_selection: /opt/homebrew/bin/iqtree2 -s /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln -st DNA -seed 1 -nt 1 -m MF -pre /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/model-selection/model-selection
+iqtree_support: /opt/homebrew/bin/iqtree2 -s /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln -st DNA -seed 1 -nt 1 -m TPM2u+F+G4 -bb 1000 -wbt -pre /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/bootstrap-support/bootstrap-support
+fasttree: /opt/homebrew/bin/FastTree -gtr -nt /private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln</pre></section>
+<section><h2>runtime-and-findings</h2><pre>total_runtime_seconds: 4.358954
+model_selection_runtime_seconds: 0.264384
+iqtree_support_runtime_seconds: 0.7237
+fasttree_runtime_seconds: 0.104754
+serious_conflict_count: 8
+rooted_engine_rf_distance: 0
+rooted_same_taxa_different_rooting: false</pre></section>
+<section><h2>warnings</h2><pre>inferred topologies differ across compared workflows
+compared workflows agree on unrooted splits but differ in rooting
+one or more internal nodes did not expose parsable FastTree local support labels
+FastTree is an approximately maximum-likelihood workflow and its SH-like local support values should be reviewed as approximate evidence</pre></section>
+<section><h2>output-inventory</h2><pre>fasttree.nwk: 442 bytes 0e11e0785b1a2a577da5e43b7ed4b3ec44ef7a4fc3f75cfb8727d1a9dd4795b6
+ginsi-gappyout.aln: 12610 bytes a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8
+ginsi-gappyout.trimmed.aln: 12610 bytes a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8
+iqtree-support.nwk: 442 bytes 07fc4128f6d2901158464a774caea4616e0f91b14ae856dc21c277678afdff8e
+rooted-engine-comparison.tsv: 3554 bytes d277d85f85161baa6279056698c3c783d77e761002be1fe982f6350729ee108b
+rooted-fasttree.nwk: 437 bytes 44c9f49562a4a93b9714b880f4aa91f1300a885edf6308cdce6e309de9e6e0fa
+rooted-iqtree-support.nwk: 438 bytes 3de589f226f6595c90467bba0695a541a1c97673ae2be4e48a52d4db77dc847a
+rooting-summary.tsv: 223 bytes 7bf3311777083acae725e051a2ef6a80de0c457fee369d7eec0351c0b376628e
+unrooted-comparison.tsv: 3423 bytes f769b731d4f51d1124fee13b6cd7498e57b88ca67a14c152ba2118b1183f1ba5
+unrooted-conclusions.tsv: 2761 bytes 5d3bbe3638e32946dfeacf72e8ee667ed0f2ffe0b5fd44c90d78121b32a59d5e
+unrooted-conflicting-clades.tsv: 1928 bytes f84ad8972d76103c2381662e1ccfdbc3c28540197038296fcd82665bc2f386f2
+unrooted-shared-clades.tsv: 436 bytes e31182b4fccc6827b951f63471a886f1620cf0766b26ed9d98ca3cd78a2e2a9b
+unrooted-stability-summary.tsv: 480 bytes c7811c0846687032b73a77e125e3ea280aedcb876ad96cfc44fa0e848cfac021
+unrooted-support-weighted-conflicts.tsv: 2281 bytes 3bb2a2a9f86d95864d5989dab6ca5d36fd889ba178d9fd1278d87970732d9c4f</pre></section>
+  </main>
+</body>
+</html>

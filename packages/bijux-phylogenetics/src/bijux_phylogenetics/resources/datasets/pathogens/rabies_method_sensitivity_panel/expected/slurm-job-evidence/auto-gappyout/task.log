@@ -1,0 +1,8 @@
+variant_id: auto-gappyout
+label: MAFFT auto plus trimAl gappyout
+execution_mode: parallel
+alignment_mode: auto
+trimming_mode: gappyout
+trim_gap_threshold: 0.1
+status: succeeded
+output_root: variants/auto-gappyout

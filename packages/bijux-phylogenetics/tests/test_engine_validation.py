@@ -109,10 +109,9 @@ if "-alrt" in args:
     )
     raise SystemExit(0)
 if "-bb" in args:
-    prefix.with_suffix(".treefile").write_text(
-        "((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n",
-        encoding="utf-8",
-    )
+    support_tree = "((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n"
+    prefix.with_suffix(".treefile").write_text(support_tree, encoding="utf-8")
+    prefix.with_suffix(".contree").write_text(support_tree, encoding="utf-8")
     prefix.with_suffix(".ufboot").write_text(
         "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
         encoding="utf-8",
@@ -358,6 +357,66 @@ def test_classify_inference_workflow_failure_detects_input_failures(
     assert report.failure_category == "input_failure"
 
 
+def test_classify_inference_workflow_failure_explains_invalid_fasta_records() -> None:
+    report = classify_inference_workflow_failure(
+        workflow="multiple-sequence-alignment",
+        input_paths=[fixture("example_sequences_invalid_input.fasta")],
+        output_paths={},
+    )
+
+    assert report.failure_category == "input_failure"
+    assert report.failure_reason == "invalid_fasta_input"
+    assert "record-level biological data problems" in report.scientific_explanation
+    assert report.evidence["duplicate_identifier_count"] == 1
+    assert report.evidence["empty_sequence_count"] == 1
+    assert report.evidence["illegal_character_count"] == 1
+
+
+def test_classify_inference_workflow_failure_explains_missing_tree_outputs(
+    tmp_path: Path,
+) -> None:
+    report = classify_inference_workflow_failure(
+        workflow="maximum-likelihood-tree",
+        input_paths=[fixture("example_alignment.fasta")],
+        output_paths={"tree": tmp_path / "missing.treefile"},
+        run_exit_code=0,
+    )
+
+    assert report.failure_category == "missing_output"
+    assert report.failure_reason == "tree_output_missing"
+    assert "without writing a tree artifact" in report.scientific_explanation
+    assert report.evidence["missing_outputs"] == [
+        {
+            "output_name": "tree",
+            "path": str(tmp_path / "missing.treefile"),
+        }
+    ]
+
+
+def test_classify_inference_workflow_failure_explains_empty_trimmed_alignment(
+    tmp_path: Path,
+) -> None:
+    trimmed_path = tmp_path / "trimmed.fasta"
+    trimmed_path.write_text("", encoding="utf-8")
+
+    report = classify_inference_workflow_failure(
+        workflow="alignment-trimming",
+        input_paths=[fixture("example_alignment_trim.fasta")],
+        output_paths={"trimmed_alignment": trimmed_path},
+        run_exit_code=0,
+    )
+
+    assert report.failure_category == "invalid_output"
+    assert report.failure_reason == "trimmed_alignment_empty"
+    assert "removed all usable alignment signal" in report.scientific_explanation
+    assert report.evidence["invalid_outputs"] == [
+        {
+            "output_name": "trimmed_alignment",
+            "path": str(trimmed_path),
+        }
+    ]
+
+
 def test_validate_bootstrap_tree_set_requires_consistent_taxa(tmp_path: Path) -> None:
     valid_path = tmp_path / "valid.ufboot"
     valid_path.write_text(
@@ -388,12 +447,41 @@ def test_summarize_bootstrap_support_distribution_reports_range_median_and_histo
 
     report = summarize_bootstrap_support_distribution(tree_path)
 
-    assert report.supported_node_count == 3
+    assert report.internal_node_count == 2
+    assert report.supported_node_count == 2
     assert report.minimum_support == 68.0
     assert report.maximum_support == 95.0
-    assert report.median_support == 72.0
+    assert report.median_support == 81.5
     assert report.weakly_supported_clade_count == 1
-    assert report.support_histogram == {"lt50": 0, "50to69": 1, "70to89": 1, "ge90": 1}
+    assert report.support_histogram == {"lt50": 0, "50to69": 1, "70to89": 0, "ge90": 1}
+
+
+def test_summarize_bootstrap_support_distribution_treats_collapsed_unlabeled_branches_as_zero_support(
+    tmp_path: Path,
+) -> None:
+    tree_path = tmp_path / "collapsed-unlabeled.nwk"
+    tree_path.write_text(
+        "(((A:0.0,B:0.0):0.000001,C:0.1)78:0.2,D:0.1)90:0.3;\n",
+        encoding="utf-8",
+    )
+
+    report = summarize_bootstrap_support_distribution(tree_path)
+
+    assert report.internal_node_count == 2
+    assert report.supported_node_count == 2
+    assert report.minimum_support == 0.0
+    assert report.maximum_support == 78.0
+    assert report.median_support == 39.0
+    assert report.weakly_supported_clade_count == 1
+    assert report.support_histogram == {"lt50": 1, "50to69": 0, "70to89": 1, "ge90": 0}
+    assert any(
+        node.descendant_taxa == ["A", "B"] and node.support == 0.0
+        for node in report.nodes
+    )
+    assert (
+        "one or more internal nodes did not expose numeric support labels"
+        not in report.warnings
+    )
 
 
 def test_detect_weakly_supported_backbone_flags_major_internal_branches(
@@ -497,7 +585,7 @@ def test_compare_inferred_trees_across_engines_reports_engine_labels(
     )
     fasttree_executable = _fake_fasttree_tree(
         tmp_path / "fasttree-engine",
-        tree_newick="((A:0.1,B:0.1):0.3,(C:0.1,D:0.1):0.3);",
+        tree_newick="((A:0.1,B:0.1)0.98:0.3,(C:0.1,D:0.1)0.62:0.3);",
     )
     ml = run_maximum_likelihood_tree_inference(
         fixture("example_alignment.fasta"),

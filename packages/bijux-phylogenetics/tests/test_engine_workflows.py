@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
+import threading
+import time
 
 import pytest
 
@@ -27,15 +30,15 @@ from bijux_phylogenetics.engines import (
     run_sh_alrt_support_estimation,
     run_tree_inference_comparison,
 )
-from bijux_phylogenetics.engines.inference_reproducibility import (
+from bijux_phylogenetics.engines.inference import (
     run_inference_reproducibility_check,
 )
-from bijux_phylogenetics.errors import (
+from bijux_phylogenetics.io.fasta import load_fasta_alignment
+from bijux_phylogenetics.runtime.errors import (
     EngineUnavailableError,
     EngineWorkflowError,
     InvalidAlignmentError,
 )
-from bijux_phylogenetics.io.fasta import load_fasta_alignment
 
 pytestmark = pytest.mark.engine_contract
 
@@ -90,6 +93,82 @@ print("WARNING: mafft fixture inserted alignment padding", file=sys.stderr)
     )
 
 
+def _fake_mafft_with_version(path: Path, version_text: str) -> Path:
+    return _write_executable(
+        path,
+        f"""#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+if "--version" in sys.argv:
+    print({version_text!r}, file=sys.stderr)
+    raise SystemExit(0)
+
+input_path = Path(sys.argv[-1])
+records = []
+identifier = None
+sequence = []
+for raw_line in input_path.read_text(encoding="utf-8").splitlines():
+    line = raw_line.strip()
+    if not line:
+        continue
+    if line.startswith(">"):
+        if identifier is not None:
+            records.append((identifier, "".join(sequence)))
+        identifier = line[1:]
+        sequence = []
+    else:
+        sequence.append(line)
+if identifier is not None:
+    records.append((identifier, "".join(sequence)))
+width = max(len(sequence) for _identifier, sequence in records)
+for identifier, sequence in records:
+    print(f">{{identifier}}")
+    print(sequence.ljust(width, "-"))
+print("WARNING: mafft fixture inserted alignment padding", file=sys.stderr)
+""",
+    )
+
+
+def _fake_mafft_slow(path: Path, *, sleep_seconds: float = 0.3) -> Path:
+    return _write_executable(
+        path,
+        f"""#!/usr/bin/env python3
+import sys
+import time
+from pathlib import Path
+
+if "--version" in sys.argv:
+    print("mafft v7.999", file=sys.stderr)
+    raise SystemExit(0)
+
+time.sleep({sleep_seconds!r})
+input_path = Path(sys.argv[-1])
+records = []
+identifier = None
+sequence = []
+for raw_line in input_path.read_text(encoding="utf-8").splitlines():
+    line = raw_line.strip()
+    if not line:
+        continue
+    if line.startswith(">"):
+        if identifier is not None:
+            records.append((identifier, "".join(sequence)))
+        identifier = line[1:]
+        sequence = []
+    else:
+        sequence.append(line)
+if identifier is not None:
+    records.append((identifier, "".join(sequence)))
+width = max(len(row[1]) for row in records)
+for identifier, sequence in records:
+    print(f">{{identifier}}")
+    print(sequence.ljust(width, "-"))
+print("WARNING: mafft slow fixture inserted alignment padding", file=sys.stderr)
+""",
+    )
+
+
 def _fake_trimal(path: Path) -> Path:
     return _write_executable(
         path,
@@ -140,6 +219,47 @@ with output_path.open("w", encoding="utf-8") as handle:
     for identifier, sequence in records:
         handle.write(f">{identifier}\\n{sequence[:-trim_count]}\\n")
 print(warning, file=sys.stderr)
+""",
+    )
+
+
+def _fake_trimal_whitespace_heavy(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+if "--version" in sys.argv:
+    print("trimAl v2.0")
+    raise SystemExit(0)
+
+args = sys.argv[1:]
+input_path = Path(args[args.index("-in") + 1])
+output_path = Path(args[args.index("-out") + 1])
+records = []
+identifier = None
+sequence = []
+for raw_line in input_path.read_text(encoding="utf-8").splitlines():
+    line = raw_line.strip()
+    if not line:
+        continue
+    if line.startswith(">"):
+        if identifier is not None:
+            records.append((identifier, "".join(sequence)))
+        identifier = line[1:]
+        sequence = []
+    else:
+        sequence.append(line)
+if identifier is not None:
+    records.append((identifier, "".join(sequence)))
+output_path.parent.mkdir(parents=True, exist_ok=True)
+with output_path.open("w", encoding="utf-8") as handle:
+    handle.write("\\n")
+    for identifier, sequence in records:
+        handle.write(f"  >{identifier}  \\n")
+        handle.write(f" {sequence[:-1]} \\n\\n")
+print("warning: trimal fixture wrote padded FASTA output", file=sys.stderr)
 """,
     )
 
@@ -255,7 +375,9 @@ if "-alrt" in args:
     raise SystemExit(0)
 
 if "-bb" in args:
-    prefix.with_suffix(".treefile").write_text("((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n", encoding="utf-8")
+    support_tree = "((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n"
+    prefix.with_suffix(".treefile").write_text(support_tree, encoding="utf-8")
+    prefix.with_suffix(".contree").write_text(support_tree, encoding="utf-8")
     prefix.with_suffix(".ufboot").write_text(
         "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
         encoding="utf-8",
@@ -344,6 +466,130 @@ raise SystemExit(0)
     )
 
 
+def _fake_iqtree_missing_model_result(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "--version" in args:
+    print("IQ-TREE multicore version 2.9.9")
+    raise SystemExit(0)
+
+prefix = Path(args[args.index("-pre") + 1]) if "-pre" in args else Path("iqtree")
+prefix.parent.mkdir(parents=True, exist_ok=True)
+prefix.with_suffix(".treefile").write_text(
+    "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".iqtree").write_text(
+    "Log-likelihood of the tree: -456.789\\nTree inference completed\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".log").write_text(
+    "IQ-TREE fixture inference log\\nBEST SCORE FOUND : -456.789\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
+def _fake_iqtree_fixed_model_without_best_fit_artifact(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "--version" in args:
+    print("IQ-TREE multicore version 2.9.9")
+    raise SystemExit(0)
+
+prefix = Path(args[args.index("-pre") + 1]) if "-pre" in args else Path("iqtree")
+prefix.parent.mkdir(parents=True, exist_ok=True)
+selected_model = args[args.index("-m") + 1] if "-m" in args else "GTR+G"
+if "-bb" in args:
+    support_tree = "((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n"
+    prefix.with_suffix(".treefile").write_text(
+        support_tree,
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".contree").write_text(support_tree, encoding="utf-8")
+    prefix.with_suffix(".ufboot").write_text(
+        "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+        "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".iqtree").write_text(
+        f"Model of substitution: {selected_model}\\n"
+        "Log-likelihood of the tree: -234.567\\n"
+        "Bootstrap analysis completed\\n",
+        encoding="utf-8",
+    )
+    prefix.with_suffix(".log").write_text(
+        "IQ-TREE fixture bootstrap log\\nBEST SCORE FOUND : -234.567\\n",
+        encoding="utf-8",
+    )
+    raise SystemExit(0)
+
+prefix.with_suffix(".treefile").write_text(
+    "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".iqtree").write_text(
+    f"Model of substitution: {selected_model}\\n"
+    "Log-likelihood of the tree: -345.678\\n"
+    "Tree inference completed\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".log").write_text(
+    "IQ-TREE fixture inference log\\nBEST SCORE FOUND : -345.678\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
+def _fake_iqtree_without_support_labels(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "--version" in args:
+    print("IQ-TREE multicore version 2.9.9")
+    raise SystemExit(0)
+
+prefix = Path(args[args.index("-pre") + 1]) if "-pre" in args else Path("iqtree")
+prefix.parent.mkdir(parents=True, exist_ok=True)
+support_tree = "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+prefix.with_suffix(".treefile").write_text(
+    support_tree,
+    encoding="utf-8",
+)
+prefix.with_suffix(".contree").write_text(support_tree, encoding="utf-8")
+prefix.with_suffix(".ufboot").write_text(
+    "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".iqtree").write_text(
+    "Best-fit model: GTR+G\\nLog-likelihood of the tree: -222.222\\nSupport analysis completed\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".log").write_text(
+    "IQ-TREE fixture support log\\nBEST SCORE FOUND : -222.222\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
 def _fake_fasttree(path: Path) -> Path:
     return _write_executable(
         path,
@@ -357,6 +603,22 @@ if not args or "-help" in args:
 
 print("((A:0.1,B:0.1)0.98:0.3,(C:0.1,D:0.1)0.62:0.3);")
 print("warning: fasttree fixture approximate support only", file=sys.stderr)
+""",
+    )
+
+
+def _fake_fasttree_without_support_labels(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+
+args = sys.argv[1:]
+if not args or "-help" in args:
+    print("FastTree Version 2.2 fixture")
+    raise SystemExit(0)
+
+print("((A:0.1,B:0.1):0.3,(C:0.1,D:0.1):0.3);")
 """,
     )
 
@@ -441,7 +703,9 @@ if "-bb" in args:
     counter_path.write_text(str(counter + 1), encoding="utf-8")
     tree_variants = {tree_variants!r}
     log_likelihoods = {log_likelihoods!r}
-    prefix.with_suffix(".treefile").write_text(tree_variants[variant_index] + "\\n", encoding="utf-8")
+    support_tree = tree_variants[variant_index] + "\\n"
+    prefix.with_suffix(".treefile").write_text(support_tree, encoding="utf-8")
+    prefix.with_suffix(".contree").write_text(support_tree, encoding="utf-8")
     prefix.with_suffix(".ufboot").write_text(
         "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
         encoding="utf-8",
@@ -481,6 +745,12 @@ def test_run_multiple_sequence_alignment_captures_logs_version_and_manifest(
     assert report.run.warning_lines == [
         "WARNING: mafft fixture inserted alignment padding"
     ]
+    assert report.run.runtime_seconds >= 0.0
+    assert report.config == {
+        "mode": "auto",
+        "extra_args": [],
+        "timeout_seconds": None,
+    }
     assert report.manifest_path.exists()
 
 
@@ -542,6 +812,13 @@ def test_run_codon_aware_multiple_sequence_alignment_preserves_triplet_gaps(
         "sequence contains one or more premature stop codons\n"
     )
     assert report.run.command[1:-1] == ["--localpair", "--maxiterate", "1000"]
+    assert report.run.runtime_seconds >= 0.0
+    assert report.config == {
+        "mode": "linsi",
+        "sequence_type": "dna",
+        "genetic_code_id": 1,
+        "timeout_seconds": None,
+    }
     assert report.notes[0].startswith("codon-aware alignment preserved")
     assert report.manifest_path.exists()
 
@@ -694,9 +971,22 @@ def test_run_multiple_sequence_alignment_times_out_and_marks_incomplete_run(
     assert len(marker_candidates) == 1
     marker_path = marker_candidates[0]
     assert marker_path.exists()
-    marker_text = marker_path.read_text(encoding="utf-8")
-    assert '"timed_out": true' in marker_text
-    assert '"timeout_seconds": 0.5' in marker_text
+    marker_payload = json.loads(marker_path.read_text(encoding="utf-8"))
+    assert marker_payload["timed_out"] is True
+    assert marker_payload["timeout_seconds"] == 0.5
+    assert marker_payload["failure_reason"] == "engine_command_timeout"
+    assert marker_payload["missing_output_names"] == []
+    assert marker_payload["observed_outputs"] == [
+        {
+            "exists": True,
+            "output_name": "alignment",
+            "path": str(output_path),
+            "path_kind": "file",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb924"
+            "27ae41e4649b934ca495991b7852b855",
+            "size_bytes": 0,
+        }
+    ]
 
 
 def test_run_multiple_sequence_alignment_resume_reuses_completed_output(
@@ -724,6 +1014,111 @@ def test_run_multiple_sequence_alignment_resume_reuses_completed_output(
     assert second.output_paths["alignment"] == output_path
 
 
+def test_run_multiple_sequence_alignment_resume_invalidates_changed_engine_version(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_mafft_with_version(tmp_path / "mafft-fixture", "mafft v7.999")
+    input_path = tmp_path / "unaligned.fasta"
+    input_path.write_text(">A\nACTG\n>B\nACTGA\n>C\nACT\n", encoding="utf-8")
+    output_path = tmp_path / "aligned.fasta"
+
+    first = run_multiple_sequence_alignment(
+        input_path,
+        output_path,
+        executable=executable,
+    )
+    _fake_mafft_with_version(executable, "mafft v8.000")
+    second = run_multiple_sequence_alignment(
+        input_path,
+        output_path,
+        executable=executable,
+        resume=True,
+    )
+
+    assert first.resumed is False
+    assert second.resumed is False
+    assert first.run.version.text != second.run.version.text
+
+
+def test_run_multiple_sequence_alignment_rejects_concurrent_reuse_of_same_output_path(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_mafft_slow(tmp_path / "mafft-slow-fixture")
+    input_path = fixture("alignments/example_alignment.fasta")
+    output_path = tmp_path / "shared-output.fasta"
+    errors: list[EngineWorkflowError] = []
+
+    def run_first() -> None:
+        run_multiple_sequence_alignment(
+            input_path,
+            output_path,
+            executable=executable,
+        )
+
+    thread = threading.Thread(target=run_first)
+    thread.start()
+    manifest_path = output_path.with_name(f"{output_path.name}.manifest.json")
+    marker_path = manifest_path.with_suffix(".running.json")
+    deadline = time.time() + 5.0
+    while not marker_path.exists():
+        if time.time() >= deadline:
+            raise AssertionError(
+                "expected running marker to appear for slow MAFFT fixture"
+            )
+        time.sleep(0.01)
+
+    try:
+        run_multiple_sequence_alignment(
+            input_path,
+            output_path,
+            executable=executable,
+        )
+    except EngineWorkflowError as error:
+        errors.append(error)
+    finally:
+        thread.join()
+
+    assert len(errors) == 1
+    assert errors[0].code == "engine_workflow_already_running"
+    assert output_path.exists()
+    assert marker_path.exists() is False
+
+
+def test_run_multiple_sequence_alignment_allows_parallel_distinct_output_paths(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_mafft_slow(tmp_path / "mafft-slow-fixture")
+    input_path = fixture("alignments/example_alignment.fasta")
+    output_paths = [tmp_path / "left-output.fasta", tmp_path / "right-output.fasta"]
+    reports: list[object] = []
+    errors: list[BaseException] = []
+
+    def run_one(output_path: Path) -> None:
+        try:
+            reports.append(
+                run_multiple_sequence_alignment(
+                    input_path,
+                    output_path,
+                    executable=executable,
+                )
+            )
+        except BaseException as error:  # pragma: no cover - failure is asserted below
+            errors.append(error)
+
+    threads = [threading.Thread(target=run_one, args=(path,)) for path in output_paths]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    assert errors == []
+    assert len(reports) == 2
+    assert all(path.exists() for path in output_paths)
+    for output_path in output_paths:
+        manifest_path = output_path.with_name(f"{output_path.name}.manifest.json")
+        assert manifest_path.with_suffix(".running.json").exists() is False
+
+
 def test_run_alignment_trimming_resume_reuses_completed_output(tmp_path: Path) -> None:
     executable = _fake_trimal(tmp_path / "trimal-fixture")
     input_path = fixture("alignments/example_alignment_trim.fasta")
@@ -748,19 +1143,39 @@ def test_run_model_selection_rejects_or_cleans_incomplete_outputs(
     input_path = fixture("alignments/example_alignment.fasta")
     out_dir = tmp_path / "model-selection"
 
-    with pytest.raises(EngineWorkflowError, match="did not produce expected outputs"):
+    with pytest.raises(
+        EngineWorkflowError, match="did not produce expected outputs"
+    ) as error:
         run_model_selection(
             input_path,
             out_dir=out_dir,
             executable=partial_executable,
             prefix="example",
         )
+    assert error.value.code == "engine_required_output_missing"
+    assert error.value.details["workflow"] == "model-selection"
+    assert error.value.details["missing_outputs"] == [
+        {
+            "output_name": "iqtree_log",
+            "path": str(out_dir / "example.log"),
+        }
+    ]
 
     manifest_path = out_dir / "example.manifest.json"
     marker_path = manifest_path.with_suffix(".incomplete.json")
     assert marker_path.exists()
+    marker_payload = json.loads(marker_path.read_text(encoding="utf-8"))
+    assert marker_payload["failure_reason"] == "engine_required_output_missing"
+    assert marker_payload["missing_output_names"] == ["iqtree_log"]
+    observed_outputs = {
+        item["output_name"]: item for item in marker_payload["observed_outputs"]
+    }
+    assert observed_outputs["iqtree_report"]["exists"] is True
+    assert observed_outputs["iqtree_report"]["path_kind"] == "file"
+    assert observed_outputs["iqtree_log"]["exists"] is False
+    assert observed_outputs["iqtree_log"]["path_kind"] == "missing"
 
-    with pytest.raises(EngineWorkflowError, match="incomplete outputs"):
+    with pytest.raises(EngineWorkflowError, match="incomplete outputs") as rejected:
         run_model_selection(
             input_path,
             out_dir=out_dir,
@@ -769,6 +1184,13 @@ def test_run_model_selection_rejects_or_cleans_incomplete_outputs(
             resume=True,
             incomplete_run_policy="reject",
         )
+    assert rejected.value.code == "engine_incomplete_outputs_present"
+    assert rejected.value.details["failure_reason"] == "engine_required_output_missing"
+    assert rejected.value.details["missing_output_names"] == ["iqtree_log"]
+    assert rejected.value.details["available_actions"] == ["resume", "clean"]
+    assert (
+        rejected.value.details["observed_outputs"] == marker_payload["observed_outputs"]
+    )
 
     report = run_model_selection(
         input_path,
@@ -828,6 +1250,16 @@ def test_run_bootstrap_support_estimation_exports_branch_ledgers_and_histogram(
     assert report.bootstrap_support_summary.weakly_supported_clade_count == 0
     assert report.weak_backbone_report is not None
     assert report.weak_backbone_report.weak_backbone_node_count == 0
+    assert report.run.runtime_seconds >= 0.0
+    assert report.config == {
+        "model": "GTR+G",
+        "replicates": 1000,
+        "sequence_type": None,
+        "partition_path": None,
+        "seed": 1,
+        "threads": 1,
+        "timeout_seconds": None,
+    }
 
 
 def test_run_sh_alrt_support_estimation_exports_combined_support_and_conflicts(
@@ -949,6 +1381,32 @@ def test_run_alignment_trimming_supports_all_named_trimal_modes(tmp_path: Path) 
         assert len(trimmed[0].sequence) == (
             len(load_fasta_alignment(input_path)[0].sequence) - removed_sites
         )
+
+
+def test_run_alignment_trimming_accepts_whitespace_heavy_trimal_output(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_trimal_whitespace_heavy(tmp_path / "trimal-whitespace")
+    input_path = fixture("alignments/example_alignment_trim.fasta")
+    output_path = tmp_path / "trimmed.fasta"
+
+    report = run_alignment_trimming(
+        input_path,
+        output_path,
+        executable=executable,
+    )
+
+    input_alignment = load_fasta_alignment(input_path)
+    trimmed = load_fasta_alignment(output_path)
+    assert report.run.warning_lines == [
+        "warning: trimal fixture wrote padded FASTA output"
+    ]
+    assert len(trimmed) == len(input_alignment)
+    assert report.trimming_summary is not None
+    assert all(
+        len(row.sequence) == report.trimming_summary.trimmed_alignment_length
+        for row in trimmed
+    )
 
 
 def test_run_model_selection_parses_best_fit_model_and_writes_manifest(
@@ -1123,6 +1581,7 @@ def test_run_ml_bootstrap_consensus_and_fast_tree_workflows(tmp_path: Path) -> N
     assert consensus_report.iqtree_summary.support_value_count == 2
 
 
+@pytest.mark.slow
 def test_run_fast_tree_inference_supports_nucleotide_and_protein_modes(
     tmp_path: Path,
 ) -> None:
@@ -1248,9 +1707,123 @@ def test_inference_workflows_detect_failed_runs_and_empty_filtered_alignments(
             input_path, tmp_path / "empty.fasta", executable=empty_trimal
         )
     except EngineWorkflowError as error:
-        assert "inference alignment is empty after filtering" in error.message
+        assert error.code == "engine_output_empty"
+        assert error.details["output_name"] == "trimmed_alignment"
     else:  # pragma: no cover - defensive assertion
         raise AssertionError("expected empty trim output to raise EngineWorkflowError")
+
+
+def test_run_model_selection_requires_parsed_model_result(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree_missing_model_result(tmp_path / "iqtree-no-model")
+
+    with pytest.raises(EngineWorkflowError) as error:
+        run_model_selection(
+            fixture("alignments/example_alignment.fasta"),
+            out_dir=tmp_path / "model-selection",
+            executable=executable,
+            prefix="example",
+        )
+
+    assert error.value.code == "engine_model_result_missing"
+    assert error.value.details["workflow"] == "model-selection"
+    assert not (tmp_path / "model-selection" / "example.manifest.json").exists()
+
+
+def test_run_fixed_model_iqtree_workflows_accept_report_without_best_fit_artifact(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree_fixed_model_without_best_fit_artifact(
+        tmp_path / "iqtree-fixed-model"
+    )
+
+    ml_report = run_maximum_likelihood_tree_inference(
+        fixture("alignments/example_alignment_protein.fasta"),
+        out_dir=tmp_path / "ml",
+        model="JTTDCMut+G4",
+        executable=executable,
+        prefix="example-protein",
+        sequence_type="protein",
+    )
+    bootstrap_report = run_bootstrap_support_estimation(
+        fixture("alignments/example_alignment_protein.fasta"),
+        out_dir=tmp_path / "bootstrap",
+        model="JTTDCMut+G4",
+        executable=executable,
+        prefix="example-protein",
+        sequence_type="protein",
+        replicates=1000,
+    )
+
+    assert ml_report.selected_model == "JTTDCMut+G4"
+    assert bootstrap_report.selected_model == "JTTDCMut+G4"
+    assert ml_report.output_paths["tree"].exists()
+    assert bootstrap_report.output_paths["support_tree"].exists()
+
+
+def test_run_bootstrap_support_estimation_requires_support_labels(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree_without_support_labels(
+        tmp_path / "iqtree-no-bootstrap-labels"
+    )
+
+    with pytest.raises(EngineWorkflowError) as error:
+        run_bootstrap_support_estimation(
+            fixture("alignments/example_alignment.fasta"),
+            out_dir=tmp_path / "bootstrap",
+            model="GTR+G",
+            executable=executable,
+            prefix="example",
+            replicates=1000,
+        )
+
+    assert error.value.code == "engine_support_values_missing"
+    assert error.value.details["workflow"] == "bootstrap-support"
+    assert error.value.details["support_kind"] == "bootstrap support"
+
+
+def test_run_sh_alrt_support_estimation_requires_joint_support_labels(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_iqtree_without_support_labels(
+        tmp_path / "iqtree-no-sh-alrt-labels"
+    )
+
+    with pytest.raises(EngineWorkflowError) as error:
+        run_sh_alrt_support_estimation(
+            fixture("alignments/example_alignment.fasta"),
+            out_dir=tmp_path / "sh-alrt",
+            model="GTR+G",
+            executable=executable,
+            prefix="example",
+            sh_alrt_replicates=1000,
+            bootstrap_replicates=1000,
+        )
+
+    assert error.value.code == "engine_support_values_missing"
+    assert error.value.details["workflow"] == "sh-alrt-support"
+    assert error.value.details["support_kind"] in {
+        "ultrafast bootstrap support",
+        "sh-alrt support",
+        "joint sh-alrt and ultrafast bootstrap support",
+    }
+
+
+def test_run_fast_tree_inference_requires_support_annotations(tmp_path: Path) -> None:
+    executable = _fake_fasttree_without_support_labels(tmp_path / "fasttree-no-support")
+
+    with pytest.raises(EngineWorkflowError) as error:
+        run_fast_tree_inference(
+            fixture("alignments/example_alignment.fasta"),
+            tmp_path / "fasttree.nwk",
+            executable=executable,
+        )
+
+    assert error.value.code == "engine_support_values_missing"
+    assert error.value.details["workflow"] == "fast-approximate-tree"
+    assert error.value.details["support_kind"] == "FastTree local support"
 
 
 def test_inference_workflow_resume_and_html_report(tmp_path: Path) -> None:
@@ -1306,6 +1879,30 @@ def test_compare_fast_and_ml_trees_builds_html_report(tmp_path: Path) -> None:
     assert comparison.comparison_report.topology.shared_taxa == ["A", "B", "C", "D"]
 
 
+def test_render_inference_workflow_report_embeds_scientific_failure_explanation(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_trimal(tmp_path / "trimal-fixture")
+    output_path = tmp_path / "trimmed.fasta"
+    report = run_alignment_trimming(
+        fixture("alignments/example_alignment_trim.fasta"),
+        output_path,
+        executable=executable,
+    )
+    output_path.write_text("", encoding="utf-8")
+
+    rendered = render_inference_workflow_report(
+        manifest_path=report.manifest_path,
+        out_path=tmp_path / "trimmed-report.html",
+    )
+    html = rendered.output_path.read_text(encoding="utf-8")
+
+    assert rendered.output_path.exists()
+    assert "failure_reason" in html
+    assert "trimmed_alignment_empty" in html
+    assert "removed all usable alignment signal" in html
+
+
 def test_run_tree_inference_comparison_exports_tables_and_conflicts(
     tmp_path: Path,
 ) -> None:
@@ -1331,6 +1928,15 @@ def test_run_tree_inference_comparison_exports_tables_and_conflicts(
     assert report.output_paths["comparison_table"].exists()
     assert report.output_paths["shared_clades"].exists()
     assert report.output_paths["conflicting_clades"].exists()
+    assert report.iqtree_seed == 1
+    assert report.iqtree_threads == 1
+    assert report.bootstrap_replicates == 1000
+    assert report.workflow == "tree-inference-comparison"
+    assert report.config["iqtree_seed"] == 1
+    assert report.commands["model_selection"][0] == str(iqtree)
+    assert report.commands["fasttree"][0] == str(fasttree)
+    assert "iqtree_support" in report.engine_versions
+    assert report.runtime_seconds >= 0.0
     assert report.engine_comparison.topology.topology_equal is True
     assert len(report.shared_clade_rows) == 2
     assert any(
@@ -1366,7 +1972,15 @@ def test_run_inference_reproducibility_check_reports_deterministic_reruns(
 
     assert report.selected_model == "GTR+G"
     assert report.repeat_count == 3
+    assert report.iqtree_seed == 1
+    assert report.iqtree_threads == 1
+    assert report.workflow == "inference-reproducibility"
+    assert report.config["repeats"] == 3
     assert report.overall_status == "deterministic"
+    assert report.commands["model_selection"][0] == str(executable)
+    assert report.commands["baseline"][0] == str(executable)
+    assert report.engine_versions["baseline"]
+    assert report.runtime_seconds >= 0.0
     assert [row.classification for row in report.comparison_rows] == [
         "deterministic",
         "deterministic",

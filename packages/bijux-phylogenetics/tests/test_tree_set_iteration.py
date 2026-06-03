@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from bijux_phylogenetics.reports.service import render_tree_uncertainty_report
-from bijux_phylogenetics.tree_set import (
+from bijux_phylogenetics.trees import (
     assess_tree_set_maturity,
     assess_tree_set_storage_risk,
     assess_tree_set_thinning_sensitivity,
@@ -33,6 +33,7 @@ def test_benchmark_tree_set_uncertainty_reports_rows() -> None:
     assert len(report.rows) == 1
     assert report.rows[0].tree_count == 3
     assert report.rows[0].taxon_count == 4
+    assert report.rows[0].peak_memory_bytes >= 0
 
 
 def test_assess_tree_set_storage_risk_reports_low_risk_for_small_fixture() -> None:
@@ -111,3 +112,5 @@ def test_render_tree_uncertainty_report_includes_new_iteration_sections(
     assert "thinning-sensitivity" in html
     assert "consensus-threshold-sensitivity" in html
     assert "maturity-gate" in html
+    assert "limitations" in html
+    assert report.machine_manifest["limitations"]

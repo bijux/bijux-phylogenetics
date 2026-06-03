@@ -1,0 +1,176 @@
+{
+  "all_outputs_fresh": true,
+  "bundle_root": ".",
+  "check_count": 12,
+  "checks": [
+    {
+      "check_id": "input-checksum:sequences.fasta",
+      "detail": "sequences.fasta still matches the checksum recorded in workflow-config.resolved.json",
+      "expected": "a3a401e5ab1e9c76e7b0793c86c69708186a550fadb2931fa6d66af61ceb6236",
+      "observed": "a3a401e5ab1e9c76e7b0793c86c69708186a550fadb2931fa6d66af61ceb6236",
+      "scope": "workflow",
+      "status": "passed",
+      "surface": "input-checksum"
+    },
+    {
+      "check_id": "input-checksum:metadata.csv",
+      "detail": "metadata.csv still matches the checksum recorded in workflow-config.resolved.json",
+      "expected": "cca2178210f8c8b9850b0773228fbc5bb26d2c363db8d115b2996df9399111f2",
+      "observed": "cca2178210f8c8b9850b0773228fbc5bb26d2c363db8d115b2996df9399111f2",
+      "scope": "workflow",
+      "status": "passed",
+      "surface": "input-checksum"
+    },
+    {
+      "check_id": "workflow-setting:sequence_type",
+      "detail": "sequence_type still matches the recorded workflow setting",
+      "expected": "dna",
+      "observed": "dna",
+      "scope": "workflow",
+      "status": "passed",
+      "surface": "workflow-setting"
+    },
+    {
+      "check_id": "workflow-setting:outgroup_taxa",
+      "detail": "outgroup_taxa still matches the recorded workflow setting",
+      "expected": "['bat_chile_rv108']",
+      "observed": "['bat_chile_rv108']",
+      "scope": "workflow",
+      "status": "passed",
+      "surface": "workflow-setting"
+    },
+    {
+      "check_id": "workflow-setting:iqtree_seed",
+      "detail": "iqtree_seed still matches the recorded workflow setting",
+      "expected": "1",
+      "observed": "1",
+      "scope": "workflow",
+      "status": "passed",
+      "surface": "workflow-setting"
+    },
+    {
+      "check_id": "workflow-setting:iqtree_threads",
+      "detail": "iqtree_threads still matches the recorded workflow setting",
+      "expected": "1",
+      "observed": "1",
+      "scope": "workflow",
+      "status": "passed",
+      "surface": "workflow-setting"
+    },
+    {
+      "check_id": "workflow-setting:bootstrap_replicates",
+      "detail": "bootstrap_replicates still matches the recorded workflow setting",
+      "expected": "1000",
+      "observed": "1000",
+      "scope": "workflow",
+      "status": "passed",
+      "surface": "workflow-setting"
+    },
+    {
+      "check_id": "variant-selection:coverage",
+      "detail": "current packaged variants still cover every recorded selected variant id",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "scope": "workflow",
+      "status": "passed",
+      "surface": "variant-selection"
+    },
+    {
+      "check_id": "variant-setting:auto-gap-threshold",
+      "detail": "current packaged variant settings still match the recorded selection",
+      "expected": "{\"alignment_mode\": \"auto\", \"trim_gap_threshold\": 0.1, \"trimming_mode\": \"gap-threshold\", \"variant_id\": \"auto-gap-threshold\"}",
+      "observed": "{\"alignment_mode\": \"auto\", \"trim_gap_threshold\": 0.1, \"trimming_mode\": \"gap-threshold\", \"variant_id\": \"auto-gap-threshold\"}",
+      "scope": "auto-gap-threshold",
+      "status": "passed",
+      "surface": "variant-setting"
+    },
+    {
+      "check_id": "variant-setting:ginsi-gap-threshold",
+      "detail": "current packaged variant settings still match the recorded selection",
+      "expected": "{\"alignment_mode\": \"ginsi\", \"trim_gap_threshold\": 0.1, \"trimming_mode\": \"gap-threshold\", \"variant_id\": \"ginsi-gap-threshold\"}",
+      "observed": "{\"alignment_mode\": \"ginsi\", \"trim_gap_threshold\": 0.1, \"trimming_mode\": \"gap-threshold\", \"variant_id\": \"ginsi-gap-threshold\"}",
+      "scope": "ginsi-gap-threshold",
+      "status": "passed",
+      "surface": "variant-setting"
+    },
+    {
+      "check_id": "variant-setting:auto-gappyout",
+      "detail": "current packaged variant settings still match the recorded selection",
+      "expected": "{\"alignment_mode\": \"auto\", \"trim_gap_threshold\": 0.1, \"trimming_mode\": \"gappyout\", \"variant_id\": \"auto-gappyout\"}",
+      "observed": "{\"alignment_mode\": \"auto\", \"trim_gap_threshold\": 0.1, \"trimming_mode\": \"gappyout\", \"variant_id\": \"auto-gappyout\"}",
+      "scope": "auto-gappyout",
+      "status": "passed",
+      "surface": "variant-setting"
+    },
+    {
+      "check_id": "variant-setting:ginsi-gappyout",
+      "detail": "current packaged variant settings still match the recorded selection",
+      "expected": "{\"alignment_mode\": \"ginsi\", \"trim_gap_threshold\": 0.1, \"trimming_mode\": \"gappyout\", \"variant_id\": \"ginsi-gappyout\"}",
+      "observed": "{\"alignment_mode\": \"ginsi\", \"trim_gap_threshold\": 0.1, \"trimming_mode\": \"gappyout\", \"variant_id\": \"ginsi-gappyout\"}",
+      "scope": "ginsi-gappyout",
+      "status": "passed",
+      "surface": "variant-setting"
+    }
+  ],
+  "dataset_id": "rabies_method_sensitivity_panel",
+  "failed_check_count": 0,
+  "fresh_job_count": 4,
+  "jobs": [
+    {
+      "array_index": 0,
+      "freshness_status": "fresh",
+      "inputs_match": true,
+      "partition_id": "compact-mafft-auto-standard",
+      "stale_reason_codes": [],
+      "stale_reason_count": 0,
+      "stale_reason_detail": "current inputs and output-affecting settings still match the bundle",
+      "variant_id": "auto-gap-threshold",
+      "variant_settings_match": true,
+      "workflow_settings_match": true
+    },
+    {
+      "array_index": 1,
+      "freshness_status": "fresh",
+      "inputs_match": true,
+      "partition_id": "compact-mafft-auto-standard",
+      "stale_reason_codes": [],
+      "stale_reason_count": 0,
+      "stale_reason_detail": "current inputs and output-affecting settings still match the bundle",
+      "variant_id": "auto-gappyout",
+      "variant_settings_match": true,
+      "workflow_settings_match": true
+    },
+    {
+      "array_index": 0,
+      "freshness_status": "fresh",
+      "inputs_match": true,
+      "partition_id": "compact-mafft-ginsi-elevated",
+      "stale_reason_codes": [],
+      "stale_reason_count": 0,
+      "stale_reason_detail": "current inputs and output-affecting settings still match the bundle",
+      "variant_id": "ginsi-gap-threshold",
+      "variant_settings_match": true,
+      "workflow_settings_match": true
+    },
+    {
+      "array_index": 1,
+      "freshness_status": "fresh",
+      "inputs_match": true,
+      "partition_id": "compact-mafft-ginsi-elevated",
+      "stale_reason_codes": [],
+      "stale_reason_count": 0,
+      "stale_reason_detail": "current inputs and output-affecting settings still match the bundle",
+      "variant_id": "ginsi-gappyout",
+      "variant_settings_match": true,
+      "workflow_settings_match": true
+    }
+  ],
+  "selected_variant_ids": [
+    "auto-gap-threshold",
+    "ginsi-gap-threshold",
+    "auto-gappyout",
+    "ginsi-gappyout"
+  ],
+  "stale_job_count": 0,
+  "workflow_prefix": "rabies-method-sensitivity-panel"
+}

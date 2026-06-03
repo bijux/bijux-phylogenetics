@@ -3,7 +3,7 @@ from __future__ import annotations
 import gzip
 from pathlib import Path
 
-from bijux_phylogenetics.engines.iqtree_artifacts import (
+from bijux_phylogenetics.engines.artifacts.iqtree import (
     parse_iqtree_model_selection_summary,
     parse_log_likelihood_text,
     parse_selected_model_decision_text,
@@ -19,6 +19,9 @@ def test_parse_selected_model_decision_text_supports_iqtree_variants() -> None:
     assert parse_selected_model_decision_text(
         "Best-fit model: K2P+I chosen according to BIC\n"
     ) == ("K2P+I", "BIC")
+    assert parse_selected_model_decision_text(
+        "Best-fit model according to BIC score = K2P+I\n"
+    ) == ("K2P+I", "BIC")
 
 
 def test_parse_log_likelihood_text_supports_report_and_log_variants() -> None:
@@ -26,6 +29,7 @@ def test_parse_log_likelihood_text_supports_report_and_log_variants() -> None:
         parse_log_likelihood_text("Log-likelihood of the tree: -123.456\n") == -123.456
     )
     assert parse_log_likelihood_text("BEST SCORE FOUND : -21.104\n") == -21.104
+    assert parse_log_likelihood_text("Log likelihood of tree = -19.209\n") == -19.209
 
 
 def test_parse_iqtree_model_selection_summary_reads_candidates_and_criteria(
@@ -133,3 +137,23 @@ def test_resolve_iqtree_model_sidecar_prefers_plain_text_before_gzip(
     gzip_path.write_bytes(gzip.compress(b"best_model_BIC: GTR+G\n"))
 
     assert resolve_iqtree_model_sidecar(prefix) == plain
+
+
+def test_parse_iqtree_model_selection_summary_accepts_version_variant_fixture() -> None:
+    fixture_root = Path(__file__).parent / "fixtures" / "engine_outputs" / "iqtree"
+    summary = parse_iqtree_model_selection_summary(
+        iqtree_report_path=fixture_root / "model-selection-version-variant.iqtree",
+        model_sidecar_path=fixture_root / "model-selection-version-variant.model",
+    )
+
+    assert summary is not None
+    assert summary.selected_model == "K2P+I"
+    assert summary.selected_criterion == "BIC"
+    assert summary.best_model_aic == "K2P+I"
+    assert summary.best_model_aicc == "JC"
+    assert summary.best_model_bic == "K2P+I"
+    assert summary.best_score_aic == 56.20822137
+    assert summary.best_score_aicc == 86.85740671
+    assert summary.best_score_bic == 56.76431216
+    assert summary.bic_near_best_models == ["K2P+I", "JC", "GTR+F+I"]
+    assert summary.candidate_count == 0

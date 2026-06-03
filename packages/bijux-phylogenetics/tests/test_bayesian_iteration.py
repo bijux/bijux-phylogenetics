@@ -8,13 +8,13 @@ from bijux_phylogenetics.bayesian.beast import (
     assess_calibration_dominance,
     assess_time_tree_readiness,
 )
-from bijux_phylogenetics.bayesian.comparison import (
+from bijux_phylogenetics.bayesian.posterior_sets.comparison import (
     compare_independent_bayesian_runs,
     compare_ml_tree_to_bayesian_posterior,
     compare_posterior_tree_sets_by_clock,
     compare_posterior_tree_sets_by_prior,
 )
-from bijux_phylogenetics.bayesian.posterior import (
+from bijux_phylogenetics.bayesian.posterior_sets.tree_sets import (
     compare_bayesian_tree_sets,
     subsample_posterior_tree_set,
     summarize_maximum_clade_credibility_tree,
@@ -22,11 +22,12 @@ from bijux_phylogenetics.bayesian.posterior import (
     thin_posterior_tree_set,
     write_posterior_tree_subsample_table,
 )
-from bijux_phylogenetics.bayesian.reports import (
+from bijux_phylogenetics.bayesian.presentation.html_reports import (
     render_bayesian_run_comparison_report,
+    render_ml_vs_bayesian_tree_report,
     render_time_tree_readiness_report,
 )
-from bijux_phylogenetics.bayesian.uncertainty import (
+from bijux_phylogenetics.bayesian.presentation.posterior_uncertainty import (
     build_posterior_uncertainty_figure_package,
     write_bayesian_limitations_text,
     write_bayesian_methods_summary_text,
@@ -214,6 +215,8 @@ def test_render_time_tree_readiness_report_writes_sections(tmp_path: Path) -> No
 
     html = output_path.read_text(encoding="utf-8")
     assert report.output_path == output_path
+    assert report.method_tier.tier == "parser-only"
+    assert "method-tier" in html
     assert "readiness" in html
     assert "calibration-dominance" in html
     assert "limitations" in html
@@ -350,9 +353,33 @@ def test_render_bayesian_run_comparison_report_writes_tree_and_trace_sections(
     html = output_path.read_text(encoding="utf-8")
     assert report.output_path == output_path
     assert report.warning_count >= 1
+    assert report.method_tier.tier == "parser-only"
+    assert "method-tier" in html
     assert "run-comparison" in html
     assert "tree-comparison" in html
     assert "parameter-differences" in html
+    assert "limitations" in html
+    assert "limitations" in report.machine_manifest["sections"]
+
+
+def test_render_ml_vs_bayesian_tree_report_includes_limitations(
+    tmp_path: Path,
+) -> None:
+    output_path = tmp_path / "ml-vs-bayesian-report.html"
+
+    report = render_ml_vs_bayesian_tree_report(
+        ml_tree_path=fixture("trees/example_tree.nwk"),
+        posterior_tree_path=fixture("trees/example_tree_set_right.nwk"),
+        out_path=output_path,
+        burnin_fraction=0.0,
+    )
+
+    html = output_path.read_text(encoding="utf-8")
+    assert report.output_path == output_path
+    assert report.warning_count >= 1
+    assert "ml-versus-bayesian-summary" in html
+    assert "limitations" in html
+    assert "limitations" in report.machine_manifest["sections"]
 
 
 def test_build_posterior_uncertainty_figure_package_writes_consensus_plot_and_tables(
@@ -365,13 +392,16 @@ def test_build_posterior_uncertainty_figure_package_writes_consensus_plot_and_ta
 
     assert result.consensus_tree_path.exists()
     assert result.consensus_figure_path.exists()
-    assert result.clade_frequency_plot_path.exists()
+    assert result.clade_support_plot_path.exists()
+    assert result.unstable_taxa_plot_path.exists()
+    assert result.topology_clusters_plot_path.exists()
     assert result.unstable_taxa_table_path.exists()
     assert result.topology_clusters_table_path.exists()
     assert result.uncertainty_conclusions_table_path.exists()
     assert result.conclusion_summary_path.exists()
+    assert result.review_path.exists()
     summary = result.conclusion_summary_path.read_text(encoding="utf-8")
-    assert "Posterior Uncertainty Summary" in summary
+    assert "Tree-Set Uncertainty Summary" in summary
     assert "Conflict-prone clades" in summary
 
 
@@ -448,6 +478,8 @@ def test_write_bayesian_methods_summary_text_describes_clock_prior_and_diagnosti
     assert "effective sample size" in text
     assert "beast2_strict_yule_posterior.xml" in text
     assert "chain length" in text.lower()
+    assert "did not execute BEAST itself" in text
+    assert "only summarized the prepared XML" in text
 
 
 def test_write_bayesian_limitations_text_includes_diagnostics_and_dating_risks(

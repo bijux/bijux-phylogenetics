@@ -1,0 +1,37 @@
+{
+  "dataset_id": "rabies_cross_host_geography_panel",
+  "label": "Rabies cross-host geography panel",
+  "sequences_path": "sequences.fasta",
+  "metadata_path": "metadata.csv",
+  "centroids_path": "region-centroids.csv",
+  "sequence_type": "dna",
+  "workflow_prefix": "rabies-cross-host-geography-panel",
+  "host_trait": "host_group",
+  "geography_trait": "region_group",
+  "host_model": "ard",
+  "geography_model": "ard",
+  "outgroup_taxa": [
+    "bat_chile_rv108"
+  ],
+  "iqtree_seed": 1,
+  "iqtree_threads": 1,
+  "bootstrap_replicates": 1000,
+  "timeout_seconds": 300.0,
+  "max_bootstrap_tree_count": 1500,
+  "max_report_table_rows": 25,
+  "memory_warning_threshold_bytes": 67108864,
+  "alignment_mode": "auto",
+  "trimming_mode": "gap-threshold",
+  "trim_gap_threshold": 0.1,
+  "bootstrap_consensus_threshold": 0.5,
+  "bootstrap_robust_support_threshold": 0.9,
+  "clade_metadata_columns": [
+    "host_species",
+    "host_group",
+    "country",
+    "region_group"
+  ],
+  "comparative_formula": "region_longitude ~ host_group",
+  "comparative_response": "region_longitude",
+  "comparative_branch_length_floor": 1e-06
+}

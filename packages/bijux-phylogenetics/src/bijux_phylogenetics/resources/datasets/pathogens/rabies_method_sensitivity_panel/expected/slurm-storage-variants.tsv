@@ -1,0 +1,5 @@
+variant_id	output_file_count	log_file_count	tree_file_count	posterior_sample_file_count	report_file_count	total_file_count	output_byte_count	log_byte_count	tree_byte_count	posterior_sample_byte_count	report_byte_count	total_byte_count	estimated_storage_mib
+auto-gap-threshold	10	1	4	0	9	24	40306	233	1759	0	252889	295187	1
+ginsi-gap-threshold	10	1	4	0	9	24	40306	237	1759	0	253604	295906	1
+auto-gappyout	10	1	4	0	9	24	40306	213	1759	0	250036	292314	1
+ginsi-gappyout	10	1	4	0	9	24	40306	217	1759	0	250741	293023	1

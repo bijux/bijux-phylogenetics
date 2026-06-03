@@ -29,8 +29,6 @@ required_root_make_targets = [
     "check-evidence-governance:",
     "sync-evidence-artifacts:",
     "check-evidence-artifacts:",
-    "rerun-evidence-cleanroom:",
-    "rerun-governed-evidence-cleanroom:",
     "report-artifact-governance:",
     "check-artifact-governance:",
     "report-execution-surfaces:",
@@ -61,6 +59,7 @@ allowed_dependencies = [
     "biopython>=1.87,<2.0",
     "cairosvg>=2.9.0,<3.0",
     "defusedxml>=0.7.1,<1.0",
+    "PyYAML>=6.0,<7.0",
 ]
 required_sdist_entries = [
     "README.md",
@@ -68,12 +67,22 @@ required_sdist_entries = [
     "LICENSE",
     "NOTICE",
     "src/bijux_phylogenetics/__init__.py",
-    "src/bijux_phylogenetics/cli.py",
+    "src/bijux_phylogenetics/command_line/__init__.py",
+    "src/bijux_phylogenetics/resources/examples/alignments/example_alignment.fasta",
+    "src/bijux_phylogenetics/resources/examples/trees/example_tree.nwk",
+    "src/bijux_phylogenetics/resources/datasets/mammals/primate_comparative/tree.nwk",
+    "src/bijux_phylogenetics/resources/datasets/mammals/primate_comparative/traits.csv",
+    "src/bijux_phylogenetics/resources/datasets/pathogens/rabies_cross_host_geography_panel/workflow-config.json",
 ]
 required_wheel_entries = [
     "bijux_phylogenetics/__init__.py",
-    "bijux_phylogenetics/cli.py",
+    "bijux_phylogenetics/command_line/__init__.py",
     "bijux_phylogenetics/py.typed",
+    "bijux_phylogenetics/resources/examples/alignments/example_alignment.fasta",
+    "bijux_phylogenetics/resources/examples/trees/example_tree.nwk",
+    "bijux_phylogenetics/resources/datasets/mammals/primate_comparative/tree.nwk",
+    "bijux_phylogenetics/resources/datasets/mammals/primate_comparative/traits.csv",
+    "bijux_phylogenetics/resources/datasets/pathogens/rabies_cross_host_geography_panel/workflow-config.json",
 ]
 forbidden_archive_prefixes = [
     "tests/",
@@ -119,6 +128,7 @@ required_sdist_entries = [
     "src/bijux_phylogenetics_dev/quality/config_ssot.py",
     "src/bijux_phylogenetics_dev/quality/package_boundaries.py",
     "src/bijux_phylogenetics_dev/quality/package_bundles.py",
+    "src/bijux_phylogenetics_dev/quality/package_install_smoke.py",
     "src/bijux_phylogenetics_dev/quality/policies/config_ssot.toml",
     "src/bijux_phylogenetics_dev/quality/policies/execution_surfaces.toml",
     "src/bijux_phylogenetics_dev/quality/policies/package_boundaries.toml",
@@ -130,6 +140,7 @@ required_wheel_entries = [
     "bijux_phylogenetics_dev/quality/config_ssot.py",
     "bijux_phylogenetics_dev/quality/package_boundaries.py",
     "bijux_phylogenetics_dev/quality/package_bundles.py",
+    "bijux_phylogenetics_dev/quality/package_install_smoke.py",
     "bijux_phylogenetics_dev/quality/policies/config_ssot.toml",
     "bijux_phylogenetics_dev/quality/policies/execution_surfaces.toml",
     "bijux_phylogenetics_dev/quality/policies/package_boundaries.toml",

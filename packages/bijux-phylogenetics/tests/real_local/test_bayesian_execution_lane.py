@@ -5,12 +5,19 @@ import subprocess
 
 import pytest
 
-from bijux_phylogenetics.bayesian.beast import (
-    parse_beast_posterior_tree_samples,
-    prepare_beast_time_tree_analysis,
+from bijux_phylogenetics.bayesian.beast.execution import (
+    run_beast_posterior_inference,
+)
+from bijux_phylogenetics.bayesian.beast.logs import (
     summarize_beast_log,
+)
+from bijux_phylogenetics.bayesian.beast.posterior_trees import (
+    parse_beast_posterior_tree_samples,
     summarize_beast_posterior_topology_diversity,
     summarize_beast_posterior_trees,
+)
+from bijux_phylogenetics.bayesian.beast.xml_analysis import (
+    prepare_beast_time_tree_analysis,
 )
 from bijux_phylogenetics.bayesian.mrbayes import (
     parse_mrbayes_consensus_tree,
@@ -94,6 +101,37 @@ def test_prepare_mrbayes_analysis_is_accepted_by_real_mrbayes_on_partitioned_inp
         ].annotated_node_count
         > 0
     )
+
+
+def test_run_mrbayes_posterior_inference_resumes_verified_real_outputs(
+    tmp_path: Path,
+) -> None:
+    executable = real_mrbayes_executable()
+    if executable is None:
+        pytest.skip("real MrBayes executable is not available")
+
+    nexus_path = tmp_path / "analysis.nex"
+    prepare_mrbayes_analysis(
+        fixture("alignments/example_alignment.fasta"),
+        nexus_path,
+    )
+
+    first = run_mrbayes_posterior_inference(
+        nexus_path,
+        executable=executable,
+        resume=False,
+    )
+    resumed = run_mrbayes_posterior_inference(
+        nexus_path,
+        executable=executable,
+        resume=True,
+    )
+
+    assert first.output_paths["posterior_trees"].exists()
+    assert first.output_paths["parameter_traces"].exists()
+    assert first.output_paths["mcmc_diagnostics"].exists()
+    assert first.output_paths["consensus_tree"].exists()
+    assert resumed.resumed is True
 
 
 def _run_small_beast_analysis(tmp_path: Path) -> Path:
@@ -187,3 +225,40 @@ def test_summarize_beast_posterior_topology_diversity_with_real_executable_on_sm
     assert report.rooted_topology_count >= 1
     assert report.dominant_topology_frequency > 0.0
     assert report.effective_topology_count >= 1.0
+
+
+@pytest.mark.slow
+def test_run_beast_posterior_inference_resumes_verified_real_outputs(
+    tmp_path: Path,
+) -> None:
+    executable = real_beast_executable()
+    if executable is None:
+        pytest.skip("real BEAST executable is not available for integration coverage")
+
+    output_path = tmp_path / "live-strict-yule.xml"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        output_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+
+    first = run_beast_posterior_inference(
+        output_path,
+        executable=executable,
+        threads=1,
+        seed=1,
+    )
+    resumed = run_beast_posterior_inference(
+        output_path,
+        executable=executable,
+        threads=1,
+        seed=1,
+        resume=True,
+    )
+
+    assert first.output_paths["posterior_log"].exists()
+    assert first.output_paths["posterior_trees"].exists()
+    assert resumed.resumed is True

@@ -1,0 +1,2946 @@
+{
+  "bootstrap_support_summary": null,
+  "config": {
+    "partition_path": null,
+    "seed": 1,
+    "sequence_type": "protein",
+    "threads": 1,
+    "timeout_seconds": null
+  },
+  "engine_name": "iqtree",
+  "fasttree_support_summary": null,
+  "input_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln": "ab275efd30c082adc4b777e59fe6c92589425c544b74e7ea661ab066d6e75c7b"
+  },
+  "input_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln"
+  ],
+  "iqtree_summary": {
+    "log_likelihood": -1592.5603,
+    "maximum_support": null,
+    "minimum_support": null,
+    "selected_model": "JTTDCMut+G4",
+    "support_value_count": 0,
+    "support_values": []
+  },
+  "log_likelihood": -1592.5603,
+  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/model-selection/model-selection.manifest.json",
+  "model_selection_summary": {
+    "best_model_aic": "JTTDCMut+G4",
+    "best_model_aicc": "JTTDCMut+G4",
+    "best_model_bic": "JTTDCMut+G4",
+    "best_score_aic": 3301.117877,
+    "best_score_aicc": 3380.699272,
+    "best_score_bic": 3473.768434,
+    "bic_near_best_models": [
+      "JTTDCMut+G4",
+      "JTT+G4",
+      "JTTDCMut+R2",
+      "JTT+R2",
+      "JTTDCMut+I+G4",
+      "JTT+I+G4",
+      "JTT+I",
+      "JTTDCMut+I",
+      "Q.plant+G4",
+      "JTTDCMut+I+R2",
+      "Q.insect+G4",
+      "JTT+I+R2",
+      "Q.mammal+G4",
+      "Q.plant+R2",
+      "Q.plant+I+G4",
+      "Q.insect+R2",
+      "Q.mammal+R2",
+      "Q.insect+I+G4",
+      "Q.mammal+I+G4",
+      "Q.insect+I",
+      "Q.plant+I+R2",
+      "Q.plant+I",
+      "Q.insect+I+R2",
+      "Q.mammal+I+R2",
+      "Q.mammal+I",
+      "Q.bird+G4",
+      "cpREV+G4",
+      "VT+G4",
+      "Q.bird+R2",
+      "Q.bird+I+G4",
+      "cpREV+I+G4",
+      "VT+R2",
+      "VT+I",
+      "WAG+G4",
+      "Q.yeast+G4",
+      "VT+I+G4",
+      "cpREV+R2",
+      "Q.bird+I+R2",
+      "WAG+R2",
+      "Q.yeast+I+G4",
+      "cpREV+I",
+      "Q.yeast+R2",
+      "WAG+I+G4",
+      "VT+I+R2",
+      "Q.bird+I",
+      "WAG+I",
+      "cpREV+I+R2",
+      "Q.pfam+G4",
+      "LG+G4",
+      "Q.yeast+I",
+      "WAG+I+R2",
+      "Q.yeast+I+R2",
+      "Q.pfam+I+G4",
+      "Q.pfam+R2",
+      "Q.pfam+I",
+      "LG+I+G4",
+      "LG+R2",
+      "LG+I",
+      "Q.pfam+I+R2",
+      "LG+I+R2",
+      "DCMut+G4",
+      "Dayhoff+G4",
+      "PMB+G4",
+      "DCMut+R2",
+      "Dayhoff+R2",
+      "LG+R3",
+      "PMB+R2",
+      "PMB+I",
+      "PMB+I+G4",
+      "DCMut+I+G4",
+      "Dayhoff+I+G4",
+      "FLAVI+G4",
+      "LG+I+R3",
+      "DCMut+I+R2",
+      "Dayhoff+I+R2",
+      "PMB+I+R2",
+      "DCMut+I",
+      "Blosum62+G4",
+      "Dayhoff+I",
+      "FLAVI+I+G4",
+      "FLAVI+R2",
+      "Blosum62+I",
+      "Blosum62+I+G4",
+      "FLU+G4",
+      "Blosum62+R2",
+      "FLAVI+I+R2",
+      "FLU+I+G4",
+      "Blosum62+I+R2",
+      "FLU+R2",
+      "LG",
+      "FLU+I+R2",
+      "JTTDCMut+F+G4",
+      "HIVb+G4",
+      "JTT+F+G4",
+      "FLU+I",
+      "JTTDCMut+F+R2",
+      "JTT+F+R2",
+      "FLAVI+I",
+      "HIVb+I+G4",
+      "JTTDCMut+F+I+G4",
+      "HIVb+R2",
+      "JTT+F+I+G4",
+      "JTTDCMut+F+I",
+      "JTT+F+I",
+      "JTTDCMut+F+I+R2",
+      "JTT+F+I+R2",
+      "rtREV+G4",
+      "HIVb+I+R2",
+      "rtREV+I+G4",
+      "rtREV+I",
+      "HIVb+I",
+      "rtREV+R2",
+      "Q.insect+F+G4",
+      "Q.plant+F+G4",
+      "Q.mammal+F+G4",
+      "Q.insect+F+R2",
+      "mtZOA+G4",
+      "rtREV+I+R2",
+      "Q.insect+F+I+G4",
+      "Q.plant+F+R2",
+      "Q.plant+F+I+G4",
+      "cpREV+F+G4",
+      "Q.mammal+F+R2",
+      "Q.insect+F+I",
+      "Q.mammal+F+I+G4",
+      "Q.insect+F+I+R2",
+      "mtZOA+I+G4",
+      "cpREV+F+R2",
+      "Q.plant+F+I+R2",
+      "cpREV+F+I+G4",
+      "Q.mammal+F+I+R2",
+      "Q.plant+F+I",
+      "mtZOA+R2",
+      "mtZOA+I+R2",
+      "WAG+F+G4",
+      "Q.mammal+F+I",
+      "cpREV+F+I",
+      "cpREV+F+I+R2",
+      "DCMut+F+G4",
+      "Dayhoff+F+G4",
+      "Q.bird+F+G4",
+      "VT+F+G4",
+      "WAG+F+R2",
+      "DCMut+F+R2",
+      "Dayhoff+F+R2",
+      "WAG+F+I+G4",
+      "mtMet+G4",
+      "Q.yeast+F+G4",
+      "WAG+F+I",
+      "VT+F+R2",
+      "DCMut+F+I+G4",
+      "Dayhoff+F+I+G4",
+      "VT+F+I+G4",
+      "VT+F+I",
+      "Q.bird+F+I+G4",
+      "Q.bird+F+R2",
+      "WAG+F+I+R2",
+      "DCMut+F+I+R2",
+      "Q.yeast+F+R2",
+      "Dayhoff+F+I+R2",
+      "Q.yeast+F+I+G4",
+      "mtMet+I+G4",
+      "VT+F+I+R2",
+      "LG+F+G4",
+      "DCMut+F+I",
+      "Q.bird+F+I+R2",
+      "Dayhoff+F+I",
+      "mtMet+R2",
+      "Q.yeast+F+I",
+      "HIVb+F+G4",
+      "Q.yeast+F+I+R2",
+      "Q.pfam+F+G4",
+      "LG+F+R2",
+      "LG+F+I+G4",
+      "mtInv+F+G4",
+      "mtMet+I+R2",
+      "HIVb+F+R2",
+      "HIVb+F+I+G4",
+      "LG+F+I",
+      "Q.pfam+F+I+G4",
+      "Q.pfam+F+R2",
+      "mtZOA+I",
+      "rtREV+F+G4",
+      "mtInv+F+I+G4",
+      "mtInv+F+R2",
+      "Q.bird+F+I",
+      "LG+F+I+R2",
+      "mtREV+G4",
+      "Q.pfam+F+I",
+      "HIVb+F+I+R2",
+      "FLAVI+F+G4",
+      "rtREV+F+I+G4",
+      "Q.pfam+F+I+R2",
+      "rtREV+F+R2",
+      "mtREV+I+G4",
+      "FLU+F+G4",
+      "mtInv+F+I+R2",
+      "PMB+F+G4",
+      "rtREV+F+I",
+      "mtREV+R2",
+      "mtInv+G4",
+      "mtInv+F+I",
+      "FLAVI+F+I+G4",
+      "rtREV+F+I+R2",
+      "FLAVI+F+R2",
+      "PMB+F+R2",
+      "mtMet+F+G4",
+      "FLU+F+I+G4",
+      "PMB+F+I+G4",
+      "PMB+F+I",
+      "mtREV+I+R2",
+      "Blosum62+F+G4",
+      "FLU+F+R2",
+      "mtMet+I",
+      "mtInv+I+G4",
+      "mtREV+I",
+      "mtInv+R2",
+      "Blosum62+F+I",
+      "mtMet+F+I+G4",
+      "PMB+F+I+R2",
+      "Blosum62+F+R2",
+      "HIVb+F+I",
+      "Blosum62+F+I+G4",
+      "mtMet+F+R2",
+      "FLAVI+F+I+R2",
+      "mtZOA+F+G4",
+      "FLU+F+I+R2",
+      "mtInv+I+R2",
+      "mtREV+F+G4",
+      "mtZOA+F+I+G4",
+      "Blosum62+F+I+R2",
+      "mtMet+F+I+R2",
+      "mtREV+F+R2",
+      "mtZOA+F+R2",
+      "mtREV+F+I+G4",
+      "mtVer+G4",
+      "FLU+F+I",
+      "mtREV+F+I+R2",
+      "mtZOA+F+I+R2",
+      "mtART+G4",
+      "mtInv+I",
+      "mtVer+I+G4",
+      "mtMet+F+I",
+      "mtREV+F+I",
+      "mtART+I+G4",
+      "mtVer+R2",
+      "FLAVI+F+I",
+      "mtVer+I+R2",
+      "mtZOA+F+I",
+      "mtART+I+R2",
+      "mtART+R2",
+      "HIVw+G4",
+      "mtVer+F+G4",
+      "HIVw+I+G4",
+      "mtVer+F+I+G4",
+      "mtART+F+G4",
+      "mtMAM+G4",
+      "mtVer+F+R2",
+      "HIVw+R2",
+      "mtVer+I",
+      "mtART+F+I+G4",
+      "HIVw+F+G4",
+      "mtMAM+I+G4",
+      "mtVer+F+I+R2",
+      "HIVw+I+R2",
+      "HIVw+F+I+G4",
+      "HIVw+F+R2",
+      "mtART+F+R2",
+      "mtMAM+I+R2",
+      "mtART+F+I+R2",
+      "mtMAM+R2",
+      "HIVw+F+I+R2",
+      "HIVw+I",
+      "mtART+I",
+      "mtVer+F+I",
+      "HIVw+F+I",
+      "mtMAM+F+G4",
+      "mtART+F+I",
+      "mtMAM+F+I+G4",
+      "mtMAM+F+I+R2",
+      "mtMAM+F+R2",
+      "mtMAM+I",
+      "mtMAM+F+I"
+    ],
+    "candidate_count": 283,
+    "candidates": [
+      {
+        "aic": 3301.118,
+        "aicc": 3380.699,
+        "bic": 3473.768,
+        "log_likelihood": -1592.559,
+        "model": "JTTDCMut+G4",
+        "parameter_count": 58,
+        "rank": 1
+      },
+      {
+        "aic": 3301.18,
+        "aicc": 3380.762,
+        "bic": 3473.831,
+        "log_likelihood": -1592.59,
+        "model": "JTT+G4",
+        "parameter_count": 58,
+        "rank": 2
+      },
+      {
+        "aic": 3301.67,
+        "aicc": 3384.964,
+        "bic": 3477.297,
+        "log_likelihood": -1591.835,
+        "model": "JTTDCMut+R2",
+        "parameter_count": 59,
+        "rank": 3
+      },
+      {
+        "aic": 3301.835,
+        "aicc": 3385.129,
+        "bic": 3477.462,
+        "log_likelihood": -1591.917,
+        "model": "JTT+R2",
+        "parameter_count": 59,
+        "rank": 4
+      },
+      {
+        "aic": 3302.597,
+        "aicc": 3385.891,
+        "bic": 3478.224,
+        "log_likelihood": -1592.298,
+        "model": "JTTDCMut+I+G4",
+        "parameter_count": 59,
+        "rank": 5
+      },
+      {
+        "aic": 3302.662,
+        "aicc": 3385.956,
+        "bic": 3478.29,
+        "log_likelihood": -1592.331,
+        "model": "JTT+I+G4",
+        "parameter_count": 59,
+        "rank": 6
+      },
+      {
+        "aic": 3307.729,
+        "aicc": 3387.31,
+        "bic": 3480.38,
+        "log_likelihood": -1595.865,
+        "model": "JTT+I",
+        "parameter_count": 58,
+        "rank": 7
+      },
+      {
+        "aic": 3307.795,
+        "aicc": 3387.376,
+        "bic": 3480.445,
+        "log_likelihood": -1595.897,
+        "model": "JTTDCMut+I",
+        "parameter_count": 58,
+        "rank": 8
+      },
+      {
+        "aic": 3308.277,
+        "aicc": 3387.858,
+        "bic": 3480.927,
+        "log_likelihood": -1596.138,
+        "model": "Q.plant+G4",
+        "parameter_count": 58,
+        "rank": 9
+      },
+      {
+        "aic": 3304.03,
+        "aicc": 3391.173,
+        "bic": 3482.634,
+        "log_likelihood": -1592.015,
+        "model": "JTTDCMut+I+R2",
+        "parameter_count": 60,
+        "rank": 10
+      },
+      {
+        "aic": 3310.28,
+        "aicc": 3389.862,
+        "bic": 3482.931,
+        "log_likelihood": -1597.14,
+        "model": "Q.insect+G4",
+        "parameter_count": 58,
+        "rank": 11
+      },
+      {
+        "aic": 3304.499,
+        "aicc": 3391.642,
+        "bic": 3483.103,
+        "log_likelihood": -1592.249,
+        "model": "JTT+I+R2",
+        "parameter_count": 60,
+        "rank": 12
+      },
+      {
+        "aic": 3310.916,
+        "aicc": 3390.497,
+        "bic": 3483.566,
+        "log_likelihood": -1597.458,
+        "model": "Q.mammal+G4",
+        "parameter_count": 58,
+        "rank": 13
+      },
+      {
+        "aic": 3308.586,
+        "aicc": 3391.88,
+        "bic": 3484.213,
+        "log_likelihood": -1595.293,
+        "model": "Q.plant+R2",
+        "parameter_count": 59,
+        "rank": 14
+      },
+      {
+        "aic": 3309.439,
+        "aicc": 3392.733,
+        "bic": 3485.066,
+        "log_likelihood": -1595.719,
+        "model": "Q.plant+I+G4",
+        "parameter_count": 59,
+        "rank": 15
+      },
+      {
+        "aic": 3310.69,
+        "aicc": 3393.984,
+        "bic": 3486.317,
+        "log_likelihood": -1596.345,
+        "model": "Q.insect+R2",
+        "parameter_count": 59,
+        "rank": 16
+      },
+      {
+        "aic": 3310.733,
+        "aicc": 3394.027,
+        "bic": 3486.36,
+        "log_likelihood": -1596.367,
+        "model": "Q.mammal+R2",
+        "parameter_count": 59,
+        "rank": 17
+      },
+      {
+        "aic": 3311.314,
+        "aicc": 3394.608,
+        "bic": 3486.941,
+        "log_likelihood": -1596.657,
+        "model": "Q.insect+I+G4",
+        "parameter_count": 59,
+        "rank": 18
+      },
+      {
+        "aic": 3312.16,
+        "aicc": 3395.454,
+        "bic": 3487.787,
+        "log_likelihood": -1597.08,
+        "model": "Q.mammal+I+G4",
+        "parameter_count": 59,
+        "rank": 19
+      },
+      {
+        "aic": 3316.744,
+        "aicc": 3396.325,
+        "bic": 3489.394,
+        "log_likelihood": -1600.372,
+        "model": "Q.insect+I",
+        "parameter_count": 58,
+        "rank": 20
+      },
+      {
+        "aic": 3310.956,
+        "aicc": 3398.099,
+        "bic": 3489.56,
+        "log_likelihood": -1595.478,
+        "model": "Q.plant+I+R2",
+        "parameter_count": 60,
+        "rank": 21
+      },
+      {
+        "aic": 3318.338,
+        "aicc": 3397.92,
+        "bic": 3490.989,
+        "log_likelihood": -1601.169,
+        "model": "Q.plant+I",
+        "parameter_count": 58,
+        "rank": 22
+      },
+      {
+        "aic": 3313.027,
+        "aicc": 3400.17,
+        "bic": 3491.631,
+        "log_likelihood": -1596.514,
+        "model": "Q.insect+I+R2",
+        "parameter_count": 60,
+        "rank": 23
+      },
+      {
+        "aic": 3313.348,
+        "aicc": 3400.491,
+        "bic": 3491.952,
+        "log_likelihood": -1596.674,
+        "model": "Q.mammal+I+R2",
+        "parameter_count": 60,
+        "rank": 24
+      },
+      {
+        "aic": 3320.316,
+        "aicc": 3399.897,
+        "bic": 3492.966,
+        "log_likelihood": -1602.158,
+        "model": "Q.mammal+I",
+        "parameter_count": 58,
+        "rank": 25
+      },
+      {
+        "aic": 3328.04,
+        "aicc": 3407.622,
+        "bic": 3500.691,
+        "log_likelihood": -1606.02,
+        "model": "Q.bird+G4",
+        "parameter_count": 58,
+        "rank": 26
+      },
+      {
+        "aic": 3330.765,
+        "aicc": 3410.346,
+        "bic": 3503.415,
+        "log_likelihood": -1607.382,
+        "model": "cpREV+G4",
+        "parameter_count": 58,
+        "rank": 27
+      },
+      {
+        "aic": 3331.84,
+        "aicc": 3411.422,
+        "bic": 3504.491,
+        "log_likelihood": -1607.92,
+        "model": "VT+G4",
+        "parameter_count": 58,
+        "rank": 28
+      },
+      {
+        "aic": 3329.286,
+        "aicc": 3412.58,
+        "bic": 3504.913,
+        "log_likelihood": -1605.643,
+        "model": "Q.bird+R2",
+        "parameter_count": 59,
+        "rank": 29
+      },
+      {
+        "aic": 3329.383,
+        "aicc": 3412.677,
+        "bic": 3505.01,
+        "log_likelihood": -1605.691,
+        "model": "Q.bird+I+G4",
+        "parameter_count": 59,
+        "rank": 30
+      },
+      {
+        "aic": 3332.568,
+        "aicc": 3415.863,
+        "bic": 3508.196,
+        "log_likelihood": -1607.284,
+        "model": "cpREV+I+G4",
+        "parameter_count": 59,
+        "rank": 31
+      },
+      {
+        "aic": 3332.701,
+        "aicc": 3415.995,
+        "bic": 3508.329,
+        "log_likelihood": -1607.351,
+        "model": "VT+R2",
+        "parameter_count": 59,
+        "rank": 32
+      },
+      {
+        "aic": 3335.744,
+        "aicc": 3415.326,
+        "bic": 3508.395,
+        "log_likelihood": -1609.872,
+        "model": "VT+I",
+        "parameter_count": 58,
+        "rank": 33
+      },
+      {
+        "aic": 3335.824,
+        "aicc": 3415.405,
+        "bic": 3508.474,
+        "log_likelihood": -1609.912,
+        "model": "WAG+G4",
+        "parameter_count": 58,
+        "rank": 34
+      },
+      {
+        "aic": 3335.865,
+        "aicc": 3415.446,
+        "bic": 3508.515,
+        "log_likelihood": -1609.932,
+        "model": "Q.yeast+G4",
+        "parameter_count": 58,
+        "rank": 35
+      },
+      {
+        "aic": 3333.078,
+        "aicc": 3416.372,
+        "bic": 3508.705,
+        "log_likelihood": -1607.539,
+        "model": "VT+I+G4",
+        "parameter_count": 59,
+        "rank": 36
+      },
+      {
+        "aic": 3333.343,
+        "aicc": 3416.637,
+        "bic": 3508.97,
+        "log_likelihood": -1607.671,
+        "model": "cpREV+R2",
+        "parameter_count": 59,
+        "rank": 37
+      },
+      {
+        "aic": 3331.293,
+        "aicc": 3418.436,
+        "bic": 3509.897,
+        "log_likelihood": -1605.647,
+        "model": "Q.bird+I+R2",
+        "parameter_count": 60,
+        "rank": 38
+      },
+      {
+        "aic": 3336.805,
+        "aicc": 3420.1,
+        "bic": 3512.433,
+        "log_likelihood": -1609.403,
+        "model": "WAG+R2",
+        "parameter_count": 59,
+        "rank": 39
+      },
+      {
+        "aic": 3337.062,
+        "aicc": 3420.356,
+        "bic": 3512.689,
+        "log_likelihood": -1609.531,
+        "model": "Q.yeast+I+G4",
+        "parameter_count": 59,
+        "rank": 40
+      },
+      {
+        "aic": 3340.087,
+        "aicc": 3419.669,
+        "bic": 3512.738,
+        "log_likelihood": -1612.044,
+        "model": "cpREV+I",
+        "parameter_count": 58,
+        "rank": 41
+      },
+      {
+        "aic": 3337.294,
+        "aicc": 3420.589,
+        "bic": 3512.922,
+        "log_likelihood": -1609.647,
+        "model": "Q.yeast+R2",
+        "parameter_count": 59,
+        "rank": 42
+      },
+      {
+        "aic": 3337.358,
+        "aicc": 3420.653,
+        "bic": 3512.986,
+        "log_likelihood": -1609.679,
+        "model": "WAG+I+G4",
+        "parameter_count": 59,
+        "rank": 43
+      },
+      {
+        "aic": 3334.798,
+        "aicc": 3421.941,
+        "bic": 3513.402,
+        "log_likelihood": -1607.399,
+        "model": "VT+I+R2",
+        "parameter_count": 60,
+        "rank": 44
+      },
+      {
+        "aic": 3341.023,
+        "aicc": 3420.605,
+        "bic": 3513.674,
+        "log_likelihood": -1612.512,
+        "model": "Q.bird+I",
+        "parameter_count": 58,
+        "rank": 45
+      },
+      {
+        "aic": 3341.596,
+        "aicc": 3421.177,
+        "bic": 3514.246,
+        "log_likelihood": -1612.798,
+        "model": "WAG+I",
+        "parameter_count": 58,
+        "rank": 46
+      },
+      {
+        "aic": 3335.707,
+        "aicc": 3422.85,
+        "bic": 3514.311,
+        "log_likelihood": -1607.854,
+        "model": "cpREV+I+R2",
+        "parameter_count": 60,
+        "rank": 47
+      },
+      {
+        "aic": 3341.978,
+        "aicc": 3421.559,
+        "bic": 3514.628,
+        "log_likelihood": -1612.989,
+        "model": "Q.pfam+G4",
+        "parameter_count": 58,
+        "rank": 48
+      },
+      {
+        "aic": 3343.518,
+        "aicc": 3423.1,
+        "bic": 3516.169,
+        "log_likelihood": -1613.759,
+        "model": "LG+G4",
+        "parameter_count": 58,
+        "rank": 49
+      },
+      {
+        "aic": 3343.992,
+        "aicc": 3423.573,
+        "bic": 3516.642,
+        "log_likelihood": -1613.996,
+        "model": "Q.yeast+I",
+        "parameter_count": 58,
+        "rank": 50
+      },
+      {
+        "aic": 3339.273,
+        "aicc": 3426.416,
+        "bic": 3517.877,
+        "log_likelihood": -1609.637,
+        "model": "WAG+I+R2",
+        "parameter_count": 60,
+        "rank": 51
+      },
+      {
+        "aic": 3339.372,
+        "aicc": 3426.515,
+        "bic": 3517.976,
+        "log_likelihood": -1609.686,
+        "model": "Q.yeast+I+R2",
+        "parameter_count": 60,
+        "rank": 52
+      },
+      {
+        "aic": 3342.588,
+        "aicc": 3425.882,
+        "bic": 3518.216,
+        "log_likelihood": -1612.294,
+        "model": "Q.pfam+I+G4",
+        "parameter_count": 59,
+        "rank": 53
+      },
+      {
+        "aic": 3343.193,
+        "aicc": 3426.488,
+        "bic": 3518.821,
+        "log_likelihood": -1612.597,
+        "model": "Q.pfam+R2",
+        "parameter_count": 59,
+        "rank": 54
+      },
+      {
+        "aic": 3346.879,
+        "aicc": 3426.461,
+        "bic": 3519.53,
+        "log_likelihood": -1615.44,
+        "model": "Q.pfam+I",
+        "parameter_count": 58,
+        "rank": 55
+      },
+      {
+        "aic": 3344.418,
+        "aicc": 3427.712,
+        "bic": 3520.045,
+        "log_likelihood": -1613.209,
+        "model": "LG+I+G4",
+        "parameter_count": 59,
+        "rank": 56
+      },
+      {
+        "aic": 3345.161,
+        "aicc": 3428.455,
+        "bic": 3520.788,
+        "log_likelihood": -1613.58,
+        "model": "LG+R2",
+        "parameter_count": 59,
+        "rank": 57
+      },
+      {
+        "aic": 3349.317,
+        "aicc": 3428.898,
+        "bic": 3521.967,
+        "log_likelihood": -1616.658,
+        "model": "LG+I",
+        "parameter_count": 58,
+        "rank": 58
+      },
+      {
+        "aic": 3345.061,
+        "aicc": 3432.204,
+        "bic": 3523.666,
+        "log_likelihood": -1612.531,
+        "model": "Q.pfam+I+R2",
+        "parameter_count": 60,
+        "rank": 59
+      },
+      {
+        "aic": 3347.013,
+        "aicc": 3434.156,
+        "bic": 3525.617,
+        "log_likelihood": -1613.507,
+        "model": "LG+I+R2",
+        "parameter_count": 60,
+        "rank": 60
+      },
+      {
+        "aic": 3353.755,
+        "aicc": 3433.337,
+        "bic": 3526.406,
+        "log_likelihood": -1618.878,
+        "model": "DCMut+G4",
+        "parameter_count": 58,
+        "rank": 61
+      },
+      {
+        "aic": 3353.912,
+        "aicc": 3433.494,
+        "bic": 3526.563,
+        "log_likelihood": -1618.956,
+        "model": "Dayhoff+G4",
+        "parameter_count": 58,
+        "rank": 62
+      },
+      {
+        "aic": 3354.059,
+        "aicc": 3433.641,
+        "bic": 3526.71,
+        "log_likelihood": -1619.03,
+        "model": "PMB+G4",
+        "parameter_count": 58,
+        "rank": 63
+      },
+      {
+        "aic": 3354.094,
+        "aicc": 3437.388,
+        "bic": 3529.721,
+        "log_likelihood": -1618.047,
+        "model": "DCMut+R2",
+        "parameter_count": 59,
+        "rank": 64
+      },
+      {
+        "aic": 3354.24,
+        "aicc": 3437.534,
+        "bic": 3529.867,
+        "log_likelihood": -1618.12,
+        "model": "Dayhoff+R2",
+        "parameter_count": 59,
+        "rank": 65
+      },
+      {
+        "aic": 3348.971,
+        "aicc": 3440.103,
+        "bic": 3530.552,
+        "log_likelihood": -1613.485,
+        "model": "LG+R3",
+        "parameter_count": 61,
+        "rank": 66
+      },
+      {
+        "aic": 3355.172,
+        "aicc": 3438.466,
+        "bic": 3530.799,
+        "log_likelihood": -1618.586,
+        "model": "PMB+R2",
+        "parameter_count": 59,
+        "rank": 67
+      },
+      {
+        "aic": 3358.301,
+        "aicc": 3437.883,
+        "bic": 3530.952,
+        "log_likelihood": -1621.151,
+        "model": "PMB+I",
+        "parameter_count": 58,
+        "rank": 68
+      },
+      {
+        "aic": 3355.357,
+        "aicc": 3438.651,
+        "bic": 3530.984,
+        "log_likelihood": -1618.678,
+        "model": "PMB+I+G4",
+        "parameter_count": 59,
+        "rank": 69
+      },
+      {
+        "aic": 3355.492,
+        "aicc": 3438.786,
+        "bic": 3531.119,
+        "log_likelihood": -1618.746,
+        "model": "DCMut+I+G4",
+        "parameter_count": 59,
+        "rank": 70
+      },
+      {
+        "aic": 3355.626,
+        "aicc": 3438.92,
+        "bic": 3531.253,
+        "log_likelihood": -1618.813,
+        "model": "Dayhoff+I+G4",
+        "parameter_count": 59,
+        "rank": 71
+      },
+      {
+        "aic": 3359.173,
+        "aicc": 3438.754,
+        "bic": 3531.824,
+        "log_likelihood": -1621.587,
+        "model": "FLAVI+G4",
+        "parameter_count": 58,
+        "rank": 72
+      },
+      {
+        "aic": 3350.575,
+        "aicc": 3445.844,
+        "bic": 3535.133,
+        "log_likelihood": -1613.288,
+        "model": "LG+I+R3",
+        "parameter_count": 62,
+        "rank": 73
+      },
+      {
+        "aic": 3356.563,
+        "aicc": 3443.706,
+        "bic": 3535.167,
+        "log_likelihood": -1618.281,
+        "model": "DCMut+I+R2",
+        "parameter_count": 60,
+        "rank": 74
+      },
+      {
+        "aic": 3356.62,
+        "aicc": 3443.763,
+        "bic": 3535.224,
+        "log_likelihood": -1618.31,
+        "model": "Dayhoff+I+R2",
+        "parameter_count": 60,
+        "rank": 75
+      },
+      {
+        "aic": 3357.245,
+        "aicc": 3444.388,
+        "bic": 3535.849,
+        "log_likelihood": -1618.623,
+        "model": "PMB+I+R2",
+        "parameter_count": 60,
+        "rank": 76
+      },
+      {
+        "aic": 3363.611,
+        "aicc": 3443.193,
+        "bic": 3536.262,
+        "log_likelihood": -1623.806,
+        "model": "DCMut+I",
+        "parameter_count": 58,
+        "rank": 77
+      },
+      {
+        "aic": 3363.67,
+        "aicc": 3443.251,
+        "bic": 3536.32,
+        "log_likelihood": -1623.835,
+        "model": "Blosum62+G4",
+        "parameter_count": 58,
+        "rank": 78
+      },
+      {
+        "aic": 3363.872,
+        "aicc": 3443.454,
+        "bic": 3536.523,
+        "log_likelihood": -1623.936,
+        "model": "Dayhoff+I",
+        "parameter_count": 58,
+        "rank": 79
+      },
+      {
+        "aic": 3361.2,
+        "aicc": 3444.494,
+        "bic": 3536.828,
+        "log_likelihood": -1621.6,
+        "model": "FLAVI+I+G4",
+        "parameter_count": 59,
+        "rank": 80
+      },
+      {
+        "aic": 3363.386,
+        "aicc": 3446.68,
+        "bic": 3539.014,
+        "log_likelihood": -1622.693,
+        "model": "FLAVI+R2",
+        "parameter_count": 59,
+        "rank": 81
+      },
+      {
+        "aic": 3366.86,
+        "aicc": 3446.442,
+        "bic": 3539.511,
+        "log_likelihood": -1625.43,
+        "model": "Blosum62+I",
+        "parameter_count": 58,
+        "rank": 82
+      },
+      {
+        "aic": 3364.628,
+        "aicc": 3447.922,
+        "bic": 3540.255,
+        "log_likelihood": -1623.314,
+        "model": "Blosum62+I+G4",
+        "parameter_count": 59,
+        "rank": 83
+      },
+      {
+        "aic": 3367.763,
+        "aicc": 3447.344,
+        "bic": 3540.413,
+        "log_likelihood": -1625.881,
+        "model": "FLU+G4",
+        "parameter_count": 58,
+        "rank": 84
+      },
+      {
+        "aic": 3364.81,
+        "aicc": 3448.104,
+        "bic": 3540.437,
+        "log_likelihood": -1623.405,
+        "model": "Blosum62+R2",
+        "parameter_count": 59,
+        "rank": 85
+      },
+      {
+        "aic": 3365.109,
+        "aicc": 3452.252,
+        "bic": 3543.713,
+        "log_likelihood": -1622.554,
+        "model": "FLAVI+I+R2",
+        "parameter_count": 60,
+        "rank": 86
+      },
+      {
+        "aic": 3369.322,
+        "aicc": 3452.616,
+        "bic": 3544.949,
+        "log_likelihood": -1625.661,
+        "model": "FLU+I+G4",
+        "parameter_count": 59,
+        "rank": 87
+      },
+      {
+        "aic": 3366.788,
+        "aicc": 3453.931,
+        "bic": 3545.392,
+        "log_likelihood": -1623.394,
+        "model": "Blosum62+I+R2",
+        "parameter_count": 60,
+        "rank": 88
+      },
+      {
+        "aic": 3370.637,
+        "aicc": 3453.931,
+        "bic": 3546.264,
+        "log_likelihood": -1626.318,
+        "model": "FLU+R2",
+        "parameter_count": 59,
+        "rank": 89
+      },
+      {
+        "aic": 3378.328,
+        "aicc": 3454.328,
+        "bic": 3548.002,
+        "log_likelihood": -1632.164,
+        "model": "LG",
+        "parameter_count": 57,
+        "rank": 90
+      },
+      {
+        "aic": 3372.954,
+        "aicc": 3460.097,
+        "bic": 3551.558,
+        "log_likelihood": -1626.477,
+        "model": "FLU+I+R2",
+        "parameter_count": 60,
+        "rank": 91
+      },
+      {
+        "aic": 3325.811,
+        "aicc": 3505.094,
+        "bic": 3555.019,
+        "log_likelihood": -1585.905,
+        "model": "JTTDCMut+F+G4",
+        "parameter_count": 77,
+        "rank": 92
+      },
+      {
+        "aic": 3382.439,
+        "aicc": 3462.02,
+        "bic": 3555.089,
+        "log_likelihood": -1633.219,
+        "model": "HIVb+G4",
+        "parameter_count": 58,
+        "rank": 93
+      },
+      {
+        "aic": 3326.338,
+        "aicc": 3505.621,
+        "bic": 3555.546,
+        "log_likelihood": -1586.169,
+        "model": "JTT+F+G4",
+        "parameter_count": 77,
+        "rank": 94
+      },
+      {
+        "aic": 3385.024,
+        "aicc": 3464.605,
+        "bic": 3557.675,
+        "log_likelihood": -1634.512,
+        "model": "FLU+I",
+        "parameter_count": 58,
+        "rank": 95
+      },
+      {
+        "aic": 3325.844,
+        "aicc": 3512.571,
+        "bic": 3558.029,
+        "log_likelihood": -1584.922,
+        "model": "JTTDCMut+F+R2",
+        "parameter_count": 78,
+        "rank": 96
+      },
+      {
+        "aic": 3326.523,
+        "aicc": 3513.25,
+        "bic": 3558.708,
+        "log_likelihood": -1585.261,
+        "model": "JTT+F+R2",
+        "parameter_count": 78,
+        "rank": 97
+      },
+      {
+        "aic": 3386.255,
+        "aicc": 3465.837,
+        "bic": 3558.906,
+        "log_likelihood": -1635.128,
+        "model": "FLAVI+I",
+        "parameter_count": 58,
+        "rank": 98
+      },
+      {
+        "aic": 3383.955,
+        "aicc": 3467.249,
+        "bic": 3559.582,
+        "log_likelihood": -1632.977,
+        "model": "HIVb+I+G4",
+        "parameter_count": 59,
+        "rank": 99
+      },
+      {
+        "aic": 3327.551,
+        "aicc": 3514.279,
+        "bic": 3559.737,
+        "log_likelihood": -1585.776,
+        "model": "JTTDCMut+F+I+G4",
+        "parameter_count": 78,
+        "rank": 100
+      },
+      {
+        "aic": 3384.337,
+        "aicc": 3467.631,
+        "bic": 3559.965,
+        "log_likelihood": -1633.169,
+        "model": "HIVb+R2",
+        "parameter_count": 59,
+        "rank": 101
+      },
+      {
+        "aic": 3328.071,
+        "aicc": 3514.798,
+        "bic": 3560.256,
+        "log_likelihood": -1586.035,
+        "model": "JTT+F+I+G4",
+        "parameter_count": 78,
+        "rank": 102
+      },
+      {
+        "aic": 3333.95,
+        "aicc": 3513.234,
+        "bic": 3563.159,
+        "log_likelihood": -1589.975,
+        "model": "JTTDCMut+F+I",
+        "parameter_count": 77,
+        "rank": 103
+      },
+      {
+        "aic": 3334.239,
+        "aicc": 3513.522,
+        "bic": 3563.447,
+        "log_likelihood": -1590.119,
+        "model": "JTT+F+I",
+        "parameter_count": 77,
+        "rank": 104
+      },
+      {
+        "aic": 3328.323,
+        "aicc": 3522.785,
+        "bic": 3563.485,
+        "log_likelihood": -1585.162,
+        "model": "JTTDCMut+F+I+R2",
+        "parameter_count": 79,
+        "rank": 105
+      },
+      {
+        "aic": 3329.357,
+        "aicc": 3523.819,
+        "bic": 3564.519,
+        "log_likelihood": -1585.679,
+        "model": "JTT+F+I+R2",
+        "parameter_count": 79,
+        "rank": 106
+      },
+      {
+        "aic": 3392.669,
+        "aicc": 3472.251,
+        "bic": 3565.32,
+        "log_likelihood": -1638.335,
+        "model": "rtREV+G4",
+        "parameter_count": 58,
+        "rank": 107
+      },
+      {
+        "aic": 3386.797,
+        "aicc": 3473.94,
+        "bic": 3565.401,
+        "log_likelihood": -1633.398,
+        "model": "HIVb+I+R2",
+        "parameter_count": 60,
+        "rank": 108
+      },
+      {
+        "aic": 3393.378,
+        "aicc": 3476.672,
+        "bic": 3569.006,
+        "log_likelihood": -1637.689,
+        "model": "rtREV+I+G4",
+        "parameter_count": 59,
+        "rank": 109
+      },
+      {
+        "aic": 3396.444,
+        "aicc": 3476.026,
+        "bic": 3569.095,
+        "log_likelihood": -1640.222,
+        "model": "rtREV+I",
+        "parameter_count": 58,
+        "rank": 110
+      },
+      {
+        "aic": 3397.468,
+        "aicc": 3477.05,
+        "bic": 3570.119,
+        "log_likelihood": -1640.734,
+        "model": "HIVb+I",
+        "parameter_count": 58,
+        "rank": 111
+      },
+      {
+        "aic": 3394.579,
+        "aicc": 3477.873,
+        "bic": 3570.206,
+        "log_likelihood": -1638.29,
+        "model": "rtREV+R2",
+        "parameter_count": 59,
+        "rank": 112
+      },
+      {
+        "aic": 3341.616,
+        "aicc": 3520.9,
+        "bic": 3570.825,
+        "log_likelihood": -1593.808,
+        "model": "Q.insect+F+G4",
+        "parameter_count": 77,
+        "rank": 113
+      },
+      {
+        "aic": 3343.411,
+        "aicc": 3522.695,
+        "bic": 3572.62,
+        "log_likelihood": -1594.706,
+        "model": "Q.plant+F+G4",
+        "parameter_count": 77,
+        "rank": 114
+      },
+      {
+        "aic": 3344.471,
+        "aicc": 3523.755,
+        "bic": 3573.68,
+        "log_likelihood": -1595.236,
+        "model": "Q.mammal+F+G4",
+        "parameter_count": 77,
+        "rank": 115
+      },
+      {
+        "aic": 3341.597,
+        "aicc": 3528.324,
+        "bic": 3573.782,
+        "log_likelihood": -1592.798,
+        "model": "Q.insect+F+R2",
+        "parameter_count": 78,
+        "rank": 116
+      },
+      {
+        "aic": 3402.193,
+        "aicc": 3481.775,
+        "bic": 3574.844,
+        "log_likelihood": -1643.097,
+        "model": "mtZOA+G4",
+        "parameter_count": 58,
+        "rank": 117
+      },
+      {
+        "aic": 3396.266,
+        "aicc": 3483.409,
+        "bic": 3574.87,
+        "log_likelihood": -1638.133,
+        "model": "rtREV+I+R2",
+        "parameter_count": 60,
+        "rank": 118
+      },
+      {
+        "aic": 3342.736,
+        "aicc": 3529.463,
+        "bic": 3574.921,
+        "log_likelihood": -1593.368,
+        "model": "Q.insect+F+I+G4",
+        "parameter_count": 78,
+        "rank": 119
+      },
+      {
+        "aic": 3343.771,
+        "aicc": 3530.498,
+        "bic": 3575.956,
+        "log_likelihood": -1593.885,
+        "model": "Q.plant+F+R2",
+        "parameter_count": 78,
+        "rank": 120
+      },
+      {
+        "aic": 3344.737,
+        "aicc": 3531.464,
+        "bic": 3576.922,
+        "log_likelihood": -1594.368,
+        "model": "Q.plant+F+I+G4",
+        "parameter_count": 78,
+        "rank": 121
+      },
+      {
+        "aic": 3347.787,
+        "aicc": 3527.07,
+        "bic": 3576.995,
+        "log_likelihood": -1596.893,
+        "model": "cpREV+F+G4",
+        "parameter_count": 77,
+        "rank": 122
+      },
+      {
+        "aic": 3345.377,
+        "aicc": 3532.105,
+        "bic": 3577.562,
+        "log_likelihood": -1594.689,
+        "model": "Q.mammal+F+R2",
+        "parameter_count": 78,
+        "rank": 123
+      },
+      {
+        "aic": 3348.432,
+        "aicc": 3527.716,
+        "bic": 3577.641,
+        "log_likelihood": -1597.216,
+        "model": "Q.insect+F+I",
+        "parameter_count": 77,
+        "rank": 124
+      },
+      {
+        "aic": 3345.949,
+        "aicc": 3532.676,
+        "bic": 3578.134,
+        "log_likelihood": -1594.974,
+        "model": "Q.mammal+F+I+G4",
+        "parameter_count": 78,
+        "rank": 125
+      },
+      {
+        "aic": 3344.009,
+        "aicc": 3538.471,
+        "bic": 3579.171,
+        "log_likelihood": -1593.005,
+        "model": "Q.insect+F+I+R2",
+        "parameter_count": 79,
+        "rank": 126
+      },
+      {
+        "aic": 3403.953,
+        "aicc": 3487.247,
+        "bic": 3579.58,
+        "log_likelihood": -1642.977,
+        "model": "mtZOA+I+G4",
+        "parameter_count": 59,
+        "rank": 127
+      },
+      {
+        "aic": 3349.067,
+        "aicc": 3535.794,
+        "bic": 3581.252,
+        "log_likelihood": -1596.533,
+        "model": "cpREV+F+R2",
+        "parameter_count": 78,
+        "rank": 128
+      },
+      {
+        "aic": 3346.104,
+        "aicc": 3540.565,
+        "bic": 3581.266,
+        "log_likelihood": -1594.052,
+        "model": "Q.plant+F+I+R2",
+        "parameter_count": 79,
+        "rank": 129
+      },
+      {
+        "aic": 3349.763,
+        "aicc": 3536.491,
+        "bic": 3581.949,
+        "log_likelihood": -1596.882,
+        "model": "cpREV+F+I+G4",
+        "parameter_count": 78,
+        "rank": 130
+      },
+      {
+        "aic": 3347.443,
+        "aicc": 3541.905,
+        "bic": 3582.605,
+        "log_likelihood": -1594.722,
+        "model": "Q.mammal+F+I+R2",
+        "parameter_count": 79,
+        "rank": 131
+      },
+      {
+        "aic": 3354.805,
+        "aicc": 3534.089,
+        "bic": 3584.014,
+        "log_likelihood": -1600.403,
+        "model": "Q.plant+F+I",
+        "parameter_count": 77,
+        "rank": 132
+      },
+      {
+        "aic": 3408.914,
+        "aicc": 3492.209,
+        "bic": 3584.542,
+        "log_likelihood": -1645.457,
+        "model": "mtZOA+R2",
+        "parameter_count": 59,
+        "rank": 133
+      },
+      {
+        "aic": 3407.203,
+        "aicc": 3494.346,
+        "bic": 3585.807,
+        "log_likelihood": -1643.601,
+        "model": "mtZOA+I+R2",
+        "parameter_count": 60,
+        "rank": 134
+      },
+      {
+        "aic": 3356.68,
+        "aicc": 3535.964,
+        "bic": 3585.888,
+        "log_likelihood": -1601.34,
+        "model": "WAG+F+G4",
+        "parameter_count": 77,
+        "rank": 135
+      },
+      {
+        "aic": 3357.343,
+        "aicc": 3536.627,
+        "bic": 3586.552,
+        "log_likelihood": -1601.672,
+        "model": "Q.mammal+F+I",
+        "parameter_count": 77,
+        "rank": 136
+      },
+      {
+        "aic": 3357.867,
+        "aicc": 3537.151,
+        "bic": 3587.076,
+        "log_likelihood": -1601.934,
+        "model": "cpREV+F+I",
+        "parameter_count": 77,
+        "rank": 137
+      },
+      {
+        "aic": 3352.334,
+        "aicc": 3546.796,
+        "bic": 3587.496,
+        "log_likelihood": -1597.167,
+        "model": "cpREV+F+I+R2",
+        "parameter_count": 79,
+        "rank": 138
+      },
+      {
+        "aic": 3358.539,
+        "aicc": 3537.823,
+        "bic": 3587.747,
+        "log_likelihood": -1602.269,
+        "model": "DCMut+F+G4",
+        "parameter_count": 77,
+        "rank": 139
+      },
+      {
+        "aic": 3358.687,
+        "aicc": 3537.97,
+        "bic": 3587.895,
+        "log_likelihood": -1602.343,
+        "model": "Dayhoff+F+G4",
+        "parameter_count": 77,
+        "rank": 140
+      },
+      {
+        "aic": 3359.711,
+        "aicc": 3538.995,
+        "bic": 3588.92,
+        "log_likelihood": -1602.856,
+        "model": "Q.bird+F+G4",
+        "parameter_count": 77,
+        "rank": 141
+      },
+      {
+        "aic": 3359.75,
+        "aicc": 3539.033,
+        "bic": 3588.958,
+        "log_likelihood": -1602.875,
+        "model": "VT+F+G4",
+        "parameter_count": 77,
+        "rank": 142
+      },
+      {
+        "aic": 3357.233,
+        "aicc": 3543.96,
+        "bic": 3589.418,
+        "log_likelihood": -1600.616,
+        "model": "WAG+F+R2",
+        "parameter_count": 78,
+        "rank": 143
+      },
+      {
+        "aic": 3357.949,
+        "aicc": 3544.677,
+        "bic": 3590.135,
+        "log_likelihood": -1600.975,
+        "model": "DCMut+F+R2",
+        "parameter_count": 78,
+        "rank": 144
+      },
+      {
+        "aic": 3358.098,
+        "aicc": 3544.825,
+        "bic": 3590.283,
+        "log_likelihood": -1601.049,
+        "model": "Dayhoff+F+R2",
+        "parameter_count": 78,
+        "rank": 145
+      },
+      {
+        "aic": 3358.242,
+        "aicc": 3544.969,
+        "bic": 3590.427,
+        "log_likelihood": -1601.121,
+        "model": "WAG+F+I+G4",
+        "parameter_count": 78,
+        "rank": 146
+      },
+      {
+        "aic": 3419.347,
+        "aicc": 3498.928,
+        "bic": 3591.997,
+        "log_likelihood": -1651.673,
+        "model": "mtMet+G4",
+        "parameter_count": 58,
+        "rank": 147
+      },
+      {
+        "aic": 3362.808,
+        "aicc": 3542.092,
+        "bic": 3592.016,
+        "log_likelihood": -1604.404,
+        "model": "Q.yeast+F+G4",
+        "parameter_count": 77,
+        "rank": 148
+      },
+      {
+        "aic": 3362.979,
+        "aicc": 3542.263,
+        "bic": 3592.188,
+        "log_likelihood": -1604.49,
+        "model": "WAG+F+I",
+        "parameter_count": 77,
+        "rank": 149
+      },
+      {
+        "aic": 3360.245,
+        "aicc": 3546.972,
+        "bic": 3592.43,
+        "log_likelihood": -1602.122,
+        "model": "VT+F+R2",
+        "parameter_count": 78,
+        "rank": 150
+      },
+      {
+        "aic": 3360.37,
+        "aicc": 3547.098,
+        "bic": 3592.556,
+        "log_likelihood": -1602.185,
+        "model": "DCMut+F+I+G4",
+        "parameter_count": 78,
+        "rank": 151
+      },
+      {
+        "aic": 3360.5,
+        "aicc": 3547.227,
+        "bic": 3592.685,
+        "log_likelihood": -1602.25,
+        "model": "Dayhoff+F+I+G4",
+        "parameter_count": 78,
+        "rank": 152
+      },
+      {
+        "aic": 3361.103,
+        "aicc": 3547.831,
+        "bic": 3593.288,
+        "log_likelihood": -1602.552,
+        "model": "VT+F+I+G4",
+        "parameter_count": 78,
+        "rank": 153
+      },
+      {
+        "aic": 3364.2,
+        "aicc": 3543.484,
+        "bic": 3593.409,
+        "log_likelihood": -1605.1,
+        "model": "VT+F+I",
+        "parameter_count": 77,
+        "rank": 154
+      },
+      {
+        "aic": 3361.403,
+        "aicc": 3548.13,
+        "bic": 3593.588,
+        "log_likelihood": -1602.701,
+        "model": "Q.bird+F+I+G4",
+        "parameter_count": 78,
+        "rank": 155
+      },
+      {
+        "aic": 3361.665,
+        "aicc": 3548.392,
+        "bic": 3593.85,
+        "log_likelihood": -1602.833,
+        "model": "Q.bird+F+R2",
+        "parameter_count": 78,
+        "rank": 156
+      },
+      {
+        "aic": 3359.898,
+        "aicc": 3554.36,
+        "bic": 3595.06,
+        "log_likelihood": -1600.949,
+        "model": "WAG+F+I+R2",
+        "parameter_count": 79,
+        "rank": 157
+      },
+      {
+        "aic": 3360.5,
+        "aicc": 3554.961,
+        "bic": 3595.662,
+        "log_likelihood": -1601.25,
+        "model": "DCMut+F+I+R2",
+        "parameter_count": 79,
+        "rank": 158
+      },
+      {
+        "aic": 3363.485,
+        "aicc": 3550.213,
+        "bic": 3595.671,
+        "log_likelihood": -1603.743,
+        "model": "Q.yeast+F+R2",
+        "parameter_count": 78,
+        "rank": 159
+      },
+      {
+        "aic": 3360.513,
+        "aicc": 3554.975,
+        "bic": 3595.675,
+        "log_likelihood": -1601.257,
+        "model": "Dayhoff+F+I+R2",
+        "parameter_count": 79,
+        "rank": 160
+      },
+      {
+        "aic": 3363.892,
+        "aicc": 3550.619,
+        "bic": 3596.077,
+        "log_likelihood": -1603.946,
+        "model": "Q.yeast+F+I+G4",
+        "parameter_count": 78,
+        "rank": 161
+      },
+      {
+        "aic": 3421.361,
+        "aicc": 3504.655,
+        "bic": 3596.988,
+        "log_likelihood": -1651.681,
+        "model": "mtMet+I+G4",
+        "parameter_count": 59,
+        "rank": 162
+      },
+      {
+        "aic": 3362.402,
+        "aicc": 3556.864,
+        "bic": 3597.564,
+        "log_likelihood": -1602.201,
+        "model": "VT+F+I+R2",
+        "parameter_count": 79,
+        "rank": 163
+      },
+      {
+        "aic": 3368.463,
+        "aicc": 3547.747,
+        "bic": 3597.671,
+        "log_likelihood": -1607.231,
+        "model": "LG+F+G4",
+        "parameter_count": 77,
+        "rank": 164
+      },
+      {
+        "aic": 3368.885,
+        "aicc": 3548.168,
+        "bic": 3598.093,
+        "log_likelihood": -1607.442,
+        "model": "DCMut+F+I",
+        "parameter_count": 77,
+        "rank": 165
+      },
+      {
+        "aic": 3363.103,
+        "aicc": 3557.565,
+        "bic": 3598.265,
+        "log_likelihood": -1602.552,
+        "model": "Q.bird+F+I+R2",
+        "parameter_count": 79,
+        "rank": 166
+      },
+      {
+        "aic": 3369.138,
+        "aicc": 3548.422,
+        "bic": 3598.347,
+        "log_likelihood": -1607.569,
+        "model": "Dayhoff+F+I",
+        "parameter_count": 77,
+        "rank": 167
+      },
+      {
+        "aic": 3422.807,
+        "aicc": 3506.101,
+        "bic": 3598.434,
+        "log_likelihood": -1652.404,
+        "model": "mtMet+R2",
+        "parameter_count": 59,
+        "rank": 168
+      },
+      {
+        "aic": 3370.334,
+        "aicc": 3549.617,
+        "bic": 3599.542,
+        "log_likelihood": -1608.167,
+        "model": "Q.yeast+F+I",
+        "parameter_count": 77,
+        "rank": 169
+      },
+      {
+        "aic": 3370.643,
+        "aicc": 3549.927,
+        "bic": 3599.852,
+        "log_likelihood": -1608.322,
+        "model": "HIVb+F+G4",
+        "parameter_count": 77,
+        "rank": 170
+      },
+      {
+        "aic": 3365.673,
+        "aicc": 3560.135,
+        "bic": 3600.835,
+        "log_likelihood": -1603.837,
+        "model": "Q.yeast+F+I+R2",
+        "parameter_count": 79,
+        "rank": 171
+      },
+      {
+        "aic": 3372.18,
+        "aicc": 3551.463,
+        "bic": 3601.388,
+        "log_likelihood": -1609.09,
+        "model": "Q.pfam+F+G4",
+        "parameter_count": 77,
+        "rank": 172
+      },
+      {
+        "aic": 3369.574,
+        "aicc": 3556.301,
+        "bic": 3601.759,
+        "log_likelihood": -1606.787,
+        "model": "LG+F+R2",
+        "parameter_count": 78,
+        "rank": 173
+      },
+      {
+        "aic": 3369.694,
+        "aicc": 3556.421,
+        "bic": 3601.879,
+        "log_likelihood": -1606.847,
+        "model": "LG+F+I+G4",
+        "parameter_count": 78,
+        "rank": 174
+      },
+      {
+        "aic": 3372.787,
+        "aicc": 3552.071,
+        "bic": 3601.995,
+        "log_likelihood": -1609.393,
+        "model": "mtInv+F+G4",
+        "parameter_count": 77,
+        "rank": 175
+      },
+      {
+        "aic": 3423.647,
+        "aicc": 3510.79,
+        "bic": 3602.251,
+        "log_likelihood": -1651.824,
+        "model": "mtMet+I+R2",
+        "parameter_count": 60,
+        "rank": 176
+      },
+      {
+        "aic": 3370.888,
+        "aicc": 3557.615,
+        "bic": 3603.073,
+        "log_likelihood": -1607.444,
+        "model": "HIVb+F+R2",
+        "parameter_count": 78,
+        "rank": 177
+      },
+      {
+        "aic": 3372.613,
+        "aicc": 3559.34,
+        "bic": 3604.798,
+        "log_likelihood": -1608.306,
+        "model": "HIVb+F+I+G4",
+        "parameter_count": 78,
+        "rank": 178
+      },
+      {
+        "aic": 3375.91,
+        "aicc": 3555.193,
+        "bic": 3605.118,
+        "log_likelihood": -1610.955,
+        "model": "LG+F+I",
+        "parameter_count": 77,
+        "rank": 179
+      },
+      {
+        "aic": 3373.122,
+        "aicc": 3559.849,
+        "bic": 3605.307,
+        "log_likelihood": -1608.561,
+        "model": "Q.pfam+F+I+G4",
+        "parameter_count": 78,
+        "rank": 180
+      },
+      {
+        "aic": 3373.276,
+        "aicc": 3560.004,
+        "bic": 3605.462,
+        "log_likelihood": -1608.638,
+        "model": "Q.pfam+F+R2",
+        "parameter_count": 78,
+        "rank": 181
+      },
+      {
+        "aic": 3433.08,
+        "aicc": 3512.661,
+        "bic": 3605.731,
+        "log_likelihood": -1658.54,
+        "model": "mtZOA+I",
+        "parameter_count": 58,
+        "rank": 182
+      },
+      {
+        "aic": 3377.096,
+        "aicc": 3556.379,
+        "bic": 3606.304,
+        "log_likelihood": -1611.548,
+        "model": "rtREV+F+G4",
+        "parameter_count": 77,
+        "rank": 183
+      },
+      {
+        "aic": 3374.231,
+        "aicc": 3560.959,
+        "bic": 3606.417,
+        "log_likelihood": -1609.116,
+        "model": "mtInv+F+I+G4",
+        "parameter_count": 78,
+        "rank": 184
+      },
+      {
+        "aic": 3374.376,
+        "aicc": 3561.104,
+        "bic": 3606.561,
+        "log_likelihood": -1609.188,
+        "model": "mtInv+F+R2",
+        "parameter_count": 78,
+        "rank": 185
+      },
+      {
+        "aic": 3377.573,
+        "aicc": 3556.857,
+        "bic": 3606.782,
+        "log_likelihood": -1611.787,
+        "model": "Q.bird+F+I",
+        "parameter_count": 77,
+        "rank": 186
+      },
+      {
+        "aic": 3371.854,
+        "aicc": 3566.316,
+        "bic": 3607.016,
+        "log_likelihood": -1606.927,
+        "model": "LG+F+I+R2",
+        "parameter_count": 79,
+        "rank": 187
+      },
+      {
+        "aic": 3434.549,
+        "aicc": 3514.13,
+        "bic": 3607.199,
+        "log_likelihood": -1659.274,
+        "model": "mtREV+G4",
+        "parameter_count": 58,
+        "rank": 188
+      },
+      {
+        "aic": 3379.353,
+        "aicc": 3558.637,
+        "bic": 3608.562,
+        "log_likelihood": -1612.677,
+        "model": "Q.pfam+F+I",
+        "parameter_count": 77,
+        "rank": 189
+      },
+      {
+        "aic": 3374.118,
+        "aicc": 3568.579,
+        "bic": 3609.28,
+        "log_likelihood": -1608.059,
+        "model": "HIVb+F+I+R2",
+        "parameter_count": 79,
+        "rank": 190
+      },
+      {
+        "aic": 3380.779,
+        "aicc": 3560.063,
+        "bic": 3609.988,
+        "log_likelihood": -1613.39,
+        "model": "FLAVI+F+G4",
+        "parameter_count": 77,
+        "rank": 191
+      },
+      {
+        "aic": 3378.077,
+        "aicc": 3564.804,
+        "bic": 3610.262,
+        "log_likelihood": -1611.038,
+        "model": "rtREV+F+I+G4",
+        "parameter_count": 78,
+        "rank": 192
+      },
+      {
+        "aic": 3375.225,
+        "aicc": 3569.687,
+        "bic": 3610.387,
+        "log_likelihood": -1608.613,
+        "model": "Q.pfam+F+I+R2",
+        "parameter_count": 79,
+        "rank": 193
+      },
+      {
+        "aic": 3378.63,
+        "aicc": 3565.357,
+        "bic": 3610.815,
+        "log_likelihood": -1611.315,
+        "model": "rtREV+F+R2",
+        "parameter_count": 78,
+        "rank": 194
+      },
+      {
+        "aic": 3435.26,
+        "aicc": 3518.554,
+        "bic": 3610.887,
+        "log_likelihood": -1658.63,
+        "model": "mtREV+I+G4",
+        "parameter_count": 59,
+        "rank": 195
+      },
+      {
+        "aic": 3382.587,
+        "aicc": 3561.87,
+        "bic": 3611.795,
+        "log_likelihood": -1614.293,
+        "model": "FLU+F+G4",
+        "parameter_count": 77,
+        "rank": 196
+      },
+      {
+        "aic": 3376.74,
+        "aicc": 3571.202,
+        "bic": 3611.902,
+        "log_likelihood": -1609.37,
+        "model": "mtInv+F+I+R2",
+        "parameter_count": 79,
+        "rank": 197
+      },
+      {
+        "aic": 3382.889,
+        "aicc": 3562.172,
+        "bic": 3612.097,
+        "log_likelihood": -1614.444,
+        "model": "PMB+F+G4",
+        "parameter_count": 77,
+        "rank": 198
+      },
+      {
+        "aic": 3382.945,
+        "aicc": 3562.229,
+        "bic": 3612.154,
+        "log_likelihood": -1614.473,
+        "model": "rtREV+F+I",
+        "parameter_count": 77,
+        "rank": 199
+      },
+      {
+        "aic": 3436.911,
+        "aicc": 3520.205,
+        "bic": 3612.538,
+        "log_likelihood": -1659.455,
+        "model": "mtREV+R2",
+        "parameter_count": 59,
+        "rank": 200
+      },
+      {
+        "aic": 3440.954,
+        "aicc": 3520.536,
+        "bic": 3613.605,
+        "log_likelihood": -1662.477,
+        "model": "mtInv+G4",
+        "parameter_count": 58,
+        "rank": 201
+      },
+      {
+        "aic": 3384.423,
+        "aicc": 3563.707,
+        "bic": 3613.632,
+        "log_likelihood": -1615.212,
+        "model": "mtInv+F+I",
+        "parameter_count": 77,
+        "rank": 202
+      },
+      {
+        "aic": 3382.98,
+        "aicc": 3569.707,
+        "bic": 3615.165,
+        "log_likelihood": -1613.49,
+        "model": "FLAVI+F+I+G4",
+        "parameter_count": 78,
+        "rank": 203
+      },
+      {
+        "aic": 3380.64,
+        "aicc": 3575.102,
+        "bic": 3615.802,
+        "log_likelihood": -1611.32,
+        "model": "rtREV+F+I+R2",
+        "parameter_count": 79,
+        "rank": 204
+      },
+      {
+        "aic": 3383.654,
+        "aicc": 3570.382,
+        "bic": 3615.839,
+        "log_likelihood": -1613.827,
+        "model": "FLAVI+F+R2",
+        "parameter_count": 78,
+        "rank": 205
+      },
+      {
+        "aic": 3383.676,
+        "aicc": 3570.403,
+        "bic": 3615.861,
+        "log_likelihood": -1613.838,
+        "model": "PMB+F+R2",
+        "parameter_count": 78,
+        "rank": 206
+      },
+      {
+        "aic": 3386.994,
+        "aicc": 3566.277,
+        "bic": 3616.202,
+        "log_likelihood": -1616.497,
+        "model": "mtMet+F+G4",
+        "parameter_count": 77,
+        "rank": 207
+      },
+      {
+        "aic": 3384.088,
+        "aicc": 3570.816,
+        "bic": 3616.274,
+        "log_likelihood": -1614.044,
+        "model": "FLU+F+I+G4",
+        "parameter_count": 78,
+        "rank": 208
+      },
+      {
+        "aic": 3384.181,
+        "aicc": 3570.908,
+        "bic": 3616.366,
+        "log_likelihood": -1614.09,
+        "model": "PMB+F+I+G4",
+        "parameter_count": 78,
+        "rank": 209
+      },
+      {
+        "aic": 3387.433,
+        "aicc": 3566.717,
+        "bic": 3616.642,
+        "log_likelihood": -1616.717,
+        "model": "PMB+F+I",
+        "parameter_count": 77,
+        "rank": 210
+      },
+      {
+        "aic": 3438.584,
+        "aicc": 3525.727,
+        "bic": 3617.188,
+        "log_likelihood": -1659.292,
+        "model": "mtREV+I+R2",
+        "parameter_count": 60,
+        "rank": 211
+      },
+      {
+        "aic": 3387.986,
+        "aicc": 3567.27,
+        "bic": 3617.195,
+        "log_likelihood": -1616.993,
+        "model": "Blosum62+F+G4",
+        "parameter_count": 77,
+        "rank": 212
+      },
+      {
+        "aic": 3385.341,
+        "aicc": 3572.069,
+        "bic": 3617.527,
+        "log_likelihood": -1614.671,
+        "model": "FLU+F+R2",
+        "parameter_count": 78,
+        "rank": 213
+      },
+      {
+        "aic": 3445.36,
+        "aicc": 3524.941,
+        "bic": 3618.01,
+        "log_likelihood": -1664.68,
+        "model": "mtMet+I",
+        "parameter_count": 58,
+        "rank": 214
+      },
+      {
+        "aic": 3442.88,
+        "aicc": 3526.175,
+        "bic": 3618.508,
+        "log_likelihood": -1662.44,
+        "model": "mtInv+I+G4",
+        "parameter_count": 59,
+        "rank": 215
+      },
+      {
+        "aic": 3446.191,
+        "aicc": 3525.773,
+        "bic": 3618.842,
+        "log_likelihood": -1665.096,
+        "model": "mtREV+I",
+        "parameter_count": 58,
+        "rank": 216
+      },
+      {
+        "aic": 3443.615,
+        "aicc": 3526.909,
+        "bic": 3619.242,
+        "log_likelihood": -1662.807,
+        "model": "mtInv+R2",
+        "parameter_count": 59,
+        "rank": 217
+      },
+      {
+        "aic": 3391.546,
+        "aicc": 3570.829,
+        "bic": 3620.754,
+        "log_likelihood": -1618.773,
+        "model": "Blosum62+F+I",
+        "parameter_count": 77,
+        "rank": 218
+      },
+      {
+        "aic": 3388.72,
+        "aicc": 3575.447,
+        "bic": 3620.905,
+        "log_likelihood": -1616.36,
+        "model": "mtMet+F+I+G4",
+        "parameter_count": 78,
+        "rank": 219
+      },
+      {
+        "aic": 3385.784,
+        "aicc": 3580.246,
+        "bic": 3620.946,
+        "log_likelihood": -1613.892,
+        "model": "PMB+F+I+R2",
+        "parameter_count": 79,
+        "rank": 220
+      },
+      {
+        "aic": 3388.911,
+        "aicc": 3575.638,
+        "bic": 3621.096,
+        "log_likelihood": -1616.456,
+        "model": "Blosum62+F+R2",
+        "parameter_count": 78,
+        "rank": 221
+      },
+      {
+        "aic": 3391.903,
+        "aicc": 3571.186,
+        "bic": 3621.111,
+        "log_likelihood": -1618.951,
+        "model": "HIVb+F+I",
+        "parameter_count": 77,
+        "rank": 222
+      },
+      {
+        "aic": 3388.996,
+        "aicc": 3575.724,
+        "bic": 3621.182,
+        "log_likelihood": -1616.498,
+        "model": "Blosum62+F+I+G4",
+        "parameter_count": 78,
+        "rank": 223
+      },
+      {
+        "aic": 3389.232,
+        "aicc": 3575.959,
+        "bic": 3621.417,
+        "log_likelihood": -1616.616,
+        "model": "mtMet+F+R2",
+        "parameter_count": 78,
+        "rank": 224
+      },
+      {
+        "aic": 3386.373,
+        "aicc": 3580.834,
+        "bic": 3621.535,
+        "log_likelihood": -1614.186,
+        "model": "FLAVI+F+I+R2",
+        "parameter_count": 79,
+        "rank": 225
+      },
+      {
+        "aic": 3392.434,
+        "aicc": 3571.718,
+        "bic": 3621.643,
+        "log_likelihood": -1619.217,
+        "model": "mtZOA+F+G4",
+        "parameter_count": 77,
+        "rank": 226
+      },
+      {
+        "aic": 3387.557,
+        "aicc": 3582.018,
+        "bic": 3622.719,
+        "log_likelihood": -1614.778,
+        "model": "FLU+F+I+R2",
+        "parameter_count": 79,
+        "rank": 227
+      },
+      {
+        "aic": 3445.141,
+        "aicc": 3532.284,
+        "bic": 3623.745,
+        "log_likelihood": -1662.57,
+        "model": "mtInv+I+R2",
+        "parameter_count": 60,
+        "rank": 228
+      },
+      {
+        "aic": 3395.567,
+        "aicc": 3574.851,
+        "bic": 3624.776,
+        "log_likelihood": -1620.784,
+        "model": "mtREV+F+G4",
+        "parameter_count": 77,
+        "rank": 229
+      },
+      {
+        "aic": 3393.81,
+        "aicc": 3580.537,
+        "bic": 3625.995,
+        "log_likelihood": -1618.905,
+        "model": "mtZOA+F+I+G4",
+        "parameter_count": 78,
+        "rank": 230
+      },
+      {
+        "aic": 3390.927,
+        "aicc": 3585.389,
+        "bic": 3626.089,
+        "log_likelihood": -1616.464,
+        "model": "Blosum62+F+I+R2",
+        "parameter_count": 79,
+        "rank": 231
+      },
+      {
+        "aic": 3391.298,
+        "aicc": 3585.759,
+        "bic": 3626.46,
+        "log_likelihood": -1616.649,
+        "model": "mtMet+F+I+R2",
+        "parameter_count": 79,
+        "rank": 232
+      },
+      {
+        "aic": 3394.912,
+        "aicc": 3581.639,
+        "bic": 3627.097,
+        "log_likelihood": -1619.456,
+        "model": "mtREV+F+R2",
+        "parameter_count": 78,
+        "rank": 233
+      },
+      {
+        "aic": 3396.533,
+        "aicc": 3583.26,
+        "bic": 3628.718,
+        "log_likelihood": -1620.266,
+        "model": "mtZOA+F+R2",
+        "parameter_count": 78,
+        "rank": 234
+      },
+      {
+        "aic": 3396.853,
+        "aicc": 3583.58,
+        "bic": 3629.038,
+        "log_likelihood": -1620.426,
+        "model": "mtREV+F+I+G4",
+        "parameter_count": 78,
+        "rank": 235
+      },
+      {
+        "aic": 3456.999,
+        "aicc": 3536.58,
+        "bic": 3629.649,
+        "log_likelihood": -1670.499,
+        "model": "mtVer+G4",
+        "parameter_count": 58,
+        "rank": 236
+      },
+      {
+        "aic": 3400.54,
+        "aicc": 3579.823,
+        "bic": 3629.748,
+        "log_likelihood": -1623.27,
+        "model": "FLU+F+I",
+        "parameter_count": 77,
+        "rank": 237
+      },
+      {
+        "aic": 3397.044,
+        "aicc": 3591.505,
+        "bic": 3632.206,
+        "log_likelihood": -1619.522,
+        "model": "mtREV+F+I+R2",
+        "parameter_count": 79,
+        "rank": 238
+      },
+      {
+        "aic": 3397.708,
+        "aicc": 3592.169,
+        "bic": 3632.87,
+        "log_likelihood": -1619.854,
+        "model": "mtZOA+F+I+R2",
+        "parameter_count": 79,
+        "rank": 239
+      },
+      {
+        "aic": 3460.521,
+        "aicc": 3540.102,
+        "bic": 3633.171,
+        "log_likelihood": -1672.26,
+        "model": "mtART+G4",
+        "parameter_count": 58,
+        "rank": 240
+      },
+      {
+        "aic": 3460.726,
+        "aicc": 3540.308,
+        "bic": 3633.377,
+        "log_likelihood": -1672.363,
+        "model": "mtInv+I",
+        "parameter_count": 58,
+        "rank": 241
+      },
+      {
+        "aic": 3458.737,
+        "aicc": 3542.031,
+        "bic": 3634.364,
+        "log_likelihood": -1670.368,
+        "model": "mtVer+I+G4",
+        "parameter_count": 59,
+        "rank": 242
+      },
+      {
+        "aic": 3405.501,
+        "aicc": 3584.785,
+        "bic": 3634.71,
+        "log_likelihood": -1625.751,
+        "model": "mtMet+F+I",
+        "parameter_count": 77,
+        "rank": 243
+      },
+      {
+        "aic": 3408.215,
+        "aicc": 3587.499,
+        "bic": 3637.424,
+        "log_likelihood": -1627.108,
+        "model": "mtREV+F+I",
+        "parameter_count": 77,
+        "rank": 244
+      },
+      {
+        "aic": 3462.368,
+        "aicc": 3545.662,
+        "bic": 3637.995,
+        "log_likelihood": -1672.184,
+        "model": "mtART+I+G4",
+        "parameter_count": 59,
+        "rank": 245
+      },
+      {
+        "aic": 3462.576,
+        "aicc": 3545.87,
+        "bic": 3638.204,
+        "log_likelihood": -1672.288,
+        "model": "mtVer+R2",
+        "parameter_count": 59,
+        "rank": 246
+      },
+      {
+        "aic": 3409.347,
+        "aicc": 3588.63,
+        "bic": 3638.555,
+        "log_likelihood": -1627.673,
+        "model": "FLAVI+F+I",
+        "parameter_count": 77,
+        "rank": 247
+      },
+      {
+        "aic": 3461.42,
+        "aicc": 3548.562,
+        "bic": 3640.024,
+        "log_likelihood": -1670.71,
+        "model": "mtVer+I+R2",
+        "parameter_count": 60,
+        "rank": 248
+      },
+      {
+        "aic": 3412.495,
+        "aicc": 3591.779,
+        "bic": 3641.704,
+        "log_likelihood": -1629.248,
+        "model": "mtZOA+F+I",
+        "parameter_count": 77,
+        "rank": 249
+      },
+      {
+        "aic": 3465.605,
+        "aicc": 3552.748,
+        "bic": 3644.209,
+        "log_likelihood": -1672.802,
+        "model": "mtART+I+R2",
+        "parameter_count": 60,
+        "rank": 250
+      },
+      {
+        "aic": 3469.767,
+        "aicc": 3553.061,
+        "bic": 3645.394,
+        "log_likelihood": -1675.884,
+        "model": "mtART+R2",
+        "parameter_count": 59,
+        "rank": 251
+      },
+      {
+        "aic": 3480.168,
+        "aicc": 3559.75,
+        "bic": 3652.819,
+        "log_likelihood": -1682.084,
+        "model": "HIVw+G4",
+        "parameter_count": 58,
+        "rank": 252
+      },
+      {
+        "aic": 3424.298,
+        "aicc": 3603.582,
+        "bic": 3653.507,
+        "log_likelihood": -1635.149,
+        "model": "mtVer+F+G4",
+        "parameter_count": 77,
+        "rank": 253
+      },
+      {
+        "aic": 3481.866,
+        "aicc": 3565.16,
+        "bic": 3657.494,
+        "log_likelihood": -1681.933,
+        "model": "HIVw+I+G4",
+        "parameter_count": 59,
+        "rank": 254
+      },
+      {
+        "aic": 3426.019,
+        "aicc": 3612.747,
+        "bic": 3658.205,
+        "log_likelihood": -1635.01,
+        "model": "mtVer+F+I+G4",
+        "parameter_count": 78,
+        "rank": 255
+      },
+      {
+        "aic": 3429.15,
+        "aicc": 3608.433,
+        "bic": 3658.358,
+        "log_likelihood": -1637.575,
+        "model": "mtART+F+G4",
+        "parameter_count": 77,
+        "rank": 256
+      },
+      {
+        "aic": 3486.663,
+        "aicc": 3566.245,
+        "bic": 3659.314,
+        "log_likelihood": -1685.332,
+        "model": "mtMAM+G4",
+        "parameter_count": 58,
+        "rank": 257
+      },
+      {
+        "aic": 3427.799,
+        "aicc": 3614.526,
+        "bic": 3659.984,
+        "log_likelihood": -1635.899,
+        "model": "mtVer+F+R2",
+        "parameter_count": 78,
+        "rank": 258
+      },
+      {
+        "aic": 3485.895,
+        "aicc": 3569.189,
+        "bic": 3661.522,
+        "log_likelihood": -1683.948,
+        "model": "HIVw+R2",
+        "parameter_count": 59,
+        "rank": 259
+      },
+      {
+        "aic": 3489.758,
+        "aicc": 3569.339,
+        "bic": 3662.408,
+        "log_likelihood": -1686.879,
+        "model": "mtVer+I",
+        "parameter_count": 58,
+        "rank": 260
+      },
+      {
+        "aic": 3430.779,
+        "aicc": 3617.507,
+        "bic": 3662.965,
+        "log_likelihood": -1637.39,
+        "model": "mtART+F+I+G4",
+        "parameter_count": 78,
+        "rank": 261
+      },
+      {
+        "aic": 3433.845,
+        "aicc": 3613.129,
+        "bic": 3663.054,
+        "log_likelihood": -1639.923,
+        "model": "HIVw+F+G4",
+        "parameter_count": 77,
+        "rank": 262
+      },
+      {
+        "aic": 3488.072,
+        "aicc": 3571.366,
+        "bic": 3663.699,
+        "log_likelihood": -1685.036,
+        "model": "mtMAM+I+G4",
+        "parameter_count": 59,
+        "rank": 263
+      },
+      {
+        "aic": 3429.262,
+        "aicc": 3623.724,
+        "bic": 3664.424,
+        "log_likelihood": -1635.631,
+        "model": "mtVer+F+I+R2",
+        "parameter_count": 79,
+        "rank": 264
+      },
+      {
+        "aic": 3486.045,
+        "aicc": 3573.188,
+        "bic": 3664.649,
+        "log_likelihood": -1683.023,
+        "model": "HIVw+I+R2",
+        "parameter_count": 60,
+        "rank": 265
+      },
+      {
+        "aic": 3435.739,
+        "aicc": 3622.467,
+        "bic": 3667.925,
+        "log_likelihood": -1639.87,
+        "model": "HIVw+F+I+G4",
+        "parameter_count": 78,
+        "rank": 266
+      },
+      {
+        "aic": 3437.188,
+        "aicc": 3623.915,
+        "bic": 3669.373,
+        "log_likelihood": -1640.594,
+        "model": "HIVw+F+R2",
+        "parameter_count": 78,
+        "rank": 267
+      },
+      {
+        "aic": 3437.893,
+        "aicc": 3624.62,
+        "bic": 3670.078,
+        "log_likelihood": -1640.947,
+        "model": "mtART+F+R2",
+        "parameter_count": 78,
+        "rank": 268
+      },
+      {
+        "aic": 3491.909,
+        "aicc": 3579.052,
+        "bic": 3670.513,
+        "log_likelihood": -1685.954,
+        "model": "mtMAM+I+R2",
+        "parameter_count": 60,
+        "rank": 269
+      },
+      {
+        "aic": 3435.419,
+        "aicc": 3629.88,
+        "bic": 3670.581,
+        "log_likelihood": -1638.709,
+        "model": "mtART+F+I+R2",
+        "parameter_count": 79,
+        "rank": 270
+      },
+      {
+        "aic": 3497.12,
+        "aicc": 3580.414,
+        "bic": 3672.748,
+        "log_likelihood": -1689.56,
+        "model": "mtMAM+R2",
+        "parameter_count": 59,
+        "rank": 271
+      },
+      {
+        "aic": 3438.721,
+        "aicc": 3633.183,
+        "bic": 3673.883,
+        "log_likelihood": -1640.361,
+        "model": "HIVw+F+I+R2",
+        "parameter_count": 79,
+        "rank": 272
+      },
+      {
+        "aic": 3502.393,
+        "aicc": 3581.975,
+        "bic": 3675.044,
+        "log_likelihood": -1693.197,
+        "model": "HIVw+I",
+        "parameter_count": 58,
+        "rank": 273
+      },
+      {
+        "aic": 3503.494,
+        "aicc": 3583.076,
+        "bic": 3676.145,
+        "log_likelihood": -1693.747,
+        "model": "mtART+I",
+        "parameter_count": 58,
+        "rank": 274
+      },
+      {
+        "aic": 3448.047,
+        "aicc": 3627.33,
+        "bic": 3677.255,
+        "log_likelihood": -1647.023,
+        "model": "mtVer+F+I",
+        "parameter_count": 77,
+        "rank": 275
+      },
+      {
+        "aic": 3454.74,
+        "aicc": 3634.023,
+        "bic": 3683.948,
+        "log_likelihood": -1650.37,
+        "model": "HIVw+F+I",
+        "parameter_count": 77,
+        "rank": 276
+      },
+      {
+        "aic": 3458.004,
+        "aicc": 3637.288,
+        "bic": 3687.213,
+        "log_likelihood": -1652.002,
+        "model": "mtMAM+F+G4",
+        "parameter_count": 77,
+        "rank": 277
+      },
+      {
+        "aic": 3460.714,
+        "aicc": 3639.997,
+        "bic": 3689.922,
+        "log_likelihood": -1653.357,
+        "model": "mtART+F+I",
+        "parameter_count": 77,
+        "rank": 278
+      },
+      {
+        "aic": 3459.314,
+        "aicc": 3646.041,
+        "bic": 3691.499,
+        "log_likelihood": -1651.657,
+        "model": "mtMAM+F+I+G4",
+        "parameter_count": 78,
+        "rank": 279
+      },
+      {
+        "aic": 3463.47,
+        "aicc": 3657.932,
+        "bic": 3698.632,
+        "log_likelihood": -1652.735,
+        "model": "mtMAM+F+I+R2",
+        "parameter_count": 79,
+        "rank": 280
+      },
+      {
+        "aic": 3466.554,
+        "aicc": 3653.281,
+        "bic": 3698.739,
+        "log_likelihood": -1655.277,
+        "model": "mtMAM+F+R2",
+        "parameter_count": 78,
+        "rank": 281
+      },
+      {
+        "aic": 3529.495,
+        "aicc": 3609.076,
+        "bic": 3702.145,
+        "log_likelihood": -1706.747,
+        "model": "mtMAM+I",
+        "parameter_count": 58,
+        "rank": 282
+      },
+      {
+        "aic": 3489.456,
+        "aicc": 3668.739,
+        "bic": 3718.664,
+        "log_likelihood": -1667.728,
+        "model": "mtMAM+F+I",
+        "parameter_count": 77,
+        "rank": 283
+      }
+    ],
+    "selected_criterion": "BIC",
+    "selected_model": "JTTDCMut+G4"
+  },
+  "notes": [
+    "iqtree random seed: 1",
+    "iqtree threads: 1",
+    "best-fit substitution model parsed from engine output",
+    "parsed 283 candidate substitution models from iqtree output",
+    "model-selection workflow exposed the governing information criterion",
+    "model-selection workflow exposed a parsable log-likelihood score"
+  ],
+  "output_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/model-selection/model-selection.iqtree": "59362345268f7ade586b8f27d6a7d846ff96bdfb026905a333123ae76e4f2072",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/model-selection/model-selection.log": "1e62610b666c97bec97608545978804e2ed6ed0f40b18178a56a4ca181b51616",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/model-selection/model-selection.model-candidates.tsv": "826afdcb61b6675181ed8b533186f723edba6032107bf9868d856ddc6cb6e2ed",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/model-selection/model-selection.model.gz": "72b801641d5e5e853d929096dc83741e1f3d110d83580bac2dff17709124da77",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/model-selection/model-selection.selected-model.txt": "519752e9f02a33dc8286a0e18a1d4f0f266da74675f8353c9cbb75d8b69a8058"
+  },
+  "output_paths": {
+    "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/model-selection/model-selection.log",
+    "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/model-selection/model-selection.iqtree",
+    "model_candidates": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/model-selection/model-selection.model-candidates.tsv",
+    "model_selection_sidecar": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/model-selection/model-selection.model.gz",
+    "selected_model": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/model-selection/model-selection.selected-model.txt"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/iqtree2",
+      "-s",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln",
+      "-st",
+      "AA",
+      "-seed",
+      "1",
+      "-nt",
+      "1",
+      "-m",
+      "MF",
+      "-pre",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/model-selection/model-selection"
+    ],
+    "ended_at_utc": "2026-06-02T12:35:47Z",
+    "engine_name": "iqtree",
+    "executable": "/opt/homebrew/bin/iqtree2",
+    "exit_code": 0,
+    "output_paths": {
+      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/model-selection/model-selection.log",
+      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/model-selection/model-selection.iqtree"
+    },
+    "runtime_seconds": 34.180592,
+    "started_at_utc": "2026-06-02T12:35:13Z",
+    "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/model-selection/model-selection.stderr.log",
+    "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/model-selection/model-selection.stdout.log",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/iqtree2",
+        "--version"
+      ],
+      "engine_name": "iqtree",
+      "executable": "/opt/homebrew/bin/iqtree2",
+      "text": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+    },
+    "warning_lines": [
+      "WARNING: Normalizing state frequencies so that sum of them equals to 1"
+    ],
+    "workflow": "model-selection",
+    "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/model-selection"
+  },
+  "selected_model": "JTTDCMut+G4",
+  "sh_alrt_support_summary": null,
+  "trimming_summary": null,
+  "weak_backbone_report": null,
+  "workflow": "model-selection"
+}

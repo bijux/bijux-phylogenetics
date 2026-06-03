@@ -30,8 +30,6 @@ REQUIRED_ROOT_TARGET_SNIPPETS = {
     "check-evidence-completeness:",
     "report-evidence-governance:",
     "check-evidence-governance:",
-    "rerun-evidence-cleanroom:",
-    "rerun-governed-evidence-cleanroom:",
     "report-artifact-governance:",
     "check-artifact-governance:",
     "report-execution-surfaces:",
@@ -95,28 +93,29 @@ def test_root_make_wires_config_ssot_into_repository_checks() -> None:
 def test_root_make_routes_test_all_across_repository_packages() -> None:
     root_make = (REPO_ROOT / "makes" / "root.mk").read_text(encoding="utf-8")
 
-    assert "test-all: root-check-env" in root_make
-    assert "makes/packages/bijux-phylogenetics.mk" in root_make
-    assert "makes/packages/bijux-phylogenetics-dev.mk" in root_make
-    assert "makes/packages/phylogenetic.mk" in root_make
-    assert root_make.count("PYTEST_ADDOPTS_EXTRA='-o timeout=0'") == 3
-    assert root_make.count("\ttest-all\n") == 3
+    assert "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time" in root_make
+    assert "ROOT_TARGET_GROUPS_test-all ?= check" in root_make
+    assert "ROOT_TARGET_SHARED_ENV_test-all ?= 1" in root_make
+    assert "ROOT_TARGET_PACKAGES_test-all := $(CHECK_PACKAGES)" in root_make
+    assert (
+        "test-all: ## Run every repository test surface, including slow, evaluation, and real-local tests"
+        in root_make
+    )
 
 
 def test_root_make_routes_test_all_plus_run_time_across_repository_packages() -> None:
     root_make = (REPO_ROOT / "makes" / "root.mk").read_text(encoding="utf-8")
 
-    assert "test-all-plus-run-time: root-check-env" in root_make
-    assert "makes/packages/bijux-phylogenetics.mk" in root_make
-    assert "makes/packages/bijux-phylogenetics-dev.mk" in root_make
-    assert "makes/packages/phylogenetic.mk" in root_make
+    assert "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time" in root_make
+    assert "ROOT_TARGET_GROUPS_test-all-plus-run-time ?= check" in root_make
+    assert "ROOT_TARGET_SHARED_ENV_test-all-plus-run-time ?= 1" in root_make
     assert (
-        root_make.count(
-            "PYTEST_ADDOPTS_EXTRA='-o timeout=0 --durations=0 --durations-min=0'"
-        )
-        == 3
+        "ROOT_TARGET_PACKAGES_test-all-plus-run-time := $(CHECK_PACKAGES)" in root_make
     )
-    assert root_make.count("\ttest-all-plus-run-time\n") == 3
+    assert (
+        "test-all-plus-run-time: ## Run every repository test surface and report per-test durations"
+        in root_make
+    )
 
 
 def test_package_makefiles_defer_monorepo_root_dependent_paths() -> None:

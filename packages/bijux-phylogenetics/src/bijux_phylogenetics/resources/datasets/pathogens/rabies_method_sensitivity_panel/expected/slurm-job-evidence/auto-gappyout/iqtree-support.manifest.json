@@ -1,0 +1,302 @@
+{
+  "bootstrap_support_summary": {
+    "internal_node_count": 7,
+    "maximum_support": 100.0,
+    "median_support": 99.5,
+    "minimum_support": 84.0,
+    "nodes": [
+      {
+        "descendant_taxa": [
+          "cattle_russia_4092_13_2025",
+          "cattle_russia_4092_15_2025",
+          "dog_pakistan_pdb011",
+          "raccoon_dog_poland_2021",
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_18_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "is_backbone": true,
+        "node": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+        "support": 100.0,
+        "support_fraction": 1.0
+      },
+      {
+        "descendant_taxa": [
+          "cattle_russia_4092_13_2025",
+          "cattle_russia_4092_15_2025",
+          "raccoon_dog_poland_2021",
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_18_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "is_backbone": true,
+        "node": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+        "support": 100.0,
+        "support_fraction": 1.0
+      },
+      {
+        "descendant_taxa": [
+          "cattle_russia_4092_13_2025",
+          "cattle_russia_4092_15_2025",
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_18_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "is_backbone": true,
+        "node": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+        "support": 99.0,
+        "support_fraction": 0.99
+      },
+      {
+        "descendant_taxa": [
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_18_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "is_backbone": false,
+        "node": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+        "support": 92.0,
+        "support_fraction": 0.92
+      },
+      {
+        "descendant_taxa": [
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "is_backbone": false,
+        "node": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025",
+        "support": 84.0,
+        "support_fraction": 0.84
+      },
+      {
+        "descendant_taxa": [
+          "cattle_russia_4092_13_2025",
+          "cattle_russia_4092_15_2025"
+        ],
+        "is_backbone": false,
+        "node": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+        "support": 100.0,
+        "support_fraction": 1.0
+      }
+    ],
+    "support_histogram": {
+      "50to69": 0,
+      "70to89": 1,
+      "ge90": 5,
+      "lt50": 0
+    },
+    "supported_node_count": 6,
+    "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.treefile",
+    "warnings": [
+      "one or more internal nodes did not expose numeric support labels"
+    ],
+    "weakly_supported_clade_count": 0
+  },
+  "config": {
+    "model": "TPM2u+F+G4",
+    "partition_path": null,
+    "replicates": 1000,
+    "seed": 1,
+    "sequence_type": "dna",
+    "threads": 1,
+    "timeout_seconds": null
+  },
+  "engine_name": "iqtree",
+  "fasttree_support_summary": null,
+  "input_checksums": {
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/auto-gappyout.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
+  },
+  "input_paths": [
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/auto-gappyout.trimmed.aln"
+  ],
+  "iqtree_summary": {
+    "log_likelihood": -3945.2388,
+    "maximum_support": 100.0,
+    "minimum_support": 84.0,
+    "selected_model": "TPM2u+F+G4",
+    "support_value_count": 6,
+    "support_values": [
+      {
+        "descendant_taxa": [
+          "cattle_russia_4092_13_2025",
+          "cattle_russia_4092_15_2025",
+          "dog_pakistan_pdb011",
+          "raccoon_dog_poland_2021",
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_18_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "is_backbone": true,
+        "node": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+        "support": 100.0,
+        "support_fraction": 1.0
+      },
+      {
+        "descendant_taxa": [
+          "cattle_russia_4092_13_2025",
+          "cattle_russia_4092_15_2025",
+          "raccoon_dog_poland_2021",
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_18_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "is_backbone": true,
+        "node": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+        "support": 100.0,
+        "support_fraction": 1.0
+      },
+      {
+        "descendant_taxa": [
+          "cattle_russia_4092_13_2025",
+          "cattle_russia_4092_15_2025",
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_18_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "is_backbone": true,
+        "node": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+        "support": 99.0,
+        "support_fraction": 0.99
+      },
+      {
+        "descendant_taxa": [
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_18_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "is_backbone": false,
+        "node": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+        "support": 92.0,
+        "support_fraction": 0.92
+      },
+      {
+        "descendant_taxa": [
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "is_backbone": false,
+        "node": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025",
+        "support": 84.0,
+        "support_fraction": 0.84
+      },
+      {
+        "descendant_taxa": [
+          "cattle_russia_4092_13_2025",
+          "cattle_russia_4092_15_2025"
+        ],
+        "is_backbone": false,
+        "node": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+        "support": 100.0,
+        "support_fraction": 1.0
+      }
+    ]
+  },
+  "log_likelihood": -3945.2388,
+  "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.manifest.json",
+  "model_selection_summary": {
+    "best_model_aic": "7932.4776",
+    "best_model_aicc": "7933.1718",
+    "best_model_bic": "8041.8893",
+    "best_score_aic": null,
+    "best_score_aicc": null,
+    "best_score_bic": null,
+    "bic_near_best_models": [],
+    "candidate_count": 0,
+    "candidates": [],
+    "selected_criterion": "BIC",
+    "selected_model": "8041.8893"
+  },
+  "notes": [
+    "iqtree random seed: 1",
+    "iqtree threads: 1",
+    "bootstrap tree set retained for downstream consensus construction",
+    "log-likelihood parsed from iqtree bootstrap inference artifacts",
+    "support values parsed from the bootstrap-supported tree artifact",
+    "branch-level support table exported for bootstrap review",
+    "low-support branch ledger exported for weak-clade review",
+    "support histogram exported for reviewer-facing support distribution checks"
+  ],
+  "output_checksums": {
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.contree": "b2daf4c3fbaba44d62fe5ee2f1d4ac8147bafd3947d96f46c9921ac54667577e",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.iqtree": "31ad33091e8e8f9f60e07947c2ae7bc6c635fe3b48f61041ab35e3b31146e29f",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.log": "9be9f453eab6f57f7dc721227e1f1af3365768f36ee1eaa1bff9dcc6c3ba69c0",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.low-support.tsv": "3c9d1d00f9023dbb6e5f8931d91ae26afc322f0fa54385f41b12290c8b814bb7",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.support-histogram.tsv": "7247f212495fc93cb528e03afabc8b802fd3299cc775368a6d6536f60b82b9e7",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.support.tsv": "fbb00f7eb709a09193f7e4a7f60bb9ac590641e6fe21fc24a47926dda8204070",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.treefile": "07fc4128f6d2901158464a774caea4616e0f91b14ae856dc21c277678afdff8e",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.ufboot": "bdacadce517612202bc5d0131cd5382b39fa5e00747a77c3a94d60c7a4371d51"
+  },
+  "output_paths": {
+    "bootstrap_trees": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.ufboot",
+    "consensus_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.contree",
+    "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.log",
+    "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.iqtree",
+    "low_support_branches": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.low-support.tsv",
+    "support_histogram": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.support-histogram.tsv",
+    "support_table": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.support.tsv",
+    "support_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.treefile"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/iqtree2",
+      "-s",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/auto-gappyout.trimmed.aln",
+      "-st",
+      "DNA",
+      "-seed",
+      "1",
+      "-nt",
+      "1",
+      "-m",
+      "TPM2u+F+G4",
+      "-bb",
+      "1000",
+      "-wbt",
+      "-pre",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support"
+    ],
+    "ended_at_utc": "2026-05-18T02:33:59Z",
+    "engine_name": "iqtree",
+    "executable": "/opt/homebrew/bin/iqtree2",
+    "exit_code": 0,
+    "output_paths": {
+      "bootstrap_trees": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.ufboot",
+      "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.log",
+      "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.iqtree",
+      "support_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.treefile"
+    },
+    "runtime_seconds": 0.721625,
+    "started_at_utc": "2026-05-18T02:33:58Z",
+    "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.stderr.log",
+    "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.stdout.log",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/iqtree2",
+        "--version"
+      ],
+      "engine_name": "iqtree",
+      "executable": "/opt/homebrew/bin/iqtree2",
+      "text": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+    },
+    "warning_lines": [],
+    "workflow": "bootstrap-support",
+    "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support"
+  },
+  "selected_model": "TPM2u+F+G4",
+  "sh_alrt_support_summary": null,
+  "trimming_summary": null,
+  "weak_backbone_report": {
+    "evaluated_backbone_node_count": 3,
+    "threshold": 70.0,
+    "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gappyout/engine-comparison/engine-artifacts/auto-gappyout/bootstrap-support/bootstrap-support.treefile",
+    "warnings": [
+      "one or more internal nodes did not expose numeric support labels"
+    ],
+    "weak_backbone_node_count": 0,
+    "weak_nodes": []
+  },
+  "workflow": "bootstrap-support"
+}

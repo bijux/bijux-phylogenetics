@@ -1,0 +1,28 @@
+{
+  "fixtures": [
+    {
+      "fixture_id": "analytical_three_taxon",
+      "relative_path": "metadata/example_distance_matrix.tsv",
+      "taxa": ["A", "B", "C"],
+      "pair_count": 9,
+      "feature_tags": ["analytical-three-taxon", "neighbor-joining-known-answer"],
+      "notes": "Three-taxon analytical distance matrix with one zero-length NJ branch."
+    },
+    {
+      "fixture_id": "ultrametric_four_taxon",
+      "relative_path": "metadata/example_distance_matrix_ultrametric.tsv",
+      "taxa": ["A", "B", "C", "D"],
+      "pair_count": 16,
+      "feature_tags": ["four-taxon", "ultrametric", "neighbor-joining-tie-case"],
+      "notes": "Four-taxon ultrametric matrix with tied NJ joins that must resolve deterministically."
+    },
+    {
+      "fixture_id": "nonultrametric_four_taxon",
+      "relative_path": "metadata/example_distance_matrix_nonultrametric.tsv",
+      "taxa": ["A", "B", "C", "D"],
+      "pair_count": 16,
+      "feature_tags": ["four-taxon", "non-ultrametric", "branch-length-case"],
+      "notes": "Four-taxon non-ultrametric matrix for NJ topology and branch-length parity."
+    }
+  ]
+}

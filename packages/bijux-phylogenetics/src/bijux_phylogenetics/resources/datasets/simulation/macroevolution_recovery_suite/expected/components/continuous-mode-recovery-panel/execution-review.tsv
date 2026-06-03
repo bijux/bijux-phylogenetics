@@ -1,0 +1,29 @@
+case_id	recovery_engine	operation	fitted_model	fit_status	selected_model	optimizer_name	converged	hit_lower_parameter_boundary	hit_upper_parameter_boundary	warning_count	failure_reason
+brownian-sigma-recovery	bijux	fit	brownian	ok			true	false	false	0	
+brownian-sigma-recovery	geiger	fit	brownian	ok		Brent	true	false	false	0	
+brownian-sigma-recovery	bijux	model-comparison	candidate-set	ok	brownian					0	
+brownian-sigma-recovery	geiger	model-comparison	candidate-set	ok	brownian					0	
+ou-parameter-recovery	bijux	fit	ornstein-uhlenbeck	ok		governed-two-stage-grid-search	true	false	false	2	
+ou-parameter-recovery	geiger	fit	ornstein-uhlenbeck	ok		L-BFGS-B	true	false	false	0	
+ou-parameter-recovery	bijux	model-comparison	candidate-set	ok	ornstein-uhlenbeck					0	
+ou-parameter-recovery	geiger	model-comparison	candidate-set	ok	brownian					0	
+early-burst-rate-recovery	bijux	fit	early-burst	ok		governed-two-stage-grid-search	true	false	false	1	
+early-burst-rate-recovery	geiger	fit	early-burst	ok		subplex	true	false	false	0	
+early-burst-rate-recovery	bijux	model-comparison	candidate-set	ok	early-burst					0	
+early-burst-rate-recovery	geiger	model-comparison	candidate-set	ok	early-burst					0	
+weak-ou-identifiability	bijux	fit	ornstein-uhlenbeck	ok		governed-two-stage-grid-search	true	false	false	2	
+weak-ou-identifiability	geiger	fit	ornstein-uhlenbeck	ok		L-BFGS-B	true	false	false	0	
+weak-ou-identifiability	bijux	model-comparison	candidate-set	ok	brownian					0	
+weak-ou-identifiability	geiger	model-comparison	candidate-set	ok	brownian					0	
+lambda-transformed-branch-review	bijux	fit	pagel-lambda	ok		governed-two-stage-grid-search	true	false	false	1	
+lambda-transformed-branch-review	geiger	fit	pagel-lambda	ok		L-BFGS-B	true	false	false	0	
+lambda-transformed-branch-review	bijux	model-comparison	candidate-set	ok	ornstein-uhlenbeck					1	
+lambda-transformed-branch-review	geiger	model-comparison	candidate-set	ok	ornstein-uhlenbeck					1	
+kappa-transformed-branch-review	bijux	fit	pagel-kappa	ok		governed-two-stage-grid-search	true	false	false	1	
+kappa-transformed-branch-review	geiger	fit	pagel-kappa	ok		subplex	true	false	false	0	
+kappa-transformed-branch-review	bijux	model-comparison	candidate-set	ok	pagel-kappa					1	
+kappa-transformed-branch-review	geiger	model-comparison	candidate-set	ok	pagel-kappa					1	
+delta-transformed-branch-review	bijux	fit	pagel-delta	ok		governed-two-stage-grid-search	true	false	false	1	
+delta-transformed-branch-review	geiger	fit	pagel-delta	ok		L-BFGS-B	true	false	false	0	
+delta-transformed-branch-review	bijux	model-comparison	candidate-set	ok	pagel-kappa					1	
+delta-transformed-branch-review	geiger	model-comparison	candidate-set	ok	pagel-kappa					1	

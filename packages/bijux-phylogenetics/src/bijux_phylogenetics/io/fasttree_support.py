@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 
 __all__ = ["FastTreeBranchSupportLabel", "parse_fasttree_branch_support_label"]
 
@@ -25,6 +26,8 @@ def parse_fasttree_branch_support_label(
     try:
         local_support = float(text)
     except ValueError:
+        return None
+    if not math.isfinite(local_support):
         return None
     if local_support < 0.0 or local_support > 1.0:
         return None

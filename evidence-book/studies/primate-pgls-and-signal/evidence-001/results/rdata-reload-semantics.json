@@ -9,15 +9,14 @@
     "primatetree"
   ],
   "row_count": 75,
-  "scalar_row_count": 42,
+  "scalar_row_count": 56,
   "schema_version": 1,
   "species_tip_match": true,
   "study_id": "primate-pgls-and-signal",
   "tip_count": 75,
   "verdict_counts": {
-    "matched": 19,
-    "matched_with_tolerance": 16,
-    "mismatch_explained": 4,
-    "mismatch_unexplained": 3
+    "matched": 9,
+    "matched_with_tolerance": 35,
+    "mismatch_unexplained": 12
   }
 }

@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.compare.taxon_influence import analyze_taxon_influence
+from bijux_phylogenetics.compare.influence import analyze_taxon_influence
 from bijux_phylogenetics.compare.topology import (
     compare_branch_lengths,
     compare_support_values,
     compare_tree_paths,
 )
-from bijux_phylogenetics.engines.inference_comparison import (
+from bijux_phylogenetics.engines.inference import (
     build_inference_comparison_conclusion_rows,
     build_inference_comparison_weighted_conflict_rows,
     summarize_inference_comparison_conclusions,

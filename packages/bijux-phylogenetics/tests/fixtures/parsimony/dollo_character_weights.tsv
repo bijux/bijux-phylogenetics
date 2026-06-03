@@ -1,0 +1,4 @@
+character_id	weight
+char01_gain_only	1.5
+char02_root_gain_with_losses	2.0
+char03_absent	3.0

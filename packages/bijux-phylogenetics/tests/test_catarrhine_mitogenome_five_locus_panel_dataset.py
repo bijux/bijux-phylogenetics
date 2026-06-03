@@ -5,14 +5,18 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
+import bijux_phylogenetics.datasets.phylogenomics as phylogenomics_api
 from bijux_phylogenetics.datasets.phylogenomics import (
     export_catarrhine_mitogenome_five_locus_panel_dataset,
     load_catarrhine_mitogenome_five_locus_panel_dataset,
     run_catarrhine_mitogenome_five_locus_panel_demo,
     run_catarrhine_mitogenome_five_locus_panel_workflow,
     write_catarrhine_mitogenome_five_locus_panel_workflow_bundle,
+)
+
+from .support.scientific_output_assertions import (
+    assert_selected_scientific_outputs_equivalent,
 )
 
 
@@ -61,10 +65,7 @@ def test_write_catarrhine_mitogenome_five_locus_panel_workflow_bundle_matches_pa
         bundle.support_table_path.name: bundle.support_table_path,
     }
     assert {path.name for path in expected_root.glob("*")} == set(generated)
-    for name, generated_path in generated.items():
-        assert generated_path.read_text(encoding="utf-8") == (
-            expected_root / name
-        ).read_text(encoding="utf-8")
+    assert_selected_scientific_outputs_equivalent(expected_root, generated)
 
 
 @pytest.mark.slow
@@ -101,23 +102,24 @@ def test_public_runtime_exports_include_catarrhine_mitogenome_five_locus_panel_s
     None
 ):
     assert (
-        bijux_phylogenetics.load_catarrhine_mitogenome_five_locus_panel_dataset
+        phylogenomics_api.load_catarrhine_mitogenome_five_locus_panel_dataset
         is load_catarrhine_mitogenome_five_locus_panel_dataset
     )
     assert (
-        bijux_phylogenetics.export_catarrhine_mitogenome_five_locus_panel_dataset
+        phylogenomics_api.export_catarrhine_mitogenome_five_locus_panel_dataset
         is export_catarrhine_mitogenome_five_locus_panel_dataset
     )
     assert (
-        bijux_phylogenetics.run_catarrhine_mitogenome_five_locus_panel_workflow
+        phylogenomics_api.run_catarrhine_mitogenome_five_locus_panel_workflow
         is run_catarrhine_mitogenome_five_locus_panel_workflow
     )
     assert (
-        bijux_phylogenetics.write_catarrhine_mitogenome_five_locus_panel_workflow_bundle
+        phylogenomics_api.write_catarrhine_mitogenome_five_locus_panel_workflow_bundle
         is write_catarrhine_mitogenome_five_locus_panel_workflow_bundle
     )
-    assert bijux_phylogenetics.run_catarrhine_mitogenome_five_locus_panel_demo is (
-        run_catarrhine_mitogenome_five_locus_panel_demo
+    assert (
+        phylogenomics_api.run_catarrhine_mitogenome_five_locus_panel_demo
+        is run_catarrhine_mitogenome_five_locus_panel_demo
     )
 
 

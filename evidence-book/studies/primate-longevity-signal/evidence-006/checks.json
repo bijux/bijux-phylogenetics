@@ -33,20 +33,20 @@
   "study_id": "primate-longevity-signal",
   "validation_rules": [
     {
-      "pass_when": "reference, analysis, checks, report, and provenance files are all present in the evidence directory",
-      "rule_id": "bundle-local-artifacts-present"
+      "rule_id": "bundle-local-artifacts-present",
+      "success_condition": "reference, analysis, checks, report, and provenance files are all present in the evidence directory"
     },
     {
-      "pass_when": "the evidence-owned results directory contains a manifest and README that inventory local execution products and governed outputs",
-      "rule_id": "results-directory-governed"
+      "rule_id": "results-directory-governed",
+      "success_condition": "the evidence-owned results directory contains a manifest and README that inventory local execution products and governed outputs"
     },
     {
-      "pass_when": "the bundle retains its governed machine outputs alongside the authored local artifact surfaces",
-      "rule_id": "primary-outputs-present"
+      "rule_id": "primary-outputs-present",
+      "success_condition": "the bundle retains its governed machine outputs alongside the authored local artifact surfaces"
     },
     {
-      "pass_when": "the bundle manifest continues to expose the verdict status and summary without hiding mismatches or boundaries",
-      "rule_id": "verdict-still-explicit"
+      "rule_id": "verdict-still-explicit",
+      "success_condition": "the bundle manifest continues to expose the verdict status and summary without hiding mismatches or boundaries"
     }
   ]
 }

@@ -1,4 +1,9 @@
 action_kind	affected_taxa	affected_nodes	reason	result
+normalize_duplicate_sequence_identifiers	pan_troglodytes_2		raw FASTA identifiers were duplicated and required deterministic renaming	rewrote retained duplicate identifiers into unique names
+remove_invalid_sequence_records	gorilla_gorilla,pongo_pygmaeus		raw FASTA records contained empty sequences or illegal characters	removed invalid records before downstream reuse
+drop_sequence_length_outliers	hylobates_lar,macaca_mulatta		raw FASTA sequence lengths deviated too far from the dataset baseline	excluded length outliers from the repaired FASTA subset
+exclude_invalid_coding_sequences	gorilla_gorilla,pan_troglodytes		coding-sequence preparation found frame errors or premature stop codons	retained only translation-ready coding sequences
+reject_raw_trait_linkage_mismatch			raw trait linkage omitted one tree taxon and introduced one extra trait taxon	strict raw linkage failed and the mismatched table was kept only as a review surface
 resolve_duplicate_trait_taxon	hylobates_lar		multiple raw trait rows were present for one taxon	kept row 6 and discarded 7
 drop_taxa_for_missing_required_traits	pongo_pygmaeus		required comparative traits remained missing after duplicate resolution	excluded taxa from the cleaned comparative subset
 drop_sequence_outlier_taxa	macaca_mulatta		alignment composition outliers exceeded the governed stress threshold	excluded taxa from the cleaned alignment and downstream subset

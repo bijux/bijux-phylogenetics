@@ -1,1 +1,1 @@
-(((homo_sapiens:0.04,pan_troglodytes:0.04):0.03,gorilla_gorilla:0.0):0.05,((pongo_pygmaeus:0.06,hylobates_lar:0.08):0.02,macaca_mulatta:2.4):0.04);
+(((homo_sapiens:0.04,pan_troglodytes:0.04):0.03,gorilla_gorilla:0.0):0.05,((pongo_pygmaeus:0.06,hylobates_lar:-0.02):0.02,macaca_mulatta:2.4):0.04);

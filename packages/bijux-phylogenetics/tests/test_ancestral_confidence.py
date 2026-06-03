@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.ancestral.confidence import (
+from bijux_phylogenetics.ancestral.continuous import (
+    reconstruct_continuous_ancestral_states,
+)
+from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
+from bijux_phylogenetics.ancestral.presentation.confidence_review import (
     build_continuous_ancestral_confidence_rows,
     build_continuous_ancestral_tree_set_confidence_rows,
     build_discrete_ancestral_confidence_rows,
@@ -15,10 +19,6 @@ from bijux_phylogenetics.ancestral.confidence import (
     write_continuous_ancestral_confidence_table,
     write_discrete_ancestral_confidence_table,
 )
-from bijux_phylogenetics.ancestral.continuous import (
-    reconstruct_continuous_ancestral_states,
-)
-from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
 from bijux_phylogenetics.ancestral.tree_set import (
     summarize_continuous_ancestral_tree_set,
     summarize_discrete_ancestral_tree_set,

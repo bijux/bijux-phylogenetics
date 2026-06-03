@@ -1,0 +1,29 @@
+#nexus
+
+BEGIN Taxa;
+DIMENSIONS ntax=5;
+TAXLABELS
+[1] 'brown_bear_modern'
+[2] 'polar_bear_modern'
+[3] 'black_bear_modern'
+[4] 'cave_bear_ud1838_fragment'
+[5] 'cave_bear_wk01_fragment'
+;
+END; [Taxa]
+
+BEGIN Splits;
+DIMENSIONS ntax=5 nsplits=9;
+FORMAT labels=no weights=yes confidences=no intervals=no;
+MATRIX
+	100	 2,
+	100	 3,
+	100	 4,
+	100	 5,
+	100	 4 5,
+	80	 1 2,
+	100	 1,
+	11	 2 3,
+	9	 1 3,
+;
+END; [Splits]
+

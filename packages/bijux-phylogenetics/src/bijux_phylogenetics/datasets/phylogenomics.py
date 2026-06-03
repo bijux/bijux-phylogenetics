@@ -5,27 +5,27 @@ from pathlib import Path
 import shutil
 from tempfile import TemporaryDirectory
 
-from bijux_phylogenetics.core.alignment import AlignmentRecord
-from bijux_phylogenetics.core.concatenation import (
-    ConcatenatedAlignmentReport,
-    concatenate_locus_alignments,
-)
-from bijux_phylogenetics.core.locus_occupancy import (
-    LocusOccupancyReport,
-    write_locus_partitions,
-)
-from bijux_phylogenetics.core.metadata import write_taxon_rows
-from bijux_phylogenetics.core.partitions import LocusPartition
-from bijux_phylogenetics.engines import (
-    EngineWorkflowReport,
+from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
+from bijux_phylogenetics.engines.workflows.iqtree import (
     run_bootstrap_support_estimation,
     run_model_selection,
 )
+from bijux_phylogenetics.engines.workflows.models import EngineWorkflowReport
 from bijux_phylogenetics.io.fasta import (
     load_fasta_alignment,
-    validate_fasta_input,
     write_fasta_alignment,
 )
+from bijux_phylogenetics.io.fasta.records import validate_fasta_input
+from bijux_phylogenetics.phylo.alignment import AlignmentRecord
+from bijux_phylogenetics.phylo.alignment.concatenation import (
+    ConcatenatedAlignmentReport,
+    concatenate_locus_alignments,
+)
+from bijux_phylogenetics.phylo.alignment.occupancy import (
+    LocusOccupancyReport,
+    write_locus_partitions,
+)
+from bijux_phylogenetics.phylo.alignment.partitions import LocusPartition
 
 _DATASET_ID = "catarrhine_mitogenome_five_locus_panel"
 _DATASET_LABEL = "Catarrhine mitogenome five-locus panel"

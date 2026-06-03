@@ -1,0 +1,131 @@
+IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024
+Developed by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,
+Dominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong
+
+Host:    Mac (SSE4.2, 32 GB RAM)
+Command: /opt/homebrew/bin/iqtree2 -s /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/trimming/trimming.trimmed.aln -st DNA -seed 1 -nt 1 -m TNe+G4 -bb 1000 -wbt -pre /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support
+Seed:    1 (Using SPRNG - Scalable Parallel Random Number Generator)
+Time:    Sun May 31 20:11:40 2026
+Kernel:  SSE2 - 1 threads (10 CPU cores detected)
+
+HINT: Use -nt option to specify number of threads because your CPU has 10 cores!
+HINT: -nt AUTO will automatically determine the best number of threads to use.
+
+Reading alignment file /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/trimming/trimming.trimmed.aln ... Fasta format detected
+Reading fasta file: done in 7.79629e-05 secs using 80.81% CPU
+Alignment most likely contains DNA/RNA sequences
+Alignment has 9 sequences with 558 columns, 310 distinct patterns
+205 parsimony-informative, 143 singleton sites, 210 constant sites
+           Gap/Ambiguity  Composition  p-value
+Analyzing sequences: done in 5.96046e-06 secs using 83.89% CPU
+   1  LcaM         4.84%    passed     42.07%
+   2  LcaH         4.30%    passed     74.10%
+   3  Dre37936     5.38%    passed     79.22%
+   4  Tru14292     4.84%    passed     65.70%
+   5  Ola20972     4.84%    passed     32.67%
+   6  Xtr21234     6.45%    passed     67.77%
+   7  Hsa167996    1.08%    passed     68.90%
+   8  Mmu024661    1.61%    passed     93.00%
+   9  Csa004271   23.12%    failed      0.67%
+****  TOTAL        6.27%  1 sequences failed composition chi2 test (p-value<5%; df=3)
+
+Create initial parsimony tree by phylogenetic likelihood library (PLL)... 0.000 seconds
+Generating 1000 samples for ultrafast bootstrap (seed: 1)...
+
+NOTE: 1 MB RAM (0 GB) is required!
+Estimate model parameters (epsilon = 0.100)
+1. Initial log-likelihood: -3524.069
+2. Current log-likelihood: -3440.873
+3. Current log-likelihood: -3440.128
+Optimal log-likelihood: -3440.100
+Rate parameters:  A-C: 1.00000  A-G: 1.91856  A-T: 1.00000  C-G: 1.00000  C-T: 2.84941  G-T: 1.00000
+Base frequencies:  A: 0.250  C: 0.250  G: 0.250  T: 0.250
+Gamma shape alpha: 0.941
+Parameters optimization took 3 rounds (0.014 sec)
+Wrote distance file to... 
+Computing ML distances based on estimated model parameters...
+Calculating distance matrix: done in 0.000324965 secs using 99.09% CPU
+Computing ML distances took 0.000363 sec (of wall-clock time) 0.000346 sec (of CPU time)
+Setting up auxiliary I and S matrices: done in 3.19481e-05 secs using 87.64% CPU
+Computing RapidNJ tree took 0.000149 sec (of wall-clock time) 0.000073 sec (of CPU time)
+Log-likelihood of RapidNJ tree: -3442.384
+--------------------------------------------------------------------
+|             INITIALIZING CANDIDATE TREE SET                      |
+--------------------------------------------------------------------
+Generating 98 parsimony trees... 0.027 second
+Computing log-likelihood of 84 initial trees ... 0.073 seconds
+Current best score: -3440.100
+
+Do NNI search on 20 best initial trees
+Estimate model parameters (epsilon = 0.100)
+BETTER TREE FOUND at iteration 1: -3440.099
+Iteration 10 / LogL: -3440.176 / Time: 0h:0m:0s
+Iteration 20 / LogL: -3440.192 / Time: 0h:0m:0s
+Finish initializing candidate tree set (2)
+Current best tree score: -3440.099 / CPU time: 0.282
+Number of iterations: 20
+--------------------------------------------------------------------
+|               OPTIMIZING CANDIDATE TREE SET                      |
+--------------------------------------------------------------------
+UPDATE BEST LOG-LIKELIHOOD: -3440.099
+Iteration 30 / LogL: -3440.313 / Time: 0h:0m:0s (0h:0m:1s left)
+UPDATE BEST LOG-LIKELIHOOD: -3440.099
+Iteration 40 / LogL: -3440.278 / Time: 0h:0m:0s (0h:0m:1s left)
+Iteration 50 / LogL: -3449.787 / Time: 0h:0m:0s (0h:0m:0s left)
+Log-likelihood cutoff on original alignment: -3463.144
+UFBoot trees printed to /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.ufboot
+UPDATE BEST LOG-LIKELIHOOD: -3440.099
+Iteration 60 / LogL: -3449.738 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 70 / LogL: -3440.140 / Time: 0h:0m:1s (0h:0m:0s left)
+Iteration 80 / LogL: -3440.205 / Time: 0h:0m:1s (0h:0m:0s left)
+UPDATE BEST LOG-LIKELIHOOD: -3440.099
+Iteration 90 / LogL: -3440.099 / Time: 0h:0m:1s (0h:0m:0s left)
+UPDATE BEST LOG-LIKELIHOOD: -3440.099
+Iteration 100 / LogL: -3449.779 / Time: 0h:0m:1s (0h:0m:0s left)
+Log-likelihood cutoff on original alignment: -3460.618
+NOTE: Bootstrap correlation coefficient of split occurrence frequencies: 1.000
+UFBoot trees printed to /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.ufboot
+TREE SEARCH COMPLETED AFTER 102 ITERATIONS / Time: 0h:0m:1s
+
+--------------------------------------------------------------------
+|                    FINALIZING TREE SEARCH                        |
+--------------------------------------------------------------------
+Performs final model parameters optimization
+Estimate model parameters (epsilon = 0.010)
+1. Initial log-likelihood: -3440.099
+Optimal log-likelihood: -3440.099
+Rate parameters:  A-C: 1.00000  A-G: 1.92054  A-T: 1.00000  C-G: 1.00000  C-T: 2.85829  G-T: 1.00000
+Base frequencies:  A: 0.250  C: 0.250  G: 0.250  T: 0.250
+Gamma shape alpha: 0.936
+Parameters optimization took 1 rounds (0.001 sec)
+BEST SCORE FOUND : -3440.099
+Creating bootstrap support values...
+Split supports printed to NEXUS file /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.splits.nex
+Total tree length: 2.181
+
+Total number of iterations: 102
+CPU time used for tree search: 1.275 sec (0h:0m:1s)
+Wall-clock time used for tree search: 1.563 sec (0h:0m:1s)
+Total CPU time used: 1.313 sec (0h:0m:1s)
+Total wall-clock time used: 1.610 sec (0h:0m:1s)
+UFBoot trees printed to /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.ufboot
+
+Computing bootstrap consensus tree...
+Reading input file /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.splits.nex...
+9 taxa and 33 splits.
+Consensus tree written to /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.contree
+Reading input trees file /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.contree
+Log-likelihood of consensus tree: -3440.099
+
+Analysis results written to: 
+  IQ-TREE report:                /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.iqtree
+  Maximum-likelihood tree:       /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.treefile
+  Likelihood distances:          /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.mldist
+
+Ultrafast bootstrap approximation results written to:
+  Split support values:          /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.splits.nex
+  Consensus tree:                /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.contree
+  UFBoot trees:                  /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.ufboot
+  Screen log file:               /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpabvj9omx/gnathostome-ortholog-coding-sequences/engine-artifacts/gnathostome-ortholog-coding-sequences/bootstrap-support/bootstrap-support.log
+
+Date and Time: Sun May 31 20:11:41 2026

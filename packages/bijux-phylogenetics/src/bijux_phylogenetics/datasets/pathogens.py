@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import shutil
 
-from bijux_phylogenetics.host_association import (
+from bijux_phylogenetics.ecology import (
     HostSwitchingReport,
     summarize_host_switching,
     write_host_state_node_table,
@@ -16,7 +16,7 @@ from bijux_phylogenetics.host_association import (
     write_host_switch_summary_table,
     write_unsupported_host_switch_claim_table,
 )
-from bijux_phylogenetics.io.fasta import validate_fasta_input
+from bijux_phylogenetics.io.fasta.records import validate_fasta_input
 
 _DATASET_ID = "rabies_cross_host_panel"
 _DATASET_LABEL = "Rabies cross-host nucleoprotein panel"

@@ -5,7 +5,7 @@ import math
 from pathlib import Path
 
 from bijux_phylogenetics.comparative.pgls import build_pgls_model_matrix, run_pgls
-from bijux_phylogenetics.comparative.pgls_interaction_coefficients import (
+from bijux_phylogenetics.comparative.pgls.interaction_coefficients import (
     summarize_pgls_interaction_coefficients,
     write_pgls_interaction_coefficient_table,
 )

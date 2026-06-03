@@ -1,0 +1,3 @@
+calibration_id	clade_name	taxa	minimum_age	maximum_age	distribution
+cal-root		A|B|C|D|E|F	4.0	4.4	uniform
+cal-abcde		A|B|C|D|E	4.5	4.8	uniform

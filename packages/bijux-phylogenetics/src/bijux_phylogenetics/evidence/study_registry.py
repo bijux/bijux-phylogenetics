@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.errors import EvidenceContractError
+from bijux_phylogenetics.runtime.errors import EvidenceContractError
 
 from .studies.primate_longevity_signal import (
     EVIDENCE_ID as PRIMATE_PCM1_SUMMARY_EVIDENCE_ID,

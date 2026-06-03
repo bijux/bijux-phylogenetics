@@ -1,0 +1,45 @@
+{
+  "dataset_id": "rabies_method_sensitivity_panel",
+  "label": "Rabies method-sensitivity panel",
+  "sequences_path": "sequences.fasta",
+  "metadata_path": "metadata.csv",
+  "sequence_type": "dna",
+  "workflow_prefix": "rabies-method-sensitivity-panel",
+  "outgroup_taxa": [
+    "bat_chile_rv108"
+  ],
+  "iqtree_seed": 1,
+  "iqtree_threads": 1,
+  "bootstrap_replicates": 1000,
+  "parallel_workers": 2,
+  "variants": [
+    {
+      "variant_id": "auto-gap-threshold",
+      "label": "MAFFT auto plus trimAl gap-threshold",
+      "alignment_mode": "auto",
+      "trimming_mode": "gap-threshold",
+      "trim_gap_threshold": 0.1
+    },
+    {
+      "variant_id": "ginsi-gap-threshold",
+      "label": "MAFFT ginsi plus trimAl gap-threshold",
+      "alignment_mode": "ginsi",
+      "trimming_mode": "gap-threshold",
+      "trim_gap_threshold": 0.1
+    },
+    {
+      "variant_id": "auto-gappyout",
+      "label": "MAFFT auto plus trimAl gappyout",
+      "alignment_mode": "auto",
+      "trimming_mode": "gappyout",
+      "trim_gap_threshold": 0.1
+    },
+    {
+      "variant_id": "ginsi-gappyout",
+      "label": "MAFFT ginsi plus trimAl gappyout",
+      "alignment_mode": "ginsi",
+      "trimming_mode": "gappyout",
+      "trim_gap_threshold": 0.1
+    }
+  ]
+}

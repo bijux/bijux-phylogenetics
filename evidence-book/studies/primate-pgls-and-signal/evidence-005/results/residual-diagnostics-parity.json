@@ -10,33 +10,33 @@
       "residual_variance": 11427.9401812442
     },
     "r": {
-      "abs_residual_fitted_correlation": 0.0234,
-      "max_abs_z_residual": 3.073,
+      "abs_residual_fitted_correlation": 0.0234397354786275,
+      "max_abs_z_residual": 3.07296182239106,
       "outlier_count_abs_z_ge_2": 5,
-      "qq_correlation": 0.975,
-      "residual_mean": 1.6314e-15,
-      "residual_sd": 1.0067,
-      "residual_variance": 1.0135
+      "qq_correlation": 0.974950137688634,
+      "residual_mean": 1.63135997766073e-15,
+      "residual_sd": 1.00673408282104,
+      "residual_variance": 1.01351351351351
     }
   },
   "estimated_lambda_diagnostics": {
     "bijux": {
-      "abs_residual_fitted_correlation": 0.112199761717797,
-      "max_abs_z_residual": 2.98146003868482,
+      "abs_residual_fitted_correlation": 0.109972191549302,
+      "max_abs_z_residual": 2.98631530647783,
       "outlier_count_abs_z_ge_2": 4,
-      "qq_correlation": 0.977832436449786,
-      "residual_mean": 43.1604392484416,
-      "residual_sd": 112.343581157334,
-      "residual_variance": 12621.0802272544
+      "qq_correlation": 0.977685033649863,
+      "residual_mean": 42.6665002202872,
+      "residual_sd": 112.113772315026,
+      "residual_variance": 12569.4979427056
     },
     "r": {
-      "abs_residual_fitted_correlation": 0.2056,
-      "max_abs_z_residual": 2.6925,
+      "abs_residual_fitted_correlation": 0.205562548325984,
+      "max_abs_z_residual": 2.69248024938595,
       "outlier_count_abs_z_ge_2": 3,
-      "qq_correlation": 0.9802,
-      "residual_mean": 0.1775,
-      "residual_sd": 0.9908,
-      "residual_variance": 0.9816
+      "qq_correlation": 0.980223544138575,
+      "residual_mean": 0.17747904227692,
+      "residual_sd": 0.990751756730887,
+      "residual_variance": 0.981589043465338
     }
   },
   "evidence_id": "evidence-005",

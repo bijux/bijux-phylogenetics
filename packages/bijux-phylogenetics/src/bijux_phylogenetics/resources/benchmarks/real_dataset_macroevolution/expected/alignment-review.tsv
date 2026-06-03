@@ -1,0 +1,3 @@
+surface_id	trait	model	original_tree_taxa	original_trait_taxa	aligned_taxa_count	dropped_tree_taxa	dropped_trait_taxa	dropped_missing_value_taxa	geiger_overlap_taxa	geiger_usable_taxa	notes
+seed-mass-alignment-review	seed_mass	ornstein-uhlenbeck	42	42	40	Triglochin_maritimum	unmatched_review_taxon	Juncus_maritimus	41	40	reference review first aligns by shared taxon set and then drops the overlapping seed_mass missing value before OU fitting
+lifeform-alignment-review	lifeform	equal-rates	42	42	40	Triglochin_maritimum	unmatched_review_taxon	Juncus_gerardii	41	40	reference review first aligns by shared taxon set and then drops the overlapping lifeform missing value before ER fitting

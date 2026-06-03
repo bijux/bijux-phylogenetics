@@ -16,6 +16,8 @@ from bijux_phylogenetics.distance import (
     compute_pairwise_genetic_distance_matrix,
     inspect_distance_matrix_quality,
     inspect_imported_distance_matrix_quality,
+    list_distance_tree_method_policies,
+    resolve_distance_tree_method_policy,
     summarize_distance_bootstrap_support,
     validate_distance_reference_examples,
     write_distance_reproducibility_bundle,
@@ -41,8 +43,40 @@ def fixture(name: str) -> Path:
 def test_validate_distance_reference_examples_passes() -> None:
     report = validate_distance_reference_examples()
     assert report.all_passed is True
-    assert len(report.observations) == 9
+    assert len(report.observations) == 11
     assert len(report.tree_observations) == 2
+
+
+def test_distance_tree_method_policies_support_bionj() -> None:
+    policies = {row.method: row for row in list_distance_tree_method_policies()}
+    assert set(policies) == {
+        "bionj",
+        "complete-linkage",
+        "neighbor-joining",
+        "single-linkage",
+        "upgma",
+        "wpgma",
+    }
+    assert policies["neighbor-joining"].supported is True
+    assert policies["single-linkage"].supported is True
+    assert policies["complete-linkage"].supported is True
+    assert policies["neighbor-joining"].reference_surface == "ape::nj"
+    assert policies["bionj"].supported is True
+    assert policies["bionj"].reference_surface == "ape::bionj"
+    assert policies["bionj"].support_scope == "owned-runtime"
+    assert policies["upgma"].supported is True
+    assert policies["wpgma"].supported is True
+
+
+def test_resolve_distance_tree_method_policy_supports_bionj() -> None:
+    policy = resolve_distance_tree_method_policy("bionj")
+    assert policy.method == "bionj"
+    tree, report = build_distance_tree(
+        fixture("example_alignment_distance.fasta"),
+        method="bionj",
+    )
+    assert tree.rooted is False
+    assert report.method == "bionj"
 
 
 def test_compute_pairwise_genetic_distance_matrix_supports_kimura_two_parameter() -> (
@@ -172,8 +206,30 @@ def test_bootstrap_distance_trees_returns_consensus_and_support() -> None:
     )
     assert len(trees) == 5
     assert report.tree_count == 5
-    assert report.consensus_newick.endswith(";")
-    assert len(report.support) > 0
+    assert (
+        report.consensus_newick == "((A:0.0125,B:0.0125)100:0.6875,C:0.0125,D:0.0125);"
+    )
+    assert [row.sampled_site_indices for row in report.replicate_rows] == [
+        [5, 2, 6, 0, 1, 1, 5, 0],
+        [3, 0, 1, 6, 6, 1, 3, 1],
+        [6, 0, 1, 3, 0, 6, 0, 3],
+        [0, 2, 4, 6, 2, 1, 4, 2],
+        [1, 3, 5, 1, 1, 0, 3, 7],
+    ]
+    assert [row.tree_newick for row in report.replicate_rows] == [
+        "((A:0,B:0)Inner1:0.625,C:0,D:0)Inner2;",
+        "((A:0,B:0)Inner1:0.75,C:0,D:0)Inner2;",
+        "((A:0,B:0)Inner1:0.75,C:0,D:0)Inner2;",
+        "((A:0,B:0)Inner1:0.625,C:0,D:0)Inner2;",
+        "((A:0.0625,B:0.0625)Inner1:0.6875,C:0.0625,D:0.0625)Inner2;",
+    ]
+    assert [(row.clade, row.tree_count, row.frequency) for row in report.support] == [
+        ("A|B", 5, 1.0)
+    ]
+    assert any(
+        len(set(row.sampled_site_indices)) < len(row.sampled_site_indices)
+        for row in report.replicate_rows
+    )
 
 
 def test_summarize_distance_bootstrap_support_reports_weak_clade_counts() -> None:
@@ -208,9 +264,11 @@ def test_compare_distance_tree_to_reference_tree_reports_matching_topology(
 def test_compare_distance_models_reports_supported_dna_models() -> None:
     report = compare_distance_models(fixture("example_alignment_distance.fasta"))
     assert [row.model for row in report.rows] == [
+        "felsenstein-81",
         "jukes-cantor",
         "kimura-2-parameter",
         "p-distance",
+        "tamura-nei-93",
     ]
 
 
@@ -232,6 +290,8 @@ def test_build_distance_method_report_combines_support_models_and_gap_sensitivit
         bootstrap_replicates=5,
         bootstrap_seed=3,
     )
+    assert report.method_policy.method == "neighbor-joining"
+    assert report.method_policy.reference_surface == "ape::nj"
     assert report.bootstrap_summary.clade_count > 0
     assert report.model_comparison.rows
     assert report.gap_policy_sensitivity.pair_count > 0
@@ -245,6 +305,7 @@ def test_assess_distance_method_maturity_validates_bundle_provenance() -> None:
         bootstrap_seed=3,
         validate_bundle=True,
     )
+    assert report.method_policy.supported is True
     assert report.decision in {"production_candidate", "validated_with_limits"}
     assert any(
         check.name == "bundle_provenance" and check.satisfied for check in report.checks

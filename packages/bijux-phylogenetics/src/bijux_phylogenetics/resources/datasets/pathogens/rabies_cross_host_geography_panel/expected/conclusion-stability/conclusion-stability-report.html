@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bijux Conclusion Stability Report</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1b1f24;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --accent: #0f766e;
+      --rule: #d6dee8;
+      --mono: "SFMono-Regular", "SF Mono", Consolas, monospace;
+    }
+    body {
+      margin: 0;
+      padding: 2rem;
+      background: linear-gradient(180deg, #eef6f4 0%, var(--bg) 100%);
+      color: var(--ink);
+      font: 16px/1.5 "Iowan Old Style", "Palatino Linotype", serif;
+    }
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--panel);
+      border: 1px solid var(--rule);
+      border-radius: 18px;
+      padding: 2rem;
+      box-shadow: 0 24px 80px rgba(15, 118, 110, 0.08);
+    }
+    h1, h2 {
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      letter-spacing: 0.02em;
+    }
+    h1 {
+      margin-top: 0;
+      color: var(--accent);
+    }
+    section + section {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--rule);
+    }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: var(--mono);
+      background: #f6f8fa;
+      border-radius: 12px;
+      padding: 1rem;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+    }
+    .summary-card {
+      background: #f6fffd;
+      border: 1px solid rgba(15, 118, 110, 0.18);
+      border-radius: 14px;
+      padding: 0.9rem 1rem;
+    }
+    .summary-card dt {
+      margin: 0;
+      font: 600 0.82rem/1.2 "Avenir Next", "Segoe UI", sans-serif;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: #476b67;
+    }
+    .summary-card dd {
+      margin: 0.35rem 0 0;
+      font: 700 1.2rem/1.25 var(--mono);
+      color: var(--ink);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Bijux Conclusion Stability Report</h1>
+    <script id="bijux-report-manifest" type="application/json">{
+  "stable_conclusions": [
+    {
+      "category": "support_value",
+      "combined_score": 1.0,
+      "conclusion_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "baseline_support=1; bootstrap_frequency=1; method_support_consistency=1",
+      "label": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "stability_class": "stable"
+    },
+    {
+      "category": "support_value",
+      "combined_score": 1.0,
+      "conclusion_id": "bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "baseline_support=; bootstrap_frequency=1; method_support_consistency=1",
+      "label": "bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "stability_class": "stable"
+    },
+    {
+      "category": "key_clade",
+      "combined_score": 1.0,
+      "conclusion_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "bootstrap_frequency=1; method_presence_fraction=1",
+      "label": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "stability_class": "stable"
+    },
+    {
+      "category": "key_clade",
+      "combined_score": 1.0,
+      "conclusion_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+      "evidence": "bootstrap_frequency=1; method_presence_fraction=1",
+      "label": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+      "stability_class": "stable"
+    },
+    {
+      "category": "key_clade",
+      "combined_score": 1.0,
+      "conclusion_id": "bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "bootstrap_frequency=1; method_presence_fraction=1",
+      "label": "bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "stability_class": "stable"
+    },
+    {
+      "category": "ancestral_state",
+      "combined_score": 1.0,
+      "conclusion_id": "host_group:raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025",
+      "evidence": "baseline_state=canid; bootstrap_state_consistency=1; method_state_consistency=1",
+      "label": "host_group::canid",
+      "stability_class": "stable"
+    },
+    {
+      "category": "ancestral_state",
+      "combined_score": 1.0,
+      "conclusion_id": "host_group:raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "baseline_state=canid; bootstrap_state_consistency=1; method_state_consistency=1",
+      "label": "host_group::canid",
+      "stability_class": "stable"
+    },
+    {
+      "category": "ancestral_state",
+      "combined_score": 1.0,
+      "conclusion_id": "host_group:cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "baseline_state=canid; bootstrap_state_consistency=1; method_state_consistency=1",
+      "label": "host_group::canid",
+      "stability_class": "stable"
+    },
+    {
+      "category": "ancestral_state",
+      "combined_score": 1.0,
+      "conclusion_id": "host_group:cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "baseline_state=canid; bootstrap_state_consistency=1; method_state_consistency=1",
+      "label": "host_group::canid",
+      "stability_class": "stable"
+    },
+    {
+      "category": "ancestral_state",
+      "combined_score": 1.0,
+      "conclusion_id": "host_group:cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "baseline_state=canid; bootstrap_state_consistency=1; method_state_consistency=1",
+      "label": "host_group::canid",
+      "stability_class": "stable"
+    },
+    {
+      "category": "ancestral_state",
+      "combined_score": 1.0,
+      "conclusion_id": "host_group:cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+      "evidence": "baseline_state=livestock; bootstrap_state_consistency=1; method_state_consistency=1",
+      "label": "host_group::livestock",
+      "stability_class": "stable"
+    },
+    {
+      "category": "ancestral_state",
+      "combined_score": 1.0,
+      "conclusion_id": "host_group:bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "baseline_state=bat; bootstrap_state_consistency=1; method_state_consistency=1",
+      "label": "host_group::bat",
+      "stability_class": "stable"
+    },
+    {
+      "category": "ancestral_state",
+      "combined_score": 1.0,
+      "conclusion_id": "host_group:bat_chile_rv108|bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "baseline_state=bat; bootstrap_state_consistency=1; method_state_consistency=1",
+      "label": "host_group::bat",
+      "stability_class": "stable"
+    },
+    {
+      "category": "ancestral_state",
+      "combined_score": 1.0,
+      "conclusion_id": "region_group:raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025",
+      "evidence": "baseline_state=north_asia; bootstrap_state_consistency=1; method_state_consistency=1",
+      "label": "region_group::north_asia",
+      "stability_class": "stable"
+    },
+    {
+      "category": "ancestral_state",
+      "combined_score": 1.0,
+      "conclusion_id": "region_group:raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "baseline_state=north_asia; bootstrap_state_consistency=1; method_state_consistency=1",
+      "label": "region_group::north_asia",
+      "stability_class": "stable"
+    },
+    {
+      "category": "ancestral_state",
+      "combined_score": 1.0,
+      "conclusion_id": "region_group:cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "baseline_state=north_asia; bootstrap_state_consistency=1; method_state_consistency=1",
+      "label": "region_group::north_asia",
+      "stability_class": "stable"
+    },
+    {
+      "category": "ancestral_state",
+      "combined_score": 1.0,
+      "conclusion_id": "region_group:cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+      "evidence": "baseline_state=north_asia; bootstrap_state_consistency=1; method_state_consistency=1",
+      "label": "region_group::north_asia",
+      "stability_class": "stable"
+    },
+    {
+      "category": "ancestral_state",
+      "combined_score": 1.0,
+      "conclusion_id": "region_group:bat_chile_rv108|bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "baseline_state=south_america; bootstrap_state_consistency=1; method_state_consistency=1",
+      "label": "region_group::south_america",
+      "stability_class": "stable"
+    },
+    {
+      "category": "support_value",
+      "combined_score": 0.99975,
+      "conclusion_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+      "evidence": "baseline_support=1; bootstrap_frequency=1; method_support_consistency=0.9995",
+      "label": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+      "stability_class": "stable"
+    },
+    {
+      "category": "key_clade",
+      "combined_score": 0.9995,
+      "conclusion_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "bootstrap_frequency=0.999; method_presence_fraction=1",
+      "label": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "stability_class": "stable"
+    },
+    {
+      "category": "ancestral_state",
+      "combined_score": 0.9995,
+      "conclusion_id": "region_group:cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "baseline_state=south_asia; bootstrap_state_consistency=0.999; method_state_consistency=1",
+      "label": "region_group::south_asia",
+      "stability_class": "stable"
+    },
+    {
+      "category": "support_value",
+      "combined_score": 0.99875,
+      "conclusion_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "baseline_support=1; bootstrap_frequency=0.999; method_support_consistency=0.9985",
+      "label": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "stability_class": "stable"
+    },
+    {
+      "category": "comparative_coefficient",
+      "combined_score": 0.9984999999999999,
+      "conclusion_id": "host_group[livestock]",
+      "evidence": "baseline_direction=positive; bootstrap_direction_consistency=1; method_direction_consistency=1",
+      "label": "host_group[livestock]",
+      "stability_class": "stable"
+    },
+    {
+      "category": "comparative_coefficient",
+      "combined_score": 0.9984999999999999,
+      "conclusion_id": "host_group[canid]",
+      "evidence": "baseline_direction=positive; bootstrap_direction_consistency=1; method_direction_consistency=1",
+      "label": "host_group[canid]",
+      "stability_class": "stable"
+    },
+    {
+      "category": "key_clade",
+      "combined_score": 0.995,
+      "conclusion_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "bootstrap_frequency=0.99; method_presence_fraction=1",
+      "label": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "stability_class": "stable"
+    },
+    {
+      "category": "support_value",
+      "combined_score": 0.9895,
+      "conclusion_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "baseline_support=0.99; bootstrap_frequency=0.99; method_support_consistency=0.989",
+      "label": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "stability_class": "stable"
+    },
+    {
+      "category": "support_value",
+      "combined_score": 0.9610000000000001,
+      "conclusion_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "baseline_support=0.92; bootstrap_frequency=0.922; method_support_consistency=1",
+      "label": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "stability_class": "stable"
+    },
+    {
+      "category": "key_clade",
+      "combined_score": 0.9610000000000001,
+      "conclusion_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "bootstrap_frequency=0.922; method_presence_fraction=1",
+      "label": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "stability_class": "stable"
+    },
+    {
+      "category": "key_clade",
+      "combined_score": 0.9219999999999999,
+      "conclusion_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025",
+      "evidence": "bootstrap_frequency=0.844; method_presence_fraction=1",
+      "label": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025",
+      "stability_class": "stable"
+    },
+    {
+      "category": "support_value",
+      "combined_score": 0.9145,
+      "conclusion_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025",
+      "evidence": "baseline_support=0.84; bootstrap_frequency=0.844; method_support_consistency=0.985",
+      "label": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025",
+      "stability_class": "stable"
+    }
+  ],
+  "summary": {
+    "stable_count": 30,
+    "unstable_count": 2,
+    "weak_count": 0
+  },
+  "unstable_conclusions": [
+    {
+      "category": "ancestral_state",
+      "combined_score": 0.505005005005005,
+      "conclusion_id": "region_group:cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "baseline_state=north_asia; bootstrap_state_consistency=0.01001001001001; method_state_consistency=1",
+      "label": "region_group::north_asia",
+      "stability_class": "unstable"
+    },
+    {
+      "category": "ancestral_state",
+      "combined_score": 0.5,
+      "conclusion_id": "region_group:bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "evidence": "baseline_state=north_america; bootstrap_state_consistency=0; method_state_consistency=1",
+      "label": "region_group::north_america",
+      "stability_class": "unstable"
+    }
+  ],
+  "weak_conclusions": []
+}</script>
+<section><h2>summary</h2><div class="summary-grid">
+<dl class="summary-card"><dt>stable_count</dt><dd>30</dd></dl>
+<dl class="summary-card"><dt>weak_count</dt><dd>0</dd></dl>
+<dl class="summary-card"><dt>unstable_count</dt><dd>2</dd></dl>
+<dl class="summary-card"><dt>key_clade_count</dt><dd>7</dd></dl>
+<dl class="summary-card"><dt>support_value_count</dt><dd>7</dd></dl>
+<dl class="summary-card"><dt>ancestral_state_count</dt><dd>16</dd></dl>
+<dl class="summary-card"><dt>comparative_coefficient_count</dt><dd>2</dd></dl>
+</div></section>
+<section><h2>stable-conclusions</h2><pre>[
+  {
+    &quot;category&quot;: &quot;support_value&quot;,
+    &quot;combined_score&quot;: 1.0,
+    &quot;conclusion_id&quot;: &quot;cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_support=1; bootstrap_frequency=1; method_support_consistency=1&quot;,
+    &quot;label&quot;: &quot;cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;support_value&quot;,
+    &quot;combined_score&quot;: 1.0,
+    &quot;conclusion_id&quot;: &quot;bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_support=; bootstrap_frequency=1; method_support_consistency=1&quot;,
+    &quot;label&quot;: &quot;bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;key_clade&quot;,
+    &quot;combined_score&quot;: 1.0,
+    &quot;conclusion_id&quot;: &quot;cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;bootstrap_frequency=1; method_presence_fraction=1&quot;,
+    &quot;label&quot;: &quot;cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;key_clade&quot;,
+    &quot;combined_score&quot;: 1.0,
+    &quot;conclusion_id&quot;: &quot;cattle_russia_4092_13_2025|cattle_russia_4092_15_2025&quot;,
+    &quot;evidence&quot;: &quot;bootstrap_frequency=1; method_presence_fraction=1&quot;,
+    &quot;label&quot;: &quot;cattle_russia_4092_13_2025|cattle_russia_4092_15_2025&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;key_clade&quot;,
+    &quot;combined_score&quot;: 1.0,
+    &quot;conclusion_id&quot;: &quot;bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;bootstrap_frequency=1; method_presence_fraction=1&quot;,
+    &quot;label&quot;: &quot;bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;ancestral_state&quot;,
+    &quot;combined_score&quot;: 1.0,
+    &quot;conclusion_id&quot;: &quot;host_group:raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_state=canid; bootstrap_state_consistency=1; method_state_consistency=1&quot;,
+    &quot;label&quot;: &quot;host_group::canid&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;ancestral_state&quot;,
+    &quot;combined_score&quot;: 1.0,
+    &quot;conclusion_id&quot;: &quot;host_group:raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_state=canid; bootstrap_state_consistency=1; method_state_consistency=1&quot;,
+    &quot;label&quot;: &quot;host_group::canid&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;ancestral_state&quot;,
+    &quot;combined_score&quot;: 1.0,
+    &quot;conclusion_id&quot;: &quot;host_group:cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_state=canid; bootstrap_state_consistency=1; method_state_consistency=1&quot;,
+    &quot;label&quot;: &quot;host_group::canid&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;ancestral_state&quot;,
+    &quot;combined_score&quot;: 1.0,
+    &quot;conclusion_id&quot;: &quot;host_group:cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_state=canid; bootstrap_state_consistency=1; method_state_consistency=1&quot;,
+    &quot;label&quot;: &quot;host_group::canid&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;ancestral_state&quot;,
+    &quot;combined_score&quot;: 1.0,
+    &quot;conclusion_id&quot;: &quot;host_group:cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_state=canid; bootstrap_state_consistency=1; method_state_consistency=1&quot;,
+    &quot;label&quot;: &quot;host_group::canid&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;ancestral_state&quot;,
+    &quot;combined_score&quot;: 1.0,
+    &quot;conclusion_id&quot;: &quot;host_group:cattle_russia_4092_13_2025|cattle_russia_4092_15_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_state=livestock; bootstrap_state_consistency=1; method_state_consistency=1&quot;,
+    &quot;label&quot;: &quot;host_group::livestock&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;ancestral_state&quot;,
+    &quot;combined_score&quot;: 1.0,
+    &quot;conclusion_id&quot;: &quot;host_group:bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_state=bat; bootstrap_state_consistency=1; method_state_consistency=1&quot;,
+    &quot;label&quot;: &quot;host_group::bat&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;ancestral_state&quot;,
+    &quot;combined_score&quot;: 1.0,
+    &quot;conclusion_id&quot;: &quot;host_group:bat_chile_rv108|bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_state=bat; bootstrap_state_consistency=1; method_state_consistency=1&quot;,
+    &quot;label&quot;: &quot;host_group::bat&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;ancestral_state&quot;,
+    &quot;combined_score&quot;: 1.0,
+    &quot;conclusion_id&quot;: &quot;region_group:raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_state=north_asia; bootstrap_state_consistency=1; method_state_consistency=1&quot;,
+    &quot;label&quot;: &quot;region_group::north_asia&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;ancestral_state&quot;,
+    &quot;combined_score&quot;: 1.0,
+    &quot;conclusion_id&quot;: &quot;region_group:raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_state=north_asia; bootstrap_state_consistency=1; method_state_consistency=1&quot;,
+    &quot;label&quot;: &quot;region_group::north_asia&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;ancestral_state&quot;,
+    &quot;combined_score&quot;: 1.0,
+    &quot;conclusion_id&quot;: &quot;region_group:cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_state=north_asia; bootstrap_state_consistency=1; method_state_consistency=1&quot;,
+    &quot;label&quot;: &quot;region_group::north_asia&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;ancestral_state&quot;,
+    &quot;combined_score&quot;: 1.0,
+    &quot;conclusion_id&quot;: &quot;region_group:cattle_russia_4092_13_2025|cattle_russia_4092_15_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_state=north_asia; bootstrap_state_consistency=1; method_state_consistency=1&quot;,
+    &quot;label&quot;: &quot;region_group::north_asia&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;ancestral_state&quot;,
+    &quot;combined_score&quot;: 1.0,
+    &quot;conclusion_id&quot;: &quot;region_group:bat_chile_rv108|bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_state=south_america; bootstrap_state_consistency=1; method_state_consistency=1&quot;,
+    &quot;label&quot;: &quot;region_group::south_america&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;support_value&quot;,
+    &quot;combined_score&quot;: 0.99975,
+    &quot;conclusion_id&quot;: &quot;cattle_russia_4092_13_2025|cattle_russia_4092_15_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_support=1; bootstrap_frequency=1; method_support_consistency=0.9995&quot;,
+    &quot;label&quot;: &quot;cattle_russia_4092_13_2025|cattle_russia_4092_15_2025&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;key_clade&quot;,
+    &quot;combined_score&quot;: 0.9995,
+    &quot;conclusion_id&quot;: &quot;cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;bootstrap_frequency=0.999; method_presence_fraction=1&quot;,
+    &quot;label&quot;: &quot;cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;ancestral_state&quot;,
+    &quot;combined_score&quot;: 0.9995,
+    &quot;conclusion_id&quot;: &quot;region_group:cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_state=south_asia; bootstrap_state_consistency=0.999; method_state_consistency=1&quot;,
+    &quot;label&quot;: &quot;region_group::south_asia&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;support_value&quot;,
+    &quot;combined_score&quot;: 0.99875,
+    &quot;conclusion_id&quot;: &quot;cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_support=1; bootstrap_frequency=0.999; method_support_consistency=0.9985&quot;,
+    &quot;label&quot;: &quot;cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;comparative_coefficient&quot;,
+    &quot;combined_score&quot;: 0.9984999999999999,
+    &quot;conclusion_id&quot;: &quot;host_group[livestock]&quot;,
+    &quot;evidence&quot;: &quot;baseline_direction=positive; bootstrap_direction_consistency=1; method_direction_consistency=1&quot;,
+    &quot;label&quot;: &quot;host_group[livestock]&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;comparative_coefficient&quot;,
+    &quot;combined_score&quot;: 0.9984999999999999,
+    &quot;conclusion_id&quot;: &quot;host_group[canid]&quot;,
+    &quot;evidence&quot;: &quot;baseline_direction=positive; bootstrap_direction_consistency=1; method_direction_consistency=1&quot;,
+    &quot;label&quot;: &quot;host_group[canid]&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;key_clade&quot;,
+    &quot;combined_score&quot;: 0.995,
+    &quot;conclusion_id&quot;: &quot;cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;bootstrap_frequency=0.99; method_presence_fraction=1&quot;,
+    &quot;label&quot;: &quot;cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;support_value&quot;,
+    &quot;combined_score&quot;: 0.9895,
+    &quot;conclusion_id&quot;: &quot;cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_support=0.99; bootstrap_frequency=0.99; method_support_consistency=0.989&quot;,
+    &quot;label&quot;: &quot;cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;support_value&quot;,
+    &quot;combined_score&quot;: 0.9610000000000001,
+    &quot;conclusion_id&quot;: &quot;raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_support=0.92; bootstrap_frequency=0.922; method_support_consistency=1&quot;,
+    &quot;label&quot;: &quot;raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;key_clade&quot;,
+    &quot;combined_score&quot;: 0.9610000000000001,
+    &quot;conclusion_id&quot;: &quot;raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;bootstrap_frequency=0.922; method_presence_fraction=1&quot;,
+    &quot;label&quot;: &quot;raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;key_clade&quot;,
+    &quot;combined_score&quot;: 0.9219999999999999,
+    &quot;conclusion_id&quot;: &quot;raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;bootstrap_frequency=0.844; method_presence_fraction=1&quot;,
+    &quot;label&quot;: &quot;raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;support_value&quot;,
+    &quot;combined_score&quot;: 0.9145,
+    &quot;conclusion_id&quot;: &quot;raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_support=0.84; bootstrap_frequency=0.844; method_support_consistency=0.985&quot;,
+    &quot;label&quot;: &quot;raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;stability_class&quot;: &quot;stable&quot;
+  }
+]</pre></section>
+<section><h2>weak-conclusions</h2><pre>[]</pre></section>
+<section><h2>unstable-conclusions</h2><pre>[
+  {
+    &quot;category&quot;: &quot;ancestral_state&quot;,
+    &quot;combined_score&quot;: 0.505005005005005,
+    &quot;conclusion_id&quot;: &quot;region_group:cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_state=north_asia; bootstrap_state_consistency=0.01001001001001; method_state_consistency=1&quot;,
+    &quot;label&quot;: &quot;region_group::north_asia&quot;,
+    &quot;stability_class&quot;: &quot;unstable&quot;
+  },
+  {
+    &quot;category&quot;: &quot;ancestral_state&quot;,
+    &quot;combined_score&quot;: 0.5,
+    &quot;conclusion_id&quot;: &quot;region_group:bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025&quot;,
+    &quot;evidence&quot;: &quot;baseline_state=north_america; bootstrap_state_consistency=0; method_state_consistency=1&quot;,
+    &quot;label&quot;: &quot;region_group::north_america&quot;,
+    &quot;stability_class&quot;: &quot;unstable&quot;
+  }
+]</pre></section>
+  </main>
+</body>
+</html>

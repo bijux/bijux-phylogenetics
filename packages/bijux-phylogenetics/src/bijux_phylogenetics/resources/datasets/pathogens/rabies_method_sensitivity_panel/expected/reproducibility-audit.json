@@ -1,0 +1,1146 @@
+{
+  "all_passed": true,
+  "bundle_root": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/rabies-method-sensitivity-failure-recovery-refresh/workflow",
+  "check_count": 136,
+  "checks": [
+    {
+      "check_id": "input-checksum:sequences.fasta",
+      "detail": "sequences.fasta matches the checksum recorded in workflow-config.resolved.json",
+      "expected": "a3a401e5ab1e9c76e7b0793c86c69708186a550fadb2931fa6d66af61ceb6236",
+      "observed": "a3a401e5ab1e9c76e7b0793c86c69708186a550fadb2931fa6d66af61ceb6236",
+      "status": "passed",
+      "surface": "input-checksum"
+    },
+    {
+      "check_id": "input-checksum:metadata.csv",
+      "detail": "metadata.csv matches the checksum recorded in workflow-config.resolved.json",
+      "expected": "cca2178210f8c8b9850b0773228fbc5bb26d2c363db8d115b2996df9399111f2",
+      "observed": "cca2178210f8c8b9850b0773228fbc5bb26d2c363db8d115b2996df9399111f2",
+      "status": "passed",
+      "surface": "input-checksum"
+    },
+    {
+      "check_id": "workflow-manifest:changed_clades",
+      "detail": "changed_clades matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "a9df7197e52f84272b6f4fd29091ff5ed8dc2105e1829e954f8e4ecebd73a5bf",
+      "observed": "a9df7197e52f84272b6f4fd29091ff5ed8dc2105e1829e954f8e4ecebd73a5bf",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:conclusion_summary",
+      "detail": "conclusion_summary matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "4e7aabca06fecb33b83da7d623e7d110a72bf41e2a1175d4a8608ca32442e94f",
+      "observed": "4e7aabca06fecb33b83da7d623e7d110a72bf41e2a1175d4a8608ca32442e94f",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:config",
+      "detail": "config matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "5dd5360de532fb56dbcb692abd39f84c850dca83095841692dbff887218f0f48",
+      "observed": "5dd5360de532fb56dbcb692abd39f84c850dca83095841692dbff887218f0f48",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:execution_record",
+      "detail": "execution_record matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "3f28c8b9b3f2583625a749ae1b4200c73ca5a73f3bfb52b79a76939ad99f7e92",
+      "observed": "3f28c8b9b3f2583625a749ae1b4200c73ca5a73f3bfb52b79a76939ad99f7e92",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:parallel_summary",
+      "detail": "parallel_summary matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "c3fc0e61aa6e70588a634914dfed2e8ecf36608445ac8d484c7b0fb8c2624be1",
+      "observed": "c3fc0e61aa6e70588a634914dfed2e8ecf36608445ac8d484c7b0fb8c2624be1",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:preprocessing_comparison",
+      "detail": "preprocessing_comparison matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "6949dfccbecc47cd8d67fe2c35a1b446b01b503096f24703ced81ef43b97c76d",
+      "observed": "6949dfccbecc47cd8d67fe2c35a1b446b01b503096f24703ced81ef43b97c76d",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_array_members",
+      "detail": "slurm_array_members matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "7b285db29be2182511bf2ffa16c1fec9eeb67346c0297d7c8442ac2f5a45c9f1",
+      "observed": "7b285db29be2182511bf2ffa16c1fec9eeb67346c0297d7c8442ac2f5a45c9f1",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_array_partitions",
+      "detail": "slurm_array_partitions matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "1cd998ff61248f071e0add5626ed5cc776a0e9588430decee5e76304b4010c67",
+      "observed": "1cd998ff61248f071e0add5626ed5cc776a0e9588430decee5e76304b4010c67",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_array_scripts_root",
+      "detail": "slurm_array_scripts_root resolves to an existing directory",
+      "expected": "directory exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_array_strategy",
+      "detail": "slurm_array_strategy matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "74bafc6e0d54269c3ef7c260cb5392a714e063018737a26dca841d20f42786bb",
+      "observed": "74bafc6e0d54269c3ef7c260cb5392a714e063018737a26dca841d20f42786bb",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_assumptions",
+      "detail": "slurm_assumptions matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "61d7325fdb62cd5bb661d407807e7c98c34dae95ceec9d2bb9ff3293d9a6e429",
+      "observed": "61d7325fdb62cd5bb661d407807e7c98c34dae95ceec9d2bb9ff3293d9a6e429",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_failure_recovery_jobs",
+      "detail": "slurm_failure_recovery_jobs matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "33105da5f22125f5e69637194702cef30a6d560e571557d0b2a40651be1f7851",
+      "observed": "33105da5f22125f5e69637194702cef30a6d560e571557d0b2a40651be1f7851",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_failure_recovery_partitions",
+      "detail": "slurm_failure_recovery_partitions matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "49564b74b95394e58de996730cb9c2a5ba84d9e69477f91a6e27a30bac6ef2c8",
+      "observed": "49564b74b95394e58de996730cb9c2a5ba84d9e69477f91a6e27a30bac6ef2c8",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_failure_recovery_report",
+      "detail": "slurm_failure_recovery_report matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "77b2ee59bf4a2376706dcd05317a8d1812b445fd8c3d46fe98e8a9eaa480e63b",
+      "observed": "77b2ee59bf4a2376706dcd05317a8d1812b445fd8c3d46fe98e8a9eaa480e63b",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_failure_recovery_summary",
+      "detail": "slurm_failure_recovery_summary matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "7820b42d9448ea0d9081cb24f7c588bbc83dd23c6087bf8be0b32ff0311c56e3",
+      "observed": "7820b42d9448ea0d9081cb24f7c588bbc83dd23c6087bf8be0b32ff0311c56e3",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_job_evidence_index",
+      "detail": "slurm_job_evidence_index matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "82a87753758653f961a01ece52961bda6a02bcfaee0eaf7ce8c3b419282a00a6",
+      "observed": "82a87753758653f961a01ece52961bda6a02bcfaee0eaf7ce8c3b419282a00a6",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_job_evidence_root",
+      "detail": "slurm_job_evidence_root resolves to an existing directory",
+      "expected": "directory exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_job_evidence_summary",
+      "detail": "slurm_job_evidence_summary matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "35f2fc686a1c43206d852071cecaffd3bcf5deca40728d47686d55f232d458a8",
+      "observed": "35f2fc686a1c43206d852071cecaffd3bcf5deca40728d47686d55f232d458a8",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_job_plan",
+      "detail": "slurm_job_plan matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "fb73d66c845ad53d1500ebe831e750e2bb8734163868d5ce8ff3fbc2c2b72fe5",
+      "observed": "fb73d66c845ad53d1500ebe831e750e2bb8734163868d5ce8ff3fbc2c2b72fe5",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_job_status",
+      "detail": "slurm_job_status matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "128eee130aae2eaff3ec30736a42b7d4bc8deb0b49a0471d959ddf8e7d435f2e",
+      "observed": "128eee130aae2eaff3ec30736a42b7d4bc8deb0b49a0471d959ddf8e7d435f2e",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_merge_checks",
+      "detail": "slurm_merge_checks matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "2b0a104cf781e5634b8a26f76e66f76f98816b23626ccd319e4e691d01237f28",
+      "observed": "2b0a104cf781e5634b8a26f76e66f76f98816b23626ccd319e4e691d01237f28",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_merge_report",
+      "detail": "slurm_merge_report matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "7721f536c603d56974e48aadf366cb0f39d8fc345ac8085e3e5512f8173fac18",
+      "observed": "7721f536c603d56974e48aadf366cb0f39d8fc345ac8085e3e5512f8173fac18",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_merge_summary",
+      "detail": "slurm_merge_summary matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "b231ebb51766c91775515fb3faf2dc531386edf2b5ac4622dc05688e89d0dee7",
+      "observed": "b231ebb51766c91775515fb3faf2dc531386edf2b5ac4622dc05688e89d0dee7",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_merge_variants",
+      "detail": "slurm_merge_variants matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "340b8c48c0b2cbd4b550f6fe2849e1116d0d9b7d2867d60c9afdc0b559f2c0d7",
+      "observed": "340b8c48c0b2cbd4b550f6fe2849e1116d0d9b7d2867d60c9afdc0b559f2c0d7",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_output_freshness",
+      "detail": "slurm_output_freshness matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "47c214cf8b436240edf1ab86da6c83108714ffd292002abfcb8b627ae4a2c7b0",
+      "observed": "47c214cf8b436240edf1ab86da6c83108714ffd292002abfcb8b627ae4a2c7b0",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_output_freshness_checks",
+      "detail": "slurm_output_freshness_checks matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "f72eb610ef9d348c24ee1fe3ac0d97e8a173522b16e62d2175fb0b30cf16c035",
+      "observed": "f72eb610ef9d348c24ee1fe3ac0d97e8a173522b16e62d2175fb0b30cf16c035",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_output_freshness_summary",
+      "detail": "slurm_output_freshness_summary matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "d8f2aef922a124c11b6c000f46e9f09c3777abf94d72f0aa0267cdfee38b564b",
+      "observed": "d8f2aef922a124c11b6c000f46e9f09c3777abf94d72f0aa0267cdfee38b564b",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_partition_status",
+      "detail": "slurm_partition_status matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "4453774c25cebb2043a0c3907fd73d48d83e7d1feb3050f51a5da29f53968763",
+      "observed": "4453774c25cebb2043a0c3907fd73d48d83e7d1feb3050f51a5da29f53968763",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_summary",
+      "detail": "slurm_summary matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "3209284870566c05d706ce6017a6171a99e21fac208f295b0568d1815f014259",
+      "observed": "3209284870566c05d706ce6017a6171a99e21fac208f295b0568d1815f014259",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:slurm_workflow_status",
+      "detail": "slurm_workflow_status matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "b383a4c37121032736cdd2fbbaf6665aafce472fa19a91c0e6d271a86602c4b7",
+      "observed": "b383a4c37121032736cdd2fbbaf6665aafce472fa19a91c0e6d271a86602c4b7",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:stable_clades",
+      "detail": "stable_clades matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "327bf8fd675001749f28120614045b4b63e374ed5cb98524177279485b67720e",
+      "observed": "327bf8fd675001749f28120614045b4b63e374ed5cb98524177279485b67720e",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:task_logs_root",
+      "detail": "task_logs_root resolves to an existing directory",
+      "expected": "directory exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:variant_summary",
+      "detail": "variant_summary matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "94e0a7813ea68e816d4e6011ae6fe25b97eed6f6f0c955c7201abf429975d1ab",
+      "observed": "94e0a7813ea68e816d4e6011ae6fe25b97eed6f6f0c955c7201abf429975d1ab",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:variants_root",
+      "detail": "variants_root resolves to an existing directory",
+      "expected": "directory exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "workflow-manifest:workflow_summary",
+      "detail": "workflow_summary matches the checksum recorded in rabies-method-sensitivity.manifest.json",
+      "expected": "c6937a57f2ff0edfec1ff274450c6f89174594e36bf117981bf811abaae94e4f",
+      "observed": "c6937a57f2ff0edfec1ff274450c6f89174594e36bf117981bf811abaae94e4f",
+      "status": "passed",
+      "surface": "workflow-manifest"
+    },
+    {
+      "check_id": "report-manifest:linked-artifact-count",
+      "detail": "linked artifact count matches the linked_artifacts payload",
+      "expected": "32",
+      "observed": "32",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:changed_clades",
+      "detail": "changed_clades matches the checksum recorded in the report manifest",
+      "expected": "a9df7197e52f84272b6f4fd29091ff5ed8dc2105e1829e954f8e4ecebd73a5bf",
+      "observed": "a9df7197e52f84272b6f4fd29091ff5ed8dc2105e1829e954f8e4ecebd73a5bf",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:conclusion_summary",
+      "detail": "conclusion_summary matches the checksum recorded in the report manifest",
+      "expected": "4e7aabca06fecb33b83da7d623e7d110a72bf41e2a1175d4a8608ca32442e94f",
+      "observed": "4e7aabca06fecb33b83da7d623e7d110a72bf41e2a1175d4a8608ca32442e94f",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:config",
+      "detail": "config matches the checksum recorded in the report manifest",
+      "expected": "5dd5360de532fb56dbcb692abd39f84c850dca83095841692dbff887218f0f48",
+      "observed": "5dd5360de532fb56dbcb692abd39f84c850dca83095841692dbff887218f0f48",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:execution_record",
+      "detail": "execution_record matches the checksum recorded in the report manifest",
+      "expected": "3f28c8b9b3f2583625a749ae1b4200c73ca5a73f3bfb52b79a76939ad99f7e92",
+      "observed": "3f28c8b9b3f2583625a749ae1b4200c73ca5a73f3bfb52b79a76939ad99f7e92",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:parallel_summary",
+      "detail": "parallel_summary matches the checksum recorded in the report manifest",
+      "expected": "c3fc0e61aa6e70588a634914dfed2e8ecf36608445ac8d484c7b0fb8c2624be1",
+      "observed": "c3fc0e61aa6e70588a634914dfed2e8ecf36608445ac8d484c7b0fb8c2624be1",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:preprocessing_comparison",
+      "detail": "preprocessing_comparison matches the checksum recorded in the report manifest",
+      "expected": "6949dfccbecc47cd8d67fe2c35a1b446b01b503096f24703ced81ef43b97c76d",
+      "observed": "6949dfccbecc47cd8d67fe2c35a1b446b01b503096f24703ced81ef43b97c76d",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_array_members",
+      "detail": "slurm_array_members matches the checksum recorded in the report manifest",
+      "expected": "7b285db29be2182511bf2ffa16c1fec9eeb67346c0297d7c8442ac2f5a45c9f1",
+      "observed": "7b285db29be2182511bf2ffa16c1fec9eeb67346c0297d7c8442ac2f5a45c9f1",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_array_partitions",
+      "detail": "slurm_array_partitions matches the checksum recorded in the report manifest",
+      "expected": "1cd998ff61248f071e0add5626ed5cc776a0e9588430decee5e76304b4010c67",
+      "observed": "1cd998ff61248f071e0add5626ed5cc776a0e9588430decee5e76304b4010c67",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_array_strategy",
+      "detail": "slurm_array_strategy matches the checksum recorded in the report manifest",
+      "expected": "74bafc6e0d54269c3ef7c260cb5392a714e063018737a26dca841d20f42786bb",
+      "observed": "74bafc6e0d54269c3ef7c260cb5392a714e063018737a26dca841d20f42786bb",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_assumptions",
+      "detail": "slurm_assumptions matches the checksum recorded in the report manifest",
+      "expected": "61d7325fdb62cd5bb661d407807e7c98c34dae95ceec9d2bb9ff3293d9a6e429",
+      "observed": "61d7325fdb62cd5bb661d407807e7c98c34dae95ceec9d2bb9ff3293d9a6e429",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_failure_recovery_jobs",
+      "detail": "slurm_failure_recovery_jobs matches the checksum recorded in the report manifest",
+      "expected": "33105da5f22125f5e69637194702cef30a6d560e571557d0b2a40651be1f7851",
+      "observed": "33105da5f22125f5e69637194702cef30a6d560e571557d0b2a40651be1f7851",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_failure_recovery_partitions",
+      "detail": "slurm_failure_recovery_partitions matches the checksum recorded in the report manifest",
+      "expected": "49564b74b95394e58de996730cb9c2a5ba84d9e69477f91a6e27a30bac6ef2c8",
+      "observed": "49564b74b95394e58de996730cb9c2a5ba84d9e69477f91a6e27a30bac6ef2c8",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_failure_recovery_report",
+      "detail": "slurm_failure_recovery_report matches the checksum recorded in the report manifest",
+      "expected": "77b2ee59bf4a2376706dcd05317a8d1812b445fd8c3d46fe98e8a9eaa480e63b",
+      "observed": "77b2ee59bf4a2376706dcd05317a8d1812b445fd8c3d46fe98e8a9eaa480e63b",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_failure_recovery_summary",
+      "detail": "slurm_failure_recovery_summary matches the checksum recorded in the report manifest",
+      "expected": "7820b42d9448ea0d9081cb24f7c588bbc83dd23c6087bf8be0b32ff0311c56e3",
+      "observed": "7820b42d9448ea0d9081cb24f7c588bbc83dd23c6087bf8be0b32ff0311c56e3",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_job_evidence_index",
+      "detail": "slurm_job_evidence_index matches the checksum recorded in the report manifest",
+      "expected": "82a87753758653f961a01ece52961bda6a02bcfaee0eaf7ce8c3b419282a00a6",
+      "observed": "82a87753758653f961a01ece52961bda6a02bcfaee0eaf7ce8c3b419282a00a6",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_job_evidence_summary",
+      "detail": "slurm_job_evidence_summary matches the checksum recorded in the report manifest",
+      "expected": "35f2fc686a1c43206d852071cecaffd3bcf5deca40728d47686d55f232d458a8",
+      "observed": "35f2fc686a1c43206d852071cecaffd3bcf5deca40728d47686d55f232d458a8",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_job_plan",
+      "detail": "slurm_job_plan matches the checksum recorded in the report manifest",
+      "expected": "fb73d66c845ad53d1500ebe831e750e2bb8734163868d5ce8ff3fbc2c2b72fe5",
+      "observed": "fb73d66c845ad53d1500ebe831e750e2bb8734163868d5ce8ff3fbc2c2b72fe5",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_job_status",
+      "detail": "slurm_job_status matches the checksum recorded in the report manifest",
+      "expected": "128eee130aae2eaff3ec30736a42b7d4bc8deb0b49a0471d959ddf8e7d435f2e",
+      "observed": "128eee130aae2eaff3ec30736a42b7d4bc8deb0b49a0471d959ddf8e7d435f2e",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_merge_checks",
+      "detail": "slurm_merge_checks matches the checksum recorded in the report manifest",
+      "expected": "2b0a104cf781e5634b8a26f76e66f76f98816b23626ccd319e4e691d01237f28",
+      "observed": "2b0a104cf781e5634b8a26f76e66f76f98816b23626ccd319e4e691d01237f28",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_merge_report",
+      "detail": "slurm_merge_report matches the checksum recorded in the report manifest",
+      "expected": "7721f536c603d56974e48aadf366cb0f39d8fc345ac8085e3e5512f8173fac18",
+      "observed": "7721f536c603d56974e48aadf366cb0f39d8fc345ac8085e3e5512f8173fac18",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_merge_summary",
+      "detail": "slurm_merge_summary matches the checksum recorded in the report manifest",
+      "expected": "b231ebb51766c91775515fb3faf2dc531386edf2b5ac4622dc05688e89d0dee7",
+      "observed": "b231ebb51766c91775515fb3faf2dc531386edf2b5ac4622dc05688e89d0dee7",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_merge_variants",
+      "detail": "slurm_merge_variants matches the checksum recorded in the report manifest",
+      "expected": "340b8c48c0b2cbd4b550f6fe2849e1116d0d9b7d2867d60c9afdc0b559f2c0d7",
+      "observed": "340b8c48c0b2cbd4b550f6fe2849e1116d0d9b7d2867d60c9afdc0b559f2c0d7",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_output_freshness",
+      "detail": "slurm_output_freshness matches the checksum recorded in the report manifest",
+      "expected": "47c214cf8b436240edf1ab86da6c83108714ffd292002abfcb8b627ae4a2c7b0",
+      "observed": "47c214cf8b436240edf1ab86da6c83108714ffd292002abfcb8b627ae4a2c7b0",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_output_freshness_checks",
+      "detail": "slurm_output_freshness_checks matches the checksum recorded in the report manifest",
+      "expected": "f72eb610ef9d348c24ee1fe3ac0d97e8a173522b16e62d2175fb0b30cf16c035",
+      "observed": "f72eb610ef9d348c24ee1fe3ac0d97e8a173522b16e62d2175fb0b30cf16c035",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_output_freshness_summary",
+      "detail": "slurm_output_freshness_summary matches the checksum recorded in the report manifest",
+      "expected": "d8f2aef922a124c11b6c000f46e9f09c3777abf94d72f0aa0267cdfee38b564b",
+      "observed": "d8f2aef922a124c11b6c000f46e9f09c3777abf94d72f0aa0267cdfee38b564b",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_partition_status",
+      "detail": "slurm_partition_status matches the checksum recorded in the report manifest",
+      "expected": "4453774c25cebb2043a0c3907fd73d48d83e7d1feb3050f51a5da29f53968763",
+      "observed": "4453774c25cebb2043a0c3907fd73d48d83e7d1feb3050f51a5da29f53968763",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_summary",
+      "detail": "slurm_summary matches the checksum recorded in the report manifest",
+      "expected": "3209284870566c05d706ce6017a6171a99e21fac208f295b0568d1815f014259",
+      "observed": "3209284870566c05d706ce6017a6171a99e21fac208f295b0568d1815f014259",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:slurm_workflow_status",
+      "detail": "slurm_workflow_status matches the checksum recorded in the report manifest",
+      "expected": "b383a4c37121032736cdd2fbbaf6665aafce472fa19a91c0e6d271a86602c4b7",
+      "observed": "b383a4c37121032736cdd2fbbaf6665aafce472fa19a91c0e6d271a86602c4b7",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:stable_clades",
+      "detail": "stable_clades matches the checksum recorded in the report manifest",
+      "expected": "327bf8fd675001749f28120614045b4b63e374ed5cb98524177279485b67720e",
+      "observed": "327bf8fd675001749f28120614045b4b63e374ed5cb98524177279485b67720e",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:variant_summary",
+      "detail": "variant_summary matches the checksum recorded in the report manifest",
+      "expected": "94e0a7813ea68e816d4e6011ae6fe25b97eed6f6f0c955c7201abf429975d1ab",
+      "observed": "94e0a7813ea68e816d4e6011ae6fe25b97eed6f6f0c955c7201abf429975d1ab",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:workflow_manifest",
+      "detail": "workflow_manifest matches the checksum recorded in the report manifest",
+      "expected": "de99e06cc4cb9b1448b3689a49a1bde90e80af85901b69dc06bc1e5890a8fba9",
+      "observed": "de99e06cc4cb9b1448b3689a49a1bde90e80af85901b69dc06bc1e5890a8fba9",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "report-manifest:workflow_summary",
+      "detail": "workflow_summary matches the checksum recorded in the report manifest",
+      "expected": "c6937a57f2ff0edfec1ff274450c6f89174594e36bf117981bf811abaae94e4f",
+      "observed": "c6937a57f2ff0edfec1ff274450c6f89174594e36bf117981bf811abaae94e4f",
+      "status": "passed",
+      "surface": "report-manifest"
+    },
+    {
+      "check_id": "variant-sets:manifest",
+      "detail": "workflow manifest task records cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "variant-sets"
+    },
+    {
+      "check_id": "variant-sets:parallel-summary",
+      "detail": "parallel summary rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "variant-sets"
+    },
+    {
+      "check_id": "variant-sets:variant-summary",
+      "detail": "variant summary rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "variant-sets"
+    },
+    {
+      "check_id": "variant-sets:task-logs",
+      "detail": "task log files cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "variant-sets"
+    },
+    {
+      "check_id": "variant-sets:variant-directories",
+      "detail": "variant output directories cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "variant-sets"
+    },
+    {
+      "check_id": "variant-count:parallel-summary",
+      "detail": "parallel summary row count matches the configured variant count",
+      "expected": "4",
+      "observed": "4",
+      "status": "passed",
+      "surface": "variant-count"
+    },
+    {
+      "check_id": "variant-count:variant-summary",
+      "detail": "variant summary row count matches the configured variant count",
+      "expected": "4",
+      "observed": "4",
+      "status": "passed",
+      "surface": "variant-count"
+    },
+    {
+      "check_id": "slurm-arrays:partition-coverage",
+      "detail": "array member rows cover the same partition ids as the partition summary",
+      "expected": "['compact-mafft-auto-standard', 'compact-mafft-ginsi-elevated']",
+      "observed": "['compact-mafft-auto-standard', 'compact-mafft-ginsi-elevated']",
+      "status": "passed",
+      "surface": "slurm-arrays"
+    },
+    {
+      "check_id": "slurm-arrays:member-coverage",
+      "detail": "array member rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "slurm-arrays"
+    },
+    {
+      "check_id": "slurm-job-evidence:job-coverage",
+      "detail": "job-evidence rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-job-evidence:job-count",
+      "detail": "job-evidence summary job_count matches the written job-evidence rows",
+      "expected": "4",
+      "observed": "4",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-job-evidence:artifact-file-count",
+      "detail": "job-evidence summary total_artifact_file_count matches the written evidence files",
+      "expected": "36",
+      "observed": "36",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-storage:category-coverage",
+      "detail": "storage category rows cover the explicit retained-storage categories",
+      "expected": "['logs', 'outputs', 'posterior_samples', 'reports', 'trees']",
+      "observed": "['logs', 'outputs', 'posterior_samples', 'reports', 'trees']",
+      "status": "passed",
+      "surface": "slurm-storage"
+    },
+    {
+      "check_id": "slurm-storage:variant-coverage",
+      "detail": "storage variant rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "slurm-storage"
+    },
+    {
+      "check_id": "slurm-storage:summary-totals",
+      "detail": "storage summary totals match the written category ledger",
+      "expected": "(131, 1270391)",
+      "observed": "(131, 1270391)",
+      "status": "passed",
+      "surface": "slurm-storage"
+    },
+    {
+      "check_id": "slurm-storage:largest-variant",
+      "detail": "storage summary largest-variant fields match the written per-variant storage ledger",
+      "expected": "('ginsi-gap-threshold', 295906)",
+      "observed": "('ginsi-gap-threshold', 295906)",
+      "status": "passed",
+      "surface": "slurm-storage"
+    },
+    {
+      "check_id": "slurm-output-explosion:variant-coverage",
+      "detail": "output-explosion rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "slurm-output-explosion"
+    },
+    {
+      "check_id": "slurm-output-explosion:check-count",
+      "detail": "output-explosion summary check_count matches the written check rows",
+      "expected": "8",
+      "observed": "8",
+      "status": "passed",
+      "surface": "slurm-output-explosion"
+    },
+    {
+      "check_id": "slurm-output-explosion:variant-counts",
+      "detail": "output-explosion summary variant_count matches the risk-classified variant rows",
+      "expected": "4",
+      "observed": "4",
+      "status": "passed",
+      "surface": "slurm-output-explosion"
+    },
+    {
+      "check_id": "slurm-output-explosion:overall-risk",
+      "detail": "output-explosion summary overall_risk_status matches the written risk counts",
+      "expected": "low",
+      "observed": "low",
+      "status": "passed",
+      "surface": "slurm-output-explosion"
+    },
+    {
+      "check_id": "slurm-tree-retention:variant-coverage",
+      "detail": "tree-retention file rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "slurm-tree-retention"
+    },
+    {
+      "check_id": "slurm-tree-retention:check-count",
+      "detail": "tree-retention summary check_count matches the written check rows",
+      "expected": "9",
+      "observed": "9",
+      "status": "passed",
+      "surface": "slurm-tree-retention"
+    },
+    {
+      "check_id": "slurm-tree-retention:tree-set-count",
+      "detail": "tree-retention summary tree_set_file_count matches the inspected file rows",
+      "expected": "0",
+      "observed": "0",
+      "status": "passed",
+      "surface": "slurm-tree-retention"
+    },
+    {
+      "check_id": "slurm-tree-retention:overall-status",
+      "detail": "tree-retention summary overall_policy_status matches the written policy counts",
+      "expected": "no_action",
+      "observed": "no_action",
+      "status": "passed",
+      "surface": "slurm-tree-retention"
+    },
+    {
+      "check_id": "slurm-merge:job-coverage",
+      "detail": "merge-variant rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "slurm-merge"
+    },
+    {
+      "check_id": "slurm-merge:check-count",
+      "detail": "merge summary check_count matches the written merge checks",
+      "expected": "12",
+      "observed": "12",
+      "status": "passed",
+      "surface": "slurm-merge"
+    },
+    {
+      "check_id": "slurm-merge:merged-variant-count",
+      "detail": "merge summary merged_variant_count matches the written merge-variant rows",
+      "expected": "4",
+      "observed": "4",
+      "status": "passed",
+      "surface": "slurm-merge"
+    },
+    {
+      "check_id": "slurm-merge:merge-ready",
+      "detail": "merge summary merge_ready matches the merge-check and merged-variant totals",
+      "expected": "True",
+      "observed": "True",
+      "status": "passed",
+      "surface": "slurm-merge"
+    },
+    {
+      "check_id": "slurm-freshness:job-coverage",
+      "detail": "output-freshness rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "slurm-freshness"
+    },
+    {
+      "check_id": "slurm-freshness:check-count",
+      "detail": "output-freshness summary check_count matches the written check rows",
+      "expected": "12",
+      "observed": "12",
+      "status": "passed",
+      "surface": "slurm-freshness"
+    },
+    {
+      "check_id": "slurm-freshness:job-count",
+      "detail": "output-freshness summary job counts match the written per-job ledger",
+      "expected": "4",
+      "observed": "4",
+      "status": "passed",
+      "surface": "slurm-freshness"
+    },
+    {
+      "check_id": "slurm-freshness:all-outputs-fresh",
+      "detail": "output-freshness summary all_outputs_fresh matches the written checks and per-job statuses",
+      "expected": "True",
+      "observed": "True",
+      "status": "passed",
+      "surface": "slurm-freshness"
+    },
+    {
+      "check_id": "slurm-arrays:script:compact-mafft-auto-standard.sbatch",
+      "detail": "array partition table references an existing sbatch script",
+      "expected": "script file exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "slurm-arrays"
+    },
+    {
+      "check_id": "slurm-arrays:script:compact-mafft-ginsi-elevated.sbatch",
+      "detail": "array partition table references an existing sbatch script",
+      "expected": "script file exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "slurm-arrays"
+    },
+    {
+      "check_id": "slurm-status:job-coverage",
+      "detail": "job-status rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "slurm-status"
+    },
+    {
+      "check_id": "slurm-status:partition-coverage",
+      "detail": "partition-status rows cover the same partition ids as the array partition table",
+      "expected": "['compact-mafft-auto-standard', 'compact-mafft-ginsi-elevated']",
+      "observed": "['compact-mafft-auto-standard', 'compact-mafft-ginsi-elevated']",
+      "status": "passed",
+      "surface": "slurm-status"
+    },
+    {
+      "check_id": "slurm-status:workflow-job-count",
+      "detail": "workflow status job_count matches the number of job-status rows",
+      "expected": "4",
+      "observed": "4",
+      "status": "passed",
+      "surface": "slurm-status"
+    },
+    {
+      "check_id": "slurm-status:workflow-partition-count",
+      "detail": "workflow status partition_count matches the number of partition-status rows",
+      "expected": "2",
+      "observed": "2",
+      "status": "passed",
+      "surface": "slurm-status"
+    },
+    {
+      "check_id": "slurm-failure-recovery:variant-coverage",
+      "detail": "failure-recovery job rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "slurm-failure-recovery"
+    },
+    {
+      "check_id": "slurm-failure-recovery:partition-coverage",
+      "detail": "failure-recovery summary partition_count matches the written partition rows",
+      "expected": "2",
+      "observed": "2",
+      "status": "passed",
+      "surface": "slurm-failure-recovery"
+    },
+    {
+      "check_id": "slurm-failure-recovery:rerunnable-count",
+      "detail": "failure-recovery summary rerunnable_job_count matches the written job rows",
+      "expected": "0",
+      "observed": "0",
+      "status": "passed",
+      "surface": "slurm-failure-recovery"
+    },
+    {
+      "check_id": "slurm-failure-recovery:overall-status",
+      "detail": "failure-recovery summary overall_recovery_status matches the written rerun decisions",
+      "expected": "clean",
+      "observed": "clean",
+      "status": "passed",
+      "surface": "slurm-failure-recovery"
+    },
+    {
+      "check_id": "slurm-freshness:status-link:auto-gap-threshold",
+      "detail": "job-status rows expose the same output-freshness status as the freshness ledger",
+      "expected": "fresh",
+      "observed": "fresh",
+      "status": "passed",
+      "surface": "slurm-freshness"
+    },
+    {
+      "check_id": "slurm-job-evidence:status-link:auto-gap-threshold",
+      "detail": "job-evidence rows expose the same terminal task status recorded in the job-status ledger",
+      "expected": "succeeded",
+      "observed": "succeeded",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-merge:status-link:auto-gap-threshold",
+      "detail": "merge-variant rows expose the same job status as the job-status ledger",
+      "expected": "completed",
+      "observed": "completed",
+      "status": "passed",
+      "surface": "slurm-merge"
+    },
+    {
+      "check_id": "slurm-merge:freshness-link:auto-gap-threshold",
+      "detail": "merge-variant rows expose the same freshness status as the freshness ledger",
+      "expected": "fresh",
+      "observed": "fresh",
+      "status": "passed",
+      "surface": "slurm-merge"
+    },
+    {
+      "check_id": "slurm-job-evidence:json:auto-gap-threshold",
+      "detail": "job-evidence index references an existing JSON evidence package",
+      "expected": "file exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-job-evidence:html:auto-gap-threshold",
+      "detail": "job-evidence index references an existing HTML evidence package",
+      "expected": "file exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-freshness:status-link:auto-gappyout",
+      "detail": "job-status rows expose the same output-freshness status as the freshness ledger",
+      "expected": "fresh",
+      "observed": "fresh",
+      "status": "passed",
+      "surface": "slurm-freshness"
+    },
+    {
+      "check_id": "slurm-job-evidence:status-link:auto-gappyout",
+      "detail": "job-evidence rows expose the same terminal task status recorded in the job-status ledger",
+      "expected": "succeeded",
+      "observed": "succeeded",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-merge:status-link:auto-gappyout",
+      "detail": "merge-variant rows expose the same job status as the job-status ledger",
+      "expected": "completed",
+      "observed": "completed",
+      "status": "passed",
+      "surface": "slurm-merge"
+    },
+    {
+      "check_id": "slurm-merge:freshness-link:auto-gappyout",
+      "detail": "merge-variant rows expose the same freshness status as the freshness ledger",
+      "expected": "fresh",
+      "observed": "fresh",
+      "status": "passed",
+      "surface": "slurm-merge"
+    },
+    {
+      "check_id": "slurm-job-evidence:json:auto-gappyout",
+      "detail": "job-evidence index references an existing JSON evidence package",
+      "expected": "file exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-job-evidence:html:auto-gappyout",
+      "detail": "job-evidence index references an existing HTML evidence package",
+      "expected": "file exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-freshness:status-link:ginsi-gap-threshold",
+      "detail": "job-status rows expose the same output-freshness status as the freshness ledger",
+      "expected": "fresh",
+      "observed": "fresh",
+      "status": "passed",
+      "surface": "slurm-freshness"
+    },
+    {
+      "check_id": "slurm-job-evidence:status-link:ginsi-gap-threshold",
+      "detail": "job-evidence rows expose the same terminal task status recorded in the job-status ledger",
+      "expected": "succeeded",
+      "observed": "succeeded",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-merge:status-link:ginsi-gap-threshold",
+      "detail": "merge-variant rows expose the same job status as the job-status ledger",
+      "expected": "completed",
+      "observed": "completed",
+      "status": "passed",
+      "surface": "slurm-merge"
+    },
+    {
+      "check_id": "slurm-merge:freshness-link:ginsi-gap-threshold",
+      "detail": "merge-variant rows expose the same freshness status as the freshness ledger",
+      "expected": "fresh",
+      "observed": "fresh",
+      "status": "passed",
+      "surface": "slurm-merge"
+    },
+    {
+      "check_id": "slurm-job-evidence:json:ginsi-gap-threshold",
+      "detail": "job-evidence index references an existing JSON evidence package",
+      "expected": "file exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-job-evidence:html:ginsi-gap-threshold",
+      "detail": "job-evidence index references an existing HTML evidence package",
+      "expected": "file exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-freshness:status-link:ginsi-gappyout",
+      "detail": "job-status rows expose the same output-freshness status as the freshness ledger",
+      "expected": "fresh",
+      "observed": "fresh",
+      "status": "passed",
+      "surface": "slurm-freshness"
+    },
+    {
+      "check_id": "slurm-job-evidence:status-link:ginsi-gappyout",
+      "detail": "job-evidence rows expose the same terminal task status recorded in the job-status ledger",
+      "expected": "succeeded",
+      "observed": "succeeded",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-merge:status-link:ginsi-gappyout",
+      "detail": "merge-variant rows expose the same job status as the job-status ledger",
+      "expected": "completed",
+      "observed": "completed",
+      "status": "passed",
+      "surface": "slurm-merge"
+    },
+    {
+      "check_id": "slurm-merge:freshness-link:ginsi-gappyout",
+      "detail": "merge-variant rows expose the same freshness status as the freshness ledger",
+      "expected": "fresh",
+      "observed": "fresh",
+      "status": "passed",
+      "surface": "slurm-merge"
+    },
+    {
+      "check_id": "slurm-job-evidence:json:ginsi-gappyout",
+      "detail": "job-evidence index references an existing JSON evidence package",
+      "expected": "file exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    },
+    {
+      "check_id": "slurm-job-evidence:html:ginsi-gappyout",
+      "detail": "job-evidence index references an existing HTML evidence package",
+      "expected": "file exists",
+      "observed": "present",
+      "status": "passed",
+      "surface": "slurm-job-evidence"
+    }
+  ],
+  "config_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/rabies-method-sensitivity-failure-recovery-refresh/workflow/workflow-config.resolved.json",
+  "dataset_id": "rabies_method_sensitivity_panel",
+  "failed_check_count": 0,
+  "failed_variant_count": 0,
+  "metadata_path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/pathogens/rabies_method_sensitivity_panel/metadata.csv",
+  "report_manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/rabies-method-sensitivity-failure-recovery-refresh/workflow/report-artifacts/rabies-method-sensitivity-report.manifest.json",
+  "sequences_path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/pathogens/rabies_method_sensitivity_panel/sequences.fasta",
+  "variant_count": 4,
+  "variants": [
+    {
+      "issues": [],
+      "missing_required_files": [],
+      "output_byte_count": 42065,
+      "output_digest": "b6d678e62f1dbbabf4b3cdaeb5a63f365c4e05bde6cba15412fb1cf759c95aa3",
+      "output_file_count": 14,
+      "status": "passed",
+      "unexpected_files": [],
+      "variant_id": "auto-gap-threshold"
+    },
+    {
+      "issues": [],
+      "missing_required_files": [],
+      "output_byte_count": 42065,
+      "output_digest": "7c273f4ff6c889892d9d062861a733f9599dea20cece2e39489f3725f97d6202",
+      "output_file_count": 14,
+      "status": "passed",
+      "unexpected_files": [],
+      "variant_id": "auto-gappyout"
+    },
+    {
+      "issues": [],
+      "missing_required_files": [],
+      "output_byte_count": 42065,
+      "output_digest": "0f5ec41454c3bc2d0195c5d43a33cbb5ee341773ee4ffaf1a7546cff44fd503d",
+      "output_file_count": 14,
+      "status": "passed",
+      "unexpected_files": [],
+      "variant_id": "ginsi-gap-threshold"
+    },
+    {
+      "issues": [],
+      "missing_required_files": [],
+      "output_byte_count": 42065,
+      "output_digest": "e607a84477f7c99cd249b2c3950196d932d2228d0c27eb3bba8141a498618376",
+      "output_file_count": 14,
+      "status": "passed",
+      "unexpected_files": [],
+      "variant_id": "ginsi-gappyout"
+    }
+  ],
+  "workflow_manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/rabies-method-sensitivity-failure-recovery-refresh/workflow/rabies-method-sensitivity.manifest.json"
+}

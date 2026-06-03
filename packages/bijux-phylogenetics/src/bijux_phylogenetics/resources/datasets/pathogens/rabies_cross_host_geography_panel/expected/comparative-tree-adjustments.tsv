@@ -1,0 +1,2 @@
+node_label	original_branch_length	repaired_branch_length	reason
+bat_chile_rv108	0	1e-06	comparative branch-length methods require strictly positive nonroot branch lengths

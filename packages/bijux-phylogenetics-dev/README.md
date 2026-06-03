@@ -18,6 +18,11 @@ license asset management, quality gates, and release support. It is intended
 for maintainers working from the repository workspace, not as the runtime entry
 point for end users.
 
+Its packaging surface now also owns the installed-artifact smoke proof that
+builds the runtime wheel and sdist, installs each into a clean virtual
+environment, copies packaged example inputs through the installed runtime API,
+and verifies packaged example and dataset resources through the public CLI.
+
 ## Read this next
 
 - maintainer handbook: [Maintainer handbook](https://bijux.io/bijux-phylogenetics/internal/maintain/)

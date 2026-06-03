@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.branch_lengths import (
+from bijux_phylogenetics.trees import (
     analyze_branch_length_distribution,
     analyze_tree_set_branch_lengths,
 )

@@ -1,0 +1,234 @@
+IQ-TREE 2.3.6 built Jul 30 2024
+
+Input file name: /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln
+Type of analysis: tree reconstruction + ultrafast bootstrap (1000 replicates)
+Random seed number: 1
+
+REFERENCES
+----------
+
+To cite IQ-TREE please use:
+
+Bui Quang Minh, Heiko A. Schmidt, Olga Chernomor, Dominik Schrempf,
+Michael D. Woodhams, Arndt von Haeseler, and Robert Lanfear (2020)
+IQ-TREE 2: New models and efficient methods for phylogenetic inference
+in the genomic era. Mol. Biol. Evol., in press.
+https://doi.org/10.1093/molbev/msaa015
+
+Since you used ultrafast bootstrap (UFBoot) please also cite: 
+
+Diep Thi Hoang, Olga Chernomor, Arndt von Haeseler, Bui Quang Minh,
+and Le Sy Vinh (2018) UFBoot2: Improving the ultrafast bootstrap
+approximation. Mol. Biol. Evol., 35:518–522.
+https://doi.org/10.1093/molbev/msx281
+
+SEQUENCE ALIGNMENT
+------------------
+
+Input data: 31 sequences with 145 amino-acid sites
+Number of constant sites: 43 (= 29.6552% of all sites)
+Number of invariant (constant or ambiguous constant) sites: 43 (= 29.6552% of all sites)
+Number of parsimony informative sites: 50
+Number of distinct site patterns: 129
+
+SUBSTITUTION PROCESS
+--------------------
+
+Model of substitution: JTTDCMut+G4
+
+State frequencies: (model)
+
+Model of rate heterogeneity: Gamma with 4 categories
+Gamma shape alpha: 1.3239
+
+ Category  Relative_rate  Proportion
+  1         0.1968         0.2500
+  2         0.5564         0.2500
+  3         1.0382         0.2500
+  4         2.2087         0.2500
+Relative rates are computed as MEAN of the portion of the Gamma distribution falling in the category.
+
+MAXIMUM LIKELIHOOD TREE
+-----------------------
+
+Log-likelihood of the tree: -1591.3727 (s.e. 84.9242)
+Unconstrained log-likelihood (without tree): -697.3527
+Number of free parameters (#branches + #model parameters): 58
+Akaike information criterion (AIC) score: 3298.7455
+Corrected Akaike information criterion (AICc) score: 3378.3269
+Bayesian information criterion (BIC) score: 3471.3960
+
+Total tree length (sum of branch lengths): 2.2187
+Sum of internal branch lengths: 0.8839 (39.8391% of tree length)
+
+WARNING: 7 near-zero internal branches (<0.0069) should be treated with caution
+         Such branches are denoted by '**' in the figure below
+
+NOTE: Tree is UNROOTED although outgroup taxon '88036.EFJ07870' is drawn at root
+Numbers in parentheses are  ultrafast bootstrap support (%)
+
++---------------------------------------------88036.EFJ07870
+|
++-------3218.PP1S150_127V6.1
+|
+|                                                +-------------29760.VIT_09s0002g06370.t01
+|                             +------------------| (97)
+|                             |                  +-----4641.GSMUA_Achr10P29310_001
+|                  +----------| (60)
+|                  |          +--3711.Bra035176.1-P
+|               +**| (16)
+|               |  |  +**59689.Al_scaffold_0002_2746
+|               |  +**| (51)
+|               |     +**3702.AT1G80500.1
+|            +--| (45)
+|            |  +--3711.Bra027566.1-P
+|         +--| (83)
+|         |  |  +--3694.POPTR_0001s03500.1
+|         |  +--| (89)
+|         |     |  +**3847.GLYMA04G38461.1
+|         |     +--| (99)
+|         |        +--3847.GLYMA06G16590.1
+|      +--| (57)
+|      |  |  +--4113.PGSC0003DMT400073367
+|      |  +--| (83)
+|      |     |  +--4081.Solyc06g068030.2.1
+|      |     +**| (52)
+|      |        +**4113.PGSC0003DMT400073369
++------| (93)
+       |             +--39946.BGIOSGA016720-PA
+       |          +--| (87)
+       |          |  |     +**39947.LOC_Os04g42500.1
+       |          |  |  +--| (98)
+       |          |  |  |  +**4538.ORGLA04G0149900.1
+       |          |  +--| (100)
+       |          |     +**39946.BGIOSGA016723-PA
+       |       +--| (94)
+       |       |  +--4533.OB04G25010.1
+       |    +--| (87)
+       |    |  |        +--15368.BRADI5G14900.1
+       |    |  |     +**| (55)
+       |    |  |     |  +--4555.Si018666m
+       |    |  |  +--| (90)
+       |    |  |  |  +--4513.MLOC_67125.1
+       |    |  +--| (68)
+       |    |     |     +**4555.Si007486m
+       |    |     |  +**| (58)
+       |    |     |  |  +**4558.Sb02g043460.1
+       |    |     +--| (70)
+       |    |        +--4577.GRMZM2G097568_P01
+       +----| (99)
+            |     +--15368.BRADI3G48660.1
+            |  +--| (46)
+            |  |  +--4513.MLOC_12967.5
+            +**| (54)
+               |  +--4533.OB02G31210.1
+               +--| (87)
+                  |  +**39946.BGIOSGA008614-PA
+                  +**| (78)
+                     +**39947.LOC_Os02g40000.1
+
+Tree in newick format:
+
+(88036.EFJ07870:0.6115679018,3218.PP1S150_127V6.1:0.1049800140,(((((((29760.VIT_09s0002g06370.t01:0.1838165221,4641.GSMUA_Achr10P29310_001:0.0890901464)97:0.2538812736,3711.Bra035176.1-P:0.0380209779)60:0.1567242041,(59689.Al_scaffold_0002_2746:0.0000010000,3702.AT1G80500.1:0.0000010000)51:0.0000010000)16:0.0000052479,3711.Bra027566.1-P:0.0343963549)45:0.0304279943,(3694.POPTR_0001s03500.1:0.0454109572,(3847.GLYMA04G38461.1:0.0000010000,3847.GLYMA06G16590.1:0.0148561849)99:0.0234907020)89:0.0125571954)83:0.0502410396,(4113.PGSC0003DMT400073367:0.0412695725,(4081.Solyc06g068030.2.1:0.0074297817,4113.PGSC0003DMT400073369:0.0000010000)52:0.0000010000)83:0.0185316573)57:0.0141447098,((((39946.BGIOSGA016720-PA:0.0275261837,((39947.LOC_Os04g42500.1:0.0000010000,4538.ORGLA04G0149900.1:0.0000010000)98:0.0134572812,39946.BGIOSGA016723-PA:0.0000021180)100:0.0484264292)87:0.0088578076,4533.OB04G25010.1:0.0094228065)94:0.0260997784,(((15368.BRADI5G14900.1:0.0228564899,4555.Si018666m:0.0074740991)55:0.0000010000,4513.MLOC_67125.1:0.0074791973)90:0.0075039615,((4555.Si007486m:0.0000010000,4558.Sb02g043460.1:0.0000010000)58:0.0000010000,4577.GRMZM2G097568_P01:0.0074573451)70:0.0074995983)68:0.0074948143)87:0.0090343592,((15368.BRADI3G48660.1:0.0305332228,4513.MLOC_12967.5:0.0302787267)46:0.0073652448,(4533.OB02G31210.1:0.0074540995,(39946.BGIOSGA008614-PA:0.0000010000,39947.LOC_Os02g40000.1:0.0000010000)78:0.0000028316)87:0.0300660071)54:0.0000020685)99:0.0754849134)93:0.0960715240);
+
+CONSENSUS TREE
+--------------
+
+Consensus tree is constructed from 1000 bootstrap trees
+Log-likelihood of consensus tree: -1591.549239
+Robinson-Foulds distance between ML tree and consensus tree: 4
+
+Branches with support >0.000000% are kept (extended consensus)
+Branch lengths are optimized by maximum likelihood on original alignment
+Numbers in parentheses are bootstrap supports (%)
+
++---------------------------------------------88036.EFJ07870
+|
++-------3218.PP1S150_127V6.1
+|
+|                                             +-------------29760.VIT_09s0002g06370.t01
+|                          +------------------| (97)
+|                          |                  +-----4641.GSMUA_Achr10P29310_001
+|               +----------| (60)
+|               |          +--3711.Bra035176.1-P
+|            +--| (45)
+|            |  |     +--59689.Al_scaffold_0002_2746
+|            |  |  +--| (51)
+|            |  |  |  +--3702.AT1G80500.1
+|            |  +--| (41)
+|            |     +--3711.Bra027566.1-P
+|         +--| (83)
+|         |  |  +--3694.POPTR_0001s03500.1
+|         |  +--| (89)
+|         |     |  +--3847.GLYMA04G38461.1
+|         |     +--| (99)
+|         |        +--3847.GLYMA06G16590.1
+|      +--| (57)
+|      |  |  +--4113.PGSC0003DMT400073367
+|      |  +--| (83)
+|      |     |  +--4081.Solyc06g068030.2.1
+|      |     +--| (52)
+|      |        +--4113.PGSC0003DMT400073369
++------| (93)
+       |             +--39946.BGIOSGA016720-PA
+       |          +--| (87)
+       |          |  |     +--39947.LOC_Os04g42500.1
+       |          |  |  +--| (98)
+       |          |  |  |  +--4538.ORGLA04G0149900.1
+       |          |  +--| (100)
+       |          |     +--39946.BGIOSGA016723-PA
+       |       +--| (94)
+       |       |  +--4533.OB04G25010.1
+       |    +--| (87)
+       |    |  |        +--15368.BRADI5G14900.1
+       |    |  |     +--| (55)
+       |    |  |     |  +--4555.Si018666m
+       |    |  |  +--| (90)
+       |    |  |  |  +--4513.MLOC_67125.1
+       |    |  +--| (68)
+       |    |     |     +--4555.Si007486m
+       |    |     |  +--| (58)
+       |    |     |  |  +--4558.Sb02g043460.1
+       |    |     +--| (70)
+       |    |        +--4577.GRMZM2G097568_P01
+       +----| (99)
+            |  +--15368.BRADI3G48660.1
+            +--| (54)
+               |  +--4513.MLOC_12967.5
+               +--| (48)
+                  |  +--4533.OB02G31210.1
+                  +--| (87)
+                     |     +**39946.BGIOSGA008614-PA
+                     |  +--|
+                     |  |  +**4538.ORGLA02G0207300.1
+                     +--| (78)
+                        +--39947.LOC_Os02g40000.1
+
+
+Consensus tree in newick format: 
+
+(88036.EFJ07870:0.6107500933,3218.PP1S150_127V6.1:0.1055987797,((((((29760.VIT_09s0002g06370.t01:0.1842358136,4641.GSMUA_Achr10P29310_001:0.0892150319)97:0.2539805236,3711.Bra035176.1-P:0.0382127808)60:0.1566390974,((59689.Al_scaffold_0002_2746:0.0000026944,3702.AT1G80500.1:0.0000026944)51:0.0000026944,3711.Bra027566.1-P:0.0344212128)41:0.0000027752)45:0.0304474595,(3694.POPTR_0001s03500.1:0.0454380491,(3847.GLYMA04G38461.1:0.0000026944,3847.GLYMA06G16590.1:0.0148649241)99:0.0235047085)89:0.0125703998)83:0.0502732452,(4113.PGSC0003DMT400073367:0.0413188108,(4081.Solyc06g068030.2.1:0.0074333849,4113.PGSC0003DMT400073369:0.0000026944)52:0.0000026944)83:0.0185521103)57:0.0141584435,((((39946.BGIOSGA016720-PA:0.0275728819,((39947.LOC_Os04g42500.1:0.0000026944,4538.ORGLA04G0149900.1:0.0000026944)98:0.0134644931,39946.BGIOSGA016723-PA:0.0000026944)100:0.0484679210)87:0.0088597866,4533.OB04G25010.1:0.0094247292)94:0.0261219911,(((15368.BRADI5G14900.1:0.0228638637,4555.Si018666m:0.0074764101)55:0.0000026944,4513.MLOC_67125.1:0.0074814839)90:0.0075061843,((4555.Si007486m:0.0000026944,4558.Sb02g043460.1:0.0000026944)58:0.0000026944,4577.GRMZM2G097568_P01:0.0074595902)70:0.0075017766)68:0.0074448701)87:0.0090306693,(15368.BRADI3G48660.1:0.0377804108,(4513.MLOC_12967.5:0.0303460654,(4533.OB02G31210.1:0.0074545364,((39946.BGIOSGA008614-PA:0.0000000000,4538.ORGLA02G0207300.1:0.0000000000):0.0000026944,39947.LOC_Os02g40000.1:0.0000026944)78:0.0000026944)87:0.0228579620)48:0.0073426055)54:0.0000022224)99:0.0754498922)93:0.0953189703);
+
+ALISIM COMMAND
+--------------
+To simulate an alignment of the same length as the original alignment, using the tree and model parameters estimated from this analysis, you can use the following command:
+
+--alisim simulated_MSA -t /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.treefile -m "JTTDCMut+G4{1.32389}" --length 145
+
+To mimic the alignment used to produce this analysis, i.e. simulate an alignment of the same length as the original alignment, using the tree and model parameters estimated from this analysis *and* copying the same gap positions as the original alignment, you can use the following command:
+
+iqtree -s /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln --alisim mimicked_MSA
+
+To simulate any number of alignments in either of the two commandlines above, use the --num-alignments options, for example mimic 100 alignments you would use the command line:
+
+iqtree -s /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln --alisim mimicked_MSA --num-alignments 100
+
+For more information on using AliSim, please visit: www.iqtree.org/doc/AliSim
+
+TIME STAMP
+----------
+
+Date and time: Tue Jun  2 14:38:30 2026
+Total CPU time used: 68.096607 seconds (0h:1m:8s)
+Total wall-clock time used: 69.76827884 seconds (0h:1m:9s)
+

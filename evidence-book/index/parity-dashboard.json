@@ -2,15 +2,14 @@
   "comparison_kind_counts": {
     "exact_answer": 14,
     "scientific_equivalence": 4,
-    "tolerance": 24
+    "tolerance": 38
   },
   "parity_expectation_counts": {},
-  "scalar_row_count": 73,
+  "scalar_row_count": 87,
   "scalar_verdict_counts": {
-    "matched": 35,
-    "matched_with_tolerance": 31,
-    "mismatch_explained": 4,
-    "mismatch_unexplained": 3
+    "matched": 25,
+    "matched_with_tolerance": 50,
+    "mismatch_unexplained": 12
   },
   "schema_version": 1,
   "studies": [
@@ -34,18 +33,17 @@
       "comparison_kind_counts": {
         "exact_answer": 14,
         "scientific_equivalence": 4,
-        "tolerance": 24
+        "tolerance": 38
       },
       "evidence_id": "evidence-001",
       "family_verdicts": [],
       "parity_expectation_counts": {},
       "relative_path": "studies/primate-pgls-and-signal/evidence-001",
-      "scalar_row_count": 42,
+      "scalar_row_count": 56,
       "scalar_verdict_counts": {
-        "matched": 19,
-        "matched_with_tolerance": 16,
-        "mismatch_explained": 4,
-        "mismatch_unexplained": 3
+        "matched": 9,
+        "matched_with_tolerance": 35,
+        "mismatch_unexplained": 12
       },
       "study_id": "primate-pgls-and-signal",
       "study_title": "Primate PGLS And Signal"

@@ -4,8 +4,6 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.core.alignment import AlignmentRecord
-from bijux_phylogenetics.errors import InvalidAlignmentError
 from bijux_phylogenetics.io.fasta import (
     detect_fasta_sequence_type,
     load_fasta_records,
@@ -14,6 +12,8 @@ from bijux_phylogenetics.io.fasta import (
     validate_fasta_input,
     write_fasta_alignment,
 )
+from bijux_phylogenetics.phylo.alignment import AlignmentRecord
+from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

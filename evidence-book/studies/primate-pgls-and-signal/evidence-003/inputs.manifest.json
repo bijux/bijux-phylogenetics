@@ -24,7 +24,7 @@
       "label": "results/pagel-lambda-regression-parity.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-003/results/pagel-lambda-regression-parity.json",
       "read_only": false,
-      "sha256": "a0b04e048613c270e8e7f838e7d7ef3bf642dfee127d3ff81f27582e7016bce0"
+      "sha256": "b1ee622b044eef75f09d80fe1d8b63d151a20e6ce054b2acf5bb91aa7505cc3d"
     },
     {
       "input_id": "local-input-004",
@@ -78,7 +78,7 @@
       "label": "R reference results for the PGLS and signal study",
       "locator": "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
       "read_only": true,
-      "sha256": "d7b74a5da5e73a3cdff702d2d86b2936a3ad96f77dc45b5cb95df2af611b9ed9"
+      "sha256": "e9a03655d093bfeab1247e0683105a9df43b2d3ff216a2687e318d7ceed4c22e"
     },
     {
       "input_id": "source-input-005",

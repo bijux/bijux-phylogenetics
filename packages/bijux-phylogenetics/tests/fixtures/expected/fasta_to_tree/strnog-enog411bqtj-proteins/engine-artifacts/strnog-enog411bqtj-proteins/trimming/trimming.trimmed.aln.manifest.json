@@ -1,0 +1,89 @@
+{
+  "bootstrap_support_summary": null,
+  "config": {
+    "gap_threshold": 0.1,
+    "mode": "gap-threshold",
+    "timeout_seconds": null
+  },
+  "engine_name": "trimal",
+  "fasttree_support_summary": null,
+  "input_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/alignment/alignment.aln": "930b51ded3819e435911dcdc9f3521f4ac08679511dcac65e348da088fa5b7a2"
+  },
+  "input_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/alignment/alignment.aln"
+  ],
+  "iqtree_summary": null,
+  "log_likelihood": null,
+  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln.manifest.json",
+  "model_selection_summary": null,
+  "notes": [
+    "trimal trimming mode: gap-threshold",
+    "retained sites: 145 of 324",
+    "gap percentage: 57.049 -> 10.790",
+    "trimmed alignment validated as nonempty equal-length FASTA"
+  ],
+  "output_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln": "ab275efd30c082adc4b777e59fe6c92589425c544b74e7ea661ab066d6e75c7b",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln.retained-sites.tsv": "79918fef23550d2673a2d40ef79de34bac200c18c1bd3242800ee65df8fe5539"
+  },
+  "output_paths": {
+    "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln",
+    "trimming_summary": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln.retained-sites.tsv"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/trimal",
+      "-in",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/alignment/alignment.aln",
+      "-out",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln",
+      "-gt",
+      "0.100000"
+    ],
+    "ended_at_utc": "2026-06-02T12:35:13Z",
+    "engine_name": "trimal",
+    "executable": "/opt/homebrew/bin/trimal",
+    "exit_code": 0,
+    "output_paths": {
+      "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln"
+    },
+    "runtime_seconds": 0.006646,
+    "started_at_utc": "2026-06-02T12:35:13Z",
+    "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln.stderr.log",
+    "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln.stdout.log",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/trimal",
+        "--version"
+      ],
+      "engine_name": "trimal",
+      "executable": "/opt/homebrew/bin/trimal",
+      "text": "trimAl v1.5.rev0 build[2024-05-27]"
+    },
+    "warning_lines": [],
+    "workflow": "alignment-trimming",
+    "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming"
+  },
+  "selected_model": null,
+  "sh_alrt_support_summary": null,
+  "trimming_summary": {
+    "gap_threshold": 0.1,
+    "input_alignment_length": 324,
+    "input_gap_fraction": 0.570489844683393,
+    "input_gap_percentage": 57.048984468339306,
+    "mode": "gap-threshold",
+    "removed_site_count": 179,
+    "removed_site_fraction": 0.5524691358024691,
+    "retained_site_count": 145,
+    "retained_site_fraction": 0.44753086419753085,
+    "trimmed_alignment_length": 145,
+    "trimmed_gap_fraction": 0.10789766407119021,
+    "trimmed_gap_percentage": 10.789766407119021
+  },
+  "weak_backbone_report": null,
+  "workflow": "alignment-trimming"
+}

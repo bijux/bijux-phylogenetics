@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.clades import (
+from bijux_phylogenetics.trees import (
     extract_tree_clades,
     extract_tree_set_clades,
     write_clade_table,

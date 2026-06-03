@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Rabies Comparative Report</title>
+  <style>
+    body { font-family: Georgia, 'Times New Roman', serif; margin: 0; background: linear-gradient(180deg, #f4f1ea 0%, #f3f7ef 100%); color: #173024; }
+    main { max-width: 1040px; margin: 0 auto; padding: 24px; }
+    h1, h2 { margin: 0 0 10px; }
+    p { line-height: 1.55; }
+    .panel { background: rgba(255,255,255,0.88); border: 1px solid rgba(23,48,36,0.12); border-radius: 18px; padding: 18px; margin-top: 18px; box-shadow: 0 14px 36px rgba(23,48,36,0.08); }
+    .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+    .card { background: rgba(255,255,255,0.88); border: 1px solid rgba(23,48,36,0.12); border-radius: 18px; padding: 16px; }
+    .label { color: #5f7469; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .value { display: block; font-size: 22px; margin-top: 6px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+    th, td { border-bottom: 1px solid rgba(23,48,36,0.10); padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { color: #365443; }
+    ul { margin: 8px 0 0 18px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Rabies Comparative Report</h1>
+  <p>This comparative section asks whether the host-associated lineages in the rabies demonstration tree are associated with a consistent eastward geographic placement when geography is summarized as regional longitude. The result is interpretive evidence, not causal proof, and it inherits the small-panel limits of this dataset.</p>
+  <section class="cards">
+    <div class="card"><span class="label">formula</span><span class="value">region_longitude ~ host_group</span></div>
+    <div class="card"><span class="label">analysis taxa</span><span class="value">9</span></div>
+    <div class="card"><span class="label">selected trait model</span><span class="value">brownian</span></div>
+    <div class="card"><span class="label">pgls r-squared</span><span class="value">0.833944827574</span></div>
+  </section>
+  <section class="panel">
+    <h2>Question and Answer</h2>
+<ul><li>Question: does host association coincide with a consistent longitudinal shift in this rabies panel?</li><li>Answer: `host_group[canid]` shows a positive association and is nominally supported.</li><li>Phylogenetic signal remains strong for the response trait (Blomberg's K 2.44100950126, Pagel's lambda 1).</li><li>Interpret the coefficient evidence cautiously because the residual diagnostics retain review warnings and the sample is intentionally compact.</li></ul>
+  </section>
+  <section class="panel">
+    <h2>Coefficient Summary</h2>
+<table><thead><tr><th>term</th><th>estimate</th><th>standard_error</th><th>p_value</th><th>significant</th></tr></thead><tbody><tr><td>intercept</td><td>-58.440449865</td><td>0.119088670303</td><td>4.88498130835e-15</td><td>true</td></tr><tr><td>host_group[canid]</td><td>144.746258822</td><td>52.8581368031</td><td>0.0338077145602</td><td>true</td></tr><tr><td>host_group[livestock]</td><td>154.578389271</td><td>55.4459300824</td><td>0.0316646120912</td><td>true</td></tr></tbody></table>
+  </section>
+  <section class="panel">
+    <h2>Residual Diagnostics</h2>
+<table><thead><tr><th>analysis</th><th>residual_variance</th><th>max_abs_standardized_residual</th><th>phylogenetic_residual_lambda</th><th>warnings</th></tr></thead><tbody><tr><td>brownian</td><td>4977.69841111</td><td>0.964746416527</td><td>1</td><td>residuals retain moderate phylogenetic structure</td></tr><tr><td>ou</td><td>4977.69841111</td><td>0.952510163321</td><td>1</td><td>residuals retain moderate phylogenetic structure; best-supported OU alpha falls on the search boundary and may not be well identified; OU likelihood surface is shallow across alpha values, so model choice may be unstable; best-supported OU alpha is weak and may be difficult to distinguish from Brownian motion</td></tr><tr><td>pgls</td><td>13904.1866087</td><td>4.29047006893</td><td>1</td><td>PGLS residuals retain moderate phylogenetic structure; PGLS residual diagnostics identify one or more outlier taxa; PGLS leverage diagnostics identify one or more high-leverage taxa</td></tr></tbody></table>
+  </section>
+  <section class="panel">
+    <h2>Comparative Tree Adjustments</h2>
+<ul><li>The comparative fit uses the rooted demonstration tree after flooring any nonpositive nonroot branch lengths to a tiny positive value.</li><li>Adjusted branch count: 1</li></ul>
+<table><thead><tr><th>node_label</th><th>original_branch_length</th><th>repaired_branch_length</th><th>reason</th></tr></thead><tbody><tr><td>bat_chile_rv108</td><td>0</td><td>1e-06</td><td>comparative branch-length methods require strictly positive nonroot branch lengths</td></tr></tbody></table>
+  </section>
+  <section class="panel">
+    <h2>Interpretation Ledger</h2>
+<table><thead><tr><th>topic</th><th>claim</th><th>evidence</th><th>caution</th></tr></thead><tbody><tr><td>formula</td><td>comparative regression was fit as `region_longitude ~ host_group`</td><td>analysis_taxa=9; predictors=1</td><td>formula interpretation is conditional on the supplied tree, taxon overlap, and encoded predictor structure</td></tr><tr><td>phylogenetic-signal</td><td>the response trait retains high phylogenetic structure</td><td>blombergs_k=2.441010; pagels_lambda=1.000000</td><td>signal metrics describe covariance with the supplied phylogeny and are not by themselves a process explanation</td></tr><tr><td>model-comparison</td><td>brownian is the preferred continuous trait model on AICc</td><td>aicc_delta=4.934486; selected_from=2 models</td><td>small AICc differences should not be overstated as decisive biological process separation</td></tr><tr><td>coefficient</td><td>`host_group[canid]` shows a positive association and is nominally supported</td><td>estimate=144.746259; p_value=0.033808; 95%_ci=[15.407057, 274.085460]</td><td>coefficient interpretation remains associational and depends on lambda choice, sample size, and residual diagnostics</td></tr><tr><td>coefficient</td><td>`host_group[livestock]` shows a positive association and is nominally supported</td><td>estimate=154.578389; p_value=0.031665; 95%_ci=[18.907086, 290.249693]</td><td>coefficient interpretation remains associational and depends on lambda choice, sample size, and residual diagnostics</td></tr><tr><td>diagnostics</td><td>brownian residual diagnostics flagged review concerns</td><td>residuals retain moderate phylogenetic structure</td><td>diagnostic warnings weaken confidence in coefficient interpretation and should be reviewed before publication use</td></tr><tr><td>diagnostics</td><td>ou residual diagnostics flagged review concerns</td><td>residuals retain moderate phylogenetic structure; best-supported OU alpha falls on the search boundary and may not be well identified; OU likelihood surface is shallow across alpha values, so model choice may be unstable; best-supported OU alpha is weak and may be difficult to distinguish from Brownian motion</td><td>diagnostic warnings weaken confidence in coefficient interpretation and should be reviewed before publication use</td></tr><tr><td>diagnostics</td><td>pgls residual diagnostics flagged review concerns</td><td>PGLS residuals retain moderate phylogenetic structure; PGLS residual diagnostics identify one or more outlier taxa; PGLS leverage diagnostics identify one or more high-leverage taxa</td><td>diagnostic warnings weaken confidence in coefficient interpretation and should be reviewed before publication use</td></tr></tbody></table>
+  </section>
+</main>
+</body>
+</html>

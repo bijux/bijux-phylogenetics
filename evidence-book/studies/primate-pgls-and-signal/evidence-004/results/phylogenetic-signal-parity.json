@@ -8,11 +8,11 @@
   },
   "evidence_id": "evidence-004",
   "r_signal_test": {
-    "estimated_lambda": 0.8027,
-    "estimated_log_likelihood": -446.9432,
-    "likelihood_ratio": 41.0304,
-    "null_log_likelihood": -467.4584,
-    "p_value": 1.4988e-10
+    "estimated_lambda": 0.80273442404245,
+    "estimated_log_likelihood": -446.943234052535,
+    "likelihood_ratio": 41.0304186930398,
+    "null_log_likelihood": -467.458443399055,
+    "p_value": 1.49878271747037e-10
   },
   "schema_version": 1,
   "study_id": "primate-pgls-and-signal"

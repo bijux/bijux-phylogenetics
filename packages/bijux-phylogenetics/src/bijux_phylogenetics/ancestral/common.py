@@ -3,13 +3,22 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.core.metadata import load_taxon_table, write_taxon_rows
-from bijux_phylogenetics.core.pruning import prune_tree_to_requested_taxa
-from bijux_phylogenetics.core.traits import validate_traits_table
-from bijux_phylogenetics.core.tree import PhyloTree, TreeNode
-from bijux_phylogenetics.errors import AncestralReconstructionError
+from bijux_phylogenetics.datasets.study_inputs import (
+    TreeTraitAlignmentReport,
+    align_tree_and_trait_table,
+    load_taxon_table,
+    write_taxon_rows,
+)
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.likelihood.discrete_observation_policies import (
+    is_missing_discrete_observation_token,
+    normalize_discrete_observation_token,
+    parse_discrete_ambiguity_token,
+)
+from bijux_phylogenetics.phylo.pruning import prune_tree_to_requested_taxa
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
+from bijux_phylogenetics.runtime.errors import AncestralReconstructionError
 
 
 @dataclass(slots=True)
@@ -23,6 +32,8 @@ class AncestralContinuousDataset:
     tree: PhyloTree
     taxa: list[str]
     values_by_taxon: dict[str, float]
+    alignment_report: TreeTraitAlignmentReport
+    missing_from_traits_taxa: list[str]
     dropped_missing_taxa: list[str]
     dropped_non_numeric_taxa: list[str]
     warnings: list[str]
@@ -42,6 +53,7 @@ class AncestralDiscreteDataset:
     observed_states: list[str]
     state_counts: dict[str, int]
     sparse_states: list[str]
+    alignment_report: TreeTraitAlignmentReport
     dropped_missing_taxa: list[str]
     warnings: list[str]
 
@@ -92,47 +104,51 @@ def load_continuous_dataset(
             "continuous ancestral reconstruction requires complete branch lengths"
         )
 
-    table = load_taxon_table(traits_path, taxon_column=taxon_column)
-    if trait not in table.columns:
-        raise AncestralReconstructionError(
-            f"trait table does not contain column '{trait}'"
-        )
-    trait_report = validate_traits_table(traits_path, taxon_column=taxon_column)
-    column_kind = next(
-        (column.kind for column in trait_report.trait_columns if column.name == trait),
-        None,
+    alignment = align_tree_and_trait_table(
+        tree_path,
+        traits_path,
+        taxon_column=taxon_column,
+        required_trait_columns=(trait,),
+        drop_missing_for_columns=(trait,),
     )
-    if column_kind != "numeric":
-        raise AncestralReconstructionError(
-            f"trait column '{trait}' must be numeric for continuous ancestral reconstruction"
-        )
-
-    rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
+    table = load_taxon_table(traits_path, taxon_column=taxon_column)
     kept_taxa: list[str] = []
-    dropped_missing_taxa: list[str] = []
+    missing_from_traits_taxa = sorted(alignment.report.dropped_tree_taxa)
+    dropped_missing_taxa = list(alignment.report.dropped_missing_value_taxa)
     dropped_non_numeric_taxa: list[str] = []
     values_by_taxon: dict[str, float] = {}
-    for taxon in tree.tip_names:
-        row = rows_by_taxon.get(taxon)
-        if row is None or not row[trait]:
-            dropped_missing_taxa.append(taxon)
-            continue
+    for row in alignment.rows:
+        taxon = row[table.taxon_column]
         try:
             values_by_taxon[taxon] = float(row[trait])
         except ValueError:
             dropped_non_numeric_taxa.append(taxon)
             continue
         kept_taxa.append(taxon)
+    if not kept_taxa and dropped_non_numeric_taxa:
+        raise AncestralReconstructionError(
+            f"trait column '{trait}' must contain numeric values for continuous ancestral reconstruction"
+        )
     if len(kept_taxa) < 2:
         raise AncestralReconstructionError(
             "continuous ancestral reconstruction requires at least two taxa with usable numeric trait values"
         )
 
-    pruned_tree, _ = prune_tree_to_requested_taxa(tree_path, kept_taxa)
+    pruned_tree = alignment.tree
+    if dropped_non_numeric_taxa:
+        pruned_tree, _ = prune_tree_to_requested_taxa(tree_path, kept_taxa)
     warnings: list[str] = []
     if len(kept_taxa) < warning_taxon_threshold:
         warnings.append(
             f"continuous trait reconstruction is using only {len(kept_taxa)} taxa; results may be unstable"
+        )
+    if alignment.report.dropped_tree_taxa:
+        warnings.append(
+            "one or more tree taxa were excluded because they were absent from the trait table"
+        )
+    if alignment.report.dropped_trait_taxa:
+        warnings.append(
+            "one or more trait rows were excluded because their taxa were absent from the tree"
         )
     if dropped_missing_taxa:
         warnings.append(
@@ -150,6 +166,8 @@ def load_continuous_dataset(
         tree=pruned_tree,
         taxa=pruned_tree.tip_names,
         values_by_taxon=values_by_taxon,
+        alignment_report=alignment.report,
+        missing_from_traits_taxa=missing_from_traits_taxa,
         dropped_missing_taxa=sorted(dropped_missing_taxa),
         dropped_non_numeric_taxa=sorted(dropped_non_numeric_taxa),
         warnings=warnings,
@@ -170,26 +188,31 @@ def load_discrete_dataset(
             "ancestral-state reconstruction requires a rooted tree"
         )
 
+    alignment = align_tree_and_trait_table(
+        tree_path,
+        traits_path,
+        taxon_column=taxon_column,
+        required_trait_columns=(trait,),
+        drop_missing_for_columns=(trait,),
+    )
     table = load_taxon_table(traits_path, taxon_column=taxon_column)
-    if trait not in table.columns:
-        raise AncestralReconstructionError(
-            f"trait table does not contain column '{trait}'"
-        )
-
-    rows_by_taxon = {row[table.taxon_column]: row for row in table.rows}
-    kept_taxa: list[str] = []
-    dropped_missing_taxa: list[str] = []
+    dropped_missing_taxa = list(alignment.report.dropped_missing_value_taxa)
     states_by_taxon: dict[str, str] = {}
-    for taxon in tree.tip_names:
-        row = rows_by_taxon.get(taxon)
-        if row is None or not row[trait]:
-            dropped_missing_taxa.append(taxon)
-            continue
-        state = row[trait].strip()
+    for row in alignment.rows:
+        taxon = row[table.taxon_column]
+        state = normalize_discrete_observation_token(row[trait])
+        if is_missing_discrete_observation_token(state):
+            raise AncestralReconstructionError(
+                f"discrete ancestral reconstruction requires resolved observed states; taxon '{taxon}' uses missing token '{state or '<blank>'}' for trait '{trait}'"
+            )
+        ambiguous_states = parse_discrete_ambiguity_token(state)
+        if ambiguous_states is not None:
+            raise AncestralReconstructionError(
+                f"discrete ancestral reconstruction requires resolved observed states; taxon '{taxon}' uses ambiguous token '{state}' for trait '{trait}'"
+            )
         states_by_taxon[taxon] = state
-        kept_taxa.append(taxon)
     observed_states = sorted(set(states_by_taxon.values()))
-    if len(kept_taxa) < 2:
+    if len(alignment.report.aligned_taxa) < 2:
         raise AncestralReconstructionError(
             "discrete ancestral reconstruction requires at least two taxa with observed states"
         )
@@ -198,13 +221,20 @@ def load_discrete_dataset(
             "discrete ancestral reconstruction requires at least two observed states"
         )
 
-    pruned_tree, _ = prune_tree_to_requested_taxa(tree_path, kept_taxa)
     state_counts = {
         state: sum(1 for value in states_by_taxon.values() if value == state)
         for state in observed_states
     }
     sparse_states = sorted(state for state, count in state_counts.items() if count < 2)
     warnings: list[str] = []
+    if alignment.report.dropped_tree_taxa:
+        warnings.append(
+            "one or more tree taxa were excluded because they were absent from the trait table"
+        )
+    if alignment.report.dropped_trait_taxa:
+        warnings.append(
+            "one or more trait rows were excluded because their taxa were absent from the tree"
+        )
     if dropped_missing_taxa:
         warnings.append(
             "one or more taxa were excluded because the discrete trait state was missing"
@@ -218,12 +248,13 @@ def load_discrete_dataset(
         traits_path=traits_path,
         taxon_column=table.taxon_column,
         trait=trait,
-        tree=pruned_tree,
-        taxa=pruned_tree.tip_names,
+        tree=alignment.tree,
+        taxa=alignment.tree.tip_names,
         states_by_taxon=states_by_taxon,
         observed_states=observed_states,
         state_counts=state_counts,
         sparse_states=sparse_states,
+        alignment_report=alignment.report,
         dropped_missing_taxa=sorted(dropped_missing_taxa),
         warnings=warnings,
     )

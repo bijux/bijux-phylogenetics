@@ -1,0 +1,16 @@
+node	node_name	is_tip	descendant_taxa	true_state
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4|SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8		false	SimTaxon1,SimTaxon2,SimTaxon3,SimTaxon4,SimTaxon5,SimTaxon6,SimTaxon7,SimTaxon8	bat
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4		false	SimTaxon1,SimTaxon2,SimTaxon3,SimTaxon4	bat
+SimTaxon1|SimTaxon2		false	SimTaxon1,SimTaxon2	bat
+SimTaxon1	SimTaxon1	true	SimTaxon1	canid
+SimTaxon2	SimTaxon2	true	SimTaxon2	bat
+SimTaxon3|SimTaxon4		false	SimTaxon3,SimTaxon4	bat
+SimTaxon3	SimTaxon3	true	SimTaxon3	bat
+SimTaxon4	SimTaxon4	true	SimTaxon4	bat
+SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8		false	SimTaxon5,SimTaxon6,SimTaxon7,SimTaxon8	bat
+SimTaxon5	SimTaxon5	true	SimTaxon5	canid
+SimTaxon6|SimTaxon7|SimTaxon8		false	SimTaxon6,SimTaxon7,SimTaxon8	bat
+SimTaxon6|SimTaxon7		false	SimTaxon6,SimTaxon7	bat
+SimTaxon6	SimTaxon6	true	SimTaxon6	bat
+SimTaxon7	SimTaxon7	true	SimTaxon7	bat
+SimTaxon8	SimTaxon8	true	SimTaxon8	bat

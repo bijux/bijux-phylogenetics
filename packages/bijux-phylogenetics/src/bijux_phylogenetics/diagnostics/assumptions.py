@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from bijux_phylogenetics.core.metadata import load_taxon_table
+from bijux_phylogenetics.datasets.study_inputs import load_taxon_table
 from bijux_phylogenetics.diagnostics.validation import inspect_tree_path
 
 

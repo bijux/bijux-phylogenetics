@@ -19,7 +19,7 @@ from bijux_phylogenetics.biogeography import (
     write_geographic_transition_event_table,
     write_geographic_transition_rate_table,
 )
-from bijux_phylogenetics.io.fasta import validate_fasta_input
+from bijux_phylogenetics.io.fasta.records import validate_fasta_input
 
 _DATASET_ID = "rabies_geographic_transition_panel"
 _DATASET_LABEL = "Rabies geographic transition panel"

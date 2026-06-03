@@ -1,0 +1,5 @@
+variant_id	merge_status	job_status	output_freshness_status	evidence_status	included_in_merge	selected_model	serious_conflict_count	rooted_engine_rf_distance	rooted_engine_same_taxa_different_rooting	issue_count	issues	evidence_json_path	evidence_html_path
+auto-gap-threshold	merged	completed	fresh	present	true	TPM2u+F+G4	8	0	false	0		slurm-job-evidence/auto-gap-threshold/job-evidence.json	slurm-job-evidence/auto-gap-threshold/job-evidence.html
+ginsi-gap-threshold	merged	completed	fresh	present	true	TPM2u+F+G4	8	0	false	0		slurm-job-evidence/ginsi-gap-threshold/job-evidence.json	slurm-job-evidence/ginsi-gap-threshold/job-evidence.html
+auto-gappyout	merged	completed	fresh	present	true	TPM2u+F+G4	8	0	false	0		slurm-job-evidence/auto-gappyout/job-evidence.json	slurm-job-evidence/auto-gappyout/job-evidence.html
+ginsi-gappyout	merged	completed	fresh	present	true	TPM2u+F+G4	8	0	false	0		slurm-job-evidence/ginsi-gappyout/job-evidence.json	slurm-job-evidence/ginsi-gappyout/job-evidence.html

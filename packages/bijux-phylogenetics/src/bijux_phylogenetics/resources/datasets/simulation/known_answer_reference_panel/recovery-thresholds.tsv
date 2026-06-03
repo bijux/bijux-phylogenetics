@@ -1,0 +1,12 @@
+metric	comparator	threshold	rationale
+same_unrooted_topology	==	true	distance recovery should preserve the simulated unrooted topology
+brownian_root_absolute_error	<=	0.25	Brownian root-state recovery should remain close on the true tree
+brownian_sigma_squared_absolute_error	<=	0.05	Brownian sigma-squared recovery should stay within one small-rate band
+ou_alpha_absolute_error	<=	0.05	OU alpha should recover the generating grid value exactly or within one tight tolerance
+ou_theta_absolute_error	<=	0.05	OU optimum recovery should remain close to the generating optimum
+ou_sigma_squared_absolute_error	<=	0.02	OU sigma-squared recovery should remain within a narrow absolute error band
+discrete_internal_node_accuracy	>=	1.0	generic discrete ancestral states should recover every internal simulated state in this panel
+host_internal_node_accuracy	>=	1.0	host-state ancestral reconstruction should recover every internal simulated host state in this panel
+host_event_accuracy	>=	1.0	host-switch branch changes should match the simulated branch events exactly in this panel
+geographic_internal_node_accuracy	>=	1.0	geographic ancestral states should recover every internal simulated region state in this panel
+geographic_event_accuracy	>=	1.0	geographic branch transitions should match the simulated branch events exactly in this panel

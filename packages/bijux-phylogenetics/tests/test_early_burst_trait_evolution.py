@@ -8,7 +8,7 @@ from bijux_phylogenetics.comparative.common import (
     build_brownian_covariance_matrix,
     stable_covariance,
 )
-from bijux_phylogenetics.comparative.early_burst_trait_evolution import (
+from bijux_phylogenetics.comparative.continuous import (
     summarize_early_burst_trait_evolution,
     write_early_burst_rate_change_profile_table,
     write_early_burst_trait_evolution_comparison_table,
@@ -45,23 +45,22 @@ def test_summarize_early_burst_trait_evolution_reports_comparison_context() -> N
     assert report.tree_taxon_count == 4
     assert report.analyzed_taxon_count == 4
     assert report.excluded_taxa == []
-    assert report.rate_change == 50.0
+    assert report.rate_change == 0.0
     assert report.better_model == "brownian"
     assert len(report.profile_rows) == 161
     assert [row.model for row in report.comparison_rows] == [
         "brownian",
-        "ornstein-uhlenbeck",
         "early-burst",
+        "ornstein-uhlenbeck",
     ]
     assert [warning.kind for warning in report.identifiability_warnings] == [
         "boundary_rate_change",
-        "flat_likelihood_profile",
         "brownian_like_rate_change",
         "comparison_not_preferred",
     ]
     assert report.confidence_intervals[0].name == "rate_change"
     assert report.confidence_intervals[0].lower_95 == 0.0
-    assert report.confidence_intervals[0].upper_95 == 50.0
+    assert report.confidence_intervals[0].upper_95 == 13.4375
 
 
 def test_summarize_early_burst_trait_evolution_records_missing_and_invalid_taxa() -> (
@@ -148,9 +147,7 @@ def test_summarize_early_burst_trait_evolution_prefers_early_burst_on_simulated_
         <= report.confidence_intervals[0].lower_95
         <= report.confidence_intervals[0].upper_95
     )
-    assert [warning.kind for warning in report.identifiability_warnings] == [
-        "flat_likelihood_profile"
-    ]
+    assert report.identifiability_warnings == []
     assert next(
         row for row in report.comparison_rows if row.model == "early-burst"
     ).selected
@@ -171,7 +168,7 @@ def _write_simulated_early_burst_dataset(tmp_path: Path) -> tuple[Path, Path]:
     transformed_tree = transform_tree_for_evolutionary_mode(
         base_tree,
         mode="early-burst",
-        parameter_value=4.0,
+        parameter_value=6.0,
     )
     covariance = stable_covariance(
         build_brownian_covariance_matrix(

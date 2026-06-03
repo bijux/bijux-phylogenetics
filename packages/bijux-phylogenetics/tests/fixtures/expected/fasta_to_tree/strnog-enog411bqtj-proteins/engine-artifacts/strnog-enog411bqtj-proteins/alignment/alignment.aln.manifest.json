@@ -1,0 +1,68 @@
+{
+  "bootstrap_support_summary": null,
+  "config": {
+    "extra_args": [],
+    "mode": "auto",
+    "timeout_seconds": null
+  },
+  "engine_name": "mafft",
+  "fasttree_support_summary": null,
+  "input_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/strnog-enog411bqtj-proteins.fasta": "636378461b11e26fa0c9b8f6ee792e7f99887ae0fc4d3259cc2103389d50ba66"
+  },
+  "input_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/strnog-enog411bqtj-proteins.fasta"
+  ],
+  "iqtree_summary": null,
+  "log_likelihood": null,
+  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/alignment/alignment.aln.manifest.json",
+  "model_selection_summary": null,
+  "notes": [
+    "mafft alignment mode: auto",
+    "alignment output validated as deterministic equal-length FASTA"
+  ],
+  "output_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/alignment/alignment.aln": "930b51ded3819e435911dcdc9f3521f4ac08679511dcac65e348da088fa5b7a2"
+  },
+  "output_paths": {
+    "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/alignment/alignment.aln"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/mafft",
+      "--auto",
+      "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/strnog-enog411bqtj-proteins.fasta"
+    ],
+    "ended_at_utc": "2026-06-02T12:35:13Z",
+    "engine_name": "mafft",
+    "executable": "/opt/homebrew/bin/mafft",
+    "exit_code": 0,
+    "output_paths": {
+      "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/alignment/alignment.aln"
+    },
+    "runtime_seconds": 0.353293,
+    "started_at_utc": "2026-06-02T12:35:12Z",
+    "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/alignment/alignment.aln.stderr.log",
+    "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/alignment/alignment.aln",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/mafft",
+        "--version"
+      ],
+      "engine_name": "mafft",
+      "executable": "/opt/homebrew/bin/mafft",
+      "text": "v7.526 (2024/Apr/26)"
+    },
+    "warning_lines": [],
+    "workflow": "multiple-sequence-alignment",
+    "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/alignment"
+  },
+  "selected_model": null,
+  "sh_alrt_support_summary": null,
+  "trimming_summary": null,
+  "weak_backbone_report": null,
+  "workflow": "multiple-sequence-alignment"
+}

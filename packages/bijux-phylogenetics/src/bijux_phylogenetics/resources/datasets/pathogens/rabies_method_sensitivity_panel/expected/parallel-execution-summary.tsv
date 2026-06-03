@@ -1,0 +1,5 @@
+variant_id	label	execution_mode	status	log_path	error_code
+auto-gap-threshold	MAFFT auto plus trimAl gap-threshold	parallel	succeeded	parallel-logs/auto-gap-threshold.log	
+ginsi-gap-threshold	MAFFT ginsi plus trimAl gap-threshold	parallel	succeeded	parallel-logs/ginsi-gap-threshold.log	
+auto-gappyout	MAFFT auto plus trimAl gappyout	parallel	succeeded	parallel-logs/auto-gappyout.log	
+ginsi-gappyout	MAFFT ginsi plus trimAl gappyout	parallel	succeeded	parallel-logs/ginsi-gappyout.log	

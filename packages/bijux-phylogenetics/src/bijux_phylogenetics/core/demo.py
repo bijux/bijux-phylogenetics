@@ -4,13 +4,6 @@ from dataclasses import dataclass
 from pathlib import Path
 import shutil
 
-from bijux_phylogenetics.compare.reports import build_tree_comparison_report
-from bijux_phylogenetics.reports.service import (
-    render_dataset_report,
-    render_phylo_inputs_report,
-    render_tree_report,
-)
-
 
 @dataclass(slots=True)
 class DemoRunResult:
@@ -24,12 +17,14 @@ class DemoRunResult:
     capability_summary: Path
 
 
-def _example_resource_root() -> Path:
+def example_resource_root() -> Path:
+    """Return the packaged example-resource root shipped with the runtime."""
     return Path(__file__).resolve().parents[1] / "resources" / "examples"
 
 
-def _copy_demo_inputs(destination: Path) -> dict[str, Path]:
-    source_root = _example_resource_root()
+def copy_example_inputs(destination: Path) -> dict[str, Path]:
+    """Copy the packaged example inputs into one writable destination."""
+    source_root = example_resource_root()
     destination.mkdir(parents=True, exist_ok=True)
     selected = {
         "tree": source_root / "trees" / "example_tree.nwk",
@@ -69,12 +64,19 @@ def _write_capability_summary(path: Path, result: DemoRunResult) -> Path:
 
 def run_capability_demo(output_root: Path) -> DemoRunResult:
     """Generate a public capability demo from the repository sample inputs."""
+    from bijux_phylogenetics.compare.presentation import build_tree_comparison_report
+    from bijux_phylogenetics.reports.service import (
+        render_dataset_report,
+        render_phylo_inputs_report,
+        render_tree_report,
+    )
+
     if output_root.exists():
         shutil.rmtree(output_root)
     input_root = output_root / "inputs"
     report_root = output_root / "reports"
     report_root.mkdir(parents=True, exist_ok=True)
-    inputs = _copy_demo_inputs(input_root)
+    inputs = copy_example_inputs(input_root)
 
     tree_report = render_tree_report(
         tree_path=inputs["tree"], out_path=report_root / "tree-report.html"

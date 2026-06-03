@@ -4,7 +4,7 @@ import json
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.correlated_trait_evolution import (
+from bijux_phylogenetics.comparative.trait_dependence import (
     summarize_correlated_trait_evolution,
     write_correlated_trait_comparison_table,
     write_correlated_trait_exclusion_table,

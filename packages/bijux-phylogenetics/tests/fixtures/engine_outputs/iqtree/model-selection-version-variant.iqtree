@@ -1,0 +1,7 @@
+WARNING: ModelFinder resumed from a checkpoint
+note: sorted candidate table omitted in this compact report
+Akaike Information Criterion (AIC): K2P+I
+Corrected Akaike Information Criterion (AICc): JC
+Bayesian Information Criterion (BIC): K2P+I
+Best-fit model according to BIC score: K2P+I
+Log likelihood of tree = -21.104

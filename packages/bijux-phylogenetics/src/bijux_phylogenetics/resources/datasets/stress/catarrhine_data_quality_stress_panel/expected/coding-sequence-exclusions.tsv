@@ -1,0 +1,3 @@
+identifier	reason	comparable_length	invalid_codon_count	premature_stop_count	terminal_stop_count	trailing_bases	note
+gorilla_gorilla	internal-stop-codon	36	0	1	0	0	sequence contains one or more premature stop codons
+pan_troglodytes	frame-error	37	0	0	0	1	sequence is not frame-consistent after gaps and missing data are removed

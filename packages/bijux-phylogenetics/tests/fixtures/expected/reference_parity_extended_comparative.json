@@ -1,0 +1,209 @@
+{
+  "generated_on": "2026-05-14",
+  "source_packages": {
+    "ape": "5.8.1",
+    "nlme": "3.1.169",
+    "phytools": "2.5.2"
+  },
+  "observations": [
+    {
+      "case": "pgls-primate-longevity-estimated-lambda",
+      "method": "pgls",
+      "input_fixtures": [
+        "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+        "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv"
+      ],
+      "response": "longevity",
+      "predictors": [
+        "social_group_size"
+      ],
+      "taxon_column": "species",
+      "lambda_value": "estimate",
+      "reference_tool": "ape+nlme",
+      "reference_version": "ape=5.8.1;nlme=3.1.169",
+      "reference_source": "ape::corPagel fixed=FALSE via nlme::gls over the governed primate longevity dataset",
+      "tolerance": 0.001,
+      "tolerance_reason": "The governed primate estimated-lambda regression now refines the lambda optimum within the best likelihood bracket, so a tight tolerance is enough to reject materially different coefficient, uncertainty, likelihood, AIC, or p-value behavior while still allowing floating-point linear algebra drift.",
+      "failure_mode": "model_assumption",
+      "expected_output": {
+        "aic": 896.13829632446982,
+        "coefficient.intercept.estimate": 249.95843527502848,
+        "coefficient.intercept.p_value": 3.4432591889139311e-06,
+        "coefficient.intercept.standard_error": 49.728278317433137,
+        "coefficient.social_group_size.estimate": 1.6621481351591505,
+        "coefficient.social_group_size.p_value": 0.016888613296791418,
+        "coefficient.social_group_size.standard_error": 0.67975150736705636,
+        "lambda_value": 0.76865653963126879,
+        "log_likelihood": -444.06914816223491
+      }
+    },
+    {
+      "case": "pgls-primate-longevity-fixed-reference-lambda",
+      "method": "pgls",
+      "input_fixtures": [
+        "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+        "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv"
+      ],
+      "response": "longevity",
+      "predictors": [
+        "social_group_size"
+      ],
+      "taxon_column": "species",
+      "lambda_value": 0.7686564518986164,
+      "reference_tool": "ape+nlme",
+      "reference_version": "ape=5.8.1;nlme=3.1.169",
+      "reference_source": "ape::corPagel fixed=TRUE via nlme::gls at the governed primate reference lambda",
+      "tolerance": 0.001,
+      "tolerance_reason": "The governed primate fixed-lambda regression reuses the exact reference lambda from the trusted R optimizer, so a tight tolerance is enough to reject materially different coefficient, uncertainty, likelihood, AIC, or p-value behavior while still allowing floating-point linear algebra drift.",
+      "failure_mode": "model_assumption",
+      "expected_output": {
+        "aic": 894.1382963244696,
+        "coefficient.intercept.estimate": 249.9584349618,
+        "coefficient.intercept.p_value": 3.443250811026837e-06,
+        "coefficient.intercept.standard_error": 49.72827203321775,
+        "coefficient.social_group_size.estimate": 1.6621482371613288,
+        "coefficient.social_group_size.p_value": 0.01688860630987273,
+        "coefficient.social_group_size.standard_error": 0.6797515041165163,
+        "lambda_value": 0.7686564518986164,
+        "log_likelihood": -444.0691481622348
+      }
+    },
+    {
+      "case": "pagel-lambda-primate-longevity",
+      "method": "pagels-lambda",
+      "input_fixtures": [
+        "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+        "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv"
+      ],
+      "reference_tool": "phytools",
+      "reference_version": "2.5.2",
+      "reference_source": "evidence-book/studies/primate-pgls-and-signal/evidence-004/results/phylogenetic-signal-parity.json via phytools::phylosig(method='lambda')",
+      "tolerance": 0.005,
+      "tolerance_reason": "The governed primate signal bundle uses a larger real dataset with rounded external likelihood outputs, so a small tolerance absorbs profile-search and reporting drift while still rejecting materially different lambda fits.",
+      "failure_mode": "model_assumption",
+      "expected_output": {
+        "lambda_value": 0.8027,
+        "log_likelihood": -446.9432
+      }
+    },
+    {
+      "case": "pagel-lambda-non-ultrametric-strong-signal-twenty-four-taxa",
+      "method": "pagels-lambda",
+      "input_fixtures": [
+        "tests/fixtures/trees/example_tree_phytools_non_ultrametric_twenty_four_taxa.nwk",
+        "tests/fixtures/metadata/example_traits_phytools_signal_non_ultrametric_twenty_four_taxa.tsv"
+      ],
+      "trait": "signal_strong",
+      "taxon_column": "taxon",
+      "reference_tool": "phytools",
+      "reference_version": "2.5.2",
+      "reference_source": "phytools::phylosig(method='lambda') on the governed strong-signal non-ultrametric twenty-four-taxon fixture",
+      "tolerance": 0.0005,
+      "tolerance_reason": "The governed non-ultrametric strong-signal lambda case sits at the Brownian boundary, so a small tolerance absorbs boundary-profile rounding while still rejecting materially different likelihood behavior.",
+      "failure_mode": "model_assumption",
+      "expected_output": {
+        "lambda_value": 0.9999266862564143,
+        "log_likelihood": -27.528337843167698
+      }
+    },
+    {
+      "case": "pagel-lambda-weak-signal-twenty-four-taxa",
+      "method": "pagels-lambda",
+      "input_fixtures": [
+        "tests/fixtures/trees/example_tree_phytools_ultrametric_twenty_four_taxa.nwk",
+        "tests/fixtures/metadata/example_traits_phytools_signal_twenty_four_taxa.tsv"
+      ],
+      "trait": "signal_weak",
+      "taxon_column": "taxon",
+      "reference_tool": "phytools",
+      "reference_version": "2.5.2",
+      "reference_source": "phytools::phylosig(method='lambda') on the governed weak-signal twenty-four-taxon fixture",
+      "tolerance": 0.001,
+      "tolerance_reason": "The governed weak-signal lambda case sits near the zero-signal boundary, so the tolerance absorbs boundary rounding while still rejecting materially different likelihood support.",
+      "failure_mode": "model_assumption",
+      "expected_output": {
+        "lambda_value": 7.33736799610782e-05,
+        "log_likelihood": -35.82077682773808
+      }
+    },
+    {
+      "case": "blomberg-k-strong-signal-twenty-four-taxa",
+      "method": "blombergs-k",
+      "input_fixtures": [
+        "tests/fixtures/trees/example_tree_phytools_ultrametric_twenty_four_taxa.nwk",
+        "tests/fixtures/metadata/example_traits_phytools_signal_twenty_four_taxa.tsv"
+      ],
+      "trait": "signal_strong",
+      "taxon_column": "taxon",
+      "reference_tool": "phytools",
+      "reference_version": "2.5.2",
+      "reference_source": "phytools::phylosig(method='K') on the governed strong-signal twenty-four-taxon fixture",
+      "tolerance": 1e-06,
+      "tolerance_reason": "Blomberg's K is deterministic on the governed strong-signal fixture, so only floating-point linear algebra drift is allowed.",
+      "failure_mode": "numerical_tolerance",
+      "expected_output": {
+        "k": 0.881409594863313
+      }
+    },
+    {
+      "case": "blomberg-k-weak-signal-twenty-four-taxa",
+      "method": "blombergs-k",
+      "input_fixtures": [
+        "tests/fixtures/trees/example_tree_phytools_ultrametric_twenty_four_taxa.nwk",
+        "tests/fixtures/metadata/example_traits_phytools_signal_twenty_four_taxa.tsv"
+      ],
+      "trait": "signal_weak",
+      "taxon_column": "taxon",
+      "reference_tool": "phytools",
+      "reference_version": "2.5.2",
+      "reference_source": "phytools::phylosig(method='K') on the governed weak-signal twenty-four-taxon fixture",
+      "tolerance": 1e-06,
+      "tolerance_reason": "Blomberg's K is deterministic on the governed weak-signal fixture, so only floating-point linear algebra drift is allowed.",
+      "failure_mode": "numerical_tolerance",
+      "expected_output": {
+        "k": 0.03137456576480431
+      }
+    },
+    {
+      "case": "brownian-primate-longevity-intercept-only",
+      "method": "brownian-trait-model",
+      "input_fixtures": [
+        "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+        "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv"
+      ],
+      "reference_tool": "geiger",
+      "reference_version": "2.0.11",
+      "reference_source": "evidence-book/studies/primate-pgls-and-signal/evidence-007/results/continuous-mode-fit-parity.json via geiger::fitContinuous(model='BM')",
+      "tolerance": 0.1,
+      "tolerance_reason": "The governed primate intercept-only Brownian fit carries a very large rate parameter on a real dataset, so the tolerance absorbs reference rounding on the rate scale while still rejecting materially different likelihood or root-state fits.",
+      "failure_mode": "numerical_tolerance",
+      "expected_output": {
+        "aic": 956.8469,
+        "log_likelihood": -476.4234,
+        "rate": 88740.5017,
+        "root_state": 262.35
+      }
+    },
+    {
+      "case": "ornstein-uhlenbeck-primate-longevity-intercept-only",
+      "method": "ornstein-uhlenbeck-trait-model",
+      "input_fixtures": [
+        "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+        "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv"
+      ],
+      "reference_tool": "ape+nlme",
+      "reference_version": "ape=5.8.1;nlme=3.1.168",
+      "reference_source": "evidence-book/studies/primate-pgls-and-signal/evidence-007/results/continuous-mode-fit-parity.json via ape::corMartins intercept-only fit",
+      "tolerance": 0.1,
+      "tolerance_reason": "The governed primate intercept-only OU fit stores rounded external rate and alpha outputs on a larger dataset, so the tolerance absorbs reporting drift without hiding materially different optimum or likelihood behavior.",
+      "failure_mode": "model_assumption",
+      "expected_output": {
+        "aic": 928.5062,
+        "alpha": 5.3356,
+        "log_likelihood": -461.2531,
+        "rate": 170195.2204,
+        "root_state": 282.7197
+      }
+    }
+  ]
+}

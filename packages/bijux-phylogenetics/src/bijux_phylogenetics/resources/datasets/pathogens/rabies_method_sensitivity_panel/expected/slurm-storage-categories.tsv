@@ -1,0 +1,6 @@
+category_id	category_label	variant_file_count	workflow_file_count	total_file_count	variant_byte_count	workflow_byte_count	total_byte_count	estimated_storage_mib	detail
+outputs	workflow outputs	40	0	40	161224	0	161224	1	Retained scientific outputs such as alignments, comparison ledgers, and variant-scoped tables that are not tree sets or reviewer reports.
+logs	canonical logs	4	0	4	900	0	900	1	Canonical orchestration logs under parallel-logs. Copied task logs inside per-job evidence packages are counted under review artifacts to avoid double-counting the same execution record as canonical storage.
+trees	tree artifacts	16	0	16	7036	0	7036	1	Tree products such as rooted or unrooted Newick outputs and other retained tree-topology artifacts.
+posterior_samples	posterior samples	0	0	0	0	0	0	0	Bayesian posterior chains or sampled tree sets. This governed workflow does not currently emit them, but the category is kept explicit so zero remains an audited, reviewer-visible statement.
+reports	review artifacts	36	35	71	1007270	93961	1101231	2	Workflow-wide summaries, manifests, HTML reports, Slurm ledgers, evidence packages, and other reviewer-facing accountability artifacts.

@@ -1,0 +1,10 @@
+taxon,accession,host_species,host_group,isolate,country,region_group,collection_date
+bat_chile_rv108,MG458305,bat,bat,RV108,Chile,south_america,
+bat_chile_rv50,MG458304,bat,bat,RV50,USA,north_america,1975
+dog_pakistan_pdb011,PV641713,dog,canid,PKDOW/PDB011,Pakistan,south_asia,2023-07-18
+raccoon_dog_russia_4092_26_2025,PX845689,raccoon dog,canid,4092/26/2025/Novosibirsk,"Russia: the selo of Novotyrtyshkino, Kolyvansky District, Novosibirsk Oblast",north_asia,2025
+raccoon_dog_poland_2021,OQ693985,raccoon dog,canid,RV_2277140521J_Mazovie_Raccoon_dog_Pol_2021,Poland,europe,2021
+red_fox_russia_4092_20_2025,PX845683,red fox,canid,4092/20/2025/Novosibirsk,"Russia: the settlment of Berezovka, Iskitimsky District, Novosibirsk Oblast",north_asia,2025
+red_fox_russia_4092_18_2025,PX845681,red fox,canid,4092/18/2025/Novosibirsk,"Russia: the selo of Kochki, Kochkovsky District, Novosibirsk Oblast",north_asia,2025
+cattle_russia_4092_15_2025,PX845678,cattle,livestock,4092/15/2025/Novosibirsk,"Russia: the cattlegrave of Chainsky, Kupinsky District, Novosibirsk Oblast",north_asia,2025
+cattle_russia_4092_13_2025,PX845676,cattle,livestock,4092/13/2025/Novosibirsk,"Russia: the selo of Ivanovka, Bagansky District, Novosibirsk Oblast",north_asia,2025

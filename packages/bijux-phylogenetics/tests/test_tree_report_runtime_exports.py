@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import bijux_phylogenetics
+import bijux_phylogenetics.reports as reports_api
 from bijux_phylogenetics.reports import (
     TreeBranchStatisticsRow,
     TreeReportPackageResult,
@@ -14,17 +14,16 @@ from bijux_phylogenetics.reports import (
 
 
 def test_tree_report_package_surfaces_export_publicly() -> None:
-    assert bijux_phylogenetics.TreeReportPackageResult is TreeReportPackageResult
-    assert bijux_phylogenetics.TreeSupportRow is TreeSupportRow
-    assert bijux_phylogenetics.TreeBranchStatisticsRow is TreeBranchStatisticsRow
-    assert bijux_phylogenetics.build_tree_report_package is build_tree_report_package
-    assert bijux_phylogenetics.summarize_tree_support is summarize_tree_support
+    assert reports_api.TreeReportPackageResult is TreeReportPackageResult
+    assert reports_api.TreeSupportRow is TreeSupportRow
+    assert reports_api.TreeBranchStatisticsRow is TreeBranchStatisticsRow
+    assert reports_api.build_tree_report_package is build_tree_report_package
+    assert reports_api.summarize_tree_support is summarize_tree_support
     assert (
-        bijux_phylogenetics.summarize_tree_branch_statistics
-        is summarize_tree_branch_statistics
+        reports_api.summarize_tree_branch_statistics is summarize_tree_branch_statistics
     )
-    assert bijux_phylogenetics.write_tree_support_table is write_tree_support_table
+    assert reports_api.write_tree_support_table is write_tree_support_table
     assert (
-        bijux_phylogenetics.write_tree_branch_statistics_table
+        reports_api.write_tree_branch_statistics_table
         is write_tree_branch_statistics_table
     )

@@ -1,0 +1,4 @@
+predictor	source_column	encoding_scheme	level	baseline_level	is_reference_level	coefficient_name	coefficient_estimate	standard_error	test_statistic	p_value	lower_95_confidence_interval	upper_95_confidence_interval	observed_taxon_count	missing_category_taxa
+host_group	host_group	reference-level	bat	bat	true								2	
+host_group	host_group	reference-level	canid	bat	false	host_group[canid]	144.746258822072	52.8581368030873	2.73839124071467	0.0338077145602476	15.4070574491558	274.085460194988	5	
+host_group	host_group	reference-level	livestock	bat	false	host_group[livestock]	154.578389270722	55.4459300823826	2.78791227852156	0.0316646120911912	18.9070858543851	290.249692687059	2	

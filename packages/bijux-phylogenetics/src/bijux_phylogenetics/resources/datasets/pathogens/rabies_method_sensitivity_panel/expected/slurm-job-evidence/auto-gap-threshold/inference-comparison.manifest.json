@@ -1,0 +1,3609 @@
+{
+  "bootstrap_replicates": 1000,
+  "commands": {
+    "fasttree": [
+      "/opt/homebrew/bin/FastTree",
+      "-gtr",
+      "-nt",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln"
+    ],
+    "iqtree_support": [
+      "/opt/homebrew/bin/iqtree2",
+      "-s",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln",
+      "-st",
+      "DNA",
+      "-seed",
+      "1",
+      "-nt",
+      "1",
+      "-m",
+      "TPM2u+F+G4",
+      "-bb",
+      "1000",
+      "-wbt",
+      "-pre",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support"
+    ],
+    "model_selection": [
+      "/opt/homebrew/bin/iqtree2",
+      "-s",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln",
+      "-st",
+      "DNA",
+      "-seed",
+      "1",
+      "-nt",
+      "1",
+      "-m",
+      "MF",
+      "-pre",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection"
+    ]
+  },
+  "comparison_report": {
+    "branch_lengths": {
+      "branch_score": {
+        "branch_score_distance": 0.059545716976719495,
+        "left_only_split_count": 0,
+        "left_only_taxa": [],
+        "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+        "missing_length_split_count": 0,
+        "right_only_split_count": 0,
+        "right_only_taxa": [],
+        "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
+        "same_taxon_set": true,
+        "shared_split_count": 15,
+        "shared_taxa": [
+          "bat_chile_rv108",
+          "bat_chile_rv50",
+          "cattle_russia_4092_13_2025",
+          "cattle_russia_4092_15_2025",
+          "dog_pakistan_pdb011",
+          "raccoon_dog_poland_2021",
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_18_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "split_count": 15,
+        "splits": [
+          {
+            "branch_score_difference": 0.010005607900000005,
+            "comparison_status": "shared",
+            "left_length": 0.045029611,
+            "right_length": 0.0550352189,
+            "split_id": "bat_chile_rv108",
+            "squared_difference": 0.0001001121894485425
+          },
+          {
+            "branch_score_difference": 0.0005682629999999994,
+            "comparison_status": "shared",
+            "left_length": 0.035406776,
+            "right_length": 0.035975039,
+            "split_id": "bat_chile_rv50",
+            "squared_difference": 3.2292283716899933e-07
+          },
+          {
+            "branch_score_difference": -3.691840000000007e-05,
+            "comparison_status": "shared",
+            "left_length": 0.001525633,
+            "right_length": 0.0014887146,
+            "split_id": "cattle_russia_4092_13_2025",
+            "squared_difference": 1.3629682585600051e-09
+          },
+          {
+            "branch_score_difference": 9.95e-07,
+            "comparison_status": "shared",
+            "left_length": 5e-09,
+            "right_length": 1e-06,
+            "split_id": "cattle_russia_4092_15_2025",
+            "squared_difference": 9.90025e-13
+          },
+          {
+            "branch_score_difference": 0.0244397477,
+            "comparison_status": "shared",
+            "left_length": 0.070057522,
+            "right_length": 0.0944972697,
+            "split_id": "dog_pakistan_pdb011",
+            "squared_difference": 0.0005973012676396553
+          },
+          {
+            "branch_score_difference": 0.0008617134999999963,
+            "comparison_status": "shared",
+            "left_length": 0.03119001,
+            "right_length": 0.0320517235,
+            "split_id": "raccoon_dog_poland_2021",
+            "squared_difference": 7.425501560822436e-07
+          },
+          {
+            "branch_score_difference": -4.292529999999975e-05,
+            "comparison_status": "shared",
+            "left_length": 0.00851591,
+            "right_length": 0.0084729847,
+            "split_id": "raccoon_dog_russia_4092_26_2025",
+            "squared_difference": 1.8425813800899784e-09
+          },
+          {
+            "branch_score_difference": 9.648790000000088e-05,
+            "comparison_status": "shared",
+            "left_length": 0.007830772,
+            "right_length": 0.0079272599,
+            "split_id": "red_fox_russia_4092_18_2025",
+            "squared_difference": 9.309914846410169e-09
+          },
+          {
+            "branch_score_difference": 2.93091000000004e-05,
+            "comparison_status": "shared",
+            "left_length": 0.003475407,
+            "right_length": 0.0035047161,
+            "split_id": "red_fox_russia_4092_20_2025",
+            "squared_difference": 8.590233428100234e-10
+          },
+          {
+            "branch_score_difference": 0.05130832680000001,
+            "comparison_status": "shared",
+            "left_length": 0.084705093,
+            "right_length": 0.1360134198,
+            "split_id": "bat_chile_rv108|bat_chile_rv50",
+            "squared_difference": 0.0026325443990155993
+          },
+          {
+            "branch_score_difference": 0.0012804083999999986,
+            "comparison_status": "shared",
+            "left_length": 0.015726579,
+            "right_length": 0.0170069874,
+            "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+            "squared_difference": 1.6394456707905566e-06
+          },
+          {
+            "branch_score_difference": -0.00021887019999999998,
+            "comparison_status": "shared",
+            "left_length": 0.002664646,
+            "right_length": 0.0024457758,
+            "split_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025",
+            "squared_difference": 4.790416444803999e-08
+          },
+          {
+            "branch_score_difference": 0.014125068799999994,
+            "comparison_status": "shared",
+            "left_length": 0.048978978,
+            "right_length": 0.0631040468,
+            "split_id": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011",
+            "squared_difference": 0.00019951756860473328
+          },
+          {
+            "branch_score_difference": -0.0007852584000000006,
+            "comparison_status": "shared",
+            "left_length": 0.008682797,
+            "right_length": 0.0078975386,
+            "split_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+            "squared_difference": 6.166307547705609e-07
+          },
+          {
+            "branch_score_difference": 0.003582479100000001,
+            "comparison_status": "shared",
+            "left_length": 0.01906422,
+            "right_length": 0.0226466991,
+            "split_id": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+            "squared_difference": 1.2834156501936816e-05
+          }
+        ],
+        "taxon_overlap_policy": "prune-to-shared"
+      },
+      "left_only_taxa": [],
+      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+      "right_only_taxa": [],
+      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
+      "same_taxon_set": true,
+      "shared_splits": [
+        {
+          "delta": 0.0012804083999999986,
+          "left_length": 0.015726579,
+          "ratio": 1.0814168421498407,
+          "right_length": 0.0170069874,
+          "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025"
+        },
+        {
+          "delta": -0.00021887019999999998,
+          "left_length": 0.002664646,
+          "ratio": 0.9178614345019939,
+          "right_length": 0.0024457758,
+          "split_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025"
+        }
+      ],
+      "shared_taxa": [
+        "bat_chile_rv108",
+        "bat_chile_rv50",
+        "cattle_russia_4092_13_2025",
+        "cattle_russia_4092_15_2025",
+        "dog_pakistan_pdb011",
+        "raccoon_dog_poland_2021",
+        "raccoon_dog_russia_4092_26_2025",
+        "red_fox_russia_4092_18_2025",
+        "red_fox_russia_4092_20_2025"
+      ],
+      "taxon_overlap_policy": "prune-to-shared"
+    },
+    "changes": {
+      "gained_clades": [
+        "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+        "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+        "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+        "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025"
+      ],
+      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+      "lost_clades": [
+        "bat_chile_rv108|bat_chile_rv50",
+        "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011",
+        "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+        "bat_chile_rv108|bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021"
+      ],
+      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+    },
+    "clades": {
+      "clade_rows": [
+        {
+          "absent_tree_count": 1,
+          "clade_id": "bat_chile_rv108|bat_chile_rv50",
+          "observations": [
+            {
+              "present": true,
+              "support": 1.0,
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
+            },
+            {
+              "present": false,
+              "support": null,
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+            }
+          ],
+          "present_in_all_trees": false,
+          "present_tree_count": 1
+        },
+        {
+          "absent_tree_count": 0,
+          "clade_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+          "observations": [
+            {
+              "present": true,
+              "support": 0.999,
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
+            },
+            {
+              "present": true,
+              "support": 100.0,
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+            }
+          ],
+          "present_in_all_trees": true,
+          "present_tree_count": 2
+        },
+        {
+          "absent_tree_count": 0,
+          "clade_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025",
+          "observations": [
+            {
+              "present": true,
+              "support": 0.87,
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
+            },
+            {
+              "present": true,
+              "support": 84.0,
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+            }
+          ],
+          "present_in_all_trees": true,
+          "present_tree_count": 2
+        },
+        {
+          "absent_tree_count": 1,
+          "clade_id": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011",
+          "observations": [
+            {
+              "present": true,
+              "support": 1.0,
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
+            },
+            {
+              "present": false,
+              "support": null,
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+            }
+          ],
+          "present_in_all_trees": false,
+          "present_tree_count": 1
+        },
+        {
+          "absent_tree_count": 1,
+          "clade_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "observations": [
+            {
+              "present": false,
+              "support": null,
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
+            },
+            {
+              "present": true,
+              "support": 92.0,
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+            }
+          ],
+          "present_in_all_trees": false,
+          "present_tree_count": 1
+        },
+        {
+          "absent_tree_count": 1,
+          "clade_id": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+          "observations": [
+            {
+              "present": true,
+              "support": 0.997,
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
+            },
+            {
+              "present": false,
+              "support": null,
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+            }
+          ],
+          "present_in_all_trees": false,
+          "present_tree_count": 1
+        },
+        {
+          "absent_tree_count": 1,
+          "clade_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "observations": [
+            {
+              "present": false,
+              "support": null,
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
+            },
+            {
+              "present": true,
+              "support": 99.0,
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+            }
+          ],
+          "present_in_all_trees": false,
+          "present_tree_count": 1
+        },
+        {
+          "absent_tree_count": 1,
+          "clade_id": "bat_chile_rv108|bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+          "observations": [
+            {
+              "present": true,
+              "support": 0.968,
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
+            },
+            {
+              "present": false,
+              "support": null,
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+            }
+          ],
+          "present_in_all_trees": false,
+          "present_tree_count": 1
+        },
+        {
+          "absent_tree_count": 1,
+          "clade_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "observations": [
+            {
+              "present": false,
+              "support": null,
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
+            },
+            {
+              "present": true,
+              "support": 100.0,
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+            }
+          ],
+          "present_in_all_trees": false,
+          "present_tree_count": 1
+        },
+        {
+          "absent_tree_count": 1,
+          "clade_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "observations": [
+            {
+              "present": false,
+              "support": null,
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk"
+            },
+            {
+              "present": true,
+              "support": 100.0,
+              "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+            }
+          ],
+          "present_in_all_trees": false,
+          "present_tree_count": 1
+        }
+      ],
+      "conflicting_clades": [
+        "bat_chile_rv108|bat_chile_rv50",
+        "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011",
+        "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+        "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+        "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+        "bat_chile_rv108|bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+        "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+        "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025"
+      ],
+      "shared_clades": [
+        "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+        "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025"
+      ],
+      "shared_taxa": [
+        "bat_chile_rv108",
+        "bat_chile_rv50",
+        "cattle_russia_4092_13_2025",
+        "cattle_russia_4092_15_2025",
+        "dog_pakistan_pdb011",
+        "raccoon_dog_poland_2021",
+        "raccoon_dog_russia_4092_26_2025",
+        "red_fox_russia_4092_18_2025",
+        "red_fox_russia_4092_20_2025"
+      ],
+      "tree_paths": [
+        "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+        "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk"
+      ],
+      "tree_summaries": [
+        {
+          "clade_count": 6,
+          "excluded_taxa": [],
+          "support_clade_count": 6,
+          "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+          "unique_clades": [
+            "bat_chile_rv108|bat_chile_rv50",
+            "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011",
+            "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+            "bat_chile_rv108|bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021"
+          ]
+        },
+        {
+          "clade_count": 6,
+          "excluded_taxa": [],
+          "support_clade_count": 6,
+          "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
+          "unique_clades": [
+            "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+            "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+            "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+            "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025"
+          ]
+        }
+      ]
+    },
+    "input_checksums": {
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk": "0e11e0785b1a2a577da5e43b7ed4b3ec44ef7a4fc3f75cfb8727d1a9dd4795b6",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk": "07fc4128f6d2901158464a774caea4616e0f91b14ae856dc21c277678afdff8e"
+    },
+    "output_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.comparison.html",
+    "support": {
+      "conflicting_clades": [
+        {
+          "comparison_status": "left_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": true,
+          "left_support": 1.0,
+          "left_support_fraction": 1.0,
+          "right_present": false,
+          "right_support": null,
+          "right_support_fraction": null,
+          "split_id": "bat_chile_rv108|bat_chile_rv50",
+          "strongest_support_fraction": 1.0,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "left_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": true,
+          "left_support": 1.0,
+          "left_support_fraction": 1.0,
+          "right_present": false,
+          "right_support": null,
+          "right_support_fraction": null,
+          "split_id": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011",
+          "strongest_support_fraction": 1.0,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "right_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": false,
+          "left_support": null,
+          "left_support_fraction": null,
+          "right_present": true,
+          "right_support": 92.0,
+          "right_support_fraction": 0.92,
+          "split_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "strongest_support_fraction": 0.92,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "left_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": true,
+          "left_support": 0.997,
+          "left_support_fraction": 0.997,
+          "right_present": false,
+          "right_support": null,
+          "right_support_fraction": null,
+          "split_id": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+          "strongest_support_fraction": 0.997,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "right_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": false,
+          "left_support": null,
+          "left_support_fraction": null,
+          "right_present": true,
+          "right_support": 99.0,
+          "right_support_fraction": 0.99,
+          "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "strongest_support_fraction": 0.99,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "left_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": true,
+          "left_support": 0.968,
+          "left_support_fraction": 0.968,
+          "right_present": false,
+          "right_support": null,
+          "right_support_fraction": null,
+          "split_id": "bat_chile_rv108|bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+          "strongest_support_fraction": 0.968,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "right_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": false,
+          "left_support": null,
+          "left_support_fraction": null,
+          "right_present": true,
+          "right_support": 100.0,
+          "right_support_fraction": 1.0,
+          "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "strongest_support_fraction": 1.0,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "right_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": false,
+          "left_support": null,
+          "left_support_fraction": null,
+          "right_present": true,
+          "right_support": 100.0,
+          "right_support_fraction": 1.0,
+          "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "strongest_support_fraction": 1.0,
+          "support_strength": "strong"
+        }
+      ],
+      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
+      "shared_clades": [
+        {
+          "left_support": 0.999,
+          "left_support_fraction": 0.999,
+          "right_support": 100.0,
+          "right_support_fraction": 1.0,
+          "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+          "support_disagreement": false,
+          "support_fraction_delta": 0.0010000000000000009
+        },
+        {
+          "left_support": 0.87,
+          "left_support_fraction": 0.87,
+          "right_support": 84.0,
+          "right_support_fraction": 0.84,
+          "split_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025",
+          "support_disagreement": false,
+          "support_fraction_delta": 0.030000000000000027
+        }
+      ],
+      "shared_taxa": [
+        "bat_chile_rv108",
+        "bat_chile_rv50",
+        "cattle_russia_4092_13_2025",
+        "cattle_russia_4092_15_2025",
+        "dog_pakistan_pdb011",
+        "raccoon_dog_poland_2021",
+        "raccoon_dog_russia_4092_26_2025",
+        "red_fox_russia_4092_18_2025",
+        "red_fox_russia_4092_20_2025"
+      ],
+      "strong_support_threshold": 0.9,
+      "support_disagreement_threshold": 0.15,
+      "weak_support_threshold": 0.7
+    },
+    "topology": {
+      "left_informative_clades": 6,
+      "left_only_taxa": [],
+      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+      "left_unrooted_splits": 6,
+      "normalized_robinson_foulds": 0.6666666666666666,
+      "rf_mode": "rooted",
+      "right_informative_clades": 6,
+      "right_only_taxa": [],
+      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
+      "right_unrooted_splits": 6,
+      "robinson_foulds_distance": 8,
+      "rooted_normalized_robinson_foulds": 0.6666666666666666,
+      "rooted_robinson_foulds_distance": 8,
+      "same_taxa_different_rooting": true,
+      "same_topology_different_branch_lengths": false,
+      "same_unrooted_topology": true,
+      "shared_taxa": [
+        "bat_chile_rv108",
+        "bat_chile_rv50",
+        "cattle_russia_4092_13_2025",
+        "cattle_russia_4092_15_2025",
+        "dog_pakistan_pdb011",
+        "raccoon_dog_poland_2021",
+        "raccoon_dog_russia_4092_26_2025",
+        "red_fox_russia_4092_18_2025",
+        "red_fox_russia_4092_20_2025"
+      ],
+      "taxon_overlap_policy": "prune-to-shared",
+      "topology_equal": false,
+      "unrooted_normalized_robinson_foulds": 0.0,
+      "unrooted_robinson_foulds_distance": 0
+    }
+  },
+  "conclusion_rows": [
+    {
+      "comparison_status": "shared",
+      "conclusion_class": "stable_clade",
+      "detail": "clade is present in both trees without a support disagreement above the governed threshold",
+      "evidence_class": "strong_stable",
+      "fasttree_present": true,
+      "fasttree_support_fraction": 0.999,
+      "iqtree_present": true,
+      "iqtree_support_fraction": 1.0,
+      "serious_conflict": false,
+      "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+      "support_fraction_delta": 0.0010000000000000009
+    },
+    {
+      "comparison_status": "shared",
+      "conclusion_class": "stable_clade",
+      "detail": "clade is present in both trees without a support disagreement above the governed threshold",
+      "evidence_class": "moderate_stable",
+      "fasttree_present": true,
+      "fasttree_support_fraction": 0.87,
+      "iqtree_present": true,
+      "iqtree_support_fraction": 0.84,
+      "serious_conflict": false,
+      "split_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025",
+      "support_fraction_delta": 0.030000000000000027
+    },
+    {
+      "comparison_status": "fasttree_only",
+      "conclusion_class": "engine_specific_clade",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "evidence_class": "high_support_conflict",
+      "fasttree_present": true,
+      "fasttree_support_fraction": 1.0,
+      "iqtree_present": false,
+      "iqtree_support_fraction": null,
+      "serious_conflict": true,
+      "split_id": "bat_chile_rv108|bat_chile_rv50",
+      "support_fraction_delta": null
+    },
+    {
+      "comparison_status": "fasttree_only",
+      "conclusion_class": "engine_specific_clade",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "evidence_class": "high_support_conflict",
+      "fasttree_present": true,
+      "fasttree_support_fraction": 0.968,
+      "iqtree_present": false,
+      "iqtree_support_fraction": null,
+      "serious_conflict": true,
+      "split_id": "bat_chile_rv108|bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+      "support_fraction_delta": null
+    },
+    {
+      "comparison_status": "fasttree_only",
+      "conclusion_class": "engine_specific_clade",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "evidence_class": "high_support_conflict",
+      "fasttree_present": true,
+      "fasttree_support_fraction": 1.0,
+      "iqtree_present": false,
+      "iqtree_support_fraction": null,
+      "serious_conflict": true,
+      "split_id": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011",
+      "support_fraction_delta": null
+    },
+    {
+      "comparison_status": "fasttree_only",
+      "conclusion_class": "engine_specific_clade",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "evidence_class": "high_support_conflict",
+      "fasttree_present": true,
+      "fasttree_support_fraction": 0.997,
+      "iqtree_present": false,
+      "iqtree_support_fraction": null,
+      "serious_conflict": true,
+      "split_id": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+      "support_fraction_delta": null
+    },
+    {
+      "comparison_status": "iqtree_only",
+      "conclusion_class": "engine_specific_clade",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "evidence_class": "high_support_conflict",
+      "fasttree_present": false,
+      "fasttree_support_fraction": null,
+      "iqtree_present": true,
+      "iqtree_support_fraction": 1.0,
+      "serious_conflict": true,
+      "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "support_fraction_delta": null
+    },
+    {
+      "comparison_status": "iqtree_only",
+      "conclusion_class": "engine_specific_clade",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "evidence_class": "high_support_conflict",
+      "fasttree_present": false,
+      "fasttree_support_fraction": null,
+      "iqtree_present": true,
+      "iqtree_support_fraction": 1.0,
+      "serious_conflict": true,
+      "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "support_fraction_delta": null
+    },
+    {
+      "comparison_status": "iqtree_only",
+      "conclusion_class": "engine_specific_clade",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "evidence_class": "high_support_conflict",
+      "fasttree_present": false,
+      "fasttree_support_fraction": null,
+      "iqtree_present": true,
+      "iqtree_support_fraction": 0.99,
+      "serious_conflict": true,
+      "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "support_fraction_delta": null
+    },
+    {
+      "comparison_status": "iqtree_only",
+      "conclusion_class": "engine_specific_clade",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "evidence_class": "high_support_conflict",
+      "fasttree_present": false,
+      "fasttree_support_fraction": null,
+      "iqtree_present": true,
+      "iqtree_support_fraction": 0.92,
+      "serious_conflict": true,
+      "split_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "support_fraction_delta": null
+    }
+  ],
+  "conclusion_summary": {
+    "branch_score_distance": 0.059545716976719495,
+    "engine_specific_clade_count": 8,
+    "high_support_conflict_count": 8,
+    "high_support_disagreement_count": 0,
+    "low_support_disagreement_count": 0,
+    "moderate_support_disagreement_count": 0,
+    "normalized_robinson_foulds": 0.6666666666666666,
+    "robinson_foulds_distance": 8,
+    "serious_conflict_count": 8,
+    "shared_taxa_count": 9,
+    "stable_clade_count": 2,
+    "support_weighted_conflict_count": 8,
+    "top_conflict_driver_taxa": [
+      "dog_pakistan_pdb011",
+      "raccoon_dog_poland_2021",
+      "bat_chile_rv108"
+    ],
+    "unstable_clade_count": 0
+  },
+  "config": {
+    "bootstrap_replicates": 1000,
+    "incomplete_run_policy": "reject",
+    "iqtree_seed": 1,
+    "iqtree_threads": 1,
+    "resume": false,
+    "sequence_type": "dna",
+    "timeout_seconds": null
+  },
+  "conflicting_clade_rows": [
+    {
+      "conflict_kind": "fasttree_only",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "fasttree_present": true,
+      "fasttree_support": 1.0,
+      "fasttree_support_fraction": 1.0,
+      "iqtree_present": false,
+      "iqtree_support": null,
+      "iqtree_support_fraction": null,
+      "split_id": "bat_chile_rv108|bat_chile_rv50"
+    },
+    {
+      "conflict_kind": "fasttree_only",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "fasttree_present": true,
+      "fasttree_support": 1.0,
+      "fasttree_support_fraction": 1.0,
+      "iqtree_present": false,
+      "iqtree_support": null,
+      "iqtree_support_fraction": null,
+      "split_id": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011"
+    },
+    {
+      "conflict_kind": "iqtree_only",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "fasttree_present": false,
+      "fasttree_support": null,
+      "fasttree_support_fraction": null,
+      "iqtree_present": true,
+      "iqtree_support": 92.0,
+      "iqtree_support_fraction": 0.92,
+      "split_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025"
+    },
+    {
+      "conflict_kind": "fasttree_only",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "fasttree_present": true,
+      "fasttree_support": 0.997,
+      "fasttree_support_fraction": 0.997,
+      "iqtree_present": false,
+      "iqtree_support": null,
+      "iqtree_support_fraction": null,
+      "split_id": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011|raccoon_dog_poland_2021"
+    },
+    {
+      "conflict_kind": "iqtree_only",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "fasttree_present": false,
+      "fasttree_support": null,
+      "fasttree_support_fraction": null,
+      "iqtree_present": true,
+      "iqtree_support": 99.0,
+      "iqtree_support_fraction": 0.99,
+      "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025"
+    },
+    {
+      "conflict_kind": "fasttree_only",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "fasttree_present": true,
+      "fasttree_support": 0.968,
+      "fasttree_support_fraction": 0.968,
+      "iqtree_present": false,
+      "iqtree_support": null,
+      "iqtree_support_fraction": null,
+      "split_id": "bat_chile_rv108|bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021"
+    },
+    {
+      "conflict_kind": "iqtree_only",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "fasttree_present": false,
+      "fasttree_support": null,
+      "fasttree_support_fraction": null,
+      "iqtree_present": true,
+      "iqtree_support": 100.0,
+      "iqtree_support_fraction": 1.0,
+      "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025"
+    },
+    {
+      "conflict_kind": "iqtree_only",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "fasttree_present": false,
+      "fasttree_support": null,
+      "fasttree_support_fraction": null,
+      "iqtree_present": true,
+      "iqtree_support": 100.0,
+      "iqtree_support_fraction": 1.0,
+      "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025"
+    }
+  ],
+  "ended_at_utc": "2026-05-18T02:33:56Z",
+  "engine_artifact_dir": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold",
+  "engine_comparison": {
+    "branch_lengths": {
+      "branch_score": {
+        "branch_score_distance": 0.059545716976719495,
+        "left_only_split_count": 0,
+        "left_only_taxa": [],
+        "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
+        "missing_length_split_count": 0,
+        "right_only_split_count": 0,
+        "right_only_taxa": [],
+        "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
+        "same_taxon_set": true,
+        "shared_split_count": 15,
+        "shared_taxa": [
+          "bat_chile_rv108",
+          "bat_chile_rv50",
+          "cattle_russia_4092_13_2025",
+          "cattle_russia_4092_15_2025",
+          "dog_pakistan_pdb011",
+          "raccoon_dog_poland_2021",
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_18_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "split_count": 15,
+        "splits": [
+          {
+            "branch_score_difference": 0.010005607900000005,
+            "comparison_status": "shared",
+            "left_length": 0.045029611,
+            "right_length": 0.0550352189,
+            "split_id": "bat_chile_rv108",
+            "squared_difference": 0.0001001121894485425
+          },
+          {
+            "branch_score_difference": 0.0005682629999999994,
+            "comparison_status": "shared",
+            "left_length": 0.035406776,
+            "right_length": 0.035975039,
+            "split_id": "bat_chile_rv50",
+            "squared_difference": 3.2292283716899933e-07
+          },
+          {
+            "branch_score_difference": -3.691840000000007e-05,
+            "comparison_status": "shared",
+            "left_length": 0.001525633,
+            "right_length": 0.0014887146,
+            "split_id": "cattle_russia_4092_13_2025",
+            "squared_difference": 1.3629682585600051e-09
+          },
+          {
+            "branch_score_difference": 9.95e-07,
+            "comparison_status": "shared",
+            "left_length": 5e-09,
+            "right_length": 1e-06,
+            "split_id": "cattle_russia_4092_15_2025",
+            "squared_difference": 9.90025e-13
+          },
+          {
+            "branch_score_difference": 0.0244397477,
+            "comparison_status": "shared",
+            "left_length": 0.070057522,
+            "right_length": 0.0944972697,
+            "split_id": "dog_pakistan_pdb011",
+            "squared_difference": 0.0005973012676396553
+          },
+          {
+            "branch_score_difference": 0.0008617134999999963,
+            "comparison_status": "shared",
+            "left_length": 0.03119001,
+            "right_length": 0.0320517235,
+            "split_id": "raccoon_dog_poland_2021",
+            "squared_difference": 7.425501560822436e-07
+          },
+          {
+            "branch_score_difference": -4.292529999999975e-05,
+            "comparison_status": "shared",
+            "left_length": 0.00851591,
+            "right_length": 0.0084729847,
+            "split_id": "raccoon_dog_russia_4092_26_2025",
+            "squared_difference": 1.8425813800899784e-09
+          },
+          {
+            "branch_score_difference": 9.648790000000088e-05,
+            "comparison_status": "shared",
+            "left_length": 0.007830772,
+            "right_length": 0.0079272599,
+            "split_id": "red_fox_russia_4092_18_2025",
+            "squared_difference": 9.309914846410169e-09
+          },
+          {
+            "branch_score_difference": 2.93091000000004e-05,
+            "comparison_status": "shared",
+            "left_length": 0.003475407,
+            "right_length": 0.0035047161,
+            "split_id": "red_fox_russia_4092_20_2025",
+            "squared_difference": 8.590233428100234e-10
+          },
+          {
+            "branch_score_difference": 0.05130832680000001,
+            "comparison_status": "shared",
+            "left_length": 0.084705093,
+            "right_length": 0.1360134198,
+            "split_id": "bat_chile_rv108|bat_chile_rv50",
+            "squared_difference": 0.0026325443990155993
+          },
+          {
+            "branch_score_difference": 0.0012804083999999986,
+            "comparison_status": "shared",
+            "left_length": 0.015726579,
+            "right_length": 0.0170069874,
+            "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+            "squared_difference": 1.6394456707905566e-06
+          },
+          {
+            "branch_score_difference": -0.00021887019999999998,
+            "comparison_status": "shared",
+            "left_length": 0.002664646,
+            "right_length": 0.0024457758,
+            "split_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025",
+            "squared_difference": 4.790416444803999e-08
+          },
+          {
+            "branch_score_difference": 0.014125068799999994,
+            "comparison_status": "shared",
+            "left_length": 0.048978978,
+            "right_length": 0.0631040468,
+            "split_id": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011",
+            "squared_difference": 0.00019951756860473328
+          },
+          {
+            "branch_score_difference": -0.0007852584000000006,
+            "comparison_status": "shared",
+            "left_length": 0.008682797,
+            "right_length": 0.0078975386,
+            "split_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+            "squared_difference": 6.166307547705609e-07
+          },
+          {
+            "branch_score_difference": 0.003582479100000001,
+            "comparison_status": "shared",
+            "left_length": 0.01906422,
+            "right_length": 0.0226466991,
+            "split_id": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+            "squared_difference": 1.2834156501936816e-05
+          }
+        ],
+        "taxon_overlap_policy": "prune-to-shared"
+      },
+      "left_only_taxa": [],
+      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
+      "right_only_taxa": [],
+      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
+      "same_taxon_set": true,
+      "shared_splits": [
+        {
+          "delta": 0.0012804083999999986,
+          "left_length": 0.015726579,
+          "ratio": 1.0814168421498407,
+          "right_length": 0.0170069874,
+          "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025"
+        },
+        {
+          "delta": -0.00021887019999999998,
+          "left_length": 0.002664646,
+          "ratio": 0.9178614345019939,
+          "right_length": 0.0024457758,
+          "split_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025"
+        }
+      ],
+      "shared_taxa": [
+        "bat_chile_rv108",
+        "bat_chile_rv50",
+        "cattle_russia_4092_13_2025",
+        "cattle_russia_4092_15_2025",
+        "dog_pakistan_pdb011",
+        "raccoon_dog_poland_2021",
+        "raccoon_dog_russia_4092_26_2025",
+        "red_fox_russia_4092_18_2025",
+        "red_fox_russia_4092_20_2025"
+      ],
+      "taxon_overlap_policy": "prune-to-shared"
+    },
+    "comparison_kind": "engine",
+    "left_engine_name": "FastTree",
+    "left_label": "FastTree",
+    "left_manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.manifest.json",
+    "left_selected_model": null,
+    "left_tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
+    "right_engine_name": "iqtree",
+    "right_label": "IQ-TREE",
+    "right_manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.manifest.json",
+    "right_selected_model": "TPM2u+F+G4",
+    "right_tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
+    "support": {
+      "conflicting_clades": [
+        {
+          "comparison_status": "left_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": true,
+          "left_support": 1.0,
+          "left_support_fraction": 1.0,
+          "right_present": false,
+          "right_support": null,
+          "right_support_fraction": null,
+          "split_id": "bat_chile_rv108|bat_chile_rv50",
+          "strongest_support_fraction": 1.0,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "left_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": true,
+          "left_support": 1.0,
+          "left_support_fraction": 1.0,
+          "right_present": false,
+          "right_support": null,
+          "right_support_fraction": null,
+          "split_id": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011",
+          "strongest_support_fraction": 1.0,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "right_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": false,
+          "left_support": null,
+          "left_support_fraction": null,
+          "right_present": true,
+          "right_support": 92.0,
+          "right_support_fraction": 0.92,
+          "split_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "strongest_support_fraction": 0.92,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "left_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": true,
+          "left_support": 0.997,
+          "left_support_fraction": 0.997,
+          "right_present": false,
+          "right_support": null,
+          "right_support_fraction": null,
+          "split_id": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+          "strongest_support_fraction": 0.997,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "right_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": false,
+          "left_support": null,
+          "left_support_fraction": null,
+          "right_present": true,
+          "right_support": 99.0,
+          "right_support_fraction": 0.99,
+          "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "strongest_support_fraction": 0.99,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "left_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": true,
+          "left_support": 0.968,
+          "left_support_fraction": 0.968,
+          "right_present": false,
+          "right_support": null,
+          "right_support_fraction": null,
+          "split_id": "bat_chile_rv108|bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+          "strongest_support_fraction": 0.968,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "right_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": false,
+          "left_support": null,
+          "left_support_fraction": null,
+          "right_present": true,
+          "right_support": 100.0,
+          "right_support_fraction": 1.0,
+          "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "strongest_support_fraction": 1.0,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "right_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": false,
+          "left_support": null,
+          "left_support_fraction": null,
+          "right_present": true,
+          "right_support": 100.0,
+          "right_support_fraction": 1.0,
+          "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "strongest_support_fraction": 1.0,
+          "support_strength": "strong"
+        }
+      ],
+      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
+      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
+      "shared_clades": [
+        {
+          "left_support": 0.999,
+          "left_support_fraction": 0.999,
+          "right_support": 100.0,
+          "right_support_fraction": 1.0,
+          "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+          "support_disagreement": false,
+          "support_fraction_delta": 0.0010000000000000009
+        },
+        {
+          "left_support": 0.87,
+          "left_support_fraction": 0.87,
+          "right_support": 84.0,
+          "right_support_fraction": 0.84,
+          "split_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025",
+          "support_disagreement": false,
+          "support_fraction_delta": 0.030000000000000027
+        }
+      ],
+      "shared_taxa": [
+        "bat_chile_rv108",
+        "bat_chile_rv50",
+        "cattle_russia_4092_13_2025",
+        "cattle_russia_4092_15_2025",
+        "dog_pakistan_pdb011",
+        "raccoon_dog_poland_2021",
+        "raccoon_dog_russia_4092_26_2025",
+        "red_fox_russia_4092_18_2025",
+        "red_fox_russia_4092_20_2025"
+      ],
+      "strong_support_threshold": 0.9,
+      "support_disagreement_threshold": 0.15,
+      "weak_support_threshold": 0.7
+    },
+    "topology": {
+      "left_informative_clades": 6,
+      "left_only_taxa": [],
+      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
+      "left_unrooted_splits": 6,
+      "normalized_robinson_foulds": 0.6666666666666666,
+      "rf_mode": "rooted",
+      "right_informative_clades": 6,
+      "right_only_taxa": [],
+      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
+      "right_unrooted_splits": 6,
+      "robinson_foulds_distance": 8,
+      "rooted_normalized_robinson_foulds": 0.6666666666666666,
+      "rooted_robinson_foulds_distance": 8,
+      "same_taxa_different_rooting": true,
+      "same_topology_different_branch_lengths": false,
+      "same_unrooted_topology": true,
+      "shared_taxa": [
+        "bat_chile_rv108",
+        "bat_chile_rv50",
+        "cattle_russia_4092_13_2025",
+        "cattle_russia_4092_15_2025",
+        "dog_pakistan_pdb011",
+        "raccoon_dog_poland_2021",
+        "raccoon_dog_russia_4092_26_2025",
+        "red_fox_russia_4092_18_2025",
+        "red_fox_russia_4092_20_2025"
+      ],
+      "taxon_overlap_policy": "prune-to-shared",
+      "topology_equal": false,
+      "unrooted_normalized_robinson_foulds": 0.0,
+      "unrooted_robinson_foulds_distance": 0
+    },
+    "warnings": [
+      "inferred topologies differ across compared workflows",
+      "compared workflows agree on unrooted splits but differ in rooting"
+    ]
+  },
+  "engine_versions": {
+    "fasttree": "FastTree 2.1.11 Double precision (No SSE3), OpenMP (10 threads):\n  FastTree protein_alignment > tree\n  FastTree < protein_alignment > tree\n  FastTree -out tree protein_alignment\n  FastTree -nt nucleotide_alignment > tree\n  FastTree -nt -gtr < nucleotide_alignment > tree\n  FastTree < nucleotide_alignment > tree\nFastTree accepts alignments in fasta or phylip interleaved formats\n\nCommon options (must be before the alignment file):\n  -quiet to suppress reporting information\n  -nopr to suppress progress indicator\n  -log logfile -- save intermediate trees, settings, and model details\n  -fastest -- speed up the neighbor joining phase & reduce memory usage\n        (recommended for >50,000 sequences)\n  -n <number> to analyze multiple alignments (phylip format only)\n        (use for global bootstrap, with seqboot and CompareToBootstrap.pl)\n  -nosupport to not compute support values\n  -intree newick_file to set the starting tree(s)\n  -intree1 newick_file to use this starting tree for all the alignments\n        (for faster global bootstrap on huge alignments)\n  -pseudo to use pseudocounts (recommended for highly gapped sequences)\n  -gtr -- generalized time-reversible model (nucleotide alignments only)\n  -lg -- Le-Gascuel 2008 model (amino acid alignments only)\n  -wag -- Whelan-And-Goldman 2001 model (amino acid alignments only)\n  -quote -- allow spaces and other restricted characters (but not ' ) in\n           sequence names and quote names in the output tree (fasta input only;\n           FastTree will not be able to read these trees back in)\n  -noml to turn off maximum-likelihood\n  -nome to turn off minimum-evolution NNIs and SPRs\n        (recommended if running additional ML NNIs with -intree)\n  -nome -mllen with -intree to optimize branch lengths for a fixed topology\n  -cat # to specify the number of rate categories of sites (default 20)\n      or -nocat to use constant rates\n  -gamma -- after optimizing the tree under the CAT approximation,\n      rescale the lengths to optimize the Gamma20 likelihood\n  -constraints constraintAlignment to constrain the topology search\n       constraintAlignment should have 1s or 0s to indicates splits\n  -expert -- see more options\nFor more information, see http://www.microbesonline.org/fasttree/",
+    "iqtree_model_selection": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong",
+    "iqtree_support": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+  },
+  "fasttree_workflow": {
+    "bootstrap_support_summary": null,
+    "config": {
+      "sequence_type": "dna",
+      "timeout_seconds": null
+    },
+    "engine_name": "FastTree",
+    "fasttree_support_summary": {
+      "annotated_node_count": 6,
+      "approximate_method": true,
+      "internal_node_count": 7,
+      "maximum_local_support": 1.0,
+      "median_local_support": 0.998,
+      "minimum_local_support": 0.87,
+      "nodes": [
+        {
+          "descendant_taxa": [
+            "bat_chile_rv108",
+            "bat_chile_rv50",
+            "cattle_russia_4092_13_2025",
+            "cattle_russia_4092_15_2025",
+            "dog_pakistan_pdb011",
+            "raccoon_dog_poland_2021"
+          ],
+          "is_backbone": true,
+          "local_support": 0.968,
+          "node": "bat_chile_rv108|bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+          "support_fraction": 0.968
+        },
+        {
+          "descendant_taxa": [
+            "cattle_russia_4092_13_2025",
+            "cattle_russia_4092_15_2025"
+          ],
+          "is_backbone": false,
+          "local_support": 0.999,
+          "node": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+          "support_fraction": 0.999
+        },
+        {
+          "descendant_taxa": [
+            "bat_chile_rv108",
+            "bat_chile_rv50",
+            "dog_pakistan_pdb011",
+            "raccoon_dog_poland_2021"
+          ],
+          "is_backbone": true,
+          "local_support": 0.997,
+          "node": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+          "support_fraction": 0.997
+        },
+        {
+          "descendant_taxa": [
+            "bat_chile_rv108",
+            "bat_chile_rv50",
+            "dog_pakistan_pdb011"
+          ],
+          "is_backbone": false,
+          "local_support": 1.0,
+          "node": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011",
+          "support_fraction": 1.0
+        },
+        {
+          "descendant_taxa": [
+            "bat_chile_rv108",
+            "bat_chile_rv50"
+          ],
+          "is_backbone": false,
+          "local_support": 1.0,
+          "node": "bat_chile_rv108|bat_chile_rv50",
+          "support_fraction": 1.0
+        },
+        {
+          "descendant_taxa": [
+            "raccoon_dog_russia_4092_26_2025",
+            "red_fox_russia_4092_20_2025"
+          ],
+          "is_backbone": false,
+          "local_support": 0.87,
+          "node": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025",
+          "support_fraction": 0.87
+        }
+      ],
+      "support_histogram": {
+        "0p5to0p69": 0,
+        "0p7to0p89": 1,
+        "ge0p9": 5,
+        "lt0p5": 0
+      },
+      "support_label_kind": "sh-like-local-support",
+      "support_scale": "proportion-0-to-1",
+      "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
+      "warnings": [
+        "one or more internal nodes did not expose parsable FastTree local support labels",
+        "FastTree is an approximately maximum-likelihood workflow and its SH-like local support values should be reviewed as approximate evidence"
+      ],
+      "weakly_supported_clade_count": 0
+    },
+    "input_checksums": {
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
+    },
+    "input_paths": [
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln"
+    ],
+    "iqtree_summary": null,
+    "log_likelihood": null,
+    "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.manifest.json",
+    "model_selection_summary": null,
+    "notes": [
+      "fast approximate tree validated as parseable Newick output",
+      "FastTree is an approximately maximum-likelihood engine and should be reviewed as an exploratory or large-alignment inference method",
+      "FastTree local support values are SH-like support proportions on the documented 0-1 scale",
+      "branch-level FastTree local support table exported for review",
+      "low-support FastTree branch ledger exported for weak-clade review",
+      "FastTree local support histogram exported for reviewer-facing distribution checks"
+    ],
+    "output_checksums": {
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk": "0e11e0785b1a2a577da5e43b7ed4b3ec44ef7a4fc3f75cfb8727d1a9dd4795b6",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.low-support.tsv": "07b6c95e7f5bbacfedde24c98d0e1056fa5b204e2a4cfbd5109a676f15f2c1f5",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.support-histogram.tsv": "21830eca94e176b070526a35b6c9633a4682460be48dc4dac56f4f421b668dd5",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.support.tsv": "dd102e30b7586bd89a8450144144c1a09094c0f8954f9a097372eb71c5eca416"
+    },
+    "output_paths": {
+      "low_support_branches": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.low-support.tsv",
+      "support_histogram": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.support-histogram.tsv",
+      "support_table": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.support.tsv",
+      "tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk"
+    },
+    "resumed": false,
+    "run": {
+      "command": [
+        "/opt/homebrew/bin/FastTree",
+        "-gtr",
+        "-nt",
+        "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln"
+      ],
+      "ended_at_utc": "2026-05-18T02:33:56Z",
+      "engine_name": "FastTree",
+      "executable": "/opt/homebrew/bin/FastTree",
+      "exit_code": 0,
+      "output_paths": {
+        "tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk"
+      },
+      "runtime_seconds": 0.105877,
+      "started_at_utc": "2026-05-18T02:33:56Z",
+      "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.stderr.log",
+      "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk",
+      "timed_out": false,
+      "timeout_seconds": null,
+      "version": {
+        "command": [
+          "/opt/homebrew/bin/FastTree",
+          "-help"
+        ],
+        "engine_name": "FastTree",
+        "executable": "/opt/homebrew/bin/FastTree",
+        "text": "FastTree 2.1.11 Double precision (No SSE3), OpenMP (10 threads):\n  FastTree protein_alignment > tree\n  FastTree < protein_alignment > tree\n  FastTree -out tree protein_alignment\n  FastTree -nt nucleotide_alignment > tree\n  FastTree -nt -gtr < nucleotide_alignment > tree\n  FastTree < nucleotide_alignment > tree\nFastTree accepts alignments in fasta or phylip interleaved formats\n\nCommon options (must be before the alignment file):\n  -quiet to suppress reporting information\n  -nopr to suppress progress indicator\n  -log logfile -- save intermediate trees, settings, and model details\n  -fastest -- speed up the neighbor joining phase & reduce memory usage\n        (recommended for >50,000 sequences)\n  -n <number> to analyze multiple alignments (phylip format only)\n        (use for global bootstrap, with seqboot and CompareToBootstrap.pl)\n  -nosupport to not compute support values\n  -intree newick_file to set the starting tree(s)\n  -intree1 newick_file to use this starting tree for all the alignments\n        (for faster global bootstrap on huge alignments)\n  -pseudo to use pseudocounts (recommended for highly gapped sequences)\n  -gtr -- generalized time-reversible model (nucleotide alignments only)\n  -lg -- Le-Gascuel 2008 model (amino acid alignments only)\n  -wag -- Whelan-And-Goldman 2001 model (amino acid alignments only)\n  -quote -- allow spaces and other restricted characters (but not ' ) in\n           sequence names and quote names in the output tree (fasta input only;\n           FastTree will not be able to read these trees back in)\n  -noml to turn off maximum-likelihood\n  -nome to turn off minimum-evolution NNIs and SPRs\n        (recommended if running additional ML NNIs with -intree)\n  -nome -mllen with -intree to optimize branch lengths for a fixed topology\n  -cat # to specify the number of rate categories of sites (default 20)\n      or -nocat to use constant rates\n  -gamma -- after optimizing the tree under the CAT approximation,\n      rescale the lengths to optimize the Gamma20 likelihood\n  -constraints constraintAlignment to constrain the topology search\n       constraintAlignment should have 1s or 0s to indicates splits\n  -expert -- see more options\nFor more information, see http://www.microbesonline.org/fasttree/"
+      },
+      "warning_lines": [],
+      "workflow": "fast-approximate-tree",
+      "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree"
+    },
+    "selected_model": null,
+    "sh_alrt_support_summary": null,
+    "trimming_summary": null,
+    "weak_backbone_report": null,
+    "workflow": "fast-approximate-tree"
+  },
+  "input_checksums": {
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
+  },
+  "input_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln",
+  "iqtree_seed": 1,
+  "iqtree_support_workflow": {
+    "bootstrap_support_summary": {
+      "internal_node_count": 7,
+      "maximum_support": 100.0,
+      "median_support": 99.5,
+      "minimum_support": 84.0,
+      "nodes": [
+        {
+          "descendant_taxa": [
+            "cattle_russia_4092_13_2025",
+            "cattle_russia_4092_15_2025",
+            "dog_pakistan_pdb011",
+            "raccoon_dog_poland_2021",
+            "raccoon_dog_russia_4092_26_2025",
+            "red_fox_russia_4092_18_2025",
+            "red_fox_russia_4092_20_2025"
+          ],
+          "is_backbone": true,
+          "node": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "support": 100.0,
+          "support_fraction": 1.0
+        },
+        {
+          "descendant_taxa": [
+            "cattle_russia_4092_13_2025",
+            "cattle_russia_4092_15_2025",
+            "raccoon_dog_poland_2021",
+            "raccoon_dog_russia_4092_26_2025",
+            "red_fox_russia_4092_18_2025",
+            "red_fox_russia_4092_20_2025"
+          ],
+          "is_backbone": true,
+          "node": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "support": 100.0,
+          "support_fraction": 1.0
+        },
+        {
+          "descendant_taxa": [
+            "cattle_russia_4092_13_2025",
+            "cattle_russia_4092_15_2025",
+            "raccoon_dog_russia_4092_26_2025",
+            "red_fox_russia_4092_18_2025",
+            "red_fox_russia_4092_20_2025"
+          ],
+          "is_backbone": true,
+          "node": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "support": 99.0,
+          "support_fraction": 0.99
+        },
+        {
+          "descendant_taxa": [
+            "raccoon_dog_russia_4092_26_2025",
+            "red_fox_russia_4092_18_2025",
+            "red_fox_russia_4092_20_2025"
+          ],
+          "is_backbone": false,
+          "node": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "support": 92.0,
+          "support_fraction": 0.92
+        },
+        {
+          "descendant_taxa": [
+            "raccoon_dog_russia_4092_26_2025",
+            "red_fox_russia_4092_20_2025"
+          ],
+          "is_backbone": false,
+          "node": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025",
+          "support": 84.0,
+          "support_fraction": 0.84
+        },
+        {
+          "descendant_taxa": [
+            "cattle_russia_4092_13_2025",
+            "cattle_russia_4092_15_2025"
+          ],
+          "is_backbone": false,
+          "node": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+          "support": 100.0,
+          "support_fraction": 1.0
+        }
+      ],
+      "support_histogram": {
+        "50to69": 0,
+        "70to89": 1,
+        "ge90": 5,
+        "lt50": 0
+      },
+      "supported_node_count": 6,
+      "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
+      "warnings": [
+        "one or more internal nodes did not expose numeric support labels"
+      ],
+      "weakly_supported_clade_count": 0
+    },
+    "config": {
+      "model": "TPM2u+F+G4",
+      "partition_path": null,
+      "replicates": 1000,
+      "seed": 1,
+      "sequence_type": "dna",
+      "threads": 1,
+      "timeout_seconds": null
+    },
+    "engine_name": "iqtree",
+    "fasttree_support_summary": null,
+    "input_checksums": {
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
+    },
+    "input_paths": [
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln"
+    ],
+    "iqtree_summary": {
+      "log_likelihood": -3945.2388,
+      "maximum_support": 100.0,
+      "minimum_support": 84.0,
+      "selected_model": "TPM2u+F+G4",
+      "support_value_count": 6,
+      "support_values": [
+        {
+          "descendant_taxa": [
+            "cattle_russia_4092_13_2025",
+            "cattle_russia_4092_15_2025",
+            "dog_pakistan_pdb011",
+            "raccoon_dog_poland_2021",
+            "raccoon_dog_russia_4092_26_2025",
+            "red_fox_russia_4092_18_2025",
+            "red_fox_russia_4092_20_2025"
+          ],
+          "is_backbone": true,
+          "node": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "support": 100.0,
+          "support_fraction": 1.0
+        },
+        {
+          "descendant_taxa": [
+            "cattle_russia_4092_13_2025",
+            "cattle_russia_4092_15_2025",
+            "raccoon_dog_poland_2021",
+            "raccoon_dog_russia_4092_26_2025",
+            "red_fox_russia_4092_18_2025",
+            "red_fox_russia_4092_20_2025"
+          ],
+          "is_backbone": true,
+          "node": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "support": 100.0,
+          "support_fraction": 1.0
+        },
+        {
+          "descendant_taxa": [
+            "cattle_russia_4092_13_2025",
+            "cattle_russia_4092_15_2025",
+            "raccoon_dog_russia_4092_26_2025",
+            "red_fox_russia_4092_18_2025",
+            "red_fox_russia_4092_20_2025"
+          ],
+          "is_backbone": true,
+          "node": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "support": 99.0,
+          "support_fraction": 0.99
+        },
+        {
+          "descendant_taxa": [
+            "raccoon_dog_russia_4092_26_2025",
+            "red_fox_russia_4092_18_2025",
+            "red_fox_russia_4092_20_2025"
+          ],
+          "is_backbone": false,
+          "node": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "support": 92.0,
+          "support_fraction": 0.92
+        },
+        {
+          "descendant_taxa": [
+            "raccoon_dog_russia_4092_26_2025",
+            "red_fox_russia_4092_20_2025"
+          ],
+          "is_backbone": false,
+          "node": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025",
+          "support": 84.0,
+          "support_fraction": 0.84
+        },
+        {
+          "descendant_taxa": [
+            "cattle_russia_4092_13_2025",
+            "cattle_russia_4092_15_2025"
+          ],
+          "is_backbone": false,
+          "node": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+          "support": 100.0,
+          "support_fraction": 1.0
+        }
+      ]
+    },
+    "log_likelihood": -3945.2388,
+    "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.manifest.json",
+    "model_selection_summary": {
+      "best_model_aic": "7932.4776",
+      "best_model_aicc": "7933.1718",
+      "best_model_bic": "8041.8893",
+      "best_score_aic": null,
+      "best_score_aicc": null,
+      "best_score_bic": null,
+      "bic_near_best_models": [],
+      "candidate_count": 0,
+      "candidates": [],
+      "selected_criterion": "BIC",
+      "selected_model": "8041.8893"
+    },
+    "notes": [
+      "iqtree random seed: 1",
+      "iqtree threads: 1",
+      "bootstrap tree set retained for downstream consensus construction",
+      "log-likelihood parsed from iqtree bootstrap inference artifacts",
+      "support values parsed from the bootstrap-supported tree artifact",
+      "branch-level support table exported for bootstrap review",
+      "low-support branch ledger exported for weak-clade review",
+      "support histogram exported for reviewer-facing support distribution checks"
+    ],
+    "output_checksums": {
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.contree": "b2daf4c3fbaba44d62fe5ee2f1d4ac8147bafd3947d96f46c9921ac54667577e",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.iqtree": "f4af66253355985fc5a035e9387b793179d2da1797f75fdbdf3ec89d9e0ef75d",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.log": "8b742a4dd05a6a8be76f5df412106dc605dd74beec1c8859c5733bad269d6f5b",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.low-support.tsv": "3c9d1d00f9023dbb6e5f8931d91ae26afc322f0fa54385f41b12290c8b814bb7",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.support-histogram.tsv": "7247f212495fc93cb528e03afabc8b802fd3299cc775368a6d6536f60b82b9e7",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.support.tsv": "fbb00f7eb709a09193f7e4a7f60bb9ac590641e6fe21fc24a47926dda8204070",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile": "07fc4128f6d2901158464a774caea4616e0f91b14ae856dc21c277678afdff8e",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.ufboot": "bdacadce517612202bc5d0131cd5382b39fa5e00747a77c3a94d60c7a4371d51"
+    },
+    "output_paths": {
+      "bootstrap_trees": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.ufboot",
+      "consensus_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.contree",
+      "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.log",
+      "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.iqtree",
+      "low_support_branches": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.low-support.tsv",
+      "support_histogram": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.support-histogram.tsv",
+      "support_table": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.support.tsv",
+      "support_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile"
+    },
+    "resumed": false,
+    "run": {
+      "command": [
+        "/opt/homebrew/bin/iqtree2",
+        "-s",
+        "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln",
+        "-st",
+        "DNA",
+        "-seed",
+        "1",
+        "-nt",
+        "1",
+        "-m",
+        "TPM2u+F+G4",
+        "-bb",
+        "1000",
+        "-wbt",
+        "-pre",
+        "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support"
+      ],
+      "ended_at_utc": "2026-05-18T02:33:54Z",
+      "engine_name": "iqtree",
+      "executable": "/opt/homebrew/bin/iqtree2",
+      "exit_code": 0,
+      "output_paths": {
+        "bootstrap_trees": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.ufboot",
+        "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.log",
+        "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.iqtree",
+        "support_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile"
+      },
+      "runtime_seconds": 0.730015,
+      "started_at_utc": "2026-05-18T02:33:53Z",
+      "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.stderr.log",
+      "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.stdout.log",
+      "timed_out": false,
+      "timeout_seconds": null,
+      "version": {
+        "command": [
+          "/opt/homebrew/bin/iqtree2",
+          "--version"
+        ],
+        "engine_name": "iqtree",
+        "executable": "/opt/homebrew/bin/iqtree2",
+        "text": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+      },
+      "warning_lines": [],
+      "workflow": "bootstrap-support",
+      "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support"
+    },
+    "selected_model": "TPM2u+F+G4",
+    "sh_alrt_support_summary": null,
+    "trimming_summary": null,
+    "weak_backbone_report": {
+      "evaluated_backbone_node_count": 3,
+      "threshold": 70.0,
+      "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.treefile",
+      "warnings": [
+        "one or more internal nodes did not expose numeric support labels"
+      ],
+      "weak_backbone_node_count": 0,
+      "weak_nodes": []
+    },
+    "workflow": "bootstrap-support"
+  },
+  "iqtree_threads": 1,
+  "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.manifest.json",
+  "model_selection_workflow": {
+    "bootstrap_support_summary": null,
+    "config": {
+      "partition_path": null,
+      "seed": 1,
+      "sequence_type": "dna",
+      "threads": 1,
+      "timeout_seconds": null
+    },
+    "engine_name": "iqtree",
+    "fasttree_support_summary": null,
+    "input_checksums": {
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
+    },
+    "input_paths": [
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln"
+    ],
+    "iqtree_summary": {
+      "log_likelihood": -3945.2345,
+      "maximum_support": null,
+      "minimum_support": null,
+      "selected_model": "TPM2u+F+G4",
+      "support_value_count": 0,
+      "support_values": []
+    },
+    "log_likelihood": -3945.2345,
+    "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.manifest.json",
+    "model_selection_summary": {
+      "best_model_aic": "TIM2+F+G4",
+      "best_model_aicc": "TIM2+F+G4",
+      "best_model_bic": "TPM2u+F+G4",
+      "best_score_aic": 7931.413977,
+      "best_score_aicc": 7932.17488,
+      "best_score_bic": 8041.859295,
+      "bic_near_best_models": [
+        "TPM2u+F+G4",
+        "TPM2u+F+I",
+        "TIM2+F+G4",
+        "TPM2+I",
+        "TPM2+G4",
+        "TIM2+F+I",
+        "TPM2u+F+R2",
+        "TPM2u+F+I+G4",
+        "TIM2e+G4",
+        "TIM2+F+I+G4",
+        "TIM2e+I",
+        "TPM2+R2",
+        "TIM2+F+R2",
+        "HKY+F+G4",
+        "TPM2+I+G4",
+        "TVM+F+G4",
+        "HKY+F+I",
+        "TVM+F+I",
+        "GTR+F+G4",
+        "TN+F+G4",
+        "TVMe+G4",
+        "TVMe+I",
+        "GTR+F+I",
+        "TN+F+I",
+        "TIM2e+R2",
+        "TIM2e+I+G4",
+        "TPM3u+F+G4",
+        "K3Pu+F+G4",
+        "HKY+F+I+G4",
+        "HKY+F+R2",
+        "TPM3u+F+I",
+        "K3Pu+F+I",
+        "TVM+F+R2",
+        "TVM+F+I+G4",
+        "K2P+G4",
+        "K2P+I",
+        "TIM3+F+G4",
+        "TN+F+I+G4",
+        "TIM+F+G4",
+        "GTR+F+I+G4",
+        "SYM+G4",
+        "SYM+I",
+        "TN+F+R2",
+        "TVMe+R2",
+        "GTR+F+R2",
+        "TIM3+F+I",
+        "TIM+F+I",
+        "TVMe+I+G4",
+        "TPM3u+F+I+G4",
+        "K3Pu+F+I+G4",
+        "K3Pu+F+R2",
+        "TPM3u+F+R2",
+        "TNe+G4",
+        "K3P+G4",
+        "TPM3+G4",
+        "K3P+I",
+        "TNe+I",
+        "K2P+R2",
+        "TIM3+F+I+G4",
+        "TIM+F+I+G4",
+        "TPM3+I",
+        "K2P+I+G4",
+        "SYM+R2",
+        "TIM+F+R2",
+        "TIM3+F+R2",
+        "SYM+I+G4",
+        "GTR+F+I+R2",
+        "TIMe+G4",
+        "TIM3e+G4",
+        "TNe+I+G4",
+        "TNe+R2",
+        "TIMe+I",
+        "K3P+R2",
+        "K3P+I+G4",
+        "TIM3e+I",
+        "TPM3+R2",
+        "TPM3+I+G4",
+        "GTR+F+R3",
+        "TIMe+I+G4",
+        "TIMe+R2",
+        "TIM3e+I+G4",
+        "TIM3e+R2",
+        "GTR+F+I+R3",
+        "GTR+F",
+        "F81+F+I",
+        "F81+F+G4",
+        "JC+I",
+        "JC+G4",
+        "F81+F+R2",
+        "F81+F+I+G4",
+        "JC+R2",
+        "JC+I+G4"
+      ],
+      "candidate_count": 92,
+      "candidates": [
+        {
+          "aic": 7932.448,
+          "aicc": 7933.142,
+          "bic": 8041.859,
+          "log_likelihood": -3945.224,
+          "model": "TPM2u+F+G4",
+          "parameter_count": 21,
+          "rank": 1
+        },
+        {
+          "aic": 7932.639,
+          "aicc": 7933.333,
+          "bic": 8042.051,
+          "log_likelihood": -3945.32,
+          "model": "TPM2u+F+I",
+          "parameter_count": 21,
+          "rank": 2
+        },
+        {
+          "aic": 7931.414,
+          "aicc": 7932.175,
+          "bic": 8046.036,
+          "log_likelihood": -3943.707,
+          "model": "TIM2+F+G4",
+          "parameter_count": 22,
+          "rank": 3
+        },
+        {
+          "aic": 7952.489,
+          "aicc": 7953.002,
+          "bic": 8046.27,
+          "log_likelihood": -3958.244,
+          "model": "TPM2+I",
+          "parameter_count": 18,
+          "rank": 4
+        },
+        {
+          "aic": 7952.577,
+          "aicc": 7953.09,
+          "bic": 8046.359,
+          "log_likelihood": -3958.289,
+          "model": "TPM2+G4",
+          "parameter_count": 18,
+          "rank": 5
+        },
+        {
+          "aic": 7932.239,
+          "aicc": 7933.0,
+          "bic": 8046.861,
+          "log_likelihood": -3944.12,
+          "model": "TIM2+F+I",
+          "parameter_count": 22,
+          "rank": 6
+        },
+        {
+          "aic": 7934.445,
+          "aicc": 7935.206,
+          "bic": 8049.066,
+          "log_likelihood": -3945.222,
+          "model": "TPM2u+F+R2",
+          "parameter_count": 22,
+          "rank": 7
+        },
+        {
+          "aic": 7934.86,
+          "aicc": 7935.62,
+          "bic": 8049.481,
+          "log_likelihood": -3945.43,
+          "model": "TPM2u+F+I+G4",
+          "parameter_count": 22,
+          "rank": 8
+        },
+        {
+          "aic": 7954.122,
+          "aicc": 7954.692,
+          "bic": 8053.114,
+          "log_likelihood": -3958.061,
+          "model": "TIM2e+G4",
+          "parameter_count": 19,
+          "rank": 9
+        },
+        {
+          "aic": 7933.36,
+          "aicc": 7934.191,
+          "bic": 8053.192,
+          "log_likelihood": -3943.68,
+          "model": "TIM2+F+I+G4",
+          "parameter_count": 23,
+          "rank": 10
+        },
+        {
+          "aic": 7954.208,
+          "aicc": 7954.778,
+          "bic": 8053.199,
+          "log_likelihood": -3958.104,
+          "model": "TIM2e+I",
+          "parameter_count": 19,
+          "rank": 11
+        },
+        {
+          "aic": 7954.373,
+          "aicc": 7954.943,
+          "bic": 8053.364,
+          "log_likelihood": -3958.186,
+          "model": "TPM2+R2",
+          "parameter_count": 19,
+          "rank": 12
+        },
+        {
+          "aic": 7933.923,
+          "aicc": 7934.754,
+          "bic": 8053.755,
+          "log_likelihood": -3943.961,
+          "model": "TIM2+F+R2",
+          "parameter_count": 23,
+          "rank": 13
+        },
+        {
+          "aic": 7949.963,
+          "aicc": 7950.594,
+          "bic": 8054.165,
+          "log_likelihood": -3954.982,
+          "model": "HKY+F+G4",
+          "parameter_count": 20,
+          "rank": 14
+        },
+        {
+          "aic": 7955.231,
+          "aicc": 7955.801,
+          "bic": 8054.222,
+          "log_likelihood": -3958.615,
+          "model": "TPM2+I+G4",
+          "parameter_count": 19,
+          "rank": 15
+        },
+        {
+          "aic": 7934.872,
+          "aicc": 7935.703,
+          "bic": 8054.704,
+          "log_likelihood": -3944.436,
+          "model": "TVM+F+G4",
+          "parameter_count": 23,
+          "rank": 16
+        },
+        {
+          "aic": 7950.665,
+          "aicc": 7951.296,
+          "bic": 8054.867,
+          "log_likelihood": -3955.333,
+          "model": "HKY+F+I",
+          "parameter_count": 20,
+          "rank": 17
+        },
+        {
+          "aic": 7935.251,
+          "aicc": 7936.081,
+          "bic": 8055.083,
+          "log_likelihood": -3944.625,
+          "model": "TVM+F+I",
+          "parameter_count": 23,
+          "rank": 18
+        },
+        {
+          "aic": 7933.701,
+          "aicc": 7934.605,
+          "bic": 8058.743,
+          "log_likelihood": -3942.851,
+          "model": "GTR+F+G4",
+          "parameter_count": 24,
+          "rank": 19
+        },
+        {
+          "aic": 7949.354,
+          "aicc": 7950.048,
+          "bic": 8058.765,
+          "log_likelihood": -3953.677,
+          "model": "TN+F+G4",
+          "parameter_count": 21,
+          "rank": 20
+        },
+        {
+          "aic": 7955.397,
+          "aicc": 7956.028,
+          "bic": 8059.599,
+          "log_likelihood": -3957.699,
+          "model": "TVMe+G4",
+          "parameter_count": 20,
+          "rank": 21
+        },
+        {
+          "aic": 7955.421,
+          "aicc": 7956.052,
+          "bic": 8059.623,
+          "log_likelihood": -3957.711,
+          "model": "TVMe+I",
+          "parameter_count": 20,
+          "rank": 22
+        },
+        {
+          "aic": 7934.735,
+          "aicc": 7935.639,
+          "bic": 8059.777,
+          "log_likelihood": -3943.368,
+          "model": "GTR+F+I",
+          "parameter_count": 24,
+          "rank": 23
+        },
+        {
+          "aic": 7950.57,
+          "aicc": 7951.264,
+          "bic": 8059.982,
+          "log_likelihood": -3954.285,
+          "model": "TN+F+I",
+          "parameter_count": 21,
+          "rank": 24
+        },
+        {
+          "aic": 7956.048,
+          "aicc": 7956.679,
+          "bic": 8060.25,
+          "log_likelihood": -3958.024,
+          "model": "TIM2e+R2",
+          "parameter_count": 20,
+          "rank": 25
+        },
+        {
+          "aic": 7956.57,
+          "aicc": 7957.2,
+          "bic": 8060.771,
+          "log_likelihood": -3958.285,
+          "model": "TIM2e+I+G4",
+          "parameter_count": 20,
+          "rank": 26
+        },
+        {
+          "aic": 7951.62,
+          "aicc": 7952.314,
+          "bic": 8061.032,
+          "log_likelihood": -3954.81,
+          "model": "TPM3u+F+G4",
+          "parameter_count": 21,
+          "rank": 27
+        },
+        {
+          "aic": 7951.639,
+          "aicc": 7952.333,
+          "bic": 8061.051,
+          "log_likelihood": -3954.819,
+          "model": "K3Pu+F+G4",
+          "parameter_count": 21,
+          "rank": 28
+        },
+        {
+          "aic": 7952.046,
+          "aicc": 7952.74,
+          "bic": 8061.458,
+          "log_likelihood": -3955.023,
+          "model": "HKY+F+I+G4",
+          "parameter_count": 21,
+          "rank": 29
+        },
+        {
+          "aic": 7952.271,
+          "aicc": 7952.966,
+          "bic": 8061.683,
+          "log_likelihood": -3955.136,
+          "model": "HKY+F+R2",
+          "parameter_count": 21,
+          "rank": 30
+        },
+        {
+          "aic": 7952.384,
+          "aicc": 7953.078,
+          "bic": 8061.795,
+          "log_likelihood": -3955.192,
+          "model": "TPM3u+F+I",
+          "parameter_count": 21,
+          "rank": 31
+        },
+        {
+          "aic": 7952.391,
+          "aicc": 7953.085,
+          "bic": 8061.803,
+          "log_likelihood": -3955.195,
+          "model": "K3Pu+F+I",
+          "parameter_count": 21,
+          "rank": 32
+        },
+        {
+          "aic": 7937.051,
+          "aicc": 7937.954,
+          "bic": 8062.093,
+          "log_likelihood": -3944.525,
+          "model": "TVM+F+R2",
+          "parameter_count": 24,
+          "rank": 33
+        },
+        {
+          "aic": 7937.104,
+          "aicc": 7938.008,
+          "bic": 8062.146,
+          "log_likelihood": -3944.552,
+          "model": "TVM+F+I+G4",
+          "parameter_count": 24,
+          "rank": 34
+        },
+        {
+          "aic": 7976.558,
+          "aicc": 7977.016,
+          "bic": 8065.129,
+          "log_likelihood": -3971.279,
+          "model": "K2P+G4",
+          "parameter_count": 17,
+          "rank": 35
+        },
+        {
+          "aic": 7976.882,
+          "aicc": 7977.34,
+          "bic": 8065.453,
+          "log_likelihood": -3971.441,
+          "model": "K2P+I",
+          "parameter_count": 17,
+          "rank": 36
+        },
+        {
+          "aic": 7950.966,
+          "aicc": 7951.727,
+          "bic": 8065.588,
+          "log_likelihood": -3953.483,
+          "model": "TIM3+F+G4",
+          "parameter_count": 22,
+          "rank": 37
+        },
+        {
+          "aic": 7951.056,
+          "aicc": 7951.817,
+          "bic": 8065.678,
+          "log_likelihood": -3953.528,
+          "model": "TN+F+I+G4",
+          "parameter_count": 22,
+          "rank": 38
+        },
+        {
+          "aic": 7951.064,
+          "aicc": 7951.825,
+          "bic": 8065.686,
+          "log_likelihood": -3953.532,
+          "model": "TIM+F+G4",
+          "parameter_count": 22,
+          "rank": 39
+        },
+        {
+          "aic": 7935.486,
+          "aicc": 7936.466,
+          "bic": 8065.738,
+          "log_likelihood": -3942.743,
+          "model": "GTR+F+I+G4",
+          "parameter_count": 25,
+          "rank": 40
+        },
+        {
+          "aic": 7956.89,
+          "aicc": 7957.585,
+          "bic": 8066.302,
+          "log_likelihood": -3957.445,
+          "model": "SYM+G4",
+          "parameter_count": 21,
+          "rank": 41
+        },
+        {
+          "aic": 7957.118,
+          "aicc": 7957.812,
+          "bic": 8066.529,
+          "log_likelihood": -3957.559,
+          "model": "SYM+I",
+          "parameter_count": 21,
+          "rank": 42
+        },
+        {
+          "aic": 7952.042,
+          "aicc": 7952.803,
+          "bic": 8066.664,
+          "log_likelihood": -3954.021,
+          "model": "TN+F+R2",
+          "parameter_count": 22,
+          "rank": 43
+        },
+        {
+          "aic": 7957.298,
+          "aicc": 7957.992,
+          "bic": 8066.71,
+          "log_likelihood": -3957.649,
+          "model": "TVMe+R2",
+          "parameter_count": 21,
+          "rank": 44
+        },
+        {
+          "aic": 7936.583,
+          "aicc": 7937.562,
+          "bic": 8066.835,
+          "log_likelihood": -3943.291,
+          "model": "GTR+F+R2",
+          "parameter_count": 25,
+          "rank": 45
+        },
+        {
+          "aic": 7952.259,
+          "aicc": 7953.02,
+          "bic": 8066.881,
+          "log_likelihood": -3954.13,
+          "model": "TIM3+F+I",
+          "parameter_count": 22,
+          "rank": 46
+        },
+        {
+          "aic": 7952.301,
+          "aicc": 7953.062,
+          "bic": 8066.923,
+          "log_likelihood": -3954.151,
+          "model": "TIM+F+I",
+          "parameter_count": 22,
+          "rank": 47
+        },
+        {
+          "aic": 7957.928,
+          "aicc": 7958.622,
+          "bic": 8067.34,
+          "log_likelihood": -3957.964,
+          "model": "TVMe+I+G4",
+          "parameter_count": 21,
+          "rank": 48
+        },
+        {
+          "aic": 7953.655,
+          "aicc": 7954.415,
+          "bic": 8068.276,
+          "log_likelihood": -3954.827,
+          "model": "TPM3u+F+I+G4",
+          "parameter_count": 22,
+          "rank": 49
+        },
+        {
+          "aic": 7953.698,
+          "aicc": 7954.459,
+          "bic": 8068.32,
+          "log_likelihood": -3954.849,
+          "model": "K3Pu+F+I+G4",
+          "parameter_count": 22,
+          "rank": 50
+        },
+        {
+          "aic": 7954.018,
+          "aicc": 7954.779,
+          "bic": 8068.64,
+          "log_likelihood": -3955.009,
+          "model": "K3Pu+F+R2",
+          "parameter_count": 22,
+          "rank": 51
+        },
+        {
+          "aic": 7954.032,
+          "aicc": 7954.793,
+          "bic": 8068.654,
+          "log_likelihood": -3955.016,
+          "model": "TPM3u+F+R2",
+          "parameter_count": 22,
+          "rank": 52
+        },
+        {
+          "aic": 7978.132,
+          "aicc": 7978.645,
+          "bic": 8071.913,
+          "log_likelihood": -3971.066,
+          "model": "TNe+G4",
+          "parameter_count": 18,
+          "rank": 53
+        },
+        {
+          "aic": 7978.296,
+          "aicc": 7978.808,
+          "bic": 8072.077,
+          "log_likelihood": -3971.148,
+          "model": "K3P+G4",
+          "parameter_count": 18,
+          "rank": 54
+        },
+        {
+          "aic": 7978.527,
+          "aicc": 7979.039,
+          "bic": 8072.308,
+          "log_likelihood": -3971.263,
+          "model": "TPM3+G4",
+          "parameter_count": 18,
+          "rank": 55
+        },
+        {
+          "aic": 7978.619,
+          "aicc": 7979.132,
+          "bic": 8072.401,
+          "log_likelihood": -3971.31,
+          "model": "K3P+I",
+          "parameter_count": 18,
+          "rank": 56
+        },
+        {
+          "aic": 7978.619,
+          "aicc": 7979.132,
+          "bic": 8072.401,
+          "log_likelihood": -3971.31,
+          "model": "TNe+I",
+          "parameter_count": 18,
+          "rank": 57
+        },
+        {
+          "aic": 7978.632,
+          "aicc": 7979.145,
+          "bic": 8072.413,
+          "log_likelihood": -3971.316,
+          "model": "K2P+R2",
+          "parameter_count": 18,
+          "rank": 58
+        },
+        {
+          "aic": 7952.614,
+          "aicc": 7953.445,
+          "bic": 8072.446,
+          "log_likelihood": -3953.307,
+          "model": "TIM3+F+I+G4",
+          "parameter_count": 23,
+          "rank": 59
+        },
+        {
+          "aic": 7952.753,
+          "aicc": 7953.583,
+          "bic": 8072.584,
+          "log_likelihood": -3953.376,
+          "model": "TIM+F+I+G4",
+          "parameter_count": 23,
+          "rank": 60
+        },
+        {
+          "aic": 7978.848,
+          "aicc": 7979.36,
+          "bic": 8072.629,
+          "log_likelihood": -3971.424,
+          "model": "TPM3+I",
+          "parameter_count": 18,
+          "rank": 61
+        },
+        {
+          "aic": 7978.858,
+          "aicc": 7979.371,
+          "bic": 8072.64,
+          "log_likelihood": -3971.429,
+          "model": "K2P+I+G4",
+          "parameter_count": 18,
+          "rank": 62
+        },
+        {
+          "aic": 7958.971,
+          "aicc": 7959.732,
+          "bic": 8073.593,
+          "log_likelihood": -3957.485,
+          "model": "SYM+R2",
+          "parameter_count": 22,
+          "rank": 63
+        },
+        {
+          "aic": 7953.855,
+          "aicc": 7954.685,
+          "bic": 8073.686,
+          "log_likelihood": -3953.927,
+          "model": "TIM+F+R2",
+          "parameter_count": 23,
+          "rank": 64
+        },
+        {
+          "aic": 7953.858,
+          "aicc": 7954.689,
+          "bic": 8073.69,
+          "log_likelihood": -3953.929,
+          "model": "TIM3+F+R2",
+          "parameter_count": 23,
+          "rank": 65
+        },
+        {
+          "aic": 7959.218,
+          "aicc": 7959.979,
+          "bic": 8073.84,
+          "log_likelihood": -3957.609,
+          "model": "SYM+I+G4",
+          "parameter_count": 22,
+          "rank": 66
+        },
+        {
+          "aic": 7938.563,
+          "aicc": 7939.622,
+          "bic": 8074.025,
+          "log_likelihood": -3943.281,
+          "model": "GTR+F+I+R2",
+          "parameter_count": 26,
+          "rank": 67
+        },
+        {
+          "aic": 7979.846,
+          "aicc": 7980.417,
+          "bic": 8078.838,
+          "log_likelihood": -3970.923,
+          "model": "TIMe+G4",
+          "parameter_count": 19,
+          "rank": 68
+        },
+        {
+          "aic": 7980.104,
+          "aicc": 7980.674,
+          "bic": 8079.095,
+          "log_likelihood": -3971.052,
+          "model": "TIM3e+G4",
+          "parameter_count": 19,
+          "rank": 69
+        },
+        {
+          "aic": 7980.252,
+          "aicc": 7980.822,
+          "bic": 8079.243,
+          "log_likelihood": -3971.126,
+          "model": "TNe+I+G4",
+          "parameter_count": 19,
+          "rank": 70
+        },
+        {
+          "aic": 7980.326,
+          "aicc": 7980.897,
+          "bic": 8079.318,
+          "log_likelihood": -3971.163,
+          "model": "TNe+R2",
+          "parameter_count": 19,
+          "rank": 71
+        },
+        {
+          "aic": 7980.37,
+          "aicc": 7980.94,
+          "bic": 8079.362,
+          "log_likelihood": -3971.185,
+          "model": "TIMe+I",
+          "parameter_count": 19,
+          "rank": 72
+        },
+        {
+          "aic": 7980.388,
+          "aicc": 7980.958,
+          "bic": 8079.379,
+          "log_likelihood": -3971.194,
+          "model": "K3P+R2",
+          "parameter_count": 19,
+          "rank": 73
+        },
+        {
+          "aic": 7980.584,
+          "aicc": 7981.154,
+          "bic": 8079.576,
+          "log_likelihood": -3971.292,
+          "model": "K3P+I+G4",
+          "parameter_count": 19,
+          "rank": 74
+        },
+        {
+          "aic": 7980.584,
+          "aicc": 7981.154,
+          "bic": 8079.576,
+          "log_likelihood": -3971.292,
+          "model": "TIM3e+I",
+          "parameter_count": 19,
+          "rank": 75
+        },
+        {
+          "aic": 7980.629,
+          "aicc": 7981.199,
+          "bic": 8079.621,
+          "log_likelihood": -3971.315,
+          "model": "TPM3+R2",
+          "parameter_count": 19,
+          "rank": 76
+        },
+        {
+          "aic": 7980.829,
+          "aicc": 7981.399,
+          "bic": 8079.821,
+          "log_likelihood": -3971.415,
+          "model": "TPM3+I+G4",
+          "parameter_count": 19,
+          "rank": 77
+        },
+        {
+          "aic": 7939.804,
+          "aicc": 7940.945,
+          "bic": 8080.476,
+          "log_likelihood": -3942.902,
+          "model": "GTR+F+R3",
+          "parameter_count": 27,
+          "rank": 78
+        },
+        {
+          "aic": 7981.976,
+          "aicc": 7982.607,
+          "bic": 8086.178,
+          "log_likelihood": -3970.988,
+          "model": "TIMe+I+G4",
+          "parameter_count": 20,
+          "rank": 79
+        },
+        {
+          "aic": 7982.112,
+          "aicc": 7982.743,
+          "bic": 8086.314,
+          "log_likelihood": -3971.056,
+          "model": "TIMe+R2",
+          "parameter_count": 20,
+          "rank": 80
+        },
+        {
+          "aic": 7982.224,
+          "aicc": 7982.855,
+          "bic": 8086.426,
+          "log_likelihood": -3971.112,
+          "model": "TIM3e+I+G4",
+          "parameter_count": 20,
+          "rank": 81
+        },
+        {
+          "aic": 7982.375,
+          "aicc": 7983.006,
+          "bic": 8086.577,
+          "log_likelihood": -3971.188,
+          "model": "TIM3e+R2",
+          "parameter_count": 20,
+          "rank": 82
+        },
+        {
+          "aic": 7941.596,
+          "aicc": 7942.823,
+          "bic": 8087.478,
+          "log_likelihood": -3942.798,
+          "model": "GTR+F+I+R3",
+          "parameter_count": 28,
+          "rank": 83
+        },
+        {
+          "aic": 8081.08,
+          "aicc": 8081.911,
+          "bic": 8200.912,
+          "log_likelihood": -4017.54,
+          "model": "GTR+F",
+          "parameter_count": 23,
+          "rank": 84
+        },
+        {
+          "aic": 8454.756,
+          "aicc": 8455.326,
+          "bic": 8553.747,
+          "log_likelihood": -4208.378,
+          "model": "F81+F+I",
+          "parameter_count": 19,
+          "rank": 85
+        },
+        {
+          "aic": 8455.777,
+          "aicc": 8456.347,
+          "bic": 8554.769,
+          "log_likelihood": -4208.889,
+          "model": "F81+F+G4",
+          "parameter_count": 19,
+          "rank": 86
+        },
+        {
+          "aic": 8475.638,
+          "aicc": 8476.045,
+          "bic": 8558.999,
+          "log_likelihood": -4221.819,
+          "model": "JC+I",
+          "parameter_count": 16,
+          "rank": 87
+        },
+        {
+          "aic": 8476.828,
+          "aicc": 8477.235,
+          "bic": 8560.189,
+          "log_likelihood": -4222.414,
+          "model": "JC+G4",
+          "parameter_count": 16,
+          "rank": 88
+        },
+        {
+          "aic": 8456.954,
+          "aicc": 8457.584,
+          "bic": 8561.155,
+          "log_likelihood": -4208.477,
+          "model": "F81+F+R2",
+          "parameter_count": 20,
+          "rank": 89
+        },
+        {
+          "aic": 8458.091,
+          "aicc": 8458.721,
+          "bic": 8562.292,
+          "log_likelihood": -4209.045,
+          "model": "F81+F+I+G4",
+          "parameter_count": 20,
+          "rank": 90
+        },
+        {
+          "aic": 8477.843,
+          "aicc": 8478.302,
+          "bic": 8566.415,
+          "log_likelihood": -4221.922,
+          "model": "JC+R2",
+          "parameter_count": 17,
+          "rank": 91
+        },
+        {
+          "aic": 8479.255,
+          "aicc": 8479.714,
+          "bic": 8567.826,
+          "log_likelihood": -4222.628,
+          "model": "JC+I+G4",
+          "parameter_count": 17,
+          "rank": 92
+        }
+      ],
+      "selected_criterion": "BIC",
+      "selected_model": "TPM2u+F+G4"
+    },
+    "notes": [
+      "iqtree random seed: 1",
+      "iqtree threads: 1",
+      "best-fit substitution model parsed from engine output",
+      "parsed 92 candidate substitution models from iqtree output",
+      "model-selection workflow exposed the governing information criterion",
+      "model-selection workflow exposed a parsable log-likelihood score"
+    ],
+    "output_checksums": {
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.iqtree": "4aac96ac82241326e51ae775a12405e203e5d8971643c1b9639dec04be0e8ac5",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.log": "97787e20d44c29a73d0b1945f0b43f3688142847c0e7965fa6cd2844cec5a049",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.model-candidates.tsv": "72a260da691f9e5f28a72b7d3ee8391846895419852beae6b622b3a3bf0734fb",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.model.gz": "9637a4d33312f34fa26e770b057d79aa9414395edf79dcd4944106f2849b3891",
+      "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.selected-model.txt": "83f15e8e7b4d36af68abb4efa0d72c8631518f540264c49447b4ff94816a91cd"
+    },
+    "output_paths": {
+      "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.log",
+      "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.iqtree",
+      "model_candidates": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.model-candidates.tsv",
+      "model_selection_sidecar": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.model.gz",
+      "selected_model": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.selected-model.txt"
+    },
+    "resumed": false,
+    "run": {
+      "command": [
+        "/opt/homebrew/bin/iqtree2",
+        "-s",
+        "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/auto-gap-threshold.trimmed.aln",
+        "-st",
+        "DNA",
+        "-seed",
+        "1",
+        "-nt",
+        "1",
+        "-m",
+        "MF",
+        "-pre",
+        "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection"
+      ],
+      "ended_at_utc": "2026-05-18T02:33:53Z",
+      "engine_name": "iqtree",
+      "executable": "/opt/homebrew/bin/iqtree2",
+      "exit_code": 0,
+      "output_paths": {
+        "iqtree_log": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.log",
+        "iqtree_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.iqtree"
+      },
+      "runtime_seconds": 0.263735,
+      "started_at_utc": "2026-05-18T02:33:53Z",
+      "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.stderr.log",
+      "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.stdout.log",
+      "timed_out": false,
+      "timeout_seconds": null,
+      "version": {
+        "command": [
+          "/opt/homebrew/bin/iqtree2",
+          "--version"
+        ],
+        "engine_name": "iqtree",
+        "executable": "/opt/homebrew/bin/iqtree2",
+        "text": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+      },
+      "warning_lines": [],
+      "workflow": "model-selection",
+      "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection"
+    },
+    "selected_model": "TPM2u+F+G4",
+    "sh_alrt_support_summary": null,
+    "trimming_summary": null,
+    "weak_backbone_report": null,
+    "workflow": "model-selection"
+  },
+  "notes": [
+    "comparison workflow runs IQ-TREE model selection, IQ-TREE bootstrap-supported inference, and FastTree approximate inference on the same alignment",
+    "comparison table exports one flat split ledger across topology, support, and branch-length comparisons",
+    "shared-clade and conflicting-clade ledgers separate topological agreement from topological or support disagreement",
+    "support-weighted conflict and conclusion ledgers separate stable clades, unstable shared clades, and engine-specific clades",
+    "FastTree SH-like local support and IQ-TREE ultrafast bootstrap support are normalized to fractions only for side-by-side review and not as proof that the methods are interchangeable",
+    "leave-one-out taxon influence identified the strongest conflict-driving taxa",
+    "iqtree random seed: 1",
+    "iqtree threads: 1",
+    "ultrafast bootstrap replicates: 1000"
+  ],
+  "out_dir": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison",
+  "output_checksums": {
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.comparison.html": "1932ee1ce30cc617082cd407698173bb862dd6f257048962206008edb8bca66e",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.comparison.tsv": "f769b731d4f51d1124fee13b6cd7498e57b88ca67a14c152ba2118b1183f1ba5",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.conclusions.tsv": "5d3bbe3638e32946dfeacf72e8ee667ed0f2ffe0b5fd44c90d78121b32a59d5e",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.conflicting-clades.tsv": "f84ad8972d76103c2381662e1ccfdbc3c28540197038296fcd82665bc2f386f2",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk": "0e11e0785b1a2a577da5e43b7ed4b3ec44ef7a4fc3f75cfb8727d1a9dd4795b6",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk": "07fc4128f6d2901158464a774caea4616e0f91b14ae856dc21c277678afdff8e",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.shared-clades.tsv": "e31182b4fccc6827b951f63471a886f1620cf0766b26ed9d98ca3cd78a2e2a9b",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.stability-summary.tsv": "c7811c0846687032b73a77e125e3ea280aedcb876ad96cfc44fa0e848cfac021",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.support-weighted-conflicts.tsv": "3bb2a2a9f86d95864d5989dab6ca5d36fd889ba178d9fd1278d87970732d9c4f",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.taxon-influence.tsv": "824f5441da0ac9e75a6876574275cb1c864afe1c51d02ff3a0e57b306abcf958"
+  },
+  "output_paths": {
+    "comparison_report": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.comparison.html",
+    "comparison_table": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.comparison.tsv",
+    "conclusion_table": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.conclusions.tsv",
+    "conflicting_clades": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.conflicting-clades.tsv",
+    "fasttree_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+    "iqtree_support_tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
+    "manifest": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.manifest.json",
+    "shared_clades": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.shared-clades.tsv",
+    "stability_summary": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.stability-summary.tsv",
+    "support_weighted_conflicts": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.support-weighted-conflicts.tsv",
+    "taxon_influence": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.taxon-influence.tsv"
+  },
+  "prefix": "auto-gap-threshold",
+  "runtime_seconds": 3.494784,
+  "selected_model": "TPM2u+F+G4",
+  "sequence_type": "dna",
+  "shared_clade_rows": [
+    {
+      "fasttree_support": 0.999,
+      "fasttree_support_fraction": 0.999,
+      "fasttree_support_label_kind": "sh-like-local-support",
+      "iqtree_support": 100.0,
+      "iqtree_support_fraction": 1.0,
+      "iqtree_support_label_kind": "ufboot-support",
+      "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+      "support_disagreement": false,
+      "support_fraction_delta": 0.0010000000000000009
+    },
+    {
+      "fasttree_support": 0.87,
+      "fasttree_support_fraction": 0.87,
+      "fasttree_support_label_kind": "sh-like-local-support",
+      "iqtree_support": 84.0,
+      "iqtree_support_fraction": 0.84,
+      "iqtree_support_label_kind": "ufboot-support",
+      "split_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025",
+      "support_disagreement": false,
+      "support_fraction_delta": 0.030000000000000027
+    }
+  ],
+  "started_at_utc": "2026-05-18T02:33:52Z",
+  "step_manifests": {
+    "fasttree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/fasttree/fasttree.nwk.manifest.json",
+    "iqtree_support": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/bootstrap-support/bootstrap-support.manifest.json",
+    "model_selection": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/engine-artifacts/auto-gap-threshold/model-selection/model-selection.manifest.json"
+  },
+  "taxon_influence_report": {
+    "baseline_support": {
+      "conflicting_clades": [
+        {
+          "comparison_status": "left_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": true,
+          "left_support": 1.0,
+          "left_support_fraction": 1.0,
+          "right_present": false,
+          "right_support": null,
+          "right_support_fraction": null,
+          "split_id": "bat_chile_rv108|bat_chile_rv50",
+          "strongest_support_fraction": 1.0,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "left_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": true,
+          "left_support": 1.0,
+          "left_support_fraction": 1.0,
+          "right_present": false,
+          "right_support": null,
+          "right_support_fraction": null,
+          "split_id": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011",
+          "strongest_support_fraction": 1.0,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "right_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": false,
+          "left_support": null,
+          "left_support_fraction": null,
+          "right_present": true,
+          "right_support": 92.0,
+          "right_support_fraction": 0.92,
+          "split_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "strongest_support_fraction": 0.92,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "left_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": true,
+          "left_support": 0.997,
+          "left_support_fraction": 0.997,
+          "right_present": false,
+          "right_support": null,
+          "right_support_fraction": null,
+          "split_id": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+          "strongest_support_fraction": 0.997,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "right_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": false,
+          "left_support": null,
+          "left_support_fraction": null,
+          "right_present": true,
+          "right_support": 99.0,
+          "right_support_fraction": 0.99,
+          "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "strongest_support_fraction": 0.99,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "left_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": true,
+          "left_support": 0.968,
+          "left_support_fraction": 0.968,
+          "right_present": false,
+          "right_support": null,
+          "right_support_fraction": null,
+          "split_id": "bat_chile_rv108|bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+          "strongest_support_fraction": 0.968,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "right_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": false,
+          "left_support": null,
+          "left_support_fraction": null,
+          "right_present": true,
+          "right_support": 100.0,
+          "right_support_fraction": 1.0,
+          "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "strongest_support_fraction": 1.0,
+          "support_strength": "strong"
+        },
+        {
+          "comparison_status": "right_only",
+          "conflict_classification": "high_support_conflict",
+          "detail": "conflicting clade carried strong branch support in the tree where it was present",
+          "left_present": false,
+          "left_support": null,
+          "left_support_fraction": null,
+          "right_present": true,
+          "right_support": 100.0,
+          "right_support_fraction": 1.0,
+          "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+          "strongest_support_fraction": 1.0,
+          "support_strength": "strong"
+        }
+      ],
+      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
+      "shared_clades": [
+        {
+          "left_support": 0.999,
+          "left_support_fraction": 0.999,
+          "right_support": 100.0,
+          "right_support_fraction": 1.0,
+          "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+          "support_disagreement": false,
+          "support_fraction_delta": 0.0010000000000000009
+        },
+        {
+          "left_support": 0.87,
+          "left_support_fraction": 0.87,
+          "right_support": 84.0,
+          "right_support_fraction": 0.84,
+          "split_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025",
+          "support_disagreement": false,
+          "support_fraction_delta": 0.030000000000000027
+        }
+      ],
+      "shared_taxa": [
+        "bat_chile_rv108",
+        "bat_chile_rv50",
+        "cattle_russia_4092_13_2025",
+        "cattle_russia_4092_15_2025",
+        "dog_pakistan_pdb011",
+        "raccoon_dog_poland_2021",
+        "raccoon_dog_russia_4092_26_2025",
+        "red_fox_russia_4092_18_2025",
+        "red_fox_russia_4092_20_2025"
+      ],
+      "strong_support_threshold": 0.9,
+      "support_disagreement_threshold": 0.15,
+      "weak_support_threshold": 0.7
+    },
+    "baseline_topology": {
+      "left_informative_clades": 6,
+      "left_only_taxa": [],
+      "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+      "left_unrooted_splits": 6,
+      "normalized_robinson_foulds": 0.6666666666666666,
+      "rf_mode": "rooted",
+      "right_informative_clades": 6,
+      "right_only_taxa": [],
+      "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
+      "right_unrooted_splits": 6,
+      "robinson_foulds_distance": 8,
+      "rooted_normalized_robinson_foulds": 0.6666666666666666,
+      "rooted_robinson_foulds_distance": 8,
+      "same_taxa_different_rooting": true,
+      "same_topology_different_branch_lengths": false,
+      "same_unrooted_topology": true,
+      "shared_taxa": [
+        "bat_chile_rv108",
+        "bat_chile_rv50",
+        "cattle_russia_4092_13_2025",
+        "cattle_russia_4092_15_2025",
+        "dog_pakistan_pdb011",
+        "raccoon_dog_poland_2021",
+        "raccoon_dog_russia_4092_26_2025",
+        "red_fox_russia_4092_18_2025",
+        "red_fox_russia_4092_20_2025"
+      ],
+      "taxon_overlap_policy": "prune-to-shared",
+      "topology_equal": false,
+      "unrooted_normalized_robinson_foulds": 0.0,
+      "unrooted_robinson_foulds_distance": 0
+    },
+    "left_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.fasttree.nwk",
+    "right_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/auto-gap-threshold/engine-comparison/auto-gap-threshold.iqtree-support.nwk",
+    "rows": [
+      {
+        "baseline_conflicting_clades": 8,
+        "baseline_high_support_conflicts": 8,
+        "baseline_rooted_normalized_robinson_foulds": 0.6666666666666666,
+        "baseline_rooted_robinson_foulds_distance": 8,
+        "baseline_same_taxa_different_rooting": true,
+        "baseline_same_unrooted_topology": true,
+        "baseline_support_disagreements": 0,
+        "baseline_topology_equal": false,
+        "baseline_unrooted_normalized_robinson_foulds": 0.0,
+        "baseline_unrooted_robinson_foulds_distance": 0,
+        "conflicting_clade_delta": -2,
+        "high_support_conflict_delta": -2,
+        "influence_rank": 1,
+        "influence_score": 4.066667,
+        "leave_one_out_conflicting_clades": 6,
+        "leave_one_out_high_support_conflicts": 6,
+        "leave_one_out_rooted_normalized_robinson_foulds": 0.6,
+        "leave_one_out_rooted_robinson_foulds_distance": 6,
+        "leave_one_out_same_taxa_different_rooting": true,
+        "leave_one_out_same_unrooted_topology": true,
+        "leave_one_out_support_disagreements": 0,
+        "leave_one_out_topology_equal": false,
+        "leave_one_out_unrooted_normalized_robinson_foulds": 0.0,
+        "leave_one_out_unrooted_robinson_foulds_distance": 0,
+        "retained_taxa": [
+          "bat_chile_rv108",
+          "bat_chile_rv50",
+          "cattle_russia_4092_13_2025",
+          "cattle_russia_4092_15_2025",
+          "raccoon_dog_poland_2021",
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_18_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "rooted_normalized_robinson_foulds_delta": -0.066667,
+        "rooted_robinson_foulds_delta": -2,
+        "support_changed": true,
+        "support_disagreement_delta": 0,
+        "taxon": "dog_pakistan_pdb011",
+        "topology_changed": true,
+        "unrooted_normalized_robinson_foulds_delta": 0.0,
+        "unrooted_robinson_foulds_delta": 0
+      },
+      {
+        "baseline_conflicting_clades": 8,
+        "baseline_high_support_conflicts": 8,
+        "baseline_rooted_normalized_robinson_foulds": 0.6666666666666666,
+        "baseline_rooted_robinson_foulds_distance": 8,
+        "baseline_same_taxa_different_rooting": true,
+        "baseline_same_unrooted_topology": true,
+        "baseline_support_disagreements": 0,
+        "baseline_topology_equal": false,
+        "baseline_unrooted_normalized_robinson_foulds": 0.0,
+        "baseline_unrooted_robinson_foulds_distance": 0,
+        "conflicting_clade_delta": -2,
+        "high_support_conflict_delta": -2,
+        "influence_rank": 2,
+        "influence_score": 4.066667,
+        "leave_one_out_conflicting_clades": 6,
+        "leave_one_out_high_support_conflicts": 6,
+        "leave_one_out_rooted_normalized_robinson_foulds": 0.6,
+        "leave_one_out_rooted_robinson_foulds_distance": 6,
+        "leave_one_out_same_taxa_different_rooting": true,
+        "leave_one_out_same_unrooted_topology": true,
+        "leave_one_out_support_disagreements": 0,
+        "leave_one_out_topology_equal": false,
+        "leave_one_out_unrooted_normalized_robinson_foulds": 0.0,
+        "leave_one_out_unrooted_robinson_foulds_distance": 0,
+        "retained_taxa": [
+          "bat_chile_rv108",
+          "bat_chile_rv50",
+          "cattle_russia_4092_13_2025",
+          "cattle_russia_4092_15_2025",
+          "dog_pakistan_pdb011",
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_18_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "rooted_normalized_robinson_foulds_delta": -0.066667,
+        "rooted_robinson_foulds_delta": -2,
+        "support_changed": true,
+        "support_disagreement_delta": 0,
+        "taxon": "raccoon_dog_poland_2021",
+        "topology_changed": true,
+        "unrooted_normalized_robinson_foulds_delta": 0.0,
+        "unrooted_robinson_foulds_delta": 0
+      },
+      {
+        "baseline_conflicting_clades": 8,
+        "baseline_high_support_conflicts": 8,
+        "baseline_rooted_normalized_robinson_foulds": 0.6666666666666666,
+        "baseline_rooted_robinson_foulds_distance": 8,
+        "baseline_same_taxa_different_rooting": true,
+        "baseline_same_unrooted_topology": true,
+        "baseline_support_disagreements": 0,
+        "baseline_topology_equal": false,
+        "baseline_unrooted_normalized_robinson_foulds": 0.0,
+        "baseline_unrooted_robinson_foulds_distance": 0,
+        "conflicting_clade_delta": -1,
+        "high_support_conflict_delta": -1,
+        "influence_rank": 3,
+        "influence_score": 2.030303,
+        "leave_one_out_conflicting_clades": 7,
+        "leave_one_out_high_support_conflicts": 7,
+        "leave_one_out_rooted_normalized_robinson_foulds": 0.6363636363636364,
+        "leave_one_out_rooted_robinson_foulds_distance": 7,
+        "leave_one_out_same_taxa_different_rooting": true,
+        "leave_one_out_same_unrooted_topology": true,
+        "leave_one_out_support_disagreements": 0,
+        "leave_one_out_topology_equal": false,
+        "leave_one_out_unrooted_normalized_robinson_foulds": 0.0,
+        "leave_one_out_unrooted_robinson_foulds_distance": 0,
+        "retained_taxa": [
+          "bat_chile_rv50",
+          "cattle_russia_4092_13_2025",
+          "cattle_russia_4092_15_2025",
+          "dog_pakistan_pdb011",
+          "raccoon_dog_poland_2021",
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_18_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "rooted_normalized_robinson_foulds_delta": -0.030303,
+        "rooted_robinson_foulds_delta": -1,
+        "support_changed": true,
+        "support_disagreement_delta": 0,
+        "taxon": "bat_chile_rv108",
+        "topology_changed": true,
+        "unrooted_normalized_robinson_foulds_delta": 0.0,
+        "unrooted_robinson_foulds_delta": 0
+      },
+      {
+        "baseline_conflicting_clades": 8,
+        "baseline_high_support_conflicts": 8,
+        "baseline_rooted_normalized_robinson_foulds": 0.6666666666666666,
+        "baseline_rooted_robinson_foulds_distance": 8,
+        "baseline_same_taxa_different_rooting": true,
+        "baseline_same_unrooted_topology": true,
+        "baseline_support_disagreements": 0,
+        "baseline_topology_equal": false,
+        "baseline_unrooted_normalized_robinson_foulds": 0.0,
+        "baseline_unrooted_robinson_foulds_distance": 0,
+        "conflicting_clade_delta": -1,
+        "high_support_conflict_delta": -1,
+        "influence_rank": 4,
+        "influence_score": 2.030303,
+        "leave_one_out_conflicting_clades": 7,
+        "leave_one_out_high_support_conflicts": 7,
+        "leave_one_out_rooted_normalized_robinson_foulds": 0.6363636363636364,
+        "leave_one_out_rooted_robinson_foulds_distance": 7,
+        "leave_one_out_same_taxa_different_rooting": true,
+        "leave_one_out_same_unrooted_topology": true,
+        "leave_one_out_support_disagreements": 0,
+        "leave_one_out_topology_equal": false,
+        "leave_one_out_unrooted_normalized_robinson_foulds": 0.0,
+        "leave_one_out_unrooted_robinson_foulds_distance": 0,
+        "retained_taxa": [
+          "bat_chile_rv108",
+          "cattle_russia_4092_13_2025",
+          "cattle_russia_4092_15_2025",
+          "dog_pakistan_pdb011",
+          "raccoon_dog_poland_2021",
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_18_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "rooted_normalized_robinson_foulds_delta": -0.030303,
+        "rooted_robinson_foulds_delta": -1,
+        "support_changed": true,
+        "support_disagreement_delta": 0,
+        "taxon": "bat_chile_rv50",
+        "topology_changed": true,
+        "unrooted_normalized_robinson_foulds_delta": 0.0,
+        "unrooted_robinson_foulds_delta": 0
+      },
+      {
+        "baseline_conflicting_clades": 8,
+        "baseline_high_support_conflicts": 8,
+        "baseline_rooted_normalized_robinson_foulds": 0.6666666666666666,
+        "baseline_rooted_robinson_foulds_distance": 8,
+        "baseline_same_taxa_different_rooting": true,
+        "baseline_same_unrooted_topology": true,
+        "baseline_support_disagreements": 0,
+        "baseline_topology_equal": false,
+        "baseline_unrooted_normalized_robinson_foulds": 0.0,
+        "baseline_unrooted_robinson_foulds_distance": 0,
+        "conflicting_clade_delta": -1,
+        "high_support_conflict_delta": -1,
+        "influence_rank": 5,
+        "influence_score": 2.030303,
+        "leave_one_out_conflicting_clades": 7,
+        "leave_one_out_high_support_conflicts": 7,
+        "leave_one_out_rooted_normalized_robinson_foulds": 0.6363636363636364,
+        "leave_one_out_rooted_robinson_foulds_distance": 7,
+        "leave_one_out_same_taxa_different_rooting": true,
+        "leave_one_out_same_unrooted_topology": true,
+        "leave_one_out_support_disagreements": 0,
+        "leave_one_out_topology_equal": false,
+        "leave_one_out_unrooted_normalized_robinson_foulds": 0.0,
+        "leave_one_out_unrooted_robinson_foulds_distance": 0,
+        "retained_taxa": [
+          "bat_chile_rv108",
+          "bat_chile_rv50",
+          "cattle_russia_4092_13_2025",
+          "cattle_russia_4092_15_2025",
+          "dog_pakistan_pdb011",
+          "raccoon_dog_poland_2021",
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "rooted_normalized_robinson_foulds_delta": -0.030303,
+        "rooted_robinson_foulds_delta": -1,
+        "support_changed": true,
+        "support_disagreement_delta": 0,
+        "taxon": "red_fox_russia_4092_18_2025",
+        "topology_changed": true,
+        "unrooted_normalized_robinson_foulds_delta": 0.0,
+        "unrooted_robinson_foulds_delta": 0
+      },
+      {
+        "baseline_conflicting_clades": 8,
+        "baseline_high_support_conflicts": 8,
+        "baseline_rooted_normalized_robinson_foulds": 0.6666666666666666,
+        "baseline_rooted_robinson_foulds_distance": 8,
+        "baseline_same_taxa_different_rooting": true,
+        "baseline_same_unrooted_topology": true,
+        "baseline_support_disagreements": 0,
+        "baseline_topology_equal": false,
+        "baseline_unrooted_normalized_robinson_foulds": 0.0,
+        "baseline_unrooted_robinson_foulds_distance": 0,
+        "conflicting_clade_delta": 0,
+        "high_support_conflict_delta": 0,
+        "influence_rank": 6,
+        "influence_score": 0.133333,
+        "leave_one_out_conflicting_clades": 8,
+        "leave_one_out_high_support_conflicts": 8,
+        "leave_one_out_rooted_normalized_robinson_foulds": 0.8,
+        "leave_one_out_rooted_robinson_foulds_distance": 8,
+        "leave_one_out_same_taxa_different_rooting": true,
+        "leave_one_out_same_unrooted_topology": true,
+        "leave_one_out_support_disagreements": 0,
+        "leave_one_out_topology_equal": false,
+        "leave_one_out_unrooted_normalized_robinson_foulds": 0.0,
+        "leave_one_out_unrooted_robinson_foulds_distance": 0,
+        "retained_taxa": [
+          "bat_chile_rv108",
+          "bat_chile_rv50",
+          "cattle_russia_4092_15_2025",
+          "dog_pakistan_pdb011",
+          "raccoon_dog_poland_2021",
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_18_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "rooted_normalized_robinson_foulds_delta": 0.133333,
+        "rooted_robinson_foulds_delta": 0,
+        "support_changed": false,
+        "support_disagreement_delta": 0,
+        "taxon": "cattle_russia_4092_13_2025",
+        "topology_changed": true,
+        "unrooted_normalized_robinson_foulds_delta": 0.0,
+        "unrooted_robinson_foulds_delta": 0
+      },
+      {
+        "baseline_conflicting_clades": 8,
+        "baseline_high_support_conflicts": 8,
+        "baseline_rooted_normalized_robinson_foulds": 0.6666666666666666,
+        "baseline_rooted_robinson_foulds_distance": 8,
+        "baseline_same_taxa_different_rooting": true,
+        "baseline_same_unrooted_topology": true,
+        "baseline_support_disagreements": 0,
+        "baseline_topology_equal": false,
+        "baseline_unrooted_normalized_robinson_foulds": 0.0,
+        "baseline_unrooted_robinson_foulds_distance": 0,
+        "conflicting_clade_delta": 0,
+        "high_support_conflict_delta": 0,
+        "influence_rank": 7,
+        "influence_score": 0.133333,
+        "leave_one_out_conflicting_clades": 8,
+        "leave_one_out_high_support_conflicts": 8,
+        "leave_one_out_rooted_normalized_robinson_foulds": 0.8,
+        "leave_one_out_rooted_robinson_foulds_distance": 8,
+        "leave_one_out_same_taxa_different_rooting": true,
+        "leave_one_out_same_unrooted_topology": true,
+        "leave_one_out_support_disagreements": 0,
+        "leave_one_out_topology_equal": false,
+        "leave_one_out_unrooted_normalized_robinson_foulds": 0.0,
+        "leave_one_out_unrooted_robinson_foulds_distance": 0,
+        "retained_taxa": [
+          "bat_chile_rv108",
+          "bat_chile_rv50",
+          "cattle_russia_4092_13_2025",
+          "dog_pakistan_pdb011",
+          "raccoon_dog_poland_2021",
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_18_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "rooted_normalized_robinson_foulds_delta": 0.133333,
+        "rooted_robinson_foulds_delta": 0,
+        "support_changed": false,
+        "support_disagreement_delta": 0,
+        "taxon": "cattle_russia_4092_15_2025",
+        "topology_changed": true,
+        "unrooted_normalized_robinson_foulds_delta": 0.0,
+        "unrooted_robinson_foulds_delta": 0
+      },
+      {
+        "baseline_conflicting_clades": 8,
+        "baseline_high_support_conflicts": 8,
+        "baseline_rooted_normalized_robinson_foulds": 0.6666666666666666,
+        "baseline_rooted_robinson_foulds_distance": 8,
+        "baseline_same_taxa_different_rooting": true,
+        "baseline_same_unrooted_topology": true,
+        "baseline_support_disagreements": 0,
+        "baseline_topology_equal": false,
+        "baseline_unrooted_normalized_robinson_foulds": 0.0,
+        "baseline_unrooted_robinson_foulds_distance": 0,
+        "conflicting_clade_delta": 0,
+        "high_support_conflict_delta": 0,
+        "influence_rank": 8,
+        "influence_score": 0.133333,
+        "leave_one_out_conflicting_clades": 8,
+        "leave_one_out_high_support_conflicts": 8,
+        "leave_one_out_rooted_normalized_robinson_foulds": 0.8,
+        "leave_one_out_rooted_robinson_foulds_distance": 8,
+        "leave_one_out_same_taxa_different_rooting": true,
+        "leave_one_out_same_unrooted_topology": true,
+        "leave_one_out_support_disagreements": 0,
+        "leave_one_out_topology_equal": false,
+        "leave_one_out_unrooted_normalized_robinson_foulds": 0.0,
+        "leave_one_out_unrooted_robinson_foulds_distance": 0,
+        "retained_taxa": [
+          "bat_chile_rv108",
+          "bat_chile_rv50",
+          "cattle_russia_4092_13_2025",
+          "cattle_russia_4092_15_2025",
+          "dog_pakistan_pdb011",
+          "raccoon_dog_poland_2021",
+          "red_fox_russia_4092_18_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "rooted_normalized_robinson_foulds_delta": 0.133333,
+        "rooted_robinson_foulds_delta": 0,
+        "support_changed": false,
+        "support_disagreement_delta": 0,
+        "taxon": "raccoon_dog_russia_4092_26_2025",
+        "topology_changed": true,
+        "unrooted_normalized_robinson_foulds_delta": 0.0,
+        "unrooted_robinson_foulds_delta": 0
+      },
+      {
+        "baseline_conflicting_clades": 8,
+        "baseline_high_support_conflicts": 8,
+        "baseline_rooted_normalized_robinson_foulds": 0.6666666666666666,
+        "baseline_rooted_robinson_foulds_distance": 8,
+        "baseline_same_taxa_different_rooting": true,
+        "baseline_same_unrooted_topology": true,
+        "baseline_support_disagreements": 0,
+        "baseline_topology_equal": false,
+        "baseline_unrooted_normalized_robinson_foulds": 0.0,
+        "baseline_unrooted_robinson_foulds_distance": 0,
+        "conflicting_clade_delta": 0,
+        "high_support_conflict_delta": 0,
+        "influence_rank": 9,
+        "influence_score": 0.133333,
+        "leave_one_out_conflicting_clades": 8,
+        "leave_one_out_high_support_conflicts": 8,
+        "leave_one_out_rooted_normalized_robinson_foulds": 0.8,
+        "leave_one_out_rooted_robinson_foulds_distance": 8,
+        "leave_one_out_same_taxa_different_rooting": true,
+        "leave_one_out_same_unrooted_topology": true,
+        "leave_one_out_support_disagreements": 0,
+        "leave_one_out_topology_equal": false,
+        "leave_one_out_unrooted_normalized_robinson_foulds": 0.0,
+        "leave_one_out_unrooted_robinson_foulds_distance": 0,
+        "retained_taxa": [
+          "bat_chile_rv108",
+          "bat_chile_rv50",
+          "cattle_russia_4092_13_2025",
+          "cattle_russia_4092_15_2025",
+          "dog_pakistan_pdb011",
+          "raccoon_dog_poland_2021",
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_18_2025"
+        ],
+        "rooted_normalized_robinson_foulds_delta": 0.133333,
+        "rooted_robinson_foulds_delta": 0,
+        "support_changed": false,
+        "support_disagreement_delta": 0,
+        "taxon": "red_fox_russia_4092_20_2025",
+        "topology_changed": true,
+        "unrooted_normalized_robinson_foulds_delta": 0.0,
+        "unrooted_robinson_foulds_delta": 0
+      }
+    ],
+    "shared_taxa": [
+      "bat_chile_rv108",
+      "bat_chile_rv50",
+      "cattle_russia_4092_13_2025",
+      "cattle_russia_4092_15_2025",
+      "dog_pakistan_pdb011",
+      "raccoon_dog_poland_2021",
+      "raccoon_dog_russia_4092_26_2025",
+      "red_fox_russia_4092_18_2025",
+      "red_fox_russia_4092_20_2025"
+    ]
+  },
+  "timeout_seconds": null,
+  "warnings": [
+    "inferred topologies differ across compared workflows",
+    "compared workflows agree on unrooted splits but differ in rooting",
+    "one or more internal nodes did not expose parsable FastTree local support labels",
+    "FastTree is an approximately maximum-likelihood workflow and its SH-like local support values should be reviewed as approximate evidence"
+  ],
+  "weighted_conflict_rows": [
+    {
+      "comparison_status": "fasttree_only",
+      "conflict_kind": "topology_conflict",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "fasttree_support_fraction": 1.0,
+      "iqtree_support_fraction": null,
+      "serious_conflict": true,
+      "severity_class": "high_support_conflict",
+      "split_id": "bat_chile_rv108|bat_chile_rv50",
+      "strongest_support_fraction": 1.0,
+      "support_fraction_delta": null,
+      "support_weight": 1.0
+    },
+    {
+      "comparison_status": "fasttree_only",
+      "conflict_kind": "topology_conflict",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "fasttree_support_fraction": 1.0,
+      "iqtree_support_fraction": null,
+      "serious_conflict": true,
+      "severity_class": "high_support_conflict",
+      "split_id": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011",
+      "strongest_support_fraction": 1.0,
+      "support_fraction_delta": null,
+      "support_weight": 1.0
+    },
+    {
+      "comparison_status": "iqtree_only",
+      "conflict_kind": "topology_conflict",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "fasttree_support_fraction": null,
+      "iqtree_support_fraction": 1.0,
+      "serious_conflict": true,
+      "severity_class": "high_support_conflict",
+      "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "strongest_support_fraction": 1.0,
+      "support_fraction_delta": null,
+      "support_weight": 1.0
+    },
+    {
+      "comparison_status": "iqtree_only",
+      "conflict_kind": "topology_conflict",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "fasttree_support_fraction": null,
+      "iqtree_support_fraction": 1.0,
+      "serious_conflict": true,
+      "severity_class": "high_support_conflict",
+      "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_poland_2021|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "strongest_support_fraction": 1.0,
+      "support_fraction_delta": null,
+      "support_weight": 1.0
+    },
+    {
+      "comparison_status": "fasttree_only",
+      "conflict_kind": "topology_conflict",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "fasttree_support_fraction": 0.997,
+      "iqtree_support_fraction": null,
+      "serious_conflict": true,
+      "severity_class": "high_support_conflict",
+      "split_id": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+      "strongest_support_fraction": 0.997,
+      "support_fraction_delta": null,
+      "support_weight": 0.997
+    },
+    {
+      "comparison_status": "iqtree_only",
+      "conflict_kind": "topology_conflict",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "fasttree_support_fraction": null,
+      "iqtree_support_fraction": 0.99,
+      "serious_conflict": true,
+      "severity_class": "high_support_conflict",
+      "split_id": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "strongest_support_fraction": 0.99,
+      "support_fraction_delta": null,
+      "support_weight": 0.99
+    },
+    {
+      "comparison_status": "fasttree_only",
+      "conflict_kind": "topology_conflict",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "fasttree_support_fraction": 0.968,
+      "iqtree_support_fraction": null,
+      "serious_conflict": true,
+      "severity_class": "high_support_conflict",
+      "split_id": "bat_chile_rv108|bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+      "strongest_support_fraction": 0.968,
+      "support_fraction_delta": null,
+      "support_weight": 0.968
+    },
+    {
+      "comparison_status": "iqtree_only",
+      "conflict_kind": "topology_conflict",
+      "detail": "conflicting clade carried strong branch support in the tree where it was present",
+      "fasttree_support_fraction": null,
+      "iqtree_support_fraction": 0.92,
+      "serious_conflict": true,
+      "severity_class": "high_support_conflict",
+      "split_id": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_18_2025|red_fox_russia_4092_20_2025",
+      "strongest_support_fraction": 0.92,
+      "support_fraction_delta": null,
+      "support_weight": 0.92
+    }
+  ],
+  "workflow": "tree-inference-comparison"
+}

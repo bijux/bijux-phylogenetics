@@ -5,8 +5,7 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_pleistocene_bear_cytb_fragment_dataset,
     load_pleistocene_bear_cytb_fragment_dataset,
@@ -14,8 +13,12 @@ from bijux_phylogenetics.datasets import (
     run_pleistocene_bear_cytb_fragment_workflow,
     write_pleistocene_bear_cytb_fragment_workflow_bundle,
 )
+import bijux_phylogenetics.datasets.pleistocene_bear_cytb_fragments as ancient_dna_api
 
 from .support.external_engines import require_alignment_engine_executables
+from .support.scientific_output_assertions import (
+    assert_selected_scientific_outputs_equivalent,
+)
 
 pytestmark = [
     pytest.mark.real_local,
@@ -71,10 +74,7 @@ def test_write_pleistocene_bear_cytb_fragment_workflow_bundle_matches_packaged_e
         bundle.support_table_path.name: bundle.support_table_path,
     }
     assert {path.name for path in expected_root.glob("*")} == set(generated)
-    for name, generated_path in generated.items():
-        assert generated_path.read_text(encoding="utf-8") == (
-            expected_root / name
-        ).read_text(encoding="utf-8")
+    assert_selected_scientific_outputs_equivalent(expected_root, generated)
 
 
 @pytest.mark.slow
@@ -115,23 +115,24 @@ def test_public_runtime_exports_include_pleistocene_bear_cytb_fragment_surface()
     None
 ):
     assert (
-        bijux_phylogenetics.load_pleistocene_bear_cytb_fragment_dataset
+        ancient_dna_api.load_pleistocene_bear_cytb_fragment_dataset
         is load_pleistocene_bear_cytb_fragment_dataset
     )
     assert (
-        bijux_phylogenetics.export_pleistocene_bear_cytb_fragment_dataset
+        ancient_dna_api.export_pleistocene_bear_cytb_fragment_dataset
         is export_pleistocene_bear_cytb_fragment_dataset
     )
     assert (
-        bijux_phylogenetics.run_pleistocene_bear_cytb_fragment_workflow
+        ancient_dna_api.run_pleistocene_bear_cytb_fragment_workflow
         is run_pleistocene_bear_cytb_fragment_workflow
     )
     assert (
-        bijux_phylogenetics.write_pleistocene_bear_cytb_fragment_workflow_bundle
+        ancient_dna_api.write_pleistocene_bear_cytb_fragment_workflow_bundle
         is write_pleistocene_bear_cytb_fragment_workflow_bundle
     )
-    assert bijux_phylogenetics.run_pleistocene_bear_cytb_fragment_demo is (
-        run_pleistocene_bear_cytb_fragment_demo
+    assert (
+        ancient_dna_api.run_pleistocene_bear_cytb_fragment_demo
+        is run_pleistocene_bear_cytb_fragment_demo
     )
 
 

@@ -17,6 +17,8 @@ def test_prune_trees_to_shared_taxa_preserves_pruning_audits_and_comparison() ->
 
     assert left.tip_names == ["A", "B", "C"]
     assert right.tip_names == ["A", "B", "C"]
+    assert left.rooted is True
+    assert right.rooted is True
     assert report.shared_taxa == ["A", "B", "C"]
     assert report.left_only_taxa == ["D"]
     assert report.right_only_taxa == ["E"]

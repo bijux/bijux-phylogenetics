@@ -1,0 +1,7 @@
+best_model_aic: K2P+I
+best_model_aicc: JC
+best_model_bic: K2P+I
+best_model_list_bic: K2P+I JC GTR+F+I
+best_score_aic: 56.20822137
+best_score_aicc: 86.85740671
+best_score_bic: 56.76431216

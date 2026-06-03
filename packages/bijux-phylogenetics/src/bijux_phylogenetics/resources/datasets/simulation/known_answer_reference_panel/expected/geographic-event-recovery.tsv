@@ -1,0 +1,15 @@
+parent_node	child_node	true_transition	estimated_transition	true_changed	estimated_changed	true_event_count	estimated_event_count	correct
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4|SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4	north->north	north->north	false	false	0	0	true
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4	SimTaxon1|SimTaxon2	north->north	north->north	false	false	0	0	true
+SimTaxon1|SimTaxon2	SimTaxon1	north->north	north->north	false	false	0	0	true
+SimTaxon1|SimTaxon2	SimTaxon2	north->north	north->north	false	false	0	0	true
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4	SimTaxon3|SimTaxon4	north->south	north->south	true	true	1	1	true
+SimTaxon3|SimTaxon4	SimTaxon3	south->south	south->south	false	false	0	0	true
+SimTaxon3|SimTaxon4	SimTaxon4	south->south	south->south	false	false	0	0	true
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4|SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	north->north	north->north	false	false	0	0	true
+SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon5	north->east	north->east	true	true	1	1	true
+SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon6|SimTaxon7|SimTaxon8	north->north	north->north	false	false	0	0	true
+SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon6|SimTaxon7	north->north	north->north	false	false	0	0	true
+SimTaxon6|SimTaxon7	SimTaxon6	north->north	north->north	false	false	0	0	true
+SimTaxon6|SimTaxon7	SimTaxon7	north->north	north->north	false	false	0	0	true
+SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon8	north->north	north->north	false	false	0	0	true

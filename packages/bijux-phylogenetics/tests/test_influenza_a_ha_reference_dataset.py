@@ -5,8 +5,7 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_influenza_a_ha_reference_dataset,
     load_influenza_a_ha_reference_dataset,
@@ -14,8 +13,12 @@ from bijux_phylogenetics.datasets import (
     run_influenza_a_ha_reference_workflow,
     write_influenza_a_ha_reference_workflow_bundle,
 )
+import bijux_phylogenetics.datasets.influenza_a_ha_reference as viruses_api
 
 from .support.external_engines import require_alignment_engine_executables
+from .support.scientific_output_assertions import (
+    assert_selected_scientific_outputs_equivalent,
+)
 
 pytestmark = [
     pytest.mark.real_local,
@@ -63,10 +66,7 @@ def test_write_influenza_a_ha_reference_workflow_bundle_matches_packaged_expecte
         bundle.support_table_path.name: bundle.support_table_path,
     }
     assert {path.name for path in expected_root.glob("*")} == set(generated)
-    for name, generated_path in generated.items():
-        assert generated_path.read_text(encoding="utf-8") == (
-            expected_root / name
-        ).read_text(encoding="utf-8")
+    assert_selected_scientific_outputs_equivalent(expected_root, generated)
 
 
 @pytest.mark.slow
@@ -104,23 +104,24 @@ def test_public_runtime_exports_include_influenza_a_ha_reference_dataset_surface
     None
 ):
     assert (
-        bijux_phylogenetics.load_influenza_a_ha_reference_dataset
+        viruses_api.load_influenza_a_ha_reference_dataset
         is load_influenza_a_ha_reference_dataset
     )
     assert (
-        bijux_phylogenetics.export_influenza_a_ha_reference_dataset
+        viruses_api.export_influenza_a_ha_reference_dataset
         is export_influenza_a_ha_reference_dataset
     )
     assert (
-        bijux_phylogenetics.run_influenza_a_ha_reference_workflow
+        viruses_api.run_influenza_a_ha_reference_workflow
         is run_influenza_a_ha_reference_workflow
     )
     assert (
-        bijux_phylogenetics.write_influenza_a_ha_reference_workflow_bundle
+        viruses_api.write_influenza_a_ha_reference_workflow_bundle
         is write_influenza_a_ha_reference_workflow_bundle
     )
-    assert bijux_phylogenetics.run_influenza_a_ha_reference_demo is (
-        run_influenza_a_ha_reference_demo
+    assert (
+        viruses_api.run_influenza_a_ha_reference_demo
+        is run_influenza_a_ha_reference_demo
     )
 
 

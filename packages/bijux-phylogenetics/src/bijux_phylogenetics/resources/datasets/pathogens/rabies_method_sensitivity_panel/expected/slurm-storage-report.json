@@ -1,0 +1,180 @@
+{
+  "assumptions": [
+    {
+      "assumption_id": "observed-retained-bytes",
+      "parameter": "total_byte_count",
+      "rationale": "The storage estimate is anchored to real retained outputs from the current governed workflow run instead of an invented storage budget.",
+      "value": "sum of bytes currently written into the governed workflow bundle"
+    },
+    {
+      "assumption_id": "canonical-log-boundary",
+      "parameter": "log_byte_count",
+      "rationale": "Copied task logs inside per-job evidence packages duplicate the same execution story, so they remain reviewer artifacts instead of being counted twice as canonical logging storage.",
+      "value": "only parallel-logs/*.log count as canonical logs"
+    },
+    {
+      "assumption_id": "tree-artifact-separation",
+      "parameter": "tree_byte_count",
+      "rationale": "Large workflow storage pressure often comes from retained tree artifacts, so they need their own reviewer-visible category.",
+      "value": "Newick and other retained tree files are separated from general outputs"
+    },
+    {
+      "assumption_id": "explicit-zero-posterior-category",
+      "parameter": "posterior_sample_byte_count",
+      "rationale": "A zero posterior-sample footprint should be explicit and reviewable rather than silently folded into a generic no-data category.",
+      "value": "0 when the governed workflow emits no posterior chains or tree sets"
+    },
+    {
+      "assumption_id": "shared-report-overhead",
+      "parameter": "workflow_shared_byte_count",
+      "rationale": "The retained storage plan needs to distinguish variant-scaled bytes from one-time workflow-wide reporting overhead.",
+      "value": "workflow-wide reports, manifests, and ledgers are counted once outside per-variant rows"
+    }
+  ],
+  "bundle_root": ".",
+  "categories": [
+    {
+      "category_id": "outputs",
+      "category_label": "workflow outputs",
+      "detail": "Retained scientific outputs such as alignments, comparison ledgers, and variant-scoped tables that are not tree sets or reviewer reports.",
+      "estimated_storage_mib": 1,
+      "total_byte_count": 161224,
+      "total_file_count": 40,
+      "variant_byte_count": 161224,
+      "variant_file_count": 40,
+      "workflow_byte_count": 0,
+      "workflow_file_count": 0
+    },
+    {
+      "category_id": "logs",
+      "category_label": "canonical logs",
+      "detail": "Canonical orchestration logs under parallel-logs. Copied task logs inside per-job evidence packages are counted under review artifacts to avoid double-counting the same execution record as canonical storage.",
+      "estimated_storage_mib": 1,
+      "total_byte_count": 900,
+      "total_file_count": 4,
+      "variant_byte_count": 900,
+      "variant_file_count": 4,
+      "workflow_byte_count": 0,
+      "workflow_file_count": 0
+    },
+    {
+      "category_id": "trees",
+      "category_label": "tree artifacts",
+      "detail": "Tree products such as rooted or unrooted Newick outputs and other retained tree-topology artifacts.",
+      "estimated_storage_mib": 1,
+      "total_byte_count": 7036,
+      "total_file_count": 16,
+      "variant_byte_count": 7036,
+      "variant_file_count": 16,
+      "workflow_byte_count": 0,
+      "workflow_file_count": 0
+    },
+    {
+      "category_id": "posterior_samples",
+      "category_label": "posterior samples",
+      "detail": "Bayesian posterior chains or sampled tree sets. This governed workflow does not currently emit them, but the category is kept explicit so zero remains an audited, reviewer-visible statement.",
+      "estimated_storage_mib": 0,
+      "total_byte_count": 0,
+      "total_file_count": 0,
+      "variant_byte_count": 0,
+      "variant_file_count": 0,
+      "workflow_byte_count": 0,
+      "workflow_file_count": 0
+    },
+    {
+      "category_id": "reports",
+      "category_label": "review artifacts",
+      "detail": "Workflow-wide summaries, manifests, HTML reports, Slurm ledgers, evidence packages, and other reviewer-facing accountability artifacts.",
+      "estimated_storage_mib": 2,
+      "total_byte_count": 1101231,
+      "total_file_count": 71,
+      "variant_byte_count": 1007270,
+      "variant_file_count": 36,
+      "workflow_byte_count": 93961,
+      "workflow_file_count": 35
+    }
+  ],
+  "dataset_id": "rabies_method_sensitivity_panel",
+  "largest_variant_id": "ginsi-gap-threshold",
+  "largest_variant_total_byte_count": 295906,
+  "log_byte_count": 900,
+  "output_byte_count": 161224,
+  "posterior_sample_byte_count": 0,
+  "report_byte_count": 1101231,
+  "total_byte_count": 1270391,
+  "total_estimated_storage_mib": 2,
+  "total_file_count": 131,
+  "tree_byte_count": 7036,
+  "variant_count": 4,
+  "variant_scoped_byte_count": 1176430,
+  "variant_scoped_file_count": 96,
+  "variants": [
+    {
+      "estimated_storage_mib": 1,
+      "log_byte_count": 233,
+      "log_file_count": 1,
+      "output_byte_count": 40306,
+      "output_file_count": 10,
+      "posterior_sample_byte_count": 0,
+      "posterior_sample_file_count": 0,
+      "report_byte_count": 252889,
+      "report_file_count": 9,
+      "total_byte_count": 295187,
+      "total_file_count": 24,
+      "tree_byte_count": 1759,
+      "tree_file_count": 4,
+      "variant_id": "auto-gap-threshold"
+    },
+    {
+      "estimated_storage_mib": 1,
+      "log_byte_count": 237,
+      "log_file_count": 1,
+      "output_byte_count": 40306,
+      "output_file_count": 10,
+      "posterior_sample_byte_count": 0,
+      "posterior_sample_file_count": 0,
+      "report_byte_count": 253604,
+      "report_file_count": 9,
+      "total_byte_count": 295906,
+      "total_file_count": 24,
+      "tree_byte_count": 1759,
+      "tree_file_count": 4,
+      "variant_id": "ginsi-gap-threshold"
+    },
+    {
+      "estimated_storage_mib": 1,
+      "log_byte_count": 213,
+      "log_file_count": 1,
+      "output_byte_count": 40306,
+      "output_file_count": 10,
+      "posterior_sample_byte_count": 0,
+      "posterior_sample_file_count": 0,
+      "report_byte_count": 250036,
+      "report_file_count": 9,
+      "total_byte_count": 292314,
+      "total_file_count": 24,
+      "tree_byte_count": 1759,
+      "tree_file_count": 4,
+      "variant_id": "auto-gappyout"
+    },
+    {
+      "estimated_storage_mib": 1,
+      "log_byte_count": 217,
+      "log_file_count": 1,
+      "output_byte_count": 40306,
+      "output_file_count": 10,
+      "posterior_sample_byte_count": 0,
+      "posterior_sample_file_count": 0,
+      "report_byte_count": 250741,
+      "report_file_count": 9,
+      "total_byte_count": 293023,
+      "total_file_count": 24,
+      "tree_byte_count": 1759,
+      "tree_file_count": 4,
+      "variant_id": "ginsi-gappyout"
+    }
+  ],
+  "workflow_prefix": "rabies-method-sensitivity-panel",
+  "workflow_shared_byte_count": 93961,
+  "workflow_shared_file_count": 35
+}

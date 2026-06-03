@@ -1,0 +1,13 @@
+check_id	status	observed_value	detail
+sequences_path	pass	sequences.fasta	input file is present
+metadata_path	pass	metadata.csv	input file is present
+centroids_path	pass	region-centroids.csv	input file is present
+metadata_required_columns	pass	7	metadata exposes the required workflow columns
+taxon_crosswalk	pass	9	metadata taxa match the FASTA identifiers
+outgroup_taxa	pass	bat_chile_rv108	all outgroup taxa are present in the FASTA panel
+centroid_region_coverage	pass	5	each grouped geography state has one centroid row
+comparative_response_column	pass	region_longitude	comparative response is present in the derived trait table
+timeout_seconds	pass	300	workflow timeout budget is positive
+max_bootstrap_tree_count	pass	1500	bootstrap summary tree budget is positive
+max_report_table_rows	pass	25	review table row budget is positive
+memory_warning_threshold_bytes	pass	67108864	memory warning threshold is positive

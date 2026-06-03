@@ -11,6 +11,10 @@ CODESPELL ?= $(VENV_PYTHON) -m codespell_lib
 
 include $(ROOT_MAKE_DIR)/bijux-py/repository/env.mk
 
+# Prefer the active package virtualenv's uv executable when available so the
+# shared make layers do not depend on a separately installed global uv binary.
+UV := $(if $(wildcard $(ACT)/uv),$(ACT)/uv,$(if $(wildcard $(VENV)/bin/uv),$(VENV)/bin/uv,uv))
+
 # Package roots expose tracked symlink aliases for repository-owned artifact
 # locations. Keep the aliases stable and let clean targets operate on the
 # canonical repository artifact tree instead of deleting the links themselves.

@@ -1,2 +1,2 @@
 dataset_id	taxon_count	workflow_trait	workflow_model	observed_host_group_count	root_host	root_confidence	host_switch_count	certain_host_switch_count	uncertain_host_switch_count	ambiguous_internal_node_count	preferred_constraint	warning_count
-rabies_cross_host_panel	9	host_group	ard	3	bat	1	2	0	2	3	unconstrained	1
+rabies_cross_host_panel	9	host_group	ard	3	bat	1	2	0	2	3	unconstrained	5

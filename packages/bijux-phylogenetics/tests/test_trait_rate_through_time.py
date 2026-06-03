@@ -11,7 +11,7 @@ from bijux_phylogenetics.comparative.common import (
 from bijux_phylogenetics.comparative.evolutionary_modes import (
     transform_tree_for_evolutionary_mode,
 )
-from bijux_phylogenetics.comparative.trait_rate_through_time import (
+from bijux_phylogenetics.comparative.traits.rate_through_time import (
     summarize_trait_rate_through_time,
     write_trait_rate_through_time_exclusion_table,
     write_trait_rate_through_time_interval_table,
@@ -98,7 +98,7 @@ def test_trait_rate_through_time_writers_emit_review_ledgers(tmp_path: Path) -> 
     ]
 
 
-def test_summarize_trait_rate_through_time_detects_simulated_acceleration(
+def test_summarize_trait_rate_through_time_detects_simulated_slowdown(
     tmp_path: Path,
 ) -> None:
     tree_path, traits_path = _write_simulated_trait_dataset(
@@ -114,12 +114,12 @@ def test_summarize_trait_rate_through_time_detects_simulated_acceleration(
         interval_count=5,
     )
 
-    assert report.trend_direction == "acceleration"
+    assert report.trend_direction == "slowdown"
     assert report.earliest_interval_rate is not None
     assert report.latest_interval_rate is not None
-    assert report.latest_interval_rate > report.earliest_interval_rate
+    assert report.latest_interval_rate < report.earliest_interval_rate
     assert report.normalized_rate_slope is not None
-    assert report.normalized_rate_slope > 0.0
+    assert report.normalized_rate_slope < 0.0
 
 
 def test_summarize_trait_rate_through_time_reports_stable_on_simulated_brownian(

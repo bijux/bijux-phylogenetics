@@ -5,6 +5,7 @@
       "case_id": "geography_equal_rates",
       "model": "equal-rates",
       "r_model": "ER",
+      "source": "ape::ace",
       "rows": [
         {
           "node": "A|B|C|D",
@@ -41,6 +42,7 @@
       "case_id": "geography_symmetric",
       "model": "symmetric",
       "r_model": "SYM",
+      "source": "ape::ace",
       "rows": [
         {
           "node": "A|B|C|D",
@@ -77,6 +79,7 @@
       "case_id": "habitat_all_rates_different",
       "model": "all-rates-different",
       "r_model": "ARD",
+      "source": "ape::ace",
       "rows": [
         {
           "node": "A|B|C|D",
@@ -104,6 +107,165 @@
       "taxon_column": "taxon",
       "trait": "habitat",
       "tree": "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree.nwk"
+    },
+    {
+      "abs_tolerance": 0.0005,
+      "case_id": "geography_biased_equal_rates",
+      "model": "equal-rates",
+      "r_model": "ER",
+      "source": "ape::ace",
+      "rows": [
+        {
+          "node": "A|B|C|D|E|F",
+          "probabilities": {
+            "island": 0.1885,
+            "north": 0.623,
+            "south": 0.1885
+          }
+        },
+        {
+          "node": "A|B|C|D",
+          "probabilities": {
+            "island": 0.0324,
+            "north": 0.9352,
+            "south": 0.0324
+          }
+        },
+        {
+          "node": "A|B",
+          "probabilities": {
+            "island": 0.0063,
+            "north": 0.9874,
+            "south": 0.0063
+          }
+        },
+        {
+          "node": "C|D",
+          "probabilities": {
+            "island": 0.0063,
+            "north": 0.9874,
+            "south": 0.0063
+          }
+        },
+        {
+          "node": "E|F",
+          "probabilities": {
+            "island": 0.4341,
+            "north": 0.1319,
+            "south": 0.4341
+          }
+        }
+      ],
+      "table": "packages/bijux-phylogenetics/tests/fixtures/metadata/example_traits_geography_biased.tsv",
+      "taxon_column": "taxon",
+      "trait": "region",
+      "tree": "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree_six_taxa.nwk"
+    },
+    {
+      "abs_tolerance": 0.0005,
+      "case_id": "geography_biased_symmetric",
+      "model": "symmetric",
+      "r_model": "SYM",
+      "source": "ape::ace",
+      "rows": [
+        {
+          "node": "A|B|C|D|E|F",
+          "probabilities": {
+            "island": 0.1806,
+            "north": 0.6388,
+            "south": 0.1806
+          }
+        },
+        {
+          "node": "A|B|C|D",
+          "probabilities": {
+            "island": 0.0133,
+            "north": 0.9734,
+            "south": 0.0133
+          }
+        },
+        {
+          "node": "A|B",
+          "probabilities": {
+            "island": 0.0011,
+            "north": 0.9978,
+            "south": 0.0011
+          }
+        },
+        {
+          "node": "C|D",
+          "probabilities": {
+            "island": 0.0011,
+            "north": 0.9978,
+            "south": 0.0011
+          }
+        },
+        {
+          "node": "E|F",
+          "probabilities": {
+            "island": 0.4829,
+            "north": 0.0342,
+            "south": 0.4829
+          }
+        }
+      ],
+      "table": "packages/bijux-phylogenetics/tests/fixtures/metadata/example_traits_geography_biased.tsv",
+      "taxon_column": "taxon",
+      "trait": "region",
+      "tree": "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree_six_taxa.nwk"
+    },
+    {
+      "abs_tolerance": 0.001,
+      "case_id": "geography_biased_all_rates_different",
+      "model": "all-rates-different",
+      "r_model": "ARD",
+      "source": "ape::ace",
+      "rows": [
+        {
+          "node": "A|B|C|D|E|F",
+          "probabilities": {
+            "island": 0.5322,
+            "north": 0.0564,
+            "south": 0.4114
+          }
+        },
+        {
+          "node": "A|B|C|D",
+          "probabilities": {
+            "island": 0.1343,
+            "north": 0.8069,
+            "south": 0.0588
+          }
+        },
+        {
+          "node": "A|B",
+          "probabilities": {
+            "island": 0.0641,
+            "north": 0.9141,
+            "south": 0.0218
+          }
+        },
+        {
+          "node": "C|D",
+          "probabilities": {
+            "island": 0.0641,
+            "north": 0.9141,
+            "south": 0.0218
+          }
+        },
+        {
+          "node": "E|F",
+          "probabilities": {
+            "island": 0.3892,
+            "north": 0.0001,
+            "south": 0.6106
+          }
+        }
+      ],
+      "table": "packages/bijux-phylogenetics/tests/fixtures/metadata/example_traits_geography_biased.tsv",
+      "taxon_column": "taxon",
+      "trait": "region",
+      "tree": "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree_six_taxa.nwk"
     }
   ]
 }

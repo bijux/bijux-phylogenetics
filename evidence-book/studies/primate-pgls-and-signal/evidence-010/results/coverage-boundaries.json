@@ -4,7 +4,9 @@
       "The lecture corBlomberg likelihood sweep remains outside the current canonical runtime parity surface.",
       "The governed evidence closes transformed-tree, fitContinuous, likelihood-ratio, and ancestral-state parity without overstating the remaining intercept-mode boundary."
     ],
-    "uncovered_fragments": "mode-linked-intercept-models"
+    "uncovered_fragments": [
+      "mode-linked-intercept-models"
+    ]
   },
   "evidence_id": "evidence-010",
   "schema_version": 1,

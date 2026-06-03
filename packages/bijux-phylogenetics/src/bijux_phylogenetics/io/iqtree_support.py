@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 
 __all__ = [
     "IqtreeBranchSupportLabel",
@@ -29,10 +30,13 @@ def parse_iqtree_branch_support_label(
         return None
     if "/" not in text:
         try:
+            ufboot_support = float(text)
+            if not math.isfinite(ufboot_support):
+                return None
             return IqtreeBranchSupportLabel(
                 raw_label=text,
                 sh_alrt_support=None,
-                ufboot_support=float(text),
+                ufboot_support=ufboot_support,
             )
         except ValueError:
             return None
@@ -44,6 +48,8 @@ def parse_iqtree_branch_support_label(
         ufboot_support = float(parts[1])
     except ValueError:
         return None
+    if not math.isfinite(sh_alrt_support) or not math.isfinite(ufboot_support):
+        return None
     return IqtreeBranchSupportLabel(
         raw_label=text,
         sh_alrt_support=sh_alrt_support,
@@ -54,5 +60,7 @@ def parse_iqtree_branch_support_label(
 def support_fraction(value: float | None) -> float | None:
     """Normalize a support value to a 0-1 fraction when expressed as a percent."""
     if value is None:
+        return None
+    if not math.isfinite(value):
         return None
     return value / 100.0 if value > 1.0 else value

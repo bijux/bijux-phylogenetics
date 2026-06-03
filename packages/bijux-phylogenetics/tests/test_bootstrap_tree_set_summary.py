@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.tree_set import (
+from bijux_phylogenetics.trees import (
     summarize_bootstrap_tree_set,
     write_bootstrap_tree_set_artifacts,
 )
@@ -66,6 +66,7 @@ def test_write_bootstrap_tree_set_artifacts_writes_governed_tables_and_consensus
         "clade_frequencies",
         "consensus_tree",
         "distance_matrix",
+        "rf_distribution",
         "summary_table",
         "topology_clusters",
         "unstable_branches",
@@ -74,12 +75,21 @@ def test_write_bootstrap_tree_set_artifacts_writes_governed_tables_and_consensus
     assert (
         report.output_paths["summary_table"]
         .read_text(encoding="utf-8")
-        .startswith("tree_count\tshared_taxon_count\trooted_topology_count\t")
+        .startswith(
+            "tree_count\truntime_seconds\tpeak_memory_bytes\tskipped_malformed_tree_count\tshared_taxon_count\trooted_topology_count\t"
+        )
     )
     assert report.output_paths["consensus_tree"].read_text(
         encoding="utf-8"
     ).strip() == (
         "((A:0.1,B:0.1)66.6666666666667:0.2,(C:0.1,D:0.1)66.6666666666667:0.2);"
+    )
+    assert (
+        report.output_paths["rf_distribution"]
+        .read_text(encoding="utf-8")
+        .startswith(
+            "robinson_foulds_distance\tnormalized_robinson_foulds\tpair_count\tfrequency\n"
+        )
     )
     assert (
         report.output_paths["unstable_branches"]

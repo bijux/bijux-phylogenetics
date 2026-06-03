@@ -3,7 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.cli import main
+import pytest
+
+from bijux_phylogenetics.command_line import main
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -20,6 +22,7 @@ def fixture(name: str) -> Path:
     raise FileNotFoundError(name)
 
 
+@pytest.mark.slow
 def test_host_association_switches_cli_can_export_review(
     tmp_path: Path,
     capsys,

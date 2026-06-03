@@ -1,0 +1,12 @@
+requirement_id	status	passed	evidence_surface	detail
+simulate-bm-traits	passed	true	continuous-mode-recovery-panel	Continuous panel includes Brownian generating model coverage: `brownian, early-burst, ornstein-uhlenbeck, pagel-delta, pagel-kappa, pagel-lambda`
+simulate-ou-traits	passed	true	continuous-mode-recovery-panel	Continuous panel includes OU generating model coverage: `brownian, early-burst, ornstein-uhlenbeck, pagel-delta, pagel-kappa, pagel-lambda`
+simulate-eb-traits	passed	true	continuous-mode-recovery-panel	Continuous panel includes early-burst generating model coverage: `brownian, early-burst, ornstein-uhlenbeck, pagel-delta, pagel-kappa, pagel-lambda`
+simulate-transformed-model-fixtures	passed	true	continuous-mode-recovery-panel	Continuous panel includes transformed review cases: `delta-transformed-branch-review, kappa-transformed-branch-review, lambda-transformed-branch-review`
+simulate-er-sym-ard-discrete-traits	passed	true	discrete-mode-recovery-panel	Discrete panel includes ER, SYM, and ARD generating model coverage: `all-rates-different, equal-rates, symmetric`
+store-true-parameters	passed	true	known-answer-reference-panel	5 stored parameter truth rows from `true-parameters.tsv`: `continuous_root_state, continuous_sigma_squared, ou_alpha, ou_sigma_squared, ou_theta`
+run-recovery-benchmark	passed	true	suite	22 governed recovery evaluations across suite components
+compare-recovery-against-geiger	passed	true	suite	23 paired Bijux-versus-geiger governed comparisons plus 5 geiger selection matches
+pass-goal-280-sim-char	passed	true	geiger-sim-char-reference	3 governed sim.char parity cases
+pass-goal-281-fitcontinuous-recovery	passed	true	continuous-mode-recovery-panel	22/22 continuous governed rows within tolerance
+pass-goal-282-fitdiscrete-recovery	passed	true	discrete-mode-recovery-panel	20/24 discrete governed rows within tolerance

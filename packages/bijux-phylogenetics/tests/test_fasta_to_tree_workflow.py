@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.engines.fasta_to_tree import (
+from bijux_phylogenetics.engines.inference import (
     FastaToTreeModelRow,
     FastaToTreeSupportRow,
     infer_unaligned_sequence_type,
@@ -15,7 +15,10 @@ from bijux_phylogenetics.engines.fasta_to_tree import (
     write_fasta_to_tree_model_table,
     write_fasta_to_tree_support_table,
 )
-from bijux_phylogenetics.errors import EngineWorkflowError, InvalidAlignmentError
+from bijux_phylogenetics.runtime.errors import (
+    EngineWorkflowError,
+    InvalidAlignmentError,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -212,10 +215,12 @@ if "-m" in args and args[args.index("-m") + 1] == "MF":
     raise SystemExit(0)
 
 if "-bb" in args:
+    support_tree = "((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n"
     prefix.with_suffix(".treefile").write_text(
-        "((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n",
+        support_tree,
         encoding="utf-8",
     )
+    prefix.with_suffix(".contree").write_text(support_tree, encoding="utf-8")
     prefix.with_suffix(".ufboot").write_text(
         "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
         encoding="utf-8",
@@ -486,10 +491,18 @@ def test_run_fasta_to_tree_workflow_materializes_expected_outputs_for_three_data
 
         assert report.sequence_type == expected_sequence_type
         assert report.selected_model == expected_model
+        assert report.method_tier.tier == "supported"
+        assert any(
+            basis.startswith("real-engine-validation:")
+            for basis in report.method_tier.validation_basis
+        )
         assert report.output_paths["alignment"].suffix == ".aln"
         assert report.output_paths["trimmed_alignment"].name.endswith(".trimmed.aln")
         assert report.output_paths["tree"].suffix == ".tree"
         assert report.output_paths["log"].suffix == ".log"
+        assert report.output_paths["methods_summary"].name.endswith(
+            ".methods-summary.md"
+        )
         assert report.output_paths["model_table"].name.endswith(".model.tsv")
         assert report.output_paths["support_table"].name.endswith(".support.tsv")
         assert report.output_paths["manifest"].name.endswith(".manifest.json")
@@ -513,18 +526,29 @@ def test_run_fasta_to_tree_workflow_materializes_expected_outputs_for_three_data
         assert model_rows[0]["model_consistent"] == "true"
         assert support_rows[0]["support"] == "95"
         log_text = report.output_paths["log"].read_text(encoding="utf-8")
+        methods_text = report.output_paths["methods_summary"].read_text(
+            encoding="utf-8"
+        )
         assert "selected_model:" in log_text
         assert "iqtree random seed: 1" in log_text
         assert "iqtree threads: 1" in log_text
         assert "warning: iqtree fixture bootstrap" in log_text
+        assert "Tree Inference Methods Summary" in methods_text
+        assert "- selected substitution model:" in methods_text
         model_text = report.output_paths["model_table"].read_text(encoding="utf-8")
         assert "engine-artifacts/" in model_text
         assert str(report.out_dir) not in model_text
         workflow_manifest = _load_json(report.manifest_path)
         run_manifest = _load_json(report.run_manifest_path)
+        assert report.workflow == "fasta-to-tree"
         assert workflow_manifest["selected_model"] == expected_model
+        assert workflow_manifest["workflow"] == "fasta-to-tree"
         assert workflow_manifest["iqtree_seed"] == 1
         assert workflow_manifest["bootstrap_replicates"] == 1000
+        assert workflow_manifest["config"]["iqtree_threads"] == 1
+        assert workflow_manifest["output_paths"]["methods_summary"].endswith(
+            ".methods-summary.md"
+        )
         assert "alignment" in workflow_manifest["commands"]
         assert "iqtree_model_selection" in workflow_manifest["engine_versions"]
         assert report.run_manifest_path == report.output_paths["run_manifest"]
@@ -532,6 +556,147 @@ def test_run_fasta_to_tree_workflow_materializes_expected_outputs_for_three_data
         assert str(report.manifest_path) in run_manifest["output_paths"]
         assert str(input_path) in run_manifest["input_paths"]
         assert str(report.output_paths["tree"]) in run_manifest["output_checksums"]
+
+
+def test_run_fasta_to_tree_workflow_records_stage_fingerprints(
+    tmp_path: Path,
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+
+    report = run_fasta_to_tree_workflow(
+        fixture("alignments/example_sequences_raw.fasta"),
+        out_dir=tmp_path / "stage-fingerprints",
+        prefix="stage-fingerprints",
+        mafft_executable=mafft,
+        trimal_executable=trimal,
+        iqtree_executable=iqtree,
+        bootstrap_replicates=1000,
+    )
+
+    assert list(report.stage_fingerprints) == [
+        "fasta_validation",
+        "alignment",
+        "trimming",
+        "model_selection",
+        "inference",
+        "support",
+        "report",
+    ]
+    assert report.stage_fingerprints["alignment"].engine_versions == {
+        "mafft": "mafft v7.999"
+    }
+    assert report.stage_fingerprints["support"].engine_versions == {
+        "iqtree_bootstrap_support": "IQ-TREE multicore version 2.9.9"
+    }
+    assert (
+        report.stage_fingerprints["report"].upstream_fingerprints["support"]
+        == report.stage_fingerprints["support"].fingerprint
+    )
+    assert all(
+        len(stage.fingerprint) == 64 for stage in report.stage_fingerprints.values()
+    )
+    manifest_payload = _load_json(report.manifest_path)
+    assert manifest_payload["stage_fingerprints"]["fasta_validation"]["stage"] == (
+        "fasta_validation"
+    )
+    assert (
+        manifest_payload["stage_fingerprints"]["report"]["upstream_fingerprints"][
+            "inference"
+        ]
+        == report.stage_fingerprints["inference"].fingerprint
+    )
+
+
+def test_run_fasta_to_tree_workflow_reruns_only_support_stage_when_replicates_change(
+    tmp_path: Path,
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    input_path = fixture("alignments/example_sequences_raw.fasta")
+
+    first = run_fasta_to_tree_workflow(
+        input_path,
+        out_dir=tmp_path / "support-rerun",
+        prefix="support-rerun",
+        mafft_executable=mafft,
+        trimal_executable=trimal,
+        iqtree_executable=iqtree,
+        bootstrap_replicates=1000,
+    )
+    second = run_fasta_to_tree_workflow(
+        input_path,
+        out_dir=tmp_path / "support-rerun",
+        prefix="support-rerun",
+        mafft_executable=mafft,
+        trimal_executable=trimal,
+        iqtree_executable=iqtree,
+        bootstrap_replicates=2000,
+        resume=True,
+    )
+
+    assert first.alignment_workflow.resumed is False
+    assert second.alignment_workflow.resumed is True
+    assert second.trimming_workflow.resumed is True
+    assert second.model_selection_workflow.resumed is True
+    assert second.maximum_likelihood_workflow.resumed is True
+    assert second.bootstrap_workflow.resumed is False
+    assert (
+        first.stage_fingerprints["support"].fingerprint
+        != second.stage_fingerprints["support"].fingerprint
+    )
+    assert (
+        first.stage_fingerprints["inference"].fingerprint
+        == second.stage_fingerprints["inference"].fingerprint
+    )
+
+
+@pytest.mark.slow
+def test_run_fasta_to_tree_workflow_input_change_invalidates_downstream_stages(
+    tmp_path: Path,
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+    trimal = _fake_trimal(tmp_path / "trimal-fixture")
+    iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
+    input_path = tmp_path / "changed-input.fasta"
+    input_path.write_text(">A\nACTG\n>B\nACTGA\n>C\nACT\n", encoding="utf-8")
+
+    first = run_fasta_to_tree_workflow(
+        input_path,
+        out_dir=tmp_path / "changed-input",
+        prefix="changed-input",
+        mafft_executable=mafft,
+        trimal_executable=trimal,
+        iqtree_executable=iqtree,
+        bootstrap_replicates=1000,
+    )
+    input_path.write_text(">A\nTTTTT\n>B\nACTGA\n>C\nGGG\n", encoding="utf-8")
+    second = run_fasta_to_tree_workflow(
+        input_path,
+        out_dir=tmp_path / "changed-input",
+        prefix="changed-input",
+        mafft_executable=mafft,
+        trimal_executable=trimal,
+        iqtree_executable=iqtree,
+        bootstrap_replicates=1000,
+        resume=True,
+    )
+
+    assert second.alignment_workflow.resumed is False
+    assert second.trimming_workflow.resumed is False
+    assert second.model_selection_workflow.resumed is False
+    assert second.maximum_likelihood_workflow.resumed is False
+    assert second.bootstrap_workflow.resumed is False
+    assert (
+        first.stage_fingerprints["fasta_validation"].fingerprint
+        != second.stage_fingerprints["fasta_validation"].fingerprint
+    )
+    assert (
+        first.stage_fingerprints["alignment"].fingerprint
+        != second.stage_fingerprints["alignment"].fingerprint
+    )
 
 
 def test_write_fasta_to_tree_log_renders_workflow_outputs_relative_to_root(
@@ -764,7 +929,7 @@ def test_run_fasta_to_tree_workflow_rejects_empty_trimmed_alignment(
     trimal = _fake_trimal_empty_output(tmp_path / "trimal-empty-fixture")
     iqtree = _fake_iqtree(tmp_path / "iqtree-fixture")
 
-    with pytest.raises(InvalidAlignmentError, match="contains no FASTA records"):
+    with pytest.raises(EngineWorkflowError) as error:
         run_fasta_to_tree_workflow(
             fixture("alignments/example_sequences_raw.fasta"),
             out_dir=tmp_path / "empty-trimmed-alignment",
@@ -774,6 +939,8 @@ def test_run_fasta_to_tree_workflow_rejects_empty_trimmed_alignment(
             iqtree_executable=iqtree,
             bootstrap_replicates=1000,
         )
+    assert error.value.code == "engine_output_empty"
+    assert error.value.details["output_name"] == "trimmed_alignment"
 
 
 def test_run_fasta_to_tree_workflow_surfaces_trimming_failure(

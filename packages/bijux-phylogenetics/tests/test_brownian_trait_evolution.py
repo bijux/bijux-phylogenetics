@@ -4,7 +4,7 @@ import json
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.brownian_trait_evolution import (
+from bijux_phylogenetics.comparative.continuous import (
     summarize_brownian_trait_evolution,
     write_brownian_trait_evolution_exclusion_table,
     write_brownian_trait_evolution_summary_table,

@@ -1,0 +1,66 @@
+{
+  "dataset_id": "rabies_method_sensitivity_panel",
+  "ended_at_utc": "2026-05-18T02:34:01Z",
+  "execution_mode": "parallel",
+  "failed_variants": [],
+  "parallel_workers": 2,
+  "selected_variant_ids": [
+    "auto-gap-threshold",
+    "ginsi-gap-threshold",
+    "auto-gappyout",
+    "ginsi-gappyout"
+  ],
+  "started_at_utc": "2026-05-18T02:33:51Z",
+  "status": "succeeded",
+  "successful_variants": [
+    "auto-gap-threshold",
+    "ginsi-gap-threshold",
+    "auto-gappyout",
+    "ginsi-gappyout"
+  ],
+  "task_records": [
+    {
+      "error_code": null,
+      "error_message": null,
+      "execution_mode": "parallel",
+      "label": "MAFFT auto plus trimAl gap-threshold",
+      "log_path": "parallel-logs/auto-gap-threshold.log",
+      "output_root": "variants/auto-gap-threshold",
+      "status": "succeeded",
+      "variant_id": "auto-gap-threshold"
+    },
+    {
+      "error_code": null,
+      "error_message": null,
+      "execution_mode": "parallel",
+      "label": "MAFFT ginsi plus trimAl gap-threshold",
+      "log_path": "parallel-logs/ginsi-gap-threshold.log",
+      "output_root": "variants/ginsi-gap-threshold",
+      "status": "succeeded",
+      "variant_id": "ginsi-gap-threshold"
+    },
+    {
+      "error_code": null,
+      "error_message": null,
+      "execution_mode": "parallel",
+      "label": "MAFFT auto plus trimAl gappyout",
+      "log_path": "parallel-logs/auto-gappyout.log",
+      "output_root": "variants/auto-gappyout",
+      "status": "succeeded",
+      "variant_id": "auto-gappyout"
+    },
+    {
+      "error_code": null,
+      "error_message": null,
+      "execution_mode": "parallel",
+      "label": "MAFFT ginsi plus trimAl gappyout",
+      "log_path": "parallel-logs/ginsi-gappyout.log",
+      "output_root": "variants/ginsi-gappyout",
+      "status": "succeeded",
+      "variant_id": "ginsi-gappyout"
+    }
+  ],
+  "variant_count": 4,
+  "workflow": "rabies_method_sensitivity_panel",
+  "workflow_prefix": "rabies-method-sensitivity-panel"
+}

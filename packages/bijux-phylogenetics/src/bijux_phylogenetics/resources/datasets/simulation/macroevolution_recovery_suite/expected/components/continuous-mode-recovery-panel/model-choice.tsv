@@ -1,0 +1,67 @@
+case_id	generating_model	recovery_engine	expected_selected_model	model	parameter_count	log_likelihood	aic	aicc	selected
+brownian-sigma-recovery	brownian	bijux	brownian	brownian	2	-16.1850411258348	36.3700822516696	37.7034155850029	true
+brownian-sigma-recovery	brownian	bijux	brownian	ornstein-uhlenbeck	3	-16.0916309146339	38.1832618292678	41.1832618292678	false
+brownian-sigma-recovery	brownian	bijux	brownian	early-burst	3	-16.1850411258348	38.3700822516696	41.3700822516696	false
+brownian-sigma-recovery	brownian	geiger	brownian	brownian	2	-16.1850411455123	36.3700822910245	37.7034156243579	true
+brownian-sigma-recovery	brownian	geiger	brownian	ornstein-uhlenbeck	3	-16.1662065722014	38.3324131444028	41.3324131444028	false
+brownian-sigma-recovery	brownian	geiger	brownian	early-burst	3	-16.1850419650072	38.3700839300143	41.3700839300143	false
+ou-parameter-recovery	ornstein-uhlenbeck	bijux	ornstein-uhlenbeck	ornstein-uhlenbeck	3	-1.369439672298	8.738879344596	11.738879344596	true
+ou-parameter-recovery	ornstein-uhlenbeck	bijux	ornstein-uhlenbeck	brownian	2	-3.91337147674185	11.8267429534837	13.160076286817	false
+ou-parameter-recovery	ornstein-uhlenbeck	bijux	ornstein-uhlenbeck	early-burst	3	-3.91337147674185	13.8267429534837	16.8267429534837	false
+ou-parameter-recovery	ornstein-uhlenbeck	geiger	ornstein-uhlenbeck	brownian	2	-3.9133714960143	11.8267429920286	13.1600763253619	true
+ou-parameter-recovery	ornstein-uhlenbeck	geiger	ornstein-uhlenbeck	ornstein-uhlenbeck	3	-2.31778740877075	10.6355748175415	13.6355748175415	false
+ou-parameter-recovery	ornstein-uhlenbeck	geiger	ornstein-uhlenbeck	early-burst	3	-3.91337368767424	13.8267473753485	16.8267473753485	false
+early-burst-rate-recovery	early-burst	bijux	early-burst	early-burst	3	27.8594152469075	-49.718830493815	-46.718830493815	true
+early-burst-rate-recovery	early-burst	bijux	early-burst	brownian	2	4.00058715342941	-4.00117430685882	-2.66784097352549	false
+early-burst-rate-recovery	early-burst	bijux	early-burst	ornstein-uhlenbeck	3	4.00057392689138	-2.00114785378276	0.99885214621724	false
+early-burst-rate-recovery	early-burst	geiger	early-burst	early-burst	3	27.8601178022936	-49.7202356045872	-46.7202356045872	true
+early-burst-rate-recovery	early-burst	geiger	early-burst	brownian	2	4.00058721562811	-4.00117443125621	-2.66784109792288	false
+early-burst-rate-recovery	early-burst	geiger	early-burst	ornstein-uhlenbeck	3	4.02005989833386	-2.04011979666771	0.959880203332286	false
+weak-ou-identifiability	ornstein-uhlenbeck	bijux	brownian	brownian	2	-0.032029582223344	4.06405916444669	5.39739249778002	true
+weak-ou-identifiability	ornstein-uhlenbeck	bijux	brownian	ornstein-uhlenbeck	3	-0.030959603109572	6.06191920621914	9.06191920621914	false
+weak-ou-identifiability	ornstein-uhlenbeck	bijux	brownian	early-burst	3	-0.032029582223344	6.06405916444669	9.06405916444669	false
+weak-ou-identifiability	ornstein-uhlenbeck	geiger	brownian	brownian	2	-0.0320295736715238	4.06405914734305	5.39739248067638	true
+weak-ou-identifiability	ornstein-uhlenbeck	geiger	brownian	ornstein-uhlenbeck	3	0.306262586364406	5.38747482727119	8.38747482727119	false
+weak-ou-identifiability	ornstein-uhlenbeck	geiger	brownian	early-burst	3	-0.0320296336853234	6.06405926737065	9.06405926737065	false
+lambda-transformed-branch-review	pagel-lambda	bijux		ornstein-uhlenbeck	3	-24.1597915286376	54.3195830572752	55.5195830572752	true
+lambda-transformed-branch-review	pagel-lambda	bijux		pagel-lambda	3	-26.2255402631027	58.4510805262054	59.6510805262054	false
+lambda-transformed-branch-review	pagel-lambda	bijux		white-noise	2	-28.5340348738332	61.0680697476664	61.639498319095	false
+lambda-transformed-branch-review	pagel-lambda	bijux		pagel-kappa	3	-27.6505448587181	61.3010897174362	62.5010897174362	false
+lambda-transformed-branch-review	pagel-lambda	bijux		pagel-delta	3	-29.1789582878	64.3579165756	65.5579165756	false
+lambda-transformed-branch-review	pagel-lambda	bijux		brownian	2	-32.3103114104074	68.6206228208148	69.1920513922434	false
+lambda-transformed-branch-review	pagel-lambda	bijux		early-burst	3	-32.3103114104074	70.6206228208148	71.8206228208148	false
+lambda-transformed-branch-review	pagel-lambda	geiger		ornstein-uhlenbeck	3	-24.1597909903136	54.3195819806271	55.5195819806271	true
+lambda-transformed-branch-review	pagel-lambda	geiger		pagel-lambda	3	-26.22554026311	58.4510805262199	59.6510805262199	false
+lambda-transformed-branch-review	pagel-lambda	geiger		white-noise	2	-28.5340348738332	61.0680697476663	61.6394983190949	false
+lambda-transformed-branch-review	pagel-lambda	geiger		pagel-kappa	3	-27.6505448847499	61.3010897694997	62.5010897694997	false
+lambda-transformed-branch-review	pagel-lambda	geiger		pagel-delta	3	-29.1789593948006	64.3579187896013	65.5579187896012	false
+lambda-transformed-branch-review	pagel-lambda	geiger		brownian	2	-32.310315348489	68.620630696978	69.1920592684066	false
+lambda-transformed-branch-review	pagel-lambda	geiger		early-burst	3	-32.3103176941181	70.6206353882362	71.8206353882362	false
+kappa-transformed-branch-review	pagel-kappa	bijux		pagel-kappa	3	17.8667602510463	-29.7335205020926	-28.5335205020926	true
+kappa-transformed-branch-review	pagel-kappa	bijux		pagel-delta	3	8.50061578071303	-11.0012315614261	-9.80123156142606	false
+kappa-transformed-branch-review	pagel-kappa	bijux		early-burst	3	8.20146236551965	-10.4029247310393	-9.2029247310393	false
+kappa-transformed-branch-review	pagel-kappa	bijux		brownian	2	4.26666575333107	-4.53333150666214	-3.96190293523357	false
+kappa-transformed-branch-review	pagel-kappa	bijux		pagel-lambda	3	4.26666575333107	-2.53333150666214	-1.33333150666214	false
+kappa-transformed-branch-review	pagel-kappa	bijux		ornstein-uhlenbeck	3	4.26665829387388	-2.53331658774776	-1.33331658774776	false
+kappa-transformed-branch-review	pagel-kappa	bijux		white-noise	2	-28.2313030623582	60.4626061247164	61.034034696145	false
+kappa-transformed-branch-review	pagel-kappa	geiger		pagel-kappa	3	17.8832517454018	-29.7665034908037	-28.5665034908037	true
+kappa-transformed-branch-review	pagel-kappa	geiger		pagel-delta	3	8.50066344604158	-11.0013268920832	-9.80132689208316	false
+kappa-transformed-branch-review	pagel-kappa	geiger		early-burst	3	8.20163099046561	-10.4032619809312	-9.20326198093121	false
+kappa-transformed-branch-review	pagel-kappa	geiger		brownian	2	4.26667201249494	-4.53334402498989	-3.96191545356132	false
+kappa-transformed-branch-review	pagel-kappa	geiger		ornstein-uhlenbeck	3	4.26667201249533	-2.53334402499066	-1.33334402499066	false
+kappa-transformed-branch-review	pagel-kappa	geiger		pagel-lambda	3	4.26667201249478	-2.53334402498955	-1.33334402498955	false
+kappa-transformed-branch-review	pagel-kappa	geiger		white-noise	2	-28.2313030623581	60.4626061247163	61.0340346961449	false
+delta-transformed-branch-review	pagel-delta	bijux		pagel-kappa	3	-2.7698826254631	11.5397652509262	12.7397652509262	true
+delta-transformed-branch-review	pagel-delta	bijux		brownian	2	-4.19613809811226	12.3922761962245	12.9637047676531	false
+delta-transformed-branch-review	pagel-delta	bijux		pagel-delta	3	-3.97823065167644	13.9564613033529	15.1564613033529	false
+delta-transformed-branch-review	pagel-delta	bijux		early-burst	3	-4.10563548073436	14.2112709614687	15.4112709614687	false
+delta-transformed-branch-review	pagel-delta	bijux		pagel-lambda	3	-4.19613809811226	14.3922761962245	15.5922761962245	false
+delta-transformed-branch-review	pagel-delta	bijux		ornstein-uhlenbeck	3	-4.19613907028103	14.3922781405621	15.5922781405621	false
+delta-transformed-branch-review	pagel-delta	bijux		white-noise	2	-28.0472299279174	60.0944598558348	60.6658884272634	false
+delta-transformed-branch-review	pagel-delta	geiger		pagel-kappa	3	-2.76984138830507	11.5396827766101	12.7396827766101	true
+delta-transformed-branch-review	pagel-delta	geiger		brownian	2	-4.19613292786295	12.3922658557259	12.9636944271545	false
+delta-transformed-branch-review	pagel-delta	geiger		pagel-delta	3	-3.97822210197279	13.9564442039456	15.1564442039456	false
+delta-transformed-branch-review	pagel-delta	geiger		early-burst	3	-4.10562616388393	14.2112523277679	15.4112523277679	false
+delta-transformed-branch-review	pagel-delta	geiger		ornstein-uhlenbeck	3	-4.19613292786262	14.3922658557252	15.5922658557252	false
+delta-transformed-branch-review	pagel-delta	geiger		pagel-lambda	3	-4.19613292786312	14.3922658557262	15.5922658557262	false
+delta-transformed-branch-review	pagel-delta	geiger		white-noise	2	-28.0472299279174	60.0944598558349	60.6658884272634	false

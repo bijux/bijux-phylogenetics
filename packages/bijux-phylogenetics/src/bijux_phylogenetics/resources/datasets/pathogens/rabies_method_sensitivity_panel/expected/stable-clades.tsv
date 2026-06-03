@@ -1,0 +1,3 @@
+split_id	conclusion_class	evidence_class	occurrence_count	variant_count	detail
+cattle_russia_4092_13_2025|cattle_russia_4092_15_2025	stable_clade	strong_stable	4	4	clade is present in both trees without a support disagreement above the governed threshold
+raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025	stable_clade	moderate_stable	4	4	clade is present in both trees without a support disagreement above the governed threshold

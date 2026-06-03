@@ -1,0 +1,16 @@
+node	node_name	is_tip	descendant_taxa	most_likely_state	state_probabilities	ambiguous
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4|SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8		false	SimTaxon1,SimTaxon2,SimTaxon3,SimTaxon4,SimTaxon5,SimTaxon6,SimTaxon7,SimTaxon8	north	"{""north"": 1.0}"	false
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4		false	SimTaxon1,SimTaxon2,SimTaxon3,SimTaxon4	north	"{""north"": 0.888888888888889, ""south"": 0.111111111111111}"	true
+SimTaxon1|SimTaxon2		false	SimTaxon1,SimTaxon2	north	"{""north"": 1.0}"	false
+SimTaxon1	SimTaxon1	true	SimTaxon1	north	"{""north"": 1.0}"	false
+SimTaxon2	SimTaxon2	true	SimTaxon2	north	"{""north"": 1.0}"	false
+SimTaxon3|SimTaxon4		false	SimTaxon3,SimTaxon4	south	"{""south"": 1.0}"	false
+SimTaxon3	SimTaxon3	true	SimTaxon3	south	"{""south"": 1.0}"	false
+SimTaxon4	SimTaxon4	true	SimTaxon4	south	"{""south"": 1.0}"	false
+SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8		false	SimTaxon5,SimTaxon6,SimTaxon7,SimTaxon8	north	"{""east"": 0.0588235294117647, ""north"": 0.941176470588235}"	true
+SimTaxon5	SimTaxon5	true	SimTaxon5	east	"{""east"": 1.0}"	false
+SimTaxon6|SimTaxon7|SimTaxon8		false	SimTaxon6,SimTaxon7,SimTaxon8	north	"{""north"": 1.0}"	false
+SimTaxon6|SimTaxon7		false	SimTaxon6,SimTaxon7	north	"{""north"": 1.0}"	false
+SimTaxon6	SimTaxon6	true	SimTaxon6	north	"{""north"": 1.0}"	false
+SimTaxon7	SimTaxon7	true	SimTaxon7	north	"{""north"": 1.0}"	false
+SimTaxon8	SimTaxon8	true	SimTaxon8	north	"{""north"": 1.0}"	false

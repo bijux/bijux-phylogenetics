@@ -41,6 +41,26 @@ def _write_sdist(path: Path, members: dict[str, str]) -> None:
             temp_path.unlink()
 
 
+def _write_sdist_with_symbolic_link(
+    path: Path,
+    *,
+    members: dict[str, str],
+    linked_member: str,
+    link_target: str,
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tarfile.open(path, "w:gz") as archive:
+        for member, payload in members.items():
+            temp_path = path.parent / member.replace("/", "_")
+            temp_path.write_text(payload, encoding="utf-8")
+            archive.add(temp_path, arcname=f"demo-0.1.0/{member}")
+            temp_path.unlink()
+        tarinfo = tarfile.TarInfo(name=f"demo-0.1.0/{linked_member}")
+        tarinfo.type = tarfile.SYMTYPE
+        tarinfo.linkname = link_target
+        archive.addfile(tarinfo)
+
+
 def _minimal_repo(tmp_path: Path) -> Path:
     repo_root = tmp_path / "repo"
     _write(
@@ -159,6 +179,10 @@ def test_load_package_bundle_policies_reads_repo_owned_policy() -> None:
         "bijux-phylogenetics-dev",
     }
     assert policies["bijux-phylogenetics"].wheel_module_root == "bijux_phylogenetics"
+    assert (
+        "bijux_phylogenetics_dev/quality/package_install_smoke.py"
+        in policies["bijux-phylogenetics-dev"].required_wheel_entries
+    )
 
 
 def test_runtime_publication_policy_allows_secured_xml_dependency() -> None:
@@ -168,9 +192,51 @@ def test_runtime_publication_policy_allows_secured_xml_dependency() -> None:
         "biopython>=1.87,<2.0",
         "cairosvg>=2.9.0,<3.0",
         "defusedxml>=0.7.1,<1.0",
+        "PyYAML>=6.0,<7.0",
+    )
+    assert (
+        "src/bijux_phylogenetics/resources/examples/alignments/example_alignment.fasta"
+        in runtime_policy.required_sdist_entries
+    )
+    assert (
+        "src/bijux_phylogenetics/resources/examples/trees/example_tree.nwk"
+        in runtime_policy.required_sdist_entries
+    )
+    assert (
+        "src/bijux_phylogenetics/resources/datasets/mammals/primate_comparative/tree.nwk"
+        in runtime_policy.required_sdist_entries
+    )
+    assert (
+        "src/bijux_phylogenetics/resources/datasets/mammals/primate_comparative/traits.csv"
+        in runtime_policy.required_sdist_entries
+    )
+    assert (
+        "src/bijux_phylogenetics/resources/datasets/pathogens/rabies_cross_host_geography_panel/workflow-config.json"
+        in runtime_policy.required_sdist_entries
+    )
+    assert (
+        "bijux_phylogenetics/resources/examples/alignments/example_alignment.fasta"
+        in runtime_policy.required_wheel_entries
+    )
+    assert (
+        "bijux_phylogenetics/resources/examples/trees/example_tree.nwk"
+        in runtime_policy.required_wheel_entries
+    )
+    assert (
+        "bijux_phylogenetics/resources/datasets/mammals/primate_comparative/tree.nwk"
+        in runtime_policy.required_wheel_entries
+    )
+    assert (
+        "bijux_phylogenetics/resources/datasets/mammals/primate_comparative/traits.csv"
+        in runtime_policy.required_wheel_entries
+    )
+    assert (
+        "bijux_phylogenetics/resources/datasets/pathogens/rabies_cross_host_geography_panel/workflow-config.json"
+        in runtime_policy.required_wheel_entries
     )
 
 
+@pytest.mark.slow
 def test_check_package_bundles_reports_target_package_policy_coverage(
     tmp_path: Path,
 ) -> None:
@@ -231,6 +297,35 @@ def test_audit_package_bundle_directory_flags_missing_and_forbidden_entries(
 
     issue_codes = {issue["code"] for issue in report["issues"]}
     assert issue_codes == {"missing-sdist-entry", "forbidden-archive-prefix"}
+
+
+def test_audit_package_bundle_directory_rejects_linked_sdist_entries(
+    tmp_path: Path,
+) -> None:
+    repo_root = _minimal_repo(tmp_path)
+    policy = load_package_bundle_policies(repo_root)["demo-runtime"]
+    dist_dir = tmp_path / "dist"
+    _write_wheel(
+        dist_dir / "demo_runtime-0.1.0-py3-none-any.whl",
+        {
+            "demo_runtime/__init__.py": "__version__='0.1.0'\n",
+        },
+    )
+    _write_sdist_with_symbolic_link(
+        dist_dir / "demo_runtime-0.1.0.tar.gz",
+        members={
+            "README.md": "# Demo\n",
+            "src/demo_runtime/__init__.py": "__version__='0.1.0'\n",
+        },
+        linked_member="LICENSE",
+        link_target="../../LICENSE",
+    )
+
+    report = audit_package_bundle_directory(policy, dist_dir)
+
+    assert report["issue_count"] == 1
+    assert report["issues"][0]["code"] == "linked-archive-entry"
+    assert "../../LICENSE" in report["issues"][0]["message"]
 
 
 def test_audit_package_bundle_directory_accepts_compliant_archives(

@@ -1,0 +1,5 @@
+taxon	response	predictor_one	predictor_two	habitat
+A	1.5	1.0	0.0	forest
+B	3.0		1.0	forest
+C	2.5	3.0	0.0	tundra
+D	4.0	4.0	1.0	tundra

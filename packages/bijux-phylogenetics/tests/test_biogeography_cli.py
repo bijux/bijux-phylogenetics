@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -91,6 +91,7 @@ def test_biogeography_model_cli_accepts_region_vocabulary(capsys) -> None:
     assert payload["metrics"]["observed_region_count"] == 3
 
 
+@pytest.mark.slow
 def test_biogeography_constrained_cli_can_export_review(
     tmp_path: Path,
     capsys,
@@ -409,11 +410,16 @@ def test_biogeography_report_cli_can_export_full_review_package(
 
     assert exit_code == 0
     assert payload["metrics"]["report_kind"] == "biogeography-report-package"
-    assert payload["metrics"]["artifact_count"] == 12
+    assert payload["metrics"]["artifact_count"] == 15
     assert payload["metrics"]["event_count"] == 2
+    assert payload["metrics"]["publication_ready"] is True
+    assert payload["metrics"]["caption_ready"] is True
+    assert payload["metrics"]["rendered_internal_pie_count"] > 0
     assert (out_dir / "biogeography-report.html").exists()
     assert (out_dir / "ancestral-region-tree.svg").exists()
     assert (out_dir / "geographic-region-map.html").exists()
+    assert (out_dir / "figure-legend.tsv").exists()
+    assert (out_dir / "figure-caption.md").exists()
     assert (out_dir / "summary.tsv").exists()
     assert (out_dir / "region-counts.tsv").exists()
     assert (out_dir / "ancestral-regions.tsv").exists()
@@ -423,3 +429,4 @@ def test_biogeography_report_cli_can_export_full_review_package(
     assert (out_dir / "map-lines.tsv").exists()
     assert (out_dir / "exclusions.tsv").exists()
     assert (out_dir / "biogeography-report.manifest.json").exists()
+    assert (out_dir / "figure-reproducibility.manifest.json").exists()

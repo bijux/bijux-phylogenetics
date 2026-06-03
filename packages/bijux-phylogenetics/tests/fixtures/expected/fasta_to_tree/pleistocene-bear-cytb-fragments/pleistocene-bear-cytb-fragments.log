@@ -1,11 +1,11 @@
 workflow: fasta-to-tree
-input_path: packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/ancient_dna/pleistocene_bear_cytb_fragments/sequences.fasta
-prepared_input_path: packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/ancient_dna/pleistocene_bear_cytb_fragments/sequences.fasta
+input_path: /Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/ancient_dna/pleistocene_bear_cytb_fragments/sequences.fasta
+prepared_input_path: /Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/ancient_dna/pleistocene_bear_cytb_fragments/sequences.fasta
 sequence_type: dna
 selected_model: HKY+F
-started_at_utc: 2026-05-13T04:26:47Z
-ended_at_utc: 2026-05-13T04:26:48Z
-runtime_seconds: 1.009
+started_at_utc: 2026-05-31T18:29:31Z
+ended_at_utc: 2026-05-31T18:29:33Z
+runtime_seconds: 1.949
 run_manifest_path: pleistocene-bear-cytb-fragments.run.json
 
 [input-validation]
@@ -16,7 +16,7 @@ warnings:
 
 [alignment]
 engine: mafft
-command: /opt/homebrew/bin/mafft --auto packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/ancient_dna/pleistocene_bear_cytb_fragments/sequences.fasta
+command: /opt/homebrew/bin/mafft --auto /Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/src/bijux_phylogenetics/resources/datasets/ancient_dna/pleistocene_bear_cytb_fragments/sequences.fasta
 version: v7.526 (2024/Apr/26)
 manifest: engine-artifacts/pleistocene-bear-cytb-fragments/alignment/alignment.aln.manifest.json
 output.alignment: engine-artifacts/pleistocene-bear-cytb-fragments/alignment/alignment.aln
@@ -27,6 +27,7 @@ command: /opt/homebrew/bin/trimal -in engine-artifacts/pleistocene-bear-cytb-fra
 version: trimAl v1.5.rev0 build[2024-05-27]
 manifest: engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln.manifest.json
 output.trimmed_alignment: engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln
+output.trimming_summary: engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln.retained-sites.tsv
 
 [model_selection]
 engine: iqtree

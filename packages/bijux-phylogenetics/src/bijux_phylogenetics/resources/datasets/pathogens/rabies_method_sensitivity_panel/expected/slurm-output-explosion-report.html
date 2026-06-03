@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rabies Slurm Output Explosion Report</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1b1f24;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --accent: #0f766e;
+      --rule: #d6dee8;
+      --mono: "SFMono-Regular", "SF Mono", Consolas, monospace;
+    }
+    body {
+      margin: 0;
+      padding: 2rem;
+      background: linear-gradient(180deg, #eef6f4 0%, var(--bg) 100%);
+      color: var(--ink);
+      font: 16px/1.5 "Iowan Old Style", "Palatino Linotype", serif;
+    }
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--panel);
+      border: 1px solid var(--rule);
+      border-radius: 18px;
+      padding: 2rem;
+      box-shadow: 0 24px 80px rgba(15, 118, 110, 0.08);
+    }
+    h1, h2 {
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      letter-spacing: 0.02em;
+    }
+    h1 {
+      margin-top: 0;
+      color: var(--accent);
+    }
+    section + section {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--rule);
+    }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: var(--mono);
+      background: #f6f8fa;
+      border-radius: 12px;
+      padding: 1rem;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+    }
+    .summary-card {
+      background: #f6fffd;
+      border: 1px solid rgba(15, 118, 110, 0.18);
+      border-radius: 14px;
+      padding: 0.9rem 1rem;
+    }
+    .summary-card dt {
+      margin: 0;
+      font: 600 0.82rem/1.2 "Avenir Next", "Segoe UI", sans-serif;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: #476b67;
+    }
+    .summary-card dd {
+      margin: 0.35rem 0 0;
+      font: 700 1.2rem/1.25 var(--mono);
+      color: var(--ink);
+    }
+
+    .artifact-list {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+    .artifact-list li + li {
+      margin-top: 0.65rem;
+    }
+    .artifact-list a {
+      color: var(--accent);
+      font-family: var(--mono);
+      text-decoration: none;
+    }
+    .artifact-list a:hover {
+      text-decoration: underline;
+    }
+    .artifact-note {
+      display: block;
+      margin-top: 0.2rem;
+      color: #51646b;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Rabies Slurm Output Explosion Report</h1>
+    <script id="bijux-report-manifest" type="application/json">{
+  "bootstrap_replicates": 1000,
+  "dataset_id": "rabies_method_sensitivity_panel",
+  "high_risk_variant_count": 0,
+  "largest_variant_id": "ginsi-gappyout",
+  "largest_variant_output_share": 0.25,
+  "overall_risk_status": "low",
+  "total_estimated_output_mib": 4,
+  "total_estimated_storage_mib": 2,
+  "total_posterior_sample_byte_count": 0,
+  "total_report_byte_count": 1101231,
+  "total_tree_byte_count": 7036,
+  "variant_count": 4,
+  "warning_variant_count": 0,
+  "workflow_prefix": "rabies-method-sensitivity-panel"
+}</script>
+<section><h2>summary</h2><div class="summary-grid">
+<dl class="summary-card"><dt>overall risk</dt><dd>low</dd></dl>
+<dl class="summary-card"><dt>warning variants</dt><dd>0</dd></dl>
+<dl class="summary-card"><dt>high-risk variants</dt><dd>0</dd></dl>
+<dl class="summary-card"><dt>global issues</dt><dd>0</dd></dl>
+<dl class="summary-card"><dt>estimated output MiB</dt><dd>4</dd></dl>
+<dl class="summary-card"><dt>estimated storage MiB</dt><dd>2</dd></dl>
+<dl class="summary-card"><dt>posterior bytes</dt><dd>0</dd></dl>
+</div></section>
+<section><h2>artifacts</h2><ul class="artifact-list">
+<li>output explosion checks: <a href="slurm-output-explosion-checks.tsv">slurm-output-explosion-checks.tsv</a></li>
+<li>output explosion variants: <a href="slurm-output-explosion-variants.tsv">slurm-output-explosion-variants.tsv</a></li>
+<li>output explosion summary: <a href="slurm-output-explosion-report.json">slurm-output-explosion-report.json</a></li>
+</ul></section>
+<section><h2>risk-summary</h2><pre>overall_risk_status: low
+bootstrap_replicates: 1000
+variant_count: 4
+total_estimated_output_mib: 4
+total_estimated_storage_mib: 2</pre></section>
+<section><h2>global-issues</h2><pre>none</pre></section>
+<section><h2>high-risk-variants</h2><pre>none</pre></section>
+<section><h2>warning-variants</h2><pre>none</pre></section>
+  </main>
+</body>
+</html>

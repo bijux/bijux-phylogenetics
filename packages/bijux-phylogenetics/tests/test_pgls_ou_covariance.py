@@ -6,12 +6,12 @@ from pathlib import Path
 
 import pytest
 
-from bijux_phylogenetics.comparative.pgls_ou_covariance import (
+from bijux_phylogenetics.comparative.pgls.ou_covariance import (
     summarize_ou_covariance_pgls,
     write_ou_alpha_profile_table,
     write_ou_covariance_table,
 )
-from bijux_phylogenetics.errors import ComparativeMethodError
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -102,6 +102,24 @@ def test_summarize_ou_covariance_pgls_detects_invalid_covariance() -> None:
             alpha=1.0,
         )
     assert "OU covariance is invalid" in str(error.value)
+
+
+def test_summarize_ou_covariance_pgls_reports_negative_branch_length_details() -> None:
+    with pytest.raises(ComparativeMethodError) as error:
+        summarize_ou_covariance_pgls(
+            fixture("example_tree_negative_length.nwk"),
+            fixture("example_traits_comparative.tsv"),
+            response="response",
+            predictors=["predictor_one"],
+            alpha=1.0,
+        )
+
+    assert (
+        error.value.details["failure_reason"] == "ou_covariance_negative_branch_lengths"
+    )
+    assert error.value.details["evidence"]["tree_path"].endswith(
+        "example_tree_negative_length.nwk"
+    )
 
 
 def test_write_ou_covariance_tables_write_rows(tmp_path: Path) -> None:

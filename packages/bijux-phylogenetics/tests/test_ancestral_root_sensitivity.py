@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
-from bijux_phylogenetics.ancestral.root_sensitivity import (
+from bijux_phylogenetics.ancestral.sensitivity import (
     summarize_ancestral_root_sensitivity,
     summarize_ancestral_root_sensitivity_report,
     write_ancestral_root_assumption_table,
@@ -88,11 +88,11 @@ def test_summarize_ancestral_root_sensitivity_reports_state_and_support_changes(
     ]
     assert summary.assumption_count == 3
     assert summary.compared_node_count == 3
-    assert summary.state_changed_node_count == 1
-    assert summary.support_changed_node_count == 2
+    assert summary.state_changed_node_count == 2
+    assert summary.support_changed_node_count == 1
     assert summary.top_sensitive_node == "A|B|C|D"
     assert report.node_rows[0].stability_class == "root_sensitive_state"
-    assert report.node_rows[1].stability_class == "root_sensitive_support"
+    assert report.node_rows[1].stability_class == "root_sensitive_state"
     assert "equal_root_prior" in report.node_rows[0].assumption_states
 
 

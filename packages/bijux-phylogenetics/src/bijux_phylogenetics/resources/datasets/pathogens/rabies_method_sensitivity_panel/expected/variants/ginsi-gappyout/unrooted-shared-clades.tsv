@@ -1,0 +1,3 @@
+split_id	fasttree_support	fasttree_support_fraction	fasttree_support_label_kind	iqtree_support	iqtree_support_fraction	iqtree_support_label_kind	support_fraction_delta	support_disagreement
+cattle_russia_4092_13_2025|cattle_russia_4092_15_2025	0.999	0.999	sh-like-local-support	100	1	ufboot-support	0.001	false
+raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025	0.87	0.87	sh-like-local-support	84	0.84	ufboot-support	0.03	false

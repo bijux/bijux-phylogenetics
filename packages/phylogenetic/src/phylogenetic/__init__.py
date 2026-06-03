@@ -5,6 +5,10 @@ from __future__ import annotations
 from importlib import import_module, metadata
 from typing import Any
 
+from bijux_phylogenetics.comparative.common import (
+    ComparativeDataset as ComparativeDataset,
+)
+
 from .runtime_alias import install_runtime_aliases
 
 _ALIAS_PACKAGE = "phylogenetic"
@@ -29,6 +33,8 @@ except metadata.PackageNotFoundError:
     __version__ = "0.1.0"
 
 __all__ = list(getattr(_runtime_module, "__all__", ()))
+if "ComparativeDataset" not in __all__:
+    __all__.append("ComparativeDataset")
 
 
 def __getattr__(name: str) -> Any:

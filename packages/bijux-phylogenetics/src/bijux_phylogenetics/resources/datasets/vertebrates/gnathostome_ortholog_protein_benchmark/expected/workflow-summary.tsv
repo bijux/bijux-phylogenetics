@@ -1,0 +1,2 @@
+dataset_id	sequence_count	sequence_type	selected_model	alignment_length	trimmed_alignment_length	internal_node_count	supported_node_count	minimum_support	maximum_support	median_support	weakly_supported_clade_count	state_space	model_selection_scope
+gnathostome_ortholog_protein_benchmark	9	protein	Q.insect+I	185	185	6	6	45	93	79.5	2	amino-acid	protein-models-only

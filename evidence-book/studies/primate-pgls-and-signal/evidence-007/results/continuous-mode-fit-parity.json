@@ -85,30 +85,30 @@
       ]
     },
     "early_burst": {
-      "aic": 928.5062,
-      "log_likelihood": -461.2531,
+      "aic": 958.8468,
+      "log_likelihood": -476.4234,
       "parameter_count": 3,
-      "rate": 3.9467,
-      "rate_change": 10.6719,
-      "root_state": 282.721
+      "rate": 88740.5228,
+      "rate_change": 0.0,
+      "root_state": 262.35
     },
     "ornstein_uhlenbeck": {
       "aic": 928.5062,
-      "alpha": 5.3344,
+      "alpha": 5.3356,
       "log_likelihood": -461.2531,
       "parameter_count": 3,
-      "rate": 170165.9998,
-      "root_state": 282.7144
+      "rate": 170195.2204,
+      "root_state": 282.7197
     }
   },
   "evidence_id": "evidence-007",
   "r_continuous_mode_fits": {
     "brownian": {
-      "aic": 956.8469,
-      "log_likelihood": -476.4234,
+      "aic": 956.84687588978,
+      "log_likelihood": -476.42343794489,
       "parameter_count": 2,
-      "rate": 88740.5017,
-      "root_state": 262.35,
+      "rate": 88740.5017326116,
+      "root_state": 262.35002249971,
       "tip_values": [
         339.6,
         276,
@@ -188,18 +188,18 @@
       ]
     },
     "early_burst": {
-      "aic": 928.5062,
-      "log_likelihood": -461.2531,
-      "rate": 3.9467,
-      "rate_change": 10.6719,
-      "root_state": 282.721
+      "aic": 928.506191316358,
+      "log_likelihood": -461.253095658179,
+      "rate": 3.94665535926673,
+      "rate_change": 10.6718757865625,
+      "root_state": 282.721003635748
     },
     "ornstein_uhlenbeck": {
-      "aic": 928.5062,
-      "alpha": 5.3344,
-      "log_likelihood": -461.2531,
-      "rate": 170166.0788,
-      "root_state": 282.7144
+      "aic": 928.506191773076,
+      "alpha": 5.3343754665625,
+      "log_likelihood": -461.253095886538,
+      "rate": 170166.078758739,
+      "root_state": 282.714422249887
     }
   },
   "schema_version": 1,

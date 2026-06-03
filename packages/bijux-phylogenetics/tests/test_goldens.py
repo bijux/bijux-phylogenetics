@@ -3,8 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 import re
 
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.reports.service import render_tree_report
+
+from .support.scientific_output_assertions import (
+    assert_scientific_outputs_equivalent,
+)
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = Path(__file__).parent / "fixtures" / "expected"
@@ -31,6 +35,5 @@ def test_tree_report_matches_golden_html(tmp_path: Path, monkeypatch) -> None:
     render_tree_report(
         tree_path=Path("tests/fixtures/trees/example_tree.nwk"), out_path=output
     )
-    assert output.read_text(encoding="utf-8") == (
-        EXPECTED / "tree_report.html"
-    ).read_text(encoding="utf-8")
+    report = assert_scientific_outputs_equivalent(EXPECTED / "tree_report.html", output)
+    assert report.compared_file_count == 1

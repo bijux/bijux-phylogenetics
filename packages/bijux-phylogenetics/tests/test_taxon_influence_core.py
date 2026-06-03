@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.compare.taxon_influence import analyze_taxon_influence
+from bijux_phylogenetics.compare.influence import analyze_taxon_influence
 
 
 def fixture(name: str) -> Path:

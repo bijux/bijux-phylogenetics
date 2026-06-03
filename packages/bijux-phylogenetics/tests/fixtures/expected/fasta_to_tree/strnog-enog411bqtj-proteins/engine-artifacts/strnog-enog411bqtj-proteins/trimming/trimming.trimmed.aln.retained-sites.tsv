@@ -1,0 +1,13 @@
+metric	value
+mode	gap-threshold
+gap_threshold	0.100000
+input_alignment_length	324
+trimmed_alignment_length	145
+retained_site_count	145
+removed_site_count	179
+retained_site_fraction	0.447530864198
+removed_site_fraction	0.552469135802
+input_gap_fraction	0.570489844683
+trimmed_gap_fraction	0.107897664071
+input_gap_percentage	57.0489844683
+trimmed_gap_percentage	10.7897664071

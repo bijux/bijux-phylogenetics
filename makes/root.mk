@@ -12,6 +12,11 @@ UV_SYNC := UV_PROJECT_ENVIRONMENT="$(ROOT_CHECK_VENV)" $(UV) sync --frozen --gro
 CLI := $(ROOT_CHECK_VENV)/bin/bijux-phylogenetics
 DEV_RUN = PYTHONPATH="$(ROOT_DEV_PYTHONPATH)$${PYTHONPATH:+:$$PYTHONPATH}" "$(ROOT_CHECK_PYTHON)"
 DOCS_RENDER_SERVE_CONFIG := 0
+ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time
+ROOT_TARGET_GROUPS_test-all ?= check
+ROOT_TARGET_GROUPS_test-all-plus-run-time ?= check
+ROOT_TARGET_SHARED_ENV_test-all ?= 1
+ROOT_TARGET_SHARED_ENV_test-all-plus-run-time ?= 1
 
 include $(ROOT_MAKEFILE_DIR)/bijux-py/repository/root.mk
 
@@ -20,6 +25,8 @@ ROOT_FORBIDDEN_ARTIFACTS := $(filter-out \
 	"$(CURDIR)/.benchmarks",$(ROOT_FORBIDDEN_ARTIFACTS))
 
 include $(ROOT_MAKEFILE_DIR)/bijux-py/root/package-dispatch.mk
+ROOT_TARGET_PACKAGES_test-all := $(CHECK_PACKAGES)
+ROOT_TARGET_PACKAGES_test-all-plus-run-time := $(CHECK_PACKAGES)
 include $(ROOT_MAKEFILE_DIR)/bijux-py/root/docs.mk
 include $(ROOT_MAKEFILE_DIR)/bijux-docs.mk
 include $(ROOT_MAKEFILE_DIR)/bijux-std.mk
@@ -36,7 +43,7 @@ DOCS_SERVE_PREPARE_TARGETS := bijux-docs-sync docs-render-serve-config
 	check package-check package-smoke package-source-smoke package-verify sync-badges sync-license-assets test-goldens demo \
 	install-external-engine-runtime test-external-engines \
 	clean-root-artifacts root-check-env check-shared-bijux-py check-config-ssot \
-	list-evidence-studies build-evidence-book build-evidence-study build-evidence-unit validate-evidence-book rerun-evidence-cleanroom rerun-governed-evidence-cleanroom \
+	list-evidence-studies build-evidence-book build-evidence-study build-evidence-unit validate-evidence-book \
 	sync-evidence-artifacts sync-evidence-unit-artifacts check-evidence-artifacts check-evidence-unit-artifacts sync-evidence-unit-inputs check-evidence-unit-inputs report-evidence-completeness check-evidence-completeness report-evidence-governance check-evidence-governance \
 	report-artifact-governance check-artifact-governance report-execution-surfaces check-execution-surfaces \
 	report-package-boundaries check-package-boundaries report-package-bundles check-package-bundles report-publish-readiness check-publish-readiness \
@@ -48,47 +55,8 @@ EVIDENCE_IDS ?=
 
 check: sync-license-assets lock-check check-config-ssot check-evidence-governance check-execution-surfaces check-package-boundaries lint test quality security docs build sbom ## Run the full repository verification flow
 
-test-all: root-check-env ## Run every repository test surface, including slow, evaluation, and real-local tests
-	@$(MAKE) -C "packages/bijux-phylogenetics" -f "$(CURDIR)/makes/packages/bijux-phylogenetics.mk" \
-		PROJECT_SLUG="bijux-phylogenetics" \
-		PYTEST_ADDOPTS_EXTRA='-o timeout=0' \
-		$(call ROOT_PACKAGE_CONTEXT_OVERRIDES,bijux-phylogenetics) \
-		$(ROOT_SHARED_CHECK_OVERRIDES) \
-		test-all
-	@$(MAKE) -C "packages/bijux-phylogenetics-dev" -f "$(CURDIR)/makes/packages/bijux-phylogenetics-dev.mk" \
-		PROJECT_SLUG="bijux-phylogenetics-dev" \
-		PYTEST_ADDOPTS_EXTRA='-o timeout=0' \
-		$(call ROOT_PACKAGE_CONTEXT_OVERRIDES,bijux-phylogenetics-dev) \
-		$(ROOT_SHARED_CHECK_OVERRIDES) \
-		test-all
-	@$(MAKE) -C "packages/phylogenetic" -f "$(CURDIR)/makes/packages/phylogenetic.mk" \
-		PROJECT_SLUG="phylogenetic" \
-		PYTEST_ADDOPTS_EXTRA='-o timeout=0' \
-		$(call ROOT_PACKAGE_CONTEXT_OVERRIDES,phylogenetic) \
-		$(ROOT_SHARED_CHECK_OVERRIDES) \
-		test-all
-.PHONY: test-all
-
-test-all-plus-run-time: root-check-env ## Run every repository test surface and report per-test durations
-	@$(MAKE) -C "packages/bijux-phylogenetics" -f "$(CURDIR)/makes/packages/bijux-phylogenetics.mk" \
-		PROJECT_SLUG="bijux-phylogenetics" \
-		PYTEST_ADDOPTS_EXTRA='-o timeout=0 --durations=0 --durations-min=0' \
-		$(call ROOT_PACKAGE_CONTEXT_OVERRIDES,bijux-phylogenetics) \
-		$(ROOT_SHARED_CHECK_OVERRIDES) \
-		test-all-plus-run-time
-	@$(MAKE) -C "packages/bijux-phylogenetics-dev" -f "$(CURDIR)/makes/packages/bijux-phylogenetics-dev.mk" \
-		PROJECT_SLUG="bijux-phylogenetics-dev" \
-		PYTEST_ADDOPTS_EXTRA='-o timeout=0 --durations=0 --durations-min=0' \
-		$(call ROOT_PACKAGE_CONTEXT_OVERRIDES,bijux-phylogenetics-dev) \
-		$(ROOT_SHARED_CHECK_OVERRIDES) \
-		test-all-plus-run-time
-	@$(MAKE) -C "packages/phylogenetic" -f "$(CURDIR)/makes/packages/phylogenetic.mk" \
-		PROJECT_SLUG="phylogenetic" \
-		PYTEST_ADDOPTS_EXTRA='-o timeout=0 --durations=0 --durations-min=0' \
-		$(call ROOT_PACKAGE_CONTEXT_OVERRIDES,phylogenetic) \
-		$(ROOT_SHARED_CHECK_OVERRIDES) \
-		test-all-plus-run-time
-.PHONY: test-all-plus-run-time
+test-all: ## Run every repository test surface, including slow, evaluation, and real-local tests
+test-all-plus-run-time: ## Run every repository test surface and report per-test durations
 
 install-external-engine-runtime: ## Install the local external engine lane dependencies on macOS with Homebrew
 	@command -v brew >/dev/null || { echo "Homebrew is required for install-external-engine-runtime"; exit 2; }
@@ -205,20 +173,6 @@ check-evidence-governance: root-check-env ## Enforce evidence-only governance ch
 	@$(MAKE) check-artifact-governance
 .PHONY: check-evidence-governance
 
-rerun-evidence-cleanroom: root-check-env ## Re-run one governed evidence selection inside a detached clean-room worktree
-	@test -n "$(EVIDENCE_STUDY_ID)" || { echo "EVIDENCE_STUDY_ID is required"; exit 2; }
-	@set -- $(EVIDENCE_IDS); \
-	ids=""; \
-	for evidence_id in $$@; do \
-	  ids="$$ids --evidence-id $$evidence_id"; \
-	done; \
-	$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_cleanroom check --repo-root "$(CURDIR)" --study-id "$(EVIDENCE_STUDY_ID)" $$ids --artifacts-root "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom" --json-out "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom/$(EVIDENCE_STUDY_ID)-cleanroom.json"
-.PHONY: rerun-evidence-cleanroom
-
-rerun-governed-evidence-cleanroom: root-check-env ## Re-run the repository-governed clean-room evidence selections
-	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_cleanroom check-selected --repo-root "$(CURDIR)" --artifacts-root "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom" --json-out "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom/selected-evidence-cleanroom.json"
-.PHONY: rerun-governed-evidence-cleanroom
-
 report-artifact-governance: root-check-env ## Audit tox, make, and workflow artifact output discipline
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.artifact_governance report --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/artifact-governance.json"
 .PHONY: report-artifact-governance
@@ -281,20 +235,26 @@ package-check: build ## Validate built distributions with twine
 	@"$(ROOT_CHECK_PYTHON)" -m twine check "$(CURDIR)/artifacts/bijux-phylogenetics/build"/*.whl "$(CURDIR)/artifacts/bijux-phylogenetics/build"/*.tar.gz
 .PHONY: package-check
 
-package-smoke: build ## Install the wheel into a temp venv and run the CLI
+package-smoke: build ## Install the wheel into a temp venv and run the governed CLI smoke proof
 	@rm -rf "$(CURDIR)/artifacts/tmp/package-smoke"
-	@"$(UV)" venv --python "$(PYTHON)" "$(CURDIR)/artifacts/tmp/package-smoke"
-	@"$(UV)" pip install --python "$(CURDIR)/artifacts/tmp/package-smoke/bin/python" "$(CURDIR)/artifacts/bijux-phylogenetics/build"/*.whl
-	@"$(CURDIR)/artifacts/tmp/package-smoke/bin/bijux-phylogenetics" --version
-	@"$(CURDIR)/artifacts/tmp/package-smoke/bin/bijux-phylogenetics" --help >/dev/null
+	@PYTHONPATH="$(CURDIR)/packages/bijux-phylogenetics-dev/src$${PYTHONPATH:+:$${PYTHONPATH}}" \
+	"$(ROOT_CHECK_PYTHON)" -m bijux_phylogenetics_dev.quality.package_install_smoke \
+		--repo-root "$(CURDIR)" \
+		--dist-dir "$(CURDIR)/artifacts/bijux-phylogenetics/build" \
+		--artifacts-root "$(CURDIR)/artifacts/tmp/package-smoke" \
+		--build-python "$(ROOT_CHECK_PYTHON)" \
+		--artifact-kind wheel
 .PHONY: package-smoke
 
-package-source-smoke: build ## Install the sdist into a temp venv and run the CLI
+package-source-smoke: build ## Install the sdist into a temp venv and run the governed CLI smoke proof
 	@rm -rf "$(CURDIR)/artifacts/tmp/package-source-smoke"
-	@"$(UV)" venv --python "$(PYTHON)" "$(CURDIR)/artifacts/tmp/package-source-smoke"
-	@"$(UV)" pip install --python "$(CURDIR)/artifacts/tmp/package-source-smoke/bin/python" "$(CURDIR)/artifacts/bijux-phylogenetics/build"/*.tar.gz
-	@"$(CURDIR)/artifacts/tmp/package-source-smoke/bin/bijux-phylogenetics" --version
-	@"$(CURDIR)/artifacts/tmp/package-source-smoke/bin/bijux-phylogenetics" --help >/dev/null
+	@PYTHONPATH="$(CURDIR)/packages/bijux-phylogenetics-dev/src$${PYTHONPATH:+:$${PYTHONPATH}}" \
+	"$(ROOT_CHECK_PYTHON)" -m bijux_phylogenetics_dev.quality.package_install_smoke \
+		--repo-root "$(CURDIR)" \
+		--dist-dir "$(CURDIR)/artifacts/bijux-phylogenetics/build" \
+		--artifacts-root "$(CURDIR)/artifacts/tmp/package-source-smoke" \
+		--build-python "$(ROOT_CHECK_PYTHON)" \
+		--artifact-kind sdist
 .PHONY: package-source-smoke
 
 package-verify: package-check package-smoke package-source-smoke ## Run the full packaging proof surface

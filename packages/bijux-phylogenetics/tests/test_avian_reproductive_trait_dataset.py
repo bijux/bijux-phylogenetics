@@ -5,14 +5,18 @@ from pathlib import Path
 
 import pytest
 
-import bijux_phylogenetics
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
     export_avian_reproductive_trait_dataset,
     load_avian_reproductive_trait_dataset,
     run_avian_reproductive_trait_demo,
     run_avian_reproductive_trait_workflow,
     write_avian_reproductive_trait_workflow_bundle,
+)
+import bijux_phylogenetics.datasets.avian_reproductive_traits as birds_api
+
+from .support.scientific_output_assertions import (
+    assert_selected_scientific_outputs_equivalent,
 )
 
 
@@ -74,10 +78,7 @@ def test_write_avian_reproductive_trait_workflow_bundle_matches_packaged_expecte
         bundle.clade_exclusion_path.name: bundle.clade_exclusion_path,
     }
     assert {path.name for path in expected_root.glob("*.tsv")} == set(generated)
-    for name, generated_path in generated.items():
-        assert generated_path.read_text(encoding="utf-8") == (
-            expected_root / name
-        ).read_text(encoding="utf-8")
+    assert_selected_scientific_outputs_equivalent(expected_root, generated)
 
 
 @pytest.mark.slow
@@ -112,23 +113,23 @@ def test_public_runtime_exports_include_avian_reproductive_trait_dataset_surface
     None
 ):
     assert (
-        bijux_phylogenetics.load_avian_reproductive_trait_dataset
+        birds_api.load_avian_reproductive_trait_dataset
         is load_avian_reproductive_trait_dataset
     )
     assert (
-        bijux_phylogenetics.export_avian_reproductive_trait_dataset
+        birds_api.export_avian_reproductive_trait_dataset
         is export_avian_reproductive_trait_dataset
     )
     assert (
-        bijux_phylogenetics.run_avian_reproductive_trait_workflow
+        birds_api.run_avian_reproductive_trait_workflow
         is run_avian_reproductive_trait_workflow
     )
     assert (
-        bijux_phylogenetics.write_avian_reproductive_trait_workflow_bundle
+        birds_api.write_avian_reproductive_trait_workflow_bundle
         is write_avian_reproductive_trait_workflow_bundle
     )
-    assert bijux_phylogenetics.run_avian_reproductive_trait_demo is (
-        run_avian_reproductive_trait_demo
+    assert (
+        birds_api.run_avian_reproductive_trait_demo is run_avian_reproductive_trait_demo
     )
 
 

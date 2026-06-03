@@ -10,7 +10,7 @@ source_csv <- file.path(
   "evidence-book",
   "studies",
   "primate-longevity-signal",
-  "evidence-001",
+  "datasets",
   "reference_primate.csv"
 )
 source_tree <- file.path(
@@ -18,7 +18,7 @@ source_tree <- file.path(
   "evidence-book",
   "studies",
   "primate-longevity-signal",
-  "evidence-001",
+  "datasets",
   "reference_trimmed_primatetree.nwk"
 )
 
@@ -296,6 +296,32 @@ r_squared <- function(observed, fitted_values) {
   rounded(1 - (residual / total))
 }
 
+gls_payload <- function(fit, observed, lambda_value = NULL) {
+  coefficient_table <- summary(fit)$tTable
+  payload <- list(
+    coefficients = list(
+      intercept = rounded(coef(fit)[["(Intercept)"]]),
+      social_group_size = rounded(coef(fit)[["social_group_size"]])
+    ),
+    standard_errors = list(
+      intercept = rounded(coefficient_table["(Intercept)", "Std.Error"]),
+      social_group_size = rounded(coefficient_table["social_group_size", "Std.Error"])
+    ),
+    p_values = list(
+      intercept = rounded(coefficient_table["(Intercept)", "p-value"]),
+      social_group_size = rounded(coefficient_table["social_group_size", "p-value"])
+    ),
+    log_likelihood = rounded(as.numeric(logLik(fit))),
+    aic = rounded(AIC(fit)),
+    r_squared = r_squared(observed, fitted(fit)),
+    diagnostics = diagnostic_summary(fitted(fit), residuals(fit, type = "n"))
+  )
+  if (!is.null(lambda_value)) {
+    payload$lambda_value <- rounded(lambda_value)
+  }
+  payload
+}
+
 primate <- read.csv(source_csv, stringsAsFactors = FALSE)
 primate$species <- as.character(primate$species)
 primatetree <- read.tree(source_tree)
@@ -325,6 +351,20 @@ pgls2 <- gls(
   correlation = corPagel(0, primatetree, fixed = FALSE, form = ~species),
   method = "ML"
 )
+estimated_lambda_value <- unname(
+  coef(pgls2$modelStruct$corStruct, unconstrained = FALSE)[["lambda"]]
+)
+pgls2_fixed <- gls(
+  longevity ~ social_group_size,
+  data = primate,
+  correlation = corPagel(
+    estimated_lambda_value,
+    primatetree,
+    fixed = TRUE,
+    form = ~species
+  ),
+  method = "ML"
+)
 pgls3 <- gls(
   longevity ~ 1,
   data = primate,
@@ -337,9 +377,6 @@ pgls4 <- gls(
   correlation = corPagel(0, primatetree, fixed = TRUE, form = ~species),
   method = "ML"
 )
-
-baseline_t_table <- summary(gls1)$tTable
-estimated_t_table <- summary(pgls2)$tTable
 signal_lambda <- unname(coef(pgls3$modelStruct$corStruct, unconstrained = FALSE)[["lambda"]])
 signal_log_likelihood <- as.numeric(logLik(pgls3))
 signal_null_log_likelihood <- as.numeric(logLik(pgls4))
@@ -394,19 +431,7 @@ payload <- list(
       rows = eb_ancestral$rows
     )
   ),
-  baseline_gls = list(
-    coefficients = list(
-      intercept = rounded(coef(gls1)[["(Intercept)"]]),
-      social_group_size = rounded(coef(gls1)[["social_group_size"]])
-    ),
-    p_values = list(
-      intercept = rounded(baseline_t_table["(Intercept)", "p-value"]),
-      social_group_size = rounded(baseline_t_table["social_group_size", "p-value"])
-    ),
-    log_likelihood = rounded(as.numeric(logLik(gls1))),
-    r_squared = r_squared(primate$longevity, fitted(gls1)),
-    diagnostics = diagnostic_summary(fitted(gls1), residuals(gls1, type = "n"))
-  ),
+  baseline_gls = gls_payload(gls1, primate$longevity),
   fixed_lambda_gls_matches_baseline = isTRUE(all.equal(
     as.numeric(coef(gls1)),
     as.numeric(coef(pgls1)),
@@ -416,19 +441,15 @@ payload <- list(
     as.numeric(logLik(pgls1)),
     tolerance = 1e-12
   )),
-  estimated_lambda_pgls = list(
-    lambda_value = rounded(unname(coef(pgls2$modelStruct$corStruct, unconstrained = FALSE)[["lambda"]])),
-    coefficients = list(
-      intercept = rounded(coef(pgls2)[["(Intercept)"]]),
-      social_group_size = rounded(coef(pgls2)[["social_group_size"]])
-    ),
-    p_values = list(
-      intercept = rounded(estimated_t_table["(Intercept)", "p-value"]),
-      social_group_size = rounded(estimated_t_table["social_group_size", "p-value"])
-    ),
-    log_likelihood = rounded(as.numeric(logLik(pgls2))),
-    r_squared = r_squared(primate$longevity, fitted(pgls2)),
-    diagnostics = diagnostic_summary(fitted(pgls2), residuals(pgls2, type = "n"))
+  fixed_reference_lambda_pgls = gls_payload(
+    pgls2_fixed,
+    primate$longevity,
+    lambda_value = estimated_lambda_value
+  ),
+  estimated_lambda_pgls = gls_payload(
+    pgls2,
+    primate$longevity,
+    lambda_value = estimated_lambda_value
   ),
   signal_test = list(
     estimated_lambda = rounded(signal_lambda),
@@ -447,4 +468,12 @@ payload <- list(
 )
 
 dir.create(dirname(out_path), recursive = TRUE, showWarnings = FALSE)
-writeLines(toJSON(payload, auto_unbox = TRUE, pretty = TRUE), con = out_path)
+writeLines(
+  toJSON(
+    payload,
+    auto_unbox = TRUE,
+    pretty = TRUE,
+    digits = NA
+  ),
+  con = out_path
+)

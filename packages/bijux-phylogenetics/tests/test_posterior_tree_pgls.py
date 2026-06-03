@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.posterior_tree_pgls import (
+from bijux_phylogenetics.comparative.pgls.posterior_tree import (
     run_posterior_tree_pgls,
     write_posterior_tree_pgls_coefficient_table,
     write_posterior_tree_pgls_summary_table,

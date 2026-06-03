@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.errors import UnsupportedTreeFormatError
 from bijux_phylogenetics.io.newick import load_newick
 from bijux_phylogenetics.io.nexus import load_nexus
 from bijux_phylogenetics.io.phyloxml import load_phyloxml
+from bijux_phylogenetics.runtime.errors import UnsupportedTreeFormatError
 
 TreeFormat = str
 

@@ -1,0 +1,8 @@
+node	descendant_taxa	true_state	estimated_state	true_state_probability	confidence	correct	ambiguous
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4|SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon1,SimTaxon2,SimTaxon3,SimTaxon4,SimTaxon5,SimTaxon6,SimTaxon7,SimTaxon8	north	north	1	1	true	false
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4	SimTaxon1,SimTaxon2,SimTaxon3,SimTaxon4	north	north	0.888888888888889	0.888888888888889	true	true
+SimTaxon1|SimTaxon2	SimTaxon1,SimTaxon2	north	north	1	1	true	false
+SimTaxon3|SimTaxon4	SimTaxon3,SimTaxon4	south	south	1	1	true	false
+SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon5,SimTaxon6,SimTaxon7,SimTaxon8	north	north	0.941176470588235	0.941176470588235	true	true
+SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon6,SimTaxon7,SimTaxon8	north	north	1	1	true	false
+SimTaxon6|SimTaxon7	SimTaxon6,SimTaxon7	north	north	1	1	true	false

@@ -2,27 +2,32 @@
   "alignment_mode": "auto",
   "alignment_workflow": {
     "bootstrap_support_summary": null,
+    "config": {
+      "extra_args": [],
+      "mode": "auto",
+      "timeout_seconds": null
+    },
     "engine_name": "mafft",
     "fasttree_support_summary": null,
     "input_checksums": {
-      "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta": "b62b24024698108034fa9764e0c6bf2972ce09498874be50cfb6c781c089a0b3"
+      "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta": "b62b24024698108034fa9764e0c6bf2972ce09498874be50cfb6c781c089a0b3"
     },
     "input_paths": [
-      "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta"
+      "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta"
     ],
     "iqtree_summary": null,
     "log_likelihood": null,
-    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln.manifest.json",
+    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln.manifest.json",
     "model_selection_summary": null,
     "notes": [
       "mafft alignment mode: auto",
       "alignment output validated as deterministic equal-length FASTA"
     ],
     "output_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
     },
     "output_paths": {
-      "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln"
+      "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln"
     },
     "resumed": false,
     "run": {
@@ -31,16 +36,17 @@
         "--auto",
         "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta"
       ],
-      "ended_at_utc": "2026-05-13T04:26:26Z",
+      "ended_at_utc": "2026-06-02T12:38:58Z",
       "engine_name": "mafft",
       "executable": "/opt/homebrew/bin/mafft",
       "exit_code": 0,
       "output_paths": {
-        "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln"
+        "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln"
       },
-      "started_at_utc": "2026-05-13T04:26:25Z",
-      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln.stderr.log",
-      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln",
+      "runtime_seconds": 0.225663,
+      "started_at_utc": "2026-06-02T12:38:58Z",
+      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln.stderr.log",
+      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln",
       "timed_out": false,
       "timeout_seconds": null,
       "version": {
@@ -54,7 +60,7 @@
       },
       "warning_lines": [],
       "workflow": "multiple-sequence-alignment",
-      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/alignment"
+      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/alignment"
     },
     "selected_model": null,
     "sh_alrt_support_summary": null,
@@ -65,22 +71,25 @@
   "bootstrap_replicates": 1000,
   "bootstrap_workflow": {
     "bootstrap_support_summary": {
-      "internal_node_count": 7,
+      "internal_node_count": 6,
       "maximum_support": 93.0,
       "median_support": 79.5,
-      "minimum_support": 44.0,
+      "minimum_support": 45.0,
       "nodes": [
         {
           "descendant_taxa": [
+            "Dre37936",
             "Hsa167996",
             "LcaH",
+            "LcaM",
             "Mmu024661",
-            "Xtr21234"
+            "Ola20972",
+            "Tru14292"
           ],
           "is_backbone": true,
-          "node": "Hsa167996|LcaH|Mmu024661|Xtr21234",
-          "support": 44.0,
-          "support_fraction": 0.44
+          "node": "Dre37936|Hsa167996|LcaH|LcaM|Mmu024661|Ola20972|Tru14292",
+          "support": 45.0,
+          "support_fraction": 0.45
         },
         {
           "descendant_taxa": [
@@ -144,39 +153,50 @@
         "lt50": 2
       },
       "supported_node_count": 6,
-      "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.treefile",
+      "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.contree",
       "warnings": [
-        "one or more internal nodes did not expose numeric support labels",
         "one or more internal clades remain weakly supported"
       ],
       "weakly_supported_clade_count": 2
     },
+    "config": {
+      "model": "Q.insect+I",
+      "partition_path": null,
+      "replicates": 1000,
+      "seed": 1,
+      "sequence_type": "protein",
+      "threads": 1,
+      "timeout_seconds": null
+    },
     "engine_name": "iqtree",
     "fasttree_support_summary": null,
     "input_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
     },
     "input_paths": [
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln"
     ],
     "iqtree_summary": {
       "log_likelihood": -1704.768,
       "maximum_support": 93.0,
-      "minimum_support": 44.0,
+      "minimum_support": 45.0,
       "selected_model": "Q.insect+I",
       "support_value_count": 6,
       "support_values": [
         {
           "descendant_taxa": [
+            "Dre37936",
             "Hsa167996",
             "LcaH",
+            "LcaM",
             "Mmu024661",
-            "Xtr21234"
+            "Ola20972",
+            "Tru14292"
           ],
           "is_backbone": true,
-          "node": "Hsa167996|LcaH|Mmu024661|Xtr21234",
-          "support": 44.0,
-          "support_fraction": 0.44
+          "node": "Dre37936|Hsa167996|LcaH|LcaM|Mmu024661|Ola20972|Tru14292",
+          "support": 45.0,
+          "support_fraction": 0.45
         },
         {
           "descendant_taxa": [
@@ -235,8 +255,20 @@
       ]
     },
     "log_likelihood": -1704.768,
-    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.manifest.json",
-    "model_selection_summary": null,
+    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.manifest.json",
+    "model_selection_summary": {
+      "best_model_aic": "3441.5359",
+      "best_model_aicc": "3444.7740",
+      "best_model_bic": "3493.0616",
+      "best_score_aic": null,
+      "best_score_aicc": null,
+      "best_score_bic": null,
+      "bic_near_best_models": [],
+      "candidate_count": 0,
+      "candidates": [],
+      "selected_criterion": "BIC",
+      "selected_model": "3493.0616"
+    },
     "notes": [
       "iqtree random seed: 1",
       "iqtree threads: 1",
@@ -248,31 +280,30 @@
       "support histogram exported for reviewer-facing support distribution checks"
     ],
     "output_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.contree": "e493d0a8742a0d43c589154bb2bdde499b81dbdf06ffaf20678ec8d90824e71e",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.iqtree": "ce87e7b519e138e16420e67f5307c1dd337a47ca97bb3fbde51e4c61a6f414b3",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.log": "16ffccc18c4afbb2369f0a7ded297fc6c18050d8bb17f16f5c2be63730c9cd0c",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.low-support.tsv": "f97be4174640f06c286834039a4d04cfb04b6416350e90295098623c2cb34eed",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.support-histogram.tsv": "5a2e9483bce134563d21d09c967fdfd2ef5cd7e21d149438c132dc3ad713e37e",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.support.tsv": "1a746f91e2050897e0513393a2003f9daf0b7378f45041e0d87dadcb3894ccff",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.treefile": "d5a1caf24fd0ae448733f042a2052a866866241d37f01b69c294003b68f3d60f",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.ufboot": "9ca71ea4c57f5ea65063703b40b180b75ccf0a84621223cd607125184a876c31"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.contree": "e493d0a8742a0d43c589154bb2bdde499b81dbdf06ffaf20678ec8d90824e71e",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.iqtree": "1ab584f3b0e521053640588aec3377932b621cf879921dbc870a7f3fc9314dcf",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.log": "8ff74806dd3308d9ec3cd525cd2ec6c5dcb2c39672ff28e5446cc267481fd4eb",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.low-support.tsv": "780ca1c28aeadc6913fbd0efa7dfbb3c7f3c68b63bdee3548693aa42addbcd01",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.support-histogram.tsv": "5a2e9483bce134563d21d09c967fdfd2ef5cd7e21d149438c132dc3ad713e37e",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.support.tsv": "b193d0bb89d1d0a5ff346973503391e2c7b33b8be72db8e960bf562e000f7080",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.ufboot": "9ca71ea4c57f5ea65063703b40b180b75ccf0a84621223cd607125184a876c31"
     },
     "output_paths": {
-      "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.ufboot",
-      "consensus_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.contree",
-      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.log",
-      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.iqtree",
-      "low_support_branches": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.low-support.tsv",
-      "support_histogram": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.support-histogram.tsv",
-      "support_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.support.tsv",
-      "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.treefile"
+      "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.ufboot",
+      "consensus_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.contree",
+      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.log",
+      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.iqtree",
+      "low_support_branches": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.low-support.tsv",
+      "support_histogram": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.support-histogram.tsv",
+      "support_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.support.tsv",
+      "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.contree"
     },
     "resumed": false,
     "run": {
       "command": [
         "/opt/homebrew/bin/iqtree2",
         "-s",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln",
         "-st",
         "AA",
         "-seed",
@@ -285,21 +316,22 @@
         "1000",
         "-wbt",
         "-pre",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support"
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support"
       ],
-      "ended_at_utc": "2026-05-13T04:26:44Z",
+      "ended_at_utc": "2026-06-02T12:39:16Z",
       "engine_name": "iqtree",
       "executable": "/opt/homebrew/bin/iqtree2",
       "exit_code": 0,
       "output_paths": {
-        "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.ufboot",
-        "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.log",
-        "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.iqtree",
-        "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.treefile"
+        "bootstrap_trees": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.ufboot",
+        "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.log",
+        "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.iqtree",
+        "support_tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.contree"
       },
-      "started_at_utc": "2026-05-13T04:26:41Z",
-      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.stderr.log",
-      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.stdout.log",
+      "runtime_seconds": 2.076447,
+      "started_at_utc": "2026-06-02T12:39:14Z",
+      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.stderr.log",
+      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.stdout.log",
       "timed_out": false,
       "timeout_seconds": null,
       "version": {
@@ -313,7 +345,7 @@
       },
       "warning_lines": [],
       "workflow": "bootstrap-support",
-      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support"
+      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support"
     },
     "selected_model": "Q.insect+I",
     "sh_alrt_support_summary": null,
@@ -321,9 +353,8 @@
     "weak_backbone_report": {
       "evaluated_backbone_node_count": 2,
       "threshold": 70.0,
-      "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.treefile",
+      "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.contree",
       "warnings": [
-        "one or more internal nodes did not expose numeric support labels",
         "one or more internal clades remain weakly supported",
         "major internal branches remain weakly supported along the backbone"
       ],
@@ -331,15 +362,18 @@
       "weak_nodes": [
         {
           "descendant_taxa": [
+            "Dre37936",
             "Hsa167996",
             "LcaH",
+            "LcaM",
             "Mmu024661",
-            "Xtr21234"
+            "Ola20972",
+            "Tru14292"
           ],
           "is_backbone": true,
-          "node": "Hsa167996|LcaH|Mmu024661|Xtr21234",
-          "support": 44.0,
-          "support_fraction": 0.44
+          "node": "Dre37936|Hsa167996|LcaH|LcaM|Mmu024661|Ola20972|Tru14292",
+          "support": 45.0,
+          "support_fraction": 0.45
         }
       ]
     },
@@ -354,7 +388,7 @@
     "bootstrap_support": [
       "/opt/homebrew/bin/iqtree2",
       "-s",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln",
       "-st",
       "AA",
       "-seed",
@@ -367,12 +401,12 @@
       "1000",
       "-wbt",
       "-pre",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support"
     ],
     "maximum_likelihood": [
       "/opt/homebrew/bin/iqtree2",
       "-s",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln",
       "-st",
       "AA",
       "-seed",
@@ -382,12 +416,12 @@
       "-m",
       "Q.insect+I",
       "-pre",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood"
     ],
     "model_selection": [
       "/opt/homebrew/bin/iqtree2",
       "-s",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln",
       "-st",
       "AA",
       "-seed",
@@ -397,20 +431,32 @@
       "-m",
       "MF",
       "-pre",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection"
     ],
     "trimming": [
       "/opt/homebrew/bin/trimal",
       "-in",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln",
       "-out",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln",
       "-gt",
       "0.100000"
     ]
   },
-  "ended_at_utc": "2026-05-13T04:26:44Z",
-  "engine_artifact_dir": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins",
+  "config": {
+    "alignment_mode": "auto",
+    "bootstrap_replicates": 1000,
+    "incomplete_run_policy": "reject",
+    "iqtree_seed": 1,
+    "iqtree_threads": 1,
+    "resume": false,
+    "sequence_type": "protein",
+    "timeout_seconds": null,
+    "trim_gap_threshold": 0.1,
+    "trimming_mode": "gap-threshold"
+  },
+  "ended_at_utc": "2026-06-02T12:39:17Z",
+  "engine_artifact_dir": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins",
   "engine_versions": {
     "iqtree_bootstrap_support": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong",
     "iqtree_maximum_likelihood": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong",
@@ -419,9 +465,9 @@
     "trimal": "trimAl v1.5.rev0 build[2024-05-27]"
   },
   "input_checksums": {
-    "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta": "b62b24024698108034fa9764e0c6bf2972ce09498874be50cfb6c781c089a0b3"
+    "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta": "b62b24024698108034fa9764e0c6bf2972ce09498874be50cfb6c781c089a0b3"
   },
-  "input_path": "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta",
+  "input_path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta",
   "input_repair": null,
   "input_validation": {
     "duplicate_identifiers": [],
@@ -450,7 +496,7 @@
         "robust_z_score": 4.721428251372572
       }
     ],
-    "path": "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta",
+    "path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta",
     "sequence_type_report": {
       "compatible_types": [
         "protein"
@@ -459,7 +505,7 @@
       "detected_type": "protein",
       "invalid_record_count": 0,
       "note": "protein-exclusive residues were observed in the raw FASTA input",
-      "path": "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta",
+      "path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta",
       "protein_signal_record_count": 9,
       "record_count": 9,
       "selected_type": "protein",
@@ -473,7 +519,7 @@
       "max_sequence_length": 183,
       "median_sequence_length": 176.0,
       "min_sequence_length": 142,
-      "path": "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta",
+      "path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta",
       "sequence_count": 9,
       "total_residue_count": 1560,
       "unique_identifier_count": 9
@@ -484,16 +530,24 @@
   },
   "iqtree_seed": 1,
   "iqtree_threads": 1,
-  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.manifest.json",
+  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.manifest.json",
   "maximum_likelihood_workflow": {
     "bootstrap_support_summary": null,
+    "config": {
+      "model": "Q.insect+I",
+      "partition_path": null,
+      "seed": 1,
+      "sequence_type": "protein",
+      "threads": 1,
+      "timeout_seconds": null
+    },
     "engine_name": "iqtree",
     "fasttree_support_summary": null,
     "input_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
     },
     "input_paths": [
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln"
     ],
     "iqtree_summary": {
       "log_likelihood": -1704.768,
@@ -504,8 +558,20 @@
       "support_values": []
     },
     "log_likelihood": -1704.768,
-    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.manifest.json",
-    "model_selection_summary": null,
+    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.manifest.json",
+    "model_selection_summary": {
+      "best_model_aic": "3441.5359",
+      "best_model_aicc": "3444.7740",
+      "best_model_bic": "3493.0616",
+      "best_score_aic": null,
+      "best_score_aicc": null,
+      "best_score_bic": null,
+      "bic_near_best_models": [],
+      "candidate_count": 0,
+      "candidates": [],
+      "selected_criterion": "BIC",
+      "selected_model": "3493.0616"
+    },
     "notes": [
       "iqtree random seed: 1",
       "iqtree threads: 1",
@@ -513,21 +579,21 @@
       "log-likelihood parsed from iqtree inference artifacts"
     ],
     "output_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.iqtree": "6e9050a010550f1bceb04cdbfb7f1067cd2abd65cf99e40d0d084d2ab9a2dfa1",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.log": "9842c5ec60cccf4dbf36a6ee95e7527331380dfc3e0f7cf40d210e63d6736c4f",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.treefile": "ede290d996d8beb1d6d65817ec676b14aa38fc5d1cf04468737e5b7e8c9277e7"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.iqtree": "87e6c1cdd0f577f6dc62800266057b60e20ceefeb462a64236cbd56e3786cf72",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.log": "2a44018fdaa89baa86afa96d3debb2d302f1cebf6a7803d8b61f11c139c7f68d",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.treefile": "ede290d996d8beb1d6d65817ec676b14aa38fc5d1cf04468737e5b7e8c9277e7"
     },
     "output_paths": {
-      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.log",
-      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.iqtree",
-      "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.treefile"
+      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.log",
+      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.iqtree",
+      "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.treefile"
     },
     "resumed": false,
     "run": {
       "command": [
         "/opt/homebrew/bin/iqtree2",
         "-s",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln",
         "-st",
         "AA",
         "-seed",
@@ -537,20 +603,21 @@
         "-m",
         "Q.insect+I",
         "-pre",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood"
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood"
       ],
-      "ended_at_utc": "2026-05-13T04:26:41Z",
+      "ended_at_utc": "2026-06-02T12:39:14Z",
       "engine_name": "iqtree",
       "executable": "/opt/homebrew/bin/iqtree2",
       "exit_code": 0,
       "output_paths": {
-        "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.log",
-        "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.iqtree",
-        "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.treefile"
+        "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.log",
+        "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.iqtree",
+        "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.treefile"
       },
-      "started_at_utc": "2026-05-13T04:26:39Z",
-      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.stderr.log",
-      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.stdout.log",
+      "runtime_seconds": 1.917249,
+      "started_at_utc": "2026-06-02T12:39:12Z",
+      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.stderr.log",
+      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.stdout.log",
       "timed_out": false,
       "timeout_seconds": null,
       "version": {
@@ -564,7 +631,7 @@
       },
       "warning_lines": [],
       "workflow": "maximum-likelihood-tree",
-      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood"
+      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood"
     },
     "selected_model": "Q.insect+I",
     "sh_alrt_support_summary": null,
@@ -572,29 +639,49 @@
     "weak_backbone_report": null,
     "workflow": "maximum-likelihood-tree"
   },
+  "method_tier": {
+    "approximation": null,
+    "excluded_reference_surfaces": [],
+    "inference_mode": "inference",
+    "summary": "This workflow runs governed external alignment and maximum-likelihood inference with real-engine validation coverage.",
+    "surface": "fasta-to-tree",
+    "tier": "supported",
+    "validation_basis": [
+      "real-engine-validation:fasta-to-tree",
+      "artifact-schema:fasta-to-tree"
+    ],
+    "warning": null
+  },
   "model_rows": [
     {
-      "alignment_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.aln",
+      "alignment_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.aln",
       "artifact_selected_model": "Q.insect+I",
       "engine_name": "iqtree",
-      "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.manifest.json",
+      "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.manifest.json",
       "model_consistent": true,
       "report_selected_model": "Q.insect+I",
       "selected_model": "Q.insect+I",
       "sequence_type": "protein",
-      "trimmed_alignment_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.trimmed.aln",
+      "trimmed_alignment_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.trimmed.aln",
       "workflow": "model-selection"
     }
   ],
   "model_selection_workflow": {
     "bootstrap_support_summary": null,
+    "config": {
+      "partition_path": null,
+      "seed": 1,
+      "sequence_type": "protein",
+      "threads": 1,
+      "timeout_seconds": null
+    },
     "engine_name": "iqtree",
     "fasttree_support_summary": null,
     "input_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
     },
     "input_paths": [
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln"
     ],
     "iqtree_summary": {
       "log_likelihood": -1705.3423,
@@ -605,7 +692,7 @@
       "support_values": []
     },
     "log_likelihood": -1705.3423,
-    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.manifest.json",
+    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.manifest.json",
     "model_selection_summary": {
       "best_model_aic": "Q.insect+I",
       "best_model_aicc": "Q.insect+I",
@@ -3460,25 +3547,25 @@
       "model-selection workflow exposed a parsable log-likelihood score"
     ],
     "output_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.iqtree": "c72dd646f78c10a0a3cc03bf195967e00ded60f85b8043eb02aa72deb1dc2c59",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.log": "59b1c56cb77ff4b3257d50c0b7231cf28fa5675c2d9e88a384af2cd2f544f2b4",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.model-candidates.tsv": "7a89ac7ddcecc851b053af83ed99b74e3f3ad150c87edb1272b460d4f9160fc5",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.model.gz": "084a4bfdae97365eb96268aba25fa71f592c663fdaba6f622fd6aad4865967f5",
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.selected-model.txt": "465106727090b08eec3f06684f860de36d04c645f02e58b9dd4995d4d0addbf4"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.iqtree": "a5c1d3f48b8361ad5d9e9724979b6c270a2fb59e5176f633328ab6f682c1bb3f",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.log": "ee08ff90aa92d8015d1e05273920f016945ce7083e26d89a606f91fe2f25c0d4",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.model-candidates.tsv": "7a89ac7ddcecc851b053af83ed99b74e3f3ad150c87edb1272b460d4f9160fc5",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.model.gz": "d240990eeb7debee2b8719a65e8b631abf6aa546d7f0710c9041b3e572dbd92a",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.selected-model.txt": "465106727090b08eec3f06684f860de36d04c645f02e58b9dd4995d4d0addbf4"
     },
     "output_paths": {
-      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.log",
-      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.iqtree",
-      "model_candidates": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.model-candidates.tsv",
-      "model_selection_sidecar": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.model.gz",
-      "selected_model": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.selected-model.txt"
+      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.log",
+      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.iqtree",
+      "model_candidates": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.model-candidates.tsv",
+      "model_selection_sidecar": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.model.gz",
+      "selected_model": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.selected-model.txt"
     },
     "resumed": false,
     "run": {
       "command": [
         "/opt/homebrew/bin/iqtree2",
         "-s",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln",
         "-st",
         "AA",
         "-seed",
@@ -3488,19 +3575,20 @@
         "-m",
         "MF",
         "-pre",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection"
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection"
       ],
-      "ended_at_utc": "2026-05-13T04:26:39Z",
+      "ended_at_utc": "2026-06-02T12:39:12Z",
       "engine_name": "iqtree",
       "executable": "/opt/homebrew/bin/iqtree2",
       "exit_code": 0,
       "output_paths": {
-        "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.log",
-        "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.iqtree"
+        "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.log",
+        "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.iqtree"
       },
-      "started_at_utc": "2026-05-13T04:26:26Z",
-      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.stderr.log",
-      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.stdout.log",
+      "runtime_seconds": 13.71253,
+      "started_at_utc": "2026-06-02T12:38:58Z",
+      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.stderr.log",
+      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.stdout.log",
       "timed_out": false,
       "timeout_seconds": null,
       "version": {
@@ -3516,7 +3604,7 @@
         "WARNING: Normalizing state frequencies so that sum of them equals to 1"
       ],
       "workflow": "model-selection",
-      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection"
+      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection"
     },
     "selected_model": "Q.insect+I",
     "sh_alrt_support_summary": null,
@@ -3531,7 +3619,7 @@
     "best_model_bic": "Q.insect+I",
     "candidate_model_count": 283,
     "issues": [],
-    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.manifest.json",
+    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.manifest.json",
     "manifest_selected_criterion": "BIC",
     "manifest_selected_model": "Q.insect+I",
     "report_selected_criterion": "BIC",
@@ -3548,52 +3636,235 @@
     "raw sequence type detection: protein (high)",
     "protein-exclusive residues were observed in the raw FASTA input"
   ],
-  "out_dir": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins",
+  "out_dir": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck",
   "output_checksums": {
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.log": "a2fedd1d4219914fee37a995a0885bf2ff1b6c7343188c3cc4cd68885cfd9857",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.model.tsv": "f72e122a52e7e992c8ab9d21ee4cb090caa56b2b1b4d6af8fa52188e3dc5b9e3",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.support.tsv": "805245204678961388ed7cc2c59320a65e023fa21e99a84cf43f2c7bf8849dc1",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.tree": "d5a1caf24fd0ae448733f042a2052a866866241d37f01b69c294003b68f3d60f",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.log": "7466a1adccfeb8cc850075fa280fb7e69094c46c4abb3f61c40751558cf0a016",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.methods-summary.md": "e1ba6a98a22b7f9022cf4f8387d93eb79e71f9ca8e486d88ec3e47d35552ad10",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.model.tsv": "f72e122a52e7e992c8ab9d21ee4cb090caa56b2b1b4d6af8fa52188e3dc5b9e3",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.support.tsv": "86675935e74b2b805c7a780a014bb111147db300d0c84ff0f25ab35ec592eb8f",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.tree": "e493d0a8742a0d43c589154bb2bdde499b81dbdf06ffaf20678ec8d90824e71e",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
   },
   "output_paths": {
-    "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.aln",
-    "log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.log",
-    "manifest": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.manifest.json",
-    "model_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.model.tsv",
-    "run_manifest": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.run.json",
-    "support_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.support.tsv",
-    "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.tree",
-    "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.trimmed.aln"
+    "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.aln",
+    "log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.log",
+    "manifest": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.manifest.json",
+    "methods_summary": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.methods-summary.md",
+    "model_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.model.tsv",
+    "run_manifest": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.run.json",
+    "support_table": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.support.tsv",
+    "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.tree",
+    "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.trimmed.aln"
   },
   "prefix": "vertebrate-homolog-proteins",
-  "prepared_input_path": "packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta",
+  "prepared_input_path": "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta",
   "repaired_input_validation": null,
-  "run_manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.run.json",
-  "runtime_seconds": 18.174381,
+  "run_manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.run.json",
+  "runtime_seconds": 19.547736,
   "selected_model": "Q.insect+I",
   "sequence_type": "protein",
-  "started_at_utc": "2026-05-13T04:26:25Z",
+  "stage_fingerprints": {
+    "alignment": {
+      "config": {
+        "alignment_mode": "auto",
+        "timeout_seconds": null
+      },
+      "engine_versions": {
+        "mafft": "v7.526 (2024/Apr/26)"
+      },
+      "fingerprint": "9f8bff20af9730744223880d1379b477796c856cd81d62a4df4ba6a7fc4f90f6",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta": "b62b24024698108034fa9764e0c6bf2972ce09498874be50cfb6c781c089a0b3"
+      },
+      "output_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      },
+      "resumed": false,
+      "stage": "alignment",
+      "upstream_fingerprints": {
+        "fasta_validation": "ae8a7e43db350f5c8830bb17a3e5a1a180b98481f769d9148eaf84b51256f10d"
+      }
+    },
+    "fasta_validation": {
+      "config": {
+        "declared_sequence_type": "protein",
+        "normalize_identifiers": false,
+        "remove_invalid_records": false
+      },
+      "engine_versions": {},
+      "fingerprint": "ae8a7e43db350f5c8830bb17a3e5a1a180b98481f769d9148eaf84b51256f10d",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/vertebrate-homolog-proteins.fasta": "b62b24024698108034fa9764e0c6bf2972ce09498874be50cfb6c781c089a0b3"
+      },
+      "output_checksums": {},
+      "resumed": false,
+      "stage": "fasta_validation",
+      "upstream_fingerprints": {}
+    },
+    "inference": {
+      "config": {
+        "iqtree_seed": 1,
+        "iqtree_threads": 1,
+        "selected_model": "Q.insect+I",
+        "sequence_type": "protein",
+        "timeout_seconds": null
+      },
+      "engine_versions": {
+        "iqtree_maximum_likelihood": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+      },
+      "fingerprint": "5b100ebbfbbdc0f6a9279724d903963e4243c2d37f0e5a863d32801c8f055e57",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      },
+      "output_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.iqtree": "87e6c1cdd0f577f6dc62800266057b60e20ceefeb462a64236cbd56e3786cf72",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.log": "2a44018fdaa89baa86afa96d3debb2d302f1cebf6a7803d8b61f11c139c7f68d",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.treefile": "ede290d996d8beb1d6d65817ec676b14aa38fc5d1cf04468737e5b7e8c9277e7"
+      },
+      "resumed": false,
+      "stage": "inference",
+      "upstream_fingerprints": {
+        "model_selection": "eb24b39eb56827a512f293a0110f0b480be25ee83bb020ea4d182da2a001fb4c",
+        "trimming": "ba9fcf3977a264f8ba8bbb2013592215701c9dd4b2132b4213b7896454135cc9"
+      }
+    },
+    "model_selection": {
+      "config": {
+        "iqtree_seed": 1,
+        "iqtree_threads": 1,
+        "sequence_type": "protein",
+        "timeout_seconds": null
+      },
+      "engine_versions": {
+        "iqtree_model_selection": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+      },
+      "fingerprint": "eb24b39eb56827a512f293a0110f0b480be25ee83bb020ea4d182da2a001fb4c",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      },
+      "output_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.iqtree": "a5c1d3f48b8361ad5d9e9724979b6c270a2fb59e5176f633328ab6f682c1bb3f",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.log": "ee08ff90aa92d8015d1e05273920f016945ce7083e26d89a606f91fe2f25c0d4",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.model-candidates.tsv": "7a89ac7ddcecc851b053af83ed99b74e3f3ad150c87edb1272b460d4f9160fc5",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.model.gz": "d240990eeb7debee2b8719a65e8b631abf6aa546d7f0710c9041b3e572dbd92a",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.selected-model.txt": "465106727090b08eec3f06684f860de36d04c645f02e58b9dd4995d4d0addbf4"
+      },
+      "resumed": false,
+      "stage": "model_selection",
+      "upstream_fingerprints": {
+        "trimming": "ba9fcf3977a264f8ba8bbb2013592215701c9dd4b2132b4213b7896454135cc9"
+      }
+    },
+    "report": {
+      "config": {
+        "note_count": 8,
+        "selected_model": "Q.insect+I",
+        "warning_count": 3
+      },
+      "engine_versions": {},
+      "fingerprint": "c727086efee833b2745dd0c50e0b9c30d180b330e81f5bce841fe48efe4cbe14",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.tree": "e493d0a8742a0d43c589154bb2bdde499b81dbdf06ffaf20678ec8d90824e71e",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      },
+      "output_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.log": "7466a1adccfeb8cc850075fa280fb7e69094c46c4abb3f61c40751558cf0a016",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.methods-summary.md": "e1ba6a98a22b7f9022cf4f8387d93eb79e71f9ca8e486d88ec3e47d35552ad10",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.model.tsv": "f72e122a52e7e992c8ab9d21ee4cb090caa56b2b1b4d6af8fa52188e3dc5b9e3",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.support.tsv": "86675935e74b2b805c7a780a014bb111147db300d0c84ff0f25ab35ec592eb8f"
+      },
+      "resumed": false,
+      "stage": "report",
+      "upstream_fingerprints": {
+        "alignment": "9f8bff20af9730744223880d1379b477796c856cd81d62a4df4ba6a7fc4f90f6",
+        "fasta_validation": "ae8a7e43db350f5c8830bb17a3e5a1a180b98481f769d9148eaf84b51256f10d",
+        "inference": "5b100ebbfbbdc0f6a9279724d903963e4243c2d37f0e5a863d32801c8f055e57",
+        "model_selection": "eb24b39eb56827a512f293a0110f0b480be25ee83bb020ea4d182da2a001fb4c",
+        "support": "c46cdc20447468bbef42a8f7f243b8a246c0fc1d59d4f15b43d4237591020859",
+        "trimming": "ba9fcf3977a264f8ba8bbb2013592215701c9dd4b2132b4213b7896454135cc9"
+      }
+    },
+    "support": {
+      "config": {
+        "bootstrap_replicates": 1000,
+        "iqtree_seed": 1,
+        "iqtree_threads": 1,
+        "selected_model": "Q.insect+I",
+        "sequence_type": "protein",
+        "timeout_seconds": null
+      },
+      "engine_versions": {
+        "iqtree_bootstrap_support": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+      },
+      "fingerprint": "c46cdc20447468bbef42a8f7f243b8a246c0fc1d59d4f15b43d4237591020859",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      },
+      "output_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.contree": "e493d0a8742a0d43c589154bb2bdde499b81dbdf06ffaf20678ec8d90824e71e",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.iqtree": "1ab584f3b0e521053640588aec3377932b621cf879921dbc870a7f3fc9314dcf",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.log": "8ff74806dd3308d9ec3cd525cd2ec6c5dcb2c39672ff28e5446cc267481fd4eb",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.low-support.tsv": "780ca1c28aeadc6913fbd0efa7dfbb3c7f3c68b63bdee3548693aa42addbcd01",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.support-histogram.tsv": "5a2e9483bce134563d21d09c967fdfd2ef5cd7e21d149438c132dc3ad713e37e",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.support.tsv": "b193d0bb89d1d0a5ff346973503391e2c7b33b8be72db8e960bf562e000f7080",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.ufboot": "9ca71ea4c57f5ea65063703b40b180b75ccf0a84621223cd607125184a876c31"
+      },
+      "resumed": false,
+      "stage": "support",
+      "upstream_fingerprints": {
+        "model_selection": "eb24b39eb56827a512f293a0110f0b480be25ee83bb020ea4d182da2a001fb4c",
+        "trimming": "ba9fcf3977a264f8ba8bbb2013592215701c9dd4b2132b4213b7896454135cc9"
+      }
+    },
+    "trimming": {
+      "config": {
+        "timeout_seconds": null,
+        "trim_gap_threshold": 0.1,
+        "trimming_mode": "gap-threshold"
+      },
+      "engine_versions": {
+        "trimal": "trimAl v1.5.rev0 build[2024-05-27]"
+      },
+      "fingerprint": "ba9fcf3977a264f8ba8bbb2013592215701c9dd4b2132b4213b7896454135cc9",
+      "input_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      },
+      "output_checksums": {
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln.retained-sites.tsv": "c7b3477b77487ad92d21a7748db921873514c6b0c50c915dc948b274091821ef"
+      },
+      "resumed": false,
+      "stage": "trimming",
+      "upstream_fingerprints": {
+        "alignment": "9f8bff20af9730744223880d1379b477796c856cd81d62a4df4ba6a7fc4f90f6"
+      }
+    }
+  },
+  "started_at_utc": "2026-06-02T12:38:57Z",
   "step_manifests": {
-    "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln.manifest.json",
-    "bootstrap_support": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.manifest.json",
-    "maximum_likelihood": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.manifest.json",
-    "model_selection": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.manifest.json",
-    "trimming": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln.manifest.json"
+    "alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln.manifest.json",
+    "bootstrap_support": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/bootstrap-support/bootstrap-support.manifest.json",
+    "maximum_likelihood": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/maximum-likelihood/maximum-likelihood.manifest.json",
+    "model_selection": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/model-selection/model-selection.manifest.json",
+    "trimming": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln.manifest.json"
   },
   "support_rows": [
     {
       "descendant_taxa": [
+        "Dre37936",
         "Hsa167996",
         "LcaH",
+        "LcaM",
         "Mmu024661",
-        "Xtr21234"
+        "Ola20972",
+        "Tru14292"
       ],
       "is_backbone": true,
-      "node": "Hsa167996|LcaH|Mmu024661|Xtr21234",
-      "support": 44.0,
-      "support_fraction": 0.44
+      "node": "Dre37936|Hsa167996|LcaH|LcaM|Mmu024661|Ola20972|Tru14292",
+      "support": 45.0,
+      "support_fraction": 0.45
     },
     {
       "descendant_taxa": [
@@ -3651,22 +3922,25 @@
     }
   ],
   "support_summary": {
-    "internal_node_count": 7,
+    "internal_node_count": 6,
     "maximum_support": 93.0,
     "median_support": 79.5,
-    "minimum_support": 44.0,
+    "minimum_support": 45.0,
     "nodes": [
       {
         "descendant_taxa": [
+          "Dre37936",
           "Hsa167996",
           "LcaH",
+          "LcaM",
           "Mmu024661",
-          "Xtr21234"
+          "Ola20972",
+          "Tru14292"
         ],
         "is_backbone": true,
-        "node": "Hsa167996|LcaH|Mmu024661|Xtr21234",
-        "support": 44.0,
-        "support_fraction": 0.44
+        "node": "Dre37936|Hsa167996|LcaH|LcaM|Mmu024661|Ola20972|Tru14292",
+        "support": 45.0,
+        "support_fraction": 0.45
       },
       {
         "descendant_taxa": [
@@ -3730,9 +4004,8 @@
       "lt50": 2
     },
     "supported_node_count": 6,
-    "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/vertebrate-homolog-proteins.tree",
+    "tree_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/vertebrate-homolog-proteins.tree",
     "warnings": [
-      "one or more internal nodes did not expose numeric support labels",
       "one or more internal clades remain weakly supported"
     ],
     "weakly_supported_clade_count": 2
@@ -3741,17 +4014,22 @@
   "trimming_mode": "gap-threshold",
   "trimming_workflow": {
     "bootstrap_support_summary": null,
+    "config": {
+      "gap_threshold": 0.1,
+      "mode": "gap-threshold",
+      "timeout_seconds": null
+    },
     "engine_name": "trimal",
     "fasttree_support_summary": null,
     "input_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
     },
     "input_paths": [
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln"
     ],
     "iqtree_summary": null,
     "log_likelihood": null,
-    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln.manifest.json",
+    "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln.manifest.json",
     "model_selection_summary": null,
     "notes": [
       "trimal trimming mode: gap-threshold",
@@ -3760,32 +4038,35 @@
       "trimmed alignment validated as nonempty equal-length FASTA"
     ],
     "output_checksums": {
-      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f"
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln.retained-sites.tsv": "c7b3477b77487ad92d21a7748db921873514c6b0c50c915dc948b274091821ef"
     },
     "output_paths": {
-      "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln"
+      "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln",
+      "trimming_summary": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln.retained-sites.tsv"
     },
     "resumed": false,
     "run": {
       "command": [
         "/opt/homebrew/bin/trimal",
         "-in",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/alignment/alignment.aln",
         "-out",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln",
         "-gt",
         "0.100000"
       ],
-      "ended_at_utc": "2026-05-13T04:26:26Z",
+      "ended_at_utc": "2026-06-02T12:38:58Z",
       "engine_name": "trimal",
       "executable": "/opt/homebrew/bin/trimal",
       "exit_code": 0,
       "output_paths": {
-        "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln"
+        "trimmed_alignment": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln"
       },
-      "started_at_utc": "2026-05-13T04:26:26Z",
-      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln.stderr.log",
-      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln.stdout.log",
+      "runtime_seconds": 0.005842,
+      "started_at_utc": "2026-06-02T12:38:58Z",
+      "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln.stderr.log",
+      "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming/trimming.trimmed.aln.stdout.log",
       "timed_out": false,
       "timeout_seconds": null,
       "version": {
@@ -3799,7 +4080,7 @@
       },
       "warning_lines": [],
       "workflow": "alignment-trimming",
-      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-refresh/vertebrate-homolog-proteins/engine-artifacts/vertebrate-homolog-proteins/trimming"
+      "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/vertebrate-recheck/engine-artifacts/vertebrate-homolog-proteins/trimming"
     },
     "selected_model": null,
     "sh_alrt_support_summary": null,
@@ -3822,8 +4103,8 @@
   },
   "warnings": [
     "WARNING: Normalizing state frequencies so that sum of them equals to 1",
-    "one or more internal nodes did not expose numeric support labels",
     "one or more internal clades remain weakly supported",
     "input contains sequence length outliers"
-  ]
+  ],
+  "workflow": "fasta-to-tree"
 }

@@ -1,0 +1,15 @@
+branch_id	parent_node	child_node	child_descendant_taxa	branch_length	parent_most_likely_host	child_most_likely_host	parent_host_set	child_host_set	overlapping_hosts	changed	transition	certainty_class	parent_confidence	child_confidence	transition_allowed
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4	SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4|SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4	SimTaxon1,SimTaxon2,SimTaxon3,SimTaxon4	0.093937389187041	bat	bat	bat,canid	bat,canid	bat,canid	false		no_switch	0.500723942334542	0.568653380663645	true
+SimTaxon1|SimTaxon2	SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4	SimTaxon1|SimTaxon2	SimTaxon1,SimTaxon2	0.138342003776927	bat	bat	bat,canid	bat,canid	bat,canid	false		no_switch	0.568653380663645	0.574090040463858	true
+SimTaxon1	SimTaxon1|SimTaxon2	SimTaxon1	SimTaxon1	0.195174506314933	bat	canid	bat,canid	canid	canid	true	bat->canid	uncertain_switch	0.574090040463858	1.0	true
+SimTaxon2	SimTaxon1|SimTaxon2	SimTaxon2	SimTaxon2	0.195174506314933	bat	bat	bat,canid	bat	bat	false		no_switch	0.574090040463858	1.0	true
+SimTaxon3|SimTaxon4	SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4	SimTaxon3|SimTaxon4	SimTaxon3,SimTaxon4	0.33351651009186	bat	bat	bat,canid	bat	bat	false		no_switch	0.568653380663645	1.0	true
+SimTaxon3	SimTaxon3|SimTaxon4	SimTaxon3	SimTaxon3	0.0	bat	bat	bat	bat	bat	false		no_switch	1.0	1.0	true
+SimTaxon4	SimTaxon3|SimTaxon4	SimTaxon4	SimTaxon4	0.0	bat	bat	bat	bat	bat	false		no_switch	1.0	1.0	true
+SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4|SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon5,SimTaxon6,SimTaxon7,SimTaxon8	0.120785530783683	bat	bat	bat,canid	bat,canid	bat,canid	false		no_switch	0.500723942334542	0.593207493809859	true
+SimTaxon5	SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon5	SimTaxon5	0.306668368495217	bat	canid	bat,canid	canid	canid	true	bat->canid	uncertain_switch	0.593207493809859	1.0	true
+SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon6,SimTaxon7,SimTaxon8	0.002180918817425	bat	bat	bat,canid	bat,canid	bat,canid	false		no_switch	0.593207493809859	0.592976334422688	true
+SimTaxon6|SimTaxon7	SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon6|SimTaxon7	SimTaxon6,SimTaxon7	0.279190544610666	bat	bat	bat,canid	bat	bat	false		no_switch	0.592976334422688	0.986647624642835	true
+SimTaxon6	SimTaxon6|SimTaxon7	SimTaxon6	SimTaxon6	0.025296905067126	bat	bat	bat	bat	bat	false		no_switch	0.986647624642835	1.0	true
+SimTaxon7	SimTaxon6|SimTaxon7	SimTaxon7	SimTaxon7	0.025296905067126	bat	bat	bat	bat	bat	false		no_switch	0.986647624642835	1.0	true
+SimTaxon8	SimTaxon6|SimTaxon7|SimTaxon8	SimTaxon8	SimTaxon8	0.304487449677792	bat	bat	bat,canid	bat	bat	false		no_switch	0.592976334422688	1.0	true

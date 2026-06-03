@@ -1,0 +1,276 @@
+{
+  "catalog_name": "shared_geiger_continuous_fixtures",
+  "fixtures": [
+    {
+      "fixture_id": "geiger_continuous_brownian_signal_twenty_four_taxa",
+      "trait_table_fixture_id": "phytools_signal_panel_twenty_four_taxa",
+      "trait_name": "signal_strong",
+      "taxon_column": "taxon",
+      "supported_model_names": ["BM", "lambda", "kappa", "delta"],
+      "validation_expectation": "clean-match",
+      "geiger_reference_expectation": "fitcontinuous-ready",
+      "feature_tags": [
+        "continuous-trait",
+        "brownian-known-truth",
+        "high-signal",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-truth-simulation"
+      ],
+      "simulation_metadata": {
+        "model": "brownian-motion",
+        "root_state": 0.5,
+        "sigma": 0.8,
+        "seed": 32024,
+        "branch_transform_review_models": ["lambda", "kappa", "delta"]
+      },
+      "notes": "BM-simulated twenty-four-taxon continuous surface reused for direct BM parity plus later lambda, kappa, and delta branch-transform review on one governed ultrametric tree."
+    },
+    {
+      "fixture_id": "geiger_continuous_white_noise_twenty_four_taxa",
+      "trait_table_fixture_id": "phytools_signal_panel_twenty_four_taxa",
+      "trait_name": "signal_weak",
+      "taxon_column": "taxon",
+      "supported_model_names": ["white"],
+      "validation_expectation": "clean-match",
+      "geiger_reference_expectation": "fitcontinuous-ready",
+      "feature_tags": [
+        "continuous-trait",
+        "white-noise-proxy",
+        "low-signal",
+        "twenty-plus-taxa-ultrametric-tree"
+      ],
+      "simulation_metadata": {
+        "model": "iid-gaussian",
+        "mean": 0.0,
+        "sigma": 1.0,
+        "seed": 41024
+      },
+      "notes": "Twenty-four-taxon iid Gaussian surface used as the governed low-signal white-model comparator instead of a toy four-tip example."
+    },
+    {
+      "fixture_id": "geiger_continuous_brownian_signal_one_hundred_twenty_eight_taxa",
+      "trait_table_fixture_id": "phytools_signal_panel_one_hundred_twenty_eight_taxa",
+      "trait_name": "signal_strong",
+      "taxon_column": "taxon",
+      "supported_model_names": ["BM", "lambda", "kappa", "delta"],
+      "validation_expectation": "clean-match",
+      "geiger_reference_expectation": "fitcontinuous-ready",
+      "feature_tags": [
+        "continuous-trait",
+        "brownian-known-truth",
+        "high-signal",
+        "one-hundred-plus-taxa-ultrametric-tree",
+        "known-truth-simulation"
+      ],
+      "simulation_metadata": {
+        "model": "brownian-motion",
+        "root_state": 0.0,
+        "sigma": 0.6,
+        "seed": 32128,
+        "branch_transform_review_models": ["lambda", "kappa", "delta"]
+      },
+      "notes": "Large 128-taxon BM surface used so the shared geiger corpus includes one genuinely large ultrametric parity case instead of only medium simulation trees."
+    },
+    {
+      "fixture_id": "geiger_continuous_white_noise_one_hundred_twenty_eight_taxa",
+      "trait_table_fixture_id": "phytools_signal_panel_one_hundred_twenty_eight_taxa",
+      "trait_name": "signal_weak",
+      "taxon_column": "taxon",
+      "supported_model_names": ["white"],
+      "validation_expectation": "clean-match",
+      "geiger_reference_expectation": "fitcontinuous-ready",
+      "feature_tags": [
+        "continuous-trait",
+        "white-noise-proxy",
+        "low-signal",
+        "one-hundred-plus-taxa-ultrametric-tree"
+      ],
+      "simulation_metadata": {
+        "model": "iid-gaussian",
+        "mean": 0.0,
+        "sigma": 1.0,
+        "seed": 41128
+      },
+      "notes": "Large 128-taxon iid Gaussian surface used as the governed white-model low-signal comparator on a real large tree."
+    },
+    {
+      "fixture_id": "geiger_continuous_ou_known_truth_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_continuous_model_panel_twenty_four_taxa",
+      "trait_name": "ou_truth",
+      "taxon_column": "taxon",
+      "supported_model_names": ["OU"],
+      "validation_expectation": "clean-match",
+      "geiger_reference_expectation": "fitcontinuous-ready",
+      "feature_tags": [
+        "continuous-trait",
+        "ou-known-truth",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-truth-simulation"
+      ],
+      "simulation_metadata": {
+        "model": "ornstein-uhlenbeck",
+        "root_state": 0.0,
+        "sigma": 0.2,
+        "alpha": 0.5,
+        "theta": 1.0,
+        "seed": 101
+      },
+      "notes": "Twenty-four-taxon OU surface generated from the governed ultrametric tree with a seed that keeps OU preferred over BM and EB in the current Bijux recovery lane."
+    },
+    {
+      "fixture_id": "geiger_continuous_early_burst_known_truth_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_continuous_model_panel_twenty_four_taxa",
+      "trait_name": "early_burst_truth",
+      "taxon_column": "taxon",
+      "supported_model_names": ["EB"],
+      "validation_expectation": "clean-match",
+      "geiger_reference_expectation": "fitcontinuous-ready",
+      "feature_tags": [
+        "continuous-trait",
+        "early-burst-known-truth",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-truth-simulation"
+      ],
+      "simulation_metadata": {
+        "model": "early-burst",
+        "root_state": 0.0,
+        "sigma": 0.4,
+        "rate_change": 5.0,
+        "seed": 404
+      },
+      "notes": "Twenty-four-taxon early-burst surface generated from the governed ultrametric tree with a stronger deceleration profile that keeps early-burst preferred over BM and OU in both the Bijux and geiger recovery lanes."
+    },
+    {
+      "fixture_id": "geiger_continuous_trend_proxy_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_continuous_model_panel_twenty_four_taxa",
+      "trait_name": "trend_proxy",
+      "taxon_column": "taxon",
+      "supported_model_names": ["trend"],
+      "validation_expectation": "clean-match",
+      "geiger_reference_expectation": "fitcontinuous-trend-explicitly-excluded-this-round",
+      "feature_tags": [
+        "continuous-trait",
+        "trend-proxy",
+        "twenty-plus-taxa-ultrametric-tree"
+      ],
+      "simulation_metadata": {
+        "model": "directional-drift-proxy",
+        "construction": "sorted-tip-rank plus low-signal residual",
+        "source_trait_fixture": "phytools_signal_panel_twenty_four_taxa",
+        "source_trait_name": "signal_weak"
+      },
+      "notes": "Directional proxy trait retained for future trend-model work on a governed twenty-four-taxon tree, but this round explicitly excludes geiger trend parity because geiger exposes distinct rate_trend and mean_trend likelihood contracts instead of one unambiguous trend model."
+    },
+    {
+      "fixture_id": "geiger_continuous_standard_error_review_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_continuous_model_panel_twenty_four_taxa",
+      "trait_name": "ou_truth",
+      "standard_error_trait_name": "ou_truth_standard_error",
+      "taxon_column": "taxon",
+      "supported_model_names": ["BM", "OU"],
+      "validation_expectation": "clean-match",
+      "geiger_reference_expectation": "fitcontinuous-standard-error-explicitly-excluded-this-round",
+      "feature_tags": [
+        "continuous-trait",
+        "trait-standard-error",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-truth-simulation"
+      ],
+      "simulation_metadata": {
+        "model": "ornstein-uhlenbeck",
+        "root_state": 0.0,
+        "sigma": 0.2,
+        "alpha": 0.5,
+        "theta": 1.0,
+        "seed": 101,
+        "standard_error_construction": "governed zero-and-positive per-tip review values"
+      },
+      "notes": "Per-taxon standard-error review surface on the governed twenty-four-taxon OU trait panel. The shared fixture is retained for future `fitContinuous(SE=...)` parity, but this round explicitly excludes measurement-error variance handling on the owned Bijux fit surface."
+    },
+    {
+      "fixture_id": "geiger_continuous_missing_values_twenty_four_taxa",
+      "trait_table_fixture_id": "phytools_signal_missing_twenty_four_taxa",
+      "trait_name": "signal_strong",
+      "taxon_column": "taxon",
+      "supported_model_names": ["BM", "OU", "EB", "lambda", "kappa", "delta", "white", "trend"],
+      "validation_expectation": "missing-trait-values-present",
+      "geiger_reference_expectation": "fitcontinuous-ready-after-pruning",
+      "feature_tags": [
+        "continuous-trait",
+        "missing-trait-values",
+        "nonnumeric-trait-values",
+        "twenty-plus-taxa-ultrametric-tree"
+      ],
+      "simulation_metadata": {
+        "source_fixture": "geiger_continuous_brownian_signal_twenty_four_taxa",
+        "missing_taxa": ["Phy10"],
+        "nonnumeric_taxa": ["Phy14"]
+      },
+      "notes": "Twenty-four-taxon missing-value pruning surface where one overlapping value is absent and one is nonnumeric so fitContinuous parity must prove explicit pruning before likelihood evaluation."
+    },
+    {
+      "fixture_id": "geiger_continuous_constant_negative_twenty_four_taxa",
+      "trait_table_fixture_id": "phytools_signal_constant_twenty_four_taxa",
+      "trait_name": "signal_constant",
+      "taxon_column": "taxon",
+      "supported_model_names": ["BM", "OU", "EB", "lambda", "kappa", "delta", "white", "trend"],
+      "validation_expectation": "constant-trait-surface",
+      "geiger_reference_expectation": "constant-trait-negative-case",
+      "feature_tags": [
+        "continuous-trait",
+        "constant-trait-negative-case",
+        "twenty-plus-taxa-ultrametric-tree"
+      ],
+      "simulation_metadata": {
+        "model": "constant-surface",
+        "value": 5.0
+      },
+      "notes": "Constant twenty-four-taxon surface used to ensure geiger parity fails honestly on zero-variance input instead of manufacturing a likelihood signal."
+    },
+    {
+      "fixture_id": "geiger_continuous_outlier_signal_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_continuous_model_panel_twenty_four_taxa",
+      "trait_name": "outlier_signal",
+      "taxon_column": "taxon",
+      "supported_model_names": ["BM", "lambda", "kappa", "delta", "white", "trend"],
+      "validation_expectation": "clean-match-with-outlier",
+      "geiger_reference_expectation": "fitcontinuous-outlier-review",
+      "feature_tags": [
+        "continuous-trait",
+        "high-signal",
+        "extreme-outlier",
+        "twenty-plus-taxa-ultrametric-tree"
+      ],
+      "simulation_metadata": {
+        "source_fixture": "geiger_continuous_brownian_signal_twenty_four_taxa",
+        "outlier_taxon": "Phy21",
+        "additive_shift": 6.0
+      },
+      "notes": "High-signal Brownian surface with one injected extreme tip outlier so fitContinuous parity can audit robustness instead of only clean numeric panels."
+    },
+    {
+      "fixture_id": "geiger_continuous_nonultrametric_control_twenty_four_taxa",
+      "trait_table_fixture_id": "phytools_signal_non_ultrametric_twenty_four_taxa",
+      "trait_name": "signal_strong",
+      "taxon_column": "taxon",
+      "supported_model_names": ["BM", "OU", "EB", "lambda", "kappa", "delta", "white", "trend"],
+      "validation_expectation": "clean-match-on-nonultrametric-tree",
+      "geiger_reference_expectation": "fitcontinuous-nonultrametric-negative-case",
+      "feature_tags": [
+        "continuous-trait",
+        "brownian-known-truth",
+        "non-ultrametric-control",
+        "twenty-plus-taxa",
+        "known-truth-simulation"
+      ],
+      "simulation_metadata": {
+        "model": "brownian-motion",
+        "root_state": 1.0,
+        "sigma": 0.7,
+        "seed": 33024,
+        "tree_fixture": "phytools_non_ultrametric_twenty_four_taxa"
+      },
+      "notes": "Strong-signal twenty-four-taxon surface paired with a governed rooted non-ultrametric tree so future geiger parity can prove explicit rejection or control-path handling on invalid branch-time structure."
+    }
+  ]
+}

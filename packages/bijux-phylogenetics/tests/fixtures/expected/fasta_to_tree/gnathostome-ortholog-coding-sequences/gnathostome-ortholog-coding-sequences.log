@@ -1,11 +1,11 @@
 workflow: fasta-to-tree
-input_path: packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-coding-sequences.fasta
-prepared_input_path: packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-coding-sequences.fasta
+input_path: /Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-coding-sequences.fasta
+prepared_input_path: /Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-coding-sequences.fasta
 sequence_type: dna
 selected_model: TNe+G4
-started_at_utc: 2026-05-13T04:23:06Z
-ended_at_utc: 2026-05-13T04:23:08Z
-runtime_seconds: 2.926
+started_at_utc: 2026-05-31T18:11:36Z
+ended_at_utc: 2026-05-31T18:11:44Z
+runtime_seconds: 7.465
 run_manifest_path: gnathostome-ortholog-coding-sequences.run.json
 
 [input-validation]
@@ -16,7 +16,7 @@ warnings:
 
 [alignment]
 engine: mafft
-command: /opt/homebrew/bin/mafft --auto packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-coding-sequences.fasta
+command: /opt/homebrew/bin/mafft --auto /Users/bijan/bijux/bijux-phylogenetics/packages/bijux-phylogenetics/tests/fixtures/fasta_to_tree/real/inputs/gnathostome-ortholog-coding-sequences.fasta
 version: v7.526 (2024/Apr/26)
 manifest: engine-artifacts/gnathostome-ortholog-coding-sequences/alignment/alignment.aln.manifest.json
 output.alignment: engine-artifacts/gnathostome-ortholog-coding-sequences/alignment/alignment.aln
@@ -27,6 +27,7 @@ command: /opt/homebrew/bin/trimal -in engine-artifacts/gnathostome-ortholog-codi
 version: trimAl v1.5.rev0 build[2024-05-27]
 manifest: engine-artifacts/gnathostome-ortholog-coding-sequences/trimming/trimming.trimmed.aln.manifest.json
 output.trimmed_alignment: engine-artifacts/gnathostome-ortholog-coding-sequences/trimming/trimming.trimmed.aln
+output.trimming_summary: engine-artifacts/gnathostome-ortholog-coding-sequences/trimming/trimming.trimmed.aln.retained-sites.tsv
 
 [model_selection]
 engine: iqtree

@@ -9,13 +9,13 @@ import subprocess
 
 import pytest
 
-from bijux_phylogenetics.comparative.phylogenetic_logistic import (
+from bijux_phylogenetics.comparative.regression import (
     summarize_phylogenetic_logistic,
     write_phylogenetic_logistic_coefficient_table,
     write_phylogenetic_logistic_excluded_taxa_table,
     write_phylogenetic_logistic_fitted_table,
 )
-from bijux_phylogenetics.errors import ComparativeMethodError
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -41,6 +41,10 @@ def test_summarize_phylogenetic_logistic_fits_binary_response() -> None:
     )
     coefficients = {row.name: row for row in report.coefficients}
     assert report.approximation_method == "phylogenetic-working-correlation-gee"
+    assert report.method_tier.tier == "experimental"
+    assert report.method_tier.approximation == report.approximation_method
+    assert report.method_tier.excluded_reference_surfaces == ("ape::compar.gee",)
+    assert report.method_tier.warning is not None
     assert report.taxon_count == 6
     assert report.success_count == 3
     assert report.failure_count == 3
@@ -74,6 +78,7 @@ def test_summarize_phylogenetic_logistic_reports_separation_risk() -> None:
     )
     warning_codes = {row.code for row in report.warnings}
     assert report.separation_detected is True
+    assert report.method_tier.tier == "experimental"
     assert "large_coefficient_magnitude" in warning_codes or (
         "fitted_probability_boundary" in warning_codes
     )

@@ -1,0 +1,108 @@
+IQ-TREE 2.3.6 built Jul 30 2024
+
+Input file name: /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln
+Type of analysis: tree reconstruction
+Random seed number: 1
+
+REFERENCES
+----------
+
+To cite IQ-TREE please use:
+
+Bui Quang Minh, Heiko A. Schmidt, Olga Chernomor, Dominik Schrempf,
+Michael D. Woodhams, Arndt von Haeseler, and Robert Lanfear (2020)
+IQ-TREE 2: New models and efficient methods for phylogenetic inference
+in the genomic era. Mol. Biol. Evol., in press.
+https://doi.org/10.1093/molbev/msaa015
+
+SEQUENCE ALIGNMENT
+------------------
+
+Input data: 5 sequences with 1140 nucleotide sites
+Number of constant sites: 1075 (= 94.2982% of all sites)
+Number of invariant (constant or ambiguous constant) sites: 1075 (= 94.2982% of all sites)
+Number of parsimony informative sites: 20
+Number of distinct site patterns: 49
+
+SUBSTITUTION PROCESS
+--------------------
+
+Model of substitution: HKY+F
+
+Rate parameter R:
+
+  A-C: 1.0000
+  A-G: 33.8778
+  A-T: 1.0000
+  C-G: 1.0000
+  C-T: 33.8778
+  G-T: 1.0000
+
+State frequencies: (empirical counts from alignment)
+
+  pi(A) = 0.2823
+  pi(C) = 0.2936
+  pi(G) = 0.15
+  pi(T) = 0.2741
+
+Rate matrix Q:
+
+  A    -0.641   0.03331    0.5766   0.03111
+  C   0.03204    -1.103   0.01702     1.054
+  G     1.085   0.03331     -1.15   0.03111
+  T   0.03204     1.129   0.01702    -1.178
+
+Model of rate heterogeneity: Uniform
+
+MAXIMUM LIKELIHOOD TREE
+-----------------------
+
+Log-likelihood of the tree: -1872.2463 (s.e. 35.4921)
+Unconstrained log-likelihood (without tree): -3134.8890
+Number of free parameters (#branches + #model parameters): 11
+Akaike information criterion (AIC) score: 3766.4925
+Corrected Akaike information criterion (AICc) score: 3766.7266
+Bayesian information criterion (BIC) score: 3821.9192
+
+Total tree length (sum of branch lengths): 0.0873
+Sum of internal branch lengths: 0.0567 (64.9424% of tree length)
+
+NOTE: Tree is UNROOTED although outgroup taxon 'brown_bear_modern' is drawn at root
+
++---------------------brown_bear_modern
+|
++--polar_bear_modern
+|
+|  +--black_bear_modern
++--|
+   |                                                     +--cave_bear_ud1838_fragment
+   +-----------------------------------------------------|
+                                                         +**cave_bear_wk01_fragment
+
+Tree in newick format:
+
+(brown_bear_modern:0.0226235137,polar_bear_modern:0.0026221741,(black_bear_modern:0.0022754804,(cave_bear_ud1838_fragment:0.0030971457,cave_bear_wk01_fragment:0.0000010000):0.0545430411):0.0021775970);
+
+ALISIM COMMAND
+--------------
+To simulate an alignment of the same length as the original alignment, using the tree and model parameters estimated from this analysis, you can use the following command:
+
+--alisim simulated_MSA -t /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/maximum-likelihood/maximum-likelihood.treefile -m "HKY{33.8778}+F{0.28235,0.293552,0.149978,0.27412}" --length 1140
+
+To mimic the alignment used to produce this analysis, i.e. simulate an alignment of the same length as the original alignment, using the tree and model parameters estimated from this analysis *and* copying the same gap positions as the original alignment, you can use the following command:
+
+iqtree -s /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln --alisim mimicked_MSA
+
+To simulate any number of alignments in either of the two commandlines above, use the --num-alignments options, for example mimic 100 alignments you would use the command line:
+
+iqtree -s /Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/engine-artifacts/pleistocene-bear-cytb-fragments/trimming/trimming.trimmed.aln --alisim mimicked_MSA --num-alignments 100
+
+For more information on using AliSim, please visit: www.iqtree.org/doc/AliSim
+
+TIME STAMP
+----------
+
+Date and time: Sun May 31 20:29:32 2026
+Total CPU time used: 0.035704 seconds (0h:0m:0s)
+Total wall-clock time used: 0.0380459 seconds (0h:0m:0s)
+

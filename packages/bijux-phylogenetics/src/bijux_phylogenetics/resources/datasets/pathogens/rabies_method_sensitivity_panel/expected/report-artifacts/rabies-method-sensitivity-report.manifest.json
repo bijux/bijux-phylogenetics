@@ -1,0 +1,172 @@
+{
+  "changed_clade_count": 8,
+  "dataset_id": "rabies_method_sensitivity_panel",
+  "execution_mode": "parallel",
+  "linked_artifact_count": 32,
+  "linked_artifacts": {
+    "changed_clades": {
+      "byte_count": 1979,
+      "path": "../changed-clades.tsv",
+      "sha256": "a9df7197e52f84272b6f4fd29091ff5ed8dc2105e1829e954f8e4ecebd73a5bf"
+    },
+    "conclusion_summary": {
+      "byte_count": 1645,
+      "path": "../method-conclusion-summary.tsv",
+      "sha256": "4e7aabca06fecb33b83da7d623e7d110a72bf41e2a1175d4a8608ca32442e94f"
+    },
+    "config": {
+      "byte_count": 1548,
+      "path": "../workflow-config.resolved.json",
+      "sha256": "5dd5360de532fb56dbcb692abd39f84c850dca83095841692dbff887218f0f48"
+    },
+    "execution_record": {
+      "byte_count": 1977,
+      "path": "../rabies-method-sensitivity-panel.run.json",
+      "sha256": "3f28c8b9b3f2583625a749ae1b4200c73ca5a73f3bfb52b79a76939ad99f7e92"
+    },
+    "parallel_summary": {
+      "byte_count": 487,
+      "path": "../parallel-execution-summary.tsv",
+      "sha256": "c3fc0e61aa6e70588a634914dfed2e8ecf36608445ac8d484c7b0fb8c2624be1"
+    },
+    "preprocessing_comparison": {
+      "byte_count": 497,
+      "path": "../preprocessing-rooted-comparisons.tsv",
+      "sha256": "6949dfccbecc47cd8d67fe2c35a1b446b01b503096f24703ced81ef43b97c76d"
+    },
+    "slurm_array_members": {
+      "byte_count": 1089,
+      "path": "../slurm-array-members.tsv",
+      "sha256": "7b285db29be2182511bf2ffa16c1fec9eeb67346c0297d7c8442ac2f5a45c9f1"
+    },
+    "slurm_array_partitions": {
+      "byte_count": 739,
+      "path": "../slurm-array-partitions.tsv",
+      "sha256": "1cd998ff61248f071e0add5626ed5cc776a0e9588430decee5e76304b4010c67"
+    },
+    "slurm_array_strategy": {
+      "byte_count": 4177,
+      "path": "../slurm-array-strategy.json",
+      "sha256": "74bafc6e0d54269c3ef7c260cb5392a714e063018737a26dca841d20f42786bb"
+    },
+    "slurm_assumptions": {
+      "byte_count": 1334,
+      "path": "../slurm-estimation-assumptions.tsv",
+      "sha256": "61d7325fdb62cd5bb661d407807e7c98c34dae95ceec9d2bb9ff3293d9a6e429"
+    },
+    "slurm_failure_recovery_jobs": {
+      "byte_count": 1376,
+      "path": "../slurm-failure-recovery-jobs.tsv",
+      "sha256": "33105da5f22125f5e69637194702cef30a6d560e571557d0b2a40651be1f7851"
+    },
+    "slurm_failure_recovery_partitions": {
+      "byte_count": 478,
+      "path": "../slurm-failure-recovery-partitions.tsv",
+      "sha256": "49564b74b95394e58de996730cb9c2a5ba84d9e69477f91a6e27a30bac6ef2c8"
+    },
+    "slurm_failure_recovery_report": {
+      "byte_count": 4191,
+      "path": "../slurm-failure-recovery-report.html",
+      "sha256": "77b2ee59bf4a2376706dcd05317a8d1812b445fd8c3d46fe98e8a9eaa480e63b"
+    },
+    "slurm_failure_recovery_summary": {
+      "byte_count": 4484,
+      "path": "../slurm-failure-recovery-report.json",
+      "sha256": "7820b42d9448ea0d9081cb24f7c588bbc83dd23c6087bf8be0b32ff0311c56e3"
+    },
+    "slurm_job_evidence_index": {
+      "byte_count": 1047,
+      "path": "../slurm-job-evidence.tsv",
+      "sha256": "82a87753758653f961a01ece52961bda6a02bcfaee0eaf7ce8c3b419282a00a6"
+    },
+    "slurm_job_evidence_summary": {
+      "byte_count": 9312,
+      "path": "../slurm-job-evidence-summary.json",
+      "sha256": "35f2fc686a1c43206d852071cecaffd3bcf5deca40728d47686d55f232d458a8"
+    },
+    "slurm_job_plan": {
+      "byte_count": 2240,
+      "path": "../slurm-job-plan.tsv",
+      "sha256": "fb73d66c845ad53d1500ebe831e750e2bb8734163868d5ce8ff3fbc2c2b72fe5"
+    },
+    "slurm_job_status": {
+      "byte_count": 1413,
+      "path": "../slurm-job-status.tsv",
+      "sha256": "128eee130aae2eaff3ec30736a42b7d4bc8deb0b49a0471d959ddf8e7d435f2e"
+    },
+    "slurm_merge_checks": {
+      "byte_count": 2312,
+      "path": "../slurm-merge-checks.tsv",
+      "sha256": "2b0a104cf781e5634b8a26f76e66f76f98816b23626ccd319e4e691d01237f28"
+    },
+    "slurm_merge_report": {
+      "byte_count": 4327,
+      "path": "../slurm-merge-report.html",
+      "sha256": "7721f536c603d56974e48aadf366cb0f39d8fc345ac8085e3e5512f8173fac18"
+    },
+    "slurm_merge_summary": {
+      "byte_count": 6970,
+      "path": "../slurm-merge-report.json",
+      "sha256": "b231ebb51766c91775515fb3faf2dc531386edf2b5ac4622dc05688e89d0dee7"
+    },
+    "slurm_merge_variants": {
+      "byte_count": 1001,
+      "path": "../slurm-merge-variants.tsv",
+      "sha256": "340b8c48c0b2cbd4b550f6fe2849e1116d0d9b7d2867d60c9afdc0b559f2c0d7"
+    },
+    "slurm_output_freshness": {
+      "byte_count": 734,
+      "path": "../slurm-output-freshness.tsv",
+      "sha256": "47c214cf8b436240edf1ab86da6c83108714ffd292002abfcb8b627ae4a2c7b0"
+    },
+    "slurm_output_freshness_checks": {
+      "byte_count": 3256,
+      "path": "../slurm-output-freshness-checks.tsv",
+      "sha256": "f72eb610ef9d348c24ee1fe3ac0d97e8a173522b16e62d2175fb0b30cf16c035"
+    },
+    "slurm_output_freshness_summary": {
+      "byte_count": 7133,
+      "path": "../slurm-output-freshness.json",
+      "sha256": "d8f2aef922a124c11b6c000f46e9f09c3777abf94d72f0aa0267cdfee38b564b"
+    },
+    "slurm_partition_status": {
+      "byte_count": 398,
+      "path": "../slurm-partition-status.tsv",
+      "sha256": "4453774c25cebb2043a0c3907fd73d48d83e7d1feb3050f51a5da29f53968763"
+    },
+    "slurm_summary": {
+      "byte_count": 6834,
+      "path": "../slurm-planning-summary.json",
+      "sha256": "3209284870566c05d706ce6017a6171a99e21fac208f295b0568d1815f014259"
+    },
+    "slurm_workflow_status": {
+      "byte_count": 4558,
+      "path": "../slurm-workflow-status.json",
+      "sha256": "b383a4c37121032736cdd2fbbaf6665aafce472fa19a91c0e6d271a86602c4b7"
+    },
+    "stable_clades": {
+      "byte_count": 439,
+      "path": "../stable-clades.tsv",
+      "sha256": "327bf8fd675001749f28120614045b4b63e374ed5cb98524177279485b67720e"
+    },
+    "variant_summary": {
+      "byte_count": 606,
+      "path": "../variant-summary.tsv",
+      "sha256": "94e0a7813ea68e816d4e6011ae6fe25b97eed6f6f0c955c7201abf429975d1ab"
+    },
+    "workflow_manifest": {
+      "byte_count": 6748,
+      "path": "../rabies-method-sensitivity.manifest.json",
+      "sha256": "de99e06cc4cb9b1448b3689a49a1bde90e80af85901b69dc06bc1e5890a8fba9"
+    },
+    "workflow_summary": {
+      "byte_count": 239,
+      "path": "../workflow-summary.tsv",
+      "sha256": "c6937a57f2ff0edfec1ff274450c6f89174594e36bf117981bf811abaae94e4f"
+    }
+  },
+  "parallel_workers": 2,
+  "report_kind": "rabies_method_sensitivity_html_report",
+  "stable_clade_count": 2,
+  "variant_count": 4
+}

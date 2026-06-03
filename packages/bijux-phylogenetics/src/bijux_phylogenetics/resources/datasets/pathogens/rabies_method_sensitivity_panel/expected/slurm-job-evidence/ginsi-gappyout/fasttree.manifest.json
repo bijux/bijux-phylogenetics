@@ -1,0 +1,168 @@
+{
+  "bootstrap_support_summary": null,
+  "config": {
+    "sequence_type": "dna",
+    "timeout_seconds": null
+  },
+  "engine_name": "FastTree",
+  "fasttree_support_summary": {
+    "annotated_node_count": 6,
+    "approximate_method": true,
+    "internal_node_count": 7,
+    "maximum_local_support": 1.0,
+    "median_local_support": 0.998,
+    "minimum_local_support": 0.87,
+    "nodes": [
+      {
+        "descendant_taxa": [
+          "bat_chile_rv108",
+          "bat_chile_rv50",
+          "cattle_russia_4092_13_2025",
+          "cattle_russia_4092_15_2025",
+          "dog_pakistan_pdb011",
+          "raccoon_dog_poland_2021"
+        ],
+        "is_backbone": true,
+        "local_support": 0.968,
+        "node": "bat_chile_rv108|bat_chile_rv50|cattle_russia_4092_13_2025|cattle_russia_4092_15_2025|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+        "support_fraction": 0.968
+      },
+      {
+        "descendant_taxa": [
+          "cattle_russia_4092_13_2025",
+          "cattle_russia_4092_15_2025"
+        ],
+        "is_backbone": false,
+        "local_support": 0.999,
+        "node": "cattle_russia_4092_13_2025|cattle_russia_4092_15_2025",
+        "support_fraction": 0.999
+      },
+      {
+        "descendant_taxa": [
+          "bat_chile_rv108",
+          "bat_chile_rv50",
+          "dog_pakistan_pdb011",
+          "raccoon_dog_poland_2021"
+        ],
+        "is_backbone": true,
+        "local_support": 0.997,
+        "node": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011|raccoon_dog_poland_2021",
+        "support_fraction": 0.997
+      },
+      {
+        "descendant_taxa": [
+          "bat_chile_rv108",
+          "bat_chile_rv50",
+          "dog_pakistan_pdb011"
+        ],
+        "is_backbone": false,
+        "local_support": 1.0,
+        "node": "bat_chile_rv108|bat_chile_rv50|dog_pakistan_pdb011",
+        "support_fraction": 1.0
+      },
+      {
+        "descendant_taxa": [
+          "bat_chile_rv108",
+          "bat_chile_rv50"
+        ],
+        "is_backbone": false,
+        "local_support": 1.0,
+        "node": "bat_chile_rv108|bat_chile_rv50",
+        "support_fraction": 1.0
+      },
+      {
+        "descendant_taxa": [
+          "raccoon_dog_russia_4092_26_2025",
+          "red_fox_russia_4092_20_2025"
+        ],
+        "is_backbone": false,
+        "local_support": 0.87,
+        "node": "raccoon_dog_russia_4092_26_2025|red_fox_russia_4092_20_2025",
+        "support_fraction": 0.87
+      }
+    ],
+    "support_histogram": {
+      "0p5to0p69": 0,
+      "0p7to0p89": 1,
+      "ge0p9": 5,
+      "lt0p5": 0
+    },
+    "support_label_kind": "sh-like-local-support",
+    "support_scale": "proportion-0-to-1",
+    "tree_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/fasttree/fasttree.nwk",
+    "warnings": [
+      "one or more internal nodes did not expose parsable FastTree local support labels",
+      "FastTree is an approximately maximum-likelihood workflow and its SH-like local support values should be reviewed as approximate evidence"
+    ],
+    "weakly_supported_clade_count": 0
+  },
+  "input_checksums": {
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
+  },
+  "input_paths": [
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln"
+  ],
+  "iqtree_summary": null,
+  "log_likelihood": null,
+  "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/fasttree/fasttree.nwk.manifest.json",
+  "model_selection_summary": null,
+  "notes": [
+    "fast approximate tree validated as parseable Newick output",
+    "FastTree is an approximately maximum-likelihood engine and should be reviewed as an exploratory or large-alignment inference method",
+    "FastTree local support values are SH-like support proportions on the documented 0-1 scale",
+    "branch-level FastTree local support table exported for review",
+    "low-support FastTree branch ledger exported for weak-clade review",
+    "FastTree local support histogram exported for reviewer-facing distribution checks"
+  ],
+  "output_checksums": {
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/fasttree/fasttree.nwk": "0e11e0785b1a2a577da5e43b7ed4b3ec44ef7a4fc3f75cfb8727d1a9dd4795b6",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/fasttree/fasttree.nwk.low-support.tsv": "07b6c95e7f5bbacfedde24c98d0e1056fa5b204e2a4cfbd5109a676f15f2c1f5",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/fasttree/fasttree.nwk.support-histogram.tsv": "21830eca94e176b070526a35b6c9633a4682460be48dc4dac56f4f421b668dd5",
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/fasttree/fasttree.nwk.support.tsv": "dd102e30b7586bd89a8450144144c1a09094c0f8954f9a097372eb71c5eca416"
+  },
+  "output_paths": {
+    "low_support_branches": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/fasttree/fasttree.nwk.low-support.tsv",
+    "support_histogram": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/fasttree/fasttree.nwk.support-histogram.tsv",
+    "support_table": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/fasttree/fasttree.nwk.support.tsv",
+    "tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/fasttree/fasttree.nwk"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/FastTree",
+      "-gtr",
+      "-nt",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln"
+    ],
+    "ended_at_utc": "2026-05-18T02:34:01Z",
+    "engine_name": "FastTree",
+    "executable": "/opt/homebrew/bin/FastTree",
+    "exit_code": 0,
+    "output_paths": {
+      "tree": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/fasttree/fasttree.nwk"
+    },
+    "runtime_seconds": 0.104754,
+    "started_at_utc": "2026-05-18T02:34:01Z",
+    "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/fasttree/fasttree.nwk.stderr.log",
+    "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/fasttree/fasttree.nwk",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/FastTree",
+        "-help"
+      ],
+      "engine_name": "FastTree",
+      "executable": "/opt/homebrew/bin/FastTree",
+      "text": "FastTree 2.1.11 Double precision (No SSE3), OpenMP (10 threads):\n  FastTree protein_alignment > tree\n  FastTree < protein_alignment > tree\n  FastTree -out tree protein_alignment\n  FastTree -nt nucleotide_alignment > tree\n  FastTree -nt -gtr < nucleotide_alignment > tree\n  FastTree < nucleotide_alignment > tree\nFastTree accepts alignments in fasta or phylip interleaved formats\n\nCommon options (must be before the alignment file):\n  -quiet to suppress reporting information\n  -nopr to suppress progress indicator\n  -log logfile -- save intermediate trees, settings, and model details\n  -fastest -- speed up the neighbor joining phase & reduce memory usage\n        (recommended for >50,000 sequences)\n  -n <number> to analyze multiple alignments (phylip format only)\n        (use for global bootstrap, with seqboot and CompareToBootstrap.pl)\n  -nosupport to not compute support values\n  -intree newick_file to set the starting tree(s)\n  -intree1 newick_file to use this starting tree for all the alignments\n        (for faster global bootstrap on huge alignments)\n  -pseudo to use pseudocounts (recommended for highly gapped sequences)\n  -gtr -- generalized time-reversible model (nucleotide alignments only)\n  -lg -- Le-Gascuel 2008 model (amino acid alignments only)\n  -wag -- Whelan-And-Goldman 2001 model (amino acid alignments only)\n  -quote -- allow spaces and other restricted characters (but not ' ) in\n           sequence names and quote names in the output tree (fasta input only;\n           FastTree will not be able to read these trees back in)\n  -noml to turn off maximum-likelihood\n  -nome to turn off minimum-evolution NNIs and SPRs\n        (recommended if running additional ML NNIs with -intree)\n  -nome -mllen with -intree to optimize branch lengths for a fixed topology\n  -cat # to specify the number of rate categories of sites (default 20)\n      or -nocat to use constant rates\n  -gamma -- after optimizing the tree under the CAT approximation,\n      rescale the lengths to optimize the Gamma20 likelihood\n  -constraints constraintAlignment to constrain the topology search\n       constraintAlignment should have 1s or 0s to indicates splits\n  -expert -- see more options\nFor more information, see http://www.microbesonline.org/fasttree/"
+    },
+    "warning_lines": [],
+    "workflow": "fast-approximate-tree",
+    "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/engine-comparison/engine-artifacts/ginsi-gappyout/fasttree"
+  },
+  "selected_model": null,
+  "sh_alrt_support_summary": null,
+  "trimming_summary": null,
+  "weak_backbone_report": null,
+  "workflow": "fast-approximate-tree"
+}

@@ -1,0 +1,3 @@
+node	descendant_taxa	support	support_fraction	is_backbone	support_bucket	low_support
+Csa004271|Dre37936|Hsa167996|LcaH|Mmu024661|Tru14292|Xtr21234	Csa004271,Dre37936,Hsa167996,LcaH,Mmu024661,Tru14292,Xtr21234	59	0.59	true	50to69	true
+Csa004271|Hsa167996|LcaH|Mmu024661	Csa004271,Hsa167996,LcaH,Mmu024661	68	0.68	true	50to69	true

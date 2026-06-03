@@ -47,10 +47,6 @@ report-evidence-governance:
 \t@$(MAKE) report-artifact-governance
 check-evidence-governance:
 \t@$(MAKE) check-artifact-governance
-rerun-evidence-cleanroom:
-\t@echo "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom"
-rerun-governed-evidence-cleanroom:
-\t@echo "$(ROOT_ARTIFACTS_DIR)/evidence-cleanroom"
 report-artifact-governance:
 \t@echo "$(ROOT_ARTIFACTS_DIR)/artifact-governance.json"
 check-artifact-governance:

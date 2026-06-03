@@ -1,5 +1,6 @@
 {
   "bijux_baseline": {
+    "aic": 918.620293126262,
     "coefficients": {
       "intercept": 263.916162626577,
       "social_group_size": 3.59115553047129
@@ -18,29 +19,38 @@
       "intercept": 0.0,
       "social_group_size": 3.43365580768307e-06
     },
-    "r_squared": 0.257169890828586
+    "r_squared": 0.257169890828586,
+    "standard_errors": {
+      "intercept": 16.3549789334552,
+      "social_group_size": 0.714344118870893
+    }
   },
   "evidence_id": "evidence-002",
   "r_baseline": {
+    "aic": 918.620293125849,
     "coefficients": {
-      "intercept": 263.9162,
-      "social_group_size": 3.5912
+      "intercept": 263.916162624481,
+      "social_group_size": 3.59115553051772
     },
     "diagnostics": {
-      "abs_residual_fitted_correlation": 0.0234,
-      "max_abs_z_residual": 3.073,
+      "abs_residual_fitted_correlation": 0.0234397354786275,
+      "max_abs_z_residual": 3.07296182239106,
       "outlier_count_abs_z_ge_2": 5,
-      "qq_correlation": 0.975,
-      "residual_mean": 1.6314e-15,
-      "residual_sd": 1.0067,
-      "residual_variance": 1.0135
+      "qq_correlation": 0.974950137688634,
+      "residual_mean": 1.63135997766073e-15,
+      "residual_sd": 1.00673408282104,
+      "residual_variance": 1.01351351351351
     },
-    "log_likelihood": -456.3101,
+    "log_likelihood": -456.310146562924,
     "p_values": {
-      "intercept": 8.7931e-26,
-      "social_group_size": 3.4337e-06
+      "intercept": 8.79309924155723e-26,
+      "social_group_size": 3.43365580694647e-06
     },
-    "r_squared": 0.2572
+    "r_squared": 0.257169890828586,
+    "standard_errors": {
+      "intercept": 16.3549789333874,
+      "social_group_size": 0.714344118871271
+    }
   },
   "r_fixed_lambda_equivalence": true,
   "schema_version": 1,

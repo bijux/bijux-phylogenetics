@@ -1,0 +1,8 @@
+node	node_name	descendant_taxa	most_likely_host	host_probabilities	confidence	ambiguous	is_root
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4|SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8		SimTaxon1,SimTaxon2,SimTaxon3,SimTaxon4,SimTaxon5,SimTaxon6,SimTaxon7,SimTaxon8	bat	"{""bat"": 0.500723942334542, ""canid"": 0.499276057665458}"	0.500723942334542	true	true
+SimTaxon1|SimTaxon2|SimTaxon3|SimTaxon4		SimTaxon1,SimTaxon2,SimTaxon3,SimTaxon4	bat	"{""bat"": 0.568653380663645, ""canid"": 0.431346619336355}"	0.568653380663645	true	false
+SimTaxon1|SimTaxon2		SimTaxon1,SimTaxon2	bat	"{""bat"": 0.574090040463858, ""canid"": 0.425909959536142}"	0.574090040463858	true	false
+SimTaxon3|SimTaxon4		SimTaxon3,SimTaxon4	bat	"{""bat"": 1.0, ""canid"": 0.0}"	1.0	false	false
+SimTaxon5|SimTaxon6|SimTaxon7|SimTaxon8		SimTaxon5,SimTaxon6,SimTaxon7,SimTaxon8	bat	"{""bat"": 0.593207493809859, ""canid"": 0.406792506190141}"	0.593207493809859	true	false
+SimTaxon6|SimTaxon7|SimTaxon8		SimTaxon6,SimTaxon7,SimTaxon8	bat	"{""bat"": 0.592976334422688, ""canid"": 0.407023665577312}"	0.592976334422688	true	false
+SimTaxon6|SimTaxon7		SimTaxon6,SimTaxon7	bat	"{""bat"": 0.986647624642835, ""canid"": 0.013352375357165}"	0.986647624642835	false	false

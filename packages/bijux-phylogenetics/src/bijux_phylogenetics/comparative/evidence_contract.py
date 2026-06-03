@@ -7,6 +7,7 @@ SUPPORTED_EVIDENCE_API_MODULES = ("bijux_phylogenetics.comparative",)
 SUPPORTED_EVIDENCE_API_LOCATORS = (
     "bijux_phylogenetics.comparative:inspect_pgls_inputs",
     "bijux_phylogenetics.comparative:build_pgls_model_matrix",
+    "bijux_phylogenetics.comparative:summarize_brownian_covariance",
     "bijux_phylogenetics.comparative:summarize_brownian_covariance_pgls",
     "bijux_phylogenetics.comparative:summarize_brownian_regime_rates",
     "bijux_phylogenetics.comparative:summarize_trait_regime_mapping",
@@ -32,6 +33,8 @@ SUPPORTED_EVIDENCE_API_LOCATORS = (
     "bijux_phylogenetics.comparative:run_multivariate_comparative_regression",
     "bijux_phylogenetics.comparative:run_pgls",
     "bijux_phylogenetics.comparative:write_brownian_covariance_table",
+    "bijux_phylogenetics.comparative:write_brownian_covariance_long_table",
+    "bijux_phylogenetics.comparative:write_brownian_covariance_matrix_table",
     "bijux_phylogenetics.comparative:write_brownian_regime_branch_table",
     "bijux_phylogenetics.comparative:write_brownian_regime_comparison_table",
     "bijux_phylogenetics.comparative:write_brownian_regime_exclusion_table",
@@ -114,3 +117,10 @@ def resolve_supported_evidence_api(locator: str) -> Any:
     module_name, export_name = locator.split(":", maxsplit=1)
     module = import_module(module_name)
     return getattr(module, export_name)
+
+
+__all__ = [
+    "SUPPORTED_EVIDENCE_API_LOCATORS",
+    "SUPPORTED_EVIDENCE_API_MODULES",
+    "resolve_supported_evidence_api",
+]

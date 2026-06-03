@@ -1,0 +1,161 @@
+IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024
+Developed by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,
+Dominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong
+
+Host:    Mac (SSE4.2, 32 GB RAM)
+Command: /opt/homebrew/bin/iqtree2 -s /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln -st AA -seed 1 -nt 1 -m JTTDCMut+G4 -bb 1000 -wbt -pre /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support
+Seed:    1 (Using SPRNG - Scalable Parallel Random Number Generator)
+Time:    Tue Jun  2 14:37:20 2026
+Kernel:  SSE2 - 1 threads (10 CPU cores detected)
+
+HINT: Use -nt option to specify number of threads because your CPU has 10 cores!
+HINT: -nt AUTO will automatically determine the best number of threads to use.
+
+Reading alignment file /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/trimming/trimming.trimmed.aln ... Fasta format detected
+Reading fasta file: done in 7.79629e-05 secs using 82.09% CPU
+Alignment most likely contains protein sequences
+Alignment has 31 sequences with 145 columns, 129 distinct patterns
+50 parsimony-informative, 52 singleton sites, 43 constant sites
+                             Gap/Ambiguity  Composition  p-value
+Analyzing sequences: done in 6.91414e-06 secs using 86.78% CPU
+   1  88036.EFJ07870                 2.07%    passed     26.40%
+   2  3218.PP1S150_127V6.1           6.90%    passed     99.54%
+   3  29760.VIT_09s0002g06370.t01   14.48%    passed     96.14%
+   4  4641.GSMUA_Achr10P29310_001   42.07%    passed     96.39%
+   5  39946.BGIOSGA016720-PA        45.52%    passed     99.81%
+   6  15368.BRADI3G48660.1           6.90%    passed    100.00%
+   7  4513.MLOC_12967.5              6.90%    passed    100.00%
+   8  4533.OB02G31210.1              6.90%    passed    100.00%
+   9  39946.BGIOSGA008614-PA         6.90%    passed    100.00%
+  10  39947.LOC_Os02g40000.1         6.90%    passed    100.00%
+  11  4538.ORGLA02G0207300.1         6.90%    passed    100.00%
+  12  39947.LOC_Os04g42500.1         0.00%    passed     99.96%
+  13  4538.ORGLA04G0149900.1         0.00%    passed     99.96%
+  14  39946.BGIOSGA016723-PA         0.00%    passed     99.97%
+  15  4533.OB04G25010.1              6.90%    passed    100.00%
+  16  15368.BRADI5G14900.1           6.90%    passed    100.00%
+  17  4513.MLOC_67125.1              6.90%    passed    100.00%
+  18  4555.Si018666m                 6.90%    passed    100.00%
+  19  4555.Si007486m                 6.90%    passed    100.00%
+  20  4558.Sb02g043460.1             6.90%    passed    100.00%
+  21  4577.GRMZM2G097568_P01         6.90%    passed    100.00%
+  22  4113.PGSC0003DMT400073367     43.45%    passed     99.36%
+  23  4081.Solyc06g068030.2.1        6.90%    passed    100.00%
+  24  4113.PGSC0003DMT400073369      6.90%    passed    100.00%
+  25  3711.Bra035176.1-P            42.07%    passed     99.90%
+  26  3694.POPTR_0001s03500.1        6.90%    passed     99.98%
+  27  3847.GLYMA04G38461.1           6.90%    passed    100.00%
+  28  3847.GLYMA06G16590.1           6.90%    passed    100.00%
+  29  59689.Al_scaffold_0002_2746    6.90%    passed    100.00%
+  30  3702.AT1G80500.1               6.90%    passed    100.00%
+  31  3711.Bra027566.1-P             0.00%    passed     99.96%
+****  TOTAL                         10.79%  0 sequences failed composition chi2 test (p-value<5%; df=19)
+NOTE: 39947.LOC_Os02g40000.1 is identical to 39946.BGIOSGA008614-PA but kept for subsequent analysis
+NOTE: 4538.ORGLA04G0149900.1 is identical to 39947.LOC_Os04g42500.1 but kept for subsequent analysis
+NOTE: 4558.Sb02g043460.1 is identical to 4555.Si007486m but kept for subsequent analysis
+NOTE: 3702.AT1G80500.1 is identical to 59689.Al_scaffold_0002_2746 but kept for subsequent analysis
+NOTE: 1 identical sequences (see below) will be ignored for subsequent analysis
+NOTE: 4538.ORGLA02G0207300.1 (identical to 39946.BGIOSGA008614-PA) is ignored but added at the end
+Alignment was printed to /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.uniqueseq.phy
+
+For your convenience alignment with unique sequences printed to /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.uniqueseq.phy
+
+Create initial parsimony tree by phylogenetic likelihood library (PLL)... 0.001 seconds
+Generating 1000 samples for ultrafast bootstrap (seed: 1)...
+
+NOTE: 3 MB RAM (0 GB) is required!
+Estimate model parameters (epsilon = 0.100)
+1. Initial log-likelihood: -1607.576
+2. Current log-likelihood: -1594.192
+3. Current log-likelihood: -1594.031
+Optimal log-likelihood: -1594.030
+Gamma shape alpha: 1.333
+Parameters optimization took 3 rounds (0.265 sec)
+Wrote distance file to... 
+Computing ML distances based on estimated model parameters...
+Calculating distance matrix: done in 0.310878 secs using 97.98% CPU
+Computing ML distances took 0.310961 sec (of wall-clock time) 0.304637 sec (of CPU time)
+Setting up auxiliary I and S matrices: done in 2.59876e-05 secs using 80.81% CPU
+Computing RapidNJ tree took 0.000095 sec (of wall-clock time) 0.000073 sec (of CPU time)
+Log-likelihood of RapidNJ tree: -1623.325
+--------------------------------------------------------------------
+|             INITIALIZING CANDIDATE TREE SET                      |
+--------------------------------------------------------------------
+Generating 98 parsimony trees... 0.111 second
+Computing log-likelihood of 98 initial trees ... 2.093 seconds
+Current best score: -1593.642
+
+Do NNI search on 20 best initial trees
+Estimate model parameters (epsilon = 0.100)
+BETTER TREE FOUND at iteration 1: -1592.387
+Estimate model parameters (epsilon = 0.100)
+BETTER TREE FOUND at iteration 3: -1592.332
+Iteration 10 / LogL: -1592.387 / Time: 0h:0m:6s
+Iteration 20 / LogL: -1592.384 / Time: 0h:0m:10s
+Finish initializing candidate tree set (14)
+Current best tree score: -1592.332 / CPU time: 9.851
+Number of iterations: 20
+--------------------------------------------------------------------
+|               OPTIMIZING CANDIDATE TREE SET                      |
+--------------------------------------------------------------------
+BETTER TREE FOUND at iteration 21: -1592.328
+Estimate model parameters (epsilon = 0.100)
+BETTER TREE FOUND at iteration 22: -1591.373
+Iteration 30 / LogL: -1592.385 / Time: 0h:0m:15s (0h:0m:50s left)
+Iteration 40 / LogL: -1592.385 / Time: 0h:0m:21s (0h:0m:45s left)
+Iteration 50 / LogL: -1591.373 / Time: 0h:0m:27s (0h:0m:39s left)
+Log-likelihood cutoff on original alignment: -1617.683
+UFBoot trees printed to /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.ufboot
+Iteration 60 / LogL: -1592.385 / Time: 0h:0m:33s (0h:0m:34s left)
+Iteration 70 / LogL: -1591.374 / Time: 0h:0m:39s (0h:0m:30s left)
+UPDATE BEST LOG-LIKELIHOOD: -1591.373
+Iteration 80 / LogL: -1592.401 / Time: 0h:0m:45s (0h:0m:24s left)
+Iteration 90 / LogL: -1594.226 / Time: 0h:0m:50s (0h:0m:18s left)
+Iteration 100 / LogL: -1591.373 / Time: 0h:0m:56s (0h:0m:12s left)
+Log-likelihood cutoff on original alignment: -1618.474
+NOTE: Bootstrap correlation coefficient of split occurrence frequencies: 0.995
+UFBoot trees printed to /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.ufboot
+Iteration 110 / LogL: -1591.373 / Time: 0h:1m:1s (0h:0m:50s left)
+Iteration 120 / LogL: -1592.385 / Time: 0h:1m:7s (0h:0m:45s left)
+TREE SEARCH COMPLETED AFTER 123 ITERATIONS / Time: 0h:1m:9s
+
+--------------------------------------------------------------------
+|                    FINALIZING TREE SEARCH                        |
+--------------------------------------------------------------------
+Performs final model parameters optimization
+Estimate model parameters (epsilon = 0.010)
+1. Initial log-likelihood: -1591.373
+Optimal log-likelihood: -1591.373
+Gamma shape alpha: 1.324
+Parameters optimization took 1 rounds (0.065 sec)
+BEST SCORE FOUND : -1591.373
+Creating bootstrap support values...
+Split supports printed to NEXUS file /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.splits.nex
+Total tree length: 2.219
+
+Total number of iterations: 123
+CPU time used for tree search: 67.288 sec (0h:1m:7s)
+Wall-clock time used for tree search: 68.817 sec (0h:1m:8s)
+Total CPU time used: 68.097 sec (0h:1m:8s)
+Total wall-clock time used: 69.645 sec (0h:1m:9s)
+UFBoot trees printed to /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.ufboot
+
+Computing bootstrap consensus tree...
+Reading input file /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.splits.nex...
+30 taxa and 269 splits.
+Consensus tree written to /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.contree
+Reading input trees file /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.contree
+Log-likelihood of consensus tree: -1591.549
+
+Analysis results written to: 
+  IQ-TREE report:                /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.iqtree
+  Maximum-likelihood tree:       /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.treefile
+  Likelihood distances:          /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.mldist
+
+Ultrafast bootstrap approximation results written to:
+  Split support values:          /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.splits.nex
+  Consensus tree:                /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.contree
+  UFBoot trees:                  /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.ufboot
+  Screen log file:               /Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/engine-artifacts/strnog-enog411bqtj-proteins/bootstrap-support/bootstrap-support.log
+
+Date and Time: Tue Jun  2 14:38:30 2026

@@ -1,0 +1,86 @@
+{
+  "bootstrap_support_summary": null,
+  "config": {
+    "gap_threshold": 0.1,
+    "mode": "gappyout",
+    "timeout_seconds": null
+  },
+  "engine_name": "trimal",
+  "fasttree_support_summary": null,
+  "input_checksums": {
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
+  },
+  "input_paths": [
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.aln"
+  ],
+  "iqtree_summary": null,
+  "log_likelihood": null,
+  "manifest_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln.manifest.json",
+  "model_selection_summary": null,
+  "notes": [
+    "trimal trimming mode: gappyout",
+    "retained sites: 1353 of 1353",
+    "gap percentage: 0.000 -> 0.000",
+    "trimmed alignment validated as nonempty equal-length FASTA"
+  ],
+  "output_checksums": {
+    "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln": "a0dc6dbfd24155e76906e156bfe85bb6e6dcdfede66af54fc6aea1dba725b4d8"
+  },
+  "output_paths": {
+    "trimmed_alignment": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/trimal",
+      "-in",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.aln",
+      "-out",
+      "/private/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln",
+      "-gappyout"
+    ],
+    "ended_at_utc": "2026-05-18T02:33:57Z",
+    "engine_name": "trimal",
+    "executable": "/opt/homebrew/bin/trimal",
+    "exit_code": 0,
+    "output_paths": {
+      "trimmed_alignment": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln"
+    },
+    "runtime_seconds": 0.02644,
+    "started_at_utc": "2026-05-18T02:33:57Z",
+    "stderr_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln.stderr.log",
+    "stdout_path": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout/ginsi-gappyout.trimmed.aln.stdout.log",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/trimal",
+        "--version"
+      ],
+      "engine_name": "trimal",
+      "executable": "/opt/homebrew/bin/trimal",
+      "text": "trimAl v1.5.rev0 build[2024-05-27]"
+    },
+    "warning_lines": [],
+    "workflow": "alignment-trimming",
+    "working_directory": "/var/folders/n8/vnvrbrx950b17b93f4xx47k80000gn/T/rabies-method-sensitivity-h_1dgk8y/variants/ginsi-gappyout"
+  },
+  "selected_model": null,
+  "sh_alrt_support_summary": null,
+  "trimming_summary": {
+    "gap_threshold": null,
+    "input_alignment_length": 1353,
+    "input_gap_fraction": 0.0,
+    "input_gap_percentage": 0.0,
+    "mode": "gappyout",
+    "removed_site_count": 0,
+    "removed_site_fraction": 0.0,
+    "retained_site_count": 1353,
+    "retained_site_fraction": 1.0,
+    "trimmed_alignment_length": 1353,
+    "trimmed_gap_fraction": 0.0,
+    "trimmed_gap_percentage": 0.0
+  },
+  "weak_backbone_report": null,
+  "workflow": "alignment-trimming"
+}

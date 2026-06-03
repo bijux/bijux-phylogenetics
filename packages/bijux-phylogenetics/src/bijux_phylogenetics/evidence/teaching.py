@@ -117,7 +117,7 @@ TEACHING_STUDY_METADATA = {
                         "family_id": "tree-operations",
                         "fragment_id": "tree-import-and-pruning",
                         "bijux_locators": [
-                            "bijux_phylogenetics.core.pruning:prune_tree_to_requested_taxa",
+                            "bijux_phylogenetics.phylo.pruning:prune_tree_to_requested_taxa",
                             "bijux_phylogenetics.evidence.studies.primate_pcm1_component_bundles:build_primate_pcm1_component_bundles",
                         ],
                         "bijux_summary": (
@@ -158,7 +158,7 @@ TEACHING_STUDY_METADATA = {
                         "fragment_id": "primate-lambda-fit",
                         "bijux_locators": [
                             "bijux_phylogenetics.comparative.signal:estimate_pagels_lambda",
-                            "bijux_phylogenetics.validation_corpus:build_scientific_validation_report",
+                            "bijux_phylogenetics.validation:build_scientific_validation_report",
                         ],
                         "bijux_summary": (
                             "Bijux turns the lecture's lambda-fitting path into a tracked "
@@ -187,7 +187,7 @@ TEACHING_STUDY_METADATA = {
                         "family_id": "ancestral-reconstruction",
                         "fragment_id": "continuous-ancestral-point-estimates",
                         "bijux_locators": [
-                            "bijux_phylogenetics.validation_corpus:build_scientific_validation_report",
+                            "bijux_phylogenetics.validation:build_scientific_validation_report",
                             "bijux_phylogenetics.evidence.studies.primate_longevity_signal:build_primate_scalar_parity_table",
                         ],
                         "bijux_summary": (

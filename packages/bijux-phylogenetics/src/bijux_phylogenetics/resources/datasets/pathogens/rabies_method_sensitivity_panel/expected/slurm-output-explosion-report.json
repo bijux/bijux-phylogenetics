@@ -1,0 +1,148 @@
+{
+  "bootstrap_replicates": 1000,
+  "bundle_root": ".",
+  "check_count": 8,
+  "checks": [
+    {
+      "check_id": "job-plan:variant-coverage",
+      "detail": "job-plan rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "job-plan"
+    },
+    {
+      "check_id": "storage:variant-coverage",
+      "detail": "storage variant rows cover the configured variant ids",
+      "expected": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "observed": "['auto-gap-threshold', 'auto-gappyout', 'ginsi-gap-threshold', 'ginsi-gappyout']",
+      "status": "passed",
+      "surface": "storage"
+    },
+    {
+      "check_id": "storage:category-coverage",
+      "detail": "storage category rows cover the explicit retained-output categories",
+      "expected": "['logs', 'outputs', 'posterior_samples', 'reports', 'trees']",
+      "observed": "['logs', 'outputs', 'posterior_samples', 'reports', 'trees']",
+      "status": "passed",
+      "surface": "storage"
+    },
+    {
+      "check_id": "job-plan:total-output-mib",
+      "detail": "storage summary variant_count matches the configured variant count",
+      "expected": "4",
+      "observed": "4",
+      "status": "passed",
+      "surface": "job-plan"
+    },
+    {
+      "check_id": "storage:total-storage-mib",
+      "detail": "storage summary total_estimated_storage_mib is a rounded-up retained-byte estimate",
+      "expected": "storage summary rounds total retained bytes up into MiB",
+      "observed": "2",
+      "status": "passed",
+      "surface": "storage"
+    },
+    {
+      "check_id": "storage:largest-variant",
+      "detail": "storage summary largest_variant_id matches the written storage-variant rows",
+      "expected": "ginsi-gap-threshold",
+      "observed": "ginsi-gap-threshold",
+      "status": "passed",
+      "surface": "storage"
+    },
+    {
+      "check_id": "risk-summary:variant-counts",
+      "detail": "risk-status counts cover every configured variant exactly once",
+      "expected": "4",
+      "observed": "4",
+      "status": "passed",
+      "surface": "risk-summary"
+    },
+    {
+      "check_id": "risk-summary:overall-status",
+      "detail": "overall explosion-risk status matches the global and per-variant risk counts",
+      "expected": "low",
+      "observed": "low",
+      "status": "passed",
+      "surface": "risk-summary"
+    }
+  ],
+  "dataset_id": "rabies_method_sensitivity_panel",
+  "failed_check_count": 0,
+  "global_issue_count": 0,
+  "global_issues": [],
+  "high_risk_variant_count": 0,
+  "largest_variant_id": "ginsi-gappyout",
+  "largest_variant_output_share": 0.25,
+  "low_risk_variant_count": 4,
+  "overall_risk_status": "low",
+  "total_estimated_output_mib": 4,
+  "total_estimated_storage_mib": 2,
+  "total_posterior_sample_byte_count": 0,
+  "total_posterior_sample_file_count": 0,
+  "total_report_byte_count": 1101231,
+  "total_tree_byte_count": 7036,
+  "total_tree_file_count": 16,
+  "variant_count": 4,
+  "variants": [
+    {
+      "estimated_output_mib": 1,
+      "estimated_storage_mib": 1,
+      "issue_count": 0,
+      "issues": [],
+      "output_share": 0.25,
+      "posterior_sample_byte_count": 0,
+      "posterior_sample_file_count": 0,
+      "report_byte_count": 252889,
+      "risk_status": "low",
+      "tree_byte_count": 1759,
+      "tree_file_count": 4,
+      "variant_id": "auto-gap-threshold"
+    },
+    {
+      "estimated_output_mib": 1,
+      "estimated_storage_mib": 1,
+      "issue_count": 0,
+      "issues": [],
+      "output_share": 0.25,
+      "posterior_sample_byte_count": 0,
+      "posterior_sample_file_count": 0,
+      "report_byte_count": 250036,
+      "risk_status": "low",
+      "tree_byte_count": 1759,
+      "tree_file_count": 4,
+      "variant_id": "auto-gappyout"
+    },
+    {
+      "estimated_output_mib": 1,
+      "estimated_storage_mib": 1,
+      "issue_count": 0,
+      "issues": [],
+      "output_share": 0.25,
+      "posterior_sample_byte_count": 0,
+      "posterior_sample_file_count": 0,
+      "report_byte_count": 253604,
+      "risk_status": "low",
+      "tree_byte_count": 1759,
+      "tree_file_count": 4,
+      "variant_id": "ginsi-gap-threshold"
+    },
+    {
+      "estimated_output_mib": 1,
+      "estimated_storage_mib": 1,
+      "issue_count": 0,
+      "issues": [],
+      "output_share": 0.25,
+      "posterior_sample_byte_count": 0,
+      "posterior_sample_file_count": 0,
+      "report_byte_count": 250741,
+      "risk_status": "low",
+      "tree_byte_count": 1759,
+      "tree_file_count": 4,
+      "variant_id": "ginsi-gappyout"
+    }
+  ],
+  "warning_variant_count": 0,
+  "workflow_prefix": "rabies-method-sensitivity-panel"
+}

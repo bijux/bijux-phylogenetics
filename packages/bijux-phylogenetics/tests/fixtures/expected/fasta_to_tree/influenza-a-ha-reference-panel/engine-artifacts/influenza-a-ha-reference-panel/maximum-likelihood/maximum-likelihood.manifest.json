@@ -1,0 +1,108 @@
+{
+  "bootstrap_support_summary": null,
+  "config": {
+    "model": "TPM3u+F+R2",
+    "partition_path": null,
+    "seed": 1,
+    "sequence_type": "dna",
+    "threads": 1,
+    "timeout_seconds": null
+  },
+  "engine_name": "iqtree",
+  "fasttree_support_summary": null,
+  "input_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln": "84d8f7d685d8637f4403badb8a8a955d9b72923eb959e372bc969df59f1b1a21"
+  },
+  "input_paths": [
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln"
+  ],
+  "iqtree_summary": {
+    "log_likelihood": -9379.188,
+    "maximum_support": null,
+    "minimum_support": null,
+    "selected_model": "TPM3u+F+R2",
+    "support_value_count": 0,
+    "support_values": []
+  },
+  "log_likelihood": -9379.188,
+  "manifest_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.manifest.json",
+  "model_selection_summary": {
+    "best_model_aic": "18790.3761",
+    "best_model_aicc": "18790.6778",
+    "best_model_bic": "18878.4815",
+    "best_score_aic": null,
+    "best_score_aicc": null,
+    "best_score_bic": null,
+    "bic_near_best_models": [],
+    "candidate_count": 0,
+    "candidates": [],
+    "selected_criterion": "BIC",
+    "selected_model": "18878.4815"
+  },
+  "notes": [
+    "iqtree random seed: 1",
+    "iqtree threads: 1",
+    "maximum-likelihood tree validated as parseable Newick output",
+    "log-likelihood parsed from iqtree inference artifacts"
+  ],
+  "output_checksums": {
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.iqtree": "e8fa8d1f4ce7102144c1615b6b280cd4421d47a6ac7e804bb8407d13fd5cf9c2",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.log": "1eb27dfdfeb8dad4b49077e51d435bd80ef1899e4589bde41a813abbacab41d2",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.treefile": "32e853a9444f1a592a5594e6ed107ec5c637f0172a28c38ba284d6c6633943f2"
+  },
+  "output_paths": {
+    "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.log",
+    "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.iqtree",
+    "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.treefile"
+  },
+  "resumed": false,
+  "run": {
+    "command": [
+      "/opt/homebrew/bin/iqtree2",
+      "-s",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/trimming/trimming.trimmed.aln",
+      "-st",
+      "DNA",
+      "-seed",
+      "1",
+      "-nt",
+      "1",
+      "-m",
+      "TPM3u+F+R2",
+      "-pre",
+      "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood"
+    ],
+    "ended_at_utc": "2026-05-31T18:29:33Z",
+    "engine_name": "iqtree",
+    "executable": "/opt/homebrew/bin/iqtree2",
+    "exit_code": 0,
+    "output_paths": {
+      "iqtree_log": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.log",
+      "iqtree_report": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.iqtree",
+      "tree": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.treefile"
+    },
+    "runtime_seconds": 0.382873,
+    "started_at_utc": "2026-05-31T18:29:33Z",
+    "stderr_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.stderr.log",
+    "stdout_path": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood/maximum-likelihood.stdout.log",
+    "timed_out": false,
+    "timeout_seconds": null,
+    "version": {
+      "command": [
+        "/opt/homebrew/bin/iqtree2",
+        "--version"
+      ],
+      "engine_name": "iqtree",
+      "executable": "/opt/homebrew/bin/iqtree2",
+      "text": "IQ-TREE multicore version 2.3.6 for MacOS ARM 64-bit built Jul 30 2024\nDeveloped by Bui Quang Minh, Nguyen Lam Tung, Olga Chernomor, Heiko Schmidt,\nDominik Schrempf, Michael Woodhams, Ly Trong Nhan, Thomas Wong"
+    },
+    "warning_lines": [],
+    "workflow": "maximum-likelihood-tree",
+    "working_directory": "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmpmhvh_s9f/influenza-a-ha-reference-panel/engine-artifacts/influenza-a-ha-reference-panel/maximum-likelihood"
+  },
+  "selected_model": "TPM3u+F+R2",
+  "sh_alrt_support_summary": null,
+  "trimming_summary": null,
+  "weak_backbone_report": null,
+  "workflow": "maximum-likelihood-tree"
+}

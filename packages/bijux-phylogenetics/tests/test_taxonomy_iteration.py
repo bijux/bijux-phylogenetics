@@ -2,26 +2,24 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.core.pruning import prune_tree_to_taxa
-from bijux_phylogenetics.core.taxon_workflows import (
-    build_taxon_stability_report,
-    build_taxon_workflow_loss_report,
-    load_taxon_run_source,
-)
-from bijux_phylogenetics.core.taxonomy import (
+from bijux_phylogenetics.io.newick import loads_newick
+from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.pruning import prune_tree_to_taxa
+from bijux_phylogenetics.phylo.taxa import (
     audit_tree_taxon_synonyms,
     build_taxon_audit_report,
     build_taxon_mapping_conflict_report,
+    build_taxon_stability_report,
+    build_taxon_workflow_loss_report,
     detect_duplicate_biological_identities,
     export_tree_accepted_names,
     inspect_tree_taxon_namespaces,
     inspect_tree_taxon_rank_consistency,
+    load_taxon_run_source,
     resolve_tree_taxon_synonyms,
     write_accepted_name_mapping,
     write_synonym_resolution_mapping,
 )
-from bijux_phylogenetics.io.newick import loads_newick
-from bijux_phylogenetics.io.trees import load_tree
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

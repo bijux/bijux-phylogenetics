@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bijux_phylogenetics.comparative.regression_model_selection import (
+from bijux_phylogenetics.comparative.regression import (
     compare_comparative_regression_models,
     write_comparative_regression_excluded_taxa_table,
     write_comparative_regression_model_ranking_table,

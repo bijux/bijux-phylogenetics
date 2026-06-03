@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.tree_shape import (
+from bijux_phylogenetics.trees import (
     summarize_tree_set_shapes,
     summarize_tree_shape,
 )

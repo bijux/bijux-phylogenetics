@@ -1,0 +1,613 @@
+{
+  "catalog_name": "shared_geiger_discrete_fixtures",
+  "fixtures": [
+    {
+      "fixture_id": "geiger_discrete_er_binary_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "er_binary_truth",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "clean-match",
+      "geiger_reference_expectation": "fitdiscrete-ready",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "equal-rates-known-truth",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-truth-simulation",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "states": ["0", "1"],
+        "matrix_shape": "2x2",
+        "parameterization": "equal-rates",
+        "off_diagonal_rate": 0.35
+      },
+      "simulation_metadata": {
+        "model": "symmetric-discrete",
+        "root_state": "0",
+        "states": ["0", "1"],
+        "transition_rate": 0.35,
+        "seed": 1
+      },
+      "notes": "Binary equal-rates surface simulated on the governed twenty-four-taxon ultrametric tree so `fitDiscrete(model='ER')` parity starts from a real non-toy known-truth panel."
+    },
+    {
+      "fixture_id": "geiger_discrete_transform_weak_signal_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "er_binary_transform_weak_signal",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "clean-match-with-weak-transform-signal",
+      "geiger_reference_expectation": "fitdiscrete-transform-ready",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "equal-rates-known-truth",
+        "weak-phylogenetic-signal-review",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "states": ["0", "1"],
+        "matrix_shape": "2x2",
+        "parameterization": "equal-rates",
+        "transform_review_kind": "shared-branch-length-transform",
+        "expected_signal_boundary": "near-zero"
+      },
+      "simulation_metadata": {
+        "model": "curated-weak-transform-review-surface",
+        "state_string_by_phy_index": "100100110010001011001111"
+      },
+      "notes": "Binary equal-rates weak-signal surface curated on the governed twenty-four-taxon ultrametric tree so transformed `fitDiscrete` parity has an explicit near-zero branch-length review lane instead of only high-signal examples."
+    },
+    {
+      "fixture_id": "geiger_discrete_kappa_branch_sensitive_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "er_binary_truth",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "clean-match",
+      "geiger_reference_expectation": "fitdiscrete-transform-kappa-ready",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "equal-rates-known-truth",
+        "branch-length-sensitive-review",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_er_binary_twenty_four_taxa",
+        "transform": "kappa"
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+        "source_trait_name": "er_binary_truth"
+      },
+      "notes": "Binary equal-rates surface reused as the governed kappa branch-length review lane because local `fitDiscrete(transform='kappa')` moves off the boundary and therefore proves real branch-length sensitivity instead of only weak-signal behavior."
+    },
+    {
+      "fixture_id": "geiger_discrete_kappa_weak_signal_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "er_binary_transform_weak_signal",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "summary-match-with-weak-transform-signal",
+      "geiger_reference_expectation": "fitdiscrete-transform-kappa-ready-with-summary-parity",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "equal-rates-known-truth",
+        "weak-phylogenetic-signal-review",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_transform_weak_signal_twenty_four_taxa",
+        "transform": "kappa",
+        "expected_signal_boundary": "near-zero"
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+        "source_trait_name": "er_binary_transform_weak_signal"
+      },
+      "notes": "Binary weak-signal surface reused as the governed kappa near-zero review lane, where parameter parity is durable but row-level ER rate maxima remain weakly identified at the branch-length boundary."
+    },
+    {
+      "fixture_id": "geiger_discrete_sym_three_state_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "sym_three_state_truth",
+      "taxon_column": "taxon",
+      "trait_kind": "three-state-discrete",
+      "supported_model_names": ["SYM"],
+      "validation_expectation": "clean-match",
+      "geiger_reference_expectation": "fitdiscrete-ready",
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "three-state-discrete-trait",
+        "symmetric-known-truth",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-truth-simulation",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "states": ["north", "south", "central"],
+        "matrix_shape": "3x3",
+        "parameterization": "symmetric",
+        "pairwise_rate": 0.45
+      },
+      "simulation_metadata": {
+        "model": "symmetric-discrete",
+        "root_state": "north",
+        "states": ["north", "south", "central"],
+        "transition_rate": 0.45,
+        "seed": 3
+      },
+      "notes": "Three-state symmetric surface simulated on the governed ultrametric tree so `fitDiscrete(model='SYM')` review is not limited to binary traits or four-taxon examples."
+    },
+    {
+      "fixture_id": "geiger_discrete_sym_four_state_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "sym_four_state_truth",
+      "taxon_column": "taxon",
+      "trait_kind": "four-state-discrete",
+      "supported_model_names": ["SYM"],
+      "validation_expectation": "clean-match",
+      "geiger_reference_expectation": "fitdiscrete-ready",
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "four-plus-state-discrete-trait",
+        "symmetric-known-truth",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-truth-simulation",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "states": ["north", "south", "east", "west"],
+        "matrix_shape": "4x4",
+        "parameterization": "symmetric",
+        "pairwise_rate": 0.45
+      },
+      "simulation_metadata": {
+        "model": "symmetric-discrete",
+        "root_state": "north",
+        "states": ["north", "south", "east", "west"],
+        "transition_rate": 0.45,
+        "seed": 1
+      },
+      "notes": "Four-state symmetric surface simulated on the governed ultrametric tree so later multistate `fitDiscrete` parity does not depend on collapsed three-state or directional-only fixtures."
+    },
+    {
+      "fixture_id": "geiger_discrete_ard_binary_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "ard_binary_truth",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ARD"],
+      "validation_expectation": "clean-match",
+      "geiger_reference_expectation": "fitdiscrete-ready",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "all-rates-different-known-truth",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-truth-simulation",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "states": ["0", "1"],
+        "matrix_shape": "2x2",
+        "parameterization": "all-rates-different",
+        "directional_transition_rates": {
+          "0->1": 0.5,
+          "1->0": 0.2
+        }
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "phytools_discrete_ard_twenty_four_taxa",
+        "source_trait_name": "binary_state",
+        "seed": 71000
+      },
+      "notes": "Directional binary surface reused from the governed ARD simulation panel so future `fitDiscrete(model='ARD')` parity has one explicitly non-symmetric known-truth binary case."
+    },
+    {
+      "fixture_id": "geiger_discrete_ard_four_state_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "ard_four_state_truth",
+      "taxon_column": "taxon",
+      "trait_kind": "four-state-discrete",
+      "supported_model_names": ["ARD"],
+      "validation_expectation": "clean-match",
+      "geiger_reference_expectation": "fitdiscrete-ready",
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "four-plus-state-discrete-trait",
+        "all-rates-different-known-truth",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-truth-simulation",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "states": ["north", "south", "east", "west"],
+        "matrix_shape": "4x4",
+        "parameterization": "all-rates-different",
+        "directional_transition_rates": {
+          "north->south": 0.9,
+          "north->east": 0.25,
+          "north->west": 0.05,
+          "south->north": 0.12,
+          "south->east": 0.55,
+          "south->west": 0.08,
+          "east->north": 0.75,
+          "east->south": 0.1,
+          "east->west": 0.3,
+          "west->north": 0.04,
+          "west->south": 0.35,
+          "west->east": 0.95
+        }
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "phytools_discrete_ard_twenty_four_taxa",
+        "source_trait_name": "region_state",
+        "seed": 71000
+      },
+      "notes": "Directional four-state surface reused from the governed ARD simulation panel so future multistate `fitDiscrete(model='ARD')` parity starts from one real asymmetric transition matrix instead of an inferred hand sketch."
+    },
+    {
+      "fixture_id": "geiger_discrete_missing_three_state_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_missing_twenty_four_taxa",
+      "trait_name": "sym_three_state_truth",
+      "taxon_column": "taxon",
+      "trait_kind": "three-state-discrete",
+      "supported_model_names": ["ER", "SYM", "ARD"],
+      "validation_expectation": "prune-invalid-overlap",
+      "geiger_reference_expectation": "fitdiscrete-ready-after-pruning",
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "three-state-discrete-trait",
+        "missing-states",
+        "missing-trait-values",
+        "twenty-plus-taxa-ultrametric-tree"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_sym_three_state_twenty_four_taxa",
+        "missing_taxa": ["Phy14"]
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+        "source_trait_name": "sym_three_state_truth"
+      },
+      "notes": "Three-state missing-value surface derived from the governed symmetric panel so `fitDiscrete` parity must prove explicit pruning before ER, SYM, or ARD likelihood comparisons."
+    },
+    {
+      "fixture_id": "geiger_discrete_lambda_missing_binary_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_missing_twenty_four_taxa",
+      "trait_name": "er_binary_truth",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "prune-invalid-overlap",
+      "geiger_reference_expectation": "fitdiscrete-transform-lambda-ready-after-pruning",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "missing-states",
+        "missing-trait-values",
+        "twenty-plus-taxa-ultrametric-tree"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_er_binary_twenty_four_taxa",
+        "transform": "lambda",
+        "missing_taxa": ["Phy14"]
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+        "source_trait_name": "er_binary_truth"
+      },
+      "notes": "Binary missing-value surface derived from the governed equal-rates panel so `fitDiscrete(model='ER', transform='lambda')` parity must prove explicit pruning before transformed likelihood comparison."
+    },
+    {
+      "fixture_id": "geiger_discrete_kappa_missing_three_state_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_missing_twenty_four_taxa",
+      "trait_name": "sym_three_state_truth",
+      "taxon_column": "taxon",
+      "trait_kind": "three-state-discrete",
+      "supported_model_names": ["SYM"],
+      "validation_expectation": "prune-invalid-overlap",
+      "geiger_reference_expectation": "fitdiscrete-transform-kappa-ready-after-pruning",
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "three-state-discrete-trait",
+        "missing-states",
+        "missing-trait-values",
+        "twenty-plus-taxa-ultrametric-tree"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_sym_three_state_twenty_four_taxa",
+        "transform": "kappa",
+        "missing_taxa": ["Phy14"]
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+        "source_trait_name": "sym_three_state_truth"
+      },
+      "notes": "Three-state missing-value surface derived from the governed symmetric panel so `fitDiscrete(model='SYM', transform='kappa')` parity must prove explicit pruning before transformed multistate likelihood comparison."
+    },
+    {
+      "fixture_id": "geiger_discrete_delta_late_change_binary_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "er_binary_truth",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "clean-match-with-late-change-boundary-review",
+      "geiger_reference_expectation": "fitdiscrete-transform-delta-ready",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "equal-rates-known-truth",
+        "late-change-boundary-review",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_er_binary_twenty_four_taxa",
+        "transform": "delta",
+        "expected_signal_boundary": "late-change"
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+        "source_trait_name": "er_binary_truth"
+      },
+      "notes": "Binary equal-rates surface reused as the governed discrete-delta late-change boundary lane because local `fitDiscrete(transform='delta')` pushes this trait to the upper timing bound while still preserving stable row-level rate parity."
+    },
+    {
+      "fixture_id": "geiger_discrete_delta_time_sensitive_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "er_binary_delta_time_sensitive",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "clean-match-with-interior-delta-optimum",
+      "geiger_reference_expectation": "fitdiscrete-transform-delta-ready",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "equal-rates-known-truth",
+        "time-sensitive-discrete-transform-review",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "states": ["0", "1"],
+        "matrix_shape": "2x2",
+        "parameterization": "equal-rates",
+        "transform_review_kind": "pagel-delta-time-sensitive",
+        "expected_signal_boundary": "interior"
+      },
+      "simulation_metadata": {
+        "model": "curated-delta-time-sensitive-review-surface",
+        "state_string_by_phy_index": "001001110100101111011111"
+      },
+      "notes": "Binary equal-rates surface curated on the governed twenty-four-taxon ultrametric tree so transformed `fitDiscrete(transform='delta')` parity includes one interior timing-sensitive review lane instead of only boundary estimates."
+    },
+    {
+      "fixture_id": "geiger_discrete_delta_missing_binary_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_missing_twenty_four_taxa",
+      "trait_name": "er_binary_delta_time_sensitive",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "pruned-match-with-interior-delta-optimum",
+      "geiger_reference_expectation": "fitdiscrete-transform-delta-ready-after-pruning",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "missing-states",
+        "missing-trait-values",
+        "time-sensitive-discrete-transform-review",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_delta_time_sensitive_twenty_four_taxa",
+        "transform": "delta",
+        "missing_taxa": ["Phy10"]
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_missing_twenty_four_taxa",
+        "source_trait_name": "er_binary_delta_time_sensitive"
+      },
+      "notes": "Binary time-sensitive delta surface reused as the governed missing-value pruning lane so discrete-delta parity proves overlap pruning without collapsing back to a boundary-only review surface."
+    },
+    {
+      "fixture_id": "geiger_discrete_early_burst_early_change_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "er_binary_truth",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "clean-match-with-interior-early-burst-optimum",
+      "geiger_reference_expectation": "fitdiscrete-transform-early-burst-ready",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "equal-rates-known-truth",
+        "early-change-discrete-transform-review",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_er_binary_twenty_four_taxa",
+        "transform": "early-burst",
+        "expected_signal_direction": "early-change"
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+        "source_trait_name": "er_binary_truth"
+      },
+      "notes": "Binary equal-rates surface reused as the governed discrete early-burst early-change lane because local `fitDiscrete(transform='EB')` supports a stable positive rate-change optimum while preserving row-level rate parity."
+    },
+    {
+      "fixture_id": "geiger_discrete_early_burst_weak_signal_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "er_binary_transform_weak_signal",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "clean-match-with-weak-early-burst-signal",
+      "geiger_reference_expectation": "fitdiscrete-transform-early-burst-ready",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "equal-rates-known-truth",
+        "weak-phylogenetic-signal-review",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_transform_weak_signal_twenty_four_taxa",
+        "transform": "early-burst",
+        "expected_signal_direction": "weak-or-boundary-review"
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+        "source_trait_name": "er_binary_transform_weak_signal"
+      },
+      "notes": "Binary weak-signal surface reused as the governed discrete early-burst weak-identifiability lane so transformed `fitDiscrete(transform='EB')` parity includes one flat-review case instead of only stable interior optima."
+    },
+    {
+      "fixture_id": "geiger_discrete_early_burst_late_change_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "er_binary_delta_time_sensitive",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "clean-match-with-interior-late-change-optimum",
+      "geiger_reference_expectation": "fitdiscrete-transform-early-burst-ready",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "equal-rates-known-truth",
+        "late-change-discrete-transform-review",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_delta_time_sensitive_twenty_four_taxa",
+        "transform": "early-burst",
+        "expected_signal_direction": "late-change"
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+        "source_trait_name": "er_binary_delta_time_sensitive"
+      },
+      "notes": "Binary time-sensitive surface reused as the governed discrete early-burst late-change lane because local `fitDiscrete(transform='EB')` supports a stable negative rate-change optimum on this trait instead of collapsing to the untransformed surface."
+    },
+    {
+      "fixture_id": "geiger_discrete_early_burst_missing_binary_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_missing_twenty_four_taxa",
+      "trait_name": "er_binary_delta_time_sensitive",
+      "taxon_column": "taxon",
+      "trait_kind": "binary-discrete",
+      "supported_model_names": ["ER"],
+      "validation_expectation": "pruned-match-with-interior-late-change-optimum",
+      "geiger_reference_expectation": "fitdiscrete-transform-early-burst-ready-after-pruning",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "missing-states",
+        "missing-trait-values",
+        "late-change-discrete-transform-review",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_early_burst_late_change_twenty_four_taxa",
+        "transform": "early-burst",
+        "missing_taxa": ["Phy10"]
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_missing_twenty_four_taxa",
+        "source_trait_name": "er_binary_delta_time_sensitive"
+      },
+      "notes": "Binary early-burst late-change surface reused as the governed missing-value pruning lane so discrete early-burst parity proves overlap pruning without dropping the signed late-change review contract."
+    },
+    {
+      "fixture_id": "geiger_discrete_constant_negative_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "constant_state",
+      "taxon_column": "taxon",
+      "trait_kind": "constant-discrete",
+      "supported_model_names": ["ER", "SYM", "ARD"],
+      "validation_expectation": "constant-trait-surface",
+      "geiger_reference_expectation": "constant-state-negative-case",
+      "feature_tags": [
+        "binary-discrete-trait",
+        "constant-state-negative-case",
+        "twenty-plus-taxa-ultrametric-tree"
+      ],
+      "transition_matrix_metadata": null,
+      "simulation_metadata": {
+        "model": "constant-surface",
+        "state": "north"
+      },
+      "notes": "Constant twenty-four-taxon discrete surface used to ensure future `fitDiscrete` parity fails honestly when only one observed state is present."
+    },
+    {
+      "fixture_id": "geiger_discrete_sparse_six_state_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+      "trait_name": "sym_six_state_truth",
+      "taxon_column": "taxon",
+      "trait_kind": "six-state-discrete",
+      "supported_model_names": ["SYM", "ARD"],
+      "validation_expectation": "clean-match-with-sparse-state",
+      "geiger_reference_expectation": "fitdiscrete-overparameterization-review",
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "four-plus-state-discrete-trait",
+        "symmetric-known-truth",
+        "rare-state-case",
+        "overparameterized-multistate-case",
+        "twenty-plus-taxa-ultrametric-tree",
+        "known-truth-simulation",
+        "known-transition-matrix-metadata"
+      ],
+      "transition_matrix_metadata": {
+        "states": ["a", "b", "c", "d", "e", "f"],
+        "matrix_shape": "6x6",
+        "parameterization": "symmetric",
+        "pairwise_rate": 0.65
+      },
+      "simulation_metadata": {
+        "model": "symmetric-discrete",
+        "root_state": "a",
+        "states": ["a", "b", "c", "d", "e", "f"],
+        "transition_rate": 0.65,
+        "seed": 1,
+        "rare_state": "f"
+      },
+      "notes": "Six-state symmetric surface with one singleton state so the shared geiger corpus contains both a sparse-state review case and an ARD overparameterization stress case on the governed twenty-four-taxon tree."
+    },
+    {
+      "fixture_id": "geiger_discrete_mismatch_four_state_twenty_four_taxa",
+      "trait_table_fixture_id": "geiger_discrete_model_panel_mismatch_twenty_four_taxa",
+      "trait_name": "sym_four_state_truth",
+      "taxon_column": "taxon",
+      "trait_kind": "four-state-discrete",
+      "supported_model_names": ["ER", "SYM", "ARD"],
+      "validation_expectation": "tip-intersection-required",
+      "geiger_reference_expectation": "fitdiscrete-ready-after-tip-intersection",
+      "feature_tags": [
+        "multistate-discrete-trait",
+        "four-plus-state-discrete-trait",
+        "tree-trait-taxon-mismatch",
+        "extra-taxa-not-in-tree",
+        "tree-taxa-missing-from-trait-table",
+        "twenty-plus-taxa-ultrametric-tree"
+      ],
+      "transition_matrix_metadata": {
+        "source_fixture": "geiger_discrete_sym_four_state_twenty_four_taxa",
+        "missing_tree_tip": "Phy9",
+        "extra_trait_taxon": "PhyExtra"
+      },
+      "simulation_metadata": {
+        "source_trait_table_fixture_id": "geiger_discrete_model_panel_twenty_four_taxa",
+        "source_trait_name": "sym_four_state_truth"
+      },
+      "notes": "Four-state tree-versus-table mismatch surface with one missing tree tip and one extra trait-only row so future `fitDiscrete` parity proves its overlap policy instead of hiding it inside one-off scripts."
+    }
+  ]
+}

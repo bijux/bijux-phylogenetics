@@ -4,7 +4,7 @@ import json
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.cli import main
+from bijux_phylogenetics.command_line import main
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -54,6 +54,43 @@ def test_comparative_compare_models_cli_reports_selected_model(capsys) -> None:
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["metrics"]["better_model"] == "brownian"
+
+
+def test_comparative_model_comparison_package_cli_writes_review_bundle(
+    tmp_path: Path, capsys
+) -> None:
+    output_dir = tmp_path / "comparative-model-figure-package"
+
+    exit_code = main(
+        [
+            "comparative",
+            "model-comparison-package",
+            str(fixture("example_tree_phytools_ultrametric_twenty_four_taxa.nwk")),
+            str(fixture("example_traits_phytools_signal_twenty_four_taxa.tsv")),
+            "--trait",
+            "signal_strong",
+            "--out-dir",
+            str(output_dir),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["publication_ready"] is True
+    assert payload["metrics"]["selected_model"] == "brownian"
+    assert payload["metrics"]["support_distinct"] is True
+    assert payload["metrics"]["plotted_model_count"] == 2
+    assert payload["metrics"]["rendered_parameter_count"] == 5
+    assert payload["metrics"]["rendered_fit_row_count"] == 2
+    assert len(payload["outputs"]) == 13
+    assert (output_dir / "model-comparison-criteria.svg").exists()
+    assert (output_dir / "model-comparison-likelihood.svg").exists()
+    assert (output_dir / "model-comparison-parameters.svg").exists()
+    assert (output_dir / "model-comparison-fit-summary.svg").exists()
+    assert (output_dir / "model-comparison-review.html").exists()
+    assert (output_dir / "model-comparison-package.manifest.json").exists()
+    assert (output_dir / "figure-reproducibility.manifest.json").exists()
 
 
 def test_comparative_validate_reference_cli_reports_pass(capsys) -> None:

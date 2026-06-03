@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import json
 from pathlib import Path
 from statistics import stdev
@@ -28,24 +29,32 @@ from bijux_phylogenetics.bayesian.beast import (
     write_beast_posterior_tree_set,
 )
 from bijux_phylogenetics.bayesian.evidence import build_bayesian_evidence_package
-from bijux_phylogenetics.bayesian.posterior import (
+from bijux_phylogenetics.bayesian.posterior_sets.tree_sets import (
     subsample_beast_posterior_tree_set,
     summarize_maximum_clade_credibility_tree,
     write_posterior_tree_subsample,
     write_posterior_tree_subsample_table,
 )
-from bijux_phylogenetics.bayesian.reports import (
+from bijux_phylogenetics.bayesian.presentation.html_reports import (
     render_bayesian_diagnostics_report,
     render_calibration_audit_report,
 )
-from bijux_phylogenetics.errors import EngineWorkflowError
-from bijux_phylogenetics.tree_set import compute_consensus_tree
+from bijux_phylogenetics.datasets.shared_fixtures import (
+    get_shared_beast_posterior_fixture,
+)
+from bijux_phylogenetics.runtime.errors import (
+    EngineUnavailableError,
+    EngineWorkflowError,
+)
+from bijux_phylogenetics.trees import compute_consensus_tree
 
 pytestmark = pytest.mark.engine_contract
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
-REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
+SHARED_BEAST_POSTERIOR = get_shared_beast_posterior_fixture(
+    "strict_yule_real_posterior"
+)
 
 
 def fixture(name: str) -> Path:
@@ -57,6 +66,11 @@ def fixture(name: str) -> Path:
         if candidate.exists():
             return candidate
     raise FileNotFoundError(name)
+
+
+def test_core_dataset_imports_after_beast_package_split() -> None:
+    dataset_module = importlib.import_module("bijux_phylogenetics.core.dataset")
+    assert hasattr(dataset_module, "summarize_dataset_readiness")
 
 
 def _write_executable(path: Path, body: str) -> Path:
@@ -100,6 +114,45 @@ print("warning: beast fixture posterior run", file=sys.stderr)
     )
 
 
+def _fake_beast_version_variant(
+    path: Path,
+    *,
+    version_text: str,
+    posterior_value: float,
+) -> Path:
+    return _write_executable(
+        path,
+        f"""#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "-version" in args:
+    print("{version_text}")
+    raise SystemExit(0)
+
+xml_path = Path(args[-1])
+seed = args[args.index("-seed") + 1]
+log_path = xml_path.with_name(f"{{xml_path.stem}}.{{seed}}.log")
+tree_path = xml_path.with_name(f"{{xml_path.stem}}.{{seed}}.trees")
+log_path.write_text(
+    "Sample\\tposterior\\tlikelihood\\tprior\\ttreeHeight\\tclockRate\\tbirthRate\\n"
+    "0\\t{posterior_value:.1f}\\t-80.0\\t-40.0\\t1.1\\t0.01\\t0.2\\n"
+    "20\\t-118.0\\t-79.0\\t-39.0\\t1.0\\t0.011\\t0.21\\n",
+    encoding="utf-8",
+)
+tree_path.write_text(
+    "#NEXUS\\n"
+    "Begin trees;\\n"
+    "tree STATE_0 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "tree STATE_20 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "End;\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
 def _fake_beast_timeout(path: Path) -> Path:
     return _write_executable(
         path,
@@ -112,6 +165,115 @@ if "-version" in sys.argv[1:]:
     raise SystemExit(0)
 
 time.sleep(1.0)
+""",
+    )
+
+
+def _fake_beast_malformed_outputs(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "-version" in args:
+    print("BEAST v2.7.7 fixture")
+    raise SystemExit(0)
+
+xml_path = Path(args[-1])
+seed = args[args.index("-seed") + 1]
+log_path = xml_path.with_name(f"{xml_path.stem}.{seed}.log")
+tree_path = xml_path.with_name(f"{xml_path.stem}.{seed}.trees")
+log_path.write_text(
+    "Sample\\tposterior\\tlikelihood\\tprior\\ttreeHeight\\tclockRate\\tbirthRate\\n"
+    "0\\t-120.0\\t-80.0\\t-40.0\\t1.1\\t0.01\\t0.2\\n"
+    "20\\tbad\\t-79.0\\t-39.0\\t1.0\\t0.011\\t0.21\\n",
+    encoding="utf-8",
+)
+tree_path.write_text(
+    "#NEXUS\\n"
+    "Begin trees;\\n"
+    "tree STATE_0 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "End;\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
+def _fake_beast_missing_tree_output(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "-version" in args:
+    print("BEAST v2.7.7 fixture")
+    raise SystemExit(0)
+
+xml_path = Path(args[-1])
+seed = args[args.index("-seed") + 1]
+log_path = xml_path.with_name(f"{xml_path.stem}.{seed}.log")
+log_path.write_text(
+    "Sample\\tposterior\\tlikelihood\\tprior\\ttreeHeight\\tclockRate\\tbirthRate\\n"
+    "0\\t-120.0\\t-80.0\\t-40.0\\t1.1\\t0.01\\t0.2\\n"
+    "20\\t-118.0\\t-79.0\\t-39.0\\t1.0\\t0.011\\t0.21\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
+def _fake_beast_inconsistent_states(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "-version" in args:
+    print("BEAST v2.7.7 fixture")
+    raise SystemExit(0)
+
+xml_path = Path(args[-1])
+seed = args[args.index("-seed") + 1]
+log_path = xml_path.with_name(f"{xml_path.stem}.{seed}.log")
+tree_path = xml_path.with_name(f"{xml_path.stem}.{seed}.trees")
+log_path.write_text(
+    "Sample\\tposterior\\tlikelihood\\tprior\\ttreeHeight\\tclockRate\\tbirthRate\\n"
+    "0\\t-120.0\\t-80.0\\t-40.0\\t1.1\\t0.01\\t0.2\\n"
+    "20\\t-118.0\\t-79.0\\t-39.0\\t1.0\\t0.011\\t0.21\\n",
+    encoding="utf-8",
+)
+tree_path.write_text(
+    "#NEXUS\\n"
+    "Begin trees;\\n"
+    "tree STATE_0 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "tree STATE_40 = [&R] ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "End;\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+
+def _fake_beast_killed(path: Path) -> Path:
+    return _write_executable(
+        path,
+        """#!/usr/bin/env python3
+import os
+import signal
+import sys
+
+if "-version" in sys.argv[1:]:
+    print("BEAST v2.7.7 fixture")
+    raise SystemExit(0)
+
+os.kill(os.getpid(), signal.SIGTERM)
 """,
     )
 
@@ -331,6 +493,19 @@ def test_validate_beast_analysis_xml_reports_missing_required_outputs(
     }
 
 
+def test_summarize_beast_analysis_xml_reports_missing_file_with_structured_error(
+    tmp_path: Path,
+) -> None:
+    missing_path = tmp_path / "missing-analysis.xml"
+
+    with pytest.raises(EngineWorkflowError) as caught:
+        summarize_beast_analysis_xml(missing_path)
+
+    assert caught.value.code == "beast_xml_missing_file"
+    assert caught.value.details["artifact_kind"] == "beast-analysis-xml"
+    assert caught.value.details["path"] == str(missing_path)
+
+
 def test_run_beast_posterior_inference_writes_outputs_and_resumes(
     tmp_path: Path,
 ) -> None:
@@ -370,6 +545,69 @@ def test_run_beast_posterior_inference_writes_outputs_and_resumes(
     )
 
 
+def test_run_beast_posterior_inference_rebuilds_outputs_after_version_change(
+    tmp_path: Path,
+) -> None:
+    first_executable = _fake_beast_version_variant(
+        tmp_path / "beast-fixture-first",
+        version_text="BEAST v2.7.7 fixture",
+        posterior_value=-120.0,
+    )
+    second_executable = _fake_beast_version_variant(
+        tmp_path / "beast-fixture-second",
+        version_text="BEAST v2.7.8 fixture",
+        posterior_value=-121.0,
+    )
+    xml_path = tmp_path / "strict-yule.xml"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        xml_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+
+    run_beast_posterior_inference(
+        xml_path,
+        executable=first_executable,
+        seed=1,
+    )
+    rebuilt = run_beast_posterior_inference(
+        xml_path,
+        executable=second_executable,
+        seed=1,
+        resume=True,
+    )
+
+    assert rebuilt.resumed is False
+    log_text = rebuilt.output_paths["posterior_log"].read_text(encoding="utf-8")
+    assert "-121.0" in log_text
+
+
+def test_run_beast_posterior_inference_reports_missing_executable_without_marker(
+    tmp_path: Path,
+) -> None:
+    xml_path = tmp_path / "strict-yule.xml"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        xml_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+
+    with pytest.raises(EngineUnavailableError, match="was not found"):
+        run_beast_posterior_inference(
+            xml_path,
+            executable=tmp_path / "missing-beast",
+            seed=1,
+        )
+
+    assert list(tmp_path.glob("*.incomplete.json")) == []
+
+
 def test_run_beast_posterior_inference_times_out_and_marks_incomplete_run(
     tmp_path: Path,
 ) -> None:
@@ -396,6 +634,162 @@ def test_run_beast_posterior_inference_times_out_and_marks_incomplete_run(
     assert len(marker_candidates) == 1
     marker_text = marker_candidates[0].read_text(encoding="utf-8")
     assert '"timed_out": true' in marker_text
+
+
+def test_run_beast_posterior_inference_marks_killed_process_incomplete(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_beast_killed(tmp_path / "beast-killed")
+    xml_path = tmp_path / "strict-yule.xml"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        xml_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+
+    with pytest.raises(EngineWorkflowError, match="failed with exit code"):
+        run_beast_posterior_inference(
+            xml_path,
+            executable=executable,
+            seed=1,
+        )
+
+    marker_candidates = sorted(tmp_path.glob("*.incomplete.json"))
+    assert len(marker_candidates) == 1
+    marker_text = marker_candidates[0].read_text(encoding="utf-8")
+    assert '"exit_code": -15' in marker_text
+
+
+def test_run_beast_posterior_inference_rejects_or_cleans_malformed_outputs(
+    tmp_path: Path,
+) -> None:
+    malformed = _fake_beast_malformed_outputs(tmp_path / "beast-malformed")
+    valid = _fake_beast(tmp_path / "beast-valid")
+    xml_path = tmp_path / "strict-yule.xml"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        xml_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+
+    with pytest.raises(EngineWorkflowError, match="non-numeric value"):
+        run_beast_posterior_inference(
+            xml_path,
+            executable=malformed,
+            seed=1,
+        )
+
+    manifest_path = xml_path.with_suffix(".manifest.json")
+    marker_path = manifest_path.with_suffix(".incomplete.json")
+    assert marker_path.exists()
+    marker_payload = json.loads(marker_path.read_text(encoding="utf-8"))
+    assert marker_payload["failure_reason"] == "beast_log_invalid_parameter_value"
+    assert marker_payload["missing_output_names"] == []
+    observed_outputs = {
+        item["output_name"]: item for item in marker_payload["observed_outputs"]
+    }
+    assert observed_outputs["posterior_log"]["exists"] is True
+    assert observed_outputs["posterior_log"]["path_kind"] == "file"
+    assert observed_outputs["posterior_trees"]["exists"] is True
+    assert observed_outputs["posterior_trees"]["path_kind"] == "file"
+
+    with pytest.raises(EngineWorkflowError, match="incomplete outputs") as rejected:
+        run_beast_posterior_inference(
+            xml_path,
+            executable=valid,
+            seed=1,
+            resume=True,
+            incomplete_run_policy="reject",
+        )
+    assert rejected.value.code == "engine_incomplete_outputs_present"
+    assert (
+        rejected.value.details["failure_reason"] == "beast_log_invalid_parameter_value"
+    )
+    assert (
+        rejected.value.details["observed_outputs"] == marker_payload["observed_outputs"]
+    )
+
+    report = run_beast_posterior_inference(
+        xml_path,
+        executable=valid,
+        seed=1,
+        resume=True,
+        incomplete_run_policy="clean",
+    )
+    assert report.output_paths["posterior_log"].exists()
+    assert report.run.runtime_seconds >= 0.0
+    assert report.config == {
+        "threads": 1,
+        "seed": 1,
+        "overwrite": True,
+        "timeout_seconds": None,
+    }
+    assert marker_path.exists() is False
+
+
+def test_run_beast_posterior_inference_reports_structured_missing_outputs(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_beast_missing_tree_output(tmp_path / "beast-missing-tree")
+    xml_path = tmp_path / "strict-yule.xml"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        xml_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+
+    with pytest.raises(EngineWorkflowError) as error:
+        run_beast_posterior_inference(
+            xml_path,
+            executable=executable,
+            seed=1,
+        )
+
+    assert error.value.code == "engine_required_output_missing"
+    assert error.value.details["workflow"] == "posterior-tree-inference"
+    assert error.value.details["engine_name"] == "BEAST"
+    assert error.value.details["missing_outputs"] == [
+        {
+            "output_name": "posterior_trees",
+            "path": str(xml_path.with_name("strict-yule.1.trees")),
+        }
+    ]
+
+
+def test_run_beast_posterior_inference_rejects_inconsistent_sampled_states(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_beast_inconsistent_states(tmp_path / "beast-inconsistent")
+    xml_path = tmp_path / "strict-yule.xml"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        xml_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+
+    with pytest.raises(EngineWorkflowError) as error:
+        run_beast_posterior_inference(
+            xml_path,
+            executable=executable,
+            seed=1,
+        )
+
+    assert error.value.code == "beast_outputs_inconsistent_states"
+    assert error.value.details["log_states"] == [0, 20]
+    assert error.value.details["tree_states"] == [0, 40]
+    assert error.value.details["missing_log_states"] == [40]
 
 
 def test_prepare_beast_time_tree_analysis_requires_tree_for_calibrations(
@@ -433,6 +827,27 @@ def test_parse_beast_log_and_assess_convergence_return_parameter_summaries() -> 
         "low-ess",
         "mean-drift",
     }
+
+
+def test_parse_beast_log_reports_structured_missing_and_malformed_errors(
+    tmp_path: Path,
+) -> None:
+    missing_path = tmp_path / "missing.log"
+    invalid_path = fixture("engine_outputs/beast/log-malformed.log")
+
+    with pytest.raises(EngineWorkflowError) as missing:
+        parse_beast_log(missing_path)
+    assert missing.value.code == "beast_log_missing_file"
+    assert missing.value.details["artifact_kind"] == "beast-log"
+    assert missing.value.details["expected_section"] == "posterior log file"
+
+    with pytest.raises(EngineWorkflowError) as malformed:
+        parse_beast_log(invalid_path)
+    assert malformed.value.code == "beast_log_invalid_parameter_value"
+    assert malformed.value.details["artifact_kind"] == "beast-log"
+    assert malformed.value.details["column"] == "posterior"
+    assert malformed.value.details["row_number"] == 3
+    assert malformed.value.details["expected_section"] == "sampled parameter row"
 
 
 def test_summarize_beast_log_classifies_parameters_and_writes_summary_table(
@@ -501,6 +916,34 @@ def test_parse_beast_log_accepts_native_sample_header(tmp_path: Path) -> None:
     assert summary.kept_row_count == 1
     assert summary.prior_parameters == ["prior"]
     assert set(summary.tree_parameters) == {"tree.height", "birthRate"}
+
+
+def test_parse_beast_log_accepts_warning_heavy_fixture() -> None:
+    report = parse_beast_log(fixture("engine_outputs/beast/log-warning-heavy.log"))
+
+    assert report.row_count == 2
+    assert report.columns == ["posterior", "prior", "likelihood", "clockRate"]
+    assert report.rows[0].state == 0
+    assert report.rows[1].state == 20
+
+
+def test_parse_beast_log_accepts_sample_header_fixture_with_bom() -> None:
+    report = parse_beast_log(fixture("engine_outputs/beast/log-sample-header.log"))
+
+    assert report.row_count == 2
+    assert report.columns == ["posterior", "prior", "likelihood", "tree.height"]
+    assert report.rows[1].state == 20
+
+
+def test_parse_beast_log_reports_truncated_fixture_with_structured_error() -> None:
+    with pytest.raises(EngineWorkflowError) as error:
+        parse_beast_log(fixture("engine_outputs/beast/log-truncated.log"))
+
+    assert error.value.code == "beast_log_missing_parameter_value"
+    assert error.value.details["artifact_kind"] == "beast-log"
+    assert error.value.details["column"] == "likelihood"
+    assert error.value.details["row_number"] == 3
+    assert error.value.details["expected_section"] == "sampled parameter row"
 
 
 def test_summarize_beast_log_reads_real_beast_fixture() -> None:
@@ -667,6 +1110,82 @@ def test_parse_beast_posterior_tree_samples_reports_metadata_annotations(
     assert sample.annotation_values["height_95%_HPD"] == "{0.2,0.4}"
 
 
+def test_parse_beast_posterior_tree_samples_reads_annotation_rich_beast_fixture() -> (
+    None
+):
+    report = parse_beast_posterior_tree_samples(
+        fixture("beast2_annotated_posterior.trees"),
+        burnin_fraction=0.0,
+    )
+
+    sample = report.trees[0]
+    assert sample.annotation_key_count == 6
+    assert sample.annotation_keys == [
+        "height",
+        "height_95%_HPD",
+        "lnP",
+        "posterior",
+        "rate",
+        "rate_95%_HPD",
+    ]
+    assert sample.annotation_values["posterior"] == "0.98"
+    assert sample.annotation_values["rate_95%_HPD"] == "{0.5,0.9}"
+
+
+def test_parse_beast_posterior_tree_samples_accepts_quoted_translate_labels_fixture() -> (
+    None
+):
+    report = parse_beast_posterior_tree_samples(
+        fixture("engine_outputs/beast/posterior-tree-version-variant.trees"),
+        burnin_fraction=0.0,
+    )
+
+    sample = report.trees[0]
+    assert report.sampled_states == [10]
+    assert sample.tip_names == ["Taxon A", "Taxon B's sample", "Taxon_C"]
+    assert "Taxon A" in sample.newick
+    assert "Taxon B''s sample" in sample.newick
+    assert sample.annotation_values["region"] == '"North, Sea"'
+    assert sample.annotation_values["note"] == "'founder''s clade'"
+
+
+def test_parse_beast_posterior_tree_samples_reports_invalid_translate_fixture() -> None:
+    with pytest.raises(EngineWorkflowError) as error:
+        parse_beast_posterior_tree_samples(
+            fixture("engine_outputs/beast/posterior-tree-invalid-translate.trees"),
+            burnin_fraction=0.0,
+        )
+
+    assert error.value.code == "beast_tree_invalid_translate_block"
+    assert error.value.details["artifact_kind"] == "beast-posterior-trees"
+    assert error.value.details["expected_section"] == "translate block"
+
+
+def test_parse_beast_posterior_tree_samples_reports_structured_parse_errors(
+    tmp_path: Path,
+) -> None:
+    missing_path = tmp_path / "missing.trees"
+    malformed_path = tmp_path / "malformed.trees"
+    malformed_path.write_text(
+        "#NEXUS\n"
+        "Begin trees;\n"
+        "tree STATE_0 = ((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2;\n"
+        "End;\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(EngineWorkflowError) as missing:
+        parse_beast_posterior_tree_samples(missing_path, burnin_fraction=0.0)
+    assert missing.value.code == "beast_tree_missing_file"
+    assert missing.value.details["artifact_kind"] == "beast-posterior-trees"
+
+    with pytest.raises(EngineWorkflowError) as malformed:
+        parse_beast_posterior_tree_samples(malformed_path, burnin_fraction=0.0)
+    assert malformed.value.code == "beast_tree_parse_error"
+    assert malformed.value.details["artifact_kind"] == "beast-posterior-trees"
+    assert malformed.value.details["tree_name"] == "STATE_0"
+
+
 def test_parse_beast_posterior_tree_samples_applies_burnin_fraction(
     tmp_path: Path,
 ) -> None:
@@ -773,6 +1292,7 @@ def test_summarize_beast_posterior_trees_builds_majority_rule_consensus(
     assert report.minimum_posterior_probability == pytest.approx(2 / 3)
     assert report.maximum_posterior_probability == pytest.approx(2 / 3)
     assert report.clade_frequency_count == 4
+    assert report.retained_tree_set_path.parent != tree_path.parent
     assert (
         report.consensus_newick
         == "((A:0.1,B:0.1)0.666666666666667:0.35,(C:0.1,D:0.1)0.666666666666667:0.35);"
@@ -804,6 +1324,79 @@ def test_summarize_beast_posterior_trees_reads_real_beast_fixture(
     assert "A" in report.consensus_newick
 
 
+def test_real_beast_reference_bundle_matches_expected_outputs(tmp_path: Path) -> None:
+    reference = SHARED_BEAST_POSTERIOR.load_reference()
+    for burnin_fraction, counts in sorted(reference.burnin_reference.items()):
+        log_summary = summarize_beast_log(
+            SHARED_BEAST_POSTERIOR.posterior_log_path,
+            burnin_fraction=burnin_fraction,
+        )
+        tree_report = parse_beast_posterior_tree_samples(
+            SHARED_BEAST_POSTERIOR.posterior_trees_path,
+            burnin_fraction=burnin_fraction,
+        )
+        assert log_summary.burnin_row_count == counts.burnin_row_count
+        assert log_summary.kept_row_count == counts.kept_row_count
+        assert tree_report.burnin_tree_count == counts.burnin_tree_count
+        assert tree_report.kept_tree_count == counts.kept_tree_count
+
+    parameter_reference = reference.parameter_reference
+    parameter_summary = summarize_beast_log(
+        SHARED_BEAST_POSTERIOR.posterior_log_path,
+        burnin_fraction=SHARED_BEAST_POSTERIOR.recommended_burnin_fraction,
+    )
+    parameters = {row.parameter: row for row in parameter_summary.parameter_summaries}
+    for parameter, expected in parameter_reference.items():
+        observed = parameters[parameter]
+        assert observed.effective_sample_size == pytest.approx(
+            expected.effective_sample_size
+        )
+        assert observed.mean == pytest.approx(expected.mean)
+        assert observed.median == pytest.approx(expected.median)
+        assert observed.hpd_95_lower == pytest.approx(expected.hpd_95_lower)
+        assert observed.hpd_95_upper == pytest.approx(expected.hpd_95_upper)
+
+    copied_path = tmp_path / "beast2_strict_yule_posterior.trees"
+    copied_path.write_text(
+        SHARED_BEAST_POSTERIOR.posterior_trees_path.read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    _consensus_tree, consensus = summarize_beast_posterior_trees(
+        copied_path,
+        burnin_fraction=SHARED_BEAST_POSTERIOR.recommended_burnin_fraction,
+    )
+    _mcc_tree, mcc = summarize_maximum_clade_credibility_tree(
+        copied_path,
+        burnin_fraction=SHARED_BEAST_POSTERIOR.recommended_burnin_fraction,
+    )
+    assert (
+        consensus.consensus_newick
+        == SHARED_BEAST_POSTERIOR.consensus_tree_path.read_text(
+            encoding="utf-8"
+        ).strip()
+    )
+    assert consensus.consensus_newick == reference.consensus_reference.newick
+    assert (
+        consensus.annotated_node_count
+        == reference.consensus_reference.annotated_node_count
+    )
+    assert consensus.minimum_posterior_probability == pytest.approx(
+        reference.consensus_reference.minimum_posterior_probability
+    )
+    assert consensus.maximum_posterior_probability == pytest.approx(
+        reference.consensus_reference.maximum_posterior_probability
+    )
+    assert (
+        mcc.mcc_newick
+        == SHARED_BEAST_POSTERIOR.mcc_tree_path.read_text(encoding="utf-8").strip()
+    )
+    assert mcc.mcc_newick == reference.mcc_reference.newick
+    assert mcc.selected_tree_index == reference.mcc_reference.selected_tree_index
+    assert mcc.clade_credibility_score == pytest.approx(
+        reference.mcc_reference.clade_credibility_score
+    )
+
+
 def test_summarize_beast_posterior_topology_diversity_reports_topology_metrics(
     tmp_path: Path,
 ) -> None:
@@ -833,6 +1426,7 @@ def test_summarize_beast_posterior_topology_diversity_reports_topology_metrics(
     assert report.mean_normalized_robinson_foulds_distance > 0.0
     assert report.maximum_robinson_foulds_distance >= 0
     assert report.unstable_clade_count >= 1
+    assert report.retained_tree_set_path.parent != tree_path.parent
     assert report.retained_tree_set_path.read_text(encoding="utf-8").count("\n") == 3
 
 
@@ -992,9 +1586,14 @@ def test_render_calibration_audit_report_includes_calibration_and_tip_date_secti
     html = output_path.read_text(encoding="utf-8")
     assert report.output_path == output_path
     assert report.invalid_calibration_count == 0
+    assert report.method_tier.tier == "parser-only"
+    assert "method-tier" in html
+    assert "parser-only" in html
     assert "fossil-calibrations" in html
     assert "impossible-constraints" in html
     assert "tip-dates" in html
+    assert "limitations" in html
+    assert "limitations" in report.machine_manifest["sections"]
 
 
 def test_build_bayesian_evidence_package_bundles_inputs_outputs_and_reports(
@@ -1077,6 +1676,8 @@ def test_render_bayesian_diagnostics_report_includes_log_burnin_mixing_and_calib
     html = output_path.read_text(encoding="utf-8")
     assert report.output_path == output_path
     assert report.chain_count == 2
+    assert report.method_tier.tier == "parser-only"
+    assert "method-tier" in html
     assert "analysis-assumptions" in html
     assert "posterior-log-validation" in html
     assert "burnin-sensitivity" in html
@@ -1085,3 +1686,87 @@ def test_render_bayesian_diagnostics_report_includes_log_burnin_mixing_and_calib
     assert "methods-summary-text" in html
     assert "fossil-calibrations" in html
     assert "tip-dates" in html
+
+
+def test_render_bayesian_diagnostics_report_marks_recorded_beast_runs_honestly(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_beast(tmp_path / "beast-fixture")
+    analysis_path = tmp_path / "analysis.xml"
+    output_path = tmp_path / "bayesian-diagnostics.html"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        analysis_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+    workflow = run_beast_posterior_inference(
+        analysis_path,
+        executable=executable,
+        seed=9,
+    )
+
+    report = render_bayesian_diagnostics_report(
+        posterior_tree_path=workflow.output_paths["posterior_trees"],
+        primary_log_path=workflow.output_paths["posterior_log"],
+        analysis_xml_path=analysis_path,
+        out_path=output_path,
+        burnin_fractions=(0.0, 0.5),
+        ess_threshold=2.0,
+        mean_shift_threshold=1.0,
+        cross_chain_mean_shift_threshold=5.0,
+    )
+
+    html = output_path.read_text(encoding="utf-8")
+    assert report.output_path == output_path
+    assert report.method_tier.tier == "parser-only"
+    assert "method-tier" in html
+    assert "workflow-evidence" in html
+    assert "recorded-prior-beast-run" in html
+    assert "did not execute BEAST itself" in html
+    assert "inferred posterior log" in html
+
+
+def test_render_bayesian_diagnostics_report_rejects_stale_beast_manifest_claims(
+    tmp_path: Path,
+) -> None:
+    executable = _fake_beast(tmp_path / "beast-fixture")
+    analysis_path = tmp_path / "analysis.xml"
+    output_path = tmp_path / "bayesian-diagnostics.html"
+    prepare_beast_time_tree_analysis(
+        fixture("example_alignment.fasta"),
+        analysis_path,
+        clock_model="strict",
+        tree_prior="yule",
+        chain_length=1000,
+        log_every=20,
+    )
+    workflow = run_beast_posterior_inference(
+        analysis_path,
+        executable=executable,
+        seed=9,
+    )
+    workflow.output_paths["posterior_log"].write_text(
+        workflow.output_paths["posterior_log"].read_text(encoding="utf-8")
+        + "40\t-117.0\t-78.0\t-39.0\t1.0\t0.012\t0.22\n",
+        encoding="utf-8",
+    )
+
+    report = render_bayesian_diagnostics_report(
+        posterior_tree_path=workflow.output_paths["posterior_trees"],
+        primary_log_path=workflow.output_paths["posterior_log"],
+        analysis_xml_path=analysis_path,
+        out_path=output_path,
+        burnin_fractions=(0.0, 0.5),
+        ess_threshold=2.0,
+        mean_shift_threshold=1.0,
+        cross_chain_mean_shift_threshold=5.0,
+    )
+
+    html = output_path.read_text(encoding="utf-8")
+    assert report.output_path == output_path
+    assert "manifest-mismatch" in html
+    assert "treated as parsed existing outputs" in html
+    assert "recorded-prior-beast-run" not in html

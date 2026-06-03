@@ -1,0 +1,6 @@
+assumption_id	parameter	value	rationale
+observed-output-footprint	observed_output_bytes	sum of files currently written under each variant output root	Output-size and scratch estimates are anchored to the real bytes written by the current governed workflow run instead of a synthetic placeholder volume.
+alignment-mode-cpu-bump	estimated_cpus_per_task	ginsi variants reserve at least 2 CPUs; auto variants follow iqtree_threads	The ginsi alignment mode is materially heavier than the auto mode, so the planner allocates an extra CPU even when the governed IQ-TREE thread count stays at 1.
+bootstrap-driven-wallclock	estimated_wallclock_minutes	20-minute floor plus linear scaling with trimmed sites, taxa, and bootstrap count	The batch wallclock estimate should stay conservative when the bootstrap burden rises, even on this compact rabies panel.
+minimum-memory-floor	estimated_memory_mib	1024 MiB minimum, rounded to 256 MiB blocks	The dataset is small, but Slurm requests still need enough room for alignment, inference, logging, and report materialization overhead.
+scratch-buffer	estimated_scratch_mib	observed output footprint inflated 64x with a 256 MiB minimum	Scratch space should cover intermediate alignments, trees, manifests, and logs without pretending that the final output footprint is the whole temporary working set.
