@@ -411,13 +411,23 @@ def _collect_known_answer_parameter_names(
 def _collect_transformed_continuous_case_ids(
     report: MacroevolutionRecoverySuiteWorkflowReport,
 ) -> list[str]:
-    transformed_prefixes = ("pagel-delta", "pagel-kappa", "pagel-lambda")
-    return sorted(
+    transformed_prefixes = ("pagel-lambda", "pagel-kappa", "pagel-delta")
+    case_ids = [
         case.scenario.case_id
         for case in report.continuous_panel_workflow.recovery_report.case_reports
         if case.scenario.generating_model.startswith(transformed_prefixes)
+    ]
+    preferred_order = {
+        "lambda-transformed-branch-review": 0,
+        "kappa-transformed-branch-review": 1,
+        "delta-transformed-branch-review": 2,
+    }
+    return sorted(
+        case_ids,
+        key=lambda case_id: preferred_order.get(case_id, len(preferred_order)),
     )
 
 
 def _format_joined_items(items: list[str] | set[str]) -> str:
-    return ", ".join(sorted(items))
+    ordered_items = sorted(items) if isinstance(items, set) else items
+    return ", ".join(ordered_items)
