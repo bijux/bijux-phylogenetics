@@ -10,9 +10,11 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 
 from .ctmc import ValidatedCtmcRateMatrix, validate_ctmc_rate_matrix
 
-_EIGENVALUE_REAL_PART_TOLERANCE = 1e-10
+_EIGENVALUE_REAL_PART_TOLERANCE = 1e-9
 _TRANSITION_NEGATIVE_TOLERANCE = 1e-12
 _TRANSITION_ROW_SUM_TOLERANCE = 1e-12
+_UNIFORMIZATION_TOLERANCE = 1e-12
+_UNIFORMIZATION_MAX_TERMS = 10000
 
 
 @dataclass(slots=True)
@@ -164,12 +166,18 @@ def _compute_transition_probability_matrix(
         eigendecomposition = _compute_rate_matrix_eigendecomposition(
             validated_rate_matrix
         )
-    eigenvalues = eigendecomposition.eigenvalues
-    eigenvectors = eigendecomposition.eigenvectors
-    inverse_vectors = eigendecomposition.inverse_vectors
-    validated_eigenvalues = _validated_transition_eigenvalues(eigenvalues)
-    diagonal = numpy.diag(numpy.exp(validated_eigenvalues * branch_length))
-    transition = eigenvectors @ diagonal @ inverse_vectors
+    try:
+        eigenvalues = eigendecomposition.eigenvalues
+        eigenvectors = eigendecomposition.eigenvectors
+        inverse_vectors = eigendecomposition.inverse_vectors
+        validated_eigenvalues = _validated_transition_eigenvalues(eigenvalues)
+        diagonal = numpy.diag(numpy.exp(validated_eigenvalues * branch_length))
+        transition = eigenvectors @ diagonal @ inverse_vectors
+    except ValueError:
+        return _compute_transition_probability_matrix_by_uniformization(
+            validated_rate_matrix,
+            branch_length,
+        )
     return _stabilize_transition_probability_matrix(
         transition,
         state_count=validated_rate_matrix.state_count,
@@ -187,6 +195,43 @@ def _validated_transition_eigenvalues(eigenvalues: numpy.ndarray) -> numpy.ndarr
         if abs(real_part) <= _EIGENVALUE_REAL_PART_TOLERANCE:
             candidate[index] = complex(0.0, eigenvalue.imag)
     return candidate
+
+
+def _compute_transition_probability_matrix_by_uniformization(
+    validated_rate_matrix: ValidatedCtmcRateMatrix,
+    branch_length: float,
+) -> numpy.ndarray:
+    rate_matrix = validated_rate_matrix.rate_matrix
+    state_count = validated_rate_matrix.state_count
+    dominating_rate = float(numpy.max(-numpy.diag(rate_matrix)))
+    if dominating_rate <= 0.0:
+        return numpy.eye(state_count, dtype=float)
+    poisson_mean = dominating_rate * branch_length
+    embedded_transition = _stabilize_transition_probability_matrix(
+        numpy.eye(state_count, dtype=float) + (rate_matrix / dominating_rate),
+        state_count=state_count,
+    )
+    weight = math.exp(-poisson_mean)
+    cumulative_weight = weight
+    power = numpy.eye(state_count, dtype=float)
+    transition = weight * power
+    for step in range(1, _UNIFORMIZATION_MAX_TERMS + 1):
+        weight *= poisson_mean / step
+        power = power @ embedded_transition
+        transition += weight * power
+        cumulative_weight += weight
+        remaining_weight = max(0.0, 1.0 - cumulative_weight)
+        if (
+            weight <= _UNIFORMIZATION_TOLERANCE
+            and remaining_weight <= _UNIFORMIZATION_TOLERANCE
+        ):
+            return _stabilize_transition_probability_matrix(
+                transition,
+                state_count=state_count,
+            )
+    raise ValueError(
+        "transition matrix uniformization did not converge within the governed term budget"
+    )
 
 
 def _stabilize_transition_probability_matrix(
