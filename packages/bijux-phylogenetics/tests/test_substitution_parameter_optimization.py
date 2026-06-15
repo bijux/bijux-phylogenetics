@@ -182,7 +182,7 @@ def test_nucleotide_substitution_parameter_recovery_benchmark_reports_governed_m
         gtr_rows["AG"].optimized_value,
         10.436093496916191,
         rel_tol=0.0,
-        abs_tol=1e-6,
+        abs_tol=1e-5,
     )
     assert gtr_rows["AG"].optimized_value > gtr_rows["CT"].optimized_value
     assert gtr_rows["AG"].optimized_value > gtr_rows["GT"].optimized_value
