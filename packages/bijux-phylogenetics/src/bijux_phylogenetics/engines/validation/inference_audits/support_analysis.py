@@ -35,11 +35,9 @@ def summarize_bootstrap_support_distribution(
     nodes: list[BootstrapSupportNode] = []
     warnings: list[str] = []
     total_tip_count = tree.tip_count
-    internal_node_count = sum(
-        1 for node in tree.iter_nodes() if node is not tree.root and not node.is_leaf()
-    )
+    internal_node_count = sum(1 for node in tree.iter_nodes() if not node.is_leaf())
     for node in tree.iter_nodes():
-        if node is tree.root or node.is_leaf():
+        if node.is_leaf():
             continue
         descendant_taxa = node_descendant_taxa(node)
         support_label = _parse_iqtree_support_label(node.name)
