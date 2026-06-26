@@ -14,11 +14,3 @@ include $(ROOT_MAKE_DIR)/bijux-py/repository/env.mk
 # Prefer the active package virtualenv's uv executable when available so the
 # shared make layers do not depend on a separately installed global uv binary.
 UV := $(if $(wildcard $(ACT)/uv),$(ACT)/uv,$(if $(wildcard $(VENV)/bin/uv),$(VENV)/bin/uv,uv))
-
-# Package roots expose tracked symlink aliases for repository-owned artifact
-# locations. Keep the aliases stable and let clean targets operate on the
-# canonical repository artifact tree instead of deleting the links themselves.
-COMMON_PYTHON_CLEAN_PATHS := $(filter-out .hypothesis .benchmarks,$(COMMON_PYTHON_CLEAN_PATHS))
-PROJECT_ARTIFACT_PRESERVE_DIRS ?= venv hypothesis benchmarks
-PROJECT_ARTIFACT_CHILD_CLEAN_PATHS := $(shell if [ -d "$(PROJECT_ARTIFACTS_DIR)" ]; then find "$(PROJECT_ARTIFACTS_DIR)" -mindepth 1 -maxdepth 1 $(foreach dir,$(PROJECT_ARTIFACT_PRESERVE_DIRS),! -name "$(dir)") -print; fi)
-COMMON_ARTIFACT_CLEAN_PATHS := $(PROJECT_ARTIFACT_CHILD_CLEAN_PATHS)
