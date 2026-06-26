@@ -3,7 +3,9 @@
 .idea/
 .vscode/
 .tox/
+.tox
 .venv/
+.venv
 .venv-esm/
 .coverage
 .coverage.*
@@ -12,6 +14,8 @@
 .pytest_cache/
 .ruff_cache/
 .hypothesis/
+.hypothesis
+.benchmarks
 .nox/
 .cache/
 .tmp/
@@ -27,6 +31,7 @@ pip-wheel-metadata/
 artifacts/*
 !artifacts/.gitkeep
 packages/*/artifacts/
+packages/*/artifacts
 
 **/__pycache__/
 **/.pytest_cache/
@@ -34,9 +39,13 @@ packages/*/artifacts/
 **/.mypy_cache/
 **/.pytype/
 **/.hypothesis/
+**/.hypothesis
 **/.benchmarks/
+**/.benchmarks
 **/.tox/
+**/.tox
 **/.venv/
+**/.venv
 **/.nox/
 **/.cache/
 **/site/

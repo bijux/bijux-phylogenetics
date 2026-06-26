@@ -20,10 +20,6 @@ ROOT_TARGET_SHARED_ENV_test-all-plus-run-time ?= 1
 
 include $(ROOT_MAKEFILE_DIR)/bijux-py/repository/root.mk
 
-ROOT_FORBIDDEN_ARTIFACTS := $(filter-out \
-	"$(CURDIR)/.hypothesis" \
-	"$(CURDIR)/.benchmarks",$(ROOT_FORBIDDEN_ARTIFACTS))
-
 include $(ROOT_MAKEFILE_DIR)/bijux-py/root/package-dispatch.mk
 ROOT_TARGET_PACKAGES_test-all := $(CHECK_PACKAGES)
 ROOT_TARGET_PACKAGES_test-all-plus-run-time := $(CHECK_PACKAGES)

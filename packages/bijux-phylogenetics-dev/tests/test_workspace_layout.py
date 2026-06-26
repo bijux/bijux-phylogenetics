@@ -2,12 +2,21 @@
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
+import subprocess
+import sys
 import tomllib
 from typing import Any, cast
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+ARTIFACT_ALIAS_SCRIPT = (
+    REPO_ROOT
+    / ".bijux"
+    / "shared"
+    / "bijux-makes-py"
+    / "repository"
+    / "artifact_aliases.py"
+)
 PACKAGE_ARTIFACT_LINKS = {
     "artifacts": "",
     ".venv": "venv",
@@ -15,7 +24,7 @@ PACKAGE_ARTIFACT_LINKS = {
     ".benchmarks": "benchmarks",
 }
 ROOT_ARTIFACT_LINKS = {
-    ".venv": "artifacts/root/venv",
+    ".venv": "artifacts/root/check-venv",
     ".hypothesis": "artifacts/root/hypothesis",
     ".benchmarks": "artifacts/root/benchmarks",
     ".tox": "artifacts/root/tox",
@@ -42,50 +51,88 @@ def _expected_package_link_target(package_name: str, link_name: str) -> str:
     return str(base / suffix) if suffix else str(base)
 
 
-def test_package_roots_use_repository_artifact_symlinks() -> None:
+def _artifact_alias_paths() -> list[str]:
     workspace = _workspace_metadata()
-    failures: list[str] = []
+    package_names = sorted(cast(list[str], workspace["packages"]))
+    paths = sorted(ROOT_ARTIFACT_LINKS)
+    for package_name in package_names:
+        for link_name in PACKAGE_ARTIFACT_LINKS:
+            paths.append(f"packages/{package_name}/{link_name}")
+    return paths
+
+
+def _assert_symlink(*, link_path: Path, expected_target: str) -> None:
+    assert link_path.is_symlink()
+    assert link_path.readlink().as_posix() == expected_target
+
+
+def test_setup_materializes_governed_artifact_aliases(tmp_path: Path) -> None:
+    workspace = _workspace_metadata()
+    repo_root = tmp_path / "repo"
+    packages_dir = repo_root / "packages"
+    packages_dir.mkdir(parents=True)
 
     for package_name in sorted(cast(list[str], workspace["packages"])):
-        package_root = _package_path(package_name)
-        for link_name in PACKAGE_ARTIFACT_LINKS:
-            link_path = package_root / link_name
-            if not link_path.is_symlink():
-                failures.append(f"{package_name}: missing symlink {link_name}")
-                continue
-            target = os.readlink(link_path)
-            expected = _expected_package_link_target(package_name, link_name)
-            if target != expected:
-                failures.append(
-                    f"{package_name}: {link_name} -> {target!r}, expected {expected!r}"
-                )
+        package_root = packages_dir / package_name
+        package_root.mkdir()
+        (package_root / "pyproject.toml").write_text("[project]\nname='test'\n")
 
-    assert not failures, "package artifact symlink contract failed:\n" + "\n".join(
-        failures
+    subprocess.run(
+        [
+            sys.executable,
+            str(ARTIFACT_ALIAS_SCRIPT),
+            "root",
+            "--repo-root",
+            str(repo_root),
+            "--packages-dir",
+            str(packages_dir),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
     )
-
-
-def test_repository_root_uses_artifact_symlinks() -> None:
-    failures: list[str] = []
 
     for link_name, expected_target in ROOT_ARTIFACT_LINKS.items():
-        link_path = REPO_ROOT / link_name
-        if not link_path.is_symlink():
-            failures.append(f"repository root: missing symlink {link_name}")
-            continue
-        target = os.readlink(link_path)
-        if target != expected_target:
-            failures.append(
-                f"repository root: {link_name} -> {target!r}, expected {expected_target!r}"
+        _assert_symlink(
+            link_path=repo_root / link_name,
+            expected_target=expected_target,
+        )
+
+    for package_name in sorted(cast(list[str], workspace["packages"])):
+        package_root = packages_dir / package_name
+        for link_name in PACKAGE_ARTIFACT_LINKS:
+            _assert_symlink(
+                link_path=package_root / link_name,
+                expected_target=_expected_package_link_target(package_name, link_name),
             )
 
-    stray_configs_artifacts = REPO_ROOT / "configs" / "artifacts"
-    if stray_configs_artifacts.exists():
-        failures.append("repository root: configs/artifacts must not exist")
-    for path_name in ROOT_FORBIDDEN_CACHE_PATHS:
-        if (REPO_ROOT / path_name).exists():
-            failures.append(f"repository root: {path_name} must not exist")
 
-    assert not failures, "repository artifact symlink contract failed:\n" + "\n".join(
-        failures
+def test_artifact_alias_paths_are_ignored_by_git() -> None:
+    paths = _artifact_alias_paths()
+    result = subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "check-ignore", "--no-index", "--stdin"],
+        input="\n".join(paths),
+        check=False,
+        capture_output=True,
+        text=True,
     )
+
+    assert result.returncode == 0
+    assert set(result.stdout.splitlines()) == set(paths)
+
+
+def test_artifact_alias_paths_stay_untracked_by_git() -> None:
+    result = subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "ls-files", "-z", "--", *_artifact_alias_paths()],
+        check=True,
+        capture_output=True,
+    )
+
+    assert result.stdout == b""
+
+
+def test_repository_root_keeps_non_artifact_caches_out_of_tree() -> None:
+    stray_configs_artifacts = REPO_ROOT / "configs" / "artifacts"
+    assert not stray_configs_artifacts.exists()
+    for path_name in ROOT_FORBIDDEN_CACHE_PATHS:
+        assert not (REPO_ROOT / path_name).exists()
