@@ -447,13 +447,13 @@ def test_summarize_bootstrap_support_distribution_reports_range_median_and_histo
 
     report = summarize_bootstrap_support_distribution(tree_path)
 
-    assert report.internal_node_count == 2
-    assert report.supported_node_count == 2
+    assert report.internal_node_count == 3
+    assert report.supported_node_count == 3
     assert report.minimum_support == 68.0
     assert report.maximum_support == 95.0
-    assert report.median_support == 81.5
+    assert report.median_support == 72.0
     assert report.weakly_supported_clade_count == 1
-    assert report.support_histogram == {"lt50": 0, "50to69": 1, "70to89": 0, "ge90": 1}
+    assert report.support_histogram == {"lt50": 0, "50to69": 1, "70to89": 1, "ge90": 1}
 
 
 def test_summarize_bootstrap_support_distribution_treats_collapsed_unlabeled_branches_as_zero_support(
@@ -467,13 +467,13 @@ def test_summarize_bootstrap_support_distribution_treats_collapsed_unlabeled_bra
 
     report = summarize_bootstrap_support_distribution(tree_path)
 
-    assert report.internal_node_count == 2
-    assert report.supported_node_count == 2
+    assert report.internal_node_count == 3
+    assert report.supported_node_count == 3
     assert report.minimum_support == 0.0
-    assert report.maximum_support == 78.0
-    assert report.median_support == 39.0
+    assert report.maximum_support == 90.0
+    assert report.median_support == 78.0
     assert report.weakly_supported_clade_count == 1
-    assert report.support_histogram == {"lt50": 1, "50to69": 0, "70to89": 1, "ge90": 0}
+    assert report.support_histogram == {"lt50": 1, "50to69": 0, "70to89": 1, "ge90": 1}
     assert any(
         node.descendant_taxa == ["A", "B"] and node.support == 0.0
         for node in report.nodes
