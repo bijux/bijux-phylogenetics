@@ -5,7 +5,7 @@ hard closure for foundational trust, visualization competition, performance comp
 migration usefulness, or reviewer readiness.
 
 - criteria: `5`
-- current freshness-tracked bundles: `10`
+- current freshness-tracked bundles: `9`
 - integrity-tracked bundles: `19`
 
 ## foundational-numerical-trust

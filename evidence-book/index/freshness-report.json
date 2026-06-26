@@ -3,9 +3,9 @@
   "entries": [
     {
       "evidence_id": "evidence-001",
-      "freshness_status": "current",
+      "freshness_status": "stale",
       "last_generated_on": "2026-06-02",
-      "latest_governed_change_on": "2026-06-02",
+      "latest_governed_change_on": "2026-06-16",
       "relative_path": "studies/primate-longevity-signal/evidence-001",
       "study_id": "primate-longevity-signal",
       "tracked_input_count": 2
@@ -94,7 +94,7 @@
     {
       "evidence_id": "evidence-002",
       "freshness_status": "current",
-      "last_generated_on": "2026-06-02",
+      "last_generated_on": "2026-06-18",
       "latest_governed_change_on": "2026-05-31",
       "relative_path": "studies/primate-pgls-and-signal/evidence-002",
       "study_id": "primate-pgls-and-signal",
@@ -174,8 +174,8 @@
     }
   ],
   "freshness_status_counts": {
-    "current": 10,
-    "stale": 9
+    "current": 9,
+    "stale": 10
   },
   "schema_version": 1
 }
