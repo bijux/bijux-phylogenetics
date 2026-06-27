@@ -138,6 +138,7 @@ def test_nucleotide_site_log_likelihood_rows_match_selected_model_totals() -> No
         base_frequencies=hky85_base_frequencies,
     )
 
+    assert hky85_report.model_name == "HKY85"
     assert math.isclose(
         hky85_report.parameter_values["kappa"],
         4.0,
@@ -147,6 +148,12 @@ def test_nucleotide_site_log_likelihood_rows_match_selected_model_totals() -> No
     assert math.isclose(
         hky85_report.log_likelihood,
         hky85_total.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        sum(row.log_likelihood for row in hky85_report.site_log_likelihoods),
+        hky85_report.log_likelihood,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
