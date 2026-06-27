@@ -1,13 +1,22 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
+from pathlib import Path
+
 import numpy
 
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.alignment.partitions import LocusPartition
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
+    CompiledFiniteStateLikelihoodAnalysis,
     FiniteStateLikelihoodSurface,
+    compile_finite_state_likelihood_analysis,
 )
 from bijux_phylogenetics.phylo.likelihood.poisson import (
     protein_poisson_rate_matrix,
+)
+from bijux_phylogenetics.phylo.likelihood.patterns import (
+    compress_alignment_site_patterns_from_records,
 )
 from bijux_phylogenetics.phylo.likelihood.protein import (
     PROTEIN_STATE_ORDER,
@@ -18,6 +27,7 @@ from bijux_phylogenetics.phylo.likelihood.protein import (
     validate_protein_root_prior,
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 
 def build_protein_poisson_finite_state_surface(
@@ -116,6 +126,104 @@ def build_empirical_protein_finite_state_surface(
                 ambiguity_policy=ambiguity_policy,
             )
         ),
+    )
+
+
+def compile_protein_poisson_likelihood_analysis(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    gap_policy: str = "treat-as-missing",
+    missing_policy: str = "treat-as-missing",
+    ambiguity_policy: str = "reject",
+    partition_map: tuple[LocusPartition, ...] | None = None,
+    site_weight_by_position: Mapping[int, float] | None = None,
+    source_path: Path | None = None,
+) -> CompiledFiniteStateLikelihoodAnalysis:
+    """Compile one reusable protein Poisson finite-state likelihood analysis."""
+    normalized_records = normalize_protein_likelihood_records(
+        records,
+        model_name="protein Poisson",
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
+    )
+    surface = build_protein_poisson_finite_state_surface(
+        normalized_records,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
+    )
+    return compile_finite_state_likelihood_analysis(
+        tree,
+        surface,
+        records=normalized_records,
+        pattern_compiler=lambda partition_records, partition_source_path: (
+            compress_alignment_site_patterns_from_records(
+                partition_records,
+                source_path=partition_source_path,
+            )
+        ),
+        missing_data_policy=_protein_observation_policy_label(
+            gap_policy=gap_policy,
+            missing_policy=missing_policy,
+            ambiguity_policy=ambiguity_policy,
+        ),
+        partition_map=partition_map,
+        site_weight_by_position=site_weight_by_position,
+        source_path=source_path,
+    )
+
+
+def compile_empirical_protein_likelihood_analysis(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
+    root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    matrix_label: str = "empirical",
+    gap_policy: str = "treat-as-missing",
+    missing_policy: str = "treat-as-missing",
+    ambiguity_policy: str = "reject",
+    partition_map: tuple[LocusPartition, ...] | None = None,
+    site_weight_by_position: Mapping[int, float] | None = None,
+    source_path: Path | None = None,
+) -> CompiledFiniteStateLikelihoodAnalysis:
+    """Compile one reusable empirical protein finite-state likelihood analysis."""
+    normalized_records = normalize_protein_likelihood_records(
+        records,
+        model_name="empirical protein matrix",
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
+    )
+    surface = build_empirical_protein_finite_state_surface(
+        normalized_records,
+        rate_matrix=rate_matrix,
+        root_prior=root_prior,
+        matrix_label=matrix_label,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
+    )
+    return compile_finite_state_likelihood_analysis(
+        tree,
+        surface,
+        records=normalized_records,
+        pattern_compiler=lambda partition_records, partition_source_path: (
+            compress_alignment_site_patterns_from_records(
+                partition_records,
+                source_path=partition_source_path,
+            )
+        ),
+        missing_data_policy=_protein_observation_policy_label(
+            gap_policy=gap_policy,
+            missing_policy=missing_policy,
+            ambiguity_policy=ambiguity_policy,
+        ),
+        partition_map=partition_map,
+        site_weight_by_position=site_weight_by_position,
+        source_path=source_path,
     )
 
 
