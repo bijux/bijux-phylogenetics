@@ -7,6 +7,7 @@ from pathlib import Path
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import loads_newick
 import bijux_phylogenetics.phylo.likelihood as likelihood_api
+import bijux_phylogenetics.phylo.likelihood.candidate_tree_site_likelihood_matrix as candidate_matrix_runtime
 from bijux_phylogenetics.phylo.likelihood import (
     evaluate_jc69_tree_likelihood,
     evaluate_nucleotide_candidate_tree_site_likelihood_matrix_from_alignment,
@@ -129,6 +130,44 @@ def test_candidate_tree_site_likelihood_matrix_reports_tree_by_site_rows_and_tot
         rel_tol=0.0,
         abs_tol=1e-12,
     )
+
+
+def test_candidate_tree_site_likelihood_matrix_reuses_compiled_topology_refresh(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    tree_set_path = write_candidate_tree_set(
+        tmp_path / "candidate-trees.nwk",
+        [
+            "((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);",
+            "(((A:0.1,B:0.1):0.1,C:0.1):0.1,D:0.1);",
+            "(((A:0.1,C:0.1):0.1,B:0.1):0.1,D:0.1);",
+        ],
+    )
+    topology_refresh_count = 0
+    original_refresh = (
+        candidate_matrix_runtime.update_compiled_finite_state_context_topology
+    )
+
+    def counting_refresh(*args, **kwargs):
+        nonlocal topology_refresh_count
+        topology_refresh_count += 1
+        return original_refresh(*args, **kwargs)
+
+    monkeypatch.setattr(
+        candidate_matrix_runtime,
+        "update_compiled_finite_state_context_topology",
+        counting_refresh,
+    )
+
+    report = evaluate_nucleotide_candidate_tree_site_likelihood_matrix_from_alignment(
+        tree_set_path,
+        fixture("alignments", "jc69_site_pattern_alignment.fasta"),
+        model_name="jc69",
+    )
+
+    assert report.tree_count == 3
+    assert topology_refresh_count == 2
 
 
 def test_candidate_tree_site_likelihood_matrix_rejects_incompatible_taxa(
