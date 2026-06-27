@@ -155,6 +155,7 @@ __all__ = [
     "compile_discrete_mk_likelihood_analysis",
     "compile_empirical_protein_likelihood_analysis",
     "compile_finite_state_likelihood_analysis",
+    "compile_partitioned_finite_state_likelihood_analysis",
     "compute_marginal_state_posteriors",
     "compute_joint_state_assignment",
     "compile_protein_poisson_likelihood_analysis",

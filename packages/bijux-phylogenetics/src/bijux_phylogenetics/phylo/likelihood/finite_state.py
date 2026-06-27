@@ -53,6 +53,14 @@ FiniteStatePartitionSourceSitePositionsResolver = Callable[
     [LocusPartition],
     tuple[int, ...],
 ]
+FiniteStatePartitionSurfaceBuilder = Callable[
+    [str, str | None, list[AlignmentRecord]],
+    "FiniteStateLikelihoodSurface",
+]
+FiniteStatePartitionContextLinkageKeyResolver = Callable[
+    [str, str | None, "FiniteStateLikelihoodSurface"],
+    str,
+]
 
 
 @dataclass(frozen=True, slots=True)
@@ -324,6 +332,144 @@ def compile_finite_state_likelihood_analysis(
         context=context,
         contexts=(context,),
         partition_contexts=partition_contexts,
+    )
+
+
+def compile_partitioned_finite_state_likelihood_analysis(
+    tree: PhyloTree,
+    *,
+    records: list[AlignmentRecord],
+    pattern_compiler: FiniteStatePatternCompiler,
+    partition_surface_builder: FiniteStatePartitionSurfaceBuilder,
+    missing_data_policy: str,
+    alignment_length_resolver: FiniteStateAlignmentLengthResolver | None = None,
+    partition_map: tuple[LocusPartition, ...],
+    partition_alignment_length: int | None = None,
+    partition_record_builder: FiniteStatePartitionRecordBuilder | None = None,
+    partition_source_site_positions_resolver: (
+        FiniteStatePartitionSourceSitePositionsResolver | None
+    ) = None,
+    partition_context_linkage_key_resolver: (
+        FiniteStatePartitionContextLinkageKeyResolver | None
+    ) = None,
+    site_weight_by_position: Mapping[int, float] | None = None,
+    source_path: Path | None = None,
+) -> CompiledFiniteStateLikelihoodAnalysis:
+    """Compile one partitioned finite-state analysis with linked or unlinked surfaces."""
+    resolved_alignment_length = (
+        _validated_alignment_length(records)
+        if alignment_length_resolver is None
+        else alignment_length_resolver(records)
+    )
+    alignment_length = _validated_compiled_alignment_length(
+        resolved_alignment_length,
+        records=records,
+    )
+    validated_site_weight_by_position = _validated_site_weight_by_position(
+        site_weight_by_position,
+        alignment_length=alignment_length,
+    )
+    validate_locus_partitions(
+        partition_map,
+        alignment_length=(
+            alignment_length
+            if partition_alignment_length is None
+            else partition_alignment_length
+        ),
+    )
+    partition_inputs = _resolve_partition_inputs(
+        records,
+        alignment_length=alignment_length,
+        partition_map=partition_map,
+        partition_record_builder=partition_record_builder,
+        partition_source_site_positions_resolver=(
+            partition_source_site_positions_resolver
+        ),
+        source_path=source_path,
+    )
+    resolved_context_linkage_key_resolver = (
+        _default_partition_context_linkage_key
+        if partition_context_linkage_key_resolver is None
+        else partition_context_linkage_key_resolver
+    )
+    contexts: list[CompiledFiniteStateLikelihoodContext] = []
+    partition_contexts: list[CompiledFiniteStatePartitionContext] = []
+    surface_signature_by_linkage_key: dict[str, tuple[object, ...]] = {}
+    context_index_by_linkage_key: dict[str, int] = {}
+    for partition_input in partition_inputs:
+        surface = partition_surface_builder(
+            partition_input.partition_name,
+            partition_input.partition_data_type,
+            partition_input.records,
+        )
+        validate_explicit_branch_lengths(tree, model_name=surface.model_name)
+        context_linkage_key = resolved_context_linkage_key_resolver(
+            partition_input.partition_name,
+            partition_input.partition_data_type,
+            surface,
+        )
+        validated_context_linkage_key = context_linkage_key.strip()
+        if not validated_context_linkage_key:
+            raise ValueError(
+                "partitioned finite-state likelihood analysis requires non-empty context linkage keys"
+            )
+        surface_signature = _finite_state_surface_signature(surface)
+        prior_surface_signature = surface_signature_by_linkage_key.get(
+            validated_context_linkage_key
+        )
+        if prior_surface_signature is None:
+            surface_signature_by_linkage_key[validated_context_linkage_key] = (
+                surface_signature
+            )
+            context_index = len(contexts)
+            context_index_by_linkage_key[validated_context_linkage_key] = context_index
+            contexts.append(compile_finite_state_likelihood_context(tree, surface))
+        else:
+            if prior_surface_signature != surface_signature:
+                raise ValueError(
+                    "partitioned finite-state likelihood analysis received incompatible linked partition surfaces"
+                )
+            context_index = context_index_by_linkage_key[validated_context_linkage_key]
+        partition_contexts.append(
+            _compile_partition_context(
+                partition_input,
+                pattern_compiler=pattern_compiler,
+                site_weight_by_position=validated_site_weight_by_position,
+                model_name=surface.model_name,
+                context_index=context_index,
+                context_linkage_key=validated_context_linkage_key,
+                parameter_values=dict(surface.parameter_values),
+            )
+        )
+    resolved_contexts = tuple(contexts)
+    resolved_partition_contexts = tuple(partition_contexts)
+    _validate_partition_taxa_against_tree(
+        tree,
+        resolved_partition_contexts,
+        analysis_contexts=resolved_contexts,
+    )
+    if not resolved_contexts:
+        raise ValueError(
+            "partitioned finite-state likelihood analysis requires at least one compiled partition context"
+        )
+    primary_context = resolved_contexts[0]
+    return CompiledFiniteStateLikelihoodAnalysis(
+        source_path=source_path,
+        alignment_length=alignment_length,
+        pattern_count=sum(
+            partition_context.pattern_count
+            for partition_context in resolved_partition_contexts
+        ),
+        partition_count=len(resolved_partition_contexts),
+        site_weight_total=sum(
+            term.effective_weight
+            for partition_context in resolved_partition_contexts
+            for term in partition_context.compiled_pattern_terms
+        ),
+        missing_data_policy=missing_data_policy,
+        context=primary_context,
+        contexts=resolved_contexts,
+        partition_contexts=resolved_partition_contexts,
     )
 
 
@@ -1193,14 +1339,50 @@ def _validate_partition_taxa_against_tree(
     tree: PhyloTree,
     partition_contexts: tuple[CompiledFiniteStatePartitionContext, ...],
     *,
-    surface: FiniteStateLikelihoodSurface,
+    analysis_contexts: tuple[CompiledFiniteStateLikelihoodContext, ...] | None = None,
+    surface: FiniteStateLikelihoodSurface | None = None,
 ) -> None:
     for partition_context in partition_contexts:
+        model_name = (
+            surface.model_name
+            if surface is not None
+            else analysis_contexts[partition_context.context_index].surface.model_name
+        )
         _validate_tree_taxa_against_order(
             tree,
             taxon_order=partition_context.taxon_order,
-            model_name=surface.model_name,
+            model_name=model_name,
         )
+
+
+def _default_partition_context_linkage_key(
+    partition_name: str,
+    _partition_data_type: str | None,
+    _surface: FiniteStateLikelihoodSurface,
+) -> str:
+    return partition_name
+
+
+def _finite_state_surface_signature(
+    surface: FiniteStateLikelihoodSurface,
+) -> tuple[object, ...]:
+    return (
+        surface.model_name,
+        surface.state_labels,
+        surface.observation_policy,
+        surface.root_prior_source,
+        _float_array_digest(surface.root_prior),
+        surface.normalization_policy,
+        tuple(
+            (key, float(value))
+            for key, value in sorted(surface.parameter_values.items())
+        ),
+        (
+            None
+            if surface.transition_rate_matrix is None
+            else _float_array_digest(surface.transition_rate_matrix)
+        ),
+    )
 
 
 def _validate_tree_taxa_against_order(

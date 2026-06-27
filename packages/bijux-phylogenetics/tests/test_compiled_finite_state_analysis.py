@@ -4,6 +4,7 @@ import math
 from pathlib import Path
 
 import numpy
+import pytest
 
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
@@ -14,6 +15,7 @@ from bijux_phylogenetics.phylo.alignment.partitions import (
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
     FiniteStateLikelihoodSurface,
     compile_finite_state_likelihood_analysis,
+    compile_partitioned_finite_state_likelihood_analysis,
     evaluate_compiled_finite_state_likelihood_analysis,
     evaluate_compiled_finite_state_partition_log_likelihood_rows,
     evaluate_compiled_finite_state_site_log_likelihood_rows,
@@ -208,6 +210,145 @@ def test_compiled_analysis_summarizes_partition_likelihood_rows() -> None:
     )
 
 
+def test_partitioned_analysis_reuses_linked_partition_contexts() -> None:
+    tree = load_tree(fixture("felsenstein_two_tip_tree.nwk"))
+    records = [
+        AlignmentRecord(identifier="A", sequence="0101"),
+        AlignmentRecord(identifier="B", sequence="0100"),
+    ]
+    partition_map = _binary_partition_map()
+    analysis = compile_partitioned_finite_state_likelihood_analysis(
+        tree,
+        records=records,
+        pattern_compiler=_pattern_compiler,
+        partition_surface_builder=lambda _name, _data_type, _partition_records: (
+            _binary_surface()
+        ),
+        missing_data_policy="reject",
+        partition_map=partition_map,
+        partition_context_linkage_key_resolver=lambda _name, _data_type, _surface: (
+            "shared-binary"
+        ),
+    )
+
+    rows, row_total = evaluate_compiled_finite_state_partition_log_likelihood_rows(
+        analysis
+    )
+
+    assert len(analysis.contexts) == 1
+    assert [context.partition_name for context in analysis.partition_contexts] == [
+        "left-half",
+        "right-half",
+    ]
+    assert [context.context_index for context in analysis.partition_contexts] == [0, 0]
+    assert [row.context_linkage_key for row in rows] == [
+        "shared-binary",
+        "shared-binary",
+    ]
+    validate_compiled_finite_state_partition_likelihood_reconstruction(
+        rows,
+        expected_total_log_likelihood=row_total,
+        expected_partition_count=analysis.partition_count,
+        owner_name="linked compiled finite-state partition test",
+    )
+    assert math.isclose(
+        row_total,
+        evaluate_compiled_finite_state_likelihood_analysis(analysis),
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
+def test_partitioned_analysis_keeps_unlinked_partition_contexts_distinct() -> None:
+    tree = load_tree(fixture("felsenstein_two_tip_tree.nwk"))
+    records = [
+        AlignmentRecord(identifier="A", sequence="0101"),
+        AlignmentRecord(identifier="B", sequence="0100"),
+    ]
+    partition_map = _binary_partition_map()
+    analysis = compile_partitioned_finite_state_likelihood_analysis(
+        tree,
+        records=records,
+        pattern_compiler=_pattern_compiler,
+        partition_surface_builder=lambda partition_name, _data_type, _partition_records: (
+            _binary_surface()
+            if partition_name == "left-half"
+            else _biased_binary_surface()
+        ),
+        missing_data_policy="reject",
+        partition_map=partition_map,
+    )
+
+    rows, row_total = evaluate_compiled_finite_state_partition_log_likelihood_rows(
+        analysis
+    )
+    left_records = [
+        AlignmentRecord(identifier="A", sequence="01"),
+        AlignmentRecord(identifier="B", sequence="01"),
+    ]
+    right_records = [
+        AlignmentRecord(identifier="A", sequence="01"),
+        AlignmentRecord(identifier="B", sequence="00"),
+    ]
+    left_total = evaluate_compiled_finite_state_likelihood_analysis(
+        compile_finite_state_likelihood_analysis(
+            tree,
+            _binary_surface(),
+            records=left_records,
+            pattern_compiler=_pattern_compiler,
+            missing_data_policy="reject",
+        )
+    )
+    right_total = evaluate_compiled_finite_state_likelihood_analysis(
+        compile_finite_state_likelihood_analysis(
+            tree,
+            _biased_binary_surface(),
+            records=right_records,
+            pattern_compiler=_pattern_compiler,
+            missing_data_policy="reject",
+        )
+    )
+
+    assert len(analysis.contexts) == 2
+    assert [context.context_index for context in analysis.partition_contexts] == [0, 1]
+    assert [row.context_linkage_key for row in rows] == ["left-half", "right-half"]
+    assert math.isclose(row_total, left_total + right_total, rel_tol=0.0, abs_tol=1e-12)
+    assert math.isclose(
+        row_total,
+        evaluate_compiled_finite_state_likelihood_analysis(analysis),
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
+def test_partitioned_analysis_rejects_incompatible_linked_surfaces() -> None:
+    tree = load_tree(fixture("felsenstein_two_tip_tree.nwk"))
+    records = [
+        AlignmentRecord(identifier="A", sequence="0101"),
+        AlignmentRecord(identifier="B", sequence="0100"),
+    ]
+
+    with pytest.raises(
+        ValueError,
+        match="incompatible linked partition surfaces",
+    ):
+        compile_partitioned_finite_state_likelihood_analysis(
+            tree,
+            records=records,
+            pattern_compiler=_pattern_compiler,
+            partition_surface_builder=lambda partition_name, _data_type, _partition_records: (
+                _binary_surface()
+                if partition_name == "left-half"
+                else _biased_binary_surface()
+            ),
+            missing_data_policy="reject",
+            partition_map=_binary_partition_map(),
+            partition_context_linkage_key_resolver=lambda _name, _data_type, _surface: (
+                "shared-binary"
+            ),
+        )
+
+
 def test_compiled_analysis_reuses_cached_transition_and_pattern_state() -> None:
     tree = load_tree(fixture("felsenstein_two_tip_tree.nwk"))
     records = [
@@ -269,6 +410,39 @@ def _binary_surface() -> FiniteStateLikelihoodSurface:
             dtype=float,
         ),
         leaf_likelihood_vector_for_state=_binary_leaf_vector,
+    )
+
+
+def _biased_binary_surface() -> FiniteStateLikelihoodSurface:
+    return FiniteStateLikelihoodSurface(
+        model_name="binary synthetic biased",
+        state_labels=("0", "1"),
+        root_prior=numpy.array([0.8, 0.2], dtype=float),
+        root_prior_source="provided",
+        observation_policy="reject",
+        transition_matrix_for_branch_length=lambda _branch_length: numpy.array(
+            [[0.85, 0.15], [0.10, 0.90]],
+            dtype=float,
+        ),
+        leaf_likelihood_vector_for_state=_binary_leaf_vector,
+        parameter_values={"bias": 0.8},
+    )
+
+
+def _binary_partition_map() -> tuple[LocusPartition, ...]:
+    return (
+        LocusPartition(
+            name="left-half",
+            segments=(LocusSegment(start=1, end=2),),
+            total_sites=2,
+            data_type="binary",
+        ),
+        LocusPartition(
+            name="right-half",
+            segments=(LocusSegment(start=3, end=4),),
+            total_sites=2,
+            data_type="binary",
+        ),
     )
 
 
