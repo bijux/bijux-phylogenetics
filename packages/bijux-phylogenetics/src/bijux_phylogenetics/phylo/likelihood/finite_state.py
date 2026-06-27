@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 import hashlib
+import math
 from pathlib import Path
 
 import numpy
@@ -19,8 +20,10 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import (
+    FiniteStatePruningPass,
     log_likelihood_from_root_prior,
     postorder_conditional_likelihoods,
+    refresh_postorder_conditional_likelihoods,
 )
 from bijux_phylogenetics.phylo.likelihood.sites import (
     expanded_site_log_likelihood_rows_from_patterns,
@@ -29,7 +32,7 @@ from bijux_phylogenetics.phylo.likelihood.validation import (
     validate_explicit_branch_lengths,
     validate_tree_taxa_against_patterns,
 )
-from bijux_phylogenetics.phylo.topology.tree import PhyloTree
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 
 FiniteStateLeafVector = Callable[[str, str], numpy.ndarray]
 FiniteStateTransitionMatrix = Callable[[float], numpy.ndarray]
@@ -82,6 +85,22 @@ class FiniteStateTransitionCacheKey:
     branch_length: float
 
 
+@dataclass(frozen=True, slots=True)
+class FiniteStateSiteEvaluationKey:
+    """One stable cached site-evaluation identity inside a compiled context."""
+
+    taxon_order: tuple[str, ...]
+    states: tuple[str, ...]
+
+
+@dataclass(slots=True)
+class CachedFiniteStateSiteEvaluation:
+    """One cached pruning pass and score for one compiled site pattern."""
+
+    pruning_pass: FiniteStatePruningPass
+    log_likelihood: float
+
+
 _SHARED_FINITE_STATE_TRANSITION_CACHE: dict[
     FiniteStateTransitionCacheKey,
     numpy.ndarray,
@@ -99,6 +118,14 @@ class CompiledFiniteStateLikelihoodContext:
     transition_cache_key_by_node_id: dict[str, FiniteStateTransitionCacheKey] = field(
         default_factory=dict
     )
+    node_by_id: dict[str, TreeNode] = field(default_factory=dict)
+    ancestor_path_by_child_node_id: dict[str, tuple[str, ...]] = field(
+        default_factory=dict
+    )
+    site_evaluation_by_key: dict[
+        FiniteStateSiteEvaluationKey,
+        CachedFiniteStateSiteEvaluation,
+    ] = field(default_factory=dict)
 
 
 @dataclass(frozen=True, slots=True)
@@ -155,6 +182,8 @@ def compile_finite_state_likelihood_context(
     """Compile one rooted tree plus one finite-state model into cached branches."""
     transition_matrix_by_node_id: dict[str, numpy.ndarray] = {}
     transition_cache_key_by_node_id: dict[str, FiniteStateTransitionCacheKey] = {}
+    node_by_id = _node_index(tree)
+    ancestor_path_by_child_node_id: dict[str, tuple[str, ...]] = {}
     transition_model_state = _transition_model_state(surface)
     for _parent, child in tree.iter_edges():
         if child.node_id is None:
@@ -175,12 +204,15 @@ def compile_finite_state_likelihood_context(
         )
         if transition_cache_key is not None:
             transition_cache_key_by_node_id[child.node_id] = transition_cache_key
+        ancestor_path_by_child_node_id[child.node_id] = _ancestor_path_from_child(child)
     return CompiledFiniteStateLikelihoodContext(
         tree=tree,
         surface=surface,
         transition_matrix_by_node_id=transition_matrix_by_node_id,
         transition_model_state=transition_model_state,
         transition_cache_key_by_node_id=transition_cache_key_by_node_id,
+        node_by_id=node_by_id,
+        ancestor_path_by_child_node_id=ancestor_path_by_child_node_id,
     )
 
 
@@ -252,6 +284,13 @@ def evaluate_finite_state_site_log_likelihood(
     taxon_order: list[str],
 ) -> float:
     """Evaluate one aligned site against one compiled finite-state context."""
+    site_evaluation_key = FiniteStateSiteEvaluationKey(
+        taxon_order=tuple(taxon_order),
+        states=states,
+    )
+    cached_site_evaluation = context.site_evaluation_by_key.get(site_evaluation_key)
+    if cached_site_evaluation is not None:
+        return cached_site_evaluation.log_likelihood
     states_by_taxon = dict(zip(taxon_order, states, strict=True))
     pruning_pass = postorder_conditional_likelihoods(
         context.tree,
@@ -266,11 +305,16 @@ def evaluate_finite_state_site_log_likelihood(
             child_node_id=child.node_id,
         ),
     )
-    return log_likelihood_from_root_prior(
+    log_likelihood = log_likelihood_from_root_prior(
         context.tree,
         pruning_pass,
         root_prior=context.surface.root_prior,
     )
+    context.site_evaluation_by_key[site_evaluation_key] = CachedFiniteStateSiteEvaluation(
+        pruning_pass=pruning_pass,
+        log_likelihood=log_likelihood,
+    )
+    return log_likelihood
 
 
 def evaluate_finite_state_tree_log_likelihood_from_patterns(
@@ -338,6 +382,73 @@ def evaluate_compiled_finite_state_likelihood_analysis(
                 taxon_order=partition_context.taxon_order,
             )
     return total
+
+
+def update_compiled_finite_state_context_branch_length(
+    context: CompiledFiniteStateLikelihoodContext,
+    *,
+    child_node_id: str,
+    branch_length: float,
+) -> None:
+    """Update one compiled branch length and refresh only the affected cached path."""
+    node = context.node_by_id.get(child_node_id)
+    if node is None:
+        raise KeyError(f"compiled context does not contain node_id '{child_node_id}'")
+    if node.parent is None:
+        raise ValueError("compiled context cannot update the root branch length")
+    normalized_branch_length = _normalized_branch_length(branch_length)
+    existing_branch_length = _normalized_branch_length(float(node.branch_length or 0.0))
+    if existing_branch_length == normalized_branch_length:
+        node.branch_length = normalized_branch_length
+        return
+    node.branch_length = normalized_branch_length
+    transition_cache_key = (
+        None
+        if context.transition_model_state is None
+        else FiniteStateTransitionCacheKey(
+            model_state=context.transition_model_state,
+            branch_length=normalized_branch_length,
+        )
+    )
+    context.transition_matrix_by_node_id[child_node_id] = _compiled_transition_matrix(
+        context.surface,
+        branch_length=normalized_branch_length,
+        transition_cache_key=transition_cache_key,
+    )
+    if transition_cache_key is None:
+        context.transition_cache_key_by_node_id.pop(child_node_id, None)
+    else:
+        context.transition_cache_key_by_node_id[child_node_id] = transition_cache_key
+    affected_node_ids = context.ancestor_path_by_child_node_id[child_node_id]
+    for cached_site_evaluation in context.site_evaluation_by_key.values():
+        refresh_postorder_conditional_likelihoods(
+            context.tree,
+            cached_site_evaluation.pruning_pass,
+            affected_node_ids=affected_node_ids,
+            transition_matrix_for_child=lambda child: _transition_matrix_for_child(
+                context,
+                child_node_id=child.node_id,
+            ),
+        )
+        cached_site_evaluation.log_likelihood = log_likelihood_from_root_prior(
+            context.tree,
+            cached_site_evaluation.pruning_pass,
+            root_prior=context.surface.root_prior,
+        )
+
+
+def update_compiled_finite_state_analysis_branch_length(
+    analysis: CompiledFiniteStateLikelihoodAnalysis,
+    *,
+    child_node_id: str,
+    branch_length: float,
+) -> None:
+    """Update one compiled-analysis branch length and refresh affected site caches."""
+    update_compiled_finite_state_context_branch_length(
+        analysis.context,
+        child_node_id=child_node_id,
+        branch_length=branch_length,
+    )
 
 
 def _leaf_likelihood_vector(
@@ -409,6 +520,32 @@ def _transition_model_state(
 def _float_array_digest(values: numpy.ndarray) -> str:
     normalized = numpy.asarray(values, dtype=float)
     return hashlib.sha256(normalized.tobytes(order="C")).hexdigest()
+
+
+def _node_index(tree: PhyloTree) -> dict[str, TreeNode]:
+    node_by_id: dict[str, TreeNode] = {}
+    for node in tree.iter_nodes(order="preorder"):
+        if node.node_id is None:
+            raise ValueError("tree node is missing a stable node_id")
+        node_by_id[node.node_id] = node
+    return node_by_id
+
+
+def _ancestor_path_from_child(child: TreeNode) -> tuple[str, ...]:
+    path: list[str] = []
+    current = child.parent
+    while current is not None:
+        if current.node_id is None:
+            raise ValueError("tree node is missing a stable node_id")
+        path.append(current.node_id)
+        current = current.parent
+    return tuple(path)
+
+
+def _normalized_branch_length(branch_length: float) -> float:
+    if not math.isfinite(branch_length):
+        raise ValueError("branch length must be finite")
+    return max(float(branch_length), 0.0)
 
 
 def _compile_partition_contexts(
