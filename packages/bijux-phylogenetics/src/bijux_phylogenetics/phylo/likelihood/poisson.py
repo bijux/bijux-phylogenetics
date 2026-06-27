@@ -16,7 +16,6 @@ from bijux_phylogenetics.phylo.likelihood.models import (
     ProteinPoissonTreeLikelihoodReport,
 )
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
-    FiniteStateLikelihoodSurface,
     compile_finite_state_likelihood_context,
     evaluate_finite_state_site_log_likelihood_rows_from_patterns,
 )
@@ -25,10 +24,8 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
     compress_alignment_site_patterns_from_records,
 )
 from bijux_phylogenetics.phylo.likelihood.protein import (
-    PROTEIN_STATE_ORDER,
-    UNIFORM_PROTEIN_ROOT_PRIOR,
     normalize_protein_likelihood_records,
-    protein_leaf_likelihood_vector,
+    PROTEIN_STATE_ORDER,
 )
 from bijux_phylogenetics.phylo.likelihood.sites import (
     validate_site_log_likelihood_reconstruction,
@@ -70,6 +67,13 @@ def evaluate_protein_poisson_tree_likelihood(
     tree: PhyloTree,
     records: list[AlignmentRecord],
     *,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
     ambiguity_policy: str = "reject",
@@ -88,6 +92,10 @@ def evaluate_protein_poisson_tree_likelihood(
     return _evaluate_protein_poisson_tree_likelihood_from_patterns(
         tree,
         compressed_patterns,
+        records=normalized_records,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
         ambiguity_policy=ambiguity_policy,
@@ -98,6 +106,13 @@ def evaluate_protein_poisson_tree_likelihood_from_alignment(
     tree_path: Path,
     alignment_path: Path,
     *,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
     ambiguity_policy: str = "reject",
@@ -106,6 +121,9 @@ def evaluate_protein_poisson_tree_likelihood_from_alignment(
     return evaluate_protein_poisson_tree_likelihood(
         load_tree(tree_path),
         load_fasta_alignment(alignment_path),
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
         ambiguity_policy=ambiguity_policy,
@@ -116,37 +134,32 @@ def _evaluate_protein_poisson_tree_likelihood_from_patterns(
     tree: PhyloTree,
     compressed_patterns: CompressedAlignmentSitePatterns,
     *,
+    records: list[AlignmentRecord],
+    root_prior_policy: str | None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None,
+    fixed_root_state: str | None,
     gap_policy: str,
     missing_policy: str,
     ambiguity_policy: str,
 ) -> ProteinPoissonTreeLikelihoodReport:
-    context = compile_finite_state_likelihood_context(
-        tree,
-        FiniteStateLikelihoodSurface(
-            model_name="protein Poisson",
-            state_labels=PROTEIN_STATE_ORDER,
-            root_prior=UNIFORM_PROTEIN_ROOT_PRIOR,
-            root_prior_source="uniform",
-            observation_policy=(
-                f"gap={gap_policy};missing={missing_policy};ambiguity={ambiguity_policy}"
-            ),
-            normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
-            transition_rate_matrix=protein_poisson_rate_matrix(),
-            transition_matrix_for_branch_length=(
-                protein_poisson_transition_probability_matrix
-            ),
-            leaf_likelihood_vector_for_state=lambda taxon_name, observed_state: (
-                protein_leaf_likelihood_vector(
-                    {taxon_name: observed_state},
-                    model_name="protein Poisson",
-                    node_name=taxon_name,
-                    gap_policy=gap_policy,
-                    missing_policy=missing_policy,
-                    ambiguity_policy=ambiguity_policy,
-                )
-            ),
-        ),
+    from bijux_phylogenetics.phylo.likelihood.protein_finite_state import (
+        build_protein_poisson_finite_state_surface,
     )
+
+    surface = build_protein_poisson_finite_state_surface(
+        records,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
+    )
+    context = compile_finite_state_likelihood_context(tree, surface)
     site_log_likelihoods, log_likelihood = (
         evaluate_finite_state_site_log_likelihood_rows_from_patterns(
             context,
@@ -166,10 +179,11 @@ def _evaluate_protein_poisson_tree_likelihood_from_patterns(
         pattern_count=compressed_patterns.pattern_count,
         compression_used=True,
         tree_newick=dumps_newick(tree),
-        state_count=len(PROTEIN_STATE_ORDER),
+        state_count=surface.state_count,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
         ambiguity_policy=ambiguity_policy,
+        root_prior_source=surface.root_prior_source,
         normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
         log_likelihood=log_likelihood,
         site_log_likelihoods=site_log_likelihoods,

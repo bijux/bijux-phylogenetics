@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
+import numpy
 import pytest
 
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
@@ -44,6 +45,7 @@ def test_protein_poisson_fixed_tree_likelihood_matches_two_tip_analytical_fixtur
     assert report.gap_policy == "treat-as-missing"
     assert report.missing_policy == "treat-as-missing"
     assert report.ambiguity_policy == "reject"
+    assert report.root_prior_source == "stationary"
     assert math.isclose(
         report.log_likelihood,
         math.log(expected_probability),
@@ -140,6 +142,107 @@ def test_protein_poisson_likelihood_does_not_reuse_dna_alphabet_surface() -> Non
     )
 
     assert math.isfinite(report.log_likelihood)
+
+
+def test_protein_poisson_root_prior_policies_change_asymmetric_likelihoods() -> None:
+    tree_path = fixture("trees", "protein_poisson_likelihood_tree_2_taxa.nwk")
+    alignment_path = fixture(
+        "alignments", "protein_poisson_likelihood_alignment_2_taxa.fasta"
+    )
+
+    equal_report = evaluate_protein_poisson_tree_likelihood_from_alignment(
+        tree_path,
+        alignment_path,
+        root_prior_policy="equal",
+    )
+    empirical_report = evaluate_protein_poisson_tree_likelihood_from_alignment(
+        tree_path,
+        alignment_path,
+        root_prior_policy="empirical",
+    )
+    stationary_report = evaluate_protein_poisson_tree_likelihood_from_alignment(
+        tree_path,
+        alignment_path,
+        root_prior_policy="stationary",
+    )
+    fixed_report = evaluate_protein_poisson_tree_likelihood_from_alignment(
+        tree_path,
+        alignment_path,
+        root_prior_policy="fixed-state",
+        fixed_root_state="A",
+    )
+    provided_report = evaluate_protein_poisson_tree_likelihood_from_alignment(
+        tree_path,
+        alignment_path,
+        root_prior_policy="provided",
+        root_prior=_biased_protein_root_prior(),
+    )
+
+    assert equal_report.root_prior_source == "equal"
+    assert empirical_report.root_prior_source == "empirical"
+    assert stationary_report.root_prior_source == "stationary"
+    assert fixed_report.root_prior_source == "fixed-state"
+    assert provided_report.root_prior_source == "provided"
+    assert math.isclose(
+        equal_report.log_likelihood,
+        stationary_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert not math.isclose(
+        empirical_report.log_likelihood,
+        equal_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert not math.isclose(
+        fixed_report.log_likelihood,
+        equal_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert not math.isclose(
+        provided_report.log_likelihood,
+        equal_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
+def _biased_protein_root_prior() -> numpy.ndarray:
+    prior = numpy.full(20, 0.02, dtype=float)
+    state_index = {state: index for index, state in enumerate(_protein_state_order())}
+    prior[state_index["A"]] = 0.18
+    prior[state_index["C"]] = 0.10
+    prior[state_index["D"]] = 0.14
+    prior[state_index["E"]] = 0.12
+    prior[state_index["F"]] = 0.06
+    return prior / float(prior.sum())
+
+
+def _protein_state_order() -> tuple[str, ...]:
+    return (
+        "A",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "K",
+        "L",
+        "M",
+        "N",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "T",
+        "V",
+        "W",
+        "Y",
+    )
 
 
 def _expected_two_tip_fixture_probability() -> float:

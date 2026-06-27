@@ -27,8 +27,8 @@ from bijux_phylogenetics.phylo.likelihood.protein import (
     UNIFORM_PROTEIN_ROOT_PRIOR,
     normalize_protein_likelihood_records,
     protein_leaf_likelihood_vector,
+    resolve_protein_root_prior,
     validate_empirical_protein_rate_matrix,
-    validate_protein_root_prior,
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
@@ -37,6 +37,13 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 def build_protein_poisson_finite_state_surface(
     records: list[AlignmentRecord],
     *,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
     ambiguity_policy: str = "reject",
@@ -50,11 +57,20 @@ def build_protein_poisson_finite_state_surface(
         ambiguity_policy=ambiguity_policy,
     )
     rate_matrix = protein_poisson_rate_matrix()
+    resolved_root_prior = resolve_protein_root_prior(
+        records,
+        owner_name="protein Poisson finite-state surface",
+        default_policy="stationary",
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        stationary_frequencies=UNIFORM_PROTEIN_ROOT_PRIOR,
+    )
     return FiniteStateLikelihoodSurface(
         model_name="protein Poisson",
         state_labels=PROTEIN_STATE_ORDER,
-        root_prior=UNIFORM_PROTEIN_ROOT_PRIOR,
-        root_prior_source="uniform",
+        root_prior=resolved_root_prior.root_prior,
+        root_prior_source=resolved_root_prior.root_prior_source,
         observation_policy=_protein_observation_policy_label(
             gap_policy=gap_policy,
             missing_policy=missing_policy,
@@ -82,7 +98,9 @@ def build_empirical_protein_finite_state_surface(
     records: list[AlignmentRecord],
     *,
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -100,20 +118,22 @@ def build_empirical_protein_finite_state_surface(
         rate_matrix,
         model_name="empirical protein matrix",
     )
-    if root_prior is None:
-        validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
-        root_prior_source = "uniform"
-    else:
-        validated_root_prior = validate_protein_root_prior(
-            root_prior,
-            model_name="empirical protein matrix",
-        )
-        root_prior_source = "provided"
+    resolved_root_prior = resolve_protein_root_prior(
+        records,
+        owner_name="empirical protein finite-state surface",
+        default_policy="equal",
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        stationary_frequencies=_stationary_distribution_for_empirical_matrix(
+            validated_rate_matrix
+        ),
+    )
     return FiniteStateLikelihoodSurface(
         model_name=f"empirical protein matrix ({matrix_label})",
         state_labels=PROTEIN_STATE_ORDER,
-        root_prior=validated_root_prior,
-        root_prior_source=root_prior_source,
+        root_prior=resolved_root_prior.root_prior,
+        root_prior_source=resolved_root_prior.root_prior_source,
         observation_policy=_protein_observation_policy_label(
             gap_policy=gap_policy,
             missing_policy=missing_policy,
@@ -141,6 +161,13 @@ def compile_protein_poisson_likelihood_analysis(
     tree: PhyloTree,
     records: list[AlignmentRecord],
     *,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
     ambiguity_policy: str = "reject",
@@ -158,6 +185,9 @@ def compile_protein_poisson_likelihood_analysis(
     )
     surface = build_protein_poisson_finite_state_surface(
         normalized_records,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
         ambiguity_policy=ambiguity_policy,
@@ -188,7 +218,9 @@ def compile_empirical_protein_likelihood_analysis(
     records: list[AlignmentRecord],
     *,
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -208,7 +240,9 @@ def compile_empirical_protein_likelihood_analysis(
     surface = build_empirical_protein_finite_state_surface(
         normalized_records,
         rate_matrix=rate_matrix,
+        root_prior_policy=root_prior_policy,
         root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         matrix_label=matrix_label,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
@@ -244,3 +278,17 @@ def _protein_observation_policy_label(
     return (
         f"gap={gap_policy};missing={missing_policy};ambiguity={ambiguity_policy}"
     )
+
+
+def _stationary_distribution_for_empirical_matrix(
+    rate_matrix: numpy.ndarray,
+) -> numpy.ndarray:
+    from bijux_phylogenetics.phylo.likelihood.ctmc import (
+        solve_ctmc_stationary_distribution,
+    )
+
+    report = solve_ctmc_stationary_distribution(
+        rate_matrix,
+        state_labels=PROTEIN_STATE_ORDER,
+    )
+    return numpy.asarray(report.probabilities, dtype=float)

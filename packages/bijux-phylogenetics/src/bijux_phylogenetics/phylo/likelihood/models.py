@@ -1561,6 +1561,7 @@ class ProteinPoissonTreeLikelihoodReport:
     gap_policy: str
     missing_policy: str
     ambiguity_policy: str
+    root_prior_source: str
     normalization_policy: str
     log_likelihood: float
     site_log_likelihoods: list[SiteLogLikelihoodRow]
