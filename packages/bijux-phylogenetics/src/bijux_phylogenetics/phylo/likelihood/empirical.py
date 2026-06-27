@@ -38,6 +38,11 @@ from bijux_phylogenetics.phylo.likelihood.parameter_search import (
     run_bounded_coordinate_likelihood_search,
     run_bounded_likelihood_search,
 )
+from bijux_phylogenetics.phylo.likelihood.finite_state import (
+    FiniteStateLikelihoodSurface,
+    compile_finite_state_likelihood_context,
+    evaluate_finite_state_site_log_likelihood_rows_from_patterns,
+)
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
     compress_alignment_site_patterns_from_records,
@@ -45,15 +50,14 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
 from bijux_phylogenetics.phylo.likelihood.protein import (
     PROTEIN_STATE_ORDER,
     UNIFORM_PROTEIN_ROOT_PRIOR,
-    evaluate_fixed_topology_protein_site_log_likelihood,
     normalize_protein_likelihood_records,
     normalize_unambiguous_protein_records,
+    protein_leaf_likelihood_vector,
     validate_empirical_protein_rate_matrix,
     validate_protein_root_prior,
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
 from bijux_phylogenetics.phylo.likelihood.sites import (
-    expanded_site_log_likelihood_rows_from_patterns,
     validate_site_log_likelihood_reconstruction,
 )
 from bijux_phylogenetics.phylo.likelihood.validation import (
@@ -920,31 +924,35 @@ def _evaluate_empirical_protein_tree_likelihood_from_patterns(
         rate_matrix,
         model_name="empirical protein matrix",
     )
-    transition_by_node_id = {
-        child.node_id: transition_probability_matrix(
-            validated_rate_matrix,
-            max(float(child.branch_length or 0.0), 0.0),
-        )
-        for _parent, child in tree.iter_edges()
-    }
-    site_log_likelihoods, log_likelihood = (
-        expanded_site_log_likelihood_rows_from_patterns(
-            compressed_patterns,
-            site_log_likelihood=lambda states: (
-                evaluate_fixed_topology_protein_site_log_likelihood(
-                    tree,
-                    states,
-                    taxon_order=compressed_patterns.taxon_order,
+    context = compile_finite_state_likelihood_context(
+        tree,
+        FiniteStateLikelihoodSurface(
+            model_name="empirical protein matrix",
+            state_labels=PROTEIN_STATE_ORDER,
+            root_prior=root_prior,
+            root_prior_source=root_prior_source,
+            observation_policy=(
+                f"gap={gap_policy};missing={missing_policy};ambiguity={ambiguity_policy}"
+            ),
+            transition_matrix_for_branch_length=lambda branch_length: (
+                transition_probability_matrix(validated_rate_matrix, branch_length)
+            ),
+            leaf_likelihood_vector_for_state=lambda taxon_name, observed_state: (
+                protein_leaf_likelihood_vector(
+                    {taxon_name: observed_state},
                     model_name="empirical protein matrix",
-                    root_prior=root_prior,
-                    transition_matrix_for_child=lambda child: transition_by_node_id[
-                        child.node_id or ""
-                    ],
+                    node_name=taxon_name,
                     gap_policy=gap_policy,
                     missing_policy=missing_policy,
                     ambiguity_policy=ambiguity_policy,
                 )
             ),
+        ),
+    )
+    site_log_likelihoods, log_likelihood = (
+        evaluate_finite_state_site_log_likelihood_rows_from_patterns(
+            context,
+            compressed_patterns,
         )
     )
     validate_site_log_likelihood_reconstruction(

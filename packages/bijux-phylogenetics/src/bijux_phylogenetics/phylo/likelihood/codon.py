@@ -24,13 +24,15 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
     AlignmentSitePattern,
     CompressedAlignmentSitePatterns,
 )
+from bijux_phylogenetics.phylo.likelihood.finite_state import (
+    FiniteStateLikelihoodSurface,
+    compile_finite_state_likelihood_context,
+    evaluate_finite_state_tree_log_likelihood_from_patterns,
+)
 from bijux_phylogenetics.phylo.likelihood.pruning import (
     build_transition_matrix_evaluator,
     log_likelihood_from_root_prior,
     postorder_conditional_likelihoods,
-)
-from bijux_phylogenetics.phylo.likelihood.sites import (
-    sum_compressed_site_pattern_log_likelihoods,
 )
 from bijux_phylogenetics.phylo.likelihood.validation import (
     validate_explicit_branch_lengths,
@@ -221,17 +223,32 @@ def _evaluate_codon_ctmc_tree_likelihood_from_patterns(
         model_name="codon CTMC",
     )
     transition_evaluator = build_transition_matrix_evaluator(rate_matrix)
-    return sum_compressed_site_pattern_log_likelihoods(
-        compressed_patterns,
-        site_log_likelihood=lambda states: _evaluate_codon_site_log_likelihood(
-            tree,
-            states,
-            taxon_order=compressed_patterns.taxon_order,
-            state_space=state_space,
+    context = compile_finite_state_likelihood_context(
+        tree,
+        FiniteStateLikelihoodSurface(
+            model_name="codon CTMC",
+            state_labels=tuple(state_space.state_order),
             root_prior=root_prior,
-            transition_evaluator=transition_evaluator,
+            root_prior_source="provided",
             observation_policy=observation_policy,
+            transition_matrix_for_branch_length=(
+                transition_evaluator.transition_probability_matrix
+            ),
+            leaf_likelihood_vector_for_state=lambda taxon_name, observed_state: (
+                resolve_codon_observation_leaf_vector(
+                    observed_state,
+                    model_name="codon CTMC",
+                    node_name=taxon_name,
+                    observation_policy=observation_policy,
+                    state_order=state_space.state_order,
+                    state_index=state_space.state_index,
+                )
+            ),
         ),
+    )
+    return evaluate_finite_state_tree_log_likelihood_from_patterns(
+        context,
+        compressed_patterns,
     )
 
 
