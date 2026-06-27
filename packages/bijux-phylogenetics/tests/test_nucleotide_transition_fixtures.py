@@ -11,7 +11,10 @@ from bijux_phylogenetics.phylo.likelihood.f81 import (
     f81_rate_matrix,
     f81_transition_probability_matrix,
 )
-from bijux_phylogenetics.phylo.likelihood.gtr import gtr_rate_matrix
+from bijux_phylogenetics.phylo.likelihood.gtr import (
+    gtr_rate_matrix,
+    gtr_transition_probability_matrix,
+)
 from bijux_phylogenetics.phylo.likelihood.hky85 import (
     hky85_rate_matrix,
     hky85_transition_probability_matrix,
@@ -269,6 +272,37 @@ def test_hky85_transition_matches_normalized_ctmc_engine(
     )
     matrix_exponential = transition_probability_matrix(
         hky85_rate_matrix(base_frequencies, kappa=kappa),
+        branch_length,
+    )
+
+    assert numpy.allclose(
+        owner_surface,
+        matrix_exponential,
+        rtol=0.0,
+        atol=1e-12,
+    )
+
+
+@pytest.mark.parametrize("branch_length", [0.0, 1e-9, 0.1, 0.75, 5.0, 25.0])
+def test_gtr_transition_matches_normalized_ctmc_engine(
+    branch_length: float,
+) -> None:
+    base_frequencies = numpy.array([0.4, 0.1, 0.2, 0.3], dtype=float)
+    exchangeabilities = {
+        "AC": 1.0,
+        "AG": 4.5,
+        "AT": 0.8,
+        "CG": 1.6,
+        "CT": 2.4,
+        "GT": 3.1,
+    }
+    owner_surface = gtr_transition_probability_matrix(
+        branch_length,
+        exchangeabilities=exchangeabilities,
+        base_frequencies=base_frequencies,
+    )
+    matrix_exponential = transition_probability_matrix(
+        gtr_rate_matrix(exchangeabilities, base_frequencies=base_frequencies),
         branch_length,
     )
 
