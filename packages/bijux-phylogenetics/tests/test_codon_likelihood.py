@@ -12,6 +12,9 @@ from bijux_phylogenetics.phylo.likelihood.codon import (
     evaluate_codon_ctmc_tree_likelihood,
     evaluate_codon_ctmc_tree_likelihood_from_alignment,
 )
+from bijux_phylogenetics.phylo.likelihood.codon_observation_policies import (
+    resolve_codon_observation_leaf_vector,
+)
 from bijux_phylogenetics.phylo.likelihood.codon_states import (
     build_equal_rate_codon_ctmc_rate_matrix,
     resolve_codon_state_space,
@@ -201,6 +204,81 @@ def test_codon_ctmc_observation_policies_change_likelihood_on_ambiguity_fixture(
 
     assert missing_report.observation_policy == "treat-as-missing"
     assert ambiguity_report.observation_policy == "ambiguity-vector"
+    assert math.isfinite(missing_report.log_likelihood)
+    assert math.isfinite(ambiguity_report.log_likelihood)
+    assert not math.isclose(
+        missing_report.log_likelihood,
+        ambiguity_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
+def test_codon_ambiguity_vectors_preserve_partial_missing_and_gap_constraints() -> None:
+    state_space = resolve_codon_state_space()
+
+    partial_missing_vector = resolve_codon_observation_leaf_vector(
+        "AT?",
+        model_name="codon CTMC",
+        node_name="A",
+        observation_policy="ambiguity-vector",
+        state_order=state_space.state_order,
+        state_index=state_space.state_index,
+    )
+    partial_gap_vector = resolve_codon_observation_leaf_vector(
+        "A-G",
+        model_name="codon CTMC",
+        node_name="A",
+        observation_policy="ambiguity-vector",
+        state_order=state_space.state_order,
+        state_index=state_space.state_index,
+    )
+    treat_as_missing_vector = resolve_codon_observation_leaf_vector(
+        "AT?",
+        model_name="codon CTMC",
+        node_name="A",
+        observation_policy="treat-as-missing",
+        state_order=state_space.state_order,
+        state_index=state_space.state_index,
+    )
+
+    expected_partial_missing = {"ATA", "ATC", "ATG", "ATT"}
+    expected_partial_gap = {"AAG", "ACG", "AGG", "ATG"}
+
+    assert {
+        codon
+        for codon, index in state_space.state_index.items()
+        if partial_missing_vector[index] == 1.0
+    } == expected_partial_missing
+    assert {
+        codon
+        for codon, index in state_space.state_index.items()
+        if partial_gap_vector[index] == 1.0
+    } == expected_partial_gap
+    assert partial_missing_vector.sum() == 4.0
+    assert partial_gap_vector.sum() == 4.0
+    assert treat_as_missing_vector.sum() == float(len(state_space.state_order))
+
+
+def test_codon_partial_missing_and_gap_change_likelihood_under_ambiguity_vectors() -> (
+    None
+):
+    records = [
+        AlignmentRecord(identifier="A", sequence="AT?A-G"),
+        AlignmentRecord(identifier="B", sequence="ATGAAG"),
+    ]
+
+    missing_report = evaluate_codon_ctmc_tree_likelihood(
+        load_tree(fixture("trees", "codon_likelihood_tree_2_taxa.nwk")),
+        records,
+        observation_policy="treat-as-missing",
+    )
+    ambiguity_report = evaluate_codon_ctmc_tree_likelihood(
+        load_tree(fixture("trees", "codon_likelihood_tree_2_taxa.nwk")),
+        records,
+        observation_policy="ambiguity-vector",
+    )
+
     assert math.isfinite(missing_report.log_likelihood)
     assert math.isfinite(ambiguity_report.log_likelihood)
     assert not math.isclose(

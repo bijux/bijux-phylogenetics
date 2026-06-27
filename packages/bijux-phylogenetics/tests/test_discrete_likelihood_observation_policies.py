@@ -10,6 +10,9 @@ from bijux_phylogenetics.ancestral.discrete.likelihood import (
     tree_log_likelihood as discrete_tree_log_likelihood,
 )
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.likelihood.discrete_observation_policies import (
+    resolve_discrete_observation_leaf_vector,
+)
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -84,6 +87,37 @@ def test_discrete_likelihood_treat_as_missing_accepts_missing_token() -> None:
     )
 
     assert math.isfinite(log_likelihood)
+
+
+def test_discrete_leaf_vectors_stay_explicit_for_missing_and_ambiguity() -> None:
+    ambiguity_vector = resolve_discrete_observation_leaf_vector(
+        "0|2",
+        model_name="discrete",
+        node_name="A",
+        state_order=["0", "1", "2"],
+        observation_policy="ambiguity-vector",
+    )
+    ambiguity_as_missing_vector = resolve_discrete_observation_leaf_vector(
+        "0|2",
+        model_name="discrete",
+        node_name="A",
+        state_order=["0", "1", "2"],
+        observation_policy="treat-as-missing",
+    )
+    missing_vector = resolve_discrete_observation_leaf_vector(
+        "?",
+        model_name="discrete",
+        node_name="A",
+        state_order=["0", "1", "2"],
+        observation_policy="treat-as-missing",
+    )
+
+    numpy.testing.assert_array_equal(ambiguity_vector, numpy.array([1, 0, 1]))
+    numpy.testing.assert_array_equal(
+        ambiguity_as_missing_vector,
+        numpy.ones(3, dtype=float),
+    )
+    numpy.testing.assert_array_equal(missing_vector, numpy.ones(3, dtype=float))
 
 
 def _three_state_rate_matrix() -> numpy.ndarray:

@@ -13,6 +13,9 @@ from bijux_phylogenetics.phylo.likelihood import (
     evaluate_protein_poisson_tree_likelihood,
     evaluate_protein_poisson_tree_likelihood_from_alignment,
 )
+from bijux_phylogenetics.phylo.likelihood.protein import (
+    protein_leaf_likelihood_vector,
+)
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -125,6 +128,43 @@ def test_protein_poisson_ambiguity_policies_change_likelihood() -> None:
         rel_tol=0.0,
         abs_tol=1e-12,
     )
+
+
+def test_protein_leaf_vectors_stay_explicit_for_gap_missing_and_ambiguity() -> None:
+    ambiguity_vector = protein_leaf_likelihood_vector(
+        {"A": "B"},
+        model_name="protein poisson",
+        node_name="A",
+        ambiguity_policy="ambiguity-vector",
+    )
+    ambiguity_as_missing_vector = protein_leaf_likelihood_vector(
+        {"A": "B"},
+        model_name="protein poisson",
+        node_name="A",
+        ambiguity_policy="treat-as-missing",
+    )
+    gap_vector = protein_leaf_likelihood_vector(
+        {"A": "-"},
+        model_name="protein poisson",
+        node_name="A",
+    )
+    missing_vector = protein_leaf_likelihood_vector(
+        {"A": "?"},
+        model_name="protein poisson",
+        node_name="A",
+    )
+
+    expected_ambiguity_vector = numpy.zeros(20, dtype=float)
+    expected_ambiguity_vector[2] = 1.0
+    expected_ambiguity_vector[11] = 1.0
+
+    numpy.testing.assert_array_equal(ambiguity_vector, expected_ambiguity_vector)
+    numpy.testing.assert_array_equal(
+        ambiguity_as_missing_vector,
+        numpy.ones(20, dtype=float),
+    )
+    numpy.testing.assert_array_equal(gap_vector, numpy.ones(20, dtype=float))
+    numpy.testing.assert_array_equal(missing_vector, numpy.ones(20, dtype=float))
 
 
 def test_protein_poisson_likelihood_does_not_reuse_dna_alphabet_surface() -> None:

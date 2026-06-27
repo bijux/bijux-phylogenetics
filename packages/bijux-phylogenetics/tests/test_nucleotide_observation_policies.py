@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
+import numpy
 import pytest
 
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
@@ -13,6 +14,9 @@ from bijux_phylogenetics.phylo.likelihood import (
     evaluate_hky85_tree_likelihood,
     evaluate_jc69_tree_likelihood,
     evaluate_k80_tree_likelihood,
+)
+from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
+    resolve_dna_observation_leaf_vector,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -67,6 +71,44 @@ def test_jc69_observation_policies_change_likelihood_on_ambiguity_fixture() -> N
         rel_tol=0.0,
         abs_tol=1e-12,
     )
+
+
+def test_dna_observation_vectors_remain_explicit_across_policies() -> None:
+    ambiguity_vector = resolve_dna_observation_leaf_vector(
+        {"A": "R"},
+        model_name="jc69",
+        node_name="A",
+        observation_policy="ambiguity-vector",
+    )
+    ambiguity_as_missing_vector = resolve_dna_observation_leaf_vector(
+        {"A": "R"},
+        model_name="jc69",
+        node_name="A",
+        observation_policy="treat-as-missing",
+    )
+    fifth_state_gap_vector = resolve_dna_observation_leaf_vector(
+        {"A": "-"},
+        model_name="jc69",
+        node_name="A",
+        observation_policy="fifth-state",
+    )
+    missing_vector = resolve_dna_observation_leaf_vector(
+        {"A": "?"},
+        model_name="jc69",
+        node_name="A",
+        observation_policy="fifth-state",
+    )
+
+    numpy.testing.assert_array_equal(ambiguity_vector, numpy.array([1, 0, 1, 0]))
+    numpy.testing.assert_array_equal(
+        ambiguity_as_missing_vector,
+        numpy.ones(4, dtype=float),
+    )
+    numpy.testing.assert_array_equal(
+        fifth_state_gap_vector,
+        numpy.array([0, 0, 0, 0, 1]),
+    )
+    numpy.testing.assert_array_equal(missing_vector, numpy.ones(5, dtype=float))
 
 
 @pytest.mark.parametrize(
