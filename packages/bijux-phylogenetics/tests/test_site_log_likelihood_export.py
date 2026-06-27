@@ -39,6 +39,7 @@ def test_nucleotide_site_log_likelihood_rows_match_selected_model_totals() -> No
     assert jc69_report.model_name == "JC69"
     assert jc69_report.site_count == 10
     assert jc69_report.pattern_count == 6
+    assert jc69_report.parameter_values == {}
     assert len(jc69_report.site_log_likelihoods) == 10
     assert math.isclose(
         jc69_report.log_likelihood,

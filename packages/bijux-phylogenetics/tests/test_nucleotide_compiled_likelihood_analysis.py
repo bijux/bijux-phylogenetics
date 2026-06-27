@@ -88,6 +88,14 @@ def test_compiled_nucleotide_analysis_matches_existing_tree_reports(
         rel_tol=0.0,
         abs_tol=1e-12,
     )
+    if model_name == "jc69":
+        assert report.parameter_count == 0
+        assert math.isclose(
+            report.aic,
+            -2.0 * compiled_log_likelihood,
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        )
 
 
 def test_compiled_nucleotide_analysis_keeps_partition_weights_and_policy() -> None:
@@ -121,6 +129,7 @@ def test_compiled_nucleotide_analysis_keeps_partition_weights_and_policy() -> No
     assert analysis.partition_count == 2
     assert analysis.missing_data_policy == "reject"
     assert math.isclose(analysis.site_weight_total, 4.5, abs_tol=1e-12)
+    assert analysis.context.surface.parameter_values == {}
     assert [partition.partition_name for partition in analysis.partition_contexts] == [
         "leading-sites",
         "trailing-sites",
@@ -155,9 +164,9 @@ def test_compiled_nucleotide_branch_refresh_matches_recompiled_report() -> None:
     )
 
     rebuilt_tree = load_tree(fixture("trees", "jc69_likelihood_tree_2_taxa.nwk"))
-    next(node for node in rebuilt_tree.iter_leaves() if node.name == "A").branch_length = (
-        0.25
-    )
+    next(
+        node for node in rebuilt_tree.iter_leaves() if node.name == "A"
+    ).branch_length = 0.25
     rebuilt_tree.refresh()
     rebuilt_report = evaluate_jc69_tree_likelihood(rebuilt_tree, records)
 
