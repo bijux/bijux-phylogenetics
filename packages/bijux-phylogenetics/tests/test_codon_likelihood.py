@@ -18,6 +18,7 @@ from bijux_phylogenetics.phylo.likelihood.codon_observation_policies import (
 from bijux_phylogenetics.phylo.likelihood.codon_states import (
     build_equal_rate_codon_ctmc_rate_matrix,
     resolve_codon_state_space,
+    validate_codon_frequency_vector,
 )
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 from tests.support.two_tip_likelihood_reference import (
@@ -55,6 +56,18 @@ def test_codon_ctmc_likelihood_matches_two_tip_high_precision_fixture() -> None:
         rel_tol=0.0,
         abs_tol=1e-12,
     )
+
+
+def test_standard_codon_state_space_excludes_stop_codons_and_keeps_61_states() -> None:
+    state_space = resolve_codon_state_space()
+
+    assert len(state_space.state_order) == 61
+    assert state_space.stop_codons == frozenset({"TAA", "TAG", "TGA"})
+    assert "TAA" not in state_space.state_order
+    assert "TAG" not in state_space.state_order
+    assert "TGA" not in state_space.state_order
+    assert state_space.state_order[0] == "AAA"
+    assert state_space.state_order[-1] == "TTT"
 
 
 def test_codon_ctmc_likelihood_rejects_stop_codon_states() -> None:
@@ -95,6 +108,22 @@ def test_codon_ctmc_likelihood_changes_with_codon_frequencies() -> None:
         rel_tol=0.0,
         abs_tol=1e-12,
     )
+
+
+def test_codon_frequency_vector_rejects_stop_codon_keys() -> None:
+    state_space = resolve_codon_state_space()
+    invalid_frequencies = dict.fromkeys(state_space.state_order, 1.0)
+    invalid_frequencies["TAA"] = 1.0
+
+    with pytest.raises(
+        InvalidAlignmentError,
+        match="unexpected codons: TAA",
+    ):
+        validate_codon_frequency_vector(
+            invalid_frequencies,
+            state_space=state_space,
+            owner_name="codon CTMC likelihood",
+        )
 
 
 def test_codon_ctmc_root_prior_policies_change_asymmetric_likelihoods() -> None:
