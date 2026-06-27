@@ -225,6 +225,8 @@ __all__ = [
     "clear_shared_finite_state_transition_cache",
     "update_compiled_finite_state_analysis_branch_length",
     "update_compiled_finite_state_context_branch_length",
+    "update_compiled_finite_state_analysis_topology",
+    "update_compiled_finite_state_context_topology",
     "evaluate_nucleotide_sh_like_branch_support",
     "evaluate_nucleotide_sh_like_branch_support_from_alignment",
     "optimize_gtr_exchangeabilities",
