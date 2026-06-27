@@ -19,8 +19,8 @@ from bijux_phylogenetics.phylo.likelihood.finite_state import (
     compile_finite_state_likelihood_analysis,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
-    AlignmentSitePattern,
     CompressedAlignmentSitePatterns,
+    compress_alignment_site_patterns_from_records,
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
@@ -131,21 +131,16 @@ def _compile_discrete_patterns(
     records: list[AlignmentRecord],
     source_path: Path | None,
 ) -> CompressedAlignmentSitePatterns:
-    return CompressedAlignmentSitePatterns(
+    return compress_alignment_site_patterns_from_records(
+        records,
         source_path=source_path,
-        taxon_order=[record.identifier for record in records],
-        alignment_length=1,
-        pattern_count=1,
-        patterns=[
-            AlignmentSitePattern(
-                pattern_id="pattern-1",
-                states=tuple(record.sequence for record in records),
-                weight=1,
-                site_positions=[1],
-            )
-        ],
+        site_tokenizer=_discrete_site_tokenizer,
     )
 
 
 def _resolve_discrete_alignment_length(_records: list[AlignmentRecord]) -> int:
     return 1
+
+
+def _discrete_site_tokenizer(sequence: str) -> tuple[str, ...]:
+    return (sequence,)
