@@ -8,6 +8,7 @@ import pytest
 
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood import (
     evaluate_f81_tree_likelihood,
     evaluate_gtr_tree_likelihood,
@@ -16,6 +17,8 @@ from bijux_phylogenetics.phylo.likelihood import (
     evaluate_k80_tree_likelihood,
 )
 from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
+    estimate_empirical_dna_base_frequencies_from_records,
+    estimate_empirical_gap_state_frequency,
     resolve_dna_observation_leaf_vector,
 )
 
@@ -109,6 +112,50 @@ def test_dna_observation_vectors_remain_explicit_across_policies() -> None:
         numpy.array([0, 0, 0, 0, 1]),
     )
     numpy.testing.assert_array_equal(missing_vector, numpy.ones(5, dtype=float))
+
+
+def test_dna_empirical_base_frequencies_weight_ambiguity_vectors_explicitly() -> None:
+    records = [
+        AlignmentRecord(identifier="A", sequence="R"),
+        AlignmentRecord(identifier="B", sequence="C"),
+        AlignmentRecord(identifier="C", sequence="T"),
+    ]
+
+    ambiguity_weighted = estimate_empirical_dna_base_frequencies_from_records(
+        records,
+        model_name="jc69",
+        observation_policy="ambiguity-vector",
+    )
+    missing_weighted = estimate_empirical_dna_base_frequencies_from_records(
+        records,
+        model_name="jc69",
+        observation_policy="treat-as-missing",
+    )
+
+    numpy.testing.assert_allclose(
+        ambiguity_weighted,
+        numpy.array([1.0 / 6.0, 1.0 / 3.0, 1.0 / 6.0, 1.0 / 3.0]),
+    )
+    numpy.testing.assert_allclose(
+        missing_weighted,
+        numpy.array([0.0, 0.5, 0.0, 0.5]),
+    )
+
+
+def test_dna_gap_frequency_estimation_counts_only_informative_fifth_state_sites() -> (
+    None
+):
+    records = [
+        AlignmentRecord(identifier="A", sequence="A-?"),
+        AlignmentRecord(identifier="B", sequence="CR?"),
+    ]
+
+    gap_frequency = estimate_empirical_gap_state_frequency(
+        records,
+        model_name="jc69",
+    )
+
+    assert math.isclose(gap_frequency, 0.25, rel_tol=0.0, abs_tol=1e-12)
 
 
 @pytest.mark.parametrize(
