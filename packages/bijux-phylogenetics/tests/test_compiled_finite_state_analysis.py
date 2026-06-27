@@ -15,7 +15,9 @@ from bijux_phylogenetics.phylo.likelihood.finite_state import (
     FiniteStateLikelihoodSurface,
     compile_finite_state_likelihood_analysis,
     evaluate_compiled_finite_state_likelihood_analysis,
+    evaluate_compiled_finite_state_partition_log_likelihood_rows,
     evaluate_compiled_finite_state_site_log_likelihood_rows,
+    validate_compiled_finite_state_partition_likelihood_reconstruction,
     validate_compiled_finite_state_site_log_likelihood_reconstruction,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
@@ -141,6 +143,65 @@ def test_compiled_analysis_expands_weighted_source_site_rows_in_original_order()
     )
     assert math.isclose(
         sum(row.site_weight * row.log_likelihood for row in rows),
+        total_log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
+def test_compiled_analysis_summarizes_partition_likelihood_rows() -> None:
+    tree = load_tree(fixture("felsenstein_two_tip_tree.nwk"))
+    records = [
+        AlignmentRecord(identifier="A", sequence="0101"),
+        AlignmentRecord(identifier="B", sequence="0100"),
+    ]
+    analysis = compile_finite_state_likelihood_analysis(
+        tree,
+        _binary_surface(),
+        records=records,
+        pattern_compiler=_pattern_compiler,
+        missing_data_policy="reject",
+        partition_map=(
+            LocusPartition(
+                name="left-half",
+                segments=(LocusSegment(start=1, end=2),),
+                total_sites=2,
+                data_type="binary",
+            ),
+            LocusPartition(
+                name="right-half",
+                segments=(LocusSegment(start=3, end=4),),
+                total_sites=2,
+                data_type="binary",
+            ),
+        ),
+        site_weight_by_position={2: 3.0, 4: 0.0},
+    )
+
+    rows, total_log_likelihood = evaluate_compiled_finite_state_partition_log_likelihood_rows(
+        analysis
+    )
+
+    assert [row.partition_name for row in rows] == ["left-half", "right-half"]
+    assert [row.model_name for row in rows] == [
+        "binary synthetic",
+        "binary synthetic",
+    ]
+    assert [row.context_index for row in rows] == [0, 0]
+    assert [row.context_linkage_key for row in rows] == ["shared", "shared"]
+    assert [row.site_count for row in rows] == [2, 2]
+    assert [row.pattern_count for row in rows] == [2, 2]
+    assert [row.site_weight_total for row in rows] == [4.0, 1.0]
+    assert rows[0].parameter_values == {}
+    assert rows[1].parameter_values == {}
+    validate_compiled_finite_state_partition_likelihood_reconstruction(
+        rows,
+        expected_total_log_likelihood=total_log_likelihood,
+        expected_partition_count=analysis.partition_count,
+        owner_name="compiled finite-state partition summary test",
+    )
+    assert math.isclose(
+        sum(row.log_likelihood for row in rows),
         total_log_likelihood,
         rel_tol=0.0,
         abs_tol=1e-12,

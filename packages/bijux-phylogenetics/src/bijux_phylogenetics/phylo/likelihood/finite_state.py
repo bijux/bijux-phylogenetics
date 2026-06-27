@@ -17,6 +17,7 @@ from bijux_phylogenetics.phylo.alignment.partitions import (
 )
 from bijux_phylogenetics.phylo.likelihood.models import SiteLogLikelihoodRow
 from bijux_phylogenetics.phylo.likelihood.models import (
+    CompiledFiniteStatePartitionLogLikelihoodRow,
     CompiledFiniteStateSiteLogLikelihoodRow,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
@@ -171,6 +172,7 @@ class CompiledFiniteStatePartitionContext:
     model_name: str
     context_index: int
     context_linkage_key: str
+    parameter_values: dict[str, float]
     alignment_length: int
     pattern_count: int
     taxon_order: list[str]
@@ -301,6 +303,7 @@ def compile_finite_state_likelihood_analysis(
         model_name=surface.model_name,
         context_index=0,
         context_linkage_key="shared",
+        parameter_values=dict(surface.parameter_values),
     )
     context = compile_finite_state_likelihood_context(tree, surface)
     _validate_partition_taxa_against_tree(tree, partition_contexts, surface=surface)
@@ -468,6 +471,44 @@ def evaluate_compiled_finite_state_site_log_likelihood_rows(
     return rows, weighted_total
 
 
+def evaluate_compiled_finite_state_partition_log_likelihood_rows(
+    analysis: CompiledFiniteStateLikelihoodAnalysis,
+) -> tuple[list[CompiledFiniteStatePartitionLogLikelihoodRow], float]:
+    """Summarize one compiled finite-state analysis into partition likelihood rows."""
+    rows: list[CompiledFiniteStatePartitionLogLikelihoodRow] = []
+    total_log_likelihood = 0.0
+    for partition_context in analysis.partition_contexts:
+        partition_likelihood_context = analysis.contexts[partition_context.context_index]
+        partition_log_likelihood = 0.0
+        partition_site_weight_total = 0.0
+        for term in partition_context.compiled_pattern_terms:
+            if term.effective_weight == 0.0:
+                continue
+            log_likelihood = evaluate_finite_state_site_log_likelihood(
+                partition_likelihood_context,
+                term.states,
+                taxon_order=partition_context.taxon_order,
+            )
+            partition_log_likelihood += term.effective_weight * log_likelihood
+            partition_site_weight_total += term.effective_weight
+        total_log_likelihood += partition_log_likelihood
+        rows.append(
+            CompiledFiniteStatePartitionLogLikelihoodRow(
+                partition_name=partition_context.partition_name,
+                partition_data_type=partition_context.partition_data_type,
+                model_name=partition_context.model_name,
+                context_index=partition_context.context_index,
+                context_linkage_key=partition_context.context_linkage_key,
+                site_count=partition_context.alignment_length,
+                pattern_count=partition_context.pattern_count,
+                site_weight_total=partition_site_weight_total,
+                parameter_values=dict(partition_context.parameter_values),
+                log_likelihood=partition_log_likelihood,
+            )
+        )
+    return rows, total_log_likelihood
+
+
 def validate_compiled_finite_state_site_log_likelihood_reconstruction(
     rows: list[CompiledFiniteStateSiteLogLikelihoodRow],
     *,
@@ -518,6 +559,35 @@ def validate_compiled_finite_state_site_log_likelihood_reconstruction(
     ):
         raise ValueError(
             f"{owner_name} source-site rows did not reconstruct the declared total likelihood"
+        )
+
+
+def validate_compiled_finite_state_partition_likelihood_reconstruction(
+    rows: list[CompiledFiniteStatePartitionLogLikelihoodRow],
+    *,
+    expected_total_log_likelihood: float,
+    expected_partition_count: int,
+    owner_name: str,
+) -> None:
+    """Reject partition rows that do not reconstruct one compiled total likelihood."""
+    if len(rows) != expected_partition_count:
+        raise ValueError(
+            f"{owner_name} emitted {len(rows)} partition rows for {expected_partition_count} declared partitions"
+        )
+    unique_partition_names = {row.partition_name for row in rows}
+    if len(unique_partition_names) != expected_partition_count:
+        raise ValueError(
+            f"{owner_name} emitted duplicate or missing partition names"
+        )
+    reconstructed_total = math.fsum(row.log_likelihood for row in rows)
+    if not math.isclose(
+        reconstructed_total,
+        expected_total_log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    ):
+        raise ValueError(
+            f"{owner_name} partition rows did not reconstruct the declared total likelihood"
         )
 
 
@@ -963,6 +1033,7 @@ def _compile_partition_contexts_from_inputs(
     model_name: str,
     context_index: int,
     context_linkage_key: str,
+    parameter_values: dict[str, float],
 ) -> tuple[CompiledFiniteStatePartitionContext, ...]:
     return tuple(
         _compile_partition_context(
@@ -972,6 +1043,7 @@ def _compile_partition_contexts_from_inputs(
             model_name=model_name,
             context_index=context_index,
             context_linkage_key=context_linkage_key,
+            parameter_values=parameter_values,
         )
         for partition_input in partition_inputs
     )
@@ -985,6 +1057,7 @@ def _compile_partition_context(
     model_name: str,
     context_index: int,
     context_linkage_key: str,
+    parameter_values: dict[str, float],
 ) -> CompiledFiniteStatePartitionContext:
     compressed_patterns = pattern_compiler(
         partition_input.records,
@@ -1007,6 +1080,7 @@ def _compile_partition_context(
         model_name=model_name,
         context_index=context_index,
         context_linkage_key=context_linkage_key,
+        parameter_values=dict(parameter_values),
         alignment_length=compressed_patterns.alignment_length,
         pattern_count=compressed_patterns.pattern_count,
         taxon_order=compressed_patterns.taxon_order,

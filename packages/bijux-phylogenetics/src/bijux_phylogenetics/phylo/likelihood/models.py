@@ -1355,6 +1355,22 @@ class CompiledFiniteStateSiteLogLikelihoodRow:
 
 
 @dataclass(slots=True)
+class CompiledFiniteStatePartitionLogLikelihoodRow:
+    """One partition-level likelihood contribution from one compiled analysis."""
+
+    partition_name: str
+    partition_data_type: str | None
+    model_name: str
+    context_index: int
+    context_linkage_key: str
+    site_count: int
+    pattern_count: int
+    site_weight_total: float
+    parameter_values: dict[str, float]
+    log_likelihood: float
+
+
+@dataclass(slots=True)
 class FixedTopologySiteLogLikelihoodReport:
     """Per-site fixed-topology likelihood report with explicit expansion policy."""
 
