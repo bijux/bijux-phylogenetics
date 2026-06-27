@@ -197,3 +197,39 @@ def test_substitution_model_selection_report_emits_ranked_rows_and_failed_candid
     assert report.warnings == [
         "one or more substitution candidates failed but remain visible in the table: NOT-A-MODEL"
     ]
+
+
+def test_substitution_model_selection_prefers_k80_on_transition_biased_fixture() -> (
+    None
+):
+    report = compare_nucleotide_substitution_models_from_alignment(
+        fixture("trees", "k80_kappa_optimization_tree_2_taxa.nwk"),
+        fixture("alignments", "k80_kappa_optimization_alignment_2_taxa.fasta"),
+        candidate_models=("JC69", "K80"),
+    )
+    rows = {row.model_name: row for row in report.rows}
+    k80_row = rows["K80"]
+    jc69_row = rows["JC69"]
+
+    assert report.best_model_aic == "K80"
+    assert report.best_model_aicc == "K80"
+    assert report.best_model_bic == "K80"
+    assert k80_row.fit_succeeded is True
+    assert k80_row.rank == 1
+    assert k80_row.selected_by_aic is True
+    assert k80_row.selected_by_aicc is True
+    assert k80_row.selected_by_bic is True
+    assert k80_row.parameter_count == 1
+    assert math.isclose(
+        k80_row.parameter_values["kappa"],
+        9.17375524515929,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert k80_row.log_likelihood > (jc69_row.log_likelihood or float("-inf"))
+    assert (k80_row.aic or float("inf")) < (jc69_row.aic or float("inf"))
+    assert (k80_row.aicc or float("inf")) < (jc69_row.aicc or float("inf"))
+    assert (k80_row.bic or float("inf")) < (jc69_row.bic or float("inf"))
+    assert k80_row.warnings == []
+    assert jc69_row.parameter_count == 0
+    assert jc69_row.rank == 2
