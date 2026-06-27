@@ -66,11 +66,18 @@ def test_nucleotide_site_log_likelihood_rows_match_selected_model_totals() -> No
         kappa=4.0,
     )
 
+    assert k80_report.model_name == "K80"
     assert k80_report.parameter_values == {"kappa": 4.0}
     assert len(k80_report.site_log_likelihoods) == 4
     assert math.isclose(
         k80_report.log_likelihood,
         k80_total.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        sum(row.log_likelihood for row in k80_report.site_log_likelihoods),
+        k80_report.log_likelihood,
         rel_tol=0.0,
         abs_tol=1e-12,
     )

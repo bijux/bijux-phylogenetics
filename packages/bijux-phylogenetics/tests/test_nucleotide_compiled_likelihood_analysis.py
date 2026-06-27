@@ -15,6 +15,7 @@ from bijux_phylogenetics.phylo.likelihood import (
     evaluate_gtr_tree_likelihood,
     evaluate_hky85_tree_likelihood,
     evaluate_jc69_tree_likelihood,
+    evaluate_k80_tree_likelihood,
 )
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
     evaluate_compiled_finite_state_likelihood_analysis,
@@ -35,6 +36,7 @@ def fixture(group: str, name: str) -> Path:
     ("model_name", "kwargs", "report_evaluator"),
     [
         ("jc69", {}, evaluate_jc69_tree_likelihood),
+        ("k80", {"kappa": 4.0}, evaluate_k80_tree_likelihood),
         (
             "hky85",
             {
@@ -88,11 +90,13 @@ def test_compiled_nucleotide_analysis_matches_existing_tree_reports(
         rel_tol=0.0,
         abs_tol=1e-12,
     )
-    if model_name == "jc69":
-        assert report.parameter_count == 0
+    if model_name in {"jc69", "k80"}:
+        expected_parameter_count = 0 if model_name == "jc69" else 1
+        expected_aic_penalty = 0.0 if model_name == "jc69" else 2.0
+        assert report.parameter_count == expected_parameter_count
         assert math.isclose(
             report.aic,
-            -2.0 * compiled_log_likelihood,
+            (-2.0 * compiled_log_likelihood) + expected_aic_penalty,
             rel_tol=0.0,
             abs_tol=1e-12,
         )
