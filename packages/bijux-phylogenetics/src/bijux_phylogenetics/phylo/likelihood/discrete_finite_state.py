@@ -1,14 +1,26 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
+from pathlib import Path
+
 import numpy
 
+from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.alignment.partitions import LocusPartition
 from bijux_phylogenetics.phylo.likelihood.discrete_observation_policies import (
     resolve_discrete_observation_leaf_vector,
 )
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
+    CompiledFiniteStateLikelihoodAnalysis,
     FiniteStateLikelihoodSurface,
+    compile_finite_state_likelihood_analysis,
+)
+from bijux_phylogenetics.phylo.likelihood.patterns import (
+    AlignmentSitePattern,
+    CompressedAlignmentSitePatterns,
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 
 def build_discrete_mk_finite_state_surface(
@@ -51,6 +63,39 @@ def build_discrete_mk_finite_state_surface(
     )
 
 
+def compile_discrete_mk_likelihood_analysis(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    state_order: list[str] | tuple[str, ...],
+    rate_matrix: numpy.ndarray,
+    root_prior: numpy.ndarray | list[float] | tuple[float, ...],
+    observation_policy: str = "reject",
+    model_name: str = "discrete Mk",
+    partition_map: tuple[LocusPartition, ...] | None = None,
+    site_weight_by_position: Mapping[int, float] | None = None,
+    source_path: Path | None = None,
+) -> CompiledFiniteStateLikelihoodAnalysis:
+    """Compile one reusable discrete Mk finite-state likelihood analysis."""
+    surface = build_discrete_mk_finite_state_surface(
+        state_order=state_order,
+        rate_matrix=rate_matrix,
+        root_prior=root_prior,
+        observation_policy=observation_policy,
+        model_name=model_name,
+    )
+    return compile_finite_state_likelihood_analysis(
+        tree,
+        surface,
+        records=records,
+        pattern_compiler=_compile_discrete_patterns,
+        missing_data_policy=observation_policy,
+        partition_map=partition_map,
+        site_weight_by_position=site_weight_by_position,
+        source_path=source_path,
+    )
+
+
 def _validate_root_prior(
     root_prior: numpy.ndarray | list[float] | tuple[float, ...],
     *,
@@ -74,3 +119,23 @@ def _validate_root_prior(
             f"{model_name} finite-state surface requires positive root-prior mass"
         )
     return vector / total
+
+
+def _compile_discrete_patterns(
+    records: list[AlignmentRecord],
+    source_path: Path | None,
+) -> CompressedAlignmentSitePatterns:
+    return CompressedAlignmentSitePatterns(
+        source_path=source_path,
+        taxon_order=[record.identifier for record in records],
+        alignment_length=1,
+        pattern_count=1,
+        patterns=[
+            AlignmentSitePattern(
+                pattern_id="pattern-1",
+                states=tuple(record.sequence for record in records),
+                weight=1,
+                site_positions=[1],
+            )
+        ],
+    )
