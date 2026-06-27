@@ -95,3 +95,153 @@ def test_selected_nucleotide_surface_matches_existing_tree_reports(
         rel_tol=0.0,
         abs_tol=1e-12,
     )
+
+
+@pytest.mark.parametrize(
+    ("model_name", "kwargs", "report_evaluator"),
+    [
+        ("jc69", {}, evaluate_jc69_tree_likelihood),
+        ("k80", {"kappa": 4.0}, evaluate_k80_tree_likelihood),
+        (
+            "f81",
+            {"base_frequencies": {"A": 0.4, "C": 0.1, "G": 0.2, "T": 0.3}},
+            evaluate_f81_tree_likelihood,
+        ),
+        (
+            "hky85",
+            {
+                "kappa": 4.0,
+                "base_frequencies": {"A": 0.4, "C": 0.1, "G": 0.2, "T": 0.3},
+            },
+            evaluate_hky85_tree_likelihood,
+        ),
+        (
+            "gtr",
+            {
+                "base_frequencies": {"A": 0.4, "C": 0.1, "G": 0.2, "T": 0.3},
+                "exchangeabilities": {
+                    "AC": 1.0,
+                    "AG": 4.5,
+                    "AT": 0.8,
+                    "CG": 1.6,
+                    "CT": 2.4,
+                    "GT": 3.1,
+                },
+            },
+            evaluate_gtr_tree_likelihood,
+        ),
+    ],
+)
+def test_selected_nucleotide_surface_matches_ambiguity_vector_reports(
+    model_name: str,
+    kwargs: dict[str, object],
+    report_evaluator,
+) -> None:
+    tree = load_tree(
+        fixture("trees", "jc69_joint_ancestral_difference_tree_3_taxa.nwk")
+    )
+    records = load_fasta_alignment(
+        fixture("alignments", "example_alignment_ambiguity.fasta")
+    )
+    compressed_patterns = compress_alignment_site_patterns_from_records(records)
+    surface = build_selected_nucleotide_finite_state_surface(
+        records,
+        model_name=model_name,
+        owner_name="finite-state nucleotide protocol test",
+        observation_policy="ambiguity-vector",
+        **kwargs,
+    )
+    context = compile_finite_state_likelihood_context(tree, surface)
+
+    protocol_log_likelihood = evaluate_finite_state_tree_log_likelihood_from_patterns(
+        context,
+        compressed_patterns,
+    )
+    family_report = report_evaluator(
+        tree,
+        records,
+        observation_policy="ambiguity-vector",
+        **kwargs,
+    )
+
+    assert math.isclose(
+        protocol_log_likelihood,
+        family_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
+@pytest.mark.parametrize(
+    ("model_name", "kwargs", "report_evaluator"),
+    [
+        ("jc69", {}, evaluate_jc69_tree_likelihood),
+        ("k80", {"kappa": 4.0}, evaluate_k80_tree_likelihood),
+        (
+            "f81",
+            {"base_frequencies": {"A": 0.4, "C": 0.1, "G": 0.2, "T": 0.3}},
+            evaluate_f81_tree_likelihood,
+        ),
+        (
+            "hky85",
+            {
+                "kappa": 4.0,
+                "base_frequencies": {"A": 0.4, "C": 0.1, "G": 0.2, "T": 0.3},
+            },
+            evaluate_hky85_tree_likelihood,
+        ),
+        (
+            "gtr",
+            {
+                "base_frequencies": {"A": 0.4, "C": 0.1, "G": 0.2, "T": 0.3},
+                "exchangeabilities": {
+                    "AC": 1.0,
+                    "AG": 4.5,
+                    "AT": 0.8,
+                    "CG": 1.6,
+                    "CT": 2.4,
+                    "GT": 3.1,
+                },
+            },
+            evaluate_gtr_tree_likelihood,
+        ),
+    ],
+)
+def test_selected_nucleotide_surface_matches_fifth_state_reports(
+    model_name: str,
+    kwargs: dict[str, object],
+    report_evaluator,
+) -> None:
+    tree = load_tree(
+        fixture("trees", "jc69_joint_ancestral_difference_tree_3_taxa.nwk")
+    )
+    records = load_fasta_alignment(
+        fixture("alignments", "example_alignment_ambiguity.fasta")
+    )
+    compressed_patterns = compress_alignment_site_patterns_from_records(records)
+    surface = build_selected_nucleotide_finite_state_surface(
+        records,
+        model_name=model_name,
+        owner_name="finite-state nucleotide protocol test",
+        observation_policy="fifth-state",
+        **kwargs,
+    )
+    context = compile_finite_state_likelihood_context(tree, surface)
+
+    protocol_log_likelihood = evaluate_finite_state_tree_log_likelihood_from_patterns(
+        context,
+        compressed_patterns,
+    )
+    family_report = report_evaluator(
+        tree,
+        records,
+        observation_policy="fifth-state",
+        **kwargs,
+    )
+
+    assert math.isclose(
+        protocol_log_likelihood,
+        family_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
