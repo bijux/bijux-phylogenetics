@@ -10,6 +10,7 @@ from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
     EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
 )
 from bijux_phylogenetics.phylo.likelihood.gamma import (
@@ -543,7 +544,7 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         root_prior_source=optimized_report.root_prior_source,
         gap_policy=optimized_report.gap_policy,
         missing_policy=optimized_report.missing_policy,
-        normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+        normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
         alpha=optimized_report.alpha,
         category_count=optimized_report.category_count,
         category_rates=optimized_report.category_rates,
@@ -786,7 +787,7 @@ def optimize_empirical_protein_tree_likelihood_with_invariant_mixture(
         root_prior_source=optimized_report.root_prior_source,
         gap_policy=optimized_report.gap_policy,
         missing_policy=optimized_report.missing_policy,
-        normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+        normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
         initial_invariant_proportion=validated_initial_invariant_proportion,
         invariant_proportion=optimized_report.invariant_proportion,
         initial_log_likelihood=initial_log_likelihood,
@@ -940,7 +941,7 @@ def _evaluate_empirical_protein_tree_likelihood_from_patterns(
             observation_policy=(
                 f"gap={gap_policy};missing={missing_policy};ambiguity={ambiguity_policy}"
             ),
-            normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+            normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
             transition_matrix_for_branch_length=lambda branch_length: (
                 transition_probability_matrix(validated_rate_matrix, branch_length)
             ),
@@ -981,7 +982,7 @@ def _evaluate_empirical_protein_tree_likelihood_from_patterns(
         gap_policy=gap_policy,
         missing_policy=missing_policy,
         ambiguity_policy=ambiguity_policy,
-        normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+        normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
         log_likelihood=log_likelihood,
         site_log_likelihoods=site_log_likelihoods,
     )
@@ -1319,7 +1320,7 @@ def _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_pattern
         root_prior_source=root_prior_source,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
-        normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+        normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
         alpha=alpha,
         category_count=category_count,
         category_rates=list(categories),
@@ -1434,7 +1435,7 @@ def _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invarian
         root_prior_source=root_prior_source,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
-        normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+        normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
         alpha=alpha,
         category_count=len(categories),
         category_rates=list(categories),
@@ -1531,7 +1532,7 @@ def _evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_patt
         root_prior_source=root_prior_source,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
-        normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+        normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
         initial_invariant_proportion=initial_invariant_proportion,
         invariant_proportion=invariant_proportion,
         initial_log_likelihood=total_log_likelihood,

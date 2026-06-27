@@ -11,7 +11,7 @@ from bijux_phylogenetics.phylo.likelihood.discrete_observation_policies import (
     resolve_discrete_observation_leaf_vector,
 )
 from bijux_phylogenetics.phylo.likelihood.ctmc import (
-    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+    CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
 )
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
     CompiledFiniteStateLikelihoodAnalysis,
@@ -50,7 +50,7 @@ def build_discrete_mk_finite_state_surface(
         root_prior=validated_root_prior,
         root_prior_source="provided",
         observation_policy=observation_policy,
-        normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+        normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
         transition_matrix_for_branch_length=lambda branch_length: (
             transition_probability_matrix(rate_matrix, branch_length)
         ),

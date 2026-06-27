@@ -13,6 +13,7 @@ from bijux_phylogenetics.phylo.likelihood.finite_state import (
     compile_finite_state_likelihood_analysis,
 )
 from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
     EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
 )
 from bijux_phylogenetics.phylo.likelihood.poisson import (
@@ -117,7 +118,7 @@ def build_empirical_protein_finite_state_surface(
             missing_policy=missing_policy,
             ambiguity_policy=ambiguity_policy,
         ),
-        normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+        normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
         transition_matrix_for_branch_length=lambda branch_length: (
             transition_probability_matrix(validated_rate_matrix, branch_length)
         ),

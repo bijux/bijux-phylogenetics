@@ -25,6 +25,7 @@ __all__ = [
     "CandidateTreeSiteLikelihoodSummary",
     "CodonCtmcTreeLikelihoodReport",
     "CodonStateSpace",
+    "CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY",
     "CompressedAlignmentSitePatterns",
     "CompiledFiniteStateLikelihoodAnalysis",
     "CompiledFiniteStatePartitionContext",
