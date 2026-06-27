@@ -323,3 +323,72 @@ def test_substitution_model_selection_prefers_hky85_on_joint_bias_fixture() -> N
     assert f81_row.rank == 2
     assert k80_row.rank == 3
     assert jc69_row.rank == 4
+
+
+def test_substitution_model_selection_prefers_gtr_on_exchangeability_fixture() -> None:
+    report = compare_nucleotide_substitution_models_from_alignment(
+        fixture("trees", "gtr_exchangeability_optimization_tree_2_taxa.nwk"),
+        fixture("alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta"),
+        candidate_models=("JC69", "K80", "F81", "HKY85", "GTR"),
+    )
+    rows = {row.model_name: row for row in report.rows}
+    gtr_row = rows["GTR"]
+    hky85_row = rows["HKY85"]
+    f81_row = rows["F81"]
+    k80_row = rows["K80"]
+    jc69_row = rows["JC69"]
+
+    assert report.best_model_aic == "GTR"
+    assert report.best_model_aicc == "GTR"
+    assert report.best_model_bic == "GTR"
+    assert gtr_row.fit_succeeded is True
+    assert gtr_row.rank == 1
+    assert gtr_row.selected_by_aic is True
+    assert gtr_row.selected_by_aicc is True
+    assert gtr_row.selected_by_bic is True
+    assert gtr_row.parameter_count == 8
+    assert math.isclose(
+        gtr_row.parameter_values["AC"],
+        1.0,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        gtr_row.parameter_values["AG"],
+        10.43609288733635,
+        rel_tol=0.0,
+        abs_tol=5e-6,
+    )
+    assert math.isclose(
+        gtr_row.parameter_values["GT"],
+        5.8809589312598565,
+        rel_tol=0.0,
+        abs_tol=5e-6,
+    )
+    assert math.isclose(
+        gtr_row.parameter_values["base_frequency_a"],
+        0.408203125,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        gtr_row.parameter_values["base_frequency_t"],
+        0.27734375,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert (gtr_row.aic or float("inf")) < (hky85_row.aic or float("inf"))
+    assert (gtr_row.aic or float("inf")) < (f81_row.aic or float("inf"))
+    assert (gtr_row.aic or float("inf")) < (k80_row.aic or float("inf"))
+    assert (gtr_row.aic or float("inf")) < (jc69_row.aic or float("inf"))
+    assert math.isclose(
+        gtr_row.akaike_weight or 0.0,
+        0.9996757105258298,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert gtr_row.warnings == []
+    assert hky85_row.rank == 2
+    assert f81_row.rank == 3
+    assert k80_row.rank == 4
+    assert jc69_row.rank == 5
