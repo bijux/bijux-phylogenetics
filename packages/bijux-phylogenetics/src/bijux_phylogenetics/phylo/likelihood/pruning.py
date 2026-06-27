@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 import math
 
@@ -316,36 +316,14 @@ def postorder_conditional_likelihoods(
             conditional_by_node_id[node.node_id] = conditional
             subtree_log_scaling_by_node_id[node.node_id] = 0.0
             continue
-
-        conditional = numpy.ones(state_count, dtype=float)
-        child_log_scaling = 0.0
-        child_impossible = False
-        for child in node.children:
-            if child.node_id is None:
-                raise ValueError("tree child node is missing a stable node_id")
-            child_transition = _validated_transition_matrix(
-                transition_matrix_for_child(child),
-                state_count=state_count,
-                context=f"branch '{child.node_id}'",
-            )
-            child_conditional = conditional_by_node_id[child.node_id]
-            conditional *= child_transition @ child_conditional
-            child_scale = subtree_log_scaling_by_node_id[child.node_id]
-            if math.isinf(child_scale) and child_scale < 0.0:
-                child_impossible = True
-            else:
-                child_log_scaling += child_scale
-
-        scale = float(conditional.sum())
-        if child_impossible or scale <= 0.0 or not math.isfinite(scale):
-            conditional_by_node_id[node.node_id] = conditional
-            subtree_log_scaling_by_node_id[node.node_id] = float("-inf")
-            continue
-        if normalize_internal_conditionals:
-            conditional /= scale
-            child_log_scaling += math.log(scale)
-        conditional_by_node_id[node.node_id] = conditional
-        subtree_log_scaling_by_node_id[node.node_id] = child_log_scaling
+        _refresh_internal_node_conditional(
+            node,
+            conditional_by_node_id=conditional_by_node_id,
+            subtree_log_scaling_by_node_id=subtree_log_scaling_by_node_id,
+            state_count=state_count,
+            transition_matrix_for_child=transition_matrix_for_child,
+            normalize_internal_conditionals=normalize_internal_conditionals,
+        )
 
     return FiniteStatePruningPass(
         conditional_by_node_id=conditional_by_node_id,
@@ -353,6 +331,38 @@ def postorder_conditional_likelihoods(
         state_count=state_count,
         normalized_internal_conditionals=normalize_internal_conditionals,
     )
+
+
+def refresh_postorder_conditional_likelihoods(
+    tree: PhyloTree,
+    pruning_pass: FiniteStatePruningPass,
+    *,
+    affected_node_ids: Iterable[str],
+    transition_matrix_for_child: Callable[[TreeNode], numpy.ndarray],
+) -> None:
+    """Refresh one cached pruning pass for one postorder-compatible internal slice."""
+    seen_node_ids: set[str] = set()
+    for node_id in affected_node_ids:
+        if node_id in seen_node_ids:
+            raise ValueError(
+                f"affected pruning slice contains duplicate node_id '{node_id}'"
+            )
+        seen_node_ids.add(node_id)
+        node = tree.node_by_id(node_id)
+        if node.is_leaf():
+            raise ValueError(
+                f"affected pruning slice contains leaf node '{node.node_id}'"
+            )
+        _refresh_internal_node_conditional(
+            node,
+            conditional_by_node_id=pruning_pass.conditional_by_node_id,
+            subtree_log_scaling_by_node_id=pruning_pass.subtree_log_scaling_by_node_id,
+            state_count=pruning_pass.state_count,
+            transition_matrix_for_child=transition_matrix_for_child,
+            normalize_internal_conditionals=(
+                pruning_pass.normalized_internal_conditionals
+            ),
+        )
 
 
 def log_likelihood_from_root_prior(
@@ -374,6 +384,48 @@ def log_likelihood_from_root_prior(
     if math.isinf(subtree_log_scaling) and subtree_log_scaling < 0.0:
         return float("-inf")
     return subtree_log_scaling + math.log(root_scale)
+
+
+def _refresh_internal_node_conditional(
+    node: TreeNode,
+    *,
+    conditional_by_node_id: dict[str, numpy.ndarray],
+    subtree_log_scaling_by_node_id: dict[str, float],
+    state_count: int,
+    transition_matrix_for_child: Callable[[TreeNode], numpy.ndarray],
+    normalize_internal_conditionals: bool,
+) -> None:
+    if node.node_id is None:
+        raise ValueError("tree node is missing a stable node_id")
+    conditional = numpy.ones(state_count, dtype=float)
+    child_log_scaling = 0.0
+    child_impossible = False
+    for child in node.children:
+        if child.node_id is None:
+            raise ValueError("tree child node is missing a stable node_id")
+        child_transition = _validated_transition_matrix(
+            transition_matrix_for_child(child),
+            state_count=state_count,
+            context=f"branch '{child.node_id}'",
+        )
+        child_conditional = conditional_by_node_id[child.node_id]
+        conditional *= child_transition @ child_conditional
+        child_scale = subtree_log_scaling_by_node_id[child.node_id]
+        if math.isinf(child_scale) and child_scale < 0.0:
+            child_impossible = True
+        else:
+            child_log_scaling += child_scale
+
+    scale = float(conditional.sum())
+    if child_impossible or scale <= 0.0 or not math.isfinite(scale):
+        conditional_by_node_id[node.node_id] = conditional
+        subtree_log_scaling_by_node_id[node.node_id] = float("-inf")
+        return
+    if normalize_internal_conditionals:
+        conditional /= scale
+        child_log_scaling += math.log(scale)
+    conditional_by_node_id[node.node_id] = conditional
+    subtree_log_scaling_by_node_id[node.node_id] = child_log_scaling
 
 
 def _validated_probability_vector(
