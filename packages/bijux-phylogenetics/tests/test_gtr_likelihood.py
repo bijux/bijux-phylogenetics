@@ -12,6 +12,9 @@ from bijux_phylogenetics.phylo.likelihood import (
     evaluate_gtr_tree_likelihood_from_alignment,
     evaluate_hky85_tree_likelihood,
 )
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+)
 from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -50,7 +53,17 @@ def test_gtr_fixed_tree_likelihood_matches_independent_fixture() -> None:
     assert report.pattern_count == 4
     assert report.compression_used is True
     assert report.tree_newick == "(A:0.1,B:0.2);"
+    assert report.state_count == 4
+    assert report.observation_policy == "reject"
+    assert (
+        report.normalization_policy
+        == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
+    )
     assert report.base_frequency_source == "provided"
+    assert math.isclose(report.base_frequency_a, 0.4, rel_tol=0.0, abs_tol=1e-12)
+    assert math.isclose(report.base_frequency_c, 0.1, rel_tol=0.0, abs_tol=1e-12)
+    assert math.isclose(report.base_frequency_g, 0.2, rel_tol=0.0, abs_tol=1e-12)
+    assert math.isclose(report.base_frequency_t, 0.3, rel_tol=0.0, abs_tol=1e-12)
     assert report.exchangeability_anchor == "AC=1"
     assert math.isclose(report.exchangeability_ac, 1.0, rel_tol=0.0, abs_tol=1e-12)
     assert math.isclose(report.exchangeability_ag, 4.5, rel_tol=0.0, abs_tol=1e-12)
@@ -104,6 +117,12 @@ def test_gtr_reduces_to_hky85_with_hky_shaped_exchangeabilities() -> None:
     assert math.isclose(
         gtr_report.log_likelihood,
         hky_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        gtr_report.aic,
+        hky_report.aic + 8.0,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
