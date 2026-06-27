@@ -23,6 +23,9 @@ from bijux_phylogenetics.phylo.likelihood.nucleotide_models import (
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     compress_alignment_site_patterns_from_records,
 )
+from bijux_phylogenetics.phylo.likelihood.pruning import (
+    build_transition_matrix_evaluator,
+)
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 
@@ -63,6 +66,7 @@ def build_selected_nucleotide_finite_state_surface(
         root_prior=root_prior,
         fixed_root_state=fixed_root_state,
     )
+    transition_evaluator = build_transition_matrix_evaluator(specification.rate_matrix)
     return FiniteStateLikelihoodSurface(
         model_name=specification.model_name,
         state_labels=tuple(
@@ -74,9 +78,7 @@ def build_selected_nucleotide_finite_state_surface(
         root_prior_source=specification.root_prior_source,
         observation_policy=specification.observation_policy,
         normalization_policy=specification.normalization_policy,
-        transition_matrix_for_branch_length=(
-            specification.transition_matrix_for_branch_length
-        ),
+        transition_matrix_for_branch_length=transition_evaluator.transition_probability_matrix,
         leaf_likelihood_vector_for_state=lambda taxon_name, observed_state: (
             resolve_dna_observation_leaf_vector(
                 {taxon_name: observed_state},

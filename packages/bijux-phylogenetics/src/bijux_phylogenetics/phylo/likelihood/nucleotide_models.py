@@ -58,6 +58,7 @@ class SelectedNucleotideLikelihoodSpecification:
     state_count: int
     observation_policy: str
     normalization_policy: str
+    rate_matrix: numpy.ndarray
     parameter_values: dict[str, float]
     transition_matrix_for_branch_length: Callable[[float], numpy.ndarray]
 
@@ -128,6 +129,16 @@ def resolve_selected_nucleotide_likelihood_specification(
             if normalized_observation_policy == "fifth-state"
             else None
         )
+        rate_matrix = (
+            augment_dna_rate_matrix_with_gap_state(
+                jc69_rate_matrix(),
+                nucleotide_frequencies=UNIFORM_DNA_ROOT_PRIOR,
+                gap_state_frequency=gap_state_frequency,
+                model_name="JC69",
+            )
+            if normalized_observation_policy == "fifth-state"
+            else jc69_rate_matrix()
+        )
         return SelectedNucleotideLikelihoodSpecification(
             model_name="JC69",
             root_prior=resolved_root_prior.root_prior,
@@ -135,16 +146,12 @@ def resolve_selected_nucleotide_likelihood_specification(
             state_count=state_count,
             observation_policy=normalized_observation_policy,
             normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+            rate_matrix=rate_matrix,
             parameter_values={},
             transition_matrix_for_branch_length=(
                 (
                     lambda branch_length: transition_probability_matrix(
-                        augment_dna_rate_matrix_with_gap_state(
-                            jc69_rate_matrix(),
-                            nucleotide_frequencies=UNIFORM_DNA_ROOT_PRIOR,
-                            gap_state_frequency=gap_state_frequency,
-                            model_name="JC69",
-                        ),
+                        rate_matrix,
                         branch_length,
                     )
                 )
@@ -176,6 +183,16 @@ def resolve_selected_nucleotide_likelihood_specification(
             if normalized_observation_policy == "fifth-state"
             else None
         )
+        rate_matrix = (
+            augment_dna_rate_matrix_with_gap_state(
+                k80_rate_matrix(validated_kappa),
+                nucleotide_frequencies=UNIFORM_DNA_ROOT_PRIOR,
+                gap_state_frequency=gap_state_frequency,
+                model_name="K80",
+            )
+            if normalized_observation_policy == "fifth-state"
+            else k80_rate_matrix(validated_kappa)
+        )
         return SelectedNucleotideLikelihoodSpecification(
             model_name="K80",
             root_prior=resolved_root_prior.root_prior,
@@ -183,16 +200,12 @@ def resolve_selected_nucleotide_likelihood_specification(
             state_count=state_count,
             observation_policy=normalized_observation_policy,
             normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+            rate_matrix=rate_matrix,
             parameter_values={"kappa": validated_kappa},
             transition_matrix_for_branch_length=(
                 (
                     lambda branch_length: transition_probability_matrix(
-                        augment_dna_rate_matrix_with_gap_state(
-                            k80_rate_matrix(validated_kappa),
-                            nucleotide_frequencies=UNIFORM_DNA_ROOT_PRIOR,
-                            gap_state_frequency=gap_state_frequency,
-                            model_name="K80",
-                        ),
+                        rate_matrix,
                         branch_length,
                     )
                 )
@@ -232,6 +245,16 @@ def resolve_selected_nucleotide_likelihood_specification(
             if normalized_observation_policy == "fifth-state"
             else None
         )
+        rate_matrix = (
+            augment_dna_rate_matrix_with_gap_state(
+                f81_rate_matrix(stationary),
+                nucleotide_frequencies=stationary,
+                gap_state_frequency=gap_state_frequency,
+                model_name="F81",
+            )
+            if normalized_observation_policy == "fifth-state"
+            else f81_rate_matrix(stationary)
+        )
         return SelectedNucleotideLikelihoodSpecification(
             model_name="F81",
             root_prior=resolved_root_prior.root_prior,
@@ -239,16 +262,12 @@ def resolve_selected_nucleotide_likelihood_specification(
             state_count=state_count,
             observation_policy=normalized_observation_policy,
             normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+            rate_matrix=rate_matrix,
             parameter_values=_base_frequency_parameter_values(stationary),
             transition_matrix_for_branch_length=(
                 (
                     lambda branch_length: transition_probability_matrix(
-                        augment_dna_rate_matrix_with_gap_state(
-                            f81_rate_matrix(stationary),
-                            nucleotide_frequencies=stationary,
-                            gap_state_frequency=gap_state_frequency,
-                            model_name="F81",
-                        ),
+                        rate_matrix,
                         branch_length,
                     )
                 )
@@ -290,6 +309,22 @@ def resolve_selected_nucleotide_likelihood_specification(
             if normalized_observation_policy == "fifth-state"
             else None
         )
+        rate_matrix = (
+            augment_dna_rate_matrix_with_gap_state(
+                hky85_rate_matrix(
+                    base_frequencies=stationary,
+                    kappa=validated_kappa,
+                ),
+                nucleotide_frequencies=stationary,
+                gap_state_frequency=gap_state_frequency,
+                model_name="HKY85",
+            )
+            if normalized_observation_policy == "fifth-state"
+            else hky85_rate_matrix(
+                base_frequencies=stationary,
+                kappa=validated_kappa,
+            )
+        )
         return SelectedNucleotideLikelihoodSpecification(
             model_name="HKY85",
             root_prior=resolved_root_prior.root_prior,
@@ -297,6 +332,7 @@ def resolve_selected_nucleotide_likelihood_specification(
             state_count=state_count,
             observation_policy=normalized_observation_policy,
             normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+            rate_matrix=rate_matrix,
             parameter_values={
                 **_base_frequency_parameter_values(stationary),
                 "kappa": validated_kappa,
@@ -304,15 +340,7 @@ def resolve_selected_nucleotide_likelihood_specification(
             transition_matrix_for_branch_length=(
                 (
                     lambda branch_length: transition_probability_matrix(
-                        augment_dna_rate_matrix_with_gap_state(
-                            hky85_rate_matrix(
-                                base_frequencies=stationary,
-                                kappa=validated_kappa,
-                            ),
-                            nucleotide_frequencies=stationary,
-                            gap_state_frequency=gap_state_frequency,
-                            model_name="HKY85",
-                        ),
+                        rate_matrix,
                         branch_length,
                     )
                 )
@@ -358,6 +386,22 @@ def resolve_selected_nucleotide_likelihood_specification(
         if normalized_observation_policy == "fifth-state"
         else None
     )
+    rate_matrix = (
+        augment_dna_rate_matrix_with_gap_state(
+            gtr_rate_matrix(
+                exchangeabilities=normalized_exchangeabilities,
+                base_frequencies=stationary,
+            ),
+            nucleotide_frequencies=stationary,
+            gap_state_frequency=gap_state_frequency,
+            model_name="GTR",
+        )
+        if normalized_observation_policy == "fifth-state"
+        else gtr_rate_matrix(
+            exchangeabilities=normalized_exchangeabilities,
+            base_frequencies=stationary,
+        )
+    )
     return SelectedNucleotideLikelihoodSpecification(
         model_name="GTR",
         root_prior=resolved_root_prior.root_prior,
@@ -365,6 +409,7 @@ def resolve_selected_nucleotide_likelihood_specification(
         state_count=state_count,
         observation_policy=normalized_observation_policy,
         normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+        rate_matrix=rate_matrix,
         parameter_values={
             **_base_frequency_parameter_values(stationary),
             "exchangeability_ac": float(normalized_exchangeabilities[0]),
@@ -377,15 +422,7 @@ def resolve_selected_nucleotide_likelihood_specification(
         transition_matrix_for_branch_length=(
             (
                 lambda branch_length: transition_probability_matrix(
-                    augment_dna_rate_matrix_with_gap_state(
-                        gtr_rate_matrix(
-                            exchangeabilities=normalized_exchangeabilities,
-                            base_frequencies=stationary,
-                        ),
-                        nucleotide_frequencies=stationary,
-                        gap_state_frequency=gap_state_frequency,
-                        model_name="GTR",
-                    ),
+                    rate_matrix,
                     branch_length,
                 )
             )
