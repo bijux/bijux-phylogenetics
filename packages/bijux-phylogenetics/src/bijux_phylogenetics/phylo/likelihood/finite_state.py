@@ -16,6 +16,9 @@ from bijux_phylogenetics.phylo.alignment.partitions import (
     validate_locus_partitions,
 )
 from bijux_phylogenetics.phylo.likelihood.models import SiteLogLikelihoodRow
+from bijux_phylogenetics.phylo.likelihood.models import (
+    CompiledFiniteStateSiteLogLikelihoodRow,
+)
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
 )
@@ -144,6 +147,7 @@ class CompiledFiniteStatePatternTerm:
     states: tuple[str, ...]
     pattern_site_count: int
     source_site_positions: tuple[int, ...]
+    source_site_weights: tuple[float, ...]
     effective_weight: float
 
 
@@ -403,6 +407,41 @@ def evaluate_compiled_finite_state_likelihood_analysis(
                 taxon_order=partition_context.taxon_order,
             )
     return total
+
+
+def evaluate_compiled_finite_state_site_log_likelihood_rows(
+    analysis: CompiledFiniteStateLikelihoodAnalysis,
+) -> tuple[list[CompiledFiniteStateSiteLogLikelihoodRow], float]:
+    """Expand one compiled finite-state analysis back to weighted source-site rows."""
+    rows: list[CompiledFiniteStateSiteLogLikelihoodRow] = []
+    weighted_total = 0.0
+    for partition_context in analysis.partition_contexts:
+        for term in partition_context.compiled_pattern_terms:
+            log_likelihood = evaluate_finite_state_site_log_likelihood(
+                analysis.context,
+                term.states,
+                taxon_order=partition_context.taxon_order,
+            )
+            weighted_total += term.effective_weight * log_likelihood
+            rows.extend(
+                CompiledFiniteStateSiteLogLikelihoodRow(
+                    partition_name=partition_context.partition_name,
+                    partition_data_type=partition_context.partition_data_type,
+                    pattern_id=term.pattern_id,
+                    pattern_site_count=term.pattern_site_count,
+                    source_site_position=source_site_position,
+                    site_states=term.states,
+                    site_weight=site_weight,
+                    log_likelihood=log_likelihood,
+                )
+                for source_site_position, site_weight in zip(
+                    term.source_site_positions,
+                    term.source_site_weights,
+                    strict=True,
+                )
+            )
+    rows.sort(key=lambda row: (row.source_site_position, row.partition_name, row.pattern_id))
+    return rows, weighted_total
 
 
 def update_compiled_finite_state_context_branch_length(
@@ -888,15 +927,17 @@ def _compile_pattern_term(
         source_site_positions[local_site_position - 1]
         for local_site_position in local_site_positions
     )
+    resolved_source_site_weights = tuple(
+        site_weight_by_position[site_position]
+        for site_position in resolved_source_positions
+    )
     return CompiledFiniteStatePatternTerm(
         pattern_id=pattern_id,
         states=states,
         pattern_site_count=pattern_site_count,
         source_site_positions=resolved_source_positions,
-        effective_weight=sum(
-            site_weight_by_position[site_position]
-            for site_position in resolved_source_positions
-        ),
+        source_site_weights=resolved_source_site_weights,
+        effective_weight=sum(resolved_source_site_weights),
     )
 
 

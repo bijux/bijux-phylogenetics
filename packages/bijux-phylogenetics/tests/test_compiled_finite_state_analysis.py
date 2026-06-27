@@ -15,6 +15,7 @@ from bijux_phylogenetics.phylo.likelihood.finite_state import (
     FiniteStateLikelihoodSurface,
     compile_finite_state_likelihood_analysis,
     evaluate_compiled_finite_state_likelihood_analysis,
+    evaluate_compiled_finite_state_site_log_likelihood_rows,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
@@ -68,18 +69,74 @@ def test_compiled_analysis_keeps_partition_weights_and_missing_data_policy() -> 
     assert right_partition.pattern_count == 2
 
     left_terms = {
-        term.source_site_positions: term.effective_weight
+        term.source_site_positions: (
+            term.source_site_weights,
+            term.effective_weight,
+        )
         for term in left_partition.compiled_pattern_terms
     }
     right_terms = {
-        term.source_site_positions: term.effective_weight
+        term.source_site_positions: (
+            term.source_site_weights,
+            term.effective_weight,
+        )
         for term in right_partition.compiled_pattern_terms
     }
 
-    assert left_terms[(1,)] == 1.0
-    assert left_terms[(2,)] == 3.0
-    assert right_terms[(3,)] == 1.0
-    assert right_terms[(4,)] == 0.0
+    assert left_terms[(1,)] == ((1.0,), 1.0)
+    assert left_terms[(2,)] == ((3.0,), 3.0)
+    assert right_terms[(3,)] == ((1.0,), 1.0)
+    assert right_terms[(4,)] == ((0.0,), 0.0)
+
+
+def test_compiled_analysis_expands_weighted_source_site_rows_in_original_order() -> None:
+    tree = load_tree(fixture("felsenstein_two_tip_tree.nwk"))
+    records = [
+        AlignmentRecord(identifier="A", sequence="0101"),
+        AlignmentRecord(identifier="B", sequence="0100"),
+    ]
+    analysis = compile_finite_state_likelihood_analysis(
+        tree,
+        _binary_surface(),
+        records=records,
+        pattern_compiler=_pattern_compiler,
+        missing_data_policy="reject",
+        partition_map=(
+            LocusPartition(
+                name="left-half",
+                segments=(LocusSegment(start=1, end=2),),
+                total_sites=2,
+                data_type="binary",
+            ),
+            LocusPartition(
+                name="right-half",
+                segments=(LocusSegment(start=3, end=4),),
+                total_sites=2,
+                data_type="binary",
+            ),
+        ),
+        site_weight_by_position={2: 3.0, 4: 0.0},
+    )
+
+    rows, total_log_likelihood = evaluate_compiled_finite_state_site_log_likelihood_rows(
+        analysis
+    )
+
+    assert [row.source_site_position for row in rows] == [1, 2, 3, 4]
+    assert [row.partition_name for row in rows] == [
+        "left-half",
+        "left-half",
+        "right-half",
+        "right-half",
+    ]
+    assert [row.pattern_site_count for row in rows] == [1, 1, 1, 1]
+    assert [row.site_weight for row in rows] == [1.0, 3.0, 1.0, 0.0]
+    assert math.isclose(
+        sum(row.site_weight * row.log_likelihood for row in rows),
+        total_log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
 
 
 def test_compiled_analysis_reuses_cached_transition_and_pattern_state() -> None:

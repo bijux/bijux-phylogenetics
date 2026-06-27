@@ -1341,6 +1341,20 @@ class SiteLogLikelihoodRow:
 
 
 @dataclass(slots=True)
+class CompiledFiniteStateSiteLogLikelihoodRow:
+    """One weighted source-site row reconstructed from one compiled finite-state analysis."""
+
+    partition_name: str
+    partition_data_type: str | None
+    pattern_id: str
+    pattern_site_count: int
+    source_site_position: int
+    site_states: tuple[str, ...]
+    site_weight: float
+    log_likelihood: float
+
+
+@dataclass(slots=True)
 class FixedTopologySiteLogLikelihoodReport:
     """Per-site fixed-topology likelihood report with explicit expansion policy."""
 
