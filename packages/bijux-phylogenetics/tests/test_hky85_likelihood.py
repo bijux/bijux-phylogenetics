@@ -13,6 +13,9 @@ from bijux_phylogenetics.phylo.likelihood import (
     evaluate_hky85_tree_likelihood_from_alignment,
     evaluate_k80_tree_likelihood,
 )
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+)
 from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -42,6 +45,12 @@ def test_hky85_fixed_tree_likelihood_matches_independent_fixture() -> None:
     assert report.pattern_count == 4
     assert report.compression_used is True
     assert report.tree_newick == "(A:0.1,B:0.2);"
+    assert report.state_count == 4
+    assert report.observation_policy == "reject"
+    assert (
+        report.normalization_policy
+        == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
+    )
     assert report.base_frequency_source == "provided"
     assert math.isclose(report.base_frequency_a, 0.4, rel_tol=0.0, abs_tol=1e-12)
     assert math.isclose(report.base_frequency_c, 0.1, rel_tol=0.0, abs_tol=1e-12)
@@ -83,6 +92,12 @@ def test_hky85_reduces_to_k80_with_uniform_base_frequencies() -> None:
         rel_tol=0.0,
         abs_tol=1e-12,
     )
+    assert math.isclose(
+        hky85_report.aic,
+        k80_report.aic + 6.0,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
 
 
 def test_hky85_reduces_to_f81_when_kappa_is_one() -> None:
@@ -107,6 +122,12 @@ def test_hky85_reduces_to_f81_when_kappa_is_one() -> None:
     assert math.isclose(
         hky85_report.log_likelihood,
         f81_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        hky85_report.aic,
+        f81_report.aic + 2.0,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
