@@ -6,7 +6,10 @@ from pathlib import Path
 import numpy
 
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
-from bijux_phylogenetics.phylo.alignment.partitions import LocusPartition
+from bijux_phylogenetics.phylo.alignment.partitions import (
+    LocusPartition,
+    slice_partition_sequence,
+)
 from bijux_phylogenetics.phylo.likelihood.codon_observation_policies import (
     resolve_codon_observation_leaf_vector,
     validate_codon_observation_policy,
@@ -27,6 +30,7 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
+from bijux_phylogenetics.runtime.errors import InvalidPartitionError
 
 from .codon import normalize_codon_likelihood_records
 from .codon import compress_codon_site_patterns_from_records
@@ -116,7 +120,13 @@ def compile_codon_likelihood_analysis(
         records=normalized_records,
         pattern_compiler=_compile_codon_patterns,
         missing_data_policy=surface.observation_policy,
+        alignment_length_resolver=_resolve_codon_alignment_length,
         partition_map=partition_map,
+        partition_alignment_length=len(normalized_records[0].sequence),
+        partition_record_builder=_slice_codon_partition_records,
+        partition_source_site_positions_resolver=(
+            _resolve_codon_partition_site_positions
+        ),
         site_weight_by_position=site_weight_by_position,
         source_path=source_path,
     )
@@ -130,3 +140,55 @@ def _compile_codon_patterns(
         records,
         source_path=source_path,
     )
+
+
+def _resolve_codon_alignment_length(records: list[AlignmentRecord]) -> int:
+    return len(records[0].sequence) // 3
+
+
+def _slice_codon_partition_records(
+    records: list[AlignmentRecord],
+    partition: LocusPartition,
+) -> list[AlignmentRecord]:
+    _validate_codon_partition(partition)
+    sliced_records = [
+        AlignmentRecord(
+            identifier=record.identifier,
+            sequence=slice_partition_sequence(record.sequence, partition),
+        )
+        for record in records
+    ]
+    sliced_lengths = {len(record.sequence) for record in sliced_records}
+    if len(sliced_lengths) != 1:
+        raise InvalidPartitionError(
+            "codon CTMC partitions must yield equal-length coding slices"
+        )
+    sliced_length = next(iter(sliced_lengths))
+    if sliced_length == 0 or sliced_length % 3 != 0:
+        raise InvalidPartitionError(
+            "codon CTMC partitions must preserve complete codon triplets"
+        )
+    return sliced_records
+
+
+def _resolve_codon_partition_site_positions(
+    partition: LocusPartition,
+) -> tuple[int, ...]:
+    _validate_codon_partition(partition)
+    return tuple(
+        ((segment_start - 1) // 3) + 1
+        for segment in partition.segments
+        for segment_start in range(segment.start, segment.end + 1, 3)
+    )
+
+
+def _validate_codon_partition(partition: LocusPartition) -> None:
+    for segment in partition.segments:
+        if segment.step != 1:
+            raise InvalidPartitionError(
+                f"codon CTMC partition '{partition.name}' must use contiguous codon blocks without stride"
+            )
+        if (segment.start - 1) % 3 != 0 or segment.end % 3 != 0:
+            raise InvalidPartitionError(
+                f"codon CTMC partition '{partition.name}' must start on codon base 1 and end on codon base 3"
+            )

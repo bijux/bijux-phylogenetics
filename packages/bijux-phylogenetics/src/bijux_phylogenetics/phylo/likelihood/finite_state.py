@@ -41,6 +41,14 @@ FiniteStatePatternCompiler = Callable[
     CompressedAlignmentSitePatterns,
 ]
 FiniteStateAlignmentLengthResolver = Callable[[list[AlignmentRecord]], int]
+FiniteStatePartitionRecordBuilder = Callable[
+    [list[AlignmentRecord], LocusPartition],
+    list[AlignmentRecord],
+]
+FiniteStatePartitionSourceSitePositionsResolver = Callable[
+    [LocusPartition],
+    tuple[int, ...],
+]
 
 
 @dataclass(frozen=True, slots=True)
@@ -225,6 +233,11 @@ def compile_finite_state_likelihood_analysis(
     missing_data_policy: str,
     alignment_length_resolver: FiniteStateAlignmentLengthResolver | None = None,
     partition_map: tuple[LocusPartition, ...] | None = None,
+    partition_alignment_length: int | None = None,
+    partition_record_builder: FiniteStatePartitionRecordBuilder | None = None,
+    partition_source_site_positions_resolver: (
+        FiniteStatePartitionSourceSitePositionsResolver | None
+    ) = None,
     site_weight_by_position: Mapping[int, float] | None = None,
     source_path: Path | None = None,
 ) -> CompiledFiniteStateLikelihoodAnalysis:
@@ -246,13 +259,21 @@ def compile_finite_state_likelihood_analysis(
     if partition_map is not None:
         validate_locus_partitions(
             partition_map,
-            alignment_length=alignment_length,
+            alignment_length=(
+                alignment_length
+                if partition_alignment_length is None
+                else partition_alignment_length
+            ),
         )
     partition_contexts = _compile_partition_contexts(
         records,
         alignment_length=alignment_length,
         pattern_compiler=pattern_compiler,
         partition_map=partition_map,
+        partition_record_builder=partition_record_builder,
+        partition_source_site_positions_resolver=(
+            partition_source_site_positions_resolver
+        ),
         site_weight_by_position=validated_site_weight_by_position,
         source_path=source_path,
     )
@@ -774,6 +795,10 @@ def _compile_partition_contexts(
     alignment_length: int,
     pattern_compiler: FiniteStatePatternCompiler,
     partition_map: tuple[LocusPartition, ...] | None,
+    partition_record_builder: FiniteStatePartitionRecordBuilder | None,
+    partition_source_site_positions_resolver: (
+        FiniteStatePartitionSourceSitePositionsResolver | None
+    ),
     site_weight_by_position: Mapping[int, float],
     source_path: Path | None,
 ) -> tuple[CompiledFiniteStatePartitionContext, ...]:
@@ -789,21 +814,26 @@ def _compile_partition_contexts(
                 source_path=source_path,
             ),
         )
+    resolved_partition_record_builder = (
+        _default_partition_record_builder
+        if partition_record_builder is None
+        else partition_record_builder
+    )
+    resolved_partition_source_site_positions_resolver = (
+        _default_partition_source_site_positions
+        if partition_source_site_positions_resolver is None
+        else partition_source_site_positions_resolver
+    )
     return tuple(
         _compile_partition_context(
             partition_name=partition.name,
             partition_data_type=partition.data_type,
-            records=[
-                AlignmentRecord(
-                    identifier=record.identifier,
-                    sequence=slice_partition_sequence(record.sequence, partition),
-                )
-                for record in records
-            ],
-            source_site_positions=tuple(
-                site
-                for segment in partition.segments
-                for site in iterate_partition_sites(segment)
+            records=resolved_partition_record_builder(
+                records,
+                partition,
+            ),
+            source_site_positions=resolved_partition_source_site_positions_resolver(
+                partition
             ),
             pattern_compiler=pattern_compiler,
             site_weight_by_position=site_weight_by_position,
@@ -919,6 +949,29 @@ def _validated_site_weight_by_position(
             )
         validated[position] = weight
     return validated
+
+
+def _default_partition_record_builder(
+    records: list[AlignmentRecord],
+    partition: LocusPartition,
+) -> list[AlignmentRecord]:
+    return [
+        AlignmentRecord(
+            identifier=record.identifier,
+            sequence=slice_partition_sequence(record.sequence, partition),
+        )
+        for record in records
+    ]
+
+
+def _default_partition_source_site_positions(
+    partition: LocusPartition,
+) -> tuple[int, ...]:
+    return tuple(
+        site
+        for segment in partition.segments
+        for site in iterate_partition_sites(segment)
+    )
 
 
 def _validate_partition_taxa_against_tree(
