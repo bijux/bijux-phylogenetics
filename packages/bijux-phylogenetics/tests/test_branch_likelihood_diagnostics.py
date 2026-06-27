@@ -90,11 +90,23 @@ def test_protein_poisson_branch_likelihood_diagnostics_report_rows_are_finite() 
     )
 
     assert report.model_name == "protein Poisson"
+    assert report.taxa == ["A", "B"]
+    assert report.site_count == 4
+    assert report.pattern_count == 4
     assert report.branch_count == 2
     assert len(report.branch_diagnostics) == 2
     assert all(
         math.isfinite(row.contribution_proxy) for row in report.branch_diagnostics
     )
+    for row in report.branch_diagnostics:
+        assert math.isfinite(row.branch_length)
+        assert math.isfinite(row.collapsed_branch_log_likelihood)
+        assert math.isclose(
+            row.contribution_proxy,
+            report.baseline_log_likelihood - row.collapsed_branch_log_likelihood,
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        )
 
 
 def test_empirical_protein_branch_likelihood_diagnostics_support_fixed_rate_surface() -> (

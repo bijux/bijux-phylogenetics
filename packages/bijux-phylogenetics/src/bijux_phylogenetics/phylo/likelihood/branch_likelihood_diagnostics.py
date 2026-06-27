@@ -209,6 +209,10 @@ def evaluate_protein_poisson_branch_likelihood_diagnostics(
         return _evaluate_protein_poisson_tree_likelihood_from_patterns(
             candidate_tree,
             compressed_patterns,
+            records=normalized_records,
+            root_prior_policy=None,
+            root_prior=None,
+            fixed_root_state=None,
             gap_policy=gap_policy,
             missing_policy=missing_policy,
             ambiguity_policy="reject",
