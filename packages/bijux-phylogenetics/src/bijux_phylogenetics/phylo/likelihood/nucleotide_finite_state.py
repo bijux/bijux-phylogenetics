@@ -78,6 +78,7 @@ def build_selected_nucleotide_finite_state_surface(
         root_prior_source=specification.root_prior_source,
         observation_policy=specification.observation_policy,
         normalization_policy=specification.normalization_policy,
+        transition_rate_matrix=specification.rate_matrix,
         transition_matrix_for_branch_length=transition_evaluator.transition_probability_matrix,
         leaf_likelihood_vector_for_state=lambda taxon_name, observed_state: (
             resolve_dna_observation_leaf_vector(

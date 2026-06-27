@@ -220,12 +220,14 @@ def _evaluate_f81_tree_likelihood_from_patterns(
         )
         def transition_matrix_for_branch_length(branch_length: float) -> numpy.ndarray:
             return transition_probability_matrix(augmented_rate_matrix, branch_length)
+        transition_rate_matrix = augmented_rate_matrix
     else:
         def transition_matrix_for_branch_length(branch_length: float) -> numpy.ndarray:
             return f81_transition_probability_matrix(
                 branch_length,
                 base_frequencies=validated_frequencies,
             )
+        transition_rate_matrix = f81_rate_matrix(validated_frequencies)
     context = compile_finite_state_likelihood_context(
         tree,
         FiniteStateLikelihoodSurface(
@@ -235,6 +237,7 @@ def _evaluate_f81_tree_likelihood_from_patterns(
             root_prior_source="provided",
             observation_policy=observation_policy,
             normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+            transition_rate_matrix=transition_rate_matrix,
             transition_matrix_for_branch_length=transition_matrix_for_branch_length,
             leaf_likelihood_vector_for_state=lambda taxon_name, observed_state: (
                 resolve_dna_observation_leaf_vector(
