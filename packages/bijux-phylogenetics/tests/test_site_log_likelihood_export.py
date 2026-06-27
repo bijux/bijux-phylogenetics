@@ -99,6 +99,7 @@ def test_nucleotide_site_log_likelihood_rows_match_selected_model_totals() -> No
         base_frequencies=f81_base_frequencies,
     )
 
+    assert f81_report.model_name == "F81"
     assert math.isclose(
         f81_report.parameter_values["base_frequency_a"],
         0.4,
@@ -108,6 +109,12 @@ def test_nucleotide_site_log_likelihood_rows_match_selected_model_totals() -> No
     assert math.isclose(
         f81_report.log_likelihood,
         f81_total.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        sum(row.log_likelihood for row in f81_report.site_log_likelihoods),
+        f81_report.log_likelihood,
         rel_tol=0.0,
         abs_tol=1e-12,
     )

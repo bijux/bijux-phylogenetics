@@ -12,6 +12,7 @@ from bijux_phylogenetics.phylo.alignment.partitions import (
     LocusSegment,
 )
 from bijux_phylogenetics.phylo.likelihood import (
+    evaluate_f81_tree_likelihood,
     evaluate_gtr_tree_likelihood,
     evaluate_hky85_tree_likelihood,
     evaluate_jc69_tree_likelihood,
@@ -37,6 +38,11 @@ def fixture(group: str, name: str) -> Path:
     [
         ("jc69", {}, evaluate_jc69_tree_likelihood),
         ("k80", {"kappa": 4.0}, evaluate_k80_tree_likelihood),
+        (
+            "f81",
+            {"base_frequencies": {"A": 0.4, "C": 0.1, "G": 0.2, "T": 0.3}},
+            evaluate_f81_tree_likelihood,
+        ),
         (
             "hky85",
             {
@@ -90,9 +96,9 @@ def test_compiled_nucleotide_analysis_matches_existing_tree_reports(
         rel_tol=0.0,
         abs_tol=1e-12,
     )
-    if model_name in {"jc69", "k80"}:
-        expected_parameter_count = 0 if model_name == "jc69" else 1
-        expected_aic_penalty = 0.0 if model_name == "jc69" else 2.0
+    if model_name in {"jc69", "k80", "f81"}:
+        expected_parameter_count = {"jc69": 0, "k80": 1, "f81": 3}[model_name]
+        expected_aic_penalty = {"jc69": 0.0, "k80": 2.0, "f81": 6.0}[model_name]
         assert report.parameter_count == expected_parameter_count
         assert math.isclose(
             report.aic,
