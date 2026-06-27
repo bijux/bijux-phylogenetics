@@ -13,6 +13,10 @@ from bijux_phylogenetics.ancestral.discrete.likelihood.rate_matrix import (
 )
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.alignment.partitions import (
+    LocusPartition,
+    LocusSegment,
+)
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.codon import (
     evaluate_codon_ctmc_tree_likelihood,
@@ -51,6 +55,55 @@ def test_compiled_codon_analysis_matches_existing_tree_report() -> None:
         compiled_log_likelihood,
         report.log_likelihood,
         rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
+def test_compiled_codon_analysis_keeps_partition_weights_and_positions() -> None:
+    tree = load_tree(fixture("trees", "codon_likelihood_tree_2_taxa.nwk"))
+    records = load_fasta_alignment(
+        fixture("alignments", "codon_likelihood_alignment_2_taxa.fasta")
+    )
+    analysis = compile_codon_likelihood_analysis(
+        tree,
+        records,
+        partition_map=(
+            LocusPartition(
+                name="leading-codon",
+                segments=(LocusSegment(start=1, end=3),),
+                total_sites=3,
+                data_type="CODON",
+            ),
+            LocusPartition(
+                name="trailing-codon",
+                segments=(LocusSegment(start=4, end=6),),
+                total_sites=3,
+                data_type="CODON",
+            ),
+        ),
+        site_weight_by_position={2: 2.5},
+    )
+
+    assert analysis.partition_count == 2
+    assert analysis.pattern_count == 2
+    assert analysis.missing_data_policy == "reject"
+    assert math.isclose(analysis.site_weight_total, 3.5, abs_tol=1e-12)
+
+    leading_partition, trailing_partition = analysis.partition_contexts
+    assert leading_partition.partition_name == "leading-codon"
+    assert trailing_partition.partition_name == "trailing-codon"
+    assert leading_partition.pattern_count == 1
+    assert trailing_partition.pattern_count == 1
+    assert leading_partition.compiled_pattern_terms[0].source_site_positions == (1,)
+    assert trailing_partition.compiled_pattern_terms[0].source_site_positions == (2,)
+    assert math.isclose(
+        leading_partition.compiled_pattern_terms[0].effective_weight,
+        1.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        trailing_partition.compiled_pattern_terms[0].effective_weight,
+        2.5,
         abs_tol=1e-12,
     )
 
