@@ -1582,6 +1582,7 @@ class CodonCtmcTreeLikelihoodReport:
     genetic_code_id: int
     genetic_code_name: str
     codon_frequency_source: str
+    root_prior_source: str
     observation_policy: str
     normalization_policy: str
     log_likelihood: float

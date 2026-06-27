@@ -21,6 +21,10 @@ from bijux_phylogenetics.phylo.likelihood.codon_states import (
     build_equal_rate_codon_ctmc_rate_matrix,
     resolve_codon_state_space,
 )
+from bijux_phylogenetics.phylo.likelihood.finite_state_root_priors import (
+    ResolvedFiniteStateRootPrior,
+    resolve_finite_state_root_prior,
+)
 from bijux_phylogenetics.phylo.likelihood.models import CodonCtmcTreeLikelihoodReport
 from bijux_phylogenetics.phylo.likelihood.models import SiteLogLikelihoodRow
 from bijux_phylogenetics.phylo.likelihood.patterns import (
@@ -60,14 +64,25 @@ def evaluate_codon_ctmc_tree_likelihood(
     | list[float]
     | tuple[float, ...]
     | None = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
     genetic_code: int | str | None = None,
     observation_policy: str = "reject",
 ) -> CodonCtmcTreeLikelihoodReport:
     """Evaluate one fixed-topology codon CTMC likelihood on an aligned coding matrix."""
-    compressed_patterns = compress_codon_site_patterns_from_records(
+    normalized_records = normalize_codon_likelihood_records(
         records,
         genetic_code=genetic_code,
         observation_policy=observation_policy,
+    )
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records,
+        site_tokenizer=iter_codon_tokens,
     )
     state_space, rate_matrix, frequencies, frequency_source = (
         build_equal_rate_codon_ctmc_rate_matrix(
@@ -75,13 +90,23 @@ def evaluate_codon_ctmc_tree_likelihood(
             genetic_code=genetic_code,
         )
     )
+    resolved_root_prior = resolve_codon_root_prior(
+        normalized_records,
+        state_space=state_space,
+        owner_name="codon CTMC likelihood",
+        default_policy="stationary",
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        stationary_frequencies=frequencies,
+    )
     site_log_likelihoods, log_likelihood = (
         _evaluate_codon_ctmc_tree_likelihood_rows_from_patterns(
         tree,
         compressed_patterns,
         state_space=state_space,
         rate_matrix=rate_matrix,
-        root_prior=frequencies,
+        root_prior=resolved_root_prior.root_prior,
         observation_policy=observation_policy,
         )
     )
@@ -105,6 +130,7 @@ def evaluate_codon_ctmc_tree_likelihood(
         genetic_code_id=state_space.genetic_code_id,
         genetic_code_name=state_space.genetic_code_name,
         codon_frequency_source=frequency_source,
+        root_prior_source=resolved_root_prior.root_prior_source,
         observation_policy=validate_codon_observation_policy(
             observation_policy,
             owner_name="codon CTMC likelihood",
@@ -124,6 +150,13 @@ def evaluate_codon_ctmc_tree_likelihood_from_alignment(
     | list[float]
     | tuple[float, ...]
     | None = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
     genetic_code: int | str | None = None,
     observation_policy: str = "reject",
 ) -> CodonCtmcTreeLikelihoodReport:
@@ -132,6 +165,9 @@ def evaluate_codon_ctmc_tree_likelihood_from_alignment(
         load_tree(tree_path),
         load_fasta_alignment(alignment_path),
         codon_frequencies=codon_frequencies,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         genetic_code=genetic_code,
         observation_policy=observation_policy,
     )
@@ -202,6 +238,38 @@ def normalize_codon_likelihood_records(
             )
         )
     return normalized_records
+
+
+def resolve_codon_root_prior(
+    records: list[AlignmentRecord],
+    *,
+    state_space: CodonStateSpace,
+    owner_name: str,
+    default_policy: str,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
+    stationary_frequencies: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+) -> ResolvedFiniteStateRootPrior:
+    return resolve_finite_state_root_prior(
+        records,
+        state_labels=state_space.state_order,
+        owner_name=owner_name,
+        default_policy=default_policy,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        stationary_frequencies=stationary_frequencies,
+        sequence_tokenizer=iter_codon_tokens,
+    )
 
 
 def _evaluate_codon_ctmc_tree_likelihood_from_patterns(
@@ -335,5 +403,9 @@ def _codon_leaf_likelihood_vector(
     )
 
 
-def _iter_record_codons(sequence: str) -> tuple[str, ...]:
+def iter_codon_tokens(sequence: str) -> tuple[str, ...]:
     return tuple(sequence[index : index + 3] for index in range(0, len(sequence), 3))
+
+
+def _iter_record_codons(sequence: str) -> tuple[str, ...]:
+    return iter_codon_tokens(sequence)

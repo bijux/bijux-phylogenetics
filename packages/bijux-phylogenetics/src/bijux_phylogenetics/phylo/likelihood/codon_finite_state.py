@@ -34,6 +34,7 @@ from bijux_phylogenetics.runtime.errors import InvalidPartitionError
 
 from .codon import normalize_codon_likelihood_records
 from .codon import compress_codon_site_patterns_from_records
+from .codon import resolve_codon_root_prior
 
 
 def build_codon_finite_state_surface(
@@ -44,6 +45,13 @@ def build_codon_finite_state_surface(
     | list[float]
     | tuple[float, ...]
     | None = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
     genetic_code: int | str | None = None,
     observation_policy: str = "reject",
 ) -> FiniteStateLikelihoodSurface:
@@ -53,11 +61,21 @@ def build_codon_finite_state_surface(
         genetic_code=genetic_code,
         observation_policy=observation_policy,
     )
-    state_space, rate_matrix, frequencies, frequency_source = (
+    state_space, rate_matrix, frequencies, _frequency_source = (
         build_equal_rate_codon_ctmc_rate_matrix(
             codon_frequencies,
             genetic_code=genetic_code,
         )
+    )
+    resolved_root_prior = resolve_codon_root_prior(
+        records,
+        state_space=state_space,
+        owner_name="codon CTMC finite-state surface",
+        default_policy="stationary",
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        stationary_frequencies=frequencies,
     )
     validated_observation_policy = validate_codon_observation_policy(
         observation_policy,
@@ -66,8 +84,8 @@ def build_codon_finite_state_surface(
     return FiniteStateLikelihoodSurface(
         model_name="codon CTMC",
         state_labels=tuple(state_space.state_order),
-        root_prior=frequencies,
-        root_prior_source=frequency_source,
+        root_prior=resolved_root_prior.root_prior,
+        root_prior_source=resolved_root_prior.root_prior_source,
         observation_policy=validated_observation_policy,
         normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
         transition_rate_matrix=rate_matrix,
@@ -96,6 +114,13 @@ def compile_codon_likelihood_analysis(
     | list[float]
     | tuple[float, ...]
     | None = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
     genetic_code: int | str | None = None,
     observation_policy: str = "reject",
     partition_map: tuple[LocusPartition, ...] | None = None,
@@ -111,6 +136,9 @@ def compile_codon_likelihood_analysis(
     surface = build_codon_finite_state_surface(
         normalized_records,
         codon_frequencies=codon_frequencies,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         genetic_code=genetic_code,
         observation_policy=observation_policy,
     )
