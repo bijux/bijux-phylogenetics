@@ -3,9 +3,11 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+import numpy
+
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood import (
     sum_site_log_likelihood_rows,
     sum_weighted_site_pattern_log_likelihood_rows,
@@ -163,6 +165,37 @@ def test_codon_surface_preserves_partial_missing_and_gap_constraints() -> None:
         family_report.log_likelihood,
         missing_report.log_likelihood,
         rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
+def test_codon_surface_normalizes_rna_records_for_empirical_root_prior() -> None:
+    records = [
+        AlignmentRecord(identifier="A", sequence="augaaa"),
+        AlignmentRecord(identifier="B", sequence="augaag"),
+    ]
+
+    surface = build_codon_finite_state_surface(
+        records,
+        root_prior_policy="empirical",
+    )
+
+    assert surface.root_prior_source == "empirical"
+    assert surface.state_count == 61
+    assert math.isclose(float(numpy.sum(surface.root_prior)), 1.0, abs_tol=1e-12)
+    assert math.isclose(
+        float(surface.root_prior[surface.state_labels.index("ATG")]),
+        0.5,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        float(surface.root_prior[surface.state_labels.index("AAA")]),
+        0.25,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        float(surface.root_prior[surface.state_labels.index("AAG")]),
+        0.25,
         abs_tol=1e-12,
     )
 
