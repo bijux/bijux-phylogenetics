@@ -299,6 +299,7 @@ __all__ = [
     "SimplexCoordinateParameterization",
     "SolvedCtmcStationaryDistribution",
     "compute_ctmc_expected_substitution_rate",
+    "EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY",
     "normalize_ctmc_rate_matrix_by_expected_substitution_rate",
     "solve_ctmc_stationary_distribution",
     "summarize_marginal_ancestral_sites",

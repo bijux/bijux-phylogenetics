@@ -73,6 +73,7 @@ def build_selected_nucleotide_finite_state_surface(
         root_prior=specification.root_prior,
         root_prior_source=specification.root_prior_source,
         observation_policy=specification.observation_policy,
+        normalization_policy=specification.normalization_policy,
         transition_matrix_for_branch_length=(
             specification.transition_matrix_for_branch_length
         ),

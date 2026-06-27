@@ -15,6 +15,9 @@ from bijux_phylogenetics.phylo.likelihood.dna import (
     is_dna_transition,
     validate_positive_kappa,
 )
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+)
 from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
     augment_dna_rate_matrix_with_gap_state,
     dna_observation_state_order,
@@ -325,6 +328,7 @@ def _evaluate_k80_tree_likelihood_from_patterns(
             root_prior=root_prior,
             root_prior_source="provided",
             observation_policy=observation_policy,
+            normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
             transition_matrix_for_branch_length=transition_matrix_for_branch_length,
             leaf_likelihood_vector_for_state=lambda taxon_name, observed_state: (
                 resolve_dna_observation_leaf_vector(

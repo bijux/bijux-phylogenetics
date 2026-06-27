@@ -12,6 +12,9 @@ from bijux_phylogenetics.phylo.likelihood.dna import (
     validate_dna_base_frequencies,
     validate_positive_kappa,
 )
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+)
 from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
     augment_dna_rate_matrix_with_gap_state,
     dna_observation_state_order,
@@ -54,6 +57,7 @@ class SelectedNucleotideLikelihoodSpecification:
     root_prior_source: str
     state_count: int
     observation_policy: str
+    normalization_policy: str
     parameter_values: dict[str, float]
     transition_matrix_for_branch_length: Callable[[float], numpy.ndarray]
 
@@ -130,6 +134,7 @@ def resolve_selected_nucleotide_likelihood_specification(
             root_prior_source=resolved_root_prior.root_prior_source,
             state_count=state_count,
             observation_policy=normalized_observation_policy,
+            normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
             parameter_values={},
             transition_matrix_for_branch_length=(
                 (
@@ -177,6 +182,7 @@ def resolve_selected_nucleotide_likelihood_specification(
             root_prior_source=resolved_root_prior.root_prior_source,
             state_count=state_count,
             observation_policy=normalized_observation_policy,
+            normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
             parameter_values={"kappa": validated_kappa},
             transition_matrix_for_branch_length=(
                 (
@@ -232,6 +238,7 @@ def resolve_selected_nucleotide_likelihood_specification(
             root_prior_source=resolved_root_prior.root_prior_source,
             state_count=state_count,
             observation_policy=normalized_observation_policy,
+            normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
             parameter_values=_base_frequency_parameter_values(stationary),
             transition_matrix_for_branch_length=(
                 (
@@ -289,6 +296,7 @@ def resolve_selected_nucleotide_likelihood_specification(
             root_prior_source=resolved_root_prior.root_prior_source,
             state_count=state_count,
             observation_policy=normalized_observation_policy,
+            normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
             parameter_values={
                 **_base_frequency_parameter_values(stationary),
                 "kappa": validated_kappa,
@@ -356,6 +364,7 @@ def resolve_selected_nucleotide_likelihood_specification(
         root_prior_source=resolved_root_prior.root_prior_source,
         state_count=state_count,
         observation_policy=normalized_observation_policy,
+        normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
         parameter_values={
             **_base_frequency_parameter_values(stationary),
             "exchangeability_ac": float(normalized_exchangeabilities[0]),

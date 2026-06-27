@@ -50,6 +50,7 @@ class FiniteStateLikelihoodSurface:
     observation_policy: str
     transition_matrix_for_branch_length: FiniteStateTransitionMatrix
     leaf_likelihood_vector_for_state: FiniteStateLeafVector
+    normalization_policy: str | None = None
     parameter_values: Mapping[str, float] = field(default_factory=dict)
 
     @property
