@@ -14,6 +14,9 @@ from bijux_phylogenetics.phylo.likelihood.codon_observation_policies import (
 from bijux_phylogenetics.phylo.likelihood.codon_states import (
     build_equal_rate_codon_ctmc_rate_matrix,
 )
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+)
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
     CompiledFiniteStateLikelihoodAnalysis,
     FiniteStateLikelihoodSurface,
@@ -62,6 +65,7 @@ def build_codon_finite_state_surface(
         root_prior=frequencies,
         root_prior_source=frequency_source,
         observation_policy=validated_observation_policy,
+        normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
         transition_matrix_for_branch_length=lambda branch_length: (
             transition_probability_matrix(rate_matrix, branch_length)
         ),

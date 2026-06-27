@@ -9,6 +9,9 @@ from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+)
 from bijux_phylogenetics.phylo.likelihood.models import (
     ProteinPoissonTreeLikelihoodReport,
 )
@@ -127,6 +130,7 @@ def _evaluate_protein_poisson_tree_likelihood_from_patterns(
             observation_policy=(
                 f"gap={gap_policy};missing={missing_policy};ambiguity={ambiguity_policy}"
             ),
+            normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
             transition_matrix_for_branch_length=(
                 protein_poisson_transition_probability_matrix
             ),

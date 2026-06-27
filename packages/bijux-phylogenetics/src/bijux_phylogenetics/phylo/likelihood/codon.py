@@ -9,6 +9,9 @@ from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+)
 from bijux_phylogenetics.phylo.likelihood.codon_observation_policies import (
     resolve_codon_observation_leaf_vector,
     validate_codon_observation_policy,
@@ -231,6 +234,7 @@ def _evaluate_codon_ctmc_tree_likelihood_from_patterns(
             root_prior=root_prior,
             root_prior_source="provided",
             observation_policy=observation_policy,
+            normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
             transition_matrix_for_branch_length=(
                 transition_evaluator.transition_probability_matrix
             ),
