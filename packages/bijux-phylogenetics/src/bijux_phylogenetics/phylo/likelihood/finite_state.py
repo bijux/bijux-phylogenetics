@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
+import hashlib
 from pathlib import Path
 
 import numpy
@@ -50,12 +51,41 @@ class FiniteStateLikelihoodSurface:
     observation_policy: str
     transition_matrix_for_branch_length: FiniteStateTransitionMatrix
     leaf_likelihood_vector_for_state: FiniteStateLeafVector
+    transition_rate_matrix: numpy.ndarray | None = None
     normalization_policy: str | None = None
     parameter_values: Mapping[str, float] = field(default_factory=dict)
 
     @property
     def state_count(self) -> int:
         return len(self.state_labels)
+
+
+@dataclass(frozen=True, slots=True)
+class FiniteStateTransitionModelState:
+    """One stable finite-state transition identity for shared matrix caching."""
+
+    model_name: str
+    state_labels: tuple[str, ...]
+    observation_policy: str
+    normalization_policy: str | None
+    root_prior_source: str
+    root_prior_digest: str
+    parameter_items: tuple[tuple[str, float], ...]
+    transition_rate_matrix_digest: str
+
+
+@dataclass(frozen=True, slots=True)
+class FiniteStateTransitionCacheKey:
+    """One shared finite-state transition cache key for a model state and branch."""
+
+    model_state: FiniteStateTransitionModelState
+    branch_length: float
+
+
+_SHARED_FINITE_STATE_TRANSITION_CACHE: dict[
+    FiniteStateTransitionCacheKey,
+    numpy.ndarray,
+] = {}
 
 
 @dataclass(slots=True)
@@ -65,6 +95,10 @@ class CompiledFiniteStateLikelihoodContext:
     tree: PhyloTree
     surface: FiniteStateLikelihoodSurface
     transition_matrix_by_node_id: dict[str, numpy.ndarray]
+    transition_model_state: FiniteStateTransitionModelState | None = None
+    transition_cache_key_by_node_id: dict[str, FiniteStateTransitionCacheKey] = field(
+        default_factory=dict
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -104,24 +138,49 @@ class CompiledFiniteStateLikelihoodAnalysis:
     partition_contexts: tuple[CompiledFiniteStatePartitionContext, ...]
 
 
+def clear_shared_finite_state_transition_cache() -> None:
+    """Drop every shared finite-state transition matrix cached across contexts."""
+    _SHARED_FINITE_STATE_TRANSITION_CACHE.clear()
+
+
+def shared_finite_state_transition_cache_entry_count() -> int:
+    """Report how many shared finite-state transition matrices are cached."""
+    return len(_SHARED_FINITE_STATE_TRANSITION_CACHE)
+
+
 def compile_finite_state_likelihood_context(
     tree: PhyloTree,
     surface: FiniteStateLikelihoodSurface,
 ) -> CompiledFiniteStateLikelihoodContext:
     """Compile one rooted tree plus one finite-state model into cached branches."""
     transition_matrix_by_node_id: dict[str, numpy.ndarray] = {}
+    transition_cache_key_by_node_id: dict[str, FiniteStateTransitionCacheKey] = {}
+    transition_model_state = _transition_model_state(surface)
     for _parent, child in tree.iter_edges():
         if child.node_id is None:
             raise ValueError("tree node is missing a stable node_id")
-        transition_matrix_by_node_id[child.node_id] = (
-            surface.transition_matrix_for_branch_length(
-                max(float(child.branch_length or 0.0), 0.0)
+        branch_length = max(float(child.branch_length or 0.0), 0.0)
+        transition_cache_key = (
+            None
+            if transition_model_state is None
+            else FiniteStateTransitionCacheKey(
+                model_state=transition_model_state,
+                branch_length=branch_length,
             )
         )
+        transition_matrix_by_node_id[child.node_id] = _compiled_transition_matrix(
+            surface,
+            branch_length=branch_length,
+            transition_cache_key=transition_cache_key,
+        )
+        if transition_cache_key is not None:
+            transition_cache_key_by_node_id[child.node_id] = transition_cache_key
     return CompiledFiniteStateLikelihoodContext(
         tree=tree,
         surface=surface,
         transition_matrix_by_node_id=transition_matrix_by_node_id,
+        transition_model_state=transition_model_state,
+        transition_cache_key_by_node_id=transition_cache_key_by_node_id,
     )
 
 
@@ -305,6 +364,51 @@ def _transition_matrix_for_child(
     if child_node_id is None:
         raise ValueError("tree node is missing a stable node_id")
     return context.transition_matrix_by_node_id[child_node_id]
+
+
+def _compiled_transition_matrix(
+    surface: FiniteStateLikelihoodSurface,
+    *,
+    branch_length: float,
+    transition_cache_key: FiniteStateTransitionCacheKey | None,
+) -> numpy.ndarray:
+    if transition_cache_key is None:
+        return surface.transition_matrix_for_branch_length(branch_length)
+    cached_matrix = _SHARED_FINITE_STATE_TRANSITION_CACHE.get(transition_cache_key)
+    if cached_matrix is not None:
+        return cached_matrix
+    resolved_matrix = numpy.asarray(
+        surface.transition_matrix_for_branch_length(branch_length),
+        dtype=float,
+    )
+    resolved_matrix.setflags(write=False)
+    _SHARED_FINITE_STATE_TRANSITION_CACHE[transition_cache_key] = resolved_matrix
+    return resolved_matrix
+
+
+def _transition_model_state(
+    surface: FiniteStateLikelihoodSurface,
+) -> FiniteStateTransitionModelState | None:
+    if surface.transition_rate_matrix is None:
+        return None
+    return FiniteStateTransitionModelState(
+        model_name=surface.model_name,
+        state_labels=surface.state_labels,
+        observation_policy=surface.observation_policy,
+        normalization_policy=surface.normalization_policy,
+        root_prior_source=surface.root_prior_source,
+        root_prior_digest=_float_array_digest(surface.root_prior),
+        parameter_items=tuple(
+            (key, float(value))
+            for key, value in sorted(surface.parameter_values.items())
+        ),
+        transition_rate_matrix_digest=_float_array_digest(surface.transition_rate_matrix),
+    )
+
+
+def _float_array_digest(values: numpy.ndarray) -> str:
+    normalized = numpy.asarray(values, dtype=float)
+    return hashlib.sha256(normalized.tobytes(order="C")).hexdigest()
 
 
 def _compile_partition_contexts(
