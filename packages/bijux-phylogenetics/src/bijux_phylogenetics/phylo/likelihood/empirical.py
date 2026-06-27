@@ -11,6 +11,7 @@ from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.ctmc import (
     CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
+    solve_ctmc_stationary_distribution,
 )
 from bijux_phylogenetics.phylo.likelihood.gamma import (
     build_discrete_gamma_rate_categories,
@@ -52,13 +53,12 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
 )
 from bijux_phylogenetics.phylo.likelihood.protein import (
     PROTEIN_STATE_ORDER,
-    UNIFORM_PROTEIN_ROOT_PRIOR,
     evaluate_fixed_topology_protein_site_log_likelihood,
     normalize_protein_likelihood_records,
     normalize_unambiguous_protein_records,
     protein_leaf_likelihood_vector,
+    resolve_protein_root_prior,
     validate_empirical_protein_rate_matrix,
-    validate_protein_root_prior,
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
 from bijux_phylogenetics.phylo.likelihood.sites import (
@@ -89,12 +89,51 @@ def validate_empirical_branch_optimization_model(likelihood_model: str) -> str:
     return likelihood_model
 
 
+def _stationary_distribution_for_empirical_rate_matrix(
+    rate_matrix: numpy.ndarray,
+) -> numpy.ndarray:
+    report = solve_ctmc_stationary_distribution(
+        rate_matrix,
+        state_labels=PROTEIN_STATE_ORDER,
+    )
+    return numpy.asarray(report.probabilities, dtype=float)
+
+
+def _resolve_empirical_protein_root_prior(
+    records: list[AlignmentRecord],
+    *,
+    owner_name: str,
+    validated_rate_matrix: numpy.ndarray,
+    root_prior_policy: str | None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None,
+    fixed_root_state: str | None,
+) -> tuple[numpy.ndarray, str]:
+    resolved = resolve_protein_root_prior(
+        records,
+        owner_name=owner_name,
+        default_policy="equal",
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        stationary_frequencies=_stationary_distribution_for_empirical_rate_matrix(
+            validated_rate_matrix
+        ),
+    )
+    return resolved.root_prior, resolved.root_prior_source
+
+
 def evaluate_empirical_protein_tree_likelihood(
     tree: PhyloTree,
     records: list[AlignmentRecord],
     *,
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -111,19 +150,22 @@ def evaluate_empirical_protein_tree_likelihood(
     compressed_patterns = compress_alignment_site_patterns_from_records(
         normalized_records
     )
-    if root_prior is None:
-        validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
-        root_prior_source = "uniform"
-    else:
-        validated_root_prior = validate_protein_root_prior(
-            root_prior,
-            model_name="empirical protein matrix",
-        )
-        root_prior_source = "provided"
+    validated_rate_matrix = validate_empirical_protein_rate_matrix(
+        rate_matrix,
+        model_name="empirical protein matrix",
+    )
+    validated_root_prior, root_prior_source = _resolve_empirical_protein_root_prior(
+        normalized_records,
+        owner_name="empirical protein matrix",
+        validated_rate_matrix=validated_rate_matrix,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+    )
     return _evaluate_empirical_protein_tree_likelihood_from_patterns(
         tree,
         compressed_patterns,
-        rate_matrix=rate_matrix,
+        rate_matrix=validated_rate_matrix,
         root_prior=validated_root_prior,
         root_prior_source=root_prior_source,
         matrix_label=matrix_label,
@@ -138,7 +180,9 @@ def evaluate_empirical_protein_tree_likelihood_from_alignment(
     alignment_path: Path,
     *,
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -149,7 +193,9 @@ def evaluate_empirical_protein_tree_likelihood_from_alignment(
         load_tree(tree_path),
         load_fasta_alignment(alignment_path),
         rate_matrix=rate_matrix,
+        root_prior_policy=root_prior_policy,
         root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         matrix_label=matrix_label,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
@@ -166,7 +212,9 @@ def optimize_empirical_protein_branch_lengths(
     alpha: float | None = None,
     invariant_proportion: float | None = None,
     category_count: int = 4,
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -199,18 +247,17 @@ def optimize_empirical_protein_branch_lengths(
     compressed_patterns = compress_alignment_site_patterns_from_records(
         normalized_records
     )
-    if root_prior is None:
-        validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
-        root_prior_source = "uniform"
-    else:
-        validated_root_prior = validate_protein_root_prior(
-            root_prior,
-            model_name="empirical protein branch optimization",
-        )
-        root_prior_source = "provided"
     validated_rate_matrix = validate_empirical_protein_rate_matrix(
         rate_matrix,
         model_name="empirical protein branch optimization",
+    )
+    validated_root_prior, root_prior_source = _resolve_empirical_protein_root_prior(
+        normalized_records,
+        owner_name="empirical protein branch optimization",
+        validated_rate_matrix=validated_rate_matrix,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
     )
     validated_alpha, validated_invariant_proportion = (
         _validate_empirical_branch_optimization_parameters(
@@ -326,7 +373,9 @@ def optimize_empirical_protein_branch_lengths_from_alignment(
     alpha: float | None = None,
     invariant_proportion: float | None = None,
     category_count: int = 4,
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -344,7 +393,9 @@ def optimize_empirical_protein_branch_lengths_from_alignment(
         alpha=alpha,
         invariant_proportion=invariant_proportion,
         category_count=category_count,
+        root_prior_policy=root_prior_policy,
         root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         matrix_label=matrix_label,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
@@ -362,7 +413,9 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma(
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
     alpha: float,
     category_count: int = 4,
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -377,20 +430,23 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma(
     compressed_patterns = compress_alignment_site_patterns_from_records(
         normalized_records
     )
-    if root_prior is None:
-        validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
-        root_prior_source = "uniform"
-    else:
-        validated_root_prior = validate_protein_root_prior(
-            root_prior,
-            model_name="empirical protein matrix +G",
-        )
-        root_prior_source = "provided"
+    validated_rate_matrix = validate_empirical_protein_rate_matrix(
+        rate_matrix,
+        model_name="empirical protein matrix +G",
+    )
+    validated_root_prior, root_prior_source = _resolve_empirical_protein_root_prior(
+        normalized_records,
+        owner_name="empirical protein matrix +G",
+        validated_rate_matrix=validated_rate_matrix,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+    )
     return (
         _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_patterns(
             tree,
             compressed_patterns,
-            rate_matrix=rate_matrix,
+            rate_matrix=validated_rate_matrix,
             alpha=alpha,
             category_count=category_count,
             root_prior=validated_root_prior,
@@ -409,7 +465,9 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignmen
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
     alpha: float,
     category_count: int = 4,
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -421,7 +479,9 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignmen
         rate_matrix=rate_matrix,
         alpha=alpha,
         category_count=category_count,
+        root_prior_policy=root_prior_policy,
         root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         matrix_label=matrix_label,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
@@ -435,7 +495,9 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
     alpha: float,
     category_count: int = 4,
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     initial_invariant_proportion: float = 0.1,
     lower_invariant_proportion_bound: float = 0.0,
     upper_invariant_proportion_bound: float = 0.95,
@@ -453,15 +515,6 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
     compressed_patterns = compress_alignment_site_patterns_from_records(
         normalized_records
     )
-    if root_prior is None:
-        validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
-        root_prior_source = "uniform"
-    else:
-        validated_root_prior = validate_protein_root_prior(
-            root_prior,
-            model_name="empirical protein matrix +G+I",
-        )
-        root_prior_source = "provided"
     (
         validated_initial_invariant_proportion,
         validated_lower_invariant_proportion_bound,
@@ -475,6 +528,14 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
     validated_rate_matrix = validate_empirical_protein_rate_matrix(
         rate_matrix,
         model_name="empirical protein matrix +G+I",
+    )
+    validated_root_prior, root_prior_source = _resolve_empirical_protein_root_prior(
+        normalized_records,
+        owner_name="empirical protein matrix +G+I",
+        validated_rate_matrix=validated_rate_matrix,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
     )
     categories = build_discrete_gamma_rate_categories(
         alpha=alpha,
@@ -573,7 +634,9 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
     alpha: float,
     category_count: int = 4,
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     initial_invariant_proportion: float = 0.1,
     lower_invariant_proportion_bound: float = 0.0,
     upper_invariant_proportion_bound: float = 0.95,
@@ -588,7 +651,9 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         rate_matrix=rate_matrix,
         alpha=alpha,
         category_count=category_count,
+        root_prior_policy=root_prior_policy,
         root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         initial_invariant_proportion=initial_invariant_proportion,
         lower_invariant_proportion_bound=lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=upper_invariant_proportion_bound,
@@ -606,7 +671,9 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
     alpha: float,
     invariant_proportion: float,
     category_count: int = 4,
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -621,15 +688,6 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
     compressed_patterns = compress_alignment_site_patterns_from_records(
         normalized_records
     )
-    if root_prior is None:
-        validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
-        root_prior_source = "uniform"
-    else:
-        validated_root_prior = validate_protein_root_prior(
-            root_prior,
-            model_name="empirical protein matrix +G+I",
-        )
-        root_prior_source = "provided"
     validated_invariant_proportion = validate_invariant_proportion(
         invariant_proportion,
         model_name="empirical protein matrix +G+I",
@@ -637,6 +695,14 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
     validated_rate_matrix = validate_empirical_protein_rate_matrix(
         rate_matrix,
         model_name="empirical protein matrix +G+I",
+    )
+    validated_root_prior, root_prior_source = _resolve_empirical_protein_root_prior(
+        normalized_records,
+        owner_name="empirical protein matrix +G+I",
+        validated_rate_matrix=validated_rate_matrix,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
     )
     categories = build_discrete_gamma_rate_categories(
         alpha=alpha,
@@ -671,7 +737,9 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
     alpha: float,
     invariant_proportion: float,
     category_count: int = 4,
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -684,7 +752,9 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         alpha=alpha,
         invariant_proportion=invariant_proportion,
         category_count=category_count,
+        root_prior_policy=root_prior_policy,
         root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         matrix_label=matrix_label,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
@@ -696,7 +766,9 @@ def optimize_empirical_protein_tree_likelihood_with_invariant_mixture(
     records: list[AlignmentRecord],
     *,
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     initial_invariant_proportion: float = 0.1,
     lower_invariant_proportion_bound: float = 0.0,
     upper_invariant_proportion_bound: float = 0.95,
@@ -714,15 +786,6 @@ def optimize_empirical_protein_tree_likelihood_with_invariant_mixture(
     compressed_patterns = compress_alignment_site_patterns_from_records(
         normalized_records
     )
-    if root_prior is None:
-        validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
-        root_prior_source = "uniform"
-    else:
-        validated_root_prior = validate_protein_root_prior(
-            root_prior,
-            model_name="empirical protein matrix +I",
-        )
-        root_prior_source = "provided"
     (
         validated_initial_invariant_proportion,
         validated_lower_invariant_proportion_bound,
@@ -736,6 +799,14 @@ def optimize_empirical_protein_tree_likelihood_with_invariant_mixture(
     validated_rate_matrix = validate_empirical_protein_rate_matrix(
         rate_matrix,
         model_name="empirical protein matrix +I",
+    )
+    validated_root_prior, root_prior_source = _resolve_empirical_protein_root_prior(
+        normalized_records,
+        owner_name="empirical protein matrix +I",
+        validated_rate_matrix=validated_rate_matrix,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
     )
     transition_by_node_id = {
         child.node_id: transition_probability_matrix(
@@ -804,7 +875,9 @@ def optimize_empirical_protein_tree_likelihood_with_invariant_mixture_from_align
     alignment_path: Path,
     *,
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     initial_invariant_proportion: float = 0.1,
     lower_invariant_proportion_bound: float = 0.0,
     upper_invariant_proportion_bound: float = 0.95,
@@ -817,7 +890,9 @@ def optimize_empirical_protein_tree_likelihood_with_invariant_mixture_from_align
         load_tree(tree_path),
         load_fasta_alignment(alignment_path),
         rate_matrix=rate_matrix,
+        root_prior_policy=root_prior_policy,
         root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         initial_invariant_proportion=initial_invariant_proportion,
         lower_invariant_proportion_bound=lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=upper_invariant_proportion_bound,
@@ -833,7 +908,9 @@ def evaluate_empirical_protein_tree_likelihood_with_invariant_mixture(
     *,
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
     invariant_proportion: float,
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -848,15 +925,6 @@ def evaluate_empirical_protein_tree_likelihood_with_invariant_mixture(
     compressed_patterns = compress_alignment_site_patterns_from_records(
         normalized_records
     )
-    if root_prior is None:
-        validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
-        root_prior_source = "uniform"
-    else:
-        validated_root_prior = validate_protein_root_prior(
-            root_prior,
-            model_name="empirical protein matrix +I",
-        )
-        root_prior_source = "provided"
     validated_invariant_proportion = validate_invariant_proportion(
         invariant_proportion,
         model_name="empirical protein matrix +I",
@@ -864,6 +932,14 @@ def evaluate_empirical_protein_tree_likelihood_with_invariant_mixture(
     validated_rate_matrix = validate_empirical_protein_rate_matrix(
         rate_matrix,
         model_name="empirical protein matrix +I",
+    )
+    validated_root_prior, root_prior_source = _resolve_empirical_protein_root_prior(
+        normalized_records,
+        owner_name="empirical protein matrix +I",
+        validated_rate_matrix=validated_rate_matrix,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
     )
     transition_by_node_id = {
         child.node_id: transition_probability_matrix(
@@ -896,7 +972,9 @@ def evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_align
     *,
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
     invariant_proportion: float,
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -907,7 +985,9 @@ def evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_align
         load_fasta_alignment(alignment_path),
         rate_matrix=rate_matrix,
         invariant_proportion=invariant_proportion,
+        root_prior_policy=root_prior_policy,
         root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         matrix_label=matrix_label,
         gap_policy=gap_policy,
         missing_policy=missing_policy,

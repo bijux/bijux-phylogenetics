@@ -142,16 +142,17 @@ def resolve_finite_state_root_prior(
     | None = None,
     sequence_tokenizer: Callable[[str], Iterable[str]] | None = None,
 ) -> ResolvedFiniteStateRootPrior:
-    normalized_policy = (
-        validate_finite_state_root_prior_policy(
-            root_prior_policy,
-            owner_name=owner_name,
-        )
-        if root_prior_policy is not None
-        else validate_finite_state_root_prior_policy(
-            default_policy,
-            owner_name=owner_name,
-        )
+    effective_policy = root_prior_policy
+    if effective_policy is None:
+        if root_prior is not None:
+            effective_policy = "provided"
+        elif fixed_root_state is not None:
+            effective_policy = "fixed-state"
+        else:
+            effective_policy = default_policy
+    normalized_policy = validate_finite_state_root_prior_policy(
+        effective_policy,
+        owner_name=owner_name,
     )
     resolved_state_labels = tuple(state_labels)
     if normalized_policy == "equal":

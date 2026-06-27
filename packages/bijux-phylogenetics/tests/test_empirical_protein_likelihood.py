@@ -154,6 +154,82 @@ def test_empirical_protein_matrix_ambiguity_policies_change_likelihood() -> None
     )
 
 
+def test_empirical_protein_root_prior_policies_change_asymmetric_likelihoods() -> None:
+    tree_path = fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk")
+    alignment_path = fixture(
+        "alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"
+    )
+    rate_matrix = _asymmetric_rate_matrix()
+
+    equal_report = evaluate_empirical_protein_tree_likelihood_from_alignment(
+        tree_path,
+        alignment_path,
+        rate_matrix=rate_matrix,
+        root_prior_policy="equal",
+        matrix_label="asymmetric",
+    )
+    empirical_report = evaluate_empirical_protein_tree_likelihood_from_alignment(
+        tree_path,
+        alignment_path,
+        rate_matrix=rate_matrix,
+        root_prior_policy="empirical",
+        matrix_label="asymmetric",
+    )
+    stationary_report = evaluate_empirical_protein_tree_likelihood_from_alignment(
+        tree_path,
+        alignment_path,
+        rate_matrix=rate_matrix,
+        root_prior_policy="stationary",
+        matrix_label="asymmetric",
+    )
+    fixed_report = evaluate_empirical_protein_tree_likelihood_from_alignment(
+        tree_path,
+        alignment_path,
+        rate_matrix=rate_matrix,
+        root_prior_policy="fixed-state",
+        fixed_root_state="A",
+        matrix_label="asymmetric",
+    )
+    provided_report = evaluate_empirical_protein_tree_likelihood_from_alignment(
+        tree_path,
+        alignment_path,
+        rate_matrix=rate_matrix,
+        root_prior_policy="provided",
+        root_prior=_biased_root_prior(),
+        matrix_label="asymmetric",
+    )
+
+    assert equal_report.root_prior_source == "equal"
+    assert empirical_report.root_prior_source == "empirical"
+    assert stationary_report.root_prior_source == "stationary"
+    assert fixed_report.root_prior_source == "fixed-state"
+    assert provided_report.root_prior_source == "provided"
+    assert not math.isclose(
+        equal_report.log_likelihood,
+        stationary_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert not math.isclose(
+        empirical_report.log_likelihood,
+        equal_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert not math.isclose(
+        fixed_report.log_likelihood,
+        equal_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert not math.isclose(
+        provided_report.log_likelihood,
+        equal_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
 def _compact_polar_rate_matrix() -> numpy.ndarray:
     return _build_empirical_rate_matrix(
         boosted_pairs={
@@ -174,6 +250,26 @@ def _aromatic_shift_rate_matrix() -> numpy.ndarray:
             ("E", "Y"): 0.30,
         }
     )
+
+
+def _asymmetric_rate_matrix() -> numpy.ndarray:
+    rate_matrix = _build_empirical_rate_matrix(
+        boosted_pairs={
+            ("A", "C"): 0.45,
+            ("C", "D"): 0.35,
+            ("D", "E"): 0.55,
+            ("A", "E"): 0.20,
+        }
+    )
+    state_index = _protein_state_index()
+    numpy.fill_diagonal(rate_matrix, 0.0)
+    rate_matrix[state_index["A"], state_index["C"]] = 0.80
+    rate_matrix[state_index["C"], state_index["A"]] = 0.05
+    rate_matrix[state_index["D"], state_index["E"]] = 0.70
+    rate_matrix[state_index["E"], state_index["D"]] = 0.10
+    for row_index in range(rate_matrix.shape[0]):
+        rate_matrix[row_index, row_index] = -float(numpy.sum(rate_matrix[row_index, :]))
+    return rate_matrix
 
 
 def _biased_root_prior() -> numpy.ndarray:
