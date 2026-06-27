@@ -223,6 +223,8 @@ __all__ = [
     "bootstrap_nucleotide_likelihood_tree_inference_from_alignment",
     "compile_finite_state_likelihood_context",
     "clear_shared_finite_state_transition_cache",
+    "update_compiled_finite_state_analysis_branch_length",
+    "update_compiled_finite_state_context_branch_length",
     "evaluate_nucleotide_sh_like_branch_support",
     "evaluate_nucleotide_sh_like_branch_support_from_alignment",
     "optimize_gtr_exchangeabilities",
