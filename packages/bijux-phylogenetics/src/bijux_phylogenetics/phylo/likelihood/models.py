@@ -29,6 +29,7 @@ class Jc69TreeLikelihoodReport:
     tree_newick: str
     state_count: int
     observation_policy: str
+    normalization_policy: str
     log_likelihood: float
 
 
@@ -162,6 +163,7 @@ class K80TreeLikelihoodReport:
     tree_newick: str
     state_count: int
     observation_policy: str
+    normalization_policy: str
     kappa: float
     log_likelihood: float
 
@@ -195,6 +197,7 @@ class F81TreeLikelihoodReport:
     tree_newick: str
     state_count: int
     observation_policy: str
+    normalization_policy: str
     base_frequency_source: str
     base_frequency_a: float
     base_frequency_c: float
@@ -216,6 +219,7 @@ class Hky85TreeLikelihoodReport:
     tree_newick: str
     state_count: int
     observation_policy: str
+    normalization_policy: str
     base_frequency_source: str
     base_frequency_a: float
     base_frequency_c: float
@@ -264,6 +268,7 @@ class GtrTreeLikelihoodReport:
     tree_newick: str
     state_count: int
     observation_policy: str
+    normalization_policy: str
     base_frequency_source: str
     base_frequency_a: float
     base_frequency_c: float
@@ -1526,6 +1531,7 @@ class ProteinPoissonTreeLikelihoodReport:
     gap_policy: str
     missing_policy: str
     ambiguity_policy: str
+    normalization_policy: str
     log_likelihood: float
     site_log_likelihoods: list[SiteLogLikelihoodRow]
     branch_likelihood_diagnostics: list[BranchLikelihoodDiagnosticRow] | None = None
@@ -1545,6 +1551,7 @@ class CodonCtmcTreeLikelihoodReport:
     genetic_code_name: str
     codon_frequency_source: str
     observation_policy: str
+    normalization_policy: str
     log_likelihood: float
 
 
@@ -1563,6 +1570,7 @@ class ProteinEmpiricalMatrixTreeLikelihoodReport:
     gap_policy: str
     missing_policy: str
     ambiguity_policy: str
+    normalization_policy: str
     log_likelihood: float
     site_log_likelihoods: list[SiteLogLikelihoodRow]
     branch_likelihood_diagnostics: list[BranchLikelihoodDiagnosticRow] | None = None
@@ -1804,6 +1812,7 @@ class ProteinEmpiricalDiscreteGammaTreeLikelihoodReport:
     root_prior_source: str
     gap_policy: str
     missing_policy: str
+    normalization_policy: str
     alpha: float
     category_count: int
     category_rates: list[DiscreteGammaRateCategory]
@@ -1840,6 +1849,7 @@ class ProteinEmpiricalInvariantMixtureTreeLikelihoodReport:
     root_prior_source: str
     gap_policy: str
     missing_policy: str
+    normalization_policy: str
     initial_invariant_proportion: float
     invariant_proportion: float
     initial_log_likelihood: float
@@ -1881,6 +1891,7 @@ class ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport:
     root_prior_source: str
     gap_policy: str
     missing_policy: str
+    normalization_policy: str
     alpha: float
     category_count: int
     category_rates: list[DiscreteGammaRateCategory]

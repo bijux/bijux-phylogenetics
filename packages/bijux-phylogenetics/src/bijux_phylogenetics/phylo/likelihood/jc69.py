@@ -375,5 +375,6 @@ def _evaluate_jc69_tree_likelihood_from_patterns(
         tree_newick=dumps_newick(tree),
         state_count=len(state_order),
         observation_policy=observation_policy,
+        normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
         log_likelihood=log_likelihood,
     )

@@ -96,6 +96,7 @@ def evaluate_codon_ctmc_tree_likelihood(
             observation_policy,
             owner_name="codon CTMC likelihood",
         ),
+        normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
         log_likelihood=log_likelihood,
     )
 

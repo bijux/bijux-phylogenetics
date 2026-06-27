@@ -260,6 +260,7 @@ def _evaluate_f81_tree_likelihood_from_patterns(
         tree_newick=dumps_newick(tree),
         state_count=len(state_order),
         observation_policy=observation_policy,
+        normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
         base_frequency_source=base_frequency_source,
         base_frequency_a=float(validated_frequencies[0]),
         base_frequency_c=float(validated_frequencies[1]),

@@ -169,6 +169,7 @@ def _evaluate_protein_poisson_tree_likelihood_from_patterns(
         gap_policy=gap_policy,
         missing_policy=missing_policy,
         ambiguity_policy=ambiguity_policy,
+        normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
         log_likelihood=log_likelihood,
         site_log_likelihoods=site_log_likelihoods,
     )

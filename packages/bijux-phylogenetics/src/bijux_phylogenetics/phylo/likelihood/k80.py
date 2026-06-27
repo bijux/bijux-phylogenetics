@@ -352,6 +352,7 @@ def _evaluate_k80_tree_likelihood_from_patterns(
         tree_newick=dumps_newick(tree),
         state_count=len(state_order),
         observation_policy=observation_policy,
+        normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
         kappa=kappa,
         log_likelihood=log_likelihood,
     )
