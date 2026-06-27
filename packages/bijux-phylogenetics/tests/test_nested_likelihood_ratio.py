@@ -86,6 +86,55 @@ def test_nucleotide_nested_likelihood_ratio_report_governed_jc69_to_k80_case() -
     assert report.warnings == []
 
 
+def test_nucleotide_nested_likelihood_ratio_report_governed_jc69_to_f81_case() -> (
+    None
+):
+    report = evaluate_nucleotide_nested_likelihood_ratio_test_from_alignment(
+        fixture("trees", "f81_aic_bias_tree_2_taxa.nwk"),
+        fixture("alignments", "f81_aic_bias_alignment_2_taxa.fasta"),
+        null_model_name="jc69",
+        alternative_model_name="f81",
+    )
+
+    assert report.taxa == ["A", "B"]
+    assert report.site_count == 21
+    assert report.pattern_count == 5
+    assert report.tree_newick == "(A:0.1,B:0.2);"
+    assert report.null_fit.model_name == "JC69"
+    assert report.alternative_fit.model_name == "F81"
+    assert report.null_fit.parameter_count == 0
+    assert report.alternative_fit.parameter_count == 3
+    assert report.null_fit.parameter_values == {}
+    assert math.isclose(
+        report.alternative_fit.parameter_values["base_frequency_a"],
+        0.6904761904761905,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        report.alternative_fit.parameter_values["base_frequency_t"],
+        0.21428571428571427,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert report.likelihood_ratio_statistic > 0.0
+    assert math.isclose(
+        report.likelihood_ratio_statistic,
+        2.0 * (report.alternative_fit.log_likelihood - report.null_fit.log_likelihood),
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert report.degrees_of_freedom == 3
+    assert report.p_value < 0.001
+    assert report.p_value_method == "chi-square approximation"
+    assert report.boundary_caveat == "no boundary parameter in declared nesting"
+    assert report.null_fit.warnings == [
+        "JC69 has no free substitution parameters; skipping parameter search"
+    ]
+    assert report.alternative_fit.warnings == []
+    assert report.warnings == []
+
+
 def test_nucleotide_nested_likelihood_ratio_supports_f81_to_hky85_pair() -> None:
     report = evaluate_nucleotide_nested_likelihood_ratio_test_from_alignment(
         fixture("trees", "hky85_kappa_optimization_tree_2_taxa.nwk"),
