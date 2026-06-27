@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
+from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.likelihood import (
@@ -116,6 +117,51 @@ def test_codon_surface_respects_custom_frequency_surface() -> None:
     assert math.isclose(
         protocol_log_likelihood,
         family_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
+def test_codon_surface_preserves_partial_missing_and_gap_constraints() -> None:
+    tree = load_tree(fixture("trees", "codon_likelihood_tree_2_taxa.nwk"))
+    records = [
+        AlignmentRecord(identifier="A", sequence="AT?A-G"),
+        AlignmentRecord(identifier="B", sequence="ATGAAG"),
+    ]
+    compressed_patterns = compress_codon_site_patterns_from_records(
+        records,
+        observation_policy="ambiguity-vector",
+    )
+    surface = build_codon_finite_state_surface(
+        records,
+        observation_policy="ambiguity-vector",
+    )
+    context = compile_finite_state_likelihood_context(tree, surface)
+
+    protocol_log_likelihood = evaluate_finite_state_tree_log_likelihood_from_patterns(
+        context,
+        compressed_patterns,
+    )
+    family_report = evaluate_codon_ctmc_tree_likelihood(
+        tree,
+        records,
+        observation_policy="ambiguity-vector",
+    )
+    missing_report = evaluate_codon_ctmc_tree_likelihood(
+        tree,
+        records,
+        observation_policy="treat-as-missing",
+    )
+
+    assert math.isclose(
+        protocol_log_likelihood,
+        family_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert not math.isclose(
+        family_report.log_likelihood,
+        missing_report.log_likelihood,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
