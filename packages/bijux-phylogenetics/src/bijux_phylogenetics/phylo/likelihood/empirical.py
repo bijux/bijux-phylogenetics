@@ -11,6 +11,7 @@ from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.ctmc import (
     CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
     solve_ctmc_stationary_distribution,
 )
 from bijux_phylogenetics.phylo.likelihood.gamma import (
@@ -60,6 +61,10 @@ from bijux_phylogenetics.phylo.likelihood.protein import (
     resolve_protein_root_prior,
     validate_empirical_protein_rate_matrix,
 )
+from bijux_phylogenetics.phylo.likelihood.protein_empirical_models import (
+    empirical_protein_rate_matrix,
+    validate_empirical_protein_model_name,
+)
 from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
 from bijux_phylogenetics.phylo.likelihood.sites import (
     validate_site_log_likelihood_reconstruction,
@@ -104,6 +109,7 @@ def _resolve_empirical_protein_root_prior(
     *,
     owner_name: str,
     validated_rate_matrix: numpy.ndarray,
+    default_policy: str = "equal",
     root_prior_policy: str | None,
     root_prior: dict[str, float]
     | numpy.ndarray
@@ -115,7 +121,7 @@ def _resolve_empirical_protein_root_prior(
     resolved = resolve_protein_root_prior(
         records,
         owner_name=owner_name,
-        default_policy="equal",
+        default_policy=default_policy,
         root_prior_policy=root_prior_policy,
         root_prior=root_prior,
         fixed_root_state=fixed_root_state,
@@ -169,6 +175,7 @@ def evaluate_empirical_protein_tree_likelihood(
         root_prior=validated_root_prior,
         root_prior_source=root_prior_source,
         matrix_label=matrix_label,
+        normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
         ambiguity_policy=ambiguity_policy,
@@ -197,6 +204,83 @@ def evaluate_empirical_protein_tree_likelihood_from_alignment(
         root_prior=root_prior,
         fixed_root_state=fixed_root_state,
         matrix_label=matrix_label,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
+    )
+
+
+def evaluate_named_empirical_protein_tree_likelihood(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    model_name: str,
+    root_prior_policy: str | None = None,
+    root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
+    gap_policy: str = "treat-as-missing",
+    missing_policy: str = "treat-as-missing",
+    ambiguity_policy: str = "reject",
+) -> ProteinEmpiricalMatrixTreeLikelihoodReport:
+    """Evaluate one fixed-topology protein likelihood from one named empirical model."""
+    validated_model_name = validate_empirical_protein_model_name(model_name)
+    normalized_records = normalize_protein_likelihood_records(
+        records,
+        model_name=f"{validated_model_name} empirical protein matrix",
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
+    )
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
+    validated_rate_matrix = validate_empirical_protein_rate_matrix(
+        empirical_protein_rate_matrix(validated_model_name),
+        model_name=f"{validated_model_name} empirical protein matrix",
+    )
+    validated_root_prior, root_prior_source = _resolve_empirical_protein_root_prior(
+        normalized_records,
+        owner_name=f"{validated_model_name} empirical protein matrix",
+        validated_rate_matrix=validated_rate_matrix,
+        default_policy="stationary",
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+    )
+    return _evaluate_empirical_protein_tree_likelihood_from_patterns(
+        tree,
+        compressed_patterns,
+        rate_matrix=validated_rate_matrix,
+        root_prior=validated_root_prior,
+        root_prior_source=root_prior_source,
+        matrix_label=validated_model_name,
+        normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
+    )
+
+
+def evaluate_named_empirical_protein_tree_likelihood_from_alignment(
+    tree_path: Path,
+    alignment_path: Path,
+    *,
+    model_name: str,
+    root_prior_policy: str | None = None,
+    root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
+    gap_policy: str = "treat-as-missing",
+    missing_policy: str = "treat-as-missing",
+    ambiguity_policy: str = "reject",
+) -> ProteinEmpiricalMatrixTreeLikelihoodReport:
+    """Evaluate one fixed-topology protein likelihood from paths and one named empirical model."""
+    return evaluate_named_empirical_protein_tree_likelihood(
+        load_tree(tree_path),
+        load_fasta_alignment(alignment_path),
+        model_name=model_name,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
         ambiguity_policy=ambiguity_policy,
@@ -1002,6 +1086,7 @@ def _evaluate_empirical_protein_tree_likelihood_from_patterns(
     root_prior: numpy.ndarray,
     root_prior_source: str,
     matrix_label: str,
+    normalization_policy: str,
     gap_policy: str,
     missing_policy: str,
     ambiguity_policy: str,
@@ -1020,7 +1105,7 @@ def _evaluate_empirical_protein_tree_likelihood_from_patterns(
             observation_policy=(
                 f"gap={gap_policy};missing={missing_policy};ambiguity={ambiguity_policy}"
             ),
-            normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
+            normalization_policy=normalization_policy,
             transition_rate_matrix=validated_rate_matrix,
             transition_matrix_for_branch_length=lambda branch_length: (
                 transition_probability_matrix(validated_rate_matrix, branch_length)
@@ -1062,7 +1147,7 @@ def _evaluate_empirical_protein_tree_likelihood_from_patterns(
         gap_policy=gap_policy,
         missing_policy=missing_policy,
         ambiguity_policy=ambiguity_policy,
-        normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
+        normalization_policy=normalization_policy,
         log_likelihood=log_likelihood,
         site_log_likelihoods=site_log_likelihoods,
     )
@@ -1136,6 +1221,7 @@ def _evaluate_empirical_protein_branch_optimization_objective(
             root_prior=root_prior,
             root_prior_source="provided",
             matrix_label="empirical",
+            normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
             gap_policy=gap_policy,
             missing_policy=missing_policy,
             ambiguity_policy="reject",

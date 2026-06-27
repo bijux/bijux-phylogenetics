@@ -31,6 +31,10 @@ from bijux_phylogenetics.phylo.likelihood.protein import (
     resolve_protein_root_prior,
     validate_empirical_protein_rate_matrix,
 )
+from bijux_phylogenetics.phylo.likelihood.protein_empirical_models import (
+    empirical_protein_rate_matrix,
+    validate_empirical_protein_model_name,
+)
 from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
@@ -104,6 +108,7 @@ def build_empirical_protein_finite_state_surface(
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
     ambiguity_policy: str = "reject",
+    normalization_policy: str = CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
 ) -> FiniteStateLikelihoodSurface:
     """Build one shared finite-state empirical protein likelihood surface."""
     normalize_protein_likelihood_records(
@@ -138,7 +143,7 @@ def build_empirical_protein_finite_state_surface(
             missing_policy=missing_policy,
             ambiguity_policy=ambiguity_policy,
         ),
-        normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
+        normalization_policy=normalization_policy,
         transition_rate_matrix=validated_rate_matrix,
         transition_matrix_for_branch_length=lambda branch_length: (
             transition_probability_matrix(validated_rate_matrix, branch_length)
@@ -153,6 +158,35 @@ def build_empirical_protein_finite_state_surface(
                 ambiguity_policy=ambiguity_policy,
             )
         ),
+    )
+
+
+def build_named_empirical_protein_finite_state_surface(
+    records: list[AlignmentRecord],
+    *,
+    model_name: str,
+    root_prior_policy: str | None = None,
+    root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
+    gap_policy: str = "treat-as-missing",
+    missing_policy: str = "treat-as-missing",
+    ambiguity_policy: str = "reject",
+) -> FiniteStateLikelihoodSurface:
+    """Build one shared finite-state surface from one named empirical protein model."""
+    validated_model_name = validate_empirical_protein_model_name(model_name)
+    return build_empirical_protein_finite_state_surface(
+        records,
+        rate_matrix=empirical_protein_rate_matrix(validated_model_name),
+        root_prior_policy=(
+            "stationary" if root_prior_policy is None else root_prior_policy
+        ),
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        matrix_label=validated_model_name,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
+        normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
     )
 
 
@@ -224,6 +258,7 @@ def compile_empirical_protein_likelihood_analysis(
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
     ambiguity_policy: str = "reject",
+    normalization_policy: str = CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
     partition_map: tuple[LocusPartition, ...] | None = None,
     site_weight_by_position: Mapping[int, float] | None = None,
     source_path: Path | None = None,
@@ -246,6 +281,7 @@ def compile_empirical_protein_likelihood_analysis(
         gap_policy=gap_policy,
         missing_policy=missing_policy,
         ambiguity_policy=ambiguity_policy,
+        normalization_policy=normalization_policy,
     )
     return compile_finite_state_likelihood_analysis(
         tree,
@@ -268,15 +304,50 @@ def compile_empirical_protein_likelihood_analysis(
     )
 
 
+def compile_named_empirical_protein_likelihood_analysis(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    model_name: str,
+    root_prior_policy: str | None = None,
+    root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
+    gap_policy: str = "treat-as-missing",
+    missing_policy: str = "treat-as-missing",
+    ambiguity_policy: str = "reject",
+    partition_map: tuple[LocusPartition, ...] | None = None,
+    site_weight_by_position: Mapping[int, float] | None = None,
+    source_path: Path | None = None,
+) -> CompiledFiniteStateLikelihoodAnalysis:
+    """Compile one reusable named empirical protein finite-state likelihood analysis."""
+    validated_model_name = validate_empirical_protein_model_name(model_name)
+    return compile_empirical_protein_likelihood_analysis(
+        tree,
+        records,
+        rate_matrix=empirical_protein_rate_matrix(validated_model_name),
+        root_prior_policy=(
+            "stationary" if root_prior_policy is None else root_prior_policy
+        ),
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        matrix_label=validated_model_name,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
+        normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+        partition_map=partition_map,
+        site_weight_by_position=site_weight_by_position,
+        source_path=source_path,
+    )
+
+
 def _protein_observation_policy_label(
     *,
     gap_policy: str,
     missing_policy: str,
     ambiguity_policy: str,
 ) -> str:
-    return (
-        f"gap={gap_policy};missing={missing_policy};ambiguity={ambiguity_policy}"
-    )
+    return f"gap={gap_policy};missing={missing_policy};ambiguity={ambiguity_policy}"
 
 
 def _stationary_distribution_for_empirical_matrix(
