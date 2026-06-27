@@ -275,3 +275,51 @@ def test_substitution_model_selection_prefers_f81_on_composition_biased_fixture(
     assert f81_row.warnings == []
     assert jc69_row.parameter_count == 0
     assert jc69_row.rank == 2
+
+
+def test_substitution_model_selection_prefers_hky85_on_joint_bias_fixture() -> None:
+    report = compare_nucleotide_substitution_models_from_alignment(
+        fixture("trees", "hky85_kappa_optimization_tree_2_taxa.nwk"),
+        fixture("alignments", "hky85_kappa_optimization_alignment_2_taxa.fasta"),
+        candidate_models=("JC69", "K80", "F81", "HKY85"),
+    )
+    rows = {row.model_name: row for row in report.rows}
+    hky85_row = rows["HKY85"]
+    f81_row = rows["F81"]
+    k80_row = rows["K80"]
+    jc69_row = rows["JC69"]
+
+    assert report.best_model_aic == "HKY85"
+    assert report.best_model_aicc == "HKY85"
+    assert report.best_model_bic == "HKY85"
+    assert hky85_row.fit_succeeded is True
+    assert hky85_row.rank == 1
+    assert hky85_row.selected_by_aic is True
+    assert hky85_row.selected_by_aicc is True
+    assert hky85_row.selected_by_bic is True
+    assert hky85_row.parameter_count == 4
+    assert math.isclose(
+        hky85_row.parameter_values["base_frequency_a"],
+        0.46875,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        hky85_row.parameter_values["base_frequency_t"],
+        0.2734375,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        hky85_row.parameter_values["kappa"],
+        5.557249215047293,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert (hky85_row.aic or float("inf")) < (f81_row.aic or float("inf"))
+    assert (hky85_row.aic or float("inf")) < (k80_row.aic or float("inf"))
+    assert (hky85_row.aic or float("inf")) < (jc69_row.aic or float("inf"))
+    assert hky85_row.warnings == []
+    assert f81_row.rank == 2
+    assert k80_row.rank == 3
+    assert jc69_row.rank == 4
