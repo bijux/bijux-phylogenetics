@@ -64,6 +64,104 @@ def test_unordered_discrete_surface_matches_native_mk_kernel() -> None:
     )
 
 
+def test_unordered_discrete_symmetric_surface_matches_native_mk_kernel() -> None:
+    state_order = ["north", "south", "west"]
+    states_by_taxon = {"A": "north", "B": "south"}
+    rate_matrix = rate_matrix_from_log_parameters(
+        numpy.log(numpy.array([0.8, 0.2, 1.1], dtype=float)),
+        state_order=state_order,
+        model="symmetric",
+        state_ordering="unordered",
+        allowed_transition_pairs=_unordered_allowed_transition_pairs(),
+    )
+
+    _assert_discrete_surface_matches_native_kernel(
+        state_order=state_order,
+        states_by_taxon=states_by_taxon,
+        rate_matrix=rate_matrix,
+        model_name="unordered symmetric discrete Mk",
+    )
+    _assert_discrete_surface_matches_two_tip_known_answer(
+        state_order=state_order,
+        states_by_taxon=states_by_taxon,
+        rate_matrix=rate_matrix,
+        model_name="unordered symmetric discrete Mk",
+    )
+
+
+def test_unordered_discrete_models_diverge_on_directional_fixture() -> None:
+    tree = load_tree(fixture("felsenstein_two_tip_tree.nwk"))
+    state_order = ["north", "south", "west"]
+    records = [
+        AlignmentRecord(identifier="A", sequence="north"),
+        AlignmentRecord(identifier="B", sequence="south"),
+    ]
+
+    equal_surface = build_discrete_mk_finite_state_surface(
+        state_order=state_order,
+        rate_matrix=rate_matrix_from_log_parameters(
+            numpy.log(numpy.array([0.8], dtype=float)),
+            state_order=state_order,
+            model="equal-rates",
+            state_ordering="unordered",
+            allowed_transition_pairs=_unordered_allowed_transition_pairs(),
+        ),
+        root_prior=numpy.full(len(state_order), 1.0 / len(state_order), dtype=float),
+        model_name="unordered equal-rates discrete Mk",
+    )
+    symmetric_surface = build_discrete_mk_finite_state_surface(
+        state_order=state_order,
+        rate_matrix=rate_matrix_from_log_parameters(
+            numpy.log(numpy.array([0.8, 0.2, 1.1], dtype=float)),
+            state_order=state_order,
+            model="symmetric",
+            state_ordering="unordered",
+            allowed_transition_pairs=_unordered_allowed_transition_pairs(),
+        ),
+        root_prior=numpy.full(len(state_order), 1.0 / len(state_order), dtype=float),
+        model_name="unordered symmetric discrete Mk",
+    )
+    ard_surface = build_discrete_mk_finite_state_surface(
+        state_order=state_order,
+        rate_matrix=rate_matrix_from_log_parameters(
+            numpy.log(numpy.array([0.8, 0.1, 0.05, 1.1, 0.4, 0.2], dtype=float)),
+            state_order=state_order,
+            model="all-rates-different",
+            state_ordering="unordered",
+            allowed_transition_pairs=_unordered_allowed_transition_pairs(),
+        ),
+        root_prior=numpy.full(len(state_order), 1.0 / len(state_order), dtype=float),
+        model_name="unordered all-rates-different discrete Mk",
+    )
+
+    equal_log_likelihood = _surface_log_likelihood(tree, equal_surface, records)
+    symmetric_log_likelihood = _surface_log_likelihood(
+        tree,
+        symmetric_surface,
+        records,
+    )
+    ard_log_likelihood = _surface_log_likelihood(tree, ard_surface, records)
+
+    assert not math.isclose(
+        equal_log_likelihood,
+        symmetric_log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert not math.isclose(
+        symmetric_log_likelihood,
+        ard_log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert not math.isclose(
+        equal_log_likelihood,
+        ard_log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
 def test_ordered_discrete_surface_matches_native_mk_kernel() -> None:
     state_order = ["north", "south", "island"]
     states_by_taxon = {"A": "north", "B": "island"}
@@ -314,3 +412,14 @@ def _surface_log_likelihood(
         tuple(record.sequence for record in records),
         taxon_order=[record.identifier for record in records],
     )
+
+
+def _unordered_allowed_transition_pairs() -> set[tuple[int, int]]:
+    return {
+        (0, 1),
+        (0, 2),
+        (1, 0),
+        (1, 2),
+        (2, 0),
+        (2, 1),
+    }
