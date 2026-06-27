@@ -13,12 +13,16 @@ from bijux_phylogenetics.phylo.alignment.partitions import (
     slice_partition_sequence,
     validate_locus_partitions,
 )
+from bijux_phylogenetics.phylo.likelihood.models import SiteLogLikelihoodRow
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import (
     log_likelihood_from_root_prior,
     postorder_conditional_likelihoods,
+)
+from bijux_phylogenetics.phylo.likelihood.sites import (
+    expanded_site_log_likelihood_rows_from_patterns,
 )
 from bijux_phylogenetics.phylo.likelihood.validation import (
     validate_explicit_branch_lengths,
@@ -222,6 +226,21 @@ def evaluate_finite_state_tree_log_likelihood_from_patterns(
             taxon_order=compressed_patterns.taxon_order,
         )
     return total
+
+
+def evaluate_finite_state_site_log_likelihood_rows_from_patterns(
+    context: CompiledFiniteStateLikelihoodContext,
+    compressed_patterns: CompressedAlignmentSitePatterns,
+) -> tuple[list[SiteLogLikelihoodRow], float]:
+    """Expand one finite-state pattern set back to per-site rows and total likelihood."""
+    return expanded_site_log_likelihood_rows_from_patterns(
+        compressed_patterns,
+        site_log_likelihood=lambda states: evaluate_finite_state_site_log_likelihood(
+            context,
+            states,
+            taxon_order=compressed_patterns.taxon_order,
+        ),
+    )
 
 
 def evaluate_finite_state_tree_log_likelihood(

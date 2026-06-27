@@ -13,6 +13,7 @@ from bijux_phylogenetics.phylo.likelihood.finite_state import (
     FiniteStateLikelihoodSurface,
     compile_finite_state_likelihood_context,
     evaluate_finite_state_site_log_likelihood,
+    evaluate_finite_state_site_log_likelihood_rows_from_patterns,
     evaluate_finite_state_tree_log_likelihood_from_patterns,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import AlignmentSitePattern
@@ -100,6 +101,50 @@ def test_finite_state_surface_matches_analytical_binary_two_tip_likelihood() -> 
 
     assert math.isclose(log_likelihood, math.log(0.125), abs_tol=1e-12)
     assert math.isclose(site_log_likelihood, math.log(0.125), abs_tol=1e-12)
+
+
+def test_finite_state_site_rows_reconstruct_pattern_total() -> None:
+    tree = load_tree(fixture("felsenstein_two_tip_tree.nwk"))
+    surface = FiniteStateLikelihoodSurface(
+        model_name="binary analytical",
+        state_labels=("0", "1"),
+        root_prior=numpy.array([0.5, 0.5], dtype=float),
+        root_prior_source="provided",
+        observation_policy="reject",
+        transition_matrix_for_branch_length=lambda _branch_length: numpy.array(
+            [[0.9, 0.1], [0.2, 0.8]],
+            dtype=float,
+        ),
+        leaf_likelihood_vector_for_state=_binary_leaf_vector,
+    )
+    context = compile_finite_state_likelihood_context(tree, surface)
+    compressed_patterns = CompressedAlignmentSitePatterns(
+        source_path=None,
+        taxon_order=["A", "B"],
+        alignment_length=2,
+        pattern_count=1,
+        patterns=[
+            AlignmentSitePattern(
+                pattern_id="pattern-1",
+                states=("0", "1"),
+                weight=2,
+                site_positions=[1, 2],
+            )
+        ],
+    )
+
+    rows, log_likelihood = evaluate_finite_state_site_log_likelihood_rows_from_patterns(
+        context,
+        compressed_patterns,
+    )
+
+    assert len(rows) == 2
+    assert rows[0].site_position == 1
+    assert rows[1].site_position == 2
+    assert rows[0].pattern_id == rows[1].pattern_id == "pattern-1"
+    assert math.isclose(log_likelihood, 2.0 * math.log(0.125), abs_tol=1e-12)
+    assert math.isclose(rows[0].log_likelihood, math.log(0.125), abs_tol=1e-12)
+    assert math.isclose(rows[1].log_likelihood, math.log(0.125), abs_tol=1e-12)
 
 
 def _binary_leaf_vector(taxon_name: str, observed_state: str) -> numpy.ndarray:
