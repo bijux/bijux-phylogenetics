@@ -16,6 +16,9 @@ from bijux_phylogenetics.phylo.likelihood import (
     log_likelihood_from_root_prior,
     postorder_conditional_likelihoods,
 )
+from tests.support.three_tip_pruning_reference import (
+    build_three_tip_pruning_reference,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -121,10 +124,88 @@ def test_three_tip_finite_state_pruning_matches_dna_like_analytical_likelihood()
         pruning_pass,
         root_prior=numpy.full(4, 0.25, dtype=float),
     )
+    reference = build_three_tip_pruning_reference(
+        tree=tree,
+        root_prior=numpy.full(4, 0.25, dtype=float),
+        leaf_vector_by_taxon={
+            "A": _one_hot(4, 0),
+            "B": _one_hot(4, 1),
+            "C": _one_hot(4, 2),
+        },
+        transition_matrix_by_node_id={
+            child.node_id: transition_by_descendants[tuple(child.descendant_taxa)]
+            for _parent, child in tree.iter_edges()
+        },
+    )
+    internal_child = reference.internal_child
 
+    assert numpy.allclose(
+        reference.internal_raw,
+        numpy.array([0.03, 0.1, 0.15, 0.0625], dtype=float),
+        rtol=0.0,
+        atol=1e-12,
+    )
+    assert numpy.allclose(
+        pruning_pass.conditional_for_node(internal_child),
+        numpy.array(
+            [
+                0.0875912408759124,
+                0.291970802919708,
+                0.437956204379562,
+                0.1824817518248175,
+            ],
+            dtype=float,
+        ),
+        rtol=0.0,
+        atol=1e-12,
+    )
+    assert math.isclose(
+        pruning_pass.subtree_log_scaling_for_node(internal_child),
+        math.log(0.3425),
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert numpy.allclose(
+        pruning_pass.conditional_for_node(tree.root),
+        numpy.array(
+            [
+                0.4445039855315158,
+                0.2020229084332507,
+                0.1240538549132561,
+                0.2294192511219774,
+            ],
+            dtype=float,
+        ),
+        rtol=0.0,
+        atol=1e-12,
+    )
+    assert math.isclose(
+        pruning_pass.subtree_log_scaling_for_node(tree.root),
+        -2.371868185162374,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert numpy.allclose(
+        pruning_pass.conditional_for_node(internal_child),
+        reference.internal_normalized,
+        rtol=0.0,
+        atol=1e-12,
+    )
+    assert numpy.allclose(
+        pruning_pass.conditional_for_node(tree.root),
+        reference.root_normalized,
+        rtol=0.0,
+        atol=1e-12,
+    )
     assert math.isclose(
         math.exp(log_likelihood),
         0.0233265625,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        log_likelihood,
+        reference.log_likelihood,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
