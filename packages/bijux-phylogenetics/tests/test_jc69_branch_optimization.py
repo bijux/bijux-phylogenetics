@@ -37,10 +37,26 @@ def test_jc69_branch_optimization_improves_two_tip_likelihood() -> None:
     assert report.branch_count == 2
     assert report.site_count == 8
     assert report.pattern_count == 6
+    assert math.isclose(report.lower_branch_length_bound, 1e-6, abs_tol=0.0)
+    assert math.isclose(report.upper_branch_length_bound, 5.0, abs_tol=0.0)
     assert report.optimized_log_likelihood > report.initial_log_likelihood
     assert report.function_evaluation_count > 1
     assert report.converged is True
     assert any(step.accepted for step in report.steps)
+    assert {step.branch_id for step in report.steps} == {
+        "root:clade:A|B/taxon:A",
+        "root:clade:A|B/taxon:B",
+    }
+    assert {tuple(step.descendant_taxa) for step in report.steps} == {("A",), ("B",)}
+    assert all(step.optimization_pass >= 1 for step in report.steps)
+    assert all(
+        step.optimized_branch_length >= report.lower_branch_length_bound
+        for step in report.steps
+    )
+    assert all(
+        step.optimized_branch_length <= report.upper_branch_length_bound
+        for step in report.steps
+    )
     assert math.isclose(
         optimized_branch_sum,
         expected_branch_sum,
