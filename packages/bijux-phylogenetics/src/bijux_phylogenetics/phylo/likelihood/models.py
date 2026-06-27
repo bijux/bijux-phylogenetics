@@ -1840,6 +1840,27 @@ class DiscreteGammaSiteLikelihood:
 
 
 @dataclass(slots=True)
+class FiniteStateDiscreteGammaTreeLikelihoodReport:
+    """Finite-state likelihood report with shared discrete-gamma rate heterogeneity."""
+
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    compression_used: bool
+    tree_newick: str
+    model_name: str
+    state_count: int
+    root_prior_source: str
+    observation_policy: str
+    normalization_policy: str | None
+    alpha: float
+    category_count: int
+    category_rates: list[DiscreteGammaRateCategory]
+    site_likelihoods: list[DiscreteGammaSiteLikelihood]
+    log_likelihood: float
+
+
+@dataclass(slots=True)
 class ProteinEmpiricalDiscreteGammaTreeLikelihoodReport:
     """Empirical protein likelihood report with discrete-gamma rate heterogeneity."""
 
