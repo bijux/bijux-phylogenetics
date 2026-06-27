@@ -13,11 +13,11 @@ from bijux_phylogenetics.ancestral.discrete.likelihood.rate_matrix import (
 )
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.alignment.partitions import (
     LocusPartition,
     LocusSegment,
 )
-from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.codon import (
     evaluate_codon_ctmc_tree_likelihood,
 )
@@ -232,6 +232,39 @@ def test_compiled_codon_analysis_respects_custom_frequency_surface() -> None:
         codon_frequencies=biased_frequencies,
     )
 
+    assert math.isclose(
+        compiled_log_likelihood,
+        report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
+def test_compiled_codon_analysis_normalizes_rna_records_for_empirical_root_prior() -> (
+    None
+):
+    tree = load_tree(fixture("trees", "codon_likelihood_tree_2_taxa.nwk"))
+    records = [
+        AlignmentRecord(identifier="A", sequence="augaaa"),
+        AlignmentRecord(identifier="B", sequence="augaag"),
+    ]
+    analysis = compile_codon_likelihood_analysis(
+        tree,
+        records,
+        root_prior_policy="empirical",
+    )
+
+    compiled_log_likelihood = evaluate_compiled_finite_state_likelihood_analysis(
+        analysis
+    )
+    report = evaluate_codon_ctmc_tree_likelihood(
+        tree,
+        records,
+        root_prior_policy="empirical",
+    )
+
+    assert analysis.context.surface.root_prior_source == "empirical"
+    assert analysis.context.surface.state_count == 61
     assert math.isclose(
         compiled_log_likelihood,
         report.log_likelihood,
