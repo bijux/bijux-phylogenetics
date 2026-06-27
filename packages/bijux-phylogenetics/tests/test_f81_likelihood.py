@@ -10,6 +10,9 @@ from bijux_phylogenetics.phylo.likelihood import (
     evaluate_f81_tree_likelihood_from_alignment,
     evaluate_jc69_tree_likelihood,
 )
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -34,6 +37,12 @@ def test_f81_fixed_tree_likelihood_matches_two_tip_analytical_fixture() -> None:
     assert report.pattern_count == 4
     assert report.compression_used is True
     assert report.tree_newick == "(A:0.1,B:0.2);"
+    assert report.state_count == 4
+    assert report.observation_policy == "reject"
+    assert (
+        report.normalization_policy
+        == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
+    )
     assert report.base_frequency_source == "provided"
     assert math.isclose(report.base_frequency_a, 0.4, rel_tol=0.0, abs_tol=1e-12)
     assert math.isclose(report.base_frequency_c, 0.1, rel_tol=0.0, abs_tol=1e-12)
@@ -70,15 +79,30 @@ def test_f81_estimated_base_frequencies_prefer_biased_data_over_jc69_by_aic() ->
     jc69_aic = -2.0 * jc69_report.log_likelihood
 
     assert estimated_report.base_frequency_source == "estimated"
+    assert estimated_report.parameter_count == 3
     assert estimated_report.base_frequency_a > 0.25
     assert estimated_report.base_frequency_t < estimated_report.base_frequency_a
     assert estimated_report.base_frequency_c < 0.1
     assert estimated_report.base_frequency_g < 0.1
+    assert math.isclose(
+        estimated_report.aic,
+        (-2.0 * estimated_report.log_likelihood) + 6.0,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
     assert estimated_report.aic < jc69_aic
     assert estimated_report.log_likelihood > jc69_report.log_likelihood
+    assert uniform_report.base_frequency_source == "provided"
+    assert uniform_report.parameter_count == 3
     assert math.isclose(
         uniform_report.log_likelihood,
         jc69_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        uniform_report.aic,
+        jc69_aic + 6.0,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
