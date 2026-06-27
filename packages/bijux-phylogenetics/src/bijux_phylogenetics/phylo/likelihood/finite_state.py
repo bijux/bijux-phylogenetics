@@ -32,6 +32,7 @@ FiniteStatePatternCompiler = Callable[
     [list[AlignmentRecord], Path | None],
     CompressedAlignmentSitePatterns,
 ]
+FiniteStateAlignmentLengthResolver = Callable[[list[AlignmentRecord]], int]
 
 
 @dataclass(frozen=True, slots=True)
@@ -126,13 +127,22 @@ def compile_finite_state_likelihood_analysis(
     records: list[AlignmentRecord],
     pattern_compiler: FiniteStatePatternCompiler,
     missing_data_policy: str,
+    alignment_length_resolver: FiniteStateAlignmentLengthResolver | None = None,
     partition_map: tuple[LocusPartition, ...] | None = None,
     site_weight_by_position: Mapping[int, float] | None = None,
     source_path: Path | None = None,
 ) -> CompiledFiniteStateLikelihoodAnalysis:
     """Compile one rooted tree, model surface, and alignment into reusable state."""
     validate_explicit_branch_lengths(tree, model_name=surface.model_name)
-    alignment_length = _validated_alignment_length(records)
+    resolved_alignment_length = (
+        _validated_alignment_length(records)
+        if alignment_length_resolver is None
+        else alignment_length_resolver(records)
+    )
+    alignment_length = _validated_compiled_alignment_length(
+        resolved_alignment_length,
+        records=records,
+    )
     validated_site_weight_by_position = _validated_site_weight_by_position(
         site_weight_by_position,
         alignment_length=alignment_length,
@@ -144,6 +154,7 @@ def compile_finite_state_likelihood_analysis(
         )
     partition_contexts = _compile_partition_contexts(
         records,
+        alignment_length=alignment_length,
         pattern_compiler=pattern_compiler,
         partition_map=partition_map,
         site_weight_by_position=validated_site_weight_by_position,
@@ -279,6 +290,7 @@ def _transition_matrix_for_child(
 def _compile_partition_contexts(
     records: list[AlignmentRecord],
     *,
+    alignment_length: int,
     pattern_compiler: FiniteStatePatternCompiler,
     partition_map: tuple[LocusPartition, ...] | None,
     site_weight_by_position: Mapping[int, float],
@@ -290,9 +302,7 @@ def _compile_partition_contexts(
                 partition_name="full-alignment",
                 partition_data_type=None,
                 records=records,
-                source_site_positions=tuple(
-                    range(1, _validated_alignment_length(records) + 1)
-                ),
+                source_site_positions=tuple(range(1, alignment_length + 1)),
                 pattern_compiler=pattern_compiler,
                 site_weight_by_position=site_weight_by_position,
                 source_path=source_path,
@@ -390,6 +400,22 @@ def _validated_alignment_length(records: list[AlignmentRecord]) -> int:
             "compiled finite-state likelihood analysis requires equal-length aligned records"
         )
     return next(iter(alignment_lengths))
+
+
+def _validated_compiled_alignment_length(
+    alignment_length: int,
+    *,
+    records: list[AlignmentRecord],
+) -> int:
+    if not records:
+        raise ValueError(
+            "compiled finite-state likelihood analysis requires records"
+        )
+    if alignment_length < 1:
+        raise ValueError(
+            "compiled finite-state likelihood analysis requires a positive alignment length"
+        )
+    return alignment_length
 
 
 def _validated_site_weight_by_position(

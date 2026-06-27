@@ -105,6 +105,54 @@ def test_compiled_discrete_analysis_matches_native_kernel() -> None:
     )
 
 
+def test_compiled_discrete_analysis_accepts_variable_length_trait_labels() -> None:
+    tree = load_tree(fixture("trees", "felsenstein_two_tip_tree.nwk"))
+    records = [
+        AlignmentRecord(identifier="A", sequence="north"),
+        AlignmentRecord(identifier="B", sequence="island"),
+    ]
+    state_order = ["north", "south", "island"]
+    rate_matrix = rate_matrix_from_log_parameters(
+        numpy.log(numpy.array([0.6], dtype=float)),
+        state_order=state_order,
+        model="equal-rates",
+        state_ordering="ordered",
+        allowed_transition_pairs={
+            (0, 1),
+            (1, 0),
+            (1, 2),
+            (2, 1),
+        },
+    )
+    root_prior = numpy.full(len(state_order), 1.0 / len(state_order), dtype=float)
+    analysis = compile_discrete_mk_likelihood_analysis(
+        tree,
+        records,
+        state_order=state_order,
+        rate_matrix=rate_matrix,
+        root_prior=root_prior,
+        model_name="ordered discrete Mk",
+    )
+
+    compiled_log_likelihood = evaluate_compiled_finite_state_likelihood_analysis(
+        analysis
+    )
+    native_log_likelihood = tree_log_likelihood(
+        tree,
+        {"A": "north", "B": "island"},
+        state_order=state_order,
+        rate_matrix=rate_matrix,
+        root_prior=root_prior,
+    )
+
+    assert math.isclose(
+        compiled_log_likelihood,
+        native_log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
 def test_compiled_codon_analysis_respects_custom_frequency_surface() -> None:
     tree = load_tree(fixture("trees", "codon_likelihood_tree_2_taxa.nwk"))
     records = load_fasta_alignment(

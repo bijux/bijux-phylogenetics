@@ -90,6 +90,7 @@ def compile_discrete_mk_likelihood_analysis(
         records=records,
         pattern_compiler=_compile_discrete_patterns,
         missing_data_policy=observation_policy,
+        alignment_length_resolver=_resolve_discrete_alignment_length,
         partition_map=partition_map,
         site_weight_by_position=site_weight_by_position,
         source_path=source_path,
@@ -139,3 +140,7 @@ def _compile_discrete_patterns(
             )
         ],
     )
+
+
+def _resolve_discrete_alignment_length(_records: list[AlignmentRecord]) -> int:
+    return 1
