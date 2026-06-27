@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import OrderedDict
 from pathlib import Path
 
 import numpy
@@ -24,8 +23,8 @@ from bijux_phylogenetics.phylo.likelihood.codon_states import (
 )
 from bijux_phylogenetics.phylo.likelihood.models import CodonCtmcTreeLikelihoodReport
 from bijux_phylogenetics.phylo.likelihood.patterns import (
-    AlignmentSitePattern,
     CompressedAlignmentSitePatterns,
+    compress_alignment_site_patterns_from_records,
 )
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
     FiniteStateLikelihoodSurface,
@@ -130,37 +129,16 @@ def compress_codon_site_patterns_from_records(
     observation_policy: str = "reject",
     source_path: Path | None = None,
 ) -> CompressedAlignmentSitePatterns:
-    """Compress identical aligned codon sites while preserving stable taxon order."""
+    """Compress identical aligned codon sites through the shared pattern surface."""
     normalized_records = normalize_codon_likelihood_records(
         records,
         genetic_code=genetic_code,
         observation_policy=observation_policy,
     )
-    codon_count = len(normalized_records[0].sequence) // 3
-    codon_sequences = [
-        _iter_record_codons(record.sequence) for record in normalized_records
-    ]
-    grouped_positions: OrderedDict[tuple[str, ...], list[int]] = OrderedDict()
-    for site_index in range(codon_count):
-        states = tuple(sequence[site_index] for sequence in codon_sequences)
-        grouped_positions.setdefault(states, []).append(site_index + 1)
-    return CompressedAlignmentSitePatterns(
+    return compress_alignment_site_patterns_from_records(
+        normalized_records,
         source_path=source_path,
-        taxon_order=[record.identifier for record in normalized_records],
-        alignment_length=codon_count,
-        pattern_count=len(grouped_positions),
-        patterns=[
-            AlignmentSitePattern(
-                pattern_id=f"pattern-{index}",
-                states=states,
-                weight=len(site_positions),
-                site_positions=site_positions,
-            )
-            for index, (states, site_positions) in enumerate(
-                grouped_positions.items(),
-                start=1,
-            )
-        ],
+        site_tokenizer=_iter_record_codons,
     )
 
 
