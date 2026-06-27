@@ -30,7 +30,9 @@ class Jc69TreeLikelihoodReport:
     state_count: int
     observation_policy: str
     normalization_policy: str
+    parameter_count: int
     log_likelihood: float
+    aic: float
 
 
 @dataclass(slots=True)

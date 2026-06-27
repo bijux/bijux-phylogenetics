@@ -337,8 +337,10 @@ def _evaluate_jc69_tree_likelihood_from_patterns(
             gap_state_frequency=gap_state_frequency,
             model_name="JC69",
         )
+
         def transition_matrix_for_branch_length(branch_length: float) -> numpy.ndarray:
             return transition_probability_matrix(augmented_rate_matrix, branch_length)
+
         transition_rate_matrix = augmented_rate_matrix
     else:
         transition_matrix_for_branch_length = jc69_transition_probability_matrix
@@ -378,5 +380,7 @@ def _evaluate_jc69_tree_likelihood_from_patterns(
         state_count=len(state_order),
         observation_policy=observation_policy,
         normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+        parameter_count=0,
         log_likelihood=log_likelihood,
+        aic=-2.0 * log_likelihood,
     )

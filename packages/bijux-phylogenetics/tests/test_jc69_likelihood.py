@@ -13,6 +13,9 @@ from bijux_phylogenetics.phylo.likelihood import (
     evaluate_jc69_tree_likelihood,
     evaluate_jc69_tree_likelihood_from_alignment,
 )
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -33,9 +36,21 @@ def test_jc69_fixed_tree_likelihood_matches_two_tip_analytical_fixture() -> None
     assert report.pattern_count == 4
     assert report.compression_used is True
     assert report.tree_newick == "(A:0.1,B:0.2);"
+    assert report.state_count == 4
+    assert report.observation_policy == "reject"
+    assert (
+        report.normalization_policy == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
+    )
+    assert report.parameter_count == 0
     assert math.isclose(
         report.log_likelihood,
         math.log(expected_probability),
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        report.aic,
+        -2.0 * report.log_likelihood,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
