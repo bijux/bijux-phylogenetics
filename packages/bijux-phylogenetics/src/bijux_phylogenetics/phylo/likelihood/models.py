@@ -1559,6 +1559,7 @@ class CodonCtmcTreeLikelihoodReport:
     site_count: int
     pattern_count: int
     compression_used: bool
+    expansion_policy: str
     tree_newick: str
     state_count: int
     genetic_code_id: int
@@ -1567,6 +1568,7 @@ class CodonCtmcTreeLikelihoodReport:
     observation_policy: str
     normalization_policy: str
     log_likelihood: float
+    site_log_likelihoods: list[SiteLogLikelihoodRow]
 
 
 @dataclass(slots=True)

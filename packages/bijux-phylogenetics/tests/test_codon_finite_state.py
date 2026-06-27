@@ -5,6 +5,10 @@ from pathlib import Path
 
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.likelihood import (
+    sum_site_log_likelihood_rows,
+    sum_weighted_site_pattern_log_likelihood_rows,
+)
 from bijux_phylogenetics.phylo.likelihood.codon import (
     compress_codon_site_patterns_from_records,
     evaluate_codon_ctmc_tree_likelihood,
@@ -112,6 +116,63 @@ def test_codon_surface_respects_custom_frequency_surface() -> None:
     assert math.isclose(
         protocol_log_likelihood,
         family_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
+def test_codon_tree_report_expands_site_rows_in_original_order() -> None:
+    tree = load_tree(fixture("trees", "codon_likelihood_tree_2_taxa.nwk"))
+    records = load_fasta_alignment(
+        fixture("alignments", "codon_site_pattern_alignment_2_taxa.fasta")
+    )
+
+    report = evaluate_codon_ctmc_tree_likelihood(tree, records)
+
+    assert report.expansion_policy == "expanded-site-rows"
+    assert report.site_count == 6
+    assert report.pattern_count == 3
+    assert [row.site_position for row in report.site_log_likelihoods] == [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+    ]
+    assert [row.pattern_id for row in report.site_log_likelihoods] == [
+        "pattern-1",
+        "pattern-2",
+        "pattern-1",
+        "pattern-2",
+        "pattern-3",
+        "pattern-3",
+    ]
+    assert [row.pattern_weight for row in report.site_log_likelihoods] == [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+    ]
+    assert [row.site_states for row in report.site_log_likelihoods] == [
+        ("AAA", "AAG"),
+        ("GCT", "GCC"),
+        ("AAA", "AAG"),
+        ("GCT", "GCC"),
+        ("TTT", "TTT"),
+        ("TTT", "TTT"),
+    ]
+    assert math.isclose(
+        sum_site_log_likelihood_rows(report.site_log_likelihoods),
+        report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        sum_weighted_site_pattern_log_likelihood_rows(report.site_log_likelihoods),
+        report.log_likelihood,
         rel_tol=0.0,
         abs_tol=1e-12,
     )

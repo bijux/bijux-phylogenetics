@@ -22,6 +22,7 @@ from bijux_phylogenetics.phylo.likelihood.codon_states import (
     resolve_codon_state_space,
 )
 from bijux_phylogenetics.phylo.likelihood.models import CodonCtmcTreeLikelihoodReport
+from bijux_phylogenetics.phylo.likelihood.models import SiteLogLikelihoodRow
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
     compress_alignment_site_patterns_from_records,
@@ -29,7 +30,7 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
     FiniteStateLikelihoodSurface,
     compile_finite_state_likelihood_context,
-    evaluate_finite_state_tree_log_likelihood_from_patterns,
+    evaluate_finite_state_site_log_likelihood_rows_from_patterns,
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import (
     build_transition_matrix_evaluator,
@@ -39,6 +40,9 @@ from bijux_phylogenetics.phylo.likelihood.pruning import (
 from bijux_phylogenetics.phylo.likelihood.validation import (
     validate_explicit_branch_lengths,
     validate_tree_taxa_against_patterns,
+)
+from bijux_phylogenetics.phylo.likelihood.sites import (
+    validate_site_log_likelihood_reconstruction,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import (
@@ -71,13 +75,22 @@ def evaluate_codon_ctmc_tree_likelihood(
             genetic_code=genetic_code,
         )
     )
-    log_likelihood = _evaluate_codon_ctmc_tree_likelihood_from_patterns(
+    site_log_likelihoods, log_likelihood = (
+        _evaluate_codon_ctmc_tree_likelihood_rows_from_patterns(
         tree,
         compressed_patterns,
         state_space=state_space,
         rate_matrix=rate_matrix,
         root_prior=frequencies,
         observation_policy=observation_policy,
+        )
+    )
+    validate_site_log_likelihood_reconstruction(
+        site_log_likelihoods,
+        expected_total_log_likelihood=log_likelihood,
+        expected_site_count=compressed_patterns.alignment_length,
+        expected_pattern_count=compressed_patterns.pattern_count,
+        owner_name="codon CTMC likelihood",
     )
     return CodonCtmcTreeLikelihoodReport(
         taxa=compressed_patterns.taxon_order,
@@ -86,6 +99,7 @@ def evaluate_codon_ctmc_tree_likelihood(
         compression_used=(
             compressed_patterns.pattern_count < compressed_patterns.alignment_length
         ),
+        expansion_policy="expanded-site-rows",
         tree_newick=dumps_newick(tree),
         state_count=len(state_space.state_order),
         genetic_code_id=state_space.genetic_code_id,
@@ -97,6 +111,7 @@ def evaluate_codon_ctmc_tree_likelihood(
         ),
         normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
         log_likelihood=log_likelihood,
+        site_log_likelihoods=site_log_likelihoods,
     )
 
 
@@ -198,6 +213,35 @@ def _evaluate_codon_ctmc_tree_likelihood_from_patterns(
     root_prior: numpy.ndarray,
     observation_policy: str,
 ) -> float:
+    site_log_likelihoods, log_likelihood = (
+        _evaluate_codon_ctmc_tree_likelihood_rows_from_patterns(
+            tree,
+            compressed_patterns,
+            state_space=state_space,
+            rate_matrix=rate_matrix,
+            root_prior=root_prior,
+            observation_policy=observation_policy,
+        )
+    )
+    validate_site_log_likelihood_reconstruction(
+        site_log_likelihoods,
+        expected_total_log_likelihood=log_likelihood,
+        expected_site_count=compressed_patterns.alignment_length,
+        expected_pattern_count=compressed_patterns.pattern_count,
+        owner_name="codon CTMC likelihood",
+    )
+    return log_likelihood
+
+
+def _evaluate_codon_ctmc_tree_likelihood_rows_from_patterns(
+    tree: PhyloTree,
+    compressed_patterns: CompressedAlignmentSitePatterns,
+    *,
+    state_space: CodonStateSpace,
+    rate_matrix: numpy.ndarray,
+    root_prior: numpy.ndarray,
+    observation_policy: str,
+) -> tuple[list[SiteLogLikelihoodRow], float]:
     validate_explicit_branch_lengths(tree, model_name="codon CTMC")
     validate_tree_taxa_against_patterns(
         tree,
@@ -230,7 +274,7 @@ def _evaluate_codon_ctmc_tree_likelihood_from_patterns(
             ),
         ),
     )
-    return evaluate_finite_state_tree_log_likelihood_from_patterns(
+    return evaluate_finite_state_site_log_likelihood_rows_from_patterns(
         context,
         compressed_patterns,
     )
