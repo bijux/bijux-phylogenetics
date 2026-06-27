@@ -8,6 +8,7 @@ from pathlib import Path
 
 import numpy
 
+from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.alignment.partitions import (
     LocusPartition,
@@ -19,7 +20,13 @@ from bijux_phylogenetics.phylo.likelihood.models import SiteLogLikelihoodRow
 from bijux_phylogenetics.phylo.likelihood.models import (
     CompiledFiniteStatePartitionLogLikelihoodRow,
     CompiledFiniteStateSiteLogLikelihoodRow,
+    DiscreteGammaSiteLikelihood,
+    FiniteStateDiscreteGammaTreeLikelihoodReport,
 )
+from bijux_phylogenetics.phylo.likelihood.gamma import (
+    build_discrete_gamma_rate_categories,
+)
+from bijux_phylogenetics.phylo.likelihood.logspace import log_weighted_sum_exp
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
 )
@@ -563,6 +570,89 @@ def evaluate_finite_state_tree_log_likelihood(
     )
 
 
+def evaluate_finite_state_tree_likelihood_with_discrete_gamma(
+    tree: PhyloTree,
+    compressed_patterns: CompressedAlignmentSitePatterns,
+    *,
+    surface: FiniteStateLikelihoodSurface,
+    alpha: float,
+    category_count: int,
+) -> FiniteStateDiscreteGammaTreeLikelihoodReport:
+    """Evaluate one shared finite-state likelihood surface under discrete-gamma rates."""
+    validate_explicit_branch_lengths(tree, model_name=surface.model_name)
+    validate_tree_taxa_against_patterns(
+        tree,
+        compressed_patterns,
+        model_name=surface.model_name,
+    )
+    categories = build_discrete_gamma_rate_categories(
+        alpha=alpha,
+        category_count=category_count,
+    )
+    contexts = tuple(
+        compile_finite_state_likelihood_context(
+            tree,
+            _build_rate_scaled_finite_state_surface(
+                surface,
+                rate_scale=category.rate,
+            ),
+        )
+        for category in categories
+    )
+    category_weights = [category.weight for category in categories]
+    site_likelihoods: list[DiscreteGammaSiteLikelihood] = []
+    total_log_likelihood = 0.0
+    for pattern in compressed_patterns.patterns:
+        category_log_likelihoods = [
+            evaluate_finite_state_site_log_likelihood(
+                context,
+                pattern.states,
+                taxon_order=compressed_patterns.taxon_order,
+            )
+            for context in contexts
+        ]
+        pattern_log_likelihood = log_weighted_sum_exp(
+            category_log_likelihoods,
+            weights=category_weights,
+        )
+        category_likelihoods = [
+            math.exp(log_likelihood) for log_likelihood in category_log_likelihoods
+        ]
+        mixture_likelihood = math.exp(pattern_log_likelihood)
+        for site_position in pattern.site_positions:
+            site_likelihoods.append(
+                DiscreteGammaSiteLikelihood(
+                    pattern_id=pattern.pattern_id,
+                    pattern_weight=pattern.weight,
+                    site_position=site_position,
+                    site_states=pattern.states,
+                    category_likelihoods=list(category_likelihoods),
+                    mixture_likelihood=mixture_likelihood,
+                    log_likelihood=pattern_log_likelihood,
+                )
+            )
+        total_log_likelihood += pattern.weight * pattern_log_likelihood
+    return FiniteStateDiscreteGammaTreeLikelihoodReport(
+        taxa=compressed_patterns.taxon_order,
+        site_count=compressed_patterns.alignment_length,
+        pattern_count=compressed_patterns.pattern_count,
+        compression_used=(
+            compressed_patterns.pattern_count < compressed_patterns.alignment_length
+        ),
+        tree_newick=dumps_newick(tree),
+        model_name=surface.model_name,
+        state_count=surface.state_count,
+        root_prior_source=surface.root_prior_source,
+        observation_policy=surface.observation_policy,
+        normalization_policy=surface.normalization_policy,
+        alpha=alpha,
+        category_count=category_count,
+        category_rates=list(categories),
+        site_likelihoods=site_likelihoods,
+        log_likelihood=total_log_likelihood,
+    )
+
+
 def evaluate_compiled_finite_state_likelihood_analysis(
     analysis: CompiledFiniteStateLikelihoodAnalysis,
 ) -> float:
@@ -954,6 +1044,33 @@ def _transition_model_state(
 def _float_array_digest(values: numpy.ndarray) -> str:
     normalized = numpy.asarray(values, dtype=float)
     return hashlib.sha256(normalized.tobytes(order="C")).hexdigest()
+
+
+def _build_rate_scaled_finite_state_surface(
+    surface: FiniteStateLikelihoodSurface,
+    *,
+    rate_scale: float,
+) -> FiniteStateLikelihoodSurface:
+    if not math.isfinite(rate_scale) or rate_scale <= 0.0:
+        raise ValueError(
+            "finite-state discrete-gamma rate scales must be finite and positive"
+        )
+    scaled_parameter_values = dict(surface.parameter_values)
+    scaled_parameter_values["discrete_gamma_rate_scale"] = rate_scale
+    return FiniteStateLikelihoodSurface(
+        model_name=surface.model_name,
+        state_labels=surface.state_labels,
+        root_prior=surface.root_prior,
+        root_prior_source=surface.root_prior_source,
+        observation_policy=surface.observation_policy,
+        transition_matrix_for_branch_length=lambda branch_length, rate_scale=rate_scale: (
+            surface.transition_matrix_for_branch_length(rate_scale * branch_length)
+        ),
+        leaf_likelihood_vector_for_state=surface.leaf_likelihood_vector_for_state,
+        transition_rate_matrix=surface.transition_rate_matrix,
+        normalization_policy=surface.normalization_policy,
+        parameter_values=scaled_parameter_values,
+    )
 
 
 def _node_index(tree: PhyloTree) -> dict[str, TreeNode]:
