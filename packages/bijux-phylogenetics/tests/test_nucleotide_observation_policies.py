@@ -59,9 +59,30 @@ def test_jc69_observation_policies_change_likelihood_on_ambiguity_fixture() -> N
     assert ambiguity_report.observation_policy == "ambiguity-vector"
     assert fifth_state_report.state_count == 5
     assert fifth_state_report.observation_policy == "fifth-state"
+    assert missing_report.parameter_count == 0
+    assert ambiguity_report.parameter_count == 0
+    assert fifth_state_report.parameter_count == 0
     assert math.isfinite(missing_report.log_likelihood)
     assert math.isfinite(ambiguity_report.log_likelihood)
     assert math.isfinite(fifth_state_report.log_likelihood)
+    assert math.isclose(
+        missing_report.aic,
+        -2.0 * missing_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        ambiguity_report.aic,
+        -2.0 * ambiguity_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        fifth_state_report.aic,
+        -2.0 * fifth_state_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
     assert not math.isclose(
         missing_report.log_likelihood,
         ambiguity_report.log_likelihood,
