@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from collections import OrderedDict
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
+
+SiteTokenizer = Callable[[str], Sequence[str]]
 
 
 @dataclass(frozen=True, slots=True)
@@ -30,11 +32,19 @@ class CompressedAlignmentSitePatterns:
     patterns: list[AlignmentSitePattern]
 
 
-def alignment_site_columns(records: list[AlignmentRecord]) -> list[tuple[str, ...]]:
-    """Return aligned columns in stable taxon order."""
-    alignment_length = _validated_alignment_length(records)
+def alignment_site_columns(
+    records: list[AlignmentRecord],
+    *,
+    site_tokenizer: SiteTokenizer | None = None,
+) -> list[tuple[str, ...]]:
+    """Return aligned site columns in stable taxon order."""
+    token_sequences = _tokenized_alignment_sequences(
+        records,
+        site_tokenizer=site_tokenizer,
+    )
+    alignment_length = len(token_sequences[0])
     return [
-        tuple(record.sequence[position] for record in records)
+        tuple(sequence[position] for sequence in token_sequences)
         for position in range(alignment_length)
     ]
 
@@ -51,12 +61,18 @@ def compress_alignment_site_patterns_from_records(
     records: list[AlignmentRecord],
     *,
     source_path: Path | None = None,
+    site_tokenizer: SiteTokenizer | None = None,
 ) -> CompressedAlignmentSitePatterns:
-    """Compress identical aligned columns while preserving stable taxon order."""
-    alignment_length = _validated_alignment_length(records)
+    """Compress identical aligned site patterns while preserving stable taxon order."""
+    token_sequences = _tokenized_alignment_sequences(
+        records,
+        site_tokenizer=site_tokenizer,
+    )
+    alignment_length = len(token_sequences[0])
     grouped_positions: OrderedDict[tuple[str, ...], list[int]] = OrderedDict()
-    for position, states in enumerate(alignment_site_columns(records), start=1):
-        grouped_positions.setdefault(states, []).append(position)
+    for position in range(alignment_length):
+        states = tuple(sequence[position] for sequence in token_sequences)
+        grouped_positions.setdefault(states, []).append(position + 1)
 
     patterns = [
         AlignmentSitePattern(
@@ -81,9 +97,11 @@ def compress_alignment_site_patterns_from_records(
 
 def iter_uncompressed_alignment_sites(
     records: list[AlignmentRecord],
+    *,
+    site_tokenizer: SiteTokenizer | None = None,
 ) -> Iterable[tuple[str, ...]]:
-    """Yield aligned columns in stable taxon order."""
-    yield from alignment_site_columns(records)
+    """Yield aligned site patterns in stable taxon order."""
+    yield from alignment_site_columns(records, site_tokenizer=site_tokenizer)
 
 
 def iter_pattern_sites_in_alignment_order(
@@ -125,3 +143,24 @@ def _validated_alignment_length(records: list[AlignmentRecord]) -> int:
             "site-pattern compression requires equal-length aligned sequences"
         )
     return next(iter(alignment_lengths))
+
+
+def _tokenized_alignment_sequences(
+    records: list[AlignmentRecord],
+    *,
+    site_tokenizer: SiteTokenizer | None = None,
+) -> list[tuple[str, ...]]:
+    if site_tokenizer is None:
+        _validated_alignment_length(records)
+        return [tuple(record.sequence) for record in records]
+    if not records:
+        raise InvalidAlignmentError(
+            "site-pattern compression requires at least one alignment record"
+        )
+    token_sequences = [tuple(site_tokenizer(record.sequence)) for record in records]
+    token_lengths = {len(sequence) for sequence in token_sequences}
+    if len(token_lengths) != 1:
+        raise InvalidAlignmentError(
+            "site-pattern compression requires equal-length aligned site-token sequences"
+        )
+    return token_sequences
