@@ -89,3 +89,48 @@ def test_validated_transition_eigenvalues_clamps_tiny_positive_real_parts() -> N
 
     assert observed[0].real == 0.0
     assert observed[1].real == -2.0
+
+
+def test_transition_matrix_evaluator_uses_uniformization_for_defective_generator() -> (
+    None
+):
+    rate_matrix = numpy.array(
+        [
+            [-1.0, 1.0, 0.0],
+            [0.0, -1.0, 1.0],
+            [0.0, 0.0, 0.0],
+        ],
+        dtype=float,
+    )
+    evaluator = build_transition_matrix_evaluator(rate_matrix)
+
+    assert evaluator.matrix_exponential_backend == "uniformization"
+
+
+@pytest.mark.parametrize("branch_length", [0.1, 1.0, 10.0])
+def test_transition_probability_matrix_matches_defective_generator_closed_form(
+    branch_length: float,
+) -> None:
+    rate_matrix = numpy.array(
+        [
+            [-1.0, 1.0, 0.0],
+            [0.0, -1.0, 1.0],
+            [0.0, 0.0, 0.0],
+        ],
+        dtype=float,
+    )
+
+    observed = transition_probability_matrix(rate_matrix, branch_length)
+    retained_probability = math.exp(-branch_length)
+    promoted_probability = branch_length * retained_probability
+    absorbed_probability = 1.0 - retained_probability - promoted_probability
+    expected = numpy.array(
+        [
+            [retained_probability, promoted_probability, absorbed_probability],
+            [0.0, retained_probability, 1.0 - retained_probability],
+            [0.0, 0.0, 1.0],
+        ],
+        dtype=float,
+    )
+
+    assert numpy.allclose(observed, expected, rtol=0.0, atol=1e-12)

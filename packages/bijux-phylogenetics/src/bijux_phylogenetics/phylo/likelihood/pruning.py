@@ -11,6 +11,7 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from .ctmc import ValidatedCtmcRateMatrix, validate_ctmc_rate_matrix
 
 _EIGENVALUE_REAL_PART_TOLERANCE = 1e-9
+_EIGENVECTOR_CONDITION_NUMBER_MAX = 1e12
 _TRANSITION_NEGATIVE_TOLERANCE = 1e-12
 _TRANSITION_ROW_SUM_TOLERANCE = 1e-12
 _UNIFORMIZATION_TOLERANCE = 1e-12
@@ -42,24 +43,15 @@ class FiniteStateTransitionMatrixEvaluator:
     """Branch-length transition evaluator for one validated finite-state model."""
 
     validated_rate_matrix: ValidatedCtmcRateMatrix
-    eigenvalues: numpy.ndarray
-    eigenvectors: numpy.ndarray
-    inverse_vectors: numpy.ndarray
+    eigendecomposition: FiniteStateRateMatrixEigendecomposition | None
     cache_matrices: bool
     transition_matrix_by_branch_length: dict[float, numpy.ndarray]
+    matrix_exponential_backend: str
     matrix_exponential_evaluation_count: int = 0
 
     @property
     def cached_branch_length_count(self) -> int:
         return len(self.transition_matrix_by_branch_length)
-
-    @property
-    def eigendecomposition(self) -> FiniteStateRateMatrixEigendecomposition:
-        return FiniteStateRateMatrixEigendecomposition(
-            eigenvalues=self.eigenvalues,
-            eigenvectors=self.eigenvectors,
-            inverse_vectors=self.inverse_vectors,
-        )
 
     def transition_probability_matrix(self, branch_length: float) -> numpy.ndarray:
         normalized_branch_length = _normalize_branch_length(branch_length)
@@ -94,14 +86,17 @@ def build_transition_matrix_evaluator(
 ) -> FiniteStateTransitionMatrixEvaluator:
     """Build one reusable transition evaluator for a single finite-state model."""
     validated_rate_matrix = _validated_rate_matrix(rate_matrix)
-    eigendecomposition = _compute_rate_matrix_eigendecomposition(validated_rate_matrix)
+    eigendecomposition = _resolve_rate_matrix_eigendecomposition(validated_rate_matrix)
     return FiniteStateTransitionMatrixEvaluator(
         validated_rate_matrix=validated_rate_matrix,
-        eigenvalues=eigendecomposition.eigenvalues,
-        eigenvectors=eigendecomposition.eigenvectors,
-        inverse_vectors=eigendecomposition.inverse_vectors,
+        eigendecomposition=eigendecomposition,
         cache_matrices=cache_matrices,
         transition_matrix_by_branch_length={},
+        matrix_exponential_backend=(
+            "eigendecomposition"
+            if eigendecomposition is not None
+            else "uniformization"
+        ),
     )
 
 
@@ -154,6 +149,25 @@ def _compute_rate_matrix_eigendecomposition(
     )
 
 
+def _resolve_rate_matrix_eigendecomposition(
+    validated_rate_matrix: ValidatedCtmcRateMatrix,
+) -> FiniteStateRateMatrixEigendecomposition | None:
+    try:
+        eigendecomposition = _compute_rate_matrix_eigendecomposition(
+            validated_rate_matrix
+        )
+    except numpy.linalg.LinAlgError:
+        return None
+    condition_number = float(
+        numpy.linalg.cond(eigendecomposition.eigenvectors)
+    )
+    if not math.isfinite(condition_number):
+        return None
+    if condition_number > _EIGENVECTOR_CONDITION_NUMBER_MAX:
+        return None
+    return eigendecomposition
+
+
 def _compute_transition_probability_matrix(
     validated_rate_matrix: ValidatedCtmcRateMatrix,
     branch_length: float,
@@ -163,24 +177,26 @@ def _compute_transition_probability_matrix(
     if branch_length == 0.0:
         return numpy.eye(validated_rate_matrix.state_count, dtype=float)
     if eigendecomposition is None:
-        eigendecomposition = _compute_rate_matrix_eigendecomposition(
+        eigendecomposition = _resolve_rate_matrix_eigendecomposition(
             validated_rate_matrix
         )
-    try:
-        eigenvalues = eigendecomposition.eigenvalues
-        eigenvectors = eigendecomposition.eigenvectors
-        inverse_vectors = eigendecomposition.inverse_vectors
-        validated_eigenvalues = _validated_transition_eigenvalues(eigenvalues)
-        diagonal = numpy.diag(numpy.exp(validated_eigenvalues * branch_length))
-        transition = eigenvectors @ diagonal @ inverse_vectors
-    except ValueError:
-        return _compute_transition_probability_matrix_by_uniformization(
-            validated_rate_matrix,
-            branch_length,
-        )
-    return _stabilize_transition_probability_matrix(
-        transition,
-        state_count=validated_rate_matrix.state_count,
+    if eigendecomposition is not None:
+        try:
+            eigenvalues = eigendecomposition.eigenvalues
+            eigenvectors = eigendecomposition.eigenvectors
+            inverse_vectors = eigendecomposition.inverse_vectors
+            validated_eigenvalues = _validated_transition_eigenvalues(eigenvalues)
+            diagonal = numpy.diag(numpy.exp(validated_eigenvalues * branch_length))
+            transition = eigenvectors @ diagonal @ inverse_vectors
+            return _stabilize_transition_probability_matrix(
+                transition,
+                state_count=validated_rate_matrix.state_count,
+            )
+        except ValueError:
+            pass
+    return _compute_transition_probability_matrix_by_uniformization(
+        validated_rate_matrix,
+        branch_length,
     )
 
 
