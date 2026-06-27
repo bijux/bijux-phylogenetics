@@ -84,6 +84,76 @@ def test_compiled_empirical_protein_analysis_matches_existing_tree_report() -> N
     )
 
 
+def test_compiled_protein_poisson_analysis_matches_ambiguity_vector_report() -> None:
+    tree = load_tree(fixture("trees", "protein_poisson_likelihood_tree_2_taxa.nwk"))
+    records = load_fasta_alignment(
+        fixture(
+            "alignments",
+            "protein_poisson_likelihood_alignment_ambiguity_2_taxa.fasta",
+        )
+    )
+    analysis = compile_protein_poisson_likelihood_analysis(
+        tree,
+        records,
+        ambiguity_policy="ambiguity-vector",
+    )
+
+    compiled_log_likelihood = evaluate_compiled_finite_state_likelihood_analysis(
+        analysis
+    )
+    report = evaluate_protein_poisson_tree_likelihood(
+        tree,
+        records,
+        ambiguity_policy="ambiguity-vector",
+    )
+
+    assert math.isclose(
+        compiled_log_likelihood,
+        report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
+def test_compiled_empirical_protein_analysis_matches_ambiguity_vector_report() -> None:
+    tree = load_tree(fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"))
+    records = load_fasta_alignment(
+        fixture(
+            "alignments",
+            "protein_poisson_likelihood_alignment_ambiguity_2_taxa.fasta",
+        )
+    )
+    rate_matrix = _compact_polar_rate_matrix()
+    root_prior = _biased_root_prior()
+    analysis = compile_empirical_protein_likelihood_analysis(
+        tree,
+        records,
+        rate_matrix=rate_matrix,
+        root_prior=root_prior,
+        matrix_label="compact-polar",
+        ambiguity_policy="ambiguity-vector",
+    )
+
+    compiled_log_likelihood = evaluate_compiled_finite_state_likelihood_analysis(
+        analysis
+    )
+    report = evaluate_empirical_protein_tree_likelihood(
+        tree,
+        records,
+        rate_matrix=rate_matrix,
+        root_prior=root_prior,
+        matrix_label="compact-polar",
+        ambiguity_policy="ambiguity-vector",
+    )
+
+    assert math.isclose(
+        compiled_log_likelihood,
+        report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
 def test_compiled_protein_analysis_keeps_policy_weights_and_partitions() -> None:
     tree = load_tree(fixture("trees", "protein_poisson_likelihood_tree_2_taxa.nwk"))
     records = load_fasta_alignment(
