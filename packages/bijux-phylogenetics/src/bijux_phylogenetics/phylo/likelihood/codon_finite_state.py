@@ -12,10 +12,6 @@ from bijux_phylogenetics.phylo.alignment.partitions import (
 )
 from bijux_phylogenetics.phylo.likelihood.codon_observation_policies import (
     resolve_codon_observation_leaf_vector,
-    validate_codon_observation_policy,
-)
-from bijux_phylogenetics.phylo.likelihood.codon_states import (
-    build_equal_rate_codon_ctmc_rate_matrix,
 )
 from bijux_phylogenetics.phylo.likelihood.ctmc import (
     EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
@@ -32,9 +28,12 @@ from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import InvalidPartitionError
 
-from .codon import normalize_codon_likelihood_records
-from .codon import compress_codon_site_patterns_from_records
-from .codon import resolve_codon_root_prior
+from .codon import (
+    compress_codon_site_patterns_from_records,
+    normalize_codon_likelihood_records,
+    resolve_codon_ctmc_model,
+    resolve_codon_root_prior,
+)
 
 
 def build_codon_finite_state_surface(
@@ -56,50 +55,41 @@ def build_codon_finite_state_surface(
     observation_policy: str = "reject",
 ) -> FiniteStateLikelihoodSurface:
     """Build one shared finite-state codon CTMC likelihood surface."""
-    normalize_codon_likelihood_records(
+    resolved_model = resolve_codon_ctmc_model(
         records,
+        codon_frequencies=codon_frequencies,
         genetic_code=genetic_code,
         observation_policy=observation_policy,
     )
-    state_space, rate_matrix, frequencies, _frequency_source = (
-        build_equal_rate_codon_ctmc_rate_matrix(
-            codon_frequencies,
-            genetic_code=genetic_code,
-        )
-    )
     resolved_root_prior = resolve_codon_root_prior(
-        records,
-        state_space=state_space,
+        resolved_model.normalized_records,
+        state_space=resolved_model.state_space,
         owner_name="codon CTMC finite-state surface",
         default_policy="stationary",
         root_prior_policy=root_prior_policy,
         root_prior=root_prior,
         fixed_root_state=fixed_root_state,
-        stationary_frequencies=frequencies,
-    )
-    validated_observation_policy = validate_codon_observation_policy(
-        observation_policy,
-        owner_name="codon CTMC likelihood",
+        stationary_frequencies=resolved_model.stationary_frequencies,
     )
     return FiniteStateLikelihoodSurface(
         model_name="codon CTMC",
-        state_labels=tuple(state_space.state_order),
+        state_labels=tuple(resolved_model.state_space.state_order),
         root_prior=resolved_root_prior.root_prior,
         root_prior_source=resolved_root_prior.root_prior_source,
-        observation_policy=validated_observation_policy,
+        observation_policy=resolved_model.observation_policy,
         normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
-        transition_rate_matrix=rate_matrix,
+        transition_rate_matrix=resolved_model.rate_matrix,
         transition_matrix_for_branch_length=lambda branch_length: (
-            transition_probability_matrix(rate_matrix, branch_length)
+            transition_probability_matrix(resolved_model.rate_matrix, branch_length)
         ),
         leaf_likelihood_vector_for_state=lambda taxon_name, observed_state: (
             resolve_codon_observation_leaf_vector(
                 observed_state,
                 model_name="codon CTMC",
                 node_name=taxon_name,
-                observation_policy=validated_observation_policy,
-                state_order=state_space.state_order,
-                state_index=state_space.state_index,
+                observation_policy=resolved_model.observation_policy,
+                state_order=resolved_model.state_space.state_order,
+                state_index=resolved_model.state_space.state_index,
             )
         ),
     )

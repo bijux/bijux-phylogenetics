@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy
@@ -8,9 +9,6 @@ from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
-from bijux_phylogenetics.phylo.likelihood.ctmc import (
-    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
-)
 from bijux_phylogenetics.phylo.likelihood.codon_observation_policies import (
     resolve_codon_observation_leaf_vector,
     validate_codon_observation_policy,
@@ -21,38 +19,55 @@ from bijux_phylogenetics.phylo.likelihood.codon_states import (
     build_equal_rate_codon_ctmc_rate_matrix,
     resolve_codon_state_space,
 )
-from bijux_phylogenetics.phylo.likelihood.finite_state_root_priors import (
-    ResolvedFiniteStateRootPrior,
-    resolve_finite_state_root_prior,
-)
-from bijux_phylogenetics.phylo.likelihood.models import CodonCtmcTreeLikelihoodReport
-from bijux_phylogenetics.phylo.likelihood.models import SiteLogLikelihoodRow
-from bijux_phylogenetics.phylo.likelihood.patterns import (
-    CompressedAlignmentSitePatterns,
-    compress_alignment_site_patterns_from_records,
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
 )
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
     FiniteStateLikelihoodSurface,
     compile_finite_state_likelihood_context,
     evaluate_finite_state_site_log_likelihood_rows_from_patterns,
 )
+from bijux_phylogenetics.phylo.likelihood.finite_state_root_priors import (
+    ResolvedFiniteStateRootPrior,
+    resolve_finite_state_root_prior,
+)
+from bijux_phylogenetics.phylo.likelihood.models import (
+    CodonCtmcTreeLikelihoodReport,
+    SiteLogLikelihoodRow,
+)
+from bijux_phylogenetics.phylo.likelihood.patterns import (
+    CompressedAlignmentSitePatterns,
+    compress_alignment_site_patterns_from_records,
+)
 from bijux_phylogenetics.phylo.likelihood.pruning import (
     build_transition_matrix_evaluator,
     log_likelihood_from_root_prior,
     postorder_conditional_likelihoods,
 )
+from bijux_phylogenetics.phylo.likelihood.sites import (
+    validate_site_log_likelihood_reconstruction,
+)
 from bijux_phylogenetics.phylo.likelihood.validation import (
     validate_explicit_branch_lengths,
     validate_tree_taxa_against_patterns,
-)
-from bijux_phylogenetics.phylo.likelihood.sites import (
-    validate_site_log_likelihood_reconstruction,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import (
     AlignmentTaxonMismatchError,
     InvalidAlignmentError,
 )
+
+
+@dataclass(frozen=True, slots=True)
+class ResolvedCodonCtmcModel:
+    """One normalized codon CTMC likelihood surface definition."""
+
+    normalized_records: list[AlignmentRecord]
+    state_space: CodonStateSpace
+    rate_matrix: numpy.ndarray
+    stationary_frequencies: numpy.ndarray
+    codon_frequency_source: str
+    observation_policy: str
 
 
 def evaluate_codon_ctmc_tree_likelihood(
@@ -75,39 +90,34 @@ def evaluate_codon_ctmc_tree_likelihood(
     observation_policy: str = "reject",
 ) -> CodonCtmcTreeLikelihoodReport:
     """Evaluate one fixed-topology codon CTMC likelihood on an aligned coding matrix."""
-    normalized_records = normalize_codon_likelihood_records(
+    resolved_model = resolve_codon_ctmc_model(
         records,
+        codon_frequencies=codon_frequencies,
         genetic_code=genetic_code,
         observation_policy=observation_policy,
     )
     compressed_patterns = compress_alignment_site_patterns_from_records(
-        normalized_records,
+        resolved_model.normalized_records,
         site_tokenizer=iter_codon_tokens,
     )
-    state_space, rate_matrix, frequencies, frequency_source = (
-        build_equal_rate_codon_ctmc_rate_matrix(
-            codon_frequencies,
-            genetic_code=genetic_code,
-        )
-    )
     resolved_root_prior = resolve_codon_root_prior(
-        normalized_records,
-        state_space=state_space,
+        resolved_model.normalized_records,
+        state_space=resolved_model.state_space,
         owner_name="codon CTMC likelihood",
         default_policy="stationary",
         root_prior_policy=root_prior_policy,
         root_prior=root_prior,
         fixed_root_state=fixed_root_state,
-        stationary_frequencies=frequencies,
+        stationary_frequencies=resolved_model.stationary_frequencies,
     )
     site_log_likelihoods, log_likelihood = (
         _evaluate_codon_ctmc_tree_likelihood_rows_from_patterns(
-        tree,
-        compressed_patterns,
-        state_space=state_space,
-        rate_matrix=rate_matrix,
-        root_prior=resolved_root_prior.root_prior,
-        observation_policy=observation_policy,
+            tree,
+            compressed_patterns,
+            state_space=resolved_model.state_space,
+            rate_matrix=resolved_model.rate_matrix,
+            root_prior=resolved_root_prior.root_prior,
+            observation_policy=resolved_model.observation_policy,
         )
     )
     validate_site_log_likelihood_reconstruction(
@@ -126,15 +136,12 @@ def evaluate_codon_ctmc_tree_likelihood(
         ),
         expansion_policy="expanded-site-rows",
         tree_newick=dumps_newick(tree),
-        state_count=len(state_space.state_order),
-        genetic_code_id=state_space.genetic_code_id,
-        genetic_code_name=state_space.genetic_code_name,
-        codon_frequency_source=frequency_source,
+        state_count=len(resolved_model.state_space.state_order),
+        genetic_code_id=resolved_model.state_space.genetic_code_id,
+        genetic_code_name=resolved_model.state_space.genetic_code_name,
+        codon_frequency_source=resolved_model.codon_frequency_source,
         root_prior_source=resolved_root_prior.root_prior_source,
-        observation_policy=validate_codon_observation_policy(
-            observation_policy,
-            owner_name="codon CTMC likelihood",
-        ),
+        observation_policy=resolved_model.observation_policy,
         normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
         log_likelihood=log_likelihood,
         site_log_likelihoods=site_log_likelihoods,
@@ -238,6 +245,43 @@ def normalize_codon_likelihood_records(
             )
         )
     return normalized_records
+
+
+def resolve_codon_ctmc_model(
+    records: list[AlignmentRecord],
+    *,
+    codon_frequencies: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    genetic_code: int | str | None = None,
+    observation_policy: str = "reject",
+) -> ResolvedCodonCtmcModel:
+    """Resolve one normalized codon CTMC model definition for owned surfaces."""
+    normalized_records = normalize_codon_likelihood_records(
+        records,
+        genetic_code=genetic_code,
+        observation_policy=observation_policy,
+    )
+    state_space, rate_matrix, frequencies, frequency_source = (
+        build_equal_rate_codon_ctmc_rate_matrix(
+            codon_frequencies,
+            genetic_code=genetic_code,
+        )
+    )
+    validated_observation_policy = validate_codon_observation_policy(
+        observation_policy,
+        owner_name="codon CTMC likelihood",
+    )
+    return ResolvedCodonCtmcModel(
+        normalized_records=normalized_records,
+        state_space=state_space,
+        rate_matrix=rate_matrix,
+        stationary_frequencies=frequencies,
+        codon_frequency_source=frequency_source,
+        observation_policy=validated_observation_policy,
+    )
 
 
 def resolve_codon_root_prior(
