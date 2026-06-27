@@ -12,6 +12,10 @@ from bijux_phylogenetics.phylo.likelihood.pruning import (
     log_likelihood_from_root_prior,
     postorder_conditional_likelihoods,
 )
+from bijux_phylogenetics.phylo.likelihood.validation import (
+    validate_explicit_branch_lengths,
+    validate_tree_taxa_against_patterns,
+)
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 FiniteStateLeafVector = Callable[[str, str], numpy.ndarray]
@@ -107,6 +111,26 @@ def evaluate_finite_state_tree_log_likelihood_from_patterns(
             taxon_order=compressed_patterns.taxon_order,
         )
     return total
+
+
+def evaluate_finite_state_tree_log_likelihood(
+    tree: PhyloTree,
+    compressed_patterns: CompressedAlignmentSitePatterns,
+    *,
+    surface: FiniteStateLikelihoodSurface,
+) -> float:
+    """Evaluate one compressed alignment on one shared finite-state surface."""
+    validate_explicit_branch_lengths(tree, model_name=surface.model_name)
+    validate_tree_taxa_against_patterns(
+        tree,
+        compressed_patterns,
+        model_name=surface.model_name,
+    )
+    context = compile_finite_state_likelihood_context(tree, surface)
+    return evaluate_finite_state_tree_log_likelihood_from_patterns(
+        context,
+        compressed_patterns,
+    )
 
 
 def _leaf_likelihood_vector(
