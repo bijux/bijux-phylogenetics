@@ -18,6 +18,7 @@ from bijux_phylogenetics.phylo.likelihood import (
 )
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
     evaluate_compiled_finite_state_likelihood_analysis,
+    update_compiled_finite_state_analysis_branch_length,
 )
 from bijux_phylogenetics.phylo.likelihood.nucleotide_finite_state import (
     compile_selected_nucleotide_likelihood_analysis,
@@ -124,3 +125,51 @@ def test_compiled_nucleotide_analysis_keeps_partition_weights_and_policy() -> No
         "leading-sites",
         "trailing-sites",
     ]
+
+
+def test_compiled_nucleotide_branch_refresh_matches_recompiled_report() -> None:
+    tree = load_tree(fixture("trees", "jc69_likelihood_tree_2_taxa.nwk"))
+    records = load_fasta_alignment(
+        fixture("alignments", "jc69_likelihood_alignment_2_taxa.fasta")
+    )
+    analysis = compile_selected_nucleotide_likelihood_analysis(
+        tree,
+        records,
+        model_name="jc69",
+        owner_name="compiled nucleotide branch refresh test",
+    )
+    original_log_likelihood = evaluate_compiled_finite_state_likelihood_analysis(
+        analysis
+    )
+    changed_node_id = next(
+        node.node_id for node in tree.iter_leaves() if node.name == "A"
+    )
+
+    update_compiled_finite_state_analysis_branch_length(
+        analysis,
+        child_node_id=changed_node_id,
+        branch_length=0.25,
+    )
+    refreshed_log_likelihood = evaluate_compiled_finite_state_likelihood_analysis(
+        analysis
+    )
+
+    rebuilt_tree = load_tree(fixture("trees", "jc69_likelihood_tree_2_taxa.nwk"))
+    next(node for node in rebuilt_tree.iter_leaves() if node.name == "A").branch_length = (
+        0.25
+    )
+    rebuilt_tree.refresh()
+    rebuilt_report = evaluate_jc69_tree_likelihood(rebuilt_tree, records)
+
+    assert not math.isclose(
+        original_log_likelihood,
+        refreshed_log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        refreshed_log_likelihood,
+        rebuilt_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
