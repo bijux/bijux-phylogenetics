@@ -14,7 +14,10 @@ from bijux_phylogenetics.phylo.likelihood.jc69 import (
     jc69_rate_matrix,
     jc69_transition_probability_matrix,
 )
-from bijux_phylogenetics.phylo.likelihood.k80 import k80_rate_matrix
+from bijux_phylogenetics.phylo.likelihood.k80 import (
+    k80_rate_matrix,
+    k80_transition_probability_matrix,
+)
 from bijux_phylogenetics.phylo.likelihood.nucleotide_finite_state import (
     build_selected_nucleotide_finite_state_surface,
 )
@@ -193,6 +196,26 @@ def test_jc69_closed_form_transition_matches_normalized_ctmc_engine(
     closed_form = jc69_transition_probability_matrix(branch_length)
     matrix_exponential = transition_probability_matrix(
         jc69_rate_matrix(),
+        branch_length,
+    )
+
+    assert numpy.allclose(
+        closed_form,
+        matrix_exponential,
+        rtol=0.0,
+        atol=1e-12,
+    )
+
+
+@pytest.mark.parametrize("kappa", [0.5, 1.0, 4.0, 9.0])
+@pytest.mark.parametrize("branch_length", [0.0, 1e-9, 0.1, 0.75, 5.0, 25.0])
+def test_k80_closed_form_transition_matches_normalized_ctmc_engine(
+    branch_length: float,
+    kappa: float,
+) -> None:
+    closed_form = k80_transition_probability_matrix(branch_length, kappa=kappa)
+    matrix_exponential = transition_probability_matrix(
+        k80_rate_matrix(kappa),
         branch_length,
     )
 
