@@ -169,6 +169,7 @@ __all__ = [
     "evaluate_codon_ctmc_tree_likelihood_from_alignment",
     "evaluate_compiled_finite_state_likelihood_analysis",
     "evaluate_compiled_finite_state_site_log_likelihood_rows",
+    "validate_compiled_finite_state_site_log_likelihood_reconstruction",
     "evaluate_nucleotide_branch_likelihood_diagnostics",
     "evaluate_nucleotide_branch_likelihood_diagnostics_from_alignment",
     "evaluate_f81_tree_likelihood",

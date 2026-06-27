@@ -16,6 +16,7 @@ from bijux_phylogenetics.phylo.likelihood.finite_state import (
     compile_finite_state_likelihood_analysis,
     evaluate_compiled_finite_state_likelihood_analysis,
     evaluate_compiled_finite_state_site_log_likelihood_rows,
+    validate_compiled_finite_state_site_log_likelihood_reconstruction,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
@@ -131,6 +132,13 @@ def test_compiled_analysis_expands_weighted_source_site_rows_in_original_order()
     ]
     assert [row.pattern_site_count for row in rows] == [1, 1, 1, 1]
     assert [row.site_weight for row in rows] == [1.0, 3.0, 1.0, 0.0]
+    validate_compiled_finite_state_site_log_likelihood_reconstruction(
+        rows,
+        expected_total_log_likelihood=total_log_likelihood,
+        expected_site_count=analysis.alignment_length,
+        expected_pattern_count=analysis.pattern_count,
+        owner_name="compiled finite-state analysis test",
+    )
     assert math.isclose(
         sum(row.site_weight * row.log_likelihood for row in rows),
         total_log_likelihood,

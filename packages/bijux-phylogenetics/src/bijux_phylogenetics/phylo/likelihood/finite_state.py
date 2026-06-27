@@ -444,6 +444,59 @@ def evaluate_compiled_finite_state_site_log_likelihood_rows(
     return rows, weighted_total
 
 
+def validate_compiled_finite_state_site_log_likelihood_reconstruction(
+    rows: list[CompiledFiniteStateSiteLogLikelihoodRow],
+    *,
+    expected_total_log_likelihood: float,
+    expected_site_count: int,
+    expected_pattern_count: int,
+    owner_name: str,
+) -> None:
+    """Reject compiled source-site rows that do not reconstruct the declared total."""
+    if len(rows) != expected_site_count:
+        raise ValueError(
+            f"{owner_name} emitted {len(rows)} source-site rows for {expected_site_count} declared sites"
+        )
+    unique_positions = {row.source_site_position for row in rows}
+    if len(unique_positions) != expected_site_count:
+        raise ValueError(
+            f"{owner_name} emitted duplicate or missing source-site positions"
+        )
+    unique_pattern_count = len(
+        {(row.partition_name, row.pattern_id) for row in rows}
+    )
+    if unique_pattern_count != expected_pattern_count:
+        raise ValueError(
+            f"{owner_name} emitted {unique_pattern_count} partition-pattern rows for {expected_pattern_count} declared patterns"
+        )
+    partition_pattern_terms: dict[
+        tuple[str, str],
+        tuple[int, tuple[str, ...], float],
+    ] = {}
+    for row in rows:
+        prior = partition_pattern_terms.get((row.partition_name, row.pattern_id))
+        current = (row.pattern_site_count, row.site_states, row.log_likelihood)
+        if prior is None:
+            partition_pattern_terms[(row.partition_name, row.pattern_id)] = current
+            continue
+        if prior != current:
+            raise ValueError(
+                f"{owner_name} emitted inconsistent rows for partition '{row.partition_name}' pattern '{row.pattern_id}'"
+            )
+    reconstructed_total = math.fsum(
+        row.site_weight * row.log_likelihood for row in rows
+    )
+    if not math.isclose(
+        reconstructed_total,
+        expected_total_log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    ):
+        raise ValueError(
+            f"{owner_name} source-site rows did not reconstruct the declared total likelihood"
+        )
+
+
 def update_compiled_finite_state_context_branch_length(
     context: CompiledFiniteStateLikelihoodContext,
     *,
