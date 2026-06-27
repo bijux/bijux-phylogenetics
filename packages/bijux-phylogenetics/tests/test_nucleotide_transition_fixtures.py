@@ -7,7 +7,10 @@ from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.ctmc import (
     solve_ctmc_stationary_distribution,
 )
-from bijux_phylogenetics.phylo.likelihood.f81 import f81_rate_matrix
+from bijux_phylogenetics.phylo.likelihood.f81 import (
+    f81_rate_matrix,
+    f81_transition_probability_matrix,
+)
 from bijux_phylogenetics.phylo.likelihood.gtr import gtr_rate_matrix
 from bijux_phylogenetics.phylo.likelihood.hky85 import hky85_rate_matrix
 from bijux_phylogenetics.phylo.likelihood.jc69 import (
@@ -216,6 +219,28 @@ def test_k80_closed_form_transition_matches_normalized_ctmc_engine(
     closed_form = k80_transition_probability_matrix(branch_length, kappa=kappa)
     matrix_exponential = transition_probability_matrix(
         k80_rate_matrix(kappa),
+        branch_length,
+    )
+
+    assert numpy.allclose(
+        closed_form,
+        matrix_exponential,
+        rtol=0.0,
+        atol=1e-12,
+    )
+
+
+@pytest.mark.parametrize("branch_length", [0.0, 1e-9, 0.1, 0.75, 5.0, 25.0])
+def test_f81_closed_form_transition_matches_normalized_ctmc_engine(
+    branch_length: float,
+) -> None:
+    base_frequencies = numpy.array([0.4, 0.1, 0.2, 0.3], dtype=float)
+    closed_form = f81_transition_probability_matrix(
+        branch_length,
+        base_frequencies=base_frequencies,
+    )
+    matrix_exponential = transition_probability_matrix(
+        f81_rate_matrix(base_frequencies),
         branch_length,
     )
 
