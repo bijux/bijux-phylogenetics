@@ -152,11 +152,25 @@ class CompiledFiniteStatePatternTerm:
 
 
 @dataclass(frozen=True, slots=True)
+class ResolvedFiniteStatePartitionInput:
+    """One validated partition slice before model-specific pattern compilation."""
+
+    partition_name: str
+    partition_data_type: str | None
+    records: list[AlignmentRecord]
+    source_site_positions: tuple[int, ...]
+    source_path: Path | None
+
+
+@dataclass(frozen=True, slots=True)
 class CompiledFiniteStatePartitionContext:
     """One compiled partition block inside a reusable finite-state analysis."""
 
     partition_name: str
     partition_data_type: str | None
+    model_name: str
+    context_index: int
+    context_linkage_key: str
     alignment_length: int
     pattern_count: int
     taxon_order: list[str]
@@ -174,6 +188,7 @@ class CompiledFiniteStateLikelihoodAnalysis:
     site_weight_total: float
     missing_data_policy: str
     context: CompiledFiniteStateLikelihoodContext
+    contexts: tuple[CompiledFiniteStateLikelihoodContext, ...]
     partition_contexts: tuple[CompiledFiniteStatePartitionContext, ...]
 
 
@@ -269,17 +284,23 @@ def compile_finite_state_likelihood_analysis(
                 else partition_alignment_length
             ),
         )
-    partition_contexts = _compile_partition_contexts(
+    partition_inputs = _resolve_partition_inputs(
         records,
         alignment_length=alignment_length,
-        pattern_compiler=pattern_compiler,
         partition_map=partition_map,
         partition_record_builder=partition_record_builder,
         partition_source_site_positions_resolver=(
             partition_source_site_positions_resolver
         ),
-        site_weight_by_position=validated_site_weight_by_position,
         source_path=source_path,
+    )
+    partition_contexts = _compile_partition_contexts_from_inputs(
+        partition_inputs,
+        pattern_compiler=pattern_compiler,
+        site_weight_by_position=validated_site_weight_by_position,
+        model_name=surface.model_name,
+        context_index=0,
+        context_linkage_key="shared",
     )
     context = compile_finite_state_likelihood_context(tree, surface)
     _validate_partition_taxa_against_tree(tree, partition_contexts, surface=surface)
@@ -298,6 +319,7 @@ def compile_finite_state_likelihood_analysis(
         ),
         missing_data_policy=missing_data_policy,
         context=context,
+        contexts=(context,),
         partition_contexts=partition_contexts,
     )
 
@@ -398,11 +420,12 @@ def evaluate_compiled_finite_state_likelihood_analysis(
     """Evaluate one reusable compiled finite-state analysis without reparsing inputs."""
     total = 0.0
     for partition_context in analysis.partition_contexts:
+        partition_likelihood_context = analysis.contexts[partition_context.context_index]
         for term in partition_context.compiled_pattern_terms:
             if term.effective_weight == 0.0:
                 continue
             total += term.effective_weight * evaluate_finite_state_site_log_likelihood(
-                analysis.context,
+                partition_likelihood_context,
                 term.states,
                 taxon_order=partition_context.taxon_order,
             )
@@ -416,9 +439,10 @@ def evaluate_compiled_finite_state_site_log_likelihood_rows(
     rows: list[CompiledFiniteStateSiteLogLikelihoodRow] = []
     weighted_total = 0.0
     for partition_context in analysis.partition_contexts:
+        partition_likelihood_context = analysis.contexts[partition_context.context_index]
         for term in partition_context.compiled_pattern_terms:
             log_likelihood = evaluate_finite_state_site_log_likelihood(
-                analysis.context,
+                partition_likelihood_context,
                 term.states,
                 taxon_order=partition_context.taxon_order,
             )
@@ -557,11 +581,12 @@ def update_compiled_finite_state_analysis_branch_length(
     branch_length: float,
 ) -> None:
     """Update one compiled-analysis branch length and refresh affected site caches."""
-    update_compiled_finite_state_context_branch_length(
-        analysis.context,
-        child_node_id=child_node_id,
-        branch_length=branch_length,
-    )
+    for context in analysis.contexts:
+        update_compiled_finite_state_context_branch_length(
+            context,
+            child_node_id=child_node_id,
+            branch_length=branch_length,
+        )
 
 
 def update_compiled_finite_state_context_topology(
@@ -637,10 +662,11 @@ def update_compiled_finite_state_analysis_topology(
     tree: PhyloTree,
 ) -> None:
     """Update one compiled analysis to a new topology while reusing unchanged subtrees."""
-    update_compiled_finite_state_context_topology(
-        analysis.context,
-        tree=tree,
-    )
+    for context in analysis.contexts:
+        update_compiled_finite_state_context_topology(
+            context,
+            tree=tree,
+        )
 
 
 def _leaf_likelihood_vector(
@@ -881,28 +907,24 @@ def _node_topology_signature(
     )
 
 
-def _compile_partition_contexts(
+def _resolve_partition_inputs(
     records: list[AlignmentRecord],
     *,
     alignment_length: int,
-    pattern_compiler: FiniteStatePatternCompiler,
     partition_map: tuple[LocusPartition, ...] | None,
     partition_record_builder: FiniteStatePartitionRecordBuilder | None,
     partition_source_site_positions_resolver: (
         FiniteStatePartitionSourceSitePositionsResolver | None
     ),
-    site_weight_by_position: Mapping[int, float],
     source_path: Path | None,
-) -> tuple[CompiledFiniteStatePartitionContext, ...]:
+) -> tuple[ResolvedFiniteStatePartitionInput, ...]:
     if partition_map is None:
         return (
-            _compile_partition_context(
+            ResolvedFiniteStatePartitionInput(
                 partition_name="full-alignment",
                 partition_data_type=None,
                 records=records,
                 source_site_positions=tuple(range(1, alignment_length + 1)),
-                pattern_compiler=pattern_compiler,
-                site_weight_by_position=site_weight_by_position,
                 source_path=source_path,
             ),
         )
@@ -917,7 +939,7 @@ def _compile_partition_contexts(
         else partition_source_site_positions_resolver
     )
     return tuple(
-        _compile_partition_context(
+        ResolvedFiniteStatePartitionInput(
             partition_name=partition.name,
             partition_data_type=partition.data_type,
             records=resolved_partition_record_builder(
@@ -927,39 +949,64 @@ def _compile_partition_contexts(
             source_site_positions=resolved_partition_source_site_positions_resolver(
                 partition
             ),
-            pattern_compiler=pattern_compiler,
-            site_weight_by_position=site_weight_by_position,
             source_path=None,
         )
         for partition in partition_map
     )
 
 
-def _compile_partition_context(
+def _compile_partition_contexts_from_inputs(
+    partition_inputs: tuple[ResolvedFiniteStatePartitionInput, ...],
     *,
-    partition_name: str,
-    partition_data_type: str | None,
-    records: list[AlignmentRecord],
-    source_site_positions: tuple[int, ...],
     pattern_compiler: FiniteStatePatternCompiler,
     site_weight_by_position: Mapping[int, float],
-    source_path: Path | None,
+    model_name: str,
+    context_index: int,
+    context_linkage_key: str,
+) -> tuple[CompiledFiniteStatePartitionContext, ...]:
+    return tuple(
+        _compile_partition_context(
+            partition_input,
+            pattern_compiler=pattern_compiler,
+            site_weight_by_position=site_weight_by_position,
+            model_name=model_name,
+            context_index=context_index,
+            context_linkage_key=context_linkage_key,
+        )
+        for partition_input in partition_inputs
+    )
+
+
+def _compile_partition_context(
+    partition_input: ResolvedFiniteStatePartitionInput,
+    *,
+    pattern_compiler: FiniteStatePatternCompiler,
+    site_weight_by_position: Mapping[int, float],
+    model_name: str,
+    context_index: int,
+    context_linkage_key: str,
 ) -> CompiledFiniteStatePartitionContext:
-    compressed_patterns = pattern_compiler(records, source_path)
+    compressed_patterns = pattern_compiler(
+        partition_input.records,
+        partition_input.source_path,
+    )
     compiled_terms = tuple(
         _compile_pattern_term(
             pattern_id=pattern.pattern_id,
             states=pattern.states,
             pattern_site_count=pattern.weight,
             local_site_positions=pattern.site_positions,
-            source_site_positions=source_site_positions,
+            source_site_positions=partition_input.source_site_positions,
             site_weight_by_position=site_weight_by_position,
         )
         for pattern in compressed_patterns.patterns
     )
     return CompiledFiniteStatePartitionContext(
-        partition_name=partition_name,
-        partition_data_type=partition_data_type,
+        partition_name=partition_input.partition_name,
+        partition_data_type=partition_input.partition_data_type,
+        model_name=model_name,
+        context_index=context_index,
+        context_linkage_key=context_linkage_key,
         alignment_length=compressed_patterns.alignment_length,
         pattern_count=compressed_patterns.pattern_count,
         taxon_order=compressed_patterns.taxon_order,
