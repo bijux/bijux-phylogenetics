@@ -236,6 +236,7 @@ def _evaluate_codon_ctmc_tree_likelihood_from_patterns(
             root_prior_source="provided",
             observation_policy=observation_policy,
             normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+            transition_rate_matrix=rate_matrix,
             transition_matrix_for_branch_length=(
                 transition_evaluator.transition_probability_matrix
             ),

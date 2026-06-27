@@ -61,6 +61,7 @@ def build_protein_poisson_finite_state_surface(
             ambiguity_policy=ambiguity_policy,
         ),
         normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+        transition_rate_matrix=rate_matrix,
         transition_matrix_for_branch_length=lambda branch_length: (
             transition_probability_matrix(rate_matrix, branch_length)
         ),
@@ -119,6 +120,7 @@ def build_empirical_protein_finite_state_surface(
             ambiguity_policy=ambiguity_policy,
         ),
         normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
+        transition_rate_matrix=validated_rate_matrix,
         transition_matrix_for_branch_length=lambda branch_length: (
             transition_probability_matrix(validated_rate_matrix, branch_length)
         ),

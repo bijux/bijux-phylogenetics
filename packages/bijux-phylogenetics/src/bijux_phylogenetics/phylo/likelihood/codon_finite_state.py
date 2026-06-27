@@ -66,6 +66,7 @@ def build_codon_finite_state_surface(
         root_prior_source=frequency_source,
         observation_policy=validated_observation_policy,
         normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+        transition_rate_matrix=rate_matrix,
         transition_matrix_for_branch_length=lambda branch_length: (
             transition_probability_matrix(rate_matrix, branch_length)
         ),

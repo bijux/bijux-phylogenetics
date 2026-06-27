@@ -131,6 +131,7 @@ def _evaluate_protein_poisson_tree_likelihood_from_patterns(
                 f"gap={gap_policy};missing={missing_policy};ambiguity={ambiguity_policy}"
             ),
             normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+            transition_rate_matrix=protein_poisson_rate_matrix(),
             transition_matrix_for_branch_length=(
                 protein_poisson_transition_probability_matrix
             ),

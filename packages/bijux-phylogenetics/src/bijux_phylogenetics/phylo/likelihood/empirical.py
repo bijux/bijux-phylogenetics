@@ -941,6 +941,7 @@ def _evaluate_empirical_protein_tree_likelihood_from_patterns(
                 f"gap={gap_policy};missing={missing_policy};ambiguity={ambiguity_policy}"
             ),
             normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
+            transition_rate_matrix=validated_rate_matrix,
             transition_matrix_for_branch_length=lambda branch_length: (
                 transition_probability_matrix(validated_rate_matrix, branch_length)
             ),

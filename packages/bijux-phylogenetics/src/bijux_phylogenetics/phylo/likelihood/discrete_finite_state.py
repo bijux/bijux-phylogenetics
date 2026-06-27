@@ -51,6 +51,7 @@ def build_discrete_mk_finite_state_surface(
         root_prior_source="provided",
         observation_policy=observation_policy,
         normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
+        transition_rate_matrix=rate_matrix,
         transition_matrix_for_branch_length=lambda branch_length: (
             transition_probability_matrix(rate_matrix, branch_length)
         ),
