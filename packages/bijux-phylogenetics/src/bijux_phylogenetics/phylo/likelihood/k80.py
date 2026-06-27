@@ -27,6 +27,11 @@ from bijux_phylogenetics.phylo.likelihood.models import (
     K80KappaOptimizationReport,
     K80TreeLikelihoodReport,
 )
+from bijux_phylogenetics.phylo.likelihood.finite_state import (
+    FiniteStateLikelihoodSurface,
+    compile_finite_state_likelihood_context,
+    evaluate_finite_state_tree_log_likelihood_from_patterns,
+)
 from bijux_phylogenetics.phylo.likelihood.parameter_bounds import (
     validate_parameter_within_bounds,
     validate_positive_parameter_bounds,
@@ -39,12 +44,7 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
     compress_alignment_site_patterns_from_records,
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import (
-    log_likelihood_from_root_prior,
-    postorder_conditional_likelihoods,
     transition_probability_matrix,
-)
-from bijux_phylogenetics.phylo.likelihood.sites import (
-    sum_compressed_site_pattern_log_likelihoods,
 )
 from bijux_phylogenetics.phylo.likelihood.validation import (
     validate_explicit_branch_lengths,
@@ -310,48 +310,35 @@ def _evaluate_k80_tree_likelihood_from_patterns(
             gap_state_frequency=gap_state_frequency,
             model_name="K80",
         )
-        transition_by_node_id = {
-            child.node_id: transition_probability_matrix(
-                augmented_rate_matrix,
-                max(float(child.branch_length or 0.0), 0.0),
-            )
-            for _parent, child in tree.iter_edges()
-        }
+        transition_matrix_for_branch_length = lambda branch_length: (
+            transition_probability_matrix(augmented_rate_matrix, branch_length)
+        )
     else:
-        transition_by_node_id = {
-            child.node_id: k80_transition_probability_matrix(
-                max(float(child.branch_length or 0.0), 0.0),
-                kappa=kappa,
-            )
-            for _parent, child in tree.iter_edges()
-        }
-
-    def site_log_likelihood(states: tuple[str, ...]) -> float:
-        states_by_taxon = dict(
-            zip(compressed_patterns.taxon_order, states, strict=True)
+        transition_matrix_for_branch_length = lambda branch_length: (
+            k80_transition_probability_matrix(branch_length, kappa=kappa)
         )
-        pruning_pass = postorder_conditional_likelihoods(
-            tree,
-            state_count=len(state_order),
-            leaf_likelihood=lambda node: resolve_dna_observation_leaf_vector(
-                states_by_taxon,
-                model_name="K80",
-                node_name=node.name,
-                observation_policy=observation_policy,
-            ),
-            transition_matrix_for_child=lambda child: transition_by_node_id[
-                child.node_id or ""
-            ],
-        )
-        return log_likelihood_from_root_prior(
-            tree,
-            pruning_pass,
+    context = compile_finite_state_likelihood_context(
+        tree,
+        FiniteStateLikelihoodSurface(
+            model_name="K80",
+            state_labels=tuple(state_order),
             root_prior=root_prior,
-        )
-
-    log_likelihood = sum_compressed_site_pattern_log_likelihoods(
+            root_prior_source="provided",
+            observation_policy=observation_policy,
+            transition_matrix_for_branch_length=transition_matrix_for_branch_length,
+            leaf_likelihood_vector_for_state=lambda taxon_name, observed_state: (
+                resolve_dna_observation_leaf_vector(
+                    {taxon_name: observed_state},
+                    model_name="K80",
+                    node_name=taxon_name,
+                    observation_policy=observation_policy,
+                )
+            ),
+        ),
+    )
+    log_likelihood = evaluate_finite_state_tree_log_likelihood_from_patterns(
+        context,
         compressed_patterns,
-        site_log_likelihood=site_log_likelihood,
     )
     return K80TreeLikelihoodReport(
         taxa=compressed_patterns.taxon_order,
