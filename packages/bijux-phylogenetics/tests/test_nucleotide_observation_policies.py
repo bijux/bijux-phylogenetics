@@ -241,6 +241,80 @@ def test_f81_observation_policies_preserve_frequency_parameter_contract() -> Non
     )
 
 
+def test_hky85_observation_policies_preserve_full_parameter_contract() -> None:
+    tree = load_tree(
+        fixture("trees", "jc69_joint_ancestral_difference_tree_3_taxa.nwk")
+    )
+    records = load_fasta_alignment(
+        fixture("alignments", "example_alignment_ambiguity.fasta")
+    )
+
+    missing_report = evaluate_hky85_tree_likelihood(
+        tree,
+        records,
+        kappa=3.0,
+        observation_policy="treat-as-missing",
+    )
+    ambiguity_report = evaluate_hky85_tree_likelihood(
+        tree,
+        records,
+        kappa=3.0,
+        observation_policy="ambiguity-vector",
+    )
+    fifth_state_report = evaluate_hky85_tree_likelihood(
+        tree,
+        records,
+        kappa=3.0,
+        observation_policy="fifth-state",
+    )
+
+    assert missing_report.state_count == 4
+    assert missing_report.observation_policy == "treat-as-missing"
+    assert ambiguity_report.state_count == 4
+    assert ambiguity_report.observation_policy == "ambiguity-vector"
+    assert fifth_state_report.state_count == 5
+    assert fifth_state_report.observation_policy == "fifth-state"
+    assert missing_report.parameter_count == 4
+    assert ambiguity_report.parameter_count == 4
+    assert fifth_state_report.parameter_count == 4
+    assert missing_report.base_frequency_source == "estimated"
+    assert ambiguity_report.base_frequency_source == "estimated"
+    assert fifth_state_report.base_frequency_source == "estimated"
+    assert math.isfinite(missing_report.log_likelihood)
+    assert math.isfinite(ambiguity_report.log_likelihood)
+    assert math.isfinite(fifth_state_report.log_likelihood)
+    assert math.isclose(
+        missing_report.aic,
+        (-2.0 * missing_report.log_likelihood) + 8.0,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        ambiguity_report.aic,
+        (-2.0 * ambiguity_report.log_likelihood) + 8.0,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        fifth_state_report.aic,
+        (-2.0 * fifth_state_report.log_likelihood) + 8.0,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert not math.isclose(
+        missing_report.log_likelihood,
+        ambiguity_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert not math.isclose(
+        ambiguity_report.log_likelihood,
+        fifth_state_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
 def test_dna_observation_vectors_remain_explicit_across_policies() -> None:
     ambiguity_vector = resolve_dna_observation_leaf_vector(
         {"A": "R"},
@@ -387,6 +461,14 @@ def test_nucleotide_models_support_fifth_state_observation_policy(
         assert math.isclose(
             report.aic,
             (-2.0 * report.log_likelihood) + 6.0,
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        )
+    if evaluator is evaluate_hky85_tree_likelihood:
+        assert report.parameter_count == 4
+        assert math.isclose(
+            report.aic,
+            (-2.0 * report.log_likelihood) + 8.0,
             rel_tol=0.0,
             abs_tol=1e-12,
         )
