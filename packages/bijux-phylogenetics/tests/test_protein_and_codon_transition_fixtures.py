@@ -11,6 +11,7 @@ from bijux_phylogenetics.phylo.likelihood.ctmc import (
 )
 from bijux_phylogenetics.phylo.likelihood.poisson import (
     protein_poisson_rate_matrix,
+    protein_poisson_transition_probability_matrix,
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import (
     build_transition_matrix_evaluator,
@@ -100,3 +101,21 @@ def test_protein_and_codon_transition_evaluator_matches_direct_probability_surfa
             len(state_space.state_order),
         )
         assert numpy.allclose(cached, direct, rtol=0.0, atol=1e-12)
+
+
+def test_protein_poisson_transition_matches_normalized_ctmc_engine() -> None:
+    rate_matrix = protein_poisson_rate_matrix()
+
+    for branch_length in (0.0, 1e-12, 0.25, 5.0, 20.0):
+        native = protein_poisson_transition_probability_matrix(branch_length)
+        generic = transition_probability_matrix(rate_matrix, branch_length)
+
+        assert native.shape == (20, 20)
+        assert numpy.all(native >= 0.0)
+        assert numpy.allclose(
+            native.sum(axis=1),
+            numpy.ones(20, dtype=float),
+            rtol=0.0,
+            atol=1e-12,
+        )
+        assert numpy.allclose(native, generic, rtol=0.0, atol=1e-12)
