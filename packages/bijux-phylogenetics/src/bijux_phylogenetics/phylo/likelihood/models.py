@@ -167,7 +167,9 @@ class K80TreeLikelihoodReport:
     observation_policy: str
     normalization_policy: str
     kappa: float
+    parameter_count: int
     log_likelihood: float
+    aic: float
 
 
 @dataclass(slots=True)
@@ -180,8 +182,11 @@ class K80KappaOptimizationReport:
     tree_newick: str
     initial_kappa: float
     optimized_kappa: float
+    parameter_count: int
     initial_log_likelihood: float
     optimized_log_likelihood: float
+    initial_aic: float
+    optimized_aic: float
     function_evaluation_count: int
     converged: bool
     lower_kappa_bound: float

@@ -36,6 +36,7 @@ def test_k80_kappa_optimization_improves_transition_biased_fixture() -> None:
     assert report.pattern_count == 9
     assert report.initial_kappa == 1.0
     assert report.optimized_kappa > report.initial_kappa
+    assert report.parameter_count == 1
     assert math.isclose(
         report.optimized_kappa,
         9.17375541937712,
@@ -43,6 +44,7 @@ def test_k80_kappa_optimization_improves_transition_biased_fixture() -> None:
         abs_tol=1e-6,
     )
     assert report.optimized_log_likelihood > report.initial_log_likelihood
+    assert report.optimized_aic < report.initial_aic
     assert report.function_evaluation_count > 1
     assert report.converged is True
 
@@ -70,10 +72,22 @@ def test_k80_kappa_optimization_beats_jc69_on_transition_biased_fixture() -> Non
         rel_tol=0.0,
         abs_tol=1e-12,
     )
+    assert math.isclose(
+        optimized_report.initial_aic,
+        jc69_report.aic + 2.0,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
     assert reevaluated_k80_report.log_likelihood > jc69_report.log_likelihood
     assert math.isclose(
         reevaluated_k80_report.log_likelihood,
         optimized_report.optimized_log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        reevaluated_k80_report.aic,
+        optimized_report.optimized_aic,
         rel_tol=0.0,
         abs_tol=1e-12,
     )

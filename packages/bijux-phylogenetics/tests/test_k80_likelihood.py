@@ -9,6 +9,9 @@ from bijux_phylogenetics.phylo.likelihood import (
     evaluate_k80_tree_likelihood,
     evaluate_k80_tree_likelihood_from_alignment,
 )
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -33,10 +36,23 @@ def test_k80_fixed_tree_likelihood_matches_two_tip_analytical_fixture() -> None:
     assert report.pattern_count == 4
     assert report.compression_used is True
     assert report.tree_newick == "(A:0.1,B:0.2);"
+    assert report.state_count == 4
+    assert report.observation_policy == "reject"
+    assert (
+        report.normalization_policy
+        == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
+    )
     assert report.kappa == 4.0
+    assert report.parameter_count == 1
     assert math.isclose(
         report.log_likelihood,
         math.log(expected_probability),
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        report.aic,
+        (-2.0 * report.log_likelihood) + 2.0,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
@@ -55,6 +71,7 @@ def test_k80_kappa_changes_likelihood_on_transition_biased_fixture() -> None:
         transition_weighted_report.log_likelihood
         > jc69_equivalent_report.log_likelihood
     )
+    assert transition_weighted_report.aic < jc69_equivalent_report.aic
 
 
 def _expected_k80_two_tip_fixture_probability(*, kappa: float) -> float:
