@@ -150,6 +150,58 @@ def test_nucleotide_nested_likelihood_ratio_supports_f81_to_hky85_pair() -> None
     assert report.alternative_fit.log_likelihood > report.null_fit.log_likelihood
 
 
+def test_nucleotide_nested_likelihood_ratio_report_governed_k80_to_hky85_case() -> (
+    None
+):
+    report = evaluate_nucleotide_nested_likelihood_ratio_test_from_alignment(
+        fixture("trees", "hky85_kappa_optimization_tree_2_taxa.nwk"),
+        fixture("alignments", "hky85_kappa_optimization_alignment_2_taxa.fasta"),
+        null_model_name="k80",
+        alternative_model_name="hky85",
+    )
+
+    assert report.taxa == ["A", "B"]
+    assert report.site_count == 128
+    assert report.pattern_count == 16
+    assert report.tree_newick == "(A:0.15,B:0.15);"
+    assert report.null_fit.model_name == "K80"
+    assert report.alternative_fit.model_name == "HKY85"
+    assert report.null_fit.parameter_count == 1
+    assert report.alternative_fit.parameter_count == 4
+    assert math.isclose(
+        report.null_fit.parameter_values["kappa"],
+        4.344240462354935,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert math.isclose(
+        report.alternative_fit.parameter_values["base_frequency_a"],
+        0.46875,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        report.alternative_fit.parameter_values["kappa"],
+        5.557249215047293,
+        rel_tol=0.0,
+        abs_tol=1e-6,
+    )
+    assert report.likelihood_ratio_statistic > 0.0
+    assert math.isclose(
+        report.likelihood_ratio_statistic,
+        2.0 * (report.alternative_fit.log_likelihood - report.null_fit.log_likelihood),
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert report.degrees_of_freedom == 3
+    assert report.p_value < 1e-6
+    assert report.p_value_method == "chi-square approximation"
+    assert report.boundary_caveat == "no boundary parameter in declared nesting"
+    assert report.null_fit.warnings == []
+    assert report.alternative_fit.warnings == []
+    assert report.warnings == []
+
+
 def test_nucleotide_nested_likelihood_ratio_rejects_nonnested_pair() -> None:
     with pytest.raises(
         ValueError,
