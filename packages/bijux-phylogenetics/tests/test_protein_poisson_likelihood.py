@@ -9,6 +9,7 @@ import pytest
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.likelihood import (
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
     evaluate_jc69_tree_likelihood_from_alignment,
     evaluate_protein_poisson_tree_likelihood,
     evaluate_protein_poisson_tree_likelihood_from_alignment,
@@ -49,9 +50,19 @@ def test_protein_poisson_fixed_tree_likelihood_matches_two_tip_analytical_fixtur
     assert report.missing_policy == "treat-as-missing"
     assert report.ambiguity_policy == "reject"
     assert report.root_prior_source == "stationary"
+    assert report.normalization_policy == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
+    assert len(report.site_log_likelihoods) == report.site_count
+    assert [row.site_position for row in report.site_log_likelihoods] == [1, 2, 3, 4]
+    assert all(row.pattern_weight == 1 for row in report.site_log_likelihoods)
     assert math.isclose(
         report.log_likelihood,
         math.log(expected_probability),
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        sum(row.log_likelihood for row in report.site_log_likelihoods),
+        report.log_likelihood,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
@@ -120,8 +131,24 @@ def test_protein_poisson_ambiguity_policies_change_likelihood() -> None:
 
     assert missing_report.ambiguity_policy == "treat-as-missing"
     assert ambiguity_report.ambiguity_policy == "ambiguity-vector"
+    assert missing_report.state_count == 20
+    assert ambiguity_report.state_count == 20
+    assert missing_report.root_prior_source == "stationary"
+    assert ambiguity_report.root_prior_source == "stationary"
     assert math.isfinite(missing_report.log_likelihood)
     assert math.isfinite(ambiguity_report.log_likelihood)
+    assert math.isclose(
+        sum(row.log_likelihood for row in missing_report.site_log_likelihoods),
+        missing_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        sum(row.log_likelihood for row in ambiguity_report.site_log_likelihoods),
+        ambiguity_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
     assert not math.isclose(
         missing_report.log_likelihood,
         ambiguity_report.log_likelihood,
