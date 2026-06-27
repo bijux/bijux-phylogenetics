@@ -96,18 +96,20 @@ def test_compiled_nucleotide_analysis_matches_existing_tree_reports(
         rel_tol=0.0,
         abs_tol=1e-12,
     )
-    if model_name in {"jc69", "k80", "f81", "hky85"}:
+    if model_name in {"jc69", "k80", "f81", "hky85", "gtr"}:
         expected_parameter_count = {
             "jc69": 0,
             "k80": 1,
             "f81": 3,
             "hky85": 4,
+            "gtr": 8,
         }[model_name]
         expected_aic_penalty = {
             "jc69": 0.0,
             "k80": 2.0,
             "f81": 6.0,
             "hky85": 8.0,
+            "gtr": 16.0,
         }[model_name]
         assert report.parameter_count == expected_parameter_count
         assert math.isclose(
