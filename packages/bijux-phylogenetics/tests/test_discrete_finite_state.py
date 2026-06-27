@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy
 
+from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.ancestral.discrete.likelihood.likelihood_math import (
     transition_probability_matrix,
     tree_log_likelihood,
@@ -118,6 +119,101 @@ def test_irreversible_discrete_surface_matches_native_mk_kernel() -> None:
     )
 
 
+def test_discrete_surface_root_prior_policies_change_asymmetric_likelihoods() -> None:
+    tree = load_tree(fixture("felsenstein_two_tip_tree.nwk"))
+    state_order = ["north", "south", "west"]
+    records = [
+        AlignmentRecord(identifier="A", sequence="north"),
+        AlignmentRecord(identifier="B", sequence="south"),
+    ]
+    rate_matrix = numpy.array(
+        [
+            [-1.0, 0.8, 0.2],
+            [0.1, -0.7, 0.6],
+            [0.4, 0.3, -0.7],
+        ],
+        dtype=float,
+    )
+
+    equal_surface = build_discrete_mk_finite_state_surface(
+        state_order=state_order,
+        rate_matrix=rate_matrix,
+        records=records,
+        root_prior_policy="equal",
+        model_name="policy discrete Mk",
+    )
+    empirical_surface = build_discrete_mk_finite_state_surface(
+        state_order=state_order,
+        rate_matrix=rate_matrix,
+        records=records,
+        root_prior_policy="empirical",
+        model_name="policy discrete Mk",
+    )
+    stationary_surface = build_discrete_mk_finite_state_surface(
+        state_order=state_order,
+        rate_matrix=rate_matrix,
+        records=records,
+        root_prior_policy="stationary",
+        model_name="policy discrete Mk",
+    )
+    fixed_surface = build_discrete_mk_finite_state_surface(
+        state_order=state_order,
+        rate_matrix=rate_matrix,
+        records=records,
+        root_prior_policy="fixed-state",
+        fixed_root_state="north",
+        model_name="policy discrete Mk",
+    )
+    provided_surface = build_discrete_mk_finite_state_surface(
+        state_order=state_order,
+        rate_matrix=rate_matrix,
+        records=records,
+        root_prior_policy="provided",
+        root_prior={"north": 0.8, "south": 0.1, "west": 0.1},
+        model_name="policy discrete Mk",
+    )
+
+    equal_log_likelihood = _surface_log_likelihood(tree, equal_surface, records)
+    empirical_log_likelihood = _surface_log_likelihood(tree, empirical_surface, records)
+    stationary_log_likelihood = _surface_log_likelihood(
+        tree,
+        stationary_surface,
+        records,
+    )
+    fixed_log_likelihood = _surface_log_likelihood(tree, fixed_surface, records)
+    provided_log_likelihood = _surface_log_likelihood(tree, provided_surface, records)
+
+    assert equal_surface.root_prior_source == "equal"
+    assert empirical_surface.root_prior_source == "empirical"
+    assert stationary_surface.root_prior_source == "stationary"
+    assert fixed_surface.root_prior_source == "fixed-state"
+    assert provided_surface.root_prior_source == "provided"
+    assert not math.isclose(
+        equal_log_likelihood,
+        stationary_log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert not math.isclose(
+        empirical_log_likelihood,
+        equal_log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert not math.isclose(
+        fixed_log_likelihood,
+        equal_log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert not math.isclose(
+        provided_log_likelihood,
+        equal_log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
 def _assert_discrete_surface_matches_native_kernel(
     *,
     state_order: list[str],
@@ -204,4 +300,17 @@ def _assert_discrete_surface_matches_two_tip_known_answer(
         expected_log_likelihood,
         rel_tol=0.0,
         abs_tol=1e-12,
+    )
+
+
+def _surface_log_likelihood(
+    tree,
+    surface,
+    records: list[AlignmentRecord],
+) -> float:
+    context = compile_finite_state_likelihood_context(tree, surface)
+    return evaluate_finite_state_site_log_likelihood(
+        context,
+        tuple(record.sequence for record in records),
+        taxon_order=[record.identifier for record in records],
     )

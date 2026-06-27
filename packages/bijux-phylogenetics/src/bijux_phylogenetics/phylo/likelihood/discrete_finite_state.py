@@ -12,6 +12,10 @@ from bijux_phylogenetics.phylo.likelihood.discrete_observation_policies import (
 )
 from bijux_phylogenetics.phylo.likelihood.ctmc import (
     CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
+    solve_ctmc_stationary_distribution,
+)
+from bijux_phylogenetics.phylo.likelihood.finite_state_root_priors import (
+    resolve_finite_state_root_prior,
 )
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
     CompiledFiniteStateLikelihoodAnalysis,
@@ -30,16 +34,33 @@ def build_discrete_mk_finite_state_surface(
     *,
     state_order: list[str] | tuple[str, ...],
     rate_matrix: numpy.ndarray,
-    root_prior: numpy.ndarray | list[float] | tuple[float, ...],
+    records: list[AlignmentRecord] | None = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
     observation_policy: str = "reject",
     model_name: str = "discrete Mk",
 ) -> FiniteStateLikelihoodSurface:
     """Build one shared finite-state surface for one discrete Mk rate matrix."""
     validated_state_order = tuple(state_order)
-    validated_root_prior = _validate_root_prior(
-        root_prior,
-        state_count=len(validated_state_order),
-        model_name=model_name,
+    validated_rate_matrix = numpy.asarray(rate_matrix, dtype=float)
+    resolved_root_prior = resolve_finite_state_root_prior(
+        records or [],
+        state_labels=validated_state_order,
+        owner_name=f"{model_name} finite-state surface",
+        default_policy="equal",
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        stationary_frequencies=_stationary_distribution_for_rate_matrix(
+            validated_rate_matrix,
+            state_labels=validated_state_order,
+        ),
+        sequence_tokenizer=_discrete_site_tokenizer,
     )
     state_index = {
         state: index for index, state in enumerate(validated_state_order)
@@ -47,13 +68,13 @@ def build_discrete_mk_finite_state_surface(
     return FiniteStateLikelihoodSurface(
         model_name=model_name,
         state_labels=validated_state_order,
-        root_prior=validated_root_prior,
-        root_prior_source="provided",
+        root_prior=resolved_root_prior.root_prior,
+        root_prior_source=resolved_root_prior.root_prior_source,
         observation_policy=observation_policy,
         normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
-        transition_rate_matrix=rate_matrix,
+        transition_rate_matrix=validated_rate_matrix,
         transition_matrix_for_branch_length=lambda branch_length: (
-            transition_probability_matrix(rate_matrix, branch_length)
+            transition_probability_matrix(validated_rate_matrix, branch_length)
         ),
         leaf_likelihood_vector_for_state=lambda taxon_name, observed_state: (
             resolve_discrete_observation_leaf_vector(
@@ -74,7 +95,13 @@ def compile_discrete_mk_likelihood_analysis(
     *,
     state_order: list[str] | tuple[str, ...],
     rate_matrix: numpy.ndarray,
-    root_prior: numpy.ndarray | list[float] | tuple[float, ...],
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
     observation_policy: str = "reject",
     model_name: str = "discrete Mk",
     partition_map: tuple[LocusPartition, ...] | None = None,
@@ -85,7 +112,10 @@ def compile_discrete_mk_likelihood_analysis(
     surface = build_discrete_mk_finite_state_surface(
         state_order=state_order,
         rate_matrix=rate_matrix,
+        records=records,
+        root_prior_policy=root_prior_policy,
         root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         observation_policy=observation_policy,
         model_name=model_name,
     )
@@ -100,32 +130,6 @@ def compile_discrete_mk_likelihood_analysis(
         site_weight_by_position=site_weight_by_position,
         source_path=source_path,
     )
-
-
-def _validate_root_prior(
-    root_prior: numpy.ndarray | list[float] | tuple[float, ...],
-    *,
-    state_count: int,
-    model_name: str,
-) -> numpy.ndarray:
-    vector = numpy.asarray(root_prior, dtype=float)
-    if vector.shape != (state_count,):
-        raise ValueError(
-            f"{model_name} finite-state surface requires {state_count} root-prior entries"
-        )
-    if not numpy.all(numpy.isfinite(vector)):
-        raise ValueError(f"{model_name} finite-state surface requires finite root prior")
-    if numpy.any(vector < 0.0):
-        raise ValueError(
-            f"{model_name} finite-state surface requires nonnegative root prior"
-        )
-    total = float(vector.sum())
-    if total <= 0.0:
-        raise ValueError(
-            f"{model_name} finite-state surface requires positive root-prior mass"
-        )
-    return vector / total
-
 
 def _compile_discrete_patterns(
     records: list[AlignmentRecord],
@@ -144,3 +148,15 @@ def _resolve_discrete_alignment_length(_records: list[AlignmentRecord]) -> int:
 
 def _discrete_site_tokenizer(sequence: str) -> tuple[str, ...]:
     return (sequence,)
+
+
+def _stationary_distribution_for_rate_matrix(
+    rate_matrix: numpy.ndarray,
+    *,
+    state_labels: tuple[str, ...],
+) -> numpy.ndarray:
+    report = solve_ctmc_stationary_distribution(
+        rate_matrix,
+        state_labels=state_labels,
+    )
+    return numpy.asarray(report.probabilities, dtype=float)
