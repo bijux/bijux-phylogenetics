@@ -451,6 +451,85 @@ def update_compiled_finite_state_analysis_branch_length(
     )
 
 
+def update_compiled_finite_state_context_topology(
+    context: CompiledFiniteStateLikelihoodContext,
+    *,
+    tree: PhyloTree,
+) -> None:
+    """Update one compiled context to a new topology while reusing unchanged subtrees."""
+    moved_tree = tree.copy().refresh()
+    validate_explicit_branch_lengths(moved_tree, model_name=context.surface.model_name)
+    _validate_topology_update_taxa(context.tree, moved_tree, surface=context.surface)
+    old_tree = context.tree
+    old_transition_by_branch_signature = _transition_by_branch_signature(context)
+    transition_matrix_by_node_id: dict[str, numpy.ndarray] = {}
+    transition_cache_key_by_node_id: dict[str, FiniteStateTransitionCacheKey] = {}
+    for _parent, child in moved_tree.iter_edges():
+        if child.node_id is None:
+            raise ValueError("tree node is missing a stable node_id")
+        branch_length = _normalized_branch_length(float(child.branch_length or 0.0))
+        branch_signature = frozenset(child.descendant_taxa)
+        reused_transition = old_transition_by_branch_signature.get(
+            (branch_signature, branch_length)
+        )
+        if reused_transition is not None:
+            transition_matrix_by_node_id[child.node_id] = reused_transition
+        else:
+            transition_cache_key = (
+                None
+                if context.transition_model_state is None
+                else FiniteStateTransitionCacheKey(
+                    model_state=context.transition_model_state,
+                    branch_length=branch_length,
+                )
+            )
+            transition_matrix_by_node_id[child.node_id] = _compiled_transition_matrix(
+                context.surface,
+                branch_length=branch_length,
+                transition_cache_key=transition_cache_key,
+            )
+        if context.transition_model_state is not None:
+            transition_cache_key_by_node_id[child.node_id] = FiniteStateTransitionCacheKey(
+                model_state=context.transition_model_state,
+                branch_length=branch_length,
+            )
+    context.tree = moved_tree
+    context.node_by_id = _node_index(moved_tree)
+    context.ancestor_path_by_child_node_id = {
+        child.node_id: _ancestor_path_from_child(child)
+        for _parent, child in moved_tree.iter_edges()
+        if child.node_id is not None
+    }
+    context.transition_matrix_by_node_id = transition_matrix_by_node_id
+    context.transition_cache_key_by_node_id = transition_cache_key_by_node_id
+    for site_evaluation_key, cached_site_evaluation in context.site_evaluation_by_key.items():
+        updated_pruning_pass = _updated_topology_pruning_pass(
+            old_tree=old_tree,
+            old_pruning_pass=cached_site_evaluation.pruning_pass,
+            moved_tree=moved_tree,
+            context=context,
+            site_evaluation_key=site_evaluation_key,
+        )
+        cached_site_evaluation.pruning_pass = updated_pruning_pass
+        cached_site_evaluation.log_likelihood = log_likelihood_from_root_prior(
+            moved_tree,
+            updated_pruning_pass,
+            root_prior=context.surface.root_prior,
+        )
+
+
+def update_compiled_finite_state_analysis_topology(
+    analysis: CompiledFiniteStateLikelihoodAnalysis,
+    *,
+    tree: PhyloTree,
+) -> None:
+    """Update one compiled analysis to a new topology while reusing unchanged subtrees."""
+    update_compiled_finite_state_context_topology(
+        analysis.context,
+        tree=tree,
+    )
+
+
 def _leaf_likelihood_vector(
     surface: FiniteStateLikelihoodSurface,
     *,
@@ -546,6 +625,147 @@ def _normalized_branch_length(branch_length: float) -> float:
     if not math.isfinite(branch_length):
         raise ValueError("branch length must be finite")
     return max(float(branch_length), 0.0)
+
+
+def _validate_topology_update_taxa(
+    original_tree: PhyloTree,
+    moved_tree: PhyloTree,
+    *,
+    surface: FiniteStateLikelihoodSurface,
+) -> None:
+    original_taxa = sorted(original_tree.tip_names)
+    moved_taxa = sorted(moved_tree.tip_names)
+    if original_taxa != moved_taxa:
+        raise ValueError(
+            f"{surface.model_name} topology update requires identical tree taxa"
+        )
+
+
+def _transition_by_branch_signature(
+    context: CompiledFiniteStateLikelihoodContext,
+) -> dict[tuple[frozenset[str], float], numpy.ndarray]:
+    transition_by_branch_signature: dict[
+        tuple[frozenset[str], float],
+        numpy.ndarray,
+    ] = {}
+    for _parent, child in context.tree.iter_edges():
+        if child.node_id is None:
+            raise ValueError("tree node is missing a stable node_id")
+        transition_by_branch_signature[
+            (
+                frozenset(child.descendant_taxa),
+                _normalized_branch_length(float(child.branch_length or 0.0)),
+            )
+        ] = context.transition_matrix_by_node_id[child.node_id]
+    return transition_by_branch_signature
+
+
+def _updated_topology_pruning_pass(
+    *,
+    old_tree: PhyloTree,
+    old_pruning_pass: FiniteStatePruningPass,
+    moved_tree: PhyloTree,
+    context: CompiledFiniteStateLikelihoodContext,
+    site_evaluation_key: FiniteStateSiteEvaluationKey,
+) -> FiniteStatePruningPass:
+    old_node_signature_map = _node_signature_by_node_id(old_tree)
+    old_conditional_by_signature = {
+        signature: old_pruning_pass.conditional_by_node_id[node_id]
+        for node_id, signature in old_node_signature_map.items()
+    }
+    old_subtree_scale_by_signature = {
+        signature: old_pruning_pass.subtree_log_scaling_by_node_id[node_id]
+        for node_id, signature in old_node_signature_map.items()
+    }
+    leaf_conditional_by_name = {
+        node.name: old_pruning_pass.conditional_by_node_id[node.node_id]
+        for node in old_tree.iter_leaves()
+        if node.name is not None and node.node_id is not None
+    }
+    conditional_by_node_id: dict[str, numpy.ndarray] = {}
+    subtree_log_scaling_by_node_id: dict[str, float] = {}
+    updated_pruning_pass = FiniteStatePruningPass(
+        conditional_by_node_id=conditional_by_node_id,
+        subtree_log_scaling_by_node_id=subtree_log_scaling_by_node_id,
+        state_count=old_pruning_pass.state_count,
+        normalized_internal_conditionals=old_pruning_pass.normalized_internal_conditionals,
+    )
+    states_by_taxon = dict(
+        zip(site_evaluation_key.taxon_order, site_evaluation_key.states, strict=True)
+    )
+    for node in moved_tree.iter_nodes(order="postorder"):
+        if node.node_id is None:
+            raise ValueError("tree node is missing a stable node_id")
+        if node.is_leaf():
+            if node.name is None:
+                raise ValueError(
+                    f"{context.surface.model_name} topology update requires named tree tips"
+                )
+            conditional_by_node_id[node.node_id] = leaf_conditional_by_name.get(
+                node.name,
+                context.surface.leaf_likelihood_vector_for_state(
+                    node.name,
+                    states_by_taxon[node.name],
+                ),
+            )
+            subtree_log_scaling_by_node_id[node.node_id] = 0.0
+            continue
+        node_signature = _node_topology_signature(node)
+        reusable_conditional = old_conditional_by_signature.get(node_signature)
+        reusable_scale = old_subtree_scale_by_signature.get(node_signature)
+        if reusable_conditional is not None and reusable_scale is not None:
+            conditional_by_node_id[node.node_id] = reusable_conditional
+            subtree_log_scaling_by_node_id[node.node_id] = reusable_scale
+            continue
+        refresh_postorder_conditional_likelihoods(
+            moved_tree,
+            updated_pruning_pass,
+            affected_node_ids=(node.node_id,),
+            transition_matrix_for_child=lambda child: _transition_matrix_for_child(
+                context,
+                child_node_id=child.node_id,
+            ),
+        )
+    return updated_pruning_pass
+
+
+def _node_signature_by_node_id(tree: PhyloTree) -> dict[str, tuple[object, ...]]:
+    signature_by_node_id: dict[str, tuple[object, ...]] = {}
+    for node in tree.iter_nodes(order="postorder"):
+        if node.node_id is None:
+            raise ValueError("tree node is missing a stable node_id")
+        signature_by_node_id[node.node_id] = _node_topology_signature(
+            node,
+            child_signatures=signature_by_node_id,
+        )
+    return signature_by_node_id
+
+
+def _node_topology_signature(
+    node: TreeNode,
+    *,
+    child_signatures: dict[str, tuple[object, ...]] | None = None,
+) -> tuple[object, ...]:
+    if node.is_leaf():
+        return ("leaf", node.name)
+    child_components: list[tuple[float, tuple[object, ...]]] = []
+    for child in node.children:
+        if child.node_id is None:
+            raise ValueError("tree child node is missing a stable node_id")
+        if child_signatures is None:
+            child_signature = _node_topology_signature(child)
+        else:
+            child_signature = child_signatures[child.node_id]
+        child_components.append(
+            (
+                _normalized_branch_length(float(child.branch_length or 0.0)),
+                child_signature,
+            )
+        )
+    return (
+        "internal",
+        tuple(sorted(child_components, key=repr)),
+    )
 
 
 def _compile_partition_contexts(
