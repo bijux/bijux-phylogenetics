@@ -18,6 +18,7 @@ from bijux_phylogenetics.phylo.likelihood.ctmc import (
 )
 from bijux_phylogenetics.phylo.likelihood.poisson import (
     protein_poisson_rate_matrix,
+    protein_poisson_transition_probability_matrix,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     compress_alignment_site_patterns_from_records,
@@ -78,9 +79,7 @@ def build_protein_poisson_finite_state_surface(
         ),
         normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
         transition_rate_matrix=rate_matrix,
-        transition_matrix_for_branch_length=lambda branch_length: (
-            transition_probability_matrix(rate_matrix, branch_length)
-        ),
+        transition_matrix_for_branch_length=protein_poisson_transition_probability_matrix,
         leaf_likelihood_vector_for_state=lambda taxon_name, observed_state: (
             protein_leaf_likelihood_vector(
                 {taxon_name: observed_state},

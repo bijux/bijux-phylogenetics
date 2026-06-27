@@ -4,6 +4,7 @@ import math
 from pathlib import Path
 
 import numpy
+import pytest
 
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
@@ -16,6 +17,7 @@ from bijux_phylogenetics.phylo.likelihood.finite_state import (
     compile_finite_state_likelihood_context,
     evaluate_finite_state_tree_log_likelihood_from_patterns,
 )
+from bijux_phylogenetics.phylo.likelihood import protein_finite_state as protein_surface_module
 from bijux_phylogenetics.phylo.likelihood.protein_finite_state import (
     build_empirical_protein_finite_state_surface,
     build_protein_poisson_finite_state_surface,
@@ -81,6 +83,30 @@ def test_protein_poisson_surface_respects_ambiguity_vector_policy() -> None:
         family_report.log_likelihood,
         rel_tol=0.0,
         abs_tol=1e-12,
+    )
+
+
+def test_protein_poisson_surface_uses_native_transition_surface(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    tree = load_tree(fixture("trees", "protein_poisson_likelihood_tree_2_taxa.nwk"))
+    records = load_fasta_alignment(
+        fixture("alignments", "protein_poisson_likelihood_alignment_2_taxa.fasta")
+    )
+    compressed_patterns = compress_alignment_site_patterns_from_records(records)
+    surface = build_protein_poisson_finite_state_surface(records)
+
+    def _boom(*_args: object, **_kwargs: object) -> numpy.ndarray:
+        raise AssertionError("protein Poisson surface should not call the generic CTMC engine")
+
+    monkeypatch.setattr(protein_surface_module, "transition_probability_matrix", _boom)
+    context = compile_finite_state_likelihood_context(tree, surface)
+
+    assert math.isfinite(
+        evaluate_finite_state_tree_log_likelihood_from_patterns(
+            context,
+            compressed_patterns,
+        )
     )
 
 
