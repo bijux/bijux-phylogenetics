@@ -7,12 +7,19 @@ import pytest
 
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood import transition_probability_matrix
 from bijux_phylogenetics.phylo.likelihood.codon import (
     evaluate_codon_ctmc_tree_likelihood,
     evaluate_codon_ctmc_tree_likelihood_from_alignment,
 )
-from bijux_phylogenetics.phylo.likelihood.codon_states import resolve_codon_state_space
+from bijux_phylogenetics.phylo.likelihood.codon_states import (
+    build_equal_rate_codon_ctmc_rate_matrix,
+    resolve_codon_state_space,
+)
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
+from tests.support.two_tip_likelihood_reference import (
+    two_tip_log_likelihood_for_labels,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -21,11 +28,12 @@ def fixture(group: str, name: str) -> Path:
     return FIXTURES / group / name
 
 
-def test_codon_ctmc_likelihood_returns_finite_report() -> None:
+def test_codon_ctmc_likelihood_matches_two_tip_high_precision_fixture() -> None:
     report = evaluate_codon_ctmc_tree_likelihood_from_alignment(
         fixture("trees", "codon_likelihood_tree_2_taxa.nwk"),
         fixture("alignments", "codon_likelihood_alignment_2_taxa.fasta"),
     )
+    expected_log_likelihood = _expected_codon_two_tip_log_likelihood()
 
     assert report.taxa == ["A", "B"]
     assert report.site_count == 2
@@ -37,7 +45,12 @@ def test_codon_ctmc_likelihood_returns_finite_report() -> None:
     assert report.codon_frequency_source == "uniform"
     assert report.observation_policy == "reject"
     assert report.tree_newick == "(A:0.1,B:0.2);"
-    assert math.isfinite(report.log_likelihood)
+    assert math.isclose(
+        report.log_likelihood,
+        expected_log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
 
 
 def test_codon_ctmc_likelihood_rejects_stop_codon_states() -> None:
@@ -144,3 +157,18 @@ def test_codon_ctmc_observation_policy_treats_missing_and_gap_codons_explicitly(
 
     assert report.observation_policy == "treat-as-missing"
     assert math.isfinite(report.log_likelihood)
+
+
+def _expected_codon_two_tip_log_likelihood() -> float:
+    state_space, rate_matrix, root_prior, _frequency_source = (
+        build_equal_rate_codon_ctmc_rate_matrix()
+    )
+    left_transition = transition_probability_matrix(rate_matrix, 0.1)
+    right_transition = transition_probability_matrix(rate_matrix, 0.2)
+    return two_tip_log_likelihood_for_labels(
+        observed_pairs=(("AAA", "AAG"), ("GCT", "GCC")),
+        state_index=state_space.state_index,
+        root_prior=root_prior,
+        left_transition=left_transition,
+        right_transition=right_transition,
+    )
