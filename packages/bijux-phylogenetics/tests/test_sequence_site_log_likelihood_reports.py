@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy
 
 from bijux_phylogenetics.phylo.likelihood import (
+    evaluate_codon_ctmc_tree_likelihood_from_alignment,
     evaluate_empirical_protein_tree_likelihood_from_alignment,
     evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment,
     evaluate_protein_poisson_tree_likelihood_from_alignment,
@@ -61,6 +62,34 @@ def test_write_site_log_likelihood_table_supports_fixed_protein_models(
     assert math.isclose(
         _expanded_site_log_likelihood_sum(empirical_path),
         empirical_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
+def test_write_site_log_likelihood_table_supports_codon_reports(
+    tmp_path: Path,
+) -> None:
+    codon_report = evaluate_codon_ctmc_tree_likelihood_from_alignment(
+        fixture("trees", "codon_likelihood_tree_2_taxa.nwk"),
+        fixture("alignments", "codon_site_pattern_alignment_2_taxa.fasta"),
+    )
+
+    output_path = write_site_log_likelihood_table(
+        tmp_path / "codon-site-log-likelihoods.tsv",
+        codon_report,
+    )
+
+    assert len(codon_report.site_log_likelihoods) == codon_report.site_count
+    assert math.isclose(
+        _expanded_site_log_likelihood_sum(output_path),
+        codon_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        _weighted_pattern_log_likelihood_sum(output_path),
+        codon_report.log_likelihood,
         rel_tol=0.0,
         abs_tol=1e-12,
     )

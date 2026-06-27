@@ -9,6 +9,7 @@ from typing import Protocol
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 
 from .models import (
+    CodonCtmcTreeLikelihoodReport,
     FixedTopologySiteLogLikelihoodReport,
     LocalClockLikelihoodReport,
     ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport,
@@ -26,7 +27,8 @@ from .patterns import (
 )
 
 SequenceSiteLogLikelihoodReport = (
-    FixedTopologySiteLogLikelihoodReport
+    CodonCtmcTreeLikelihoodReport
+    | FixedTopologySiteLogLikelihoodReport
     | LocalClockLikelihoodReport
     | ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport
     | ProteinEmpiricalDiscreteGammaTreeLikelihoodReport
@@ -260,6 +262,8 @@ def _site_log_likelihood_report_model_name(
         return report.model_name
     if isinstance(report, ProteinPoissonTreeLikelihoodReport):
         return "protein Poisson"
+    if isinstance(report, CodonCtmcTreeLikelihoodReport):
+        return "codon CTMC"
     if isinstance(report, ProteinEmpiricalMatrixTreeLikelihoodReport):
         return "empirical protein matrix"
     if isinstance(report, ProteinEmpiricalDiscreteGammaTreeLikelihoodReport):
