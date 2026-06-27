@@ -510,17 +510,15 @@ def _evaluate_gtr_tree_likelihood_from_patterns(
             gap_state_frequency=gap_state_frequency,
             model_name="GTR",
         )
-        transition_matrix_for_branch_length = lambda branch_length: (
-            transition_probability_matrix(augmented_rate_matrix, branch_length)
-        )
+        def transition_matrix_for_branch_length(branch_length: float) -> numpy.ndarray:
+            return transition_probability_matrix(augmented_rate_matrix, branch_length)
     else:
-        transition_matrix_for_branch_length = lambda branch_length: (
-            gtr_transition_probability_matrix(
+        def transition_matrix_for_branch_length(branch_length: float) -> numpy.ndarray:
+            return gtr_transition_probability_matrix(
                 branch_length,
                 exchangeabilities=normalized_exchangeabilities,
                 base_frequencies=validated_frequencies,
             )
-        )
     context = compile_finite_state_likelihood_context(
         tree,
         FiniteStateLikelihoodSurface(

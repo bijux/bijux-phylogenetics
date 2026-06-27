@@ -11,7 +11,6 @@ from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.ctmc import (
     CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
-    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
 )
 from bijux_phylogenetics.phylo.likelihood.gamma import (
     build_discrete_gamma_rate_categories,

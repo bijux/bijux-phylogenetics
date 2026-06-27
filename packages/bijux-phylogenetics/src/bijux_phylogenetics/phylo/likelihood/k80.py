@@ -313,13 +313,11 @@ def _evaluate_k80_tree_likelihood_from_patterns(
             gap_state_frequency=gap_state_frequency,
             model_name="K80",
         )
-        transition_matrix_for_branch_length = lambda branch_length: (
-            transition_probability_matrix(augmented_rate_matrix, branch_length)
-        )
+        def transition_matrix_for_branch_length(branch_length: float) -> numpy.ndarray:
+            return transition_probability_matrix(augmented_rate_matrix, branch_length)
     else:
-        transition_matrix_for_branch_length = lambda branch_length: (
-            k80_transition_probability_matrix(branch_length, kappa=kappa)
-        )
+        def transition_matrix_for_branch_length(branch_length: float) -> numpy.ndarray:
+            return k80_transition_probability_matrix(branch_length, kappa=kappa)
     context = compile_finite_state_likelihood_context(
         tree,
         FiniteStateLikelihoodSurface(

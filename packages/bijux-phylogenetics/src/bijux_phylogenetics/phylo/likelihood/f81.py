@@ -218,16 +218,14 @@ def _evaluate_f81_tree_likelihood_from_patterns(
             gap_state_frequency=gap_state_frequency,
             model_name="F81",
         )
-        transition_matrix_for_branch_length = lambda branch_length: (
-            transition_probability_matrix(augmented_rate_matrix, branch_length)
-        )
+        def transition_matrix_for_branch_length(branch_length: float) -> numpy.ndarray:
+            return transition_probability_matrix(augmented_rate_matrix, branch_length)
     else:
-        transition_matrix_for_branch_length = lambda branch_length: (
-            f81_transition_probability_matrix(
+        def transition_matrix_for_branch_length(branch_length: float) -> numpy.ndarray:
+            return f81_transition_probability_matrix(
                 branch_length,
                 base_frequencies=validated_frequencies,
             )
-        )
     context = compile_finite_state_likelihood_context(
         tree,
         FiniteStateLikelihoodSurface(

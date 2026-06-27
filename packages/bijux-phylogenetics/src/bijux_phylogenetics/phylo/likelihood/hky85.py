@@ -355,17 +355,15 @@ def _evaluate_hky85_tree_likelihood_from_patterns(
             gap_state_frequency=gap_state_frequency,
             model_name="HKY85",
         )
-        transition_matrix_for_branch_length = lambda branch_length: (
-            transition_probability_matrix(augmented_rate_matrix, branch_length)
-        )
+        def transition_matrix_for_branch_length(branch_length: float) -> numpy.ndarray:
+            return transition_probability_matrix(augmented_rate_matrix, branch_length)
     else:
-        transition_matrix_for_branch_length = lambda branch_length: (
-            hky85_transition_probability_matrix(
+        def transition_matrix_for_branch_length(branch_length: float) -> numpy.ndarray:
+            return hky85_transition_probability_matrix(
                 branch_length,
                 base_frequencies=validated_frequencies,
                 kappa=validated_kappa,
             )
-        )
     context = compile_finite_state_likelihood_context(
         tree,
         FiniteStateLikelihoodSurface(
