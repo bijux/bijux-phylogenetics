@@ -13,10 +13,12 @@ from bijux_phylogenetics.phylo.alignment.partitions import (
 )
 from bijux_phylogenetics.phylo.likelihood import (
     evaluate_empirical_protein_tree_likelihood,
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
     evaluate_protein_poisson_tree_likelihood,
 )
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
     evaluate_compiled_finite_state_likelihood_analysis,
+    evaluate_compiled_finite_state_site_log_likelihood_rows,
 )
 from bijux_phylogenetics.phylo.likelihood.protein_finite_state import (
     compile_empirical_protein_likelihood_analysis,
@@ -44,6 +46,57 @@ def test_compiled_protein_poisson_analysis_matches_existing_tree_report() -> Non
 
     assert math.isclose(
         compiled_log_likelihood,
+        report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert analysis.alignment_length == 4
+    assert analysis.pattern_count == 4
+    assert analysis.partition_count == 1
+    assert math.isclose(analysis.site_weight_total, 4.0, rel_tol=0.0, abs_tol=1e-12)
+    assert analysis.context.surface.model_name == "protein Poisson"
+    assert analysis.context.surface.state_count == 20
+    assert analysis.context.surface.root_prior_source == "stationary"
+    assert (
+        analysis.context.surface.normalization_policy
+        == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
+    )
+
+
+def test_compiled_protein_poisson_site_rows_reconstruct_governed_report() -> None:
+    tree = load_tree(fixture("trees", "protein_poisson_likelihood_tree_2_taxa.nwk"))
+    records = load_fasta_alignment(
+        fixture(
+            "alignments",
+            "protein_poisson_likelihood_alignment_ambiguity_2_taxa.fasta",
+        )
+    )
+    analysis = compile_protein_poisson_likelihood_analysis(
+        tree,
+        records,
+        ambiguity_policy="ambiguity-vector",
+    )
+    report = evaluate_protein_poisson_tree_likelihood(
+        tree,
+        records,
+        ambiguity_policy="ambiguity-vector",
+    )
+    compiled_rows, weighted_total = evaluate_compiled_finite_state_site_log_likelihood_rows(
+        analysis
+    )
+
+    assert len(compiled_rows) == report.site_count
+    assert [row.source_site_position for row in compiled_rows] == [1, 2]
+    assert all(row.partition_name == "full-alignment" for row in compiled_rows)
+    assert all(row.partition_data_type is None for row in compiled_rows)
+    assert math.isclose(
+        sum(row.log_likelihood * row.site_weight for row in compiled_rows),
+        report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        weighted_total,
         report.log_likelihood,
         rel_tol=0.0,
         abs_tol=1e-12,
