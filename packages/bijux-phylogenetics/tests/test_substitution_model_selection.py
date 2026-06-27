@@ -233,3 +233,45 @@ def test_substitution_model_selection_prefers_k80_on_transition_biased_fixture()
     assert k80_row.warnings == []
     assert jc69_row.parameter_count == 0
     assert jc69_row.rank == 2
+
+
+def test_substitution_model_selection_prefers_f81_on_composition_biased_fixture() -> (
+    None
+):
+    report = compare_nucleotide_substitution_models_from_alignment(
+        fixture("trees", "f81_aic_bias_tree_2_taxa.nwk"),
+        fixture("alignments", "f81_aic_bias_alignment_2_taxa.fasta"),
+        candidate_models=("JC69", "F81"),
+    )
+    rows = {row.model_name: row for row in report.rows}
+    f81_row = rows["F81"]
+    jc69_row = rows["JC69"]
+
+    assert report.best_model_aic == "F81"
+    assert report.best_model_aicc == "F81"
+    assert report.best_model_bic == "F81"
+    assert f81_row.fit_succeeded is True
+    assert f81_row.rank == 1
+    assert f81_row.selected_by_aic is True
+    assert f81_row.selected_by_aicc is True
+    assert f81_row.selected_by_bic is True
+    assert f81_row.parameter_count == 3
+    assert math.isclose(
+        f81_row.parameter_values["base_frequency_a"],
+        0.6904761904761905,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        f81_row.parameter_values["base_frequency_t"],
+        0.21428571428571427,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert f81_row.log_likelihood > (jc69_row.log_likelihood or float("-inf"))
+    assert (f81_row.aic or float("inf")) < (jc69_row.aic or float("inf"))
+    assert (f81_row.aicc or float("inf")) < (jc69_row.aicc or float("inf"))
+    assert (f81_row.bic or float("inf")) < (jc69_row.bic or float("inf"))
+    assert f81_row.warnings == []
+    assert jc69_row.parameter_count == 0
+    assert jc69_row.rank == 2
