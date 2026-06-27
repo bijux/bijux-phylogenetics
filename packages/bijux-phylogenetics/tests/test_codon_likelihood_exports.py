@@ -3,7 +3,9 @@ from __future__ import annotations
 from bijux_phylogenetics.phylo.likelihood import (
     CodonCtmcTreeLikelihoodReport,
     CodonStateSpace,
+    build_codon_finite_state_surface,
     build_equal_rate_codon_ctmc_rate_matrix,
+    compile_codon_likelihood_analysis,
     evaluate_codon_ctmc_tree_likelihood,
     evaluate_codon_ctmc_tree_likelihood_from_alignment,
     resolve_codon_state_space,
@@ -14,6 +16,12 @@ from bijux_phylogenetics.phylo.likelihood.codon import (
 )
 from bijux_phylogenetics.phylo.likelihood.codon import (
     evaluate_codon_ctmc_tree_likelihood_from_alignment as evaluate_codon_ctmc_tree_likelihood_from_alignment_impl,
+)
+from bijux_phylogenetics.phylo.likelihood.codon_finite_state import (
+    build_codon_finite_state_surface as build_codon_finite_state_surface_impl,
+)
+from bijux_phylogenetics.phylo.likelihood.codon_finite_state import (
+    compile_codon_likelihood_analysis as compile_codon_likelihood_analysis_impl,
 )
 from bijux_phylogenetics.phylo.likelihood.codon_states import (
     CodonStateSpace as CodonStateSpaceImpl,
@@ -48,3 +56,5 @@ def test_phylo_likelihood_exports_codon_ctmc_surface() -> None:
         evaluate_codon_ctmc_tree_likelihood_from_alignment
         is evaluate_codon_ctmc_tree_likelihood_from_alignment_impl
     )
+    assert build_codon_finite_state_surface is build_codon_finite_state_surface_impl
+    assert compile_codon_likelihood_analysis is compile_codon_likelihood_analysis_impl
