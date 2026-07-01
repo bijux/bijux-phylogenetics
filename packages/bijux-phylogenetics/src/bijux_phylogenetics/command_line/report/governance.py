@@ -10,6 +10,7 @@ from bijux_phylogenetics.reports.service import (
     render_level_one_release_gate_report,
     render_production_scale_readiness_report,
     render_release_truth_report,
+    render_shared_continuous_fixture_catalog_report,
     render_workflow_validation_report,
 )
 from bijux_phylogenetics.runtime.results import build_command_result
@@ -173,6 +174,18 @@ def add_governance_report_commands(report_subparsers: Any) -> None:
     )
     _add_manifest_argument(report_production_scale_readiness)
 
+    report_shared_continuous_fixture_catalog = report_subparsers.add_parser(
+        "shared-continuous-fixture-catalog",
+        help="Render the governed shared continuous fixture catalog used by live geiger parity.",
+    )
+    report_shared_continuous_fixture_catalog.add_argument(
+        "--out", required=True, type=Path
+    )
+    report_shared_continuous_fixture_catalog.add_argument(
+        "--json", action="store_true", help="Emit the report build result as JSON."
+    )
+    _add_manifest_argument(report_shared_continuous_fixture_catalog)
+
 
 def run_governance_report_command(args: Any) -> int | None:
     if args.report_command == "workflow-validation":
@@ -322,6 +335,35 @@ def run_governance_report_command(args: Any) -> int | None:
                     outputs=outputs,
                     warnings=result.production_scale_readiness.limitations,
                     metrics=result.machine_manifest["metrics"],
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_path)
+        return 0
+
+    if args.report_command == "shared-continuous-fixture-catalog":
+        result = render_shared_continuous_fixture_catalog_report(
+            out_path=args.out,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="report",
+            inputs=[],
+            outputs=[result.output_path, result.machine_manifest_path],
+        )
+        if args.json:
+            _print_result(
+                build_command_result(
+                    command="report",
+                    inputs=[],
+                    outputs=outputs,
+                    metrics={
+                        "goal_id": result.fixture_catalog.goal_id,
+                        "fixture_count": result.fixture_catalog.fixture_count,
+                        "live_case_count": result.fixture_catalog.live_case_count,
+                    },
                     data=result,
                 ),
                 json_output=True,
