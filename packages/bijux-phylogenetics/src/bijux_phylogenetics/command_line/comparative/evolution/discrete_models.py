@@ -11,6 +11,7 @@ from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.comparative.discrete_mk import (
     fit_discrete_mk_model,
+    write_discrete_mk_pattern_likelihood_table,
     write_discrete_mk_rate_table,
     write_discrete_mk_summary_table,
 )
@@ -66,6 +67,11 @@ def add_discrete_model_comparative_evolution_commands(
         help="Write one fitted directed rate-matrix ledger as TSV or CSV.",
     )
     comparative_discrete_mk.add_argument(
+        "--patterns-out",
+        type=Path,
+        help="Write one observed discrete Mk pattern-likelihood ledger as TSV or CSV.",
+    )
+    comparative_discrete_mk.add_argument(
         "--json", action="store_true", help="Emit the discrete Mk report as JSON."
     )
     _add_manifest_argument(comparative_discrete_mk)
@@ -95,6 +101,10 @@ def run_discrete_model_comparative_evolution_command(
         outputs.append(write_discrete_mk_summary_table(args.summary_out, report))
     if args.rates_out:
         outputs.append(write_discrete_mk_rate_table(args.rates_out, report))
+    if args.patterns_out:
+        outputs.append(
+            write_discrete_mk_pattern_likelihood_table(args.patterns_out, report)
+        )
     outputs = _finalize_outputs(
         args,
         command="comparative",

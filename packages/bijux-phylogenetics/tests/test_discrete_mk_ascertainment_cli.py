@@ -13,8 +13,10 @@ def fixture(group: str, name: str) -> Path:
 
 
 def test_comparative_discrete_mk_cli_reports_lewis_ascertainment_metrics(
+    tmp_path: Path,
     capsys,
 ) -> None:
+    pattern_path = tmp_path / "discrete-mk-patterns.tsv"
     exit_code = main(
         [
             "comparative",
@@ -31,6 +33,8 @@ def test_comparative_discrete_mk_cli_reports_lewis_ascertainment_metrics(
             "taxon",
             "--ascertainment",
             "lewis-variable-only",
+            "--patterns-out",
+            str(pattern_path),
             "--json",
         ]
     )
@@ -42,3 +46,6 @@ def test_comparative_discrete_mk_cli_reports_lewis_ascertainment_metrics(
     assert payload["metrics"]["ascertainment_log_likelihood_delta"] is not None
     assert payload["metrics"]["ascertainment_conditioning_log_probability"] is not None
     assert payload["metrics"]["invariant_pattern_log_probability"] is not None
+    assert pattern_path.read_text(encoding="utf-8").startswith(
+        "pattern_id\tpattern_weight\ttip_states\traw_log_likelihood\tascertainment_conditioning_log_probability\tlog_likelihood"
+    )
