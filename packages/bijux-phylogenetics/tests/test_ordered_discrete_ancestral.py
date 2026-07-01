@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.ancestral.discrete import reconstruct_discrete_ancestral_states
 from bijux_phylogenetics.ancestral.discrete.review import (
     summarize_ordered_discrete_reconstruction,
@@ -88,6 +90,42 @@ def test_summarize_ordered_discrete_reconstruction_compares_ordered_and_unordere
     assert north_to_island.ordered_transition_allowed is False
     assert north_to_island.unordered_transition_allowed is True
     assert north_to_island.ordered_rate == 0.0
+
+
+@pytest.mark.parametrize(
+    ("model", "ordered_parameter_count", "unordered_parameter_count"),
+    [
+        ("symmetric", 2, 3),
+        ("all-rates-different", 4, 6),
+    ],
+)
+def test_summarize_ordered_discrete_reconstruction_covers_multirate_models(
+    model: str,
+    ordered_parameter_count: int,
+    unordered_parameter_count: int,
+) -> None:
+    report = summarize_ordered_discrete_reconstruction(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_geography.tsv"),
+        trait="region",
+        model=model,
+        ordered_states=["north", "south", "island"],
+    )
+    summary = summarize_ordered_discrete_report(report)
+
+    north_to_island = next(
+        row
+        for row in report.transition_rows
+        if row.source_state == "north" and row.target_state == "island"
+    )
+
+    assert summary.preferred_ordering == "ordered"
+    assert summary.restricted_transition_count == 2
+    assert summary.ordered_parameter_count == ordered_parameter_count
+    assert summary.unordered_parameter_count == unordered_parameter_count
+    assert north_to_island.ordered_transition_allowed is False
+    assert north_to_island.ordered_rate == 0.0
+    assert north_to_island.unordered_rate > 0.0
 
 
 def test_write_ordered_discrete_tables_emit_expected_ledgers(tmp_path: Path) -> None:

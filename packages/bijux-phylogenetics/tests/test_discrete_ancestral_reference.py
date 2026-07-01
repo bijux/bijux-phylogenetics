@@ -12,7 +12,7 @@ pytestmark = pytest.mark.slow
 def test_validate_discrete_ancestral_reference_examples_reports_passing_cases() -> None:
     report = validate_discrete_ancestral_reference_examples()
 
-    assert report.case_count == 10
+    assert report.case_count == 12
     assert report.external_case_count == 6
     assert report.all_passed is True
     assert {observation.category for observation in report.observations} == {
@@ -51,15 +51,23 @@ def test_validate_discrete_ancestral_reference_examples_covers_policy_surfaces()
     observations = {row.case_id: row for row in report.observations}
 
     root_prior = observations["root_prior_sensitivity_policy"]
-    ordered = observations["ordered_transition_constraints"]
+    ordered_er = observations["ordered_transition_constraints_equal_rates"]
+    ordered_sym = observations["ordered_transition_constraints_symmetric"]
+    ordered_ard = observations[
+        "ordered_transition_constraints_all_rates_different"
+    ]
     irreversible = observations["irreversible_loss_constraints"]
     ambiguous = observations["ambiguous_internal_states"]
 
     assert root_prior.observed_metrics["state_changed_node_count"] == 2
     assert root_prior.observed_metrics["support_changed_node_count"] == 1
     assert root_prior.observed_metrics["fixed_root_state"] == "island"
-    assert ordered.observed_metrics["preferred_ordering"] == "ordered"
-    assert ordered.observed_metrics["north_to_island_allowed"] is False
+    assert ordered_er.observed_metrics["preferred_ordering"] == "ordered"
+    assert ordered_er.observed_metrics["north_to_island_allowed"] is False
+    assert ordered_sym.observed_metrics["ordered_parameter_count"] == 2
+    assert ordered_sym.observed_metrics["unordered_parameter_count"] == 3
+    assert ordered_ard.observed_metrics["ordered_parameter_count"] == 4
+    assert ordered_ard.observed_metrics["unordered_parameter_count"] == 6
     assert irreversible.observed_metrics["preferred_constraint"] == "constrained"
     assert irreversible.observed_metrics["absent_to_present_allowed"] is False
     assert ambiguous.observed_metrics["ambiguous_nodes"] == ["A|B|C|D"]
