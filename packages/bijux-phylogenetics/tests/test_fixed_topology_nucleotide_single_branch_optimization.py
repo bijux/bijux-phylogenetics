@@ -25,19 +25,27 @@ def fixture(group: str, name: str) -> Path:
 
 
 @pytest.mark.parametrize(
-    ("model_name", "alignment_name", "optimization_kwargs", "evaluator"),
+    (
+        "model_name",
+        "alignment_name",
+        "optimization_kwargs",
+        "evaluator",
+        "expected_fit_classification",
+    ),
     [
         (
             "jc69",
             "jc69_branch_optimization_alignment_2_taxa.fasta",
             {},
             evaluate_jc69_tree_likelihood,
+            "failed",
         ),
         (
             "k80",
             "k80_likelihood_alignment_2_taxa.fasta",
             {"kappa": 4.0},
             evaluate_k80_tree_likelihood,
+            "failed",
         ),
         (
             "f81",
@@ -51,6 +59,7 @@ def fixture(group: str, name: str) -> Path:
                 }
             },
             evaluate_f81_tree_likelihood,
+            "failed",
         ),
         (
             "hky85",
@@ -65,6 +74,7 @@ def fixture(group: str, name: str) -> Path:
                 },
             },
             evaluate_hky85_tree_likelihood,
+            "failed",
         ),
         (
             "gtr",
@@ -86,6 +96,7 @@ def fixture(group: str, name: str) -> Path:
                 },
             },
             evaluate_gtr_tree_likelihood,
+            "failed",
         ),
     ],
 )
@@ -94,6 +105,7 @@ def test_fixed_topology_nucleotide_single_branch_optimization_keeps_other_branch
     alignment_name: str,
     optimization_kwargs: dict[str, object],
     evaluator,
+    expected_fit_classification: str,
 ) -> None:
     tree = load_tree(fixture("trees", "jc69_branch_optimization_start_tree_2_taxa.nwk"))
     alignment_path = fixture("alignments", alignment_name)
@@ -128,6 +140,7 @@ def test_fixed_topology_nucleotide_single_branch_optimization_keeps_other_branch
 
     assert report.model_name == model_name.upper()
     assert report.branch_count == 2
+    assert report.fit_assessment.classification == expected_fit_classification
     assert report.selected_branch.branch_id == selected_branch_id
     assert report.selected_branch.child_name == "A"
     assert report.selected_branch.descendant_taxa == ["A"]

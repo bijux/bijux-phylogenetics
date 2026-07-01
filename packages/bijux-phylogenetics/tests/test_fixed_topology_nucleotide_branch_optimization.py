@@ -26,19 +26,27 @@ def fixture(group: str, name: str) -> Path:
 
 
 @pytest.mark.parametrize(
-    ("model_name", "alignment_name", "optimization_kwargs", "evaluator"),
+    (
+        "model_name",
+        "alignment_name",
+        "optimization_kwargs",
+        "evaluator",
+        "expected_fit_classification",
+    ),
     [
         (
             "jc69",
             "jc69_branch_optimization_alignment_2_taxa.fasta",
             {},
             evaluate_jc69_tree_likelihood,
+            "boundary",
         ),
         (
             "k80",
             "k80_likelihood_alignment_2_taxa.fasta",
             {"kappa": 4.0},
             evaluate_k80_tree_likelihood,
+            "weak",
         ),
         (
             "f81",
@@ -52,6 +60,7 @@ def fixture(group: str, name: str) -> Path:
                 }
             },
             evaluate_f81_tree_likelihood,
+            "weak",
         ),
         (
             "hky85",
@@ -66,6 +75,7 @@ def fixture(group: str, name: str) -> Path:
                 },
             },
             evaluate_hky85_tree_likelihood,
+            "boundary",
         ),
         (
             "gtr",
@@ -87,6 +97,7 @@ def fixture(group: str, name: str) -> Path:
                 },
             },
             evaluate_gtr_tree_likelihood,
+            "weak",
         ),
     ],
 )
@@ -95,6 +106,7 @@ def test_fixed_topology_nucleotide_branch_optimization_improves_selected_model(
     alignment_name: str,
     optimization_kwargs: dict[str, object],
     evaluator,
+    expected_fit_classification: str,
 ) -> None:
     tree_path = fixture("trees", "jc69_branch_optimization_start_tree_2_taxa.nwk")
     alignment_path = fixture("alignments", alignment_name)
@@ -118,6 +130,7 @@ def test_fixed_topology_nucleotide_branch_optimization_improves_selected_model(
     assert report.branch_count == 2
     assert report.initial_tree_newick == "(A:0.8,B:0.8);"
     assert report.parameter_count == len(report.fixed_parameter_values)
+    assert report.fit_assessment.classification == expected_fit_classification
     assert report.optimized_log_likelihood > report.initial_log_likelihood
     assert report.function_evaluation_count > 1
     assert all(row.optimized_branch_length >= 0.0 for row in report.branches)

@@ -1736,6 +1736,7 @@ class FixedTopologyNucleotideBranchLengthOptimizationReport:
     optimization_pass_count: int
     function_evaluation_count: int
     converged: bool
+    fit_assessment: LikelihoodFitAssessment
     lower_branch_length_bound: float
     upper_branch_length_bound: float
     branches: list[BranchLengthOptimizationRow]
@@ -1766,6 +1767,7 @@ class FixedTopologyNucleotideSingleBranchOptimizationReport:
     optimized_log_likelihood: float
     function_evaluation_count: int
     converged: bool
+    fit_assessment: LikelihoodFitAssessment
     lower_branch_length_bound: float
     upper_branch_length_bound: float
 

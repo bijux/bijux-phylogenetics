@@ -15,6 +15,9 @@ from bijux_phylogenetics.phylo.likelihood.dna import (
 from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
     normalize_dna_likelihood_records,
 )
+from bijux_phylogenetics.phylo.likelihood.fit_assessment import (
+    build_likelihood_fit_assessment,
+)
 from bijux_phylogenetics.phylo.likelihood.models import (
     BranchLengthOptimizationRow,
     FixedTopologyNucleotideBranchLengthOptimizationReport,
@@ -181,6 +184,13 @@ def optimize_fixed_topology_nucleotide_branch_lengths(
         lower_branch_length_bound=lower_branch_length_bound,
         upper_branch_length_bound=upper_branch_length_bound,
     )
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=compressed_patterns.alignment_length,
+        pattern_count=compressed_patterns.pattern_count,
+        optimized_parameter_count=len(branch_rows),
+        converged=search_result.converged,
+        boundary_warnings=boundary_warnings,
+    )
     return FixedTopologyNucleotideBranchLengthOptimizationReport(
         model_name=specification.model_name,
         taxa=compressed_patterns.taxon_order,
@@ -200,6 +210,7 @@ def optimize_fixed_topology_nucleotide_branch_lengths(
         optimization_pass_count=search_result.optimization_pass_count,
         function_evaluation_count=search_result.function_evaluation_count,
         converged=search_result.converged,
+        fit_assessment=fit_assessment,
         lower_branch_length_bound=lower_branch_length_bound,
         upper_branch_length_bound=upper_branch_length_bound,
         branches=branch_rows,
@@ -346,6 +357,25 @@ def optimize_fixed_topology_nucleotide_single_branch_length(
     optimized_branch_lengths = _collect_branch_lengths_by_id(
         search_result.optimized_tree
     )
+    selected_branch = BranchLengthOptimizationRow(
+        branch_id=selected_branch_id,
+        child_name=selected_branch_node.name,
+        descendant_taxa=selected_branch_node.descendant_taxa,
+        initial_branch_length=initial_branch_lengths[selected_branch_id],
+        optimized_branch_length=optimized_branch_lengths[selected_branch_id],
+    )
+    boundary_warnings = build_branch_length_boundary_warnings(
+        [selected_branch],
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
+    )
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=compressed_patterns.alignment_length,
+        pattern_count=compressed_patterns.pattern_count,
+        optimized_parameter_count=1,
+        converged=search_result.converged,
+        boundary_warnings=boundary_warnings,
+    )
     return FixedTopologyNucleotideSingleBranchOptimizationReport(
         model_name=specification.model_name,
         taxa=compressed_patterns.taxon_order,
@@ -360,13 +390,7 @@ def optimize_fixed_topology_nucleotide_single_branch_length(
         root_prior_values=specification.root_prior.tolist(),
         parameter_count=len(specification.parameter_values),
         fixed_parameter_values=dict(specification.parameter_values),
-        selected_branch=BranchLengthOptimizationRow(
-            branch_id=selected_branch_id,
-            child_name=selected_branch_node.name,
-            descendant_taxa=selected_branch_node.descendant_taxa,
-            initial_branch_length=initial_branch_lengths[selected_branch_id],
-            optimized_branch_length=optimized_branch_lengths[selected_branch_id],
-        ),
+        selected_branch=selected_branch,
         unchanged_branch_count=len(initial_branch_lengths) - 1,
         unchanged_branch_ids=sorted(
             branch_length_id
@@ -377,6 +401,7 @@ def optimize_fixed_topology_nucleotide_single_branch_length(
         optimized_log_likelihood=search_result.log_likelihood,
         function_evaluation_count=search_result.function_evaluation_count,
         converged=search_result.converged,
+        fit_assessment=fit_assessment,
         lower_branch_length_bound=lower_branch_length_bound,
         upper_branch_length_bound=upper_branch_length_bound,
     )
