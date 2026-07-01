@@ -73,10 +73,13 @@ independent-contrast analysis no longer need to restart from path-based
 loading wrappers.
 The same comparative runtime now also exposes one direct discrete Mk fit
 surface on a loaded ancestral discrete dataset through
-`fit_discrete_mk_model_from_dataset(...)`, so ER, SYM, and ARD review no
-longer need to restart from tree and trait file paths once one
-`AncestralDiscreteDataset` already exists in memory. That same owned surface
-now underlies the governed live `phytools::fitMk(model='ER')` and
+`fit_discrete_mk_model_from_dataset(...)`, so ER, SYM, ARD, and native
+irreversible review no longer need to restart from tree and trait file paths
+once one `AncestralDiscreteDataset` already exists in memory. The same owned
+surface now treats `irreversible` as one first-class Mk contract with
+structurally forbidden reverse transitions instead of reusing one constrained
+ARD label. That same owned surface now underlies the governed live
+`phytools::fitMk(model='ER')` and
 `phytools::fitMk(model='SYM')` parity lanes for the validated ER and
 unordered-multistate SYM cases, and it now also underlies the governed live
 `phytools::fitMk(model='ARD')` lane for one rate-row-parity binary surface

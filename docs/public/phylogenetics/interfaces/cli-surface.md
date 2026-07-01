@@ -1749,8 +1749,9 @@ transition ledger. Each row preserves:
 
 `ancestral irreversible-discrete` is the governed irreversible-state review
 surface for one discrete likelihood ancestral reconstruction. It fits the
-requested likelihood model twice on the same tree: once under an explicit
-directed allowed-transition graph and once under the unrestricted baseline.
+requested irreversible likelihood model under one explicit directed
+allowed-transition graph and compares it to the unrestricted reversible
+`all-rates-different` baseline on the same tree.
 Its JSON metrics report:
 - `model`
 - `allowed_transition_count`
@@ -1760,11 +1761,14 @@ Its JSON metrics report:
 - `forbidden_transition_count`
 - `preferred_constraint`
 
-The command supports `equal-rates`, `symmetric`, and
-`all-rates-different`. It requires `--allowed-transitions`, which accepts a
+The command defaults to the native `irreversible` model and also accepts
+`equal-rates`, `symmetric`, and `all-rates-different` for explicit review
+scenarios. It requires `--allowed-transitions`, which accepts a
 comma-delimited directed graph such as `present->absent` or
-`north->south,south->island`. Under `symmetric`, every allowed edge must be
-bidirectional because the fitted rates are shared across both directions.
+`north->south,south->island`. Under the native `irreversible` model, reverse
+edges are structurally forbidden unless they are named explicitly. Under
+`symmetric`, every allowed edge must be bidirectional because the fitted rates
+are shared across both directions.
 
 When `--summary-out` is supplied, `ancestral irreversible-discrete` writes one
 overall summary ledger. The row preserves:

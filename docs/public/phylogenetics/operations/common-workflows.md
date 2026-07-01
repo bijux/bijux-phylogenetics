@@ -1392,10 +1392,11 @@ allowed.
 
 When the goal is to model irreversible gains or losses, use
 `ancestral irreversible-discrete`. This workflow fits one constrained discrete
-likelihood model under an explicit directed transition graph and compares it to
-the unconstrained baseline of the same model family. It is the owned review
-surface for one-way losses, forbidden reversals, and similar trait histories
-where some transitions should be impossible.
+likelihood model under an explicit directed transition graph and compares the
+native `irreversible` fit to one unconstrained reversible
+`all-rates-different` baseline. It is the owned review surface for one-way
+losses, forbidden reversals, and similar trait histories where some
+transitions should be impossible.
 
 ```bash
 bijux-phylogenetics ancestral irreversible-discrete \
@@ -1403,7 +1404,6 @@ bijux-phylogenetics ancestral irreversible-discrete \
   artifacts/primates.csv \
   --trait trait_state \
   --taxon-column species \
-  --model all-rates-different \
   --allowed-transitions present->absent \
   --summary-out artifacts/primates.irreversible-summary.tsv \
   --fits-out artifacts/primates.irreversible-fits.tsv \
