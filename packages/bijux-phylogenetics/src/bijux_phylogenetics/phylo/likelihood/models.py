@@ -1255,6 +1255,25 @@ class NucleotideLikelihoodSearchTraceReplayReport:
 
 
 @dataclass(slots=True)
+class NucleotideLikelihoodNeighborJoiningStartTreeReport:
+    """Alignment-derived native NJ starting tree summary for rooted likelihood search."""
+
+    algorithm: str
+    distance_method: str
+    distance_model: str
+    gap_handling: str
+    ambiguity_policy: str
+    alignment_path: str | None
+    taxon_count: int
+    site_count: int
+    pair_count: int
+    distance_warnings: list[str]
+    rooting_policy: str
+    unrooted_tree_newick: str
+    rooted_tree_newick: str
+
+
+@dataclass(slots=True)
 class NucleotideLikelihoodStartingTreeSummary:
     """One scored starting tree inside a native likelihood start-tree pool."""
 
