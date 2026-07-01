@@ -18,6 +18,11 @@ from bijux_phylogenetics.comparative.common import (
     build_ou_covariance_matrix,
     load_comparative_dataset,
 )
+from bijux_phylogenetics.comparative.search import (
+    BoundedSearchControls,
+    BoundedSearchDiagnostics,
+    fit_bounded_scalar_parameter,
+)
 from bijux_phylogenetics.comparative.model_selection import (
     ComparativeModelComparisonReport,
     ComparativeModelComparisonRow,
@@ -104,6 +109,7 @@ class OUTraitModelReport:
     log_likelihood: float
     fitted_values: list[float]
     residuals: list[float]
+    optimizer_diagnostics: BoundedSearchDiagnostics
     convergence_status: str
     assumptions: list[str]
     confidence_intervals: list[ComparativeParameterInterval]
@@ -174,23 +180,31 @@ def fit_ornstein_uhlenbeck_model(
         require_rooted=True,
         require_binary=False,
     )
-    alpha_grid = _alpha_grid(dataset)
-    best_alpha = alpha_grid[0]
-    best_fit: _InterceptOnlyFit | None = None
-    profile: list[tuple[float, float]] = []
-    for alpha in alpha_grid:
-        covariance = stable_covariance(
-            build_ou_covariance_matrix(dataset.tree, dataset.taxa, alpha=alpha)
-        )
-        fit = _fit_intercept_only_model(dataset, covariance)
-        profile.append((alpha, fit.log_likelihood))
-        if best_fit is None or fit.log_likelihood > best_fit.log_likelihood:
-            best_alpha = alpha
-            best_fit = fit
-    if best_fit is None:
-        raise ValueError(
-            "failed to fit OU intercept-only model for the provided alpha grid"
-        )
+    alpha_profile_values = _alpha_grid(dataset)
+    alpha_fit = fit_bounded_scalar_parameter(
+        lower_bound=alpha_profile_values[0],
+        upper_bound=alpha_profile_values[-1],
+        controls=BoundedSearchControls(
+            coarse_grid_point_count=81,
+            fine_grid_point_count=81,
+            initial_parameter_value=alpha_profile_values[
+                len(alpha_profile_values) // 2
+            ],
+            refinement_start_count=5,
+        ),
+        evaluate=lambda alpha: _evaluate_ou_alpha_candidate(dataset, alpha),
+        profile_parameter_values=alpha_profile_values,
+        confidence_interval_drop=1.92,
+        optimizer_name="two-stage-grid-search",
+        parameter_search_strategy=(
+            "bounded-coarse-grid-with-multi-start-golden-section-refinement"
+        ),
+    )
+    best_alpha = alpha_fit.parameter_value
+    best_fit = alpha_fit.payload
+    profile = [
+        (row.parameter_value, row.objective_value) for row in alpha_fit.profile_rows
+    ]
     best_covariance = stable_covariance(
         build_ou_covariance_matrix(dataset.tree, dataset.taxa, alpha=best_alpha)
     )
@@ -221,10 +235,11 @@ def fit_ornstein_uhlenbeck_model(
         log_likelihood=best_fit.log_likelihood,
         fitted_values=best_fit.fitted_values,
         residuals=best_fit.residuals,
-        convergence_status="grid-search-converged",
+        optimizer_diagnostics=alpha_fit.optimizer_diagnostics,
+        convergence_status="bounded-scalar-search-converged",
         assumptions=[
             "OU assumes trait evolution is pulled toward a stationary optimum theta",
-            "OU fit here uses a rooted stationary-process covariance and grid-search over alpha",
+            "OU alpha fit here uses rooted stationary-process covariance and shared bounded scalar likelihood optimization",
         ],
         confidence_intervals=intervals,
         identifiability_warnings=identifiability_warnings,
@@ -317,6 +332,17 @@ def _fit_intercept_only_model(
         fitted_values=fitted_values,
         residuals=residuals,
     )
+
+
+def _evaluate_ou_alpha_candidate(
+    dataset: ComparativeDataset,
+    alpha: float,
+) -> tuple[_InterceptOnlyFit, float]:
+    covariance = stable_covariance(
+        build_ou_covariance_matrix(dataset.tree, dataset.taxa, alpha=alpha)
+    )
+    fit = _fit_intercept_only_model(dataset, covariance)
+    return fit, fit.log_likelihood
 
 
 def _brownian_parameter_intervals(
@@ -559,43 +585,62 @@ def _hat_matrix(
 def _estimate_lambda_for_values(
     dataset: ComparativeDataset, values: list[float]
 ) -> float:
-    candidates = [index / 20.0 for index in range(21)]
-    best_lambda = 0.0
-    best_score = -math.inf
-    for lambda_value in candidates:
-        covariance = [
-            [
-                value if row_index == column_index else value * lambda_value
-                for column_index, value in enumerate(row)
-            ]
-            for row_index, row in enumerate(dataset.covariance_matrix)
+    fit = fit_bounded_scalar_parameter(
+        lower_bound=0.0,
+        upper_bound=1.0,
+        controls=BoundedSearchControls(
+            coarse_grid_point_count=21,
+            fine_grid_point_count=21,
+            refinement_start_count=3,
+        ),
+        evaluate=lambda lambda_value: (
+            lambda_value,
+            _lambda_log_likelihood_for_values(dataset, values, lambda_value),
+        ),
+        profile_parameter_values=[index / 20.0 for index in range(21)],
+        confidence_interval_drop=1.92,
+        optimizer_name="two-stage-grid-search",
+        parameter_search_strategy=(
+            "bounded-coarse-grid-with-multi-start-golden-section-refinement"
+        ),
+    )
+    return fit.parameter_value
+
+
+def _lambda_log_likelihood_for_values(
+    dataset: ComparativeDataset,
+    values: list[float],
+    lambda_value: float,
+) -> float:
+    covariance = [
+        [
+            value if row_index == column_index else value * lambda_value
+            for column_index, value in enumerate(row)
         ]
-        covariance = stable_covariance(covariance)
-        inverse_covariance = invert_matrix(covariance)
-        ones = [1.0] * len(values)
-        denom = quadratic_form(ones, inverse_covariance)
-        mean_value = (
-            sum(
-                ones[row_index]
-                * sum(
-                    inverse_covariance[row_index][column_index] * values[column_index]
-                    for column_index in range(len(values))
-                )
-                for row_index in range(len(values))
+        for row_index, row in enumerate(dataset.covariance_matrix)
+    ]
+    covariance = stable_covariance(covariance)
+    inverse_covariance = invert_matrix(covariance)
+    ones = [1.0] * len(values)
+    denom = quadratic_form(ones, inverse_covariance)
+    mean_value = (
+        sum(
+            ones[row_index]
+            * sum(
+                inverse_covariance[row_index][column_index] * values[column_index]
+                for column_index in range(len(values))
             )
-            / denom
+            for row_index in range(len(values))
         )
-        residuals = [value - mean_value for value in values]
-        sigma_squared = quadratic_form(residuals, inverse_covariance) / len(values)
-        score = -0.5 * (
-            len(values) * math.log(2.0 * math.pi * sigma_squared)
-            + log_determinant(covariance)
-            + len(values)
-        )
-        if score > best_score:
-            best_score = score
-            best_lambda = lambda_value
-    return best_lambda
+        / denom
+    )
+    residuals = [value - mean_value for value in values]
+    sigma_squared = quadratic_form(residuals, inverse_covariance) / len(values)
+    return -0.5 * (
+        len(values) * math.log(2.0 * math.pi * sigma_squared)
+        + log_determinant(covariance)
+        + len(values)
+    )
 
 
 def _comparison_row(

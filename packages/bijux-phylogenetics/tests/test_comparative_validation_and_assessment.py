@@ -62,7 +62,10 @@ def test_fit_ornstein_uhlenbeck_model_reports_identifiability_warnings() -> None
         "boundary_alpha",
         "flat_likelihood",
     ]
-    assert report.convergence_status == "grid-search-converged"
+    assert report.convergence_status == "bounded-scalar-search-converged"
+    assert report.optimizer_diagnostics.optimizer_name == "two-stage-grid-search"
+    assert report.optimizer_diagnostics.converged is True
+    assert report.optimizer_diagnostics.failure_reason is None
 
 
 def test_compare_brownian_and_ou_models_prefers_brownian_on_example_dataset() -> None:

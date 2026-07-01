@@ -13,6 +13,7 @@ from bijux_phylogenetics.comparative.continuous.model_fitting import (
     OUIdentifiabilityWarning,
     fit_ornstein_uhlenbeck_model,
 )
+from bijux_phylogenetics.comparative.search import BoundedSearchDiagnostics
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 
 
@@ -42,6 +43,7 @@ class OUTraitEvolutionSummaryReport:
     log_likelihood: float
     aic: float
     aicc: float
+    optimizer_diagnostics: BoundedSearchDiagnostics
     convergence_status: str
     confidence_intervals: list[ComparativeParameterInterval]
     identifiability_warnings: list[OUIdentifiabilityWarning]
@@ -106,6 +108,7 @@ def summarize_ou_trait_evolution(
         log_likelihood=fit.log_likelihood,
         aic=aic,
         aicc=aicc,
+        optimizer_diagnostics=fit.optimizer_diagnostics,
         convergence_status=fit.convergence_status,
         confidence_intervals=list(fit.confidence_intervals),
         identifiability_warnings=list(fit.identifiability_warnings),

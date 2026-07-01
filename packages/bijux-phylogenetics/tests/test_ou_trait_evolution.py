@@ -47,7 +47,9 @@ def test_summarize_ou_trait_evolution_matches_reference_example() -> None:
     assert report.sigma_squared > 0.0
     expected_aic = (2.0 * 3.0) - (2.0 * report.log_likelihood)
     assert math.isclose(report.aic, expected_aic, rel_tol=0.0, abs_tol=1e-12)
-    assert report.convergence_status == "grid-search-converged"
+    assert report.convergence_status == "bounded-scalar-search-converged"
+    assert report.optimizer_diagnostics.optimizer_name == "two-stage-grid-search"
+    assert report.optimizer_diagnostics.converged is True
     assert [warning.kind for warning in report.identifiability_warnings] == [
         "small_sample_size",
         "boundary_alpha",

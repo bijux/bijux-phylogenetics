@@ -1037,6 +1037,9 @@ def test_comparative_ou_cli_reports_model_fit_metrics(capsys) -> None:
     assert math.isclose(payload["metrics"]["theta"], 2.7503175510416416)
     assert math.isclose(payload["metrics"]["log_likelihood"], -5.260966005271784)
     assert payload["metrics"]["sigma_squared"] > 0.0
+    assert payload["metrics"]["optimizer_name"] == "two-stage-grid-search"
+    assert payload["metrics"]["optimizer_converged"] is True
+    assert payload["metrics"]["optimizer_function_evaluation_count"] > 0
     assert "aic" in payload["metrics"]
     assert "aicc" in payload["metrics"]
 
