@@ -10,7 +10,7 @@ def test_validate_tree_set_uncertainty_methods_summary_reference_fixtures_govern
 ):
     report = validate_tree_set_uncertainty_methods_summary_reference_fixtures()
 
-    assert report.goal_id == 253
+    assert report.goal_id == 231
     assert report.passed is True
     observed = {fixture.name: fixture for fixture in report.fixtures}
     assert (

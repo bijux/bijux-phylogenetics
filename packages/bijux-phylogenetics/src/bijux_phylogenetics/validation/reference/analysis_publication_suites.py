@@ -156,7 +156,7 @@ def validate_tree_set_uncertainty_methods_summary_reference_fixtures(
 
     fixtures = [
         check(
-            goal_id=253,
+            goal_id=231,
             suite="tree-set-uncertainty-methods-reference",
             name="multi_topology_methods_summary_keeps_support_and_instability",
             fixture_paths=[tree_set_path],
@@ -181,7 +181,7 @@ def validate_tree_set_uncertainty_methods_summary_reference_fixtures(
             ],
         ),
         check(
-            goal_id=253,
+            goal_id=231,
             suite="tree-set-uncertainty-methods-reference",
             name="single_topology_methods_summary_keeps_clean_lane_explicit",
             fixture_paths=[single_topology_path],
@@ -207,7 +207,7 @@ def validate_tree_set_uncertainty_methods_summary_reference_fixtures(
         ),
     ]
     return suite_report(
-        goal_id=253,
+        goal_id=231,
         suite="tree-set-uncertainty-methods-reference",
         reviewer_goal="Tree-set uncertainty methods-summary fixtures",
         fixtures=fixtures,
