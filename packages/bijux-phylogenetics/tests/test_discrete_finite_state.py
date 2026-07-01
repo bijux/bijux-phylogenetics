@@ -198,7 +198,7 @@ def test_irreversible_discrete_surface_matches_native_mk_kernel() -> None:
     rate_matrix = rate_matrix_from_log_parameters(
         numpy.log(numpy.array([0.4], dtype=float)),
         state_order=state_order,
-        model="all-rates-different",
+        model="irreversible",
         state_ordering="unordered",
         allowed_transition_pairs={(0, 1)},
     )
