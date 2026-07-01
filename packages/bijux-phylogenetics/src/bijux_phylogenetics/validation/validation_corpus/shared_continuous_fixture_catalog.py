@@ -25,7 +25,11 @@ def build_shared_continuous_fixture_catalog() -> SharedContinuousFixtureCatalogR
         case_groups.setdefault(case.fixture_id, []).append(case)
 
     fixtures = sorted(
-        list_shared_geiger_continuous_fixtures(),
+        [
+            fixture
+            for fixture in list_shared_geiger_continuous_fixtures()
+            if fixture.fixture_id in case_groups
+        ],
         key=lambda fixture: fixture.fixture_id,
     )
     rows = []
@@ -58,6 +62,7 @@ def build_shared_continuous_fixture_catalog() -> SharedContinuousFixtureCatalogR
         live_case_count=len(live_cases),
         fixtures=rows,
         limitations=[
+            "the catalog covers the governed continuous fixtures consumed by the live fitContinuous parity harness; it does not enumerate governed fixtures that are not yet part of that live surface",
             "the catalog proves which governed fixtures are consumed by the live fitContinuous parity harness; it does not by itself prove parity passed for every covered model",
             "fixture membership is governed by the shared fixture catalog and live geiger registry, so coverage changes only when one of those owned sources changes",
         ],

@@ -22,6 +22,7 @@ from bijux_phylogenetics.validation import (
     build_regression_dataset_corpus,
     build_runtime_benchmark_dashboard,
     build_scientific_validation_report,
+    build_shared_continuous_fixture_catalog,
     build_workflow_practical_limit_dashboard,
     validate_simulation_reproducibility,
     write_validation_corpus_json,
@@ -268,6 +269,31 @@ def test_validate_simulation_reproducibility_confirms_same_seed_repeatability() 
     assert all(case.digest for case in report.cases)
 
 
+def test_build_shared_continuous_fixture_catalog_tracks_live_consumed_fixtures() -> (
+    None
+):
+    report = build_shared_continuous_fixture_catalog()
+
+    assert report.goal_id == 252
+    assert report.fixture_count == 6
+    assert report.live_case_count >= report.fixture_count
+    observed = {fixture.fixture_id: fixture for fixture in report.fixtures}
+    missing_values = observed["geiger_continuous_missing_values_twenty_four_taxa"]
+
+    assert "trend" in missing_values.supported_model_names
+    assert "trend" not in missing_values.covered_model_names
+    assert missing_values.covered_model_names == [
+        "BM",
+        "EB",
+        "OU",
+        "delta",
+        "kappa",
+        "lambda",
+        "white",
+    ]
+    assert all(fixture.live_case_count > 0 for fixture in report.fixtures)
+
+
 def test_package_root_exports_validation_corpus_surfaces() -> None:
     assert validation_api.build_clean_benchmark_corpus is build_clean_benchmark_corpus
     assert (
@@ -289,6 +315,10 @@ def test_package_root_exports_validation_corpus_surfaces() -> None:
     assert (
         validation_api.build_method_limitation_registry
         is build_method_limitation_registry
+    )
+    assert (
+        validation_api.build_shared_continuous_fixture_catalog
+        is build_shared_continuous_fixture_catalog
     )
     assert (
         validation_api.validate_simulation_reproducibility
@@ -355,6 +385,19 @@ def test_write_validation_corpus_json_serializes_large_tree_set_scaling_dashboar
     text = path.read_text(encoding="utf-8")
     assert '"goal_id": 223' in text
     assert '"pairwise-rf-diversity"' in text
+
+
+def test_write_validation_corpus_json_serializes_continuous_fixture_catalog(
+    tmp_path: Path,
+) -> None:
+    path = write_validation_corpus_json(
+        tmp_path / "continuous-fixture-catalog.json",
+        build_shared_continuous_fixture_catalog(),
+    )
+
+    text = path.read_text(encoding="utf-8")
+    assert '"goal_id": 252' in text
+    assert '"geiger_continuous_missing_values_twenty_four_taxa"' in text
 
 
 @pytest.mark.slow
