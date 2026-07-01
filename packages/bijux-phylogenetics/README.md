@@ -1158,6 +1158,16 @@ surface now lives as a domain package with separate `models`, `transforms`,
 `fitting`, `comparison`, and `tables` modules so transform search policy,
 single-fit execution, model-ranking workflow, and ledger writing do not
 collapse back into one flat implementation file.
+For variable-only morphology matrices, the same surface now also exposes one
+governed Lewis ascertainment contract instead of hiding the correction behind
+one switch. `--ascertainment lewis-variable-only` or
+`ascertainment_policy="lewis-variable-only"` keeps the corrected
+log-likelihood, the ordinary uncorrected log-likelihood, the conditioning-term
+delta, and the invariant-pattern log-probability in the same fit report so one
+review can distinguish retained-variable-character conditioning from an
+ordinary Mk fit on a matrix that still contains invariant characters. The CLI
+surface also writes one observed pattern ledger through `--patterns-out` when
+reviewers need the per-pattern likelihood audit rather than one summary row.
 
 The PGLS surface is likewise available as a typed Python package under
 `bijux_phylogenetics.comparative.pgls`. Use `inspect_pgls_inputs()` and

@@ -85,6 +85,14 @@ unordered-multistate SYM cases, and it now also underlies the governed live
 `phytools::fitMk(model='ARD')` lane for one rate-row-parity binary surface
 plus one summary-parity multistate surface when the optimizer flags weakly
 identified boundary rates.
+The same dataset-backed fit report now also makes Lewis ascertainment explicit
+rather than leaving it as one label alone. When callers pass
+`ascertainment_policy="lewis-variable-only"` for variable-only character
+matrices, the returned report keeps the conditioned `log_likelihood` alongside
+`uncorrected_log_likelihood`, `ascertainment_log_likelihood_delta`,
+`ascertainment_conditioning_log_probability`, and
+`invariant_pattern_log_probability`, so one downstream notebook or report can
+show exactly how the variable-only conditioning changed the fitted surface.
 The same owned comparative runtime also underlies the governed live
 `phytools::pgls.SEy` lane for fixed-lambda Brownian covariance regression over
 simple numeric, categorical, and interaction-coded fixtures. That governed
