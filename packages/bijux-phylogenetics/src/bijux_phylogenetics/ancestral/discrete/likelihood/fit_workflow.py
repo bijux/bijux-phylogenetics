@@ -223,6 +223,7 @@ def fit_discrete_mk_model(
         raise ValueError(
             "discrete ancestral reconstruction requires at least one allowed transition"
         )
+    initial_candidate_count = 1
     if count == 1:
         best_run = optimize_single_log_parameter(
             tree,
@@ -247,6 +248,7 @@ def fit_discrete_mk_model(
             root_prior_mode=root_prior_mode,
             ascertainment_policy=ascertainment_policy,
         )
+        initial_candidate_count = len(initial_candidates)
         best_log_parameters: numpy.ndarray | None = None
         best_log_likelihood = float("-inf")
         best_run: _DiscreteOptimizationRun | None = None
@@ -297,7 +299,7 @@ def fit_discrete_mk_model(
         DiscreteOptimizerDiagnostics(
             optimizer_name=best_run.optimizer_name,
             parameter_count=count,
-            initial_candidate_count=best_run.initial_candidate_count,
+            initial_candidate_count=initial_candidate_count,
             best_initial_scale=best_run.initial_scale,
             converged=best_run.converged,
             iteration_count=best_run.iteration_count,

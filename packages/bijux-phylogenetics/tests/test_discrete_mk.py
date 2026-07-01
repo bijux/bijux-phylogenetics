@@ -245,6 +245,7 @@ def test_fit_discrete_mk_model_reports_multistate_ard_surface() -> None:
     assert report.parameter_count == 12
     assert report.baseline_comparison is not None
     assert report.optimizer_diagnostics.converged is False
+    assert report.optimizer_diagnostics.initial_candidate_count <= 10
     assert report.optimizer_diagnostics.hit_lower_parameter_bound is True
     assert report.optimizer_diagnostics.hit_upper_parameter_bound is False
     assert any(
@@ -373,6 +374,7 @@ def test_fit_discrete_mk_model_reports_ard_pruned_missing_values() -> None:
     assert multistate_report.taxon_count == 23
     assert multistate_report.input_audit.pruned_missing_value_taxa == ["Phy14"]
     assert multistate_report.parameter_count == 12
+    assert multistate_report.optimizer_diagnostics.initial_candidate_count <= 10
     assert multistate_report.optimizer_diagnostics.hit_lower_parameter_bound is True
 
 
@@ -1130,6 +1132,7 @@ def test_fit_discrete_mk_model_marks_governed_geiger_ard_four_state_review_surfa
     assert report.baseline_comparison is not None
     assert report.baseline_comparison.preferred_model_by_aic == "equal-rates"
     assert report.optimizer_diagnostics.converged is False
+    assert report.optimizer_diagnostics.initial_candidate_count <= 10
     assert report.optimizer_diagnostics.hit_lower_parameter_bound is True
     assert report.optimizer_diagnostics.hit_upper_parameter_bound is False
     assert any(
