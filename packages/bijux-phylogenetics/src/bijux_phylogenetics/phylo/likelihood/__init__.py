@@ -215,6 +215,8 @@ __all__ = [
     "evaluate_k80_tree_likelihood_from_alignment",
     "evaluate_nucleotide_nested_likelihood_ratio_test",
     "evaluate_nucleotide_nested_likelihood_ratio_test_from_alignment",
+    "evaluate_selected_nucleotide_tree_likelihood_with_invariant_mixture",
+    "evaluate_selected_nucleotide_tree_likelihood_with_invariant_mixture_from_alignment",
     "reconstruct_nucleotide_joint_ancestral_sequences",
     "reconstruct_nucleotide_joint_ancestral_sequences_from_alignment",
     "evaluate_nucleotide_marginal_ancestral_probabilities",
