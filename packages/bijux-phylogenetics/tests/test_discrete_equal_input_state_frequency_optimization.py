@@ -59,3 +59,42 @@ def test_discrete_equal_input_state_frequency_optimization_keeps_simplex_valid()
             in report.warnings
         )
     assert report.parameter_diagnostics
+
+
+def test_discrete_equal_input_state_frequency_optimization_emits_structured_floor_warnings() -> (
+    None
+):
+    report = optimize_discrete_equal_input_state_frequencies(
+        load_tree(fixture("trees", "jc69_likelihood_tree_2_taxa.nwk")),
+        [
+            AlignmentRecord(identifier="A", sequence="0"),
+            AlignmentRecord(identifier="B", sequence="0"),
+        ],
+        state_order=("0", "1", "2", "3"),
+        initial_state_frequencies={
+            "0": 0.25,
+            "1": 0.25,
+            "2": 0.25,
+            "3": 0.25,
+        },
+        model_name="finite-state equal-input",
+        minimum_state_frequency=0.2,
+        max_coordinate_passes=6,
+    )
+
+    assert report.boundary_warning_rows
+    assert all(
+        warning.warning_kind == "frequency-boundary"
+        for warning in report.boundary_warning_rows
+    )
+    assert all(
+        warning.boundary_side == "lower" for warning in report.boundary_warning_rows
+    )
+    assert all(
+        warning.message in report.warnings for warning in report.boundary_warning_rows
+    )
+    assert {warning.affected_parameter for warning in report.boundary_warning_rows} == {
+        "state_frequency[1]",
+        "state_frequency[2]",
+        "state_frequency[3]",
+    }

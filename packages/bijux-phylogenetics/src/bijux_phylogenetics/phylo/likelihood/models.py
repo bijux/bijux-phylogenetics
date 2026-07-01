@@ -423,6 +423,9 @@ class FiniteStateFrequencyOptimizationReport:
     minimum_state_frequency: float
     state_rows: list[StateFrequencyOptimizationRow]
     warnings: list[str]
+    boundary_warning_rows: list[LikelihoodOptimizationBoundaryWarning] = field(
+        default_factory=list
+    )
     parameter_diagnostics: dict[str, BoundedScalarSearchDiagnostics] = field(
         default_factory=dict
     )
