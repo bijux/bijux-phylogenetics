@@ -739,6 +739,7 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
             optimized_report.hit_upper_invariant_proportion_boundary
         ),
         boundary_warnings=list(optimized_report.boundary_warnings),
+        boundary_warning_rows=list(optimized_report.boundary_warning_rows),
         optimizer_diagnostics=search_result.diagnostics,
         site_likelihoods=optimized_report.site_likelihoods,
     )
@@ -981,7 +982,28 @@ def optimize_empirical_protein_tree_likelihood_with_invariant_mixture(
         upper_bound=validated_upper_invariant_proportion_bound,
         evaluate=evaluate_candidate,
     )
-    optimized_report = search_result.payload
+    optimized_finite_state_report = (
+        evaluate_finite_state_tree_likelihood_with_invariant_mixture_from_patterns(
+            context,
+            compressed_patterns,
+            invariant_proportion=search_result.parameter_value,
+            lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
+            upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
+            emit_boundary_warnings=True,
+        )
+    )
+    optimized_report = _protein_empirical_invariant_mixture_report_from_finite_state(
+        optimized_finite_state_report,
+        matrix_label=matrix_label,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        initial_invariant_proportion=validated_initial_invariant_proportion,
+        lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
+        function_evaluation_count=search_result.function_evaluation_count,
+        converged=search_result.converged,
+        initial_log_likelihood=initial_log_likelihood,
+    )
     return ProteinEmpiricalInvariantMixtureTreeLikelihoodReport(
         taxa=optimized_report.taxa,
         site_count=optimized_report.site_count,
@@ -1002,6 +1024,14 @@ def optimize_empirical_protein_tree_likelihood_with_invariant_mixture(
         converged=search_result.converged,
         lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
+        hit_lower_invariant_proportion_boundary=(
+            optimized_report.hit_lower_invariant_proportion_boundary
+        ),
+        hit_upper_invariant_proportion_boundary=(
+            optimized_report.hit_upper_invariant_proportion_boundary
+        ),
+        boundary_warnings=list(optimized_report.boundary_warnings),
+        boundary_warning_rows=list(optimized_report.boundary_warning_rows),
         optimizer_diagnostics=search_result.diagnostics,
         site_likelihoods=optimized_report.site_likelihoods,
     )
@@ -1166,6 +1196,14 @@ def _protein_empirical_invariant_mixture_report_from_finite_state(
         converged=converged,
         lower_invariant_proportion_bound=lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        hit_lower_invariant_proportion_boundary=(
+            report.hit_lower_invariant_proportion_boundary
+        ),
+        hit_upper_invariant_proportion_boundary=(
+            report.hit_upper_invariant_proportion_boundary
+        ),
+        boundary_warnings=list(report.boundary_warnings),
+        boundary_warning_rows=list(report.boundary_warning_rows),
         optimizer_diagnostics=None,
         site_likelihoods=report.site_likelihoods,
     )
@@ -1216,6 +1254,7 @@ def _protein_empirical_discrete_gamma_invariant_report_from_finite_state(
         hit_lower_invariant_proportion_boundary=report.hit_lower_invariant_proportion_boundary,
         hit_upper_invariant_proportion_boundary=report.hit_upper_invariant_proportion_boundary,
         boundary_warnings=list(report.boundary_warnings),
+        boundary_warning_rows=list(report.boundary_warning_rows),
         optimizer_diagnostics=None,
         site_likelihoods=report.site_likelihoods,
     )

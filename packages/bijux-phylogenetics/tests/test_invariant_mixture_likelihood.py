@@ -186,6 +186,35 @@ def test_empirical_protein_invariant_mixture_improves_over_zero_invariant_case()
     assert optimized_report.log_likelihood > zero_invariant_report.log_likelihood
 
 
+def test_empirical_protein_invariant_mixture_boundary_warning_reports_bound_hit() -> (
+    None
+):
+    report = optimize_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment(
+        fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+        fixture(
+            "alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"
+        ),
+        rate_matrix=_compact_polar_rate_matrix(),
+        root_prior=_biased_root_prior(),
+        matrix_label="compact-polar",
+        initial_invariant_proportion=0.31,
+        lower_invariant_proportion_bound=0.3,
+        upper_invariant_proportion_bound=0.5,
+    )
+
+    assert report.hit_lower_invariant_proportion_boundary is True
+    assert report.hit_upper_invariant_proportion_boundary is False
+    assert report.boundary_warnings == [
+        "invariant proportion hit lower search boundary"
+    ]
+    assert [warning.warning_kind for warning in report.boundary_warning_rows] == [
+        "invariant-boundary"
+    ]
+    assert [warning.boundary_side for warning in report.boundary_warning_rows] == [
+        "lower"
+    ]
+
+
 def _compact_polar_rate_matrix() -> numpy.ndarray:
     return _build_empirical_rate_matrix(
         boosted_pairs={

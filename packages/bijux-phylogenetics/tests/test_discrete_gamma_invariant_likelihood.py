@@ -207,6 +207,12 @@ def test_discrete_gamma_invariant_mixture_boundary_warning_reports_bound_hit() -
     assert report.boundary_warnings == [
         "invariant proportion hit lower search boundary"
     ]
+    assert [warning.warning_kind for warning in report.boundary_warning_rows] == [
+        "invariant-boundary"
+    ]
+    assert [warning.boundary_side for warning in report.boundary_warning_rows] == [
+        "lower"
+    ]
 
 
 def test_discrete_gamma_invariant_evaluation_wrapper_can_emit_boundary_warning() -> None:

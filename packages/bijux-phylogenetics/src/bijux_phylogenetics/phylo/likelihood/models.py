@@ -1967,6 +1967,14 @@ class FiniteStateInvariantMixtureTreeLikelihoodReport:
     invariant_proportion: float
     site_likelihoods: list[InvariantMixtureSiteLikelihood]
     log_likelihood: float
+    lower_invariant_proportion_bound: float | None = None
+    upper_invariant_proportion_bound: float | None = None
+    hit_lower_invariant_proportion_boundary: bool = False
+    hit_upper_invariant_proportion_boundary: bool = False
+    boundary_warnings: list[str] = field(default_factory=list)
+    boundary_warning_rows: list[LikelihoodOptimizationBoundaryWarning] = field(
+        default_factory=list
+    )
 
 
 @dataclass(slots=True)
@@ -1993,6 +2001,12 @@ class ProteinEmpiricalInvariantMixtureTreeLikelihoodReport:
     lower_invariant_proportion_bound: float
     upper_invariant_proportion_bound: float
     site_likelihoods: list[InvariantMixtureSiteLikelihood]
+    hit_lower_invariant_proportion_boundary: bool = False
+    hit_upper_invariant_proportion_boundary: bool = False
+    boundary_warnings: list[str] = field(default_factory=list)
+    boundary_warning_rows: list[LikelihoodOptimizationBoundaryWarning] = field(
+        default_factory=list
+    )
     optimizer_diagnostics: BoundedScalarSearchDiagnostics | None = None
     branch_likelihood_diagnostics: list[BranchLikelihoodDiagnosticRow] | None = None
 
@@ -2037,6 +2051,9 @@ class FiniteStateDiscreteGammaInvariantTreeLikelihoodReport:
     boundary_warnings: list[str]
     site_likelihoods: list[DiscreteGammaInvariantMixtureSiteLikelihood]
     log_likelihood: float
+    boundary_warning_rows: list[LikelihoodOptimizationBoundaryWarning] = field(
+        default_factory=list
+    )
 
 
 @dataclass(slots=True)
@@ -2069,6 +2086,9 @@ class ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport:
     hit_upper_invariant_proportion_boundary: bool
     boundary_warnings: list[str]
     site_likelihoods: list[DiscreteGammaInvariantMixtureSiteLikelihood]
+    boundary_warning_rows: list[LikelihoodOptimizationBoundaryWarning] = field(
+        default_factory=list
+    )
     optimizer_diagnostics: BoundedScalarSearchDiagnostics | None = None
     branch_likelihood_diagnostics: list[BranchLikelihoodDiagnosticRow] | None = None
 

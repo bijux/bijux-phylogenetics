@@ -36,6 +36,9 @@ from bijux_phylogenetics.phylo.likelihood.invariant import (
     validate_invariant_proportion,
 )
 from bijux_phylogenetics.phylo.likelihood.logspace import log_weighted_sum_exp
+from bijux_phylogenetics.phylo.likelihood.optimization_boundary_warnings import (
+    build_invariant_proportion_boundary_warnings,
+)
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
 )
@@ -829,6 +832,15 @@ def evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixt
         hit_lower_invariant_proportion_boundary = False
         hit_upper_invariant_proportion_boundary = False
         boundary_warnings = []
+    boundary_warning_rows = (
+        build_invariant_proportion_boundary_warnings(
+            invariant_proportion=invariant_proportion,
+            lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+            upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        )
+        if emit_boundary_warnings
+        else []
+    )
     return FiniteStateDiscreteGammaInvariantTreeLikelihoodReport(
         taxa=compressed_patterns.taxon_order,
         site_count=compressed_patterns.alignment_length,
@@ -853,6 +865,7 @@ def evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixt
         boundary_warnings=boundary_warnings,
         site_likelihoods=site_likelihoods,
         log_likelihood=total_log_likelihood,
+        boundary_warning_rows=boundary_warning_rows,
     )
 
 
@@ -861,6 +874,9 @@ def evaluate_finite_state_tree_likelihood_with_invariant_mixture_from_patterns(
     compressed_patterns: CompressedAlignmentSitePatterns,
     *,
     invariant_proportion: float,
+    lower_invariant_proportion_bound: float | None = None,
+    upper_invariant_proportion_bound: float | None = None,
+    emit_boundary_warnings: bool = False,
 ) -> FiniteStateInvariantMixtureTreeLikelihoodReport:
     site_likelihoods: list[InvariantMixtureSiteLikelihood] = []
     total_log_likelihood = 0.0
@@ -896,6 +912,27 @@ def evaluate_finite_state_tree_likelihood_with_invariant_mixture_from_patterns(
                 )
             )
         total_log_likelihood += pattern.weight * pattern_log_likelihood
+    boundary_warning_rows = []
+    boundary_warnings: list[str] = []
+    hit_lower_invariant_proportion_boundary = False
+    hit_upper_invariant_proportion_boundary = False
+    if (
+        emit_boundary_warnings
+        and lower_invariant_proportion_bound is not None
+        and upper_invariant_proportion_bound is not None
+    ):
+        boundary_warning_rows = build_invariant_proportion_boundary_warnings(
+            invariant_proportion=invariant_proportion,
+            lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+            upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        )
+        boundary_warnings = [warning.message for warning in boundary_warning_rows]
+        hit_lower_invariant_proportion_boundary = any(
+            warning.boundary_side == "lower" for warning in boundary_warning_rows
+        )
+        hit_upper_invariant_proportion_boundary = any(
+            warning.boundary_side == "upper" for warning in boundary_warning_rows
+        )
     return FiniteStateInvariantMixtureTreeLikelihoodReport(
         taxa=compressed_patterns.taxon_order,
         site_count=compressed_patterns.alignment_length,
@@ -912,6 +949,12 @@ def evaluate_finite_state_tree_likelihood_with_invariant_mixture_from_patterns(
         invariant_proportion=invariant_proportion,
         site_likelihoods=site_likelihoods,
         log_likelihood=total_log_likelihood,
+        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        hit_lower_invariant_proportion_boundary=hit_lower_invariant_proportion_boundary,
+        hit_upper_invariant_proportion_boundary=hit_upper_invariant_proportion_boundary,
+        boundary_warnings=boundary_warnings,
+        boundary_warning_rows=boundary_warning_rows,
     )
 
 
