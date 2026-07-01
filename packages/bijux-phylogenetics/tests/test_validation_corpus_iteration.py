@@ -295,7 +295,6 @@ def test_build_shared_continuous_fixture_catalog_tracks_live_consumed_fixtures()
     assert "trend" not in missing_values.covered_model_names
     assert missing_values.covered_model_names == [
         "BM",
-        "EB",
         "OU",
         "delta",
         "kappa",
