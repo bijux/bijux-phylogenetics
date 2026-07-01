@@ -287,24 +287,36 @@ def test_build_invariant_mixture_family_coverage_proves_supported_families() -> 
 
     assert report.goal_id == 29
     assert report.passed is True
-    assert report.family_count == 5
+    assert report.family_count == 7
+    assert report.model_count == 17
+    assert report.passed_family_count == 7
+    assert report.passed_model_count == 17
     observed = {entry.family_name: entry for entry in report.families}
     assert set(observed) == {
-        "nucleotide-jc69",
+        "nucleotide",
         "protein-poisson",
-        "protein-empirical-wag",
+        "protein-empirical",
         "codon-ctmc",
         "discrete-mk-unordered",
+        "discrete-mk-ordered",
+        "discrete-mk-irreversible",
     }
 
-    codon = observed["codon-ctmc"]
-    assert codon.surface_model_name == "codon CTMC"
-    assert codon.invariant_proportion == 0.35
-    assert codon.likelihood_changed is True
-    assert codon.invariant_component_active is True
-    assert codon.passed is True
-    assert codon.invariant_component_likelihood > 0.0
-    assert codon.variable_component_likelihood > 0.0
+    nucleotide = observed["nucleotide"]
+    assert nucleotide.supported_model_names == ["JC69", "K80", "F81", "HKY85", "GTR"]
+    assert nucleotide.covered_model_names == nucleotide.supported_model_names
+    assert nucleotide.passed_model_count == 5
+
+    gtr = next(
+        case for case in nucleotide.model_cases if case.model_name == "GTR"
+    )
+    assert gtr.surface_model_name == "GTR"
+    assert gtr.invariant_proportion == 0.35
+    assert gtr.likelihood_changed is True
+    assert gtr.invariant_component_active is True
+    assert gtr.passed is True
+    assert gtr.invariant_component_likelihood > 0.0
+    assert gtr.variable_component_likelihood > 0.0
 
 
 def test_build_shared_continuous_fixture_catalog_tracks_live_consumed_fixtures() -> (
@@ -478,7 +490,8 @@ def test_write_validation_corpus_json_serializes_invariant_family_coverage(
 
     text = path.read_text(encoding="utf-8")
     assert '"goal_id": 29' in text
-    assert '"protein-empirical-wag"' in text
+    assert '"protein-empirical"' in text
+    assert '"LG"' in text
 
 
 def test_write_validation_corpus_json_serializes_discrete_fixture_catalog(

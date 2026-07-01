@@ -228,10 +228,10 @@ class SimulationReproducibilityReport:
 
 
 @dataclass(slots=True)
-class InvariantMixtureFamilyCoverageEntry:
-    """One eligible finite-state family checked under an active invariant mixture."""
+class InvariantMixtureModelCoverageCase:
+    """One eligible finite-state model checked under an active invariant mixture."""
 
-    family_name: str
+    model_name: str
     surface_model_name: str
     invariant_proportion: float
     site_count: int
@@ -248,12 +248,29 @@ class InvariantMixtureFamilyCoverageEntry:
 
 
 @dataclass(slots=True)
+class InvariantMixtureFamilyCoverageEntry:
+    """One eligible finite-state family summarized across its governed model cases."""
+
+    family_name: str
+    supported_model_names: list[str]
+    covered_model_names: list[str]
+    model_count: int
+    passed_model_count: int
+    passed: bool
+    model_cases: list[InvariantMixtureModelCoverageCase]
+    notes: list[str]
+
+
+@dataclass(slots=True)
 class InvariantMixtureFamilyCoverageReport:
-    """Reviewer-facing proof that invariant mass is active across eligible families."""
+    """Reviewer-facing proof that invariant mass is active across eligible models."""
 
     goal_id: int
     passed: bool
     family_count: int
+    model_count: int
+    passed_family_count: int
+    passed_model_count: int
     families: list[InvariantMixtureFamilyCoverageEntry]
     limitations: list[str]
 

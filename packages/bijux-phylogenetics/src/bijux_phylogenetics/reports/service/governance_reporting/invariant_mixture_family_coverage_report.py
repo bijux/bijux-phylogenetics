@@ -21,7 +21,9 @@ def render_invariant_mixture_family_coverage_report(
     title = "Bijux Invariant Mixture Family Coverage Report"
     reviewer_summary = [
         f"family count: {coverage.family_count}",
+        f"model count: {coverage.model_count}",
         f"passed families: {passed_family_count}",
+        f"passed models: {coverage.passed_model_count}",
         "covered families: "
         + ", ".join(family.family_name for family in coverage.families),
     ]
@@ -31,8 +33,10 @@ def render_invariant_mixture_family_coverage_report(
             "family-overview",
             {
                 "family_count": coverage.family_count,
+                "model_count": coverage.model_count,
                 "passed": coverage.passed,
                 "passed_family_count": passed_family_count,
+                "passed_model_count": coverage.passed_model_count,
             },
         ),
         section("families", [asdict(family) for family in coverage.families]),
@@ -47,8 +51,10 @@ def render_invariant_mixture_family_coverage_report(
         "metrics": {
             "goal_id": coverage.goal_id,
             "family_count": coverage.family_count,
+            "model_count": coverage.model_count,
             "passed": coverage.passed,
             "passed_family_count": passed_family_count,
+            "passed_model_count": coverage.passed_model_count,
         },
         "reviewer_summary": reviewer_summary,
         "limitations": coverage.limitations,

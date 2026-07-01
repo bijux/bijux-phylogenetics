@@ -417,7 +417,10 @@ def run_governance_report_command(args: Any) -> int | None:
                     metrics={
                         "goal_id": result.coverage.goal_id,
                         "family_count": result.coverage.family_count,
+                        "model_count": result.coverage.model_count,
                         "passed": result.coverage.passed,
+                        "passed_family_count": result.coverage.passed_family_count,
+                        "passed_model_count": result.coverage.passed_model_count,
                     },
                     data=result,
                 ),
