@@ -27,3 +27,6 @@ from .builder import (
 from .builder import (
     compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment as compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment,
 )
+from .builder import (
+    compute_pairwise_genetic_distance_matrix_from_records as compute_pairwise_genetic_distance_matrix_from_records,
+)

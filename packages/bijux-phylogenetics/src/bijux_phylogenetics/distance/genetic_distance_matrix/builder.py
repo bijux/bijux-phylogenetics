@@ -7,6 +7,7 @@ from Bio.Phylo.TreeConstruction import DistanceMatrix
 from bijux_phylogenetics.io.fasta import (
     infer_alignment_alphabet,
     load_fasta_alignment,
+    load_dna_bin_alignment_from_records,
 )
 from bijux_phylogenetics.io.fasta.matrix import load_dna_bin_alignment
 from bijux_phylogenetics.phylo.alignment import AlignmentRecord, DnaBinAlignment
@@ -188,6 +189,23 @@ def compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment(
             retained_positions=retained_positions,
             model_parameters=model_parameters,
         ),
+    )
+
+
+def compute_pairwise_genetic_distance_matrix_from_records(
+    records: list[AlignmentRecord],
+    *,
+    model: DistanceModel = "p-distance",
+    gap_handling: GapHandlingMode = "pairwise-deletion",
+    ambiguity_policy: AmbiguityPolicy = "ignore",
+) -> GeneticDistanceMatrix:
+    """Compute a deterministic nucleotide distance matrix from already-loaded alignment records."""
+    alignment = load_dna_bin_alignment_from_records(records, normalize_uracil=True)
+    return compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment(
+        alignment,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
     )
 
 
