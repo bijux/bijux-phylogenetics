@@ -596,6 +596,22 @@ count, trait-row count, and transition-matrix metadata explicit so reviewers
 can inspect the actual live discrete coverage instead of inferring it from the
 broader generated parity tranche.
 
+`report invariant-mixture-family-coverage` is the governed proof surface for
+the first owned invariant-site mixture claim across eligible finite-state
+families. It reruns small invariant-rich nucleotide, protein Poisson,
+empirical protein, codon, and unordered Mk cases through the shared pruning
+engine and reports:
+
+- `goal_id`
+- `family_count`
+- `passed`
+
+The report body keeps each family label, surface model name, invariant
+proportion, fixed-rate versus invariant-mixture log-likelihood, likelihood
+delta, first-site invariant and variable component activity, and reviewer notes
+explicit so the `+I` claim is tied to observable likelihood behavior rather
+than only to helper-function availability.
+
 `report tree-package` is the governed full tree review surface. It takes one
 tree and materializes a richer review directory than the older `report tree`
 diagnostic. Its JSON metrics report:
