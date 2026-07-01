@@ -157,6 +157,7 @@ def validate_early_burst_bounds(bounds: tuple[float, float]) -> None:
 def comparison_models(models: tuple[str, ...] | None) -> tuple[str, ...]:
     if models is None:
         return DISCRETE_MK_MODEL_COMPARISON_ORDER
+    supported_models = set(DISCRETE_MK_MODEL_COMPARISON_ORDER) | {"irreversible"}
     deduplicated: list[str] = []
     unknown: list[str] = []
     for model in models:
@@ -165,7 +166,7 @@ def comparison_models(models: tuple[str, ...] | None) -> tuple[str, ...]:
         except ValueError:
             unknown.append(model)
             continue
-        if resolved_model not in DISCRETE_MK_MODEL_COMPARISON_ORDER:
+        if resolved_model not in supported_models:
             unknown.append(model)
             continue
         if resolved_model not in deduplicated:

@@ -225,6 +225,36 @@ def test_fit_discrete_mk_model_reports_binary_ard_surface() -> None:
     )
 
 
+def test_fit_discrete_mk_model_reports_binary_irreversible_surface() -> None:
+    report = fit_discrete_mk_model(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_binary.tsv"),
+        trait="presence",
+        model="irreversible",
+        allowed_transition_pairs=[("1", "0")],
+    )
+
+    rate_lookup = _allowed_rate_lookup(report)
+
+    assert report.model == "irreversible"
+    assert report.parameter_count == 1
+    assert report.allowed_transition_pairs == [("1", "0")]
+    assert report.baseline_comparison is not None
+    assert report.baseline_comparison.baseline_model == "equal-rates"
+    assert report.baseline_comparison.preferred_model_by_aic in {
+        "equal-rates",
+        "irreversible",
+    }
+    assert rate_lookup[("1", "0")] > 0.0
+    forbidden_row = next(
+        row
+        for row in report.transition_rate_rows
+        if row.source_state == "0" and row.target_state == "1"
+    )
+    assert forbidden_row.transition_allowed is False
+    assert forbidden_row.rate == 0.0
+
+
 def test_fit_discrete_mk_model_reports_ordered_model_baselines() -> None:
     symmetric_report = fit_discrete_mk_model(
         fixture("example_tree.nwk"),
@@ -253,6 +283,21 @@ def test_fit_discrete_mk_model_reports_ordered_model_baselines() -> None:
     assert ard_report.baseline_comparison is not None
     assert ard_report.baseline_comparison.baseline_model == "equal-rates"
     assert ard_report.baseline_comparison.preferred_model_by_aic == "equal-rates"
+
+
+def test_compare_discrete_mk_model_ranking_accepts_explicit_irreversible_surface() -> None:
+    report = compare_discrete_mk_model_ranking(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_binary.tsv"),
+        trait="presence",
+        models=("equal-rates", "irreversible"),
+        allowed_transition_pairs=[("1", "0")],
+    )
+
+    assert {row.model for row in report.rows} == {"equal-rates", "irreversible"}
+    assert report.better_model in {"equal-rates", "irreversible"}
+    irreversible_row = next(row for row in report.rows if row.model == "irreversible")
+    assert irreversible_row.comparable is True
 
 
 def test_fit_discrete_mk_model_reports_ordered_transition_audit() -> None:

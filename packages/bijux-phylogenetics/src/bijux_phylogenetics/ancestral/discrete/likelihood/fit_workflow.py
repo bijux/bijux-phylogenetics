@@ -133,11 +133,7 @@ def reconstruct_likelihood_estimates(
     )
     aic = (2.0 * count) - (2.0 * reported_log_likelihood)
     baseline_comparison = None
-    if (
-        include_equal_rates_baseline
-        and model != "equal-rates"
-        and allowed_transition_pairs is None
-    ):
+    if include_equal_rates_baseline and model != "equal-rates":
         try:
             baseline_fit = reconstruct_likelihood_estimates(
                 dataset,
@@ -146,7 +142,7 @@ def reconstruct_likelihood_estimates(
                 ordered_states=state_order,
                 root_prior_mode=root_prior_mode,
                 fixed_root_state=fixed_root_state,
-                allowed_transition_pairs=None,
+                allowed_transition_pairs=allowed_transition_pairs,
                 include_equal_rates_baseline=False,
                 stable_probability_mapping=stable_probability_mapping,
                 material_state_set=material_state_set,

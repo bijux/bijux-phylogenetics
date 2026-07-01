@@ -56,6 +56,8 @@ def test_discrete_reconstruction_accepts_native_irreversible_model() -> None:
     assert report.model == "irreversible"
     assert report.parameter_count == 1
     assert report.allowed_transition_pairs == [("1", "0")]
+    assert report.baseline_comparison is not None
+    assert report.baseline_comparison.baseline_model == "equal-rates"
     forbidden_row = next(
         row
         for row in report.transition_rate_rows
