@@ -418,6 +418,7 @@ def optimize_empirical_protein_branch_lengths(
         evaluate=evaluate_candidate,
         improvement_tolerance=improvement_tolerance,
         max_coordinate_passes=max_coordinate_passes,
+        owner_name="empirical protein branch-length fit",
     )
     optimized_branch_lengths = dict(search_result.parameter_values)
     _assign_branch_lengths(working_tree, optimized_branch_lengths)
@@ -682,6 +683,8 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         lower_bound=validated_lower_invariant_proportion_bound,
         upper_bound=validated_upper_invariant_proportion_bound,
         evaluate=evaluate_candidate,
+        parameter_name="invariant_proportion",
+        owner_name="empirical protein gamma-invariant fit",
     )
     optimized_finite_state_report = (
         evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns(
@@ -981,6 +984,8 @@ def optimize_empirical_protein_tree_likelihood_with_invariant_mixture(
         lower_bound=validated_lower_invariant_proportion_bound,
         upper_bound=validated_upper_invariant_proportion_bound,
         evaluate=evaluate_candidate,
+        parameter_name="invariant_proportion",
+        owner_name="empirical protein invariant-proportion fit",
     )
     optimized_finite_state_report = (
         evaluate_finite_state_tree_likelihood_with_invariant_mixture_from_patterns(

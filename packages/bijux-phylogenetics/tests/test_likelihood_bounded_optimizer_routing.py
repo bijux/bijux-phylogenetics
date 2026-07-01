@@ -28,11 +28,17 @@ def fixture(group: str, name: str) -> Path:
 def test_jc69_branch_length_optimization_routes_through_shared_likelihood_search(
     monkeypatch,
 ) -> None:
-    observed_bounds: list[tuple[float, float]] = []
+    observed_calls: list[tuple[tuple[float, float], str, str]] = []
     original_search = jc69_module.run_bounded_likelihood_search
 
     def observe_search(**kwargs):
-        observed_bounds.append((kwargs["lower_bound"], kwargs["upper_bound"]))
+        observed_calls.append(
+            (
+                (kwargs["lower_bound"], kwargs["upper_bound"]),
+                kwargs["parameter_name"],
+                kwargs["owner_name"],
+            )
+        )
         return original_search(**kwargs)
 
     monkeypatch.setattr(jc69_module, "run_bounded_likelihood_search", observe_search)
@@ -43,18 +49,26 @@ def test_jc69_branch_length_optimization_routes_through_shared_likelihood_search
     )
 
     assert report.converged is True
-    assert observed_bounds
-    assert all(bounds == (1e-06, 5.0) for bounds in observed_bounds)
+    assert observed_calls
+    assert all(call[0] == (1e-06, 5.0) for call in observed_calls)
+    assert all(call[1] == "branch_length" for call in observed_calls)
+    assert all(call[2] == "JC69 branch-length fit" for call in observed_calls)
 
 
 def test_k80_kappa_optimization_routes_through_shared_likelihood_search(
     monkeypatch,
 ) -> None:
-    observed_bounds: list[tuple[float, float]] = []
+    observed_calls: list[tuple[tuple[float, float], str, str]] = []
     original_search = k80_module.run_bounded_likelihood_search
 
     def observe_search(**kwargs):
-        observed_bounds.append((kwargs["lower_bound"], kwargs["upper_bound"]))
+        observed_calls.append(
+            (
+                (kwargs["lower_bound"], kwargs["upper_bound"]),
+                kwargs["parameter_name"],
+                kwargs["owner_name"],
+            )
+        )
         return original_search(**kwargs)
 
     monkeypatch.setattr(k80_module, "run_bounded_likelihood_search", observe_search)
@@ -65,17 +79,23 @@ def test_k80_kappa_optimization_routes_through_shared_likelihood_search(
     )
 
     assert report.converged is True
-    assert observed_bounds == [(0.05, 20.0)]
+    assert observed_calls == [((0.05, 20.0), "kappa", "K80 kappa fit")]
 
 
 def test_hky85_kappa_optimization_routes_through_shared_likelihood_search(
     monkeypatch,
 ) -> None:
-    observed_bounds: list[tuple[float, float]] = []
+    observed_calls: list[tuple[tuple[float, float], str, str]] = []
     original_search = hky85_module.run_bounded_likelihood_search
 
     def observe_search(**kwargs):
-        observed_bounds.append((kwargs["lower_bound"], kwargs["upper_bound"]))
+        observed_calls.append(
+            (
+                (kwargs["lower_bound"], kwargs["upper_bound"]),
+                kwargs["parameter_name"],
+                kwargs["owner_name"],
+            )
+        )
         return original_search(**kwargs)
 
     monkeypatch.setattr(hky85_module, "run_bounded_likelihood_search", observe_search)
@@ -86,17 +106,23 @@ def test_hky85_kappa_optimization_routes_through_shared_likelihood_search(
     )
 
     assert report.converged is True
-    assert observed_bounds == [(0.05, 20.0)]
+    assert observed_calls == [((0.05, 20.0), "kappa", "HKY85 kappa fit")]
 
 
 def test_empirical_invariant_mixture_routes_through_shared_likelihood_search(
     monkeypatch,
 ) -> None:
-    observed_bounds: list[tuple[float, float]] = []
+    observed_calls: list[tuple[tuple[float, float], str, str]] = []
     original_search = empirical_module.run_bounded_likelihood_search
 
     def observe_search(**kwargs):
-        observed_bounds.append((kwargs["lower_bound"], kwargs["upper_bound"]))
+        observed_calls.append(
+            (
+                (kwargs["lower_bound"], kwargs["upper_bound"]),
+                kwargs["parameter_name"],
+                kwargs["owner_name"],
+            )
+        )
         return original_search(**kwargs)
 
     monkeypatch.setattr(
@@ -120,17 +146,29 @@ def test_empirical_invariant_mixture_routes_through_shared_likelihood_search(
     )
 
     assert report.converged is True
-    assert observed_bounds == [(0.0, 0.95)]
+    assert observed_calls == [
+        (
+            (0.0, 0.95),
+            "invariant_proportion",
+            "empirical protein invariant-proportion fit",
+        )
+    ]
 
 
 def test_empirical_gamma_invariant_mixture_routes_through_shared_likelihood_search(
     monkeypatch,
 ) -> None:
-    observed_bounds: list[tuple[float, float]] = []
+    observed_calls: list[tuple[tuple[float, float], str, str]] = []
     original_search = empirical_module.run_bounded_likelihood_search
 
     def observe_search(**kwargs):
-        observed_bounds.append((kwargs["lower_bound"], kwargs["upper_bound"]))
+        observed_calls.append(
+            (
+                (kwargs["lower_bound"], kwargs["upper_bound"]),
+                kwargs["parameter_name"],
+                kwargs["owner_name"],
+            )
+        )
         return original_search(**kwargs)
 
     monkeypatch.setattr(
@@ -156,19 +194,27 @@ def test_empirical_gamma_invariant_mixture_routes_through_shared_likelihood_sear
     )
 
     assert report.converged is True
-    assert observed_bounds == [(0.0, 0.95)]
+    assert observed_calls == [
+        (
+            (0.0, 0.95),
+            "invariant_proportion",
+            "empirical protein gamma-invariant fit",
+        )
+    ]
 
 
 def test_gamma_candidate_routes_alpha_through_shared_coordinate_search(
     monkeypatch,
 ) -> None:
     observed_parameter_sets: list[set[str]] = []
+    observed_owner_names: list[str] = []
     original_search = (
         substitution_model_selection_module.run_bounded_coordinate_likelihood_search
     )
 
     def observe_search(**kwargs):
         observed_parameter_sets.append(set(kwargs["initial_values"]))
+        observed_owner_names.append(kwargs["owner_name"])
         return original_search(**kwargs)
 
     monkeypatch.setattr(
@@ -204,6 +250,7 @@ def test_gamma_candidate_routes_alpha_through_shared_coordinate_search(
 
     assert row.fit_succeeded is True
     assert observed_parameter_sets == [{"alpha"}]
+    assert observed_owner_names == ["substitution model rate-heterogeneity fit"]
 
 
 def _compact_polar_rate_matrix() -> numpy.ndarray:

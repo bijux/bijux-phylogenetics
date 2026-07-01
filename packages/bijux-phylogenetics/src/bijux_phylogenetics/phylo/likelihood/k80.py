@@ -395,6 +395,8 @@ def optimize_k80_kappa(
         lower_bound=validated_lower_bound,
         upper_bound=validated_upper_bound,
         evaluate=evaluate_candidate_kappa,
+        parameter_name="kappa",
+        owner_name="K80 kappa fit",
     )
     optimized_report = search_result.payload
     return K80KappaOptimizationReport(

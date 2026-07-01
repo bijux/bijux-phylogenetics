@@ -383,6 +383,8 @@ def optimize_jc69_branch_lengths(
                 lower_bound=validated_lower_bound,
                 upper_bound=validated_upper_bound,
                 evaluate=evaluate_candidate,
+                parameter_name="branch_length",
+                owner_name="JC69 branch-length fit",
             )
             parameter_diagnostics[node.node_id] = search_result.diagnostics
             function_evaluation_count += search_result.function_evaluation_count

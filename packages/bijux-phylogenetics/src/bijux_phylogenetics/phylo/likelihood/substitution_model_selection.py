@@ -354,6 +354,7 @@ def _fit_rate_heterogeneous_candidate(
             evaluate=evaluate_candidate,
             improvement_tolerance=improvement_tolerance,
             max_coordinate_passes=max_coordinate_passes,
+            owner_name="substitution model rate-heterogeneity fit",
         )
         resolved_parameters = dict(search_result.payload)
         log_likelihood = float(search_result.objective_value)

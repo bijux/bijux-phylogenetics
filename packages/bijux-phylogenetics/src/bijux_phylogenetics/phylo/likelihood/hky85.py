@@ -426,6 +426,8 @@ def optimize_hky85_kappa(
         lower_bound=validated_lower_bound,
         upper_bound=validated_upper_bound,
         evaluate=evaluate_candidate_kappa,
+        parameter_name="kappa",
+        owner_name="HKY85 kappa fit",
     )
     optimized_report = search_result.payload
     return Hky85KappaOptimizationReport(
