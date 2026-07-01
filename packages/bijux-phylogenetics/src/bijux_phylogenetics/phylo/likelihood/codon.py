@@ -33,6 +33,7 @@ from bijux_phylogenetics.phylo.likelihood.finite_state_root_priors import (
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
     CodonCtmcTreeLikelihoodReport,
+    FiniteStateInvariantMixtureTreeLikelihoodReport,
     SiteLogLikelihoodRow,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
@@ -171,6 +172,93 @@ def evaluate_codon_ctmc_tree_likelihood_from_alignment(
     return evaluate_codon_ctmc_tree_likelihood(
         load_tree(tree_path),
         load_fasta_alignment(alignment_path),
+        codon_frequencies=codon_frequencies,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        genetic_code=genetic_code,
+        observation_policy=observation_policy,
+    )
+
+
+def evaluate_codon_ctmc_tree_likelihood_with_invariant_mixture(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    invariant_proportion: float,
+    codon_frequencies: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
+    genetic_code: int | str | None = None,
+    observation_policy: str = "reject",
+) -> FiniteStateInvariantMixtureTreeLikelihoodReport:
+    """Evaluate one codon CTMC likelihood surface under one active +I mixture."""
+    from bijux_phylogenetics.phylo.likelihood.codon_finite_state import (
+        build_codon_finite_state_surface,
+    )
+    from bijux_phylogenetics.phylo.likelihood.finite_state import (
+        evaluate_finite_state_tree_likelihood_with_invariant_mixture,
+    )
+
+    normalized_records = normalize_codon_likelihood_records(
+        records,
+        genetic_code=genetic_code,
+        observation_policy=observation_policy,
+    )
+    compressed_patterns = compress_codon_site_patterns_from_records(
+        normalized_records
+    )
+    surface = build_codon_finite_state_surface(
+        normalized_records,
+        codon_frequencies=codon_frequencies,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        genetic_code=genetic_code,
+        observation_policy=observation_policy,
+    )
+    return evaluate_finite_state_tree_likelihood_with_invariant_mixture(
+        tree,
+        compressed_patterns,
+        surface=surface,
+        invariant_proportion=invariant_proportion,
+    )
+
+
+def evaluate_codon_ctmc_tree_likelihood_with_invariant_mixture_from_alignment(
+    tree_path: Path,
+    alignment_path: Path,
+    *,
+    invariant_proportion: float,
+    codon_frequencies: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
+    genetic_code: int | str | None = None,
+    observation_policy: str = "reject",
+) -> FiniteStateInvariantMixtureTreeLikelihoodReport:
+    """Evaluate one codon CTMC +I likelihood from tree and alignment paths."""
+    return evaluate_codon_ctmc_tree_likelihood_with_invariant_mixture(
+        load_tree(tree_path),
+        load_fasta_alignment(alignment_path),
+        invariant_proportion=invariant_proportion,
         codon_frequencies=codon_frequencies,
         root_prior_policy=root_prior_policy,
         root_prior=root_prior,
