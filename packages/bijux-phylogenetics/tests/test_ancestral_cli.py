@@ -580,8 +580,6 @@ def test_ancestral_irreversible_discrete_cli_can_export_review(
             str(fixture("example_traits_geography.tsv")),
             "--trait",
             "region",
-            "--model",
-            "all-rates-different",
             "--allowed-transitions",
             "north->south,south->island",
             "--summary-out",
@@ -598,7 +596,7 @@ def test_ancestral_irreversible_discrete_cli_can_export_review(
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
-    assert payload["metrics"]["model"] == "all-rates-different"
+    assert payload["metrics"]["model"] == "irreversible"
     assert payload["metrics"]["allowed_transition_count"] == 2
     assert payload["metrics"]["fit_count"] == 2
     assert payload["metrics"]["forbidden_transition_count"] == 4

@@ -77,13 +77,19 @@ def test_summarize_irreversible_discrete_reconstruction_prefers_constraint_on_si
         fixture("example_tree_six_taxa.nwk"),
         traits_path,
         trait="state",
-        model="all-rates-different",
+        model="irreversible",
         allowed_transition_pairs=[("present", "absent")],
     )
     summary = summarize_irreversible_discrete_report(report)
 
     assert summary.constrained_parameter_count == 1
     assert summary.unconstrained_parameter_count == 2
+    constrained_fit = next(row for row in report.fit_rows if row.constraint_mode == "constrained")
+    unconstrained_fit = next(
+        row for row in report.fit_rows if row.constraint_mode == "unconstrained"
+    )
+    assert constrained_fit.model == "irreversible"
+    assert unconstrained_fit.model == "all-rates-different"
     assert summary.forbidden_transition_count == 1
     assert summary.preferred_constraint == "constrained"
     forbidden_row = next(
@@ -106,7 +112,7 @@ def test_write_irreversible_discrete_tables_emit_expected_ledgers(
         fixture("example_tree_six_taxa.nwk"),
         traits_path,
         trait="state",
-        model="all-rates-different",
+        model="irreversible",
         allowed_transition_pairs=[("present", "absent")],
     )
     summary_path = tmp_path / "irreversible-summary.tsv"

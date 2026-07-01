@@ -392,7 +392,7 @@ def _validate_irreversible_constraint_behavior() -> (
         fixtures_root / "trees/example_tree_six_taxa.nwk",
         fixtures_root / "metadata/example_traits_irreversible_loss.tsv",
         trait="state",
-        model="all-rates-different",
+        model="irreversible",
         allowed_transition_pairs=[("present", "absent")],
     )
     summary = summarize_irreversible_discrete_report(report)
@@ -431,7 +431,7 @@ def _validate_irreversible_constraint_behavior() -> (
         case_id="irreversible_loss_constraints",
         category="irreversible-constraint-policy",
         source="owned irreversible-transition policy",
-        model="all-rates-different",
+        model="irreversible",
         tolerance=1e-12,
         expected_metrics=expected_metrics,
         observed_metrics=observed_metrics,
