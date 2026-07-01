@@ -29,6 +29,8 @@ from .contracts import (
     ScientificValidationReport,
     SharedContinuousFixtureCatalogEntry,
     SharedContinuousFixtureCatalogReport,
+    SharedDiscreteFixtureCatalogEntry,
+    SharedDiscreteFixtureCatalogReport,
     SimulationReproducibilityCase,
     SimulationReproducibilityReport,
     WorkflowPracticalLimitDashboard,
@@ -42,6 +44,7 @@ from .presentation import write_validation_corpus_json
 from .regression_corpus import build_regression_dataset_corpus
 from .reproducibility import validate_simulation_reproducibility
 from .shared_continuous_fixture_catalog import build_shared_continuous_fixture_catalog
+from .shared_discrete_fixture_catalog import build_shared_discrete_fixture_catalog
 from .scientific_review import (
     build_method_limitation_registry,
     build_scientific_validation_report,
@@ -61,6 +64,7 @@ __all__ = [
     "build_runtime_benchmark_dashboard",
     "build_scientific_validation_report",
     "build_shared_continuous_fixture_catalog",
+    "build_shared_discrete_fixture_catalog",
     "build_workflow_practical_limit_dashboard",
     "BenchmarkCorpusReport",
     "BenchmarkDashboardRow",
@@ -81,6 +85,8 @@ __all__ = [
     "ScientificValidationReport",
     "SharedContinuousFixtureCatalogEntry",
     "SharedContinuousFixtureCatalogReport",
+    "SharedDiscreteFixtureCatalogEntry",
+    "SharedDiscreteFixtureCatalogReport",
     "SimulationReproducibilityCase",
     "SimulationReproducibilityReport",
     "WorkflowPracticalLimitDashboard",

@@ -23,6 +23,7 @@ from bijux_phylogenetics.validation import (
     build_runtime_benchmark_dashboard,
     build_scientific_validation_report,
     build_shared_continuous_fixture_catalog,
+    build_shared_discrete_fixture_catalog,
     build_workflow_practical_limit_dashboard,
     validate_simulation_reproducibility,
     write_validation_corpus_json,
@@ -304,6 +305,29 @@ def test_build_shared_continuous_fixture_catalog_tracks_live_consumed_fixtures()
     assert all(fixture.live_case_count > 0 for fixture in report.fixtures)
 
 
+def test_build_shared_discrete_fixture_catalog_tracks_live_consumed_fixtures() -> (
+    None
+):
+    report = build_shared_discrete_fixture_catalog()
+
+    assert report.goal_id == 253
+    assert report.fixture_count == 17
+    assert report.live_case_count >= report.fixture_count
+    observed = {fixture.fixture_id: fixture for fixture in report.fixtures}
+    assert "geiger_discrete_constant_negative_twenty_four_taxa" not in observed
+    sym_fixture = observed["geiger_discrete_sym_three_state_twenty_four_taxa"]
+
+    assert sym_fixture.covered_model_names == ["SYM"]
+    assert sym_fixture.trait_kind == "three-state-discrete"
+    assert sym_fixture.transition_matrix_metadata == {
+        "states": ["north", "south", "central"],
+        "matrix_shape": "3x3",
+        "parameterization": "symmetric",
+        "pairwise_rate": 0.45,
+    }
+    assert all(fixture.live_case_count > 0 for fixture in report.fixtures)
+
+
 def test_package_root_exports_validation_corpus_surfaces() -> None:
     assert validation_api.build_clean_benchmark_corpus is build_clean_benchmark_corpus
     assert (
@@ -329,6 +353,10 @@ def test_package_root_exports_validation_corpus_surfaces() -> None:
     assert (
         validation_api.build_shared_continuous_fixture_catalog
         is build_shared_continuous_fixture_catalog
+    )
+    assert (
+        validation_api.build_shared_discrete_fixture_catalog
+        is build_shared_discrete_fixture_catalog
     )
     assert (
         validation_api.validate_simulation_reproducibility
@@ -408,6 +436,19 @@ def test_write_validation_corpus_json_serializes_continuous_fixture_catalog(
     text = path.read_text(encoding="utf-8")
     assert '"goal_id": 252' in text
     assert '"geiger_continuous_missing_values_twenty_four_taxa"' in text
+
+
+def test_write_validation_corpus_json_serializes_discrete_fixture_catalog(
+    tmp_path: Path,
+) -> None:
+    path = write_validation_corpus_json(
+        tmp_path / "discrete-fixture-catalog.json",
+        build_shared_discrete_fixture_catalog(),
+    )
+
+    text = path.read_text(encoding="utf-8")
+    assert '"goal_id": 253' in text
+    assert '"geiger_discrete_sym_three_state_twenty_four_taxa"' in text
 
 
 @pytest.mark.slow
