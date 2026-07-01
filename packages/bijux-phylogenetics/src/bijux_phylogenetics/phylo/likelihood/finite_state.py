@@ -20,6 +20,7 @@ from bijux_phylogenetics.phylo.likelihood.models import SiteLogLikelihoodRow
 from bijux_phylogenetics.phylo.likelihood.models import (
     CompiledFiniteStatePartitionLogLikelihoodRow,
     CompiledFiniteStateSiteLogLikelihoodRow,
+    DiscreteGammaRateCategory,
     DiscreteGammaInvariantMixtureSiteLikelihood,
     DiscreteGammaSiteLikelihood,
     FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
