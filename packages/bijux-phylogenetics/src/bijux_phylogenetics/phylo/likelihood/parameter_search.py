@@ -23,6 +23,8 @@ def run_bounded_likelihood_search(
     lower_bound: float,
     upper_bound: float,
     evaluate: Callable[[float], tuple[_PayloadT, float]],
+    parameter_name: str = "search parameter",
+    owner_name: str = "bounded likelihood search",
     tolerance: float = 1e-9,
     max_iterations: int = 400,
 ) -> BoundedLikelihoodSearchResult[_PayloadT]:
@@ -31,8 +33,8 @@ def run_bounded_likelihood_search(
         lower_bound=lower_bound,
         upper_bound=upper_bound,
         evaluate=evaluate,
-        parameter_name="search parameter",
-        owner_name="bounded likelihood search",
+        parameter_name=parameter_name,
+        owner_name=owner_name,
         tolerance=tolerance,
         max_iterations=max_iterations,
     )
@@ -45,6 +47,7 @@ def run_bounded_coordinate_likelihood_search(
     evaluate: Callable[[dict[str, float]], tuple[_PayloadT, float]],
     improvement_tolerance: float = 1e-9,
     max_coordinate_passes: int = 12,
+    owner_name: str = "coordinate likelihood search",
 ) -> BoundedCoordinateLikelihoodSearchResult[_PayloadT]:
     """Maximize one bounded likelihood-like objective by coordinate search."""
     return run_bounded_coordinate_optimization(
@@ -53,5 +56,5 @@ def run_bounded_coordinate_likelihood_search(
         evaluate=evaluate,
         improvement_tolerance=improvement_tolerance,
         max_coordinate_passes=max_coordinate_passes,
-        owner_name="coordinate likelihood search",
+        owner_name=owner_name,
     )

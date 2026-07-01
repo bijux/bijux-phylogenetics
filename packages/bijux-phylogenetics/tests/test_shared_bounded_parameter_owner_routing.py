@@ -12,12 +12,14 @@ def test_phylo_bounded_likelihood_search_delegates_to_shared_golden_section_owne
     monkeypatch,
 ) -> None:
     observed_owner_names: list[str] = []
+    observed_parameter_names: list[str] = []
     original_search = (
         phylo_parameter_search_module.run_bounded_parameter_golden_section_maximization
     )
 
     def observe_search(**kwargs):
         observed_owner_names.append(kwargs["owner_name"])
+        observed_parameter_names.append(kwargs["parameter_name"])
         return original_search(**kwargs)
 
     monkeypatch.setattr(
@@ -33,9 +35,12 @@ def test_phylo_bounded_likelihood_search_delegates_to_shared_golden_section_owne
             parameter_value,
             -((parameter_value - 2.0) ** 2),
         ),
+        parameter_name="branch length",
+        owner_name="JC69 branch-length fit",
     )
 
-    assert observed_owner_names == ["bounded likelihood search"]
+    assert observed_owner_names == ["JC69 branch-length fit"]
+    assert observed_parameter_names == ["branch length"]
     assert math.isclose(result.parameter_value, 2.0, abs_tol=1e-6)
 
 
@@ -62,9 +67,10 @@ def test_phylo_coordinate_search_delegates_to_shared_coordinate_owner(
             dict(values),
             -((values["alpha"] - 1.5) ** 2) - ((values["kappa"] - 2.0) ** 2),
         ),
+        owner_name="joint substitution fit",
     )
 
-    assert observed_owner_names == ["coordinate likelihood search"]
+    assert observed_owner_names == ["joint substitution fit"]
     assert math.isclose(result.parameter_values["alpha"], 1.5, abs_tol=1e-6)
     assert math.isclose(result.parameter_values["kappa"], 2.0, abs_tol=1e-6)
 
