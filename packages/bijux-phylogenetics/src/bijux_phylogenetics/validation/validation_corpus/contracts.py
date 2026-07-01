@@ -225,3 +225,35 @@ class SimulationReproducibilityReport:
     passed: bool
     cases: list[SimulationReproducibilityCase]
     limitations: list[str]
+
+
+@dataclass(slots=True)
+class SharedContinuousFixtureCatalogEntry:
+    """One governed continuous-trait fixture used by live `geiger` parity."""
+
+    fixture_id: str
+    tree_fixture_id: str
+    trait_table_fixture_id: str
+    trait_name: str
+    standard_error_trait_name: str | None
+    taxon_column: str
+    taxon_count: int | None
+    trait_row_count: int
+    supported_model_names: list[str]
+    covered_model_names: list[str]
+    live_case_count: int
+    validation_expectation: str
+    geiger_reference_expectation: str
+    feature_tags: list[str]
+    notes: str
+
+
+@dataclass(slots=True)
+class SharedContinuousFixtureCatalogReport:
+    """Goal 252 governed inventory for live `geiger::fitContinuous` fixtures."""
+
+    goal_id: int
+    fixture_count: int
+    live_case_count: int
+    fixtures: list[SharedContinuousFixtureCatalogEntry]
+    limitations: list[str]
