@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
+from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.reports.service import (
     render_invariant_mixture_family_coverage_report,
 )
@@ -30,3 +32,35 @@ def test_render_invariant_mixture_family_coverage_report_writes_family_sections(
     assert result.machine_manifest_path.exists()
     assert "Bijux Invariant Mixture Family Coverage Report" in text
     assert "protein-empirical-wag" in text
+
+
+def test_cli_report_invariant_mixture_family_coverage_json_output_uses_contract(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    output = tmp_path / "invariant-mixture-family-coverage.html"
+    exit_code = main(
+        [
+            "report",
+            "invariant-mixture-family-coverage",
+            "--out",
+            str(output),
+            "--json",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    families = payload["data"]["coverage"]["families"]
+    codon = next(
+        family for family in families if family["family_name"] == "codon-ctmc"
+    )
+
+    assert exit_code == 0
+    assert payload["command"] == "report"
+    assert payload["outputs"] == [str(output), str(output.with_suffix(".json"))]
+    assert payload["data"]["report_kind"] == "invariant-mixture-family-coverage"
+    assert payload["metrics"]["goal_id"] == 29
+    assert payload["metrics"]["family_count"] == 5
+    assert payload["metrics"]["passed"] is True
+    assert codon["surface_model_name"] == "codon CTMC"
+    assert codon["invariant_component_active"] is True
