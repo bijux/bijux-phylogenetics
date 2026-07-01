@@ -3,22 +3,22 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TypeVar
 
-from bijux_phylogenetics.core.bounded_scalar_search import (
-    BoundedScalarSearchControls,
-    BoundedScalarSearchDiagnostics,
-    BoundedScalarSearchProfileRow,
-    BoundedScalarSearchResult,
-    run_bounded_scalar_golden_section_maximization,
-    run_bounded_scalar_maximization,
+from bijux_phylogenetics.core.bounded_parameter_optimization import (
+    BoundedParameterOptimizationResult,
+    BoundedParameterSearchControls,
+    BoundedParameterSearchDiagnostics,
+    BoundedParameterSearchProfileRow,
+    run_bounded_parameter_golden_section_maximization,
+    run_bounded_parameter_maximization,
 )
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 _PayloadT = TypeVar("_PayloadT")
 
-BoundedSearchControls = BoundedScalarSearchControls
-BoundedSearchDiagnostics = BoundedScalarSearchDiagnostics
-BoundedSearchProfileRow = BoundedScalarSearchProfileRow
-BoundedSearchResult = BoundedScalarSearchResult
+BoundedSearchControls = BoundedParameterSearchControls
+BoundedSearchDiagnostics = BoundedParameterSearchDiagnostics
+BoundedSearchProfileRow = BoundedParameterSearchProfileRow
+BoundedSearchResult = BoundedParameterOptimizationResult
 
 
 def run_bounded_maximization(
@@ -32,11 +32,13 @@ def run_bounded_maximization(
 ) -> BoundedSearchResult[_PayloadT]:
     """Maximize one bounded objective with the shared scalar search surface."""
     try:
-        return run_bounded_scalar_maximization(
+        return run_bounded_parameter_maximization(
             lower_bound=lower_bound,
             upper_bound=upper_bound,
             controls=controls,
             evaluate=evaluate,
+            parameter_name="search parameter",
+            owner_name="comparative bounded search",
             optimizer_name=optimizer_name,
             parameter_search_strategy=parameter_search_strategy,
         )
@@ -56,10 +58,12 @@ def run_bounded_golden_section_maximization(
 ) -> BoundedSearchResult[_PayloadT]:
     """Maximize one bounded objective with the shared scalar golden-section search."""
     try:
-        return run_bounded_scalar_golden_section_maximization(
+        return run_bounded_parameter_golden_section_maximization(
             lower_bound=lower_bound,
             upper_bound=upper_bound,
             evaluate=evaluate,
+            parameter_name="search parameter",
+            owner_name="comparative bounded search",
             tolerance=tolerance,
             max_iterations=max_iterations,
             optimizer_name=optimizer_name,
