@@ -24,6 +24,7 @@ from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
     resolve_dna_observation_leaf_vector,
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
+    FiniteStateInvariantMixtureTreeLikelihoodReport,
     Jc69BranchLengthOptimizationReport,
     Jc69BranchLengthOptimizationStep,
     Jc69TreeLikelihoodReport,
@@ -143,6 +144,64 @@ def evaluate_jc69_tree_likelihood_from_alignment(
     return evaluate_jc69_tree_likelihood(
         load_tree(tree_path),
         load_fasta_alignment(alignment_path),
+        observation_policy=observation_policy,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+    )
+
+
+def evaluate_jc69_tree_likelihood_with_invariant_mixture(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    invariant_proportion: float,
+    observation_policy: str = "reject",
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
+) -> FiniteStateInvariantMixtureTreeLikelihoodReport:
+    """Evaluate one JC69 likelihood surface under one active +I mixture."""
+    from bijux_phylogenetics.phylo.likelihood.nucleotide_finite_state import (
+        evaluate_selected_nucleotide_tree_likelihood_with_invariant_mixture,
+    )
+
+    return evaluate_selected_nucleotide_tree_likelihood_with_invariant_mixture(
+        tree,
+        records,
+        model_name="jc69",
+        owner_name="JC69 likelihood",
+        invariant_proportion=invariant_proportion,
+        observation_policy=observation_policy,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+    )
+
+
+def evaluate_jc69_tree_likelihood_with_invariant_mixture_from_alignment(
+    tree_path: Path,
+    alignment_path: Path,
+    *,
+    invariant_proportion: float,
+    observation_policy: str = "reject",
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
+) -> FiniteStateInvariantMixtureTreeLikelihoodReport:
+    """Evaluate one JC69 +I likelihood from tree and alignment paths."""
+    return evaluate_jc69_tree_likelihood_with_invariant_mixture(
+        load_tree(tree_path),
+        load_fasta_alignment(alignment_path),
+        invariant_proportion=invariant_proportion,
         observation_policy=observation_policy,
         root_prior_policy=root_prior_policy,
         root_prior=root_prior,
