@@ -17,6 +17,7 @@ from bijux_phylogenetics.phylo.likelihood.f81 import (
     evaluate_f81_tree_likelihood,
 )
 from bijux_phylogenetics.phylo.likelihood.gtr import (
+    evaluate_gtr_tree_likelihood,
     optimize_gtr_exchangeabilities,
 )
 from bijux_phylogenetics.phylo.likelihood.hky85 import (
@@ -695,16 +696,35 @@ def _optimize_gtr_substitution_parameters(
                 model_name="GTR substitution optimization",
             )
         )
-    optimization_report = optimize_gtr_exchangeabilities(
-        tree,
-        records,
-        base_frequencies=base_frequencies,
-        initial_exchangeabilities=initial_exchangeabilities,
-        lower_exchangeability_bound=validated_lower_bound,
-        upper_exchangeability_bound=validated_upper_bound,
-        max_coordinate_passes=max_coordinate_passes,
-        improvement_tolerance=improvement_tolerance,
-    )
+    if base_frequencies is not None:
+        optimization_report = optimize_gtr_exchangeabilities(
+            tree,
+            records,
+            base_frequencies=base_frequencies,
+            initial_exchangeabilities=initial_exchangeabilities,
+            lower_exchangeability_bound=validated_lower_bound,
+            upper_exchangeability_bound=validated_upper_bound,
+            max_coordinate_passes=max_coordinate_passes,
+            improvement_tolerance=improvement_tolerance,
+        )
+        optimization_pass_count = optimization_report.optimization_pass_count
+        function_evaluation_count = optimization_report.function_evaluation_count
+        converged = optimization_report.converged
+    else:
+        (
+            optimization_report,
+            function_evaluation_count,
+            optimization_pass_count,
+            converged,
+        ) = _optimize_estimated_gtr_exchangeabilities_and_base_frequencies(
+            tree,
+            records,
+            initial_exchangeabilities=normalized_initial_exchangeabilities,
+            lower_exchangeability_bound=validated_lower_bound,
+            upper_exchangeability_bound=validated_upper_bound,
+            max_joint_passes=max_coordinate_passes,
+            improvement_tolerance=improvement_tolerance,
+        )
     parameter_rows: list[SubstitutionParameterOptimizationRow] = []
     warnings: list[str] = []
     optimized_values = {
@@ -736,6 +756,11 @@ def _optimize_gtr_substitution_parameters(
             base_frequency_c=optimization_report.base_frequency_c,
             base_frequency_g=optimization_report.base_frequency_g,
             base_frequency_t=optimization_report.base_frequency_t,
+            lower_frequency_bound=(
+                _DEFAULT_MINIMUM_BASE_FREQUENCY
+                if base_frequencies is None
+                else 0.0
+            ),
         )
     )
     warnings.extend(
@@ -761,9 +786,9 @@ def _optimize_gtr_substitution_parameters(
         optimized_log_likelihood=optimization_report.optimized_log_likelihood,
         initial_aic=optimization_report.initial_aic,
         optimized_aic=optimization_report.optimized_aic,
-        function_evaluation_count=optimization_report.function_evaluation_count,
-        optimization_pass_count=optimization_report.optimization_pass_count,
-        converged=optimization_report.converged,
+        function_evaluation_count=function_evaluation_count,
+        optimization_pass_count=optimization_pass_count,
+        converged=converged,
         boundary_warnings=boundary_warnings,
         warnings=warnings,
     )
@@ -885,12 +910,139 @@ def _evaluate_hky85_frequency_candidate(
     return report, report.log_likelihood
 
 
+def _optimize_estimated_gtr_exchangeabilities_and_base_frequencies(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    initial_exchangeabilities: numpy.ndarray,
+    lower_exchangeability_bound: float,
+    upper_exchangeability_bound: float,
+    max_joint_passes: int,
+    improvement_tolerance: float,
+):
+    initial_optimization_report = optimize_gtr_exchangeabilities(
+        tree,
+        records,
+        initial_exchangeabilities=initial_exchangeabilities,
+        lower_exchangeability_bound=lower_exchangeability_bound,
+        upper_exchangeability_bound=upper_exchangeability_bound,
+        max_coordinate_passes=max_joint_passes,
+        improvement_tolerance=improvement_tolerance,
+    )
+    current_optimization_report = initial_optimization_report
+    current_base_frequencies = _resolved_report_base_frequencies(
+        current_optimization_report
+    )
+    current_exchangeabilities = _resolved_report_exchangeabilities(
+        current_optimization_report
+    )
+    current_objective = current_optimization_report.optimized_log_likelihood
+    total_function_evaluation_count = (
+        current_optimization_report.function_evaluation_count
+    )
+    executed_joint_pass_count = 0
+    schedule_converged = False
+
+    for joint_pass_index in range(1, max_joint_passes + 1):
+        executed_joint_pass_count = joint_pass_index
+        frequency_search = run_simplex_likelihood_search(
+            initial_values_by_name=current_base_frequencies,
+            expected_component_names=DNA_STATE_ORDER,
+            owner_name="GTR substitution optimization",
+            evaluate=lambda candidate: _evaluate_gtr_frequency_candidate(
+                tree,
+                records,
+                candidate,
+                current_exchangeabilities=current_exchangeabilities,
+            ),
+            minimum_component_value=_DEFAULT_MINIMUM_BASE_FREQUENCY,
+            improvement_tolerance=improvement_tolerance,
+            max_coordinate_passes=1,
+        )
+        total_function_evaluation_count += frequency_search.function_evaluation_count
+        current_base_frequencies = _resolved_report_base_frequencies(
+            frequency_search.payload
+        )
+
+        exchangeability_report = optimize_gtr_exchangeabilities(
+            tree,
+            records,
+            base_frequencies=current_base_frequencies,
+            initial_exchangeabilities=current_exchangeabilities,
+            lower_exchangeability_bound=lower_exchangeability_bound,
+            upper_exchangeability_bound=upper_exchangeability_bound,
+            max_coordinate_passes=1,
+            improvement_tolerance=improvement_tolerance,
+        )
+        total_function_evaluation_count += (
+            exchangeability_report.function_evaluation_count
+        )
+        current_exchangeabilities = _resolved_report_exchangeabilities(
+            exchangeability_report
+        )
+        current_optimization_report = replace(
+            exchangeability_report,
+            base_frequency_source="estimated",
+            base_frequency_a=current_base_frequencies["A"],
+            base_frequency_c=current_base_frequencies["C"],
+            base_frequency_g=current_base_frequencies["G"],
+            base_frequency_t=current_base_frequencies["T"],
+        )
+        if (
+            frequency_search.payload.log_likelihood
+            <= (current_objective + improvement_tolerance)
+            and current_optimization_report.optimized_log_likelihood
+            <= (current_objective + improvement_tolerance)
+        ):
+            schedule_converged = True
+            break
+        current_objective = current_optimization_report.optimized_log_likelihood
+
+    return (
+        replace(
+            current_optimization_report,
+            initial_log_likelihood=initial_optimization_report.initial_log_likelihood,
+            initial_aic=initial_optimization_report.initial_aic,
+        ),
+        total_function_evaluation_count,
+        max(1, executed_joint_pass_count),
+        initial_optimization_report.converged and schedule_converged,
+    )
+
+
+def _evaluate_gtr_frequency_candidate(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    candidate_base_frequencies: dict[str, float],
+    *,
+    current_exchangeabilities: dict[str, float],
+) -> tuple[object, float]:
+    report = evaluate_gtr_tree_likelihood(
+        tree,
+        records,
+        exchangeabilities=current_exchangeabilities,
+        base_frequencies=candidate_base_frequencies,
+    )
+    return report, report.log_likelihood
+
+
 def _resolved_report_base_frequencies(report) -> dict[str, float]:
     return {
         "A": float(report.base_frequency_a),
         "C": float(report.base_frequency_c),
         "G": float(report.base_frequency_g),
         "T": float(report.base_frequency_t),
+    }
+
+
+def _resolved_report_exchangeabilities(report) -> dict[str, float]:
+    return {
+        "AC": float(report.exchangeability_ac),
+        "AG": float(report.exchangeability_ag),
+        "AT": float(report.exchangeability_at),
+        "CG": float(report.exchangeability_cg),
+        "CT": float(report.exchangeability_ct),
+        "GT": float(report.exchangeability_gt),
     }
 
 

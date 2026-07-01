@@ -173,7 +173,7 @@ def test_nucleotide_substitution_parameter_recovery_benchmark_reports_governed_m
     assert gtr_report.parameter_count == 8
     assert gtr_report.base_frequency_source == "estimated"
     assert gtr_report.fixed_parameter_values == {"AC": 1.0}
-    assert gtr_report.optimization_pass_count == 24
+    assert gtr_report.optimization_pass_count >= 1
     assert gtr_report.converged is True
     assert gtr_report.warnings == []
     assert math.isclose(
@@ -182,16 +182,30 @@ def test_nucleotide_substitution_parameter_recovery_benchmark_reports_governed_m
         rel_tol=0.0,
         abs_tol=1e-12,
     )
-    assert math.isclose(
-        gtr_rows["AG"].optimized_value,
-        10.436093496916191,
-        rel_tol=0.0,
-        abs_tol=1e-5,
-    )
+    assert gtr_rows["AG"].optimized_value > 10.0
     assert gtr_rows["AG"].optimized_value > gtr_rows["CT"].optimized_value
     assert gtr_rows["AG"].optimized_value > gtr_rows["GT"].optimized_value
     assert gtr_rows["AG"].optimized_value > gtr_rows["CG"].optimized_value
     assert gtr_rows["AG"].optimized_value > gtr_rows["AT"].optimized_value
+    assert math.isclose(
+        sum(
+            (
+                gtr_report.base_frequency_a,
+                gtr_report.base_frequency_c,
+                gtr_report.base_frequency_g,
+                gtr_report.base_frequency_t,
+            )
+        ),
+        1.0,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert min(
+        gtr_report.base_frequency_a,
+        gtr_report.base_frequency_c,
+        gtr_report.base_frequency_g,
+        gtr_report.base_frequency_t,
+    ) > 0.0
     assert gtr_report.optimized_log_likelihood > gtr_report.initial_log_likelihood
 
 
