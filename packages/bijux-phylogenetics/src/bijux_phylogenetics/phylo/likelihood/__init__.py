@@ -161,6 +161,7 @@ __all__ = [
     "compile_empirical_protein_likelihood_analysis",
     "compile_named_empirical_protein_likelihood_analysis",
     "compile_finite_state_likelihood_analysis",
+    "compile_finite_state_discrete_gamma_contexts",
     "compile_partitioned_finite_state_likelihood_analysis",
     "compile_partitioned_nucleotide_likelihood_analysis",
     "compute_marginal_state_posteriors",

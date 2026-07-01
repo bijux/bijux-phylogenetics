@@ -623,7 +623,7 @@ def evaluate_finite_state_tree_likelihood_with_discrete_gamma(
         alpha=alpha,
         category_count=category_count,
     )
-    contexts = _compile_discrete_gamma_contexts(
+    contexts = compile_finite_state_discrete_gamma_contexts(
         tree,
         surface,
         categories=categories,
@@ -729,7 +729,7 @@ def evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixt
         alpha=alpha,
         category_count=category_count,
     )
-    contexts = _compile_discrete_gamma_contexts(
+    contexts = compile_finite_state_discrete_gamma_contexts(
         tree,
         surface,
         categories=categories,
@@ -1383,7 +1383,7 @@ def _build_rate_scaled_finite_state_surface(
     )
 
 
-def _compile_discrete_gamma_contexts(
+def compile_finite_state_discrete_gamma_contexts(
     tree: PhyloTree,
     surface: FiniteStateLikelihoodSurface,
     *,

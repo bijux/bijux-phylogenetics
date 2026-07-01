@@ -32,6 +32,7 @@ from bijux_phylogenetics.phylo.likelihood.models import (
     DiscreteGammaInvariantMixtureSiteLikelihood,
     DiscreteGammaRateCategory,
     DiscreteGammaSiteLikelihood,
+    FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
     FiniteStateInvariantMixtureTreeLikelihoodReport,
     InvariantMixtureSiteLikelihood,
     ProteinEmpiricalBranchLengthOptimizationReport,
@@ -46,7 +47,10 @@ from bijux_phylogenetics.phylo.likelihood.parameter_search import (
 )
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
     FiniteStateLikelihoodSurface,
+    compile_finite_state_discrete_gamma_contexts,
     compile_finite_state_likelihood_context,
+    evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture,
+    evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns,
     evaluate_finite_state_tree_likelihood_with_invariant_mixture,
     evaluate_finite_state_tree_likelihood_with_invariant_mixture_from_patterns,
     evaluate_finite_state_site_log_likelihood_rows_from_patterns,
@@ -619,40 +623,54 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         rate_matrix,
         model_name="empirical protein matrix +G+I",
     )
-    validated_root_prior, root_prior_source = _resolve_empirical_protein_root_prior(
+    surface = build_empirical_protein_finite_state_surface(
         normalized_records,
-        owner_name="empirical protein matrix +G+I",
-        validated_rate_matrix=validated_rate_matrix,
+        rate_matrix=validated_rate_matrix,
         root_prior_policy=root_prior_policy,
         root_prior=root_prior,
         fixed_root_state=fixed_root_state,
+        matrix_label=matrix_label,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
     )
     categories = build_discrete_gamma_rate_categories(
         alpha=alpha,
         category_count=category_count,
     )
+    contexts = compile_finite_state_discrete_gamma_contexts(
+        tree,
+        surface,
+        categories=categories,
+    )
 
     def evaluate_candidate(
         invariant_proportion: float,
     ) -> tuple[ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport, float]:
-        report = _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns(
-            tree,
-            compressed_patterns,
-            validated_rate_matrix=validated_rate_matrix,
+        finite_state_report = (
+            evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns(
+                contexts,
+                compressed_patterns,
+                surface=surface,
+                alpha=alpha,
+                category_rates=categories,
+                invariant_proportion=invariant_proportion,
+                lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
+                upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
+                emit_boundary_warnings=False,
+            )
+        )
+        report = _protein_empirical_discrete_gamma_invariant_report_from_finite_state(
+            finite_state_report,
             alpha=alpha,
-            categories=categories,
-            root_prior=validated_root_prior,
-            root_prior_source=root_prior_source,
             matrix_label=matrix_label,
             gap_policy=gap_policy,
             missing_policy=missing_policy,
-            invariant_proportion=invariant_proportion,
             initial_invariant_proportion=validated_initial_invariant_proportion,
             lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
             upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
             function_evaluation_count=0,
             converged=False,
-            emit_boundary_warnings=False,
+            initial_log_likelihood=finite_state_report.log_likelihood,
         )
         return report, report.log_likelihood
 
@@ -664,24 +682,31 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         upper_bound=validated_upper_invariant_proportion_bound,
         evaluate=evaluate_candidate,
     )
-    optimized_report = _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns(
-        tree,
-        compressed_patterns,
-        validated_rate_matrix=validated_rate_matrix,
+    optimized_finite_state_report = (
+        evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns(
+            contexts,
+            compressed_patterns,
+            surface=surface,
+            alpha=alpha,
+            category_rates=categories,
+            invariant_proportion=search_result.parameter_value,
+            lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
+            upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
+            emit_boundary_warnings=True,
+        )
+    )
+    optimized_report = _protein_empirical_discrete_gamma_invariant_report_from_finite_state(
+        optimized_finite_state_report,
         alpha=alpha,
-        categories=categories,
-        root_prior=validated_root_prior,
-        root_prior_source=root_prior_source,
         matrix_label=matrix_label,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
-        invariant_proportion=search_result.parameter_value,
         initial_invariant_proportion=validated_initial_invariant_proportion,
         lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
         function_evaluation_count=search_result.function_evaluation_count,
         converged=search_result.converged,
-        emit_boundary_warnings=True,
+        initial_log_likelihood=initial_log_likelihood,
     )
     return ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport(
         taxa=optimized_report.taxa,
@@ -786,36 +811,36 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         rate_matrix,
         model_name="empirical protein matrix +G+I",
     )
-    validated_root_prior, root_prior_source = _resolve_empirical_protein_root_prior(
+    surface = build_empirical_protein_finite_state_surface(
         normalized_records,
-        owner_name="empirical protein matrix +G+I",
-        validated_rate_matrix=validated_rate_matrix,
+        rate_matrix=validated_rate_matrix,
         root_prior_policy=root_prior_policy,
         root_prior=root_prior,
         fixed_root_state=fixed_root_state,
-    )
-    categories = build_discrete_gamma_rate_categories(
-        alpha=alpha,
-        category_count=category_count,
-    )
-    return _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns(
-        tree,
-        compressed_patterns,
-        validated_rate_matrix=validated_rate_matrix,
-        alpha=alpha,
-        categories=categories,
-        root_prior=validated_root_prior,
-        root_prior_source=root_prior_source,
         matrix_label=matrix_label,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
+    )
+    finite_state_report = evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+        tree,
+        compressed_patterns,
+        surface=surface,
+        alpha=alpha,
+        category_count=category_count,
         invariant_proportion=validated_invariant_proportion,
+    )
+    return _protein_empirical_discrete_gamma_invariant_report_from_finite_state(
+        finite_state_report,
+        alpha=alpha,
+        matrix_label=matrix_label,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
         initial_invariant_proportion=validated_invariant_proportion,
         lower_invariant_proportion_bound=validated_invariant_proportion,
         upper_invariant_proportion_bound=validated_invariant_proportion,
         function_evaluation_count=1,
         converged=True,
-        emit_boundary_warnings=False,
+        initial_log_likelihood=finite_state_report.log_likelihood,
     )
 
 
@@ -1118,6 +1143,55 @@ def _protein_empirical_invariant_mixture_report_from_finite_state(
         converged=converged,
         lower_invariant_proportion_bound=lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        site_likelihoods=report.site_likelihoods,
+    )
+
+
+def _protein_empirical_discrete_gamma_invariant_report_from_finite_state(
+    report: FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
+    *,
+    alpha: float,
+    matrix_label: str,
+    gap_policy: str,
+    missing_policy: str,
+    initial_invariant_proportion: float,
+    lower_invariant_proportion_bound: float,
+    upper_invariant_proportion_bound: float,
+    function_evaluation_count: int,
+    converged: bool,
+    initial_log_likelihood: float,
+) -> ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport:
+    normalization_policy = (
+        CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY
+        if report.normalization_policy is None
+        else report.normalization_policy
+    )
+    return ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport(
+        taxa=report.taxa,
+        site_count=report.site_count,
+        pattern_count=report.pattern_count,
+        compression_used=report.compression_used,
+        tree_newick=report.tree_newick,
+        state_count=report.state_count,
+        matrix_label=matrix_label,
+        root_prior_source=report.root_prior_source,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        normalization_policy=normalization_policy,
+        alpha=alpha,
+        category_count=report.category_count,
+        category_rates=report.category_rates,
+        initial_invariant_proportion=initial_invariant_proportion,
+        invariant_proportion=report.invariant_proportion,
+        initial_log_likelihood=initial_log_likelihood,
+        log_likelihood=report.log_likelihood,
+        function_evaluation_count=function_evaluation_count,
+        converged=converged,
+        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        hit_lower_invariant_proportion_boundary=report.hit_lower_invariant_proportion_boundary,
+        hit_upper_invariant_proportion_boundary=report.hit_upper_invariant_proportion_boundary,
+        boundary_warnings=list(report.boundary_warnings),
         site_likelihoods=report.site_likelihoods,
     )
 
