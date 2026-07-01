@@ -6,10 +6,17 @@ from pathlib import Path
 import numpy
 
 from bijux_phylogenetics.phylo.likelihood import (
+    compress_alignment_site_patterns_from_records,
     evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment,
     evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment,
     evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment,
+    evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture,
     optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment,
+)
+from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
+from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.likelihood.protein_finite_state import (
+    build_empirical_protein_finite_state_surface,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -248,6 +255,68 @@ def test_discrete_gamma_invariant_mixture_is_not_a_standalone_report_merge() -> 
     assert not math.isclose(
         combined_report.log_likelihood,
         invariant_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
+def test_empirical_protein_gamma_invariant_wrapper_matches_shared_finite_state_engine() -> None:
+    tree = load_tree(fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"))
+    records = load_fasta_alignment(
+        fixture(
+            "alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"
+        )
+    )
+    rate_matrix = _compact_polar_rate_matrix()
+    root_prior = _biased_root_prior()
+
+    wrapper_report = (
+        evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
+            fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+            fixture(
+                "alignments",
+                "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
+            ),
+            rate_matrix=rate_matrix,
+            root_prior=root_prior,
+            alpha=0.8,
+            category_count=4,
+            invariant_proportion=0.35,
+            matrix_label="compact-polar",
+        )
+    )
+    finite_state_report = (
+        evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+            tree,
+            compress_alignment_site_patterns_from_records(records),
+            surface=build_empirical_protein_finite_state_surface(
+                records,
+                rate_matrix=rate_matrix,
+                root_prior=root_prior,
+                matrix_label="compact-polar",
+            ),
+            alpha=0.8,
+            category_count=4,
+            invariant_proportion=0.35,
+        )
+    )
+
+    assert math.isclose(
+        wrapper_report.log_likelihood,
+        finite_state_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert len(wrapper_report.site_likelihoods) == len(finite_state_report.site_likelihoods)
+    assert math.isclose(
+        wrapper_report.site_likelihoods[0].invariant_component_likelihood,
+        finite_state_report.site_likelihoods[0].invariant_component_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        wrapper_report.site_likelihoods[0].variable_component_likelihood,
+        finite_state_report.site_likelihoods[0].variable_component_likelihood,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
