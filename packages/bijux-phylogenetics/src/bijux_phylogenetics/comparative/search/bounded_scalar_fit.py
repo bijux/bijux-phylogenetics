@@ -4,10 +4,14 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import Generic, TypeVar
 
+from bijux_phylogenetics.core.bounded_parameter_optimization import (
+    fit_profiled_bounded_parameter,
+)
+from bijux_phylogenetics.runtime.errors import ComparativeMethodError
+
 from .bounded import (
     BoundedSearchControls,
     BoundedSearchDiagnostics,
-    run_bounded_maximization,
 )
 
 _PayloadT = TypeVar("_PayloadT")
@@ -48,53 +52,36 @@ def fit_bounded_scalar_parameter(
     parameter_search_strategy: str = "bounded-two-stage-grid-search",
 ) -> ComparativeBoundedScalarFitResult[_PayloadT]:
     """Fit one bounded scalar parameter and build its reviewer-facing likelihood profile."""
-    evaluation_cache: dict[float, tuple[_PayloadT, float]] = {}
-
-    def evaluate_cached(parameter_value: float) -> tuple[_PayloadT, float]:
-        cache_key = round(parameter_value, 12)
-        cached = evaluation_cache.get(cache_key)
-        if cached is not None:
-            return cached
-        result = evaluate(parameter_value)
-        evaluation_cache[cache_key] = result
-        return result
-
-    search_result = run_bounded_maximization(
-        lower_bound=lower_bound,
-        upper_bound=upper_bound,
-        controls=controls,
-        evaluate=evaluate_cached,
-        optimizer_name=optimizer_name,
-        parameter_search_strategy=parameter_search_strategy,
-    )
-    profile_rows: list[ComparativeBoundedScalarProfileRow] = []
-    best_objective_value = search_result.objective_value
-    for parameter_value in profile_parameter_values:
-        _, objective_value = evaluate_cached(parameter_value)
-        delta_objective_value = max(0.0, best_objective_value - objective_value)
-        profile_rows.append(
-            ComparativeBoundedScalarProfileRow(
-                parameter_value=parameter_value,
-                objective_value=objective_value,
-                delta_objective_value=delta_objective_value,
-                within_95_confidence_interval=(
-                    delta_objective_value <= confidence_interval_drop
-                ),
-            )
+    try:
+        fit = fit_profiled_bounded_parameter(
+            lower_bound=lower_bound,
+            upper_bound=upper_bound,
+            controls=controls,
+            evaluate=evaluate,
+            profile_parameter_values=list(profile_parameter_values),
+            confidence_interval_drop=confidence_interval_drop,
+            parameter_name="search parameter",
+            owner_name="comparative bounded parameter fit",
+            optimizer_name=optimizer_name,
+            parameter_search_strategy=parameter_search_strategy,
         )
-    supported_parameter_values = [
-        row.parameter_value for row in profile_rows if row.within_95_confidence_interval
-    ]
+    except ValueError as error:
+        raise ComparativeMethodError(str(error)) from error
+
     return ComparativeBoundedScalarFitResult(
-        parameter_value=search_result.parameter_value,
-        payload=search_result.payload,
-        objective_value=search_result.objective_value,
-        lower_95_confidence_interval=(
-            None if not supported_parameter_values else min(supported_parameter_values)
-        ),
-        upper_95_confidence_interval=(
-            None if not supported_parameter_values else max(supported_parameter_values)
-        ),
-        optimizer_diagnostics=search_result.diagnostics,
-        profile_rows=profile_rows,
+        parameter_value=fit.parameter_value,
+        payload=fit.payload,
+        objective_value=fit.objective_value,
+        lower_95_confidence_interval=fit.lower_confidence_interval,
+        upper_95_confidence_interval=fit.upper_confidence_interval,
+        optimizer_diagnostics=fit.optimizer_diagnostics,
+        profile_rows=[
+            ComparativeBoundedScalarProfileRow(
+                parameter_value=row.parameter_value,
+                objective_value=row.objective_value,
+                delta_objective_value=row.delta_objective_value,
+                within_95_confidence_interval=row.within_confidence_interval,
+            )
+            for row in fit.profile_rows
+        ],
     )
