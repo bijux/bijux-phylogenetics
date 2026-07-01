@@ -485,6 +485,9 @@ class SubstitutionModelSelectionRow:
     selected_by_bic: bool
     parameter_values: dict[str, float]
     warnings: list[str]
+    boundary_warning_rows: list[LikelihoodOptimizationBoundaryWarning] = field(
+        default_factory=list
+    )
 
 
 @dataclass(slots=True)
