@@ -48,6 +48,8 @@ def fit_bounded_scalar_parameter(
     evaluate: Callable[[float], tuple[_PayloadT, float]],
     profile_parameter_values: Iterable[float],
     confidence_interval_drop: float,
+    parameter_name: str = "search parameter",
+    owner_name: str = "comparative bounded parameter fit",
     optimizer_name: str = "governed-two-stage-grid-search",
     parameter_search_strategy: str = "bounded-two-stage-grid-search",
 ) -> ComparativeBoundedScalarFitResult[_PayloadT]:
@@ -60,8 +62,8 @@ def fit_bounded_scalar_parameter(
             evaluate=evaluate,
             profile_parameter_values=list(profile_parameter_values),
             confidence_interval_drop=confidence_interval_drop,
-            parameter_name="search parameter",
-            owner_name="comparative bounded parameter fit",
+            parameter_name=parameter_name,
+            owner_name=owner_name,
             optimizer_name=optimizer_name,
             parameter_search_strategy=parameter_search_strategy,
         )

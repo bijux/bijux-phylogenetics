@@ -73,10 +73,12 @@ def test_comparative_bounded_search_delegates_to_shared_parameter_owner(
     monkeypatch,
 ) -> None:
     observed_owner_names: list[str] = []
+    observed_parameter_names: list[str] = []
     original_search = comparative_bounded_module.run_bounded_parameter_maximization
 
     def observe_search(**kwargs):
         observed_owner_names.append(kwargs["owner_name"])
+        observed_parameter_names.append(kwargs["parameter_name"])
         return original_search(**kwargs)
 
     monkeypatch.setattr(
@@ -98,9 +100,12 @@ def test_comparative_bounded_search_delegates_to_shared_parameter_owner(
             parameter_value,
             -((parameter_value - 1.5) ** 2),
         ),
+        parameter_name="pagel lambda",
+        owner_name="comparative lambda search",
     )
 
-    assert observed_owner_names == ["comparative bounded search"]
+    assert observed_owner_names == ["comparative lambda search"]
+    assert observed_parameter_names == ["pagel lambda"]
     assert math.isclose(result.parameter_value, 1.5, abs_tol=1e-6)
 
 
@@ -108,10 +113,12 @@ def test_comparative_profiled_fit_delegates_to_shared_profile_owner(
     monkeypatch,
 ) -> None:
     observed_owner_names: list[str] = []
+    observed_parameter_names: list[str] = []
     original_fit = comparative_fit_module.fit_profiled_bounded_parameter
 
     def observe_fit(**kwargs):
         observed_owner_names.append(kwargs["owner_name"])
+        observed_parameter_names.append(kwargs["parameter_name"])
         return original_fit(**kwargs)
 
     monkeypatch.setattr(
@@ -135,9 +142,12 @@ def test_comparative_profiled_fit_delegates_to_shared_profile_owner(
         ),
         profile_parameter_values=[0.0, 1.0, 1.5, 2.0, 4.0],
         confidence_interval_drop=0.5,
+        parameter_name="OU alpha",
+        owner_name="comparative OU alpha fit",
     )
 
-    assert observed_owner_names == ["comparative bounded parameter fit"]
+    assert observed_owner_names == ["comparative OU alpha fit"]
+    assert observed_parameter_names == ["OU alpha"]
     assert math.isclose(result.parameter_value, 1.5, abs_tol=1e-6)
     assert result.lower_95_confidence_interval == 1.0
     assert result.upper_95_confidence_interval == 2.0
