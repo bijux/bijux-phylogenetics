@@ -489,6 +489,8 @@ __all__ = [
     "write_nucleotide_likelihood_nni_candidate_table",
     "write_nucleotide_likelihood_nni_run_json",
     "write_nucleotide_likelihood_nni_trace_table",
+    "write_nucleotide_likelihood_neighbor_joining_start_tree_artifacts",
+    "write_nucleotide_likelihood_neighbor_joining_start_tree_run_json",
     "write_nucleotide_likelihood_ratchet_artifacts",
     "write_nucleotide_likelihood_ratchet_best_tree_history_table",
     "write_nucleotide_likelihood_ratchet_cycle_table",

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from bijux_phylogenetics.distance import (
@@ -80,6 +81,54 @@ def build_likelihood_neighbor_joining_tree_from_alignment(
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
     )
+
+
+def write_nucleotide_likelihood_neighbor_joining_start_tree_run_json(
+    path: Path,
+    report: NucleotideLikelihoodNeighborJoiningStartTreeReport,
+) -> Path:
+    """Write one machine-readable native NJ starting-tree payload."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "algorithm": report.algorithm,
+        "distance_method": report.distance_method,
+        "distance_model": report.distance_model,
+        "gap_handling": report.gap_handling,
+        "ambiguity_policy": report.ambiguity_policy,
+        "alignment_path": report.alignment_path,
+        "taxon_count": report.taxon_count,
+        "site_count": report.site_count,
+        "pair_count": report.pair_count,
+        "distance_warnings": report.distance_warnings,
+        "rooting_policy": report.rooting_policy,
+        "unrooted_tree_newick": report.unrooted_tree_newick,
+        "rooted_tree_newick": report.rooted_tree_newick,
+    }
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    return path
+
+
+def write_nucleotide_likelihood_neighbor_joining_start_tree_artifacts(
+    out_dir: Path,
+    report: NucleotideLikelihoodNeighborJoiningStartTreeReport,
+) -> dict[str, Path]:
+    """Write the governed artifact family for one native NJ starting tree."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    unrooted_tree_path = out_dir / "unrooted_tree.nwk"
+    unrooted_tree_path.write_text(report.unrooted_tree_newick + "\n", encoding="utf-8")
+    rooted_tree_path = out_dir / "rooted_tree.nwk"
+    rooted_tree_path.write_text(report.rooted_tree_newick + "\n", encoding="utf-8")
+    run_json_path = write_nucleotide_likelihood_neighbor_joining_start_tree_run_json(
+        out_dir / "run.json",
+        report,
+    )
+    return {
+        "unrooted_tree_path": unrooted_tree_path,
+        "rooted_tree_path": rooted_tree_path,
+        "run_json_path": run_json_path,
+    }
 
 
 def _root_neighbor_joining_start_tree(tree: PhyloTree) -> PhyloTree:

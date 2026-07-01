@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import bijux_phylogenetics.phylo.likelihood as likelihood_api
@@ -8,6 +9,8 @@ from bijux_phylogenetics.phylo.likelihood import (
     NucleotideLikelihoodNeighborJoiningStartTreeReport,
     build_likelihood_neighbor_joining_tree,
     build_likelihood_neighbor_joining_tree_from_alignment,
+    write_nucleotide_likelihood_neighbor_joining_start_tree_artifacts,
+    write_nucleotide_likelihood_neighbor_joining_start_tree_run_json,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -29,6 +32,14 @@ def test_likelihood_gateway_exports_neighbor_joining_start_tree_surface() -> Non
     assert (
         likelihood_api.build_likelihood_neighbor_joining_tree_from_alignment
         is build_likelihood_neighbor_joining_tree_from_alignment
+    )
+    assert (
+        likelihood_api.write_nucleotide_likelihood_neighbor_joining_start_tree_run_json
+        is write_nucleotide_likelihood_neighbor_joining_start_tree_run_json
+    )
+    assert (
+        likelihood_api.write_nucleotide_likelihood_neighbor_joining_start_tree_artifacts
+        is write_nucleotide_likelihood_neighbor_joining_start_tree_artifacts
     )
 
 
@@ -74,3 +85,42 @@ def test_build_likelihood_neighbor_joining_tree_roots_two_taxon_tree_without_rew
     assert report.taxon_count == 2
     assert report.pair_count == 1
     assert report.rooted_tree_newick == dumps_newick(tree)
+
+
+def test_write_nucleotide_likelihood_neighbor_joining_start_tree_artifacts_materializes_governed_output_family(
+    tmp_path: Path,
+) -> None:
+    _tree, report = build_likelihood_neighbor_joining_tree_from_alignment(
+        fixture("alignments", "example_alignment_distance.fasta")
+    )
+
+    outputs = write_nucleotide_likelihood_neighbor_joining_start_tree_artifacts(
+        tmp_path / "neighbor-joining-start-tree",
+        report,
+    )
+
+    assert set(outputs) == {
+        "unrooted_tree_path",
+        "rooted_tree_path",
+        "run_json_path",
+    }
+    assert outputs["unrooted_tree_path"].name == "unrooted_tree.nwk"
+    assert outputs["rooted_tree_path"].name == "rooted_tree.nwk"
+    assert outputs["run_json_path"].name == "run.json"
+    assert (
+        outputs["unrooted_tree_path"].read_text(encoding="utf-8")
+        == report.unrooted_tree_newick + "\n"
+    )
+    assert (
+        outputs["rooted_tree_path"].read_text(encoding="utf-8")
+        == report.rooted_tree_newick + "\n"
+    )
+
+    payload = json.loads(outputs["run_json_path"].read_text(encoding="utf-8"))
+
+    assert payload["algorithm"] == "nucleotide-likelihood-neighbor-joining-start-tree"
+    assert payload["distance_method"] == "neighbor-joining"
+    assert payload["distance_model"] == "p-distance"
+    assert payload["rooting_policy"] == "largest-root-clade"
+    assert payload["unrooted_tree_newick"] == report.unrooted_tree_newick
+    assert payload["rooted_tree_newick"] == report.rooted_tree_newick
