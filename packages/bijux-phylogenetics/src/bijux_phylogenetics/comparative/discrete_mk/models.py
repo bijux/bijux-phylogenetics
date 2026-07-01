@@ -154,6 +154,7 @@ class DiscreteMkFitReport:
     ascertainment_policy: str
     state_ordering: str
     state_order: list[str]
+    ordered_states: list[str]
     taxon_count: int
     input_audit: DiscreteMkInputAudit
     log_likelihood: float
@@ -167,6 +168,8 @@ class DiscreteMkFitReport:
     pattern_likelihood_rows: list[DiscreteMkPatternLikelihoodRow]
     transition_rate_rows: list[DiscreteTransitionRateRow]
     allowed_transition_pairs: list[tuple[str, str]]
+    allowed_transition_count: int
+    restricted_transition_count: int
     optimizer_diagnostics: DiscreteOptimizerDiagnostics
     overparameterized: bool
     transform_fit: DiscreteMkTransformFit | None

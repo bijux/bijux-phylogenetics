@@ -331,6 +331,33 @@ def test_comparative_discrete_mk_cli_reports_er_metrics(capsys) -> None:
     assert payload["metrics"]["baseline_model"] is None
 
 
+def test_comparative_discrete_mk_cli_reports_ordered_transition_metrics(capsys) -> None:
+    exit_code = main(
+        [
+            "comparative",
+            "discrete-mk",
+            str(fixture("example_tree.nwk")),
+            str(fixture("example_traits_geography.tsv")),
+            "--trait",
+            "region",
+            "--taxon-column",
+            "taxon",
+            "--state-ordering",
+            "ordered",
+            "--ordered-states",
+            "north,south,island",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["ordered_state_count"] == 3
+    assert payload["metrics"]["allowed_transition_count"] == 4
+    assert payload["metrics"]["restricted_transition_count"] == 2
+    assert payload["data"]["ordered_states"] == ["north", "south", "island"]
+
+
 @pytest.mark.slow
 def test_comparative_discrete_mk_cli_reports_symmetric_baseline_metrics(
     capsys,

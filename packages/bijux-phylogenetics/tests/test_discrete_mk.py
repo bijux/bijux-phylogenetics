@@ -255,6 +255,22 @@ def test_fit_discrete_mk_model_reports_ordered_model_baselines() -> None:
     assert ard_report.baseline_comparison.preferred_model_by_aic == "equal-rates"
 
 
+def test_fit_discrete_mk_model_reports_ordered_transition_audit() -> None:
+    report = fit_discrete_mk_model(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_geography.tsv"),
+        trait="region",
+        taxon_column="taxon",
+        model="equal-rates",
+        state_ordering="ordered",
+        ordered_states=["north", "south", "island"],
+    )
+
+    assert report.ordered_states == ["north", "south", "island"]
+    assert report.allowed_transition_count == 4
+    assert report.restricted_transition_count == 2
+
+
 @pytest.mark.slow
 def test_fit_discrete_mk_model_reports_multistate_ard_surface() -> None:
     fixture_entry = get_shared_phytools_comparative_fixture(

@@ -411,6 +411,15 @@ def fit_discrete_mk_model_from_dataset(
             "the untransformed branch-length baseline remains preferred by AIC over the requested discrete Mk transform"
         )
     input_audit = build_discrete_mk_input_audit(dataset, warnings=warnings)
+    transition_rate_rows = _normalize_transition_rate_rows(
+        _build_transition_rate_rows(
+            state_order=state_order,
+            state_ordering=state_ordering,
+            rate_matrix=rate_matrix,
+            allowed_transition_pairs=resolved_allowed_transition_pairs,
+        ),
+        state_ordering=state_ordering,
+    )
     return DiscreteMkFitReport(
         tree_path=dataset.tree_path,
         traits_path=dataset.traits_path,
@@ -420,6 +429,7 @@ def fit_discrete_mk_model_from_dataset(
         ascertainment_policy=resolved_ascertainment_policy,
         state_ordering=state_ordering,
         state_order=state_order,
+        ordered_states=(state_order if state_ordering == "ordered" else []),
         taxon_count=len(dataset.taxa),
         input_audit=input_audit,
         log_likelihood=log_likelihood,
@@ -435,19 +445,15 @@ def fit_discrete_mk_model_from_dataset(
         ),
         likelihood_comparison_policy=DISCRETE_MK_LIKELIHOOD_COMPARISON_POLICY,
         pattern_likelihood_rows=pattern_likelihood_rows,
-        transition_rate_rows=_normalize_transition_rate_rows(
-            _build_transition_rate_rows(
-                state_order=state_order,
-                state_ordering=state_ordering,
-                rate_matrix=rate_matrix,
-                allowed_transition_pairs=resolved_allowed_transition_pairs,
-            ),
-            state_ordering=state_ordering,
-        ),
+        transition_rate_rows=transition_rate_rows,
         allowed_transition_pairs=[
             (state_order[left_index], state_order[right_index])
             for left_index, right_index in sorted(resolved_allowed_transition_pairs)
         ],
+        allowed_transition_count=len(resolved_allowed_transition_pairs),
+        restricted_transition_count=sum(
+            not row.transition_allowed for row in transition_rate_rows
+        ),
         optimizer_diagnostics=optimizer_diagnostics,
         overparameterized=overparameterized,
         transform_fit=transform_fit,

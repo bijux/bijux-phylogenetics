@@ -3,7 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
+from bijux_phylogenetics.command_line.arguments import (
+    _add_manifest_argument,
+    _split_csv_values,
+)
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.comparative.discrete_mk import (
@@ -43,6 +46,16 @@ def add_discrete_model_comparative_evolution_commands(
         help="Apply one governed branch-length transform before fitting the discrete Mk surface.",
     )
     comparative_discrete_mk.add_argument(
+        "--state-ordering",
+        default="unordered",
+        choices=("unordered", "ordered"),
+        help="Choose whether the discrete Mk surface uses unrestricted or adjacent ordered transitions.",
+    )
+    comparative_discrete_mk.add_argument(
+        "--ordered-states",
+        help="Comma-delimited explicit ordered state vocabulary required when --state-ordering is ordered.",
+    )
+    comparative_discrete_mk.add_argument(
         "--summary-out",
         type=Path,
         help="Write one discrete Mk fit summary ledger as TSV or CSV.",
@@ -74,6 +87,8 @@ def run_discrete_model_comparative_evolution_command(
         model=args.model,
         ascertainment_policy=args.ascertainment,
         transform=args.transform,
+        state_ordering=args.state_ordering,
+        ordered_states=_split_csv_values(args.ordered_states) or None,
     )
     outputs: list[Path | str] = []
     if args.summary_out:
@@ -150,6 +165,9 @@ def run_discrete_model_comparative_evolution_command(
                     if report.transform_fit is None
                     else len(report.transform_fit.warnings)
                 ),
+                "ordered_state_count": len(report.ordered_states),
+                "allowed_transition_count": report.allowed_transition_count,
+                "restricted_transition_count": report.restricted_transition_count,
                 "overparameterized": report.overparameterized,
                 "transition_rate_count": len(report.transition_rate_rows),
                 "baseline_model": (
