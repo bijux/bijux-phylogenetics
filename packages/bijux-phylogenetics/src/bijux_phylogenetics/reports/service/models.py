@@ -45,6 +45,7 @@ from bijux_phylogenetics.validation import (
     ProductionScaleReadinessReport,
     ReleaseTruthReport,
     SharedContinuousFixtureCatalogReport,
+    SharedDiscreteFixtureCatalogReport,
 )
 
 
@@ -226,6 +227,16 @@ class SharedContinuousFixtureCatalogReportBuildResult:
     machine_manifest: dict[str, object]
 
 
+@dataclass(frozen=True, slots=True)
+class SharedDiscreteFixtureCatalogReportBuildResult:
+    output_path: Path
+    machine_manifest_path: Path
+    report_kind: str
+    title: str
+    fixture_catalog: SharedDiscreteFixtureCatalogReport
+    machine_manifest: dict[str, object]
+
+
 __all__ = [
     "AlignmentReportBuildResult",
     "DistanceReportBuildResult",
@@ -235,6 +246,7 @@ __all__ = [
     "ReportBuildResult",
     "ReportInputLedgerEntry",
     "SharedContinuousFixtureCatalogReportBuildResult",
+    "SharedDiscreteFixtureCatalogReportBuildResult",
     "TableLinkageReport",
     "TaxonReportBuildResult",
     "TreeSetComparisonReportBuildResult",

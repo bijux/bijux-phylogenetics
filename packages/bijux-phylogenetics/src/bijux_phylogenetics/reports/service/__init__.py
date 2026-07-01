@@ -6,6 +6,7 @@ from .governance_reports import (
     render_production_scale_readiness_report,
     render_release_truth_report,
     render_shared_continuous_fixture_catalog_report,
+    render_shared_discrete_fixture_catalog_report,
     render_workflow_validation_report,
 )
 from .input_reports import (
@@ -29,6 +30,7 @@ from .models import (
     ReportBuildResult,
     ReportInputLedgerEntry,
     SharedContinuousFixtureCatalogReportBuildResult,
+    SharedDiscreteFixtureCatalogReportBuildResult,
     TableLinkageReport,
     TaxonReportBuildResult,
     TreeSetComparisonReportBuildResult,
@@ -51,6 +53,7 @@ __all__ = [
     "ReportBuildResult",
     "ReportInputLedgerEntry",
     "SharedContinuousFixtureCatalogReportBuildResult",
+    "SharedDiscreteFixtureCatalogReportBuildResult",
     "TableLinkageReport",
     "TaxonReportBuildResult",
     "TreeSetComparisonReportBuildResult",
@@ -67,6 +70,7 @@ __all__ = [
     "render_production_scale_readiness_report",
     "render_release_truth_report",
     "render_shared_continuous_fixture_catalog_report",
+    "render_shared_discrete_fixture_catalog_report",
     "render_taxon_report",
     "render_tree_report",
     "render_tree_set_comparison_report",

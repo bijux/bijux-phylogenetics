@@ -5,6 +5,7 @@ from .governance_reporting import (
     render_production_scale_readiness_report,
     render_release_truth_report,
     render_shared_continuous_fixture_catalog_report,
+    render_shared_discrete_fixture_catalog_report,
     render_workflow_validation_report,
 )
 
@@ -13,5 +14,6 @@ __all__ = [
     "render_production_scale_readiness_report",
     "render_release_truth_report",
     "render_shared_continuous_fixture_catalog_report",
+    "render_shared_discrete_fixture_catalog_report",
     "render_workflow_validation_report",
 ]
