@@ -20,7 +20,9 @@ from bijux_phylogenetics.phylo.likelihood.models import SiteLogLikelihoodRow
 from bijux_phylogenetics.phylo.likelihood.models import (
     CompiledFiniteStatePartitionLogLikelihoodRow,
     CompiledFiniteStateSiteLogLikelihoodRow,
+    DiscreteGammaInvariantMixtureSiteLikelihood,
     DiscreteGammaSiteLikelihood,
+    FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
     FiniteStateInvariantMixtureTreeLikelihoodReport,
     FiniteStateDiscreteGammaTreeLikelihoodReport,
     InvariantMixtureSiteLikelihood,
@@ -29,6 +31,7 @@ from bijux_phylogenetics.phylo.likelihood.gamma import (
     build_discrete_gamma_rate_categories,
 )
 from bijux_phylogenetics.phylo.likelihood.invariant import (
+    invariant_proportion_boundary_warnings,
     validate_invariant_proportion,
 )
 from bijux_phylogenetics.phylo.likelihood.logspace import log_weighted_sum_exp
@@ -620,17 +623,32 @@ def evaluate_finite_state_tree_likelihood_with_discrete_gamma(
         alpha=alpha,
         category_count=category_count,
     )
-    contexts = tuple(
-        compile_finite_state_likelihood_context(
-            tree,
-            _build_rate_scaled_finite_state_surface(
-                surface,
-                rate_scale=category.rate,
-            ),
-        )
-        for category in categories
+    contexts = _compile_discrete_gamma_contexts(
+        tree,
+        surface,
+        categories=categories,
     )
-    category_weights = [category.weight for category in categories]
+    return evaluate_finite_state_tree_likelihood_with_discrete_gamma_from_patterns(
+        contexts,
+        compressed_patterns,
+        surface=surface,
+        alpha=alpha,
+        category_count=category_count,
+        category_rates=categories,
+    )
+
+
+def evaluate_finite_state_tree_likelihood_with_discrete_gamma_from_patterns(
+    contexts: tuple[CompiledFiniteStateLikelihoodContext, ...],
+    compressed_patterns: CompressedAlignmentSitePatterns,
+    *,
+    surface: FiniteStateLikelihoodSurface,
+    alpha: float,
+    category_count: int,
+    category_rates: list[DiscreteGammaRateCategory],
+) -> FiniteStateDiscreteGammaTreeLikelihoodReport:
+    """Evaluate one compiled finite-state gamma mixture without rebuilding branches."""
+    category_weights = [category.weight for category in category_rates]
     site_likelihoods: list[DiscreteGammaSiteLikelihood] = []
     total_log_likelihood = 0.0
     for pattern in compressed_patterns.patterns:
@@ -670,7 +688,7 @@ def evaluate_finite_state_tree_likelihood_with_discrete_gamma(
         compression_used=(
             compressed_patterns.pattern_count < compressed_patterns.alignment_length
         ),
-        tree_newick=dumps_newick(tree),
+        tree_newick=dumps_newick(contexts[0].tree),
         model_name=surface.model_name,
         state_count=surface.state_count,
         root_prior_source=surface.root_prior_source,
@@ -678,7 +696,160 @@ def evaluate_finite_state_tree_likelihood_with_discrete_gamma(
         normalization_policy=surface.normalization_policy,
         alpha=alpha,
         category_count=category_count,
-        category_rates=list(categories),
+        category_rates=list(category_rates),
+        site_likelihoods=site_likelihoods,
+        log_likelihood=total_log_likelihood,
+    )
+
+
+def evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+    tree: PhyloTree,
+    compressed_patterns: CompressedAlignmentSitePatterns,
+    *,
+    surface: FiniteStateLikelihoodSurface,
+    alpha: float,
+    category_count: int,
+    invariant_proportion: float,
+    lower_invariant_proportion_bound: float | None = None,
+    upper_invariant_proportion_bound: float | None = None,
+    emit_boundary_warnings: bool = False,
+) -> FiniteStateDiscreteGammaInvariantTreeLikelihoodReport:
+    """Evaluate one shared finite-state surface under one active gamma-plus-invariant mixture."""
+    validate_explicit_branch_lengths(tree, model_name=surface.model_name)
+    validate_tree_taxa_against_patterns(
+        tree,
+        compressed_patterns,
+        model_name=surface.model_name,
+    )
+    validated_invariant_proportion = validate_invariant_proportion(
+        invariant_proportion,
+        model_name=f"{surface.model_name} +G+I",
+    )
+    categories = build_discrete_gamma_rate_categories(
+        alpha=alpha,
+        category_count=category_count,
+    )
+    contexts = _compile_discrete_gamma_contexts(
+        tree,
+        surface,
+        categories=categories,
+    )
+    return evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns(
+        contexts,
+        compressed_patterns,
+        surface=surface,
+        alpha=alpha,
+        category_rates=categories,
+        invariant_proportion=validated_invariant_proportion,
+        lower_invariant_proportion_bound=(
+            validated_invariant_proportion
+            if lower_invariant_proportion_bound is None
+            else lower_invariant_proportion_bound
+        ),
+        upper_invariant_proportion_bound=(
+            validated_invariant_proportion
+            if upper_invariant_proportion_bound is None
+            else upper_invariant_proportion_bound
+        ),
+        emit_boundary_warnings=emit_boundary_warnings,
+    )
+
+
+def evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns(
+    contexts: tuple[CompiledFiniteStateLikelihoodContext, ...],
+    compressed_patterns: CompressedAlignmentSitePatterns,
+    *,
+    surface: FiniteStateLikelihoodSurface,
+    alpha: float,
+    category_rates: list[DiscreteGammaRateCategory],
+    invariant_proportion: float,
+    lower_invariant_proportion_bound: float,
+    upper_invariant_proportion_bound: float,
+    emit_boundary_warnings: bool,
+) -> FiniteStateDiscreteGammaInvariantTreeLikelihoodReport:
+    """Evaluate one compiled finite-state gamma-plus-invariant mixture without rebuilding branches."""
+    category_weights = [category.weight for category in category_rates]
+    site_likelihoods: list[DiscreteGammaInvariantMixtureSiteLikelihood] = []
+    total_log_likelihood = 0.0
+    for pattern in compressed_patterns.patterns:
+        category_log_likelihoods = [
+            evaluate_finite_state_site_log_likelihood(
+                context,
+                pattern.states,
+                taxon_order=compressed_patterns.taxon_order,
+            )
+            for context in contexts
+        ]
+        variable_component_log_likelihood = log_weighted_sum_exp(
+            category_log_likelihoods,
+            weights=category_weights,
+        )
+        variable_component_likelihood = math.exp(variable_component_log_likelihood)
+        invariant_component_likelihood = _finite_state_invariant_component_likelihood(
+            surface,
+            pattern.states,
+            taxon_order=compressed_patterns.taxon_order,
+        )
+        pattern_log_likelihood = _invariant_mixture_log_likelihood(
+            invariant_proportion=invariant_proportion,
+            invariant_component_likelihood=invariant_component_likelihood,
+            variable_component_log_likelihood=variable_component_log_likelihood,
+        )
+        category_likelihoods = [
+            math.exp(log_likelihood) for log_likelihood in category_log_likelihoods
+        ]
+        mixture_likelihood = math.exp(pattern_log_likelihood)
+        for site_position in pattern.site_positions:
+            site_likelihoods.append(
+                DiscreteGammaInvariantMixtureSiteLikelihood(
+                    pattern_id=pattern.pattern_id,
+                    pattern_weight=pattern.weight,
+                    site_position=site_position,
+                    site_states=pattern.states,
+                    category_likelihoods=list(category_likelihoods),
+                    invariant_component_likelihood=invariant_component_likelihood,
+                    variable_component_likelihood=variable_component_likelihood,
+                    mixture_likelihood=mixture_likelihood,
+                    log_likelihood=pattern_log_likelihood,
+                )
+            )
+        total_log_likelihood += pattern.weight * pattern_log_likelihood
+    if emit_boundary_warnings:
+        (
+            hit_lower_invariant_proportion_boundary,
+            hit_upper_invariant_proportion_boundary,
+            boundary_warnings,
+        ) = invariant_proportion_boundary_warnings(
+            invariant_proportion=invariant_proportion,
+            lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+            upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        )
+    else:
+        hit_lower_invariant_proportion_boundary = False
+        hit_upper_invariant_proportion_boundary = False
+        boundary_warnings = []
+    return FiniteStateDiscreteGammaInvariantTreeLikelihoodReport(
+        taxa=compressed_patterns.taxon_order,
+        site_count=compressed_patterns.alignment_length,
+        pattern_count=compressed_patterns.pattern_count,
+        compression_used=(
+            compressed_patterns.pattern_count < compressed_patterns.alignment_length
+        ),
+        tree_newick=dumps_newick(contexts[0].tree),
+        model_name=surface.model_name,
+        state_count=surface.state_count,
+        root_prior_source=surface.root_prior_source,
+        observation_policy=surface.observation_policy,
+        normalization_policy=surface.normalization_policy,
+        alpha=alpha,
+        category_count=len(category_rates),
+        category_rates=list(category_rates),
+        invariant_proportion=invariant_proportion,
+        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        hit_lower_invariant_proportion_boundary=hit_lower_invariant_proportion_boundary,
+        hit_upper_invariant_proportion_boundary=hit_upper_invariant_proportion_boundary,
+        boundary_warnings=boundary_warnings,
         site_likelihoods=site_likelihoods,
         log_likelihood=total_log_likelihood,
     )
@@ -1209,6 +1380,24 @@ def _build_rate_scaled_finite_state_surface(
         transition_rate_matrix=surface.transition_rate_matrix,
         normalization_policy=surface.normalization_policy,
         parameter_values=scaled_parameter_values,
+    )
+
+
+def _compile_discrete_gamma_contexts(
+    tree: PhyloTree,
+    surface: FiniteStateLikelihoodSurface,
+    *,
+    categories: list[DiscreteGammaRateCategory],
+) -> tuple[CompiledFiniteStateLikelihoodContext, ...]:
+    return tuple(
+        compile_finite_state_likelihood_context(
+            tree,
+            _build_rate_scaled_finite_state_surface(
+                surface,
+                rate_scale=category.rate,
+            ),
+        )
+        for category in categories
     )
 
 
