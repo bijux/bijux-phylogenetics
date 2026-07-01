@@ -788,6 +788,9 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
     alpha: float,
     invariant_proportion: float,
     category_count: int = 4,
+    lower_invariant_proportion_bound: float | None = None,
+    upper_invariant_proportion_bound: float | None = None,
+    emit_boundary_warnings: bool = False,
     root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
     fixed_root_state: str | None = None,
@@ -830,6 +833,9 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         alpha=alpha,
         category_count=category_count,
         invariant_proportion=validated_invariant_proportion,
+        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        emit_boundary_warnings=emit_boundary_warnings,
     )
     return _protein_empirical_discrete_gamma_invariant_report_from_finite_state(
         finite_state_report,
@@ -838,8 +844,16 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         gap_policy=gap_policy,
         missing_policy=missing_policy,
         initial_invariant_proportion=validated_invariant_proportion,
-        lower_invariant_proportion_bound=validated_invariant_proportion,
-        upper_invariant_proportion_bound=validated_invariant_proportion,
+        lower_invariant_proportion_bound=(
+            validated_invariant_proportion
+            if lower_invariant_proportion_bound is None
+            else lower_invariant_proportion_bound
+        ),
+        upper_invariant_proportion_bound=(
+            validated_invariant_proportion
+            if upper_invariant_proportion_bound is None
+            else upper_invariant_proportion_bound
+        ),
         function_evaluation_count=1,
         converged=True,
         initial_log_likelihood=finite_state_report.log_likelihood,
@@ -854,6 +868,9 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
     alpha: float,
     invariant_proportion: float,
     category_count: int = 4,
+    lower_invariant_proportion_bound: float | None = None,
+    upper_invariant_proportion_bound: float | None = None,
+    emit_boundary_warnings: bool = False,
     root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
     fixed_root_state: str | None = None,
@@ -869,6 +886,9 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         alpha=alpha,
         invariant_proportion=invariant_proportion,
         category_count=category_count,
+        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        emit_boundary_warnings=emit_boundary_warnings,
         root_prior_policy=root_prior_policy,
         root_prior=root_prior,
         fixed_root_state=fixed_root_state,

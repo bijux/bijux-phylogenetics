@@ -209,6 +209,30 @@ def test_discrete_gamma_invariant_mixture_boundary_warning_reports_bound_hit() -
     ]
 
 
+def test_discrete_gamma_invariant_evaluation_wrapper_can_emit_boundary_warning() -> None:
+    report = evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
+        fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+        fixture(
+            "alignments", "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"
+        ),
+        rate_matrix=_compact_polar_rate_matrix(),
+        root_prior=_biased_root_prior(),
+        alpha=0.8,
+        category_count=4,
+        invariant_proportion=0.35,
+        lower_invariant_proportion_bound=0.35,
+        upper_invariant_proportion_bound=0.5,
+        emit_boundary_warnings=True,
+        matrix_label="compact-polar",
+    )
+
+    assert report.hit_lower_invariant_proportion_boundary is True
+    assert report.hit_upper_invariant_proportion_boundary is False
+    assert report.boundary_warnings == [
+        "invariant proportion hit lower search boundary"
+    ]
+
+
 def test_discrete_gamma_invariant_mixture_is_not_a_standalone_report_merge() -> None:
     combined_report = evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
         fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
