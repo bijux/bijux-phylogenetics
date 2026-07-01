@@ -74,6 +74,11 @@ def test_hky85_kappa_optimization_prefers_hky_fixture_over_jc69_f81_and_k80() ->
     assert hky85_optimization.optimized_aic < k80_aic
     assert hky85_optimization.function_evaluation_count > 1
     assert hky85_optimization.converged is True
+    assert hky85_optimization.optimizer_diagnostics.lower_bound == 0.05
+    assert hky85_optimization.optimizer_diagnostics.upper_bound == 20.0
+    assert hky85_optimization.optimizer_diagnostics.starting_parameter_value > 0.0
+    assert hky85_optimization.optimizer_diagnostics.converged is True
+    assert hky85_optimization.optimizer_diagnostics.failure_reason is None
     assert math.isclose(
         hky85_report.log_likelihood,
         hky85_optimization.optimized_log_likelihood,

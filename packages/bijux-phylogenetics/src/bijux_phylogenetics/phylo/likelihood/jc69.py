@@ -38,6 +38,7 @@ from bijux_phylogenetics.phylo.likelihood.parameter_bounds import (
     validate_parameter_within_bounds,
 )
 from bijux_phylogenetics.phylo.likelihood.parameter_search import (
+    BoundedScalarSearchDiagnostics,
     run_bounded_likelihood_search,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
@@ -214,6 +215,7 @@ def optimize_jc69_branch_lengths(
     optimization_pass_count = 0
     converged = False
     steps: list[Jc69BranchLengthOptimizationStep] = []
+    parameter_diagnostics: dict[str, BoundedScalarSearchDiagnostics] = {}
 
     for optimization_pass in range(1, max_coordinate_passes + 1):
         optimization_pass_count = optimization_pass
@@ -244,6 +246,7 @@ def optimize_jc69_branch_lengths(
                 upper_bound=validated_upper_bound,
                 evaluate=evaluate_candidate,
             )
+            parameter_diagnostics[node.node_id] = search_result.diagnostics
             function_evaluation_count += search_result.function_evaluation_count
             optimized_branch_length = float(search_result.parameter_value)
             optimized_log_likelihood = search_result.objective_value
@@ -288,6 +291,7 @@ def optimize_jc69_branch_lengths(
         lower_branch_length_bound=validated_lower_bound,
         upper_branch_length_bound=validated_upper_bound,
         steps=steps,
+        parameter_diagnostics=parameter_diagnostics,
     )
 
 

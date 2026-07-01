@@ -60,6 +60,18 @@ def test_empirical_protein_invariant_mixture_estimates_nonzero_proportion() -> N
     )
     assert report.log_likelihood > report.initial_log_likelihood
     assert report.function_evaluation_count == 46
+    assert report.optimizer_diagnostics is not None
+    assert (
+        report.optimizer_diagnostics.lower_bound
+        == report.lower_invariant_proportion_bound
+    )
+    assert (
+        report.optimizer_diagnostics.upper_bound
+        == report.upper_invariant_proportion_bound
+    )
+    assert report.optimizer_diagnostics.starting_parameter_value > 0.0
+    assert report.optimizer_diagnostics.converged is True
+    assert report.optimizer_diagnostics.failure_reason is None
     assert len(report.site_likelihoods) == report.site_count
     assert [row.site_position for row in report.site_likelihoods] == list(range(1, 21))
 
@@ -82,6 +94,7 @@ def test_empirical_protein_invariant_mixture_rows_emit_real_component_activity()
     assert report.initial_invariant_proportion == 0.35
     assert report.function_evaluation_count == 1
     assert report.converged is True
+    assert report.optimizer_diagnostics is None
     assert math.isclose(
         report.log_likelihood,
         -58.78116686054642,

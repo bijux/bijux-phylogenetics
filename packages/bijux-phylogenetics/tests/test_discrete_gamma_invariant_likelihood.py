@@ -81,6 +81,18 @@ def test_discrete_gamma_invariant_mixture_reports_alpha_invariant_and_total_like
     )
     assert report.function_evaluation_count == 46
     assert report.converged is True
+    assert report.optimizer_diagnostics is not None
+    assert (
+        report.optimizer_diagnostics.lower_bound
+        == report.lower_invariant_proportion_bound
+    )
+    assert (
+        report.optimizer_diagnostics.upper_bound
+        == report.upper_invariant_proportion_bound
+    )
+    assert report.optimizer_diagnostics.starting_parameter_value > 0.0
+    assert report.optimizer_diagnostics.converged is True
+    assert report.optimizer_diagnostics.failure_reason is None
     assert report.hit_lower_invariant_proportion_boundary is False
     assert report.hit_upper_invariant_proportion_boundary is False
     assert report.boundary_warnings == []
@@ -105,6 +117,7 @@ def test_discrete_gamma_invariant_mixture_rows_keep_gamma_and_invariant_componen
 
     assert report.alpha == 0.8
     assert report.invariant_proportion == 0.35
+    assert report.optimizer_diagnostics is None
     assert report.boundary_warnings == []
     assert math.isclose(
         report.log_likelihood,

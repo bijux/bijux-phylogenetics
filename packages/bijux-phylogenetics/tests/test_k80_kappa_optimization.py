@@ -47,6 +47,11 @@ def test_k80_kappa_optimization_improves_transition_biased_fixture() -> None:
     assert report.optimized_aic < report.initial_aic
     assert report.function_evaluation_count > 1
     assert report.converged is True
+    assert report.optimizer_diagnostics.lower_bound == 0.05
+    assert report.optimizer_diagnostics.upper_bound == 20.0
+    assert report.optimizer_diagnostics.starting_parameter_value > 0.0
+    assert report.optimizer_diagnostics.converged is True
+    assert report.optimizer_diagnostics.failure_reason is None
 
 
 def test_k80_kappa_optimization_beats_jc69_on_transition_biased_fixture() -> None:

@@ -240,6 +240,7 @@ def _fit_jc69_strict_clock_likelihood(
         converged=search_result.converged,
         lower_clock_rate_bound=lower_clock_rate_bound,
         upper_clock_rate_bound=upper_clock_rate_bound,
+        optimizer_diagnostics=search_result.diagnostics,
         branch_rows=branch_rows,
         site_log_likelihoods=site_log_likelihood_report.site_log_likelihoods,
         branch_likelihood_diagnostics=branch_diagnostic_report.branch_diagnostics,

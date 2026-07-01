@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+from bijux_phylogenetics.core.bounded_scalar_search import (
+    BoundedScalarSearchDiagnostics,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -53,6 +57,9 @@ class Jc69BranchLengthOptimizationReport:
     lower_branch_length_bound: float
     upper_branch_length_bound: float
     steps: list[Jc69BranchLengthOptimizationStep]
+    parameter_diagnostics: dict[str, BoundedScalarSearchDiagnostics] = field(
+        default_factory=dict
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -89,6 +96,7 @@ class StrictClockLikelihoodReport:
     converged: bool
     lower_clock_rate_bound: float
     upper_clock_rate_bound: float
+    optimizer_diagnostics: BoundedScalarSearchDiagnostics
     branch_rows: list[StrictClockBranchRow]
     site_log_likelihoods: list[SiteLogLikelihoodRow]
     branch_likelihood_diagnostics: list[BranchLikelihoodDiagnosticRow]
@@ -191,6 +199,7 @@ class K80KappaOptimizationReport:
     converged: bool
     lower_kappa_bound: float
     upper_kappa_bound: float
+    optimizer_diagnostics: BoundedScalarSearchDiagnostics
 
 
 @dataclass(slots=True)
@@ -262,6 +271,7 @@ class Hky85KappaOptimizationReport:
     converged: bool
     lower_kappa_bound: float
     upper_kappa_bound: float
+    optimizer_diagnostics: BoundedScalarSearchDiagnostics
 
 
 @dataclass(slots=True)
@@ -379,6 +389,9 @@ class NucleotideSubstitutionParameterOptimizationReport:
     converged: bool
     boundary_warnings: list[LikelihoodOptimizationBoundaryWarning]
     warnings: list[str]
+    parameter_diagnostics: dict[str, BoundedScalarSearchDiagnostics] = field(
+        default_factory=dict
+    )
 
 
 @dataclass(slots=True)
@@ -1815,6 +1828,9 @@ class ProteinEmpiricalBranchLengthOptimizationReport:
     lower_branch_length_bound: float
     upper_branch_length_bound: float
     branches: list[BranchLengthOptimizationRow]
+    parameter_diagnostics: dict[str, BoundedScalarSearchDiagnostics] = field(
+        default_factory=dict
+    )
 
 
 @dataclass(slots=True)
@@ -1940,6 +1956,7 @@ class ProteinEmpiricalInvariantMixtureTreeLikelihoodReport:
     lower_invariant_proportion_bound: float
     upper_invariant_proportion_bound: float
     site_likelihoods: list[InvariantMixtureSiteLikelihood]
+    optimizer_diagnostics: BoundedScalarSearchDiagnostics | None = None
     branch_likelihood_diagnostics: list[BranchLikelihoodDiagnosticRow] | None = None
 
 
@@ -2015,6 +2032,7 @@ class ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport:
     hit_upper_invariant_proportion_boundary: bool
     boundary_warnings: list[str]
     site_likelihoods: list[DiscreteGammaInvariantMixtureSiteLikelihood]
+    optimizer_diagnostics: BoundedScalarSearchDiagnostics | None = None
     branch_likelihood_diagnostics: list[BranchLikelihoodDiagnosticRow] | None = None
 
 

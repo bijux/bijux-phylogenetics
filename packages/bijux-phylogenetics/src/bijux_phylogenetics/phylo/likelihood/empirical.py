@@ -455,6 +455,7 @@ def optimize_empirical_protein_branch_lengths(
         lower_branch_length_bound=lower_branch_length_bound,
         upper_branch_length_bound=upper_branch_length_bound,
         branches=branches,
+        parameter_diagnostics=search_result.parameter_diagnostics,
     )
 
 
@@ -738,6 +739,7 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
             optimized_report.hit_upper_invariant_proportion_boundary
         ),
         boundary_warnings=list(optimized_report.boundary_warnings),
+        optimizer_diagnostics=search_result.diagnostics,
         site_likelihoods=optimized_report.site_likelihoods,
     )
 
@@ -980,6 +982,7 @@ def optimize_empirical_protein_tree_likelihood_with_invariant_mixture(
         converged=search_result.converged,
         lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
+        optimizer_diagnostics=search_result.diagnostics,
         site_likelihoods=optimized_report.site_likelihoods,
     )
 
@@ -1143,6 +1146,7 @@ def _protein_empirical_invariant_mixture_report_from_finite_state(
         converged=converged,
         lower_invariant_proportion_bound=lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        optimizer_diagnostics=None,
         site_likelihoods=report.site_likelihoods,
     )
 
@@ -1192,6 +1196,7 @@ def _protein_empirical_discrete_gamma_invariant_report_from_finite_state(
         hit_lower_invariant_proportion_boundary=report.hit_lower_invariant_proportion_boundary,
         hit_upper_invariant_proportion_boundary=report.hit_upper_invariant_proportion_boundary,
         boundary_warnings=list(report.boundary_warnings),
+        optimizer_diagnostics=None,
         site_likelihoods=report.site_likelihoods,
     )
 
@@ -1734,6 +1739,7 @@ def _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invarian
         hit_lower_invariant_proportion_boundary=hit_lower_invariant_proportion_boundary,
         hit_upper_invariant_proportion_boundary=hit_upper_invariant_proportion_boundary,
         boundary_warnings=boundary_warnings,
+        optimizer_diagnostics=None,
         site_likelihoods=site_likelihoods,
     )
 
@@ -1825,5 +1831,6 @@ def _evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_patt
         converged=converged,
         lower_invariant_proportion_bound=lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        optimizer_diagnostics=None,
         site_likelihoods=site_likelihoods,
     )

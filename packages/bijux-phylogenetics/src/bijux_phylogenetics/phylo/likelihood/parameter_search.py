@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-import math
 from typing import Generic, TypeVar
 
+from bijux_phylogenetics.core.bounded_scalar_search import (
+    BoundedScalarSearchDiagnostics,
+    run_bounded_scalar_golden_section_maximization,
+)
 from bijux_phylogenetics.phylo.likelihood.parameter_bounds import (
     validate_increasing_parameter_bounds,
     validate_parameter_within_bounds,
@@ -22,6 +25,7 @@ class BoundedLikelihoodSearchResult(Generic[_PayloadT]):
     objective_value: float
     function_evaluation_count: int
     converged: bool
+    diagnostics: BoundedScalarSearchDiagnostics
 
 
 @dataclass(slots=True)
@@ -34,6 +38,7 @@ class BoundedCoordinateLikelihoodSearchResult(Generic[_PayloadT]):
     function_evaluation_count: int
     optimization_pass_count: int
     converged: bool
+    parameter_diagnostics: dict[str, BoundedScalarSearchDiagnostics]
 
 
 def run_bounded_likelihood_search(
@@ -44,22 +49,15 @@ def run_bounded_likelihood_search(
     tolerance: float = 1e-9,
     max_iterations: int = 400,
 ) -> BoundedLikelihoodSearchResult[_PayloadT]:
-    """Maximize one bounded likelihood-like objective by golden-section search."""
+    """Maximize one bounded likelihood-like objective by shared scalar search."""
     validated_lower_bound, validated_upper_bound = validate_increasing_parameter_bounds(
         parameter_name="search parameter",
         lower_bound=lower_bound,
         upper_bound=upper_bound,
         owner_name="bounded likelihood search",
     )
-    if tolerance <= 0.0:
-        raise ValueError("bounded likelihood search tolerance must be positive")
-    if max_iterations < 1:
-        raise ValueError("bounded likelihood search iterations must be positive")
 
-    phi = (math.sqrt(5.0) - 1.0) / 2.0
-    cache: dict[float, tuple[_PayloadT, float]] = {}
-
-    def evaluate_cached(parameter_value: float) -> tuple[_PayloadT, float]:
+    def evaluate_validated(parameter_value: float) -> tuple[_PayloadT, float]:
         validated_parameter_value = validate_parameter_within_bounds(
             parameter_name="search parameter",
             value=parameter_value,
@@ -67,63 +65,22 @@ def run_bounded_likelihood_search(
             upper_bound=validated_upper_bound,
             owner_name="bounded likelihood search",
         )
-        cache_key = round(validated_parameter_value, 12)
-        cached = cache.get(cache_key)
-        if cached is not None:
-            return cached
-        candidate = evaluate(validated_parameter_value)
-        cache[cache_key] = candidate
-        return candidate
+        return evaluate(validated_parameter_value)
 
-    left = validated_upper_bound - (
-        phi * (validated_upper_bound - validated_lower_bound)
+    search_result = run_bounded_scalar_golden_section_maximization(
+        lower_bound=validated_lower_bound,
+        upper_bound=validated_upper_bound,
+        evaluate=evaluate_validated,
+        tolerance=tolerance,
+        max_iterations=max_iterations,
     )
-    right = validated_lower_bound + (
-        phi * (validated_upper_bound - validated_lower_bound)
-    )
-    left_payload, left_objective = evaluate_cached(left)
-    right_payload, right_objective = evaluate_cached(right)
-    iteration = 0
-
-    while (
-        validated_upper_bound - validated_lower_bound
-    ) > tolerance and iteration < max_iterations:
-        if left_objective < right_objective:
-            validated_lower_bound = left
-            left = right
-            left_payload = right_payload
-            left_objective = right_objective
-            right = validated_lower_bound + (
-                phi * (validated_upper_bound - validated_lower_bound)
-            )
-            right_payload, right_objective = evaluate_cached(right)
-        else:
-            validated_upper_bound = right
-            right = left
-            right_payload = left_payload
-            right_objective = left_objective
-            left = validated_upper_bound - (
-                phi * (validated_upper_bound - validated_lower_bound)
-            )
-            left_payload, left_objective = evaluate_cached(left)
-        iteration += 1
-
-    midpoint = (validated_lower_bound + validated_upper_bound) / 2.0
-    midpoint_payload, midpoint_objective = evaluate_cached(midpoint)
-    best_parameter, best_payload, best_objective = sorted(
-        [
-            (left, left_payload, left_objective),
-            (right, right_payload, right_objective),
-            (midpoint, midpoint_payload, midpoint_objective),
-        ],
-        key=lambda item: (-item[2], item[0]),
-    )[0]
     return BoundedLikelihoodSearchResult(
-        parameter_value=best_parameter,
-        payload=best_payload,
-        objective_value=best_objective,
-        function_evaluation_count=len(cache),
-        converged=(validated_upper_bound - validated_lower_bound) <= tolerance,
+        parameter_value=search_result.parameter_value,
+        payload=search_result.payload,
+        objective_value=search_result.objective_value,
+        function_evaluation_count=search_result.diagnostics.function_evaluation_count,
+        converged=search_result.diagnostics.converged,
+        diagnostics=search_result.diagnostics,
     )
 
 
@@ -169,6 +126,8 @@ def run_bounded_coordinate_likelihood_search(
     function_evaluation_count = 1
     optimization_pass_count = 0
     converged = False
+    all_coordinate_searches_converged = True
+    parameter_diagnostics: dict[str, BoundedScalarSearchDiagnostics] = {}
 
     for optimization_pass in range(1, max_coordinate_passes + 1):
         optimization_pass_count = optimization_pass
@@ -189,7 +148,10 @@ def run_bounded_coordinate_likelihood_search(
                 upper_bound=upper_bound,
                 evaluate=evaluate_coordinate,
             )
+            parameter_diagnostics[name] = search_result.diagnostics
             function_evaluation_count += search_result.function_evaluation_count
+            if not search_result.converged:
+                all_coordinate_searches_converged = False
             if search_result.objective_value > (
                 current_objective + improvement_tolerance
             ):
@@ -198,7 +160,7 @@ def run_bounded_coordinate_likelihood_search(
                 current_objective = search_result.objective_value
                 improved = True
         if not improved:
-            converged = True
+            converged = all_coordinate_searches_converged
             break
 
     return BoundedCoordinateLikelihoodSearchResult(
@@ -208,4 +170,5 @@ def run_bounded_coordinate_likelihood_search(
         function_evaluation_count=function_evaluation_count,
         optimization_pass_count=optimization_pass_count,
         converged=converged,
+        parameter_diagnostics=parameter_diagnostics,
     )

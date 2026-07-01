@@ -53,6 +53,8 @@ def test_write_strict_clock_run_json_serializes_report_fields(tmp_path: Path) ->
     assert payload["branch_count"] == 6
     assert payload["optimized_clock_rate"] == 0.5217383669434831
     assert payload["optimized_log_likelihood"] == -64.38812241070909
+    assert payload["optimizer_diagnostics"]["converged"] is True
+    assert payload["optimizer_diagnostics"]["failure_reason"] is None
     assert len(payload["branch_rows"]) == 6
 
 

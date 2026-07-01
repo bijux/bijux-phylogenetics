@@ -47,6 +47,14 @@ def test_jc69_branch_optimization_improves_two_tip_likelihood() -> None:
         "root:clade:A|B/taxon:A",
         "root:clade:A|B/taxon:B",
     }
+    assert set(report.parameter_diagnostics) == {
+        "root:clade:A|B/taxon:A",
+        "root:clade:A|B/taxon:B",
+    }
+    assert all(
+        diagnostics.failure_reason is None
+        for diagnostics in report.parameter_diagnostics.values()
+    )
     assert {tuple(step.descendant_taxa) for step in report.steps} == {("A",), ("B",)}
     assert all(step.optimization_pass >= 1 for step in report.steps)
     assert all(

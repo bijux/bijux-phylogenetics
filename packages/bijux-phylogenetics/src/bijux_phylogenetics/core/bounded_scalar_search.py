@@ -262,37 +262,37 @@ def run_bounded_scalar_golden_section_maximization(
     right_payload, right_objective_value = evaluate_cached(right)
     starting_parameter_value = left
     starting_parameter_objective_value = left_objective_value
-    converged = False
-    failure_reason = "max-iterations-exhausted"
+    iteration_count = 0
 
-    for _ in range(max_iterations):
-        if abs(upper_bound - lower_bound) < tolerance:
-            converged = True
-            failure_reason = None
-            break
-        if left_objective_value > right_objective_value:
-            upper_bound = right
-            right = left
-            right_payload = left_payload
-            right_objective_value = left_objective_value
-            left = upper_bound - (phi * (upper_bound - lower_bound))
-            left_payload, left_objective_value = evaluate_cached(left)
-        else:
+    while (upper_bound - lower_bound) > tolerance and iteration_count < max_iterations:
+        if left_objective_value < right_objective_value:
             lower_bound = left
             left = right
             left_payload = right_payload
             left_objective_value = right_objective_value
             right = lower_bound + (phi * (upper_bound - lower_bound))
             right_payload, right_objective_value = evaluate_cached(right)
+        else:
+            upper_bound = right
+            right = left
+            right_payload = left_payload
+            right_objective_value = left_objective_value
+            left = upper_bound - (phi * (upper_bound - lower_bound))
+            left_payload, left_objective_value = evaluate_cached(left)
+        iteration_count += 1
 
-    if left_objective_value >= right_objective_value:
-        best_parameter = left
-        best_payload = left_payload
-        best_objective_value = left_objective_value
-    else:
-        best_parameter = right
-        best_payload = right_payload
-        best_objective_value = right_objective_value
+    midpoint = (lower_bound + upper_bound) / 2.0
+    midpoint_payload, midpoint_objective_value = evaluate_cached(midpoint)
+    best_parameter, best_payload, best_objective_value = sorted(
+        [
+            (left, left_payload, left_objective_value),
+            (right, right_payload, right_objective_value),
+            (midpoint, midpoint_payload, midpoint_objective_value),
+        ],
+        key=lambda item: (-item[2], item[0]),
+    )[0]
+    converged = (upper_bound - lower_bound) <= tolerance
+    failure_reason = None if converged else "max-iterations-exhausted"
     return BoundedScalarSearchResult(
         parameter_value=best_parameter,
         payload=best_payload,

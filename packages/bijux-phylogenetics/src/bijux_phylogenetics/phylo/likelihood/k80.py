@@ -267,6 +267,7 @@ def optimize_k80_kappa(
         converged=search_result.converged,
         lower_kappa_bound=validated_lower_bound,
         upper_kappa_bound=validated_upper_bound,
+        optimizer_diagnostics=search_result.diagnostics,
     )
 
 
