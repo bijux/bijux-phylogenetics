@@ -6,7 +6,141 @@ from pathlib import Path
 
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 
-from .contracts import MaximumLikelihoodWrapperBenchmarkReport
+from .contracts import (
+    MaximumLikelihoodWrapperBenchmarkReport,
+    NativeMaximumLikelihoodSpeedBenchmarkReport,
+)
+
+
+def write_native_maximum_likelihood_speed_summary_table(
+    path: Path,
+    report: NativeMaximumLikelihoodSpeedBenchmarkReport,
+) -> Path:
+    """Write the stable summary counts for one native ML speed benchmark run."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "replicates",
+            "observation_count",
+            "trend_row_count",
+            "size_class_labels",
+            "model_names",
+            "search_methods",
+            "limitations",
+        ],
+        rows=[
+            {
+                "replicates": report.replicates,
+                "observation_count": len(report.observations),
+                "trend_row_count": len(report.trend_rows),
+                "size_class_labels": " | ".join(report.size_class_labels),
+                "model_names": " | ".join(report.model_names),
+                "search_methods": " | ".join(report.search_methods),
+                "limitations": " | ".join(report.limitations),
+            }
+        ],
+    )
+
+
+def write_native_maximum_likelihood_speed_observation_table(
+    path: Path,
+    report: NativeMaximumLikelihoodSpeedBenchmarkReport,
+) -> Path:
+    """Write one stable observation row per native ML speed benchmark lane."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "label",
+            "size_class",
+            "model_name",
+            "search_method",
+            "taxon_count",
+            "site_count",
+            "runtime_seconds",
+            "peak_memory_bytes",
+            "selected_model_name",
+            "best_run_source_label",
+            "search_algorithm",
+            "final_log_likelihood",
+        ],
+        rows=[
+            {
+                "label": row.label,
+                "size_class": row.size_class,
+                "model_name": row.model_name,
+                "search_method": row.search_method,
+                "taxon_count": row.taxon_count,
+                "site_count": row.site_count,
+                "runtime_seconds": format(row.runtime_seconds, ".15g"),
+                "peak_memory_bytes": row.peak_memory_bytes,
+                "selected_model_name": row.selected_model_name,
+                "best_run_source_label": row.best_run_source_label,
+                "search_algorithm": row.search_algorithm,
+                "final_log_likelihood": format(row.final_log_likelihood, ".15g"),
+            }
+            for row in report.observations
+        ],
+    )
+
+
+def write_native_maximum_likelihood_speed_trend_table(
+    path: Path,
+    report: NativeMaximumLikelihoodSpeedBenchmarkReport,
+) -> Path:
+    """Write one stable runtime trend row per native ML model and search lane."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "model_name",
+            "search_method",
+            "baseline_size_class",
+            "comparison_size_class",
+            "baseline_taxon_count",
+            "comparison_taxon_count",
+            "baseline_site_count",
+            "comparison_site_count",
+            "baseline_runtime_seconds",
+            "comparison_runtime_seconds",
+            "runtime_delta_seconds",
+            "runtime_ratio",
+        ],
+        rows=[
+            {
+                "model_name": row.model_name,
+                "search_method": row.search_method,
+                "baseline_size_class": row.baseline_size_class,
+                "comparison_size_class": row.comparison_size_class,
+                "baseline_taxon_count": row.baseline_taxon_count,
+                "comparison_taxon_count": row.comparison_taxon_count,
+                "baseline_site_count": row.baseline_site_count,
+                "comparison_site_count": row.comparison_site_count,
+                "baseline_runtime_seconds": format(
+                    row.baseline_runtime_seconds,
+                    ".15g",
+                ),
+                "comparison_runtime_seconds": format(
+                    row.comparison_runtime_seconds,
+                    ".15g",
+                ),
+                "runtime_delta_seconds": format(row.runtime_delta_seconds, ".15g"),
+                "runtime_ratio": format(row.runtime_ratio, ".15g"),
+            }
+            for row in report.trend_rows
+        ],
+    )
+
+
+def write_native_maximum_likelihood_speed_run_json(
+    path: Path,
+    report: NativeMaximumLikelihoodSpeedBenchmarkReport,
+) -> Path:
+    """Write the machine-readable native ML speed benchmark payload."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(asdict(report), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return path
 
 
 def write_maximum_likelihood_wrapper_comparison_summary_table(

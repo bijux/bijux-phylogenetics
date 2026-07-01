@@ -34,6 +34,7 @@ from .contracts import (
     MaximumLikelihoodWrapperBenchmarkReport,
     MaximumLikelihoodWrapperBenchmarkSummaryRow,
     MaximumLikelihoodWrapperSupportComparison,
+    NativeMaximumLikelihoodSpeedBenchmarkBundle,
     NativeMaximumLikelihoodSpeedBenchmarkObservation,
     NativeMaximumLikelihoodSpeedBenchmarkReport,
     NativeMaximumLikelihoodSpeedTrendRow,
@@ -43,6 +44,10 @@ from .artifact_outputs import (
     write_maximum_likelihood_wrapper_comparison_observation_table,
     write_maximum_likelihood_wrapper_comparison_run_json,
     write_maximum_likelihood_wrapper_comparison_summary_table,
+    write_native_maximum_likelihood_speed_observation_table,
+    write_native_maximum_likelihood_speed_run_json,
+    write_native_maximum_likelihood_speed_summary_table,
+    write_native_maximum_likelihood_speed_trend_table,
 )
 
 _MAXIMUM_LIKELIHOOD_WRAPPER_BENCHMARK_STATUSES = (
@@ -208,6 +213,59 @@ def benchmark_maximum_likelihood_wrapper_comparison() -> (
             "the fasttree lane remains an expected model-assumption difference because FastTree uses an approximate JC+CAT likelihood surface and the cached tiny-alignment support output does not expose a separate comparable split-support table",
             "the raxml lane remains explicitly unsupported until one governed small-reference corpus with runtime, memory, likelihood, topology, and support evidence is checked in",
         ],
+    )
+
+
+def write_native_maximum_likelihood_speed_bundle(
+    output_root: Path,
+    *,
+    replicates: int = 1,
+    size_classes: list[tuple[str, int, int]] | None = None,
+    model_names: list[str] | tuple[str, ...] | None = None,
+    search_methods: list[str] | tuple[str, ...] | None = None,
+    start_tree_count: int = 1,
+    start_tree_seed: int = 17,
+    upper_branch_length_bound: float = 1.0,
+) -> NativeMaximumLikelihoodSpeedBenchmarkBundle:
+    """Write one governed artifact bundle for the native ML speed benchmark."""
+    if output_root.exists():
+        for path in sorted(output_root.rglob("*"), reverse=True):
+            if path.is_file():
+                path.unlink()
+            elif path.is_dir():
+                path.rmdir()
+    output_root.mkdir(parents=True, exist_ok=True)
+    report = benchmark_native_maximum_likelihood_speed(
+        replicates=replicates,
+        size_classes=size_classes,
+        model_names=model_names,
+        search_methods=search_methods,
+        start_tree_count=start_tree_count,
+        start_tree_seed=start_tree_seed,
+        upper_branch_length_bound=upper_branch_length_bound,
+    )
+    summary_path = write_native_maximum_likelihood_speed_summary_table(
+        output_root / "summary.tsv",
+        report,
+    )
+    observation_table_path = write_native_maximum_likelihood_speed_observation_table(
+        output_root / "observations.tsv",
+        report,
+    )
+    trend_table_path = write_native_maximum_likelihood_speed_trend_table(
+        output_root / "trends.tsv",
+        report,
+    )
+    run_json_path = write_native_maximum_likelihood_speed_run_json(
+        output_root / "run.json",
+        report,
+    )
+    return NativeMaximumLikelihoodSpeedBenchmarkBundle(
+        output_root=output_root,
+        summary_path=summary_path,
+        observation_table_path=observation_table_path,
+        trend_table_path=trend_table_path,
+        run_json_path=run_json_path,
     )
 
 
