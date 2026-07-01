@@ -278,6 +278,24 @@ def _normalize_outgroup_rooting_to_ape(
     return rooted_tree
 
 
+def root_unrooted_tree_deterministically(tree: PhyloTree) -> PhyloTree:
+    """Convert one explicit unrooted trifurcation into a deterministic rooted binary tree."""
+    working_tree = tree.copy().refresh()
+    if working_tree.rooted and len(working_tree.root.children) == 2:
+        return working_tree
+    if len(working_tree.root.children) != 3:
+        raise ValueError(
+            "deterministic rooting requires an explicit unrooted trifurcation at the root"
+        )
+    outgroup_node = max(
+        working_tree.root.children,
+        key=lambda child: (len(_descendant_taxa(child)), _descendant_taxa(child)),
+    )
+    rooted_tree = _root_tree_by_outgroup_node(working_tree, outgroup_node=outgroup_node)
+    rooted_tree.rooted = True
+    return rooted_tree.refresh()
+
+
 def write_tree_rooting_report(path: Path, report: TreeRootingReport) -> Path:
     """Write one durable TSV summary for a rooting transform."""
     path.parent.mkdir(parents=True, exist_ok=True)
