@@ -417,15 +417,6 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
-        / "test_rabies_cross_host_geography_panel_dataset.py": {
-            "test_write_rabies_cross_host_geography_panel_workflow_bundle_matches_packaged_expected_outputs",
-            "test_run_rabies_cross_host_geography_panel_demo_materializes_dataset_and_workflow",
-            "test_cli_demo_rabies_cross_host_geography_panel_json_output_reports_integrated_workflow",
-        },
-        REPO_ROOT
-        / "packages"
-        / "bijux-phylogenetics"
-        / "tests"
         / "test_influenza_a_ha_reference_dataset.py": {
             "test_write_influenza_a_ha_reference_workflow_bundle_matches_packaged_expected_outputs",
             "test_run_influenza_a_ha_reference_demo_materializes_dataset_and_workflow",
