@@ -20,6 +20,7 @@ from bijux_phylogenetics.phylo.likelihood.gtr import (
     optimize_gtr_exchangeabilities,
 )
 from bijux_phylogenetics.phylo.likelihood.hky85 import (
+    evaluate_hky85_tree_likelihood,
     optimize_hky85_kappa,
 )
 from bijux_phylogenetics.phylo.likelihood.jc69 import (
@@ -140,6 +141,8 @@ def optimize_nucleotide_substitution_parameters(
             initial_exchangeabilities=initial_exchangeabilities,
             lower_exchangeability_bound=lower_exchangeability_bound,
             upper_exchangeability_bound=upper_exchangeability_bound,
+            max_coordinate_passes=max_coordinate_passes,
+            improvement_tolerance=improvement_tolerance,
         )
     return _optimize_gtr_substitution_parameters(
         tree,
@@ -337,7 +340,7 @@ def _optimize_k80_substitution_parameters(
     )
     parameter_row, warnings = _parameter_row_with_boundary_warnings(
         parameter_name="kappa",
-        initial_value=optimization_report.initial_kappa,
+        initial_value=validated_initial_kappa,
         optimized_value=optimization_report.optimized_kappa,
         lower_bound=optimization_report.lower_kappa_bound,
         upper_bound=optimization_report.upper_kappa_bound,
@@ -532,6 +535,8 @@ def _optimize_hky85_substitution_parameters(
     ),
     lower_exchangeability_bound: float | None,
     upper_exchangeability_bound: float | None,
+    max_coordinate_passes: int,
+    improvement_tolerance: float,
 ) -> NucleotideSubstitutionParameterOptimizationReport:
     _reject_irrelevant_parameter(
         "HKY85 substitution optimization",
@@ -556,22 +561,41 @@ def _optimize_hky85_substitution_parameters(
             upper_kappa_bound=upper_kappa_bound,
         )
     )
-    optimization_report = optimize_hky85_kappa(
-        tree,
-        records,
-        base_frequencies=base_frequencies,
-        initial_kappa=validated_initial_kappa,
-        lower_kappa_bound=validated_lower_bound,
-        upper_kappa_bound=validated_upper_bound,
-    )
+    if base_frequencies is not None:
+        optimization_report = optimize_hky85_kappa(
+            tree,
+            records,
+            base_frequencies=base_frequencies,
+            initial_kappa=validated_initial_kappa,
+            lower_kappa_bound=validated_lower_bound,
+            upper_kappa_bound=validated_upper_bound,
+        )
+        optimization_pass_count = 1
+        function_evaluation_count = optimization_report.function_evaluation_count
+        converged = optimization_report.converged
+    else:
+        (
+            optimization_report,
+            function_evaluation_count,
+            optimization_pass_count,
+            converged,
+        ) = _optimize_estimated_hky85_kappa_and_base_frequencies(
+            tree,
+            records,
+            initial_kappa=validated_initial_kappa,
+            lower_kappa_bound=validated_lower_bound,
+            upper_kappa_bound=validated_upper_bound,
+            max_joint_passes=max_coordinate_passes,
+            improvement_tolerance=improvement_tolerance,
+        )
     parameter_row, warnings = _parameter_row_with_boundary_warnings(
         parameter_name="kappa",
-        initial_value=optimization_report.initial_kappa,
+        initial_value=validated_initial_kappa,
         optimized_value=optimization_report.optimized_kappa,
         lower_bound=optimization_report.lower_kappa_bound,
         upper_bound=optimization_report.upper_kappa_bound,
     )
-    if not optimization_report.converged:
+    if not converged:
         warnings.append("HKY85 substitution-parameter search did not converge")
     boundary_warnings = build_substitution_parameter_boundary_warnings([parameter_row])
     boundary_warnings.extend(
@@ -581,6 +605,11 @@ def _optimize_hky85_substitution_parameters(
             base_frequency_c=optimization_report.base_frequency_c,
             base_frequency_g=optimization_report.base_frequency_g,
             base_frequency_t=optimization_report.base_frequency_t,
+            lower_frequency_bound=(
+                _DEFAULT_MINIMUM_BASE_FREQUENCY
+                if base_frequencies is None
+                else 0.0
+            ),
         )
     )
     warnings.extend(
@@ -606,9 +635,9 @@ def _optimize_hky85_substitution_parameters(
         optimized_log_likelihood=optimization_report.optimized_log_likelihood,
         initial_aic=optimization_report.initial_aic,
         optimized_aic=optimization_report.optimized_aic,
-        function_evaluation_count=optimization_report.function_evaluation_count,
-        optimization_pass_count=1,
-        converged=optimization_report.converged,
+        function_evaluation_count=function_evaluation_count,
+        optimization_pass_count=optimization_pass_count,
+        converged=converged,
         boundary_warnings=boundary_warnings,
         warnings=warnings,
     )
@@ -751,6 +780,118 @@ def _evaluate_f81_frequency_candidate(
         base_frequencies=candidate_base_frequencies,
     )
     return report, report.log_likelihood
+
+
+def _optimize_estimated_hky85_kappa_and_base_frequencies(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    initial_kappa: float,
+    lower_kappa_bound: float,
+    upper_kappa_bound: float,
+    max_joint_passes: int,
+    improvement_tolerance: float,
+):
+    current_optimization_report = optimize_hky85_kappa(
+        tree,
+        records,
+        initial_kappa=initial_kappa,
+        lower_kappa_bound=lower_kappa_bound,
+        upper_kappa_bound=upper_kappa_bound,
+    )
+    current_base_frequencies = _resolved_report_base_frequencies(
+        current_optimization_report
+    )
+    current_kappa = current_optimization_report.optimized_kappa
+    current_objective = current_optimization_report.optimized_log_likelihood
+    total_function_evaluation_count = (
+        current_optimization_report.function_evaluation_count
+    )
+    scalar_searches_converged = current_optimization_report.converged
+    executed_joint_pass_count = 0
+    schedule_converged = False
+
+    for joint_pass_index in range(1, max_joint_passes + 1):
+        executed_joint_pass_count = joint_pass_index
+        frequency_search = run_simplex_likelihood_search(
+            initial_values_by_name=current_base_frequencies,
+            expected_component_names=DNA_STATE_ORDER,
+            owner_name="HKY85 substitution optimization",
+            evaluate=lambda candidate: _evaluate_hky85_frequency_candidate(
+                tree,
+                records,
+                candidate,
+                current_kappa=current_kappa,
+            ),
+            minimum_component_value=_DEFAULT_MINIMUM_BASE_FREQUENCY,
+            improvement_tolerance=improvement_tolerance,
+            max_coordinate_passes=1,
+        )
+        total_function_evaluation_count += frequency_search.function_evaluation_count
+        current_base_frequencies = _resolved_report_base_frequencies(
+            frequency_search.payload
+        )
+
+        kappa_report = optimize_hky85_kappa(
+            tree,
+            records,
+            base_frequencies=current_base_frequencies,
+            initial_kappa=current_kappa,
+            lower_kappa_bound=lower_kappa_bound,
+            upper_kappa_bound=upper_kappa_bound,
+        )
+        total_function_evaluation_count += kappa_report.function_evaluation_count
+        scalar_searches_converged = scalar_searches_converged and kappa_report.converged
+        if (
+            frequency_search.payload.log_likelihood
+            <= (current_objective + improvement_tolerance)
+            and kappa_report.optimized_log_likelihood
+            <= (current_objective + improvement_tolerance)
+        ):
+            schedule_converged = True
+            break
+        current_kappa = kappa_report.optimized_kappa
+        current_objective = kappa_report.optimized_log_likelihood
+        current_optimization_report = replace(
+            kappa_report,
+            base_frequency_source="estimated",
+            base_frequency_a=current_base_frequencies["A"],
+            base_frequency_c=current_base_frequencies["C"],
+            base_frequency_g=current_base_frequencies["G"],
+            base_frequency_t=current_base_frequencies["T"],
+        )
+
+    return (
+        current_optimization_report,
+        total_function_evaluation_count,
+        max(1, executed_joint_pass_count),
+        schedule_converged and scalar_searches_converged,
+    )
+
+
+def _evaluate_hky85_frequency_candidate(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    candidate_base_frequencies: dict[str, float],
+    *,
+    current_kappa: float,
+) -> tuple[object, float]:
+    report = evaluate_hky85_tree_likelihood(
+        tree,
+        records,
+        base_frequencies=candidate_base_frequencies,
+        kappa=current_kappa,
+    )
+    return report, report.log_likelihood
+
+
+def _resolved_report_base_frequencies(report) -> dict[str, float]:
+    return {
+        "A": float(report.base_frequency_a),
+        "C": float(report.base_frequency_c),
+        "G": float(report.base_frequency_g),
+        "T": float(report.base_frequency_t),
+    }
 
 
 def _parameter_row_with_boundary_warnings(
