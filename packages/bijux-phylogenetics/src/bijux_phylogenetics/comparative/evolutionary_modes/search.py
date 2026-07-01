@@ -127,6 +127,7 @@ def best_transformed_mode_fit(
         converged=search_result.diagnostics.converged,
         hit_lower_boundary=search_result.diagnostics.hit_lower_boundary,
         hit_upper_boundary=search_result.diagnostics.hit_upper_boundary,
+        failure_reason=search_result.diagnostics.failure_reason,
     )
     return TransformedModeSearchResult(
         parameter_value=search_result.parameter_value,
@@ -196,6 +197,7 @@ def best_pagel_lambda_fit(
         converged=search_result.diagnostics.converged,
         hit_lower_boundary=search_result.diagnostics.hit_lower_boundary,
         hit_upper_boundary=search_result.diagnostics.hit_upper_boundary,
+        failure_reason=search_result.diagnostics.failure_reason,
     )
     return TransformedModeSearchResult(
         parameter_value=search_result.parameter_value,

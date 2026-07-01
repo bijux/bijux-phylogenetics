@@ -108,6 +108,7 @@ class ContinuousModeOptimizerDiagnostics:
     converged: bool
     hit_lower_boundary: bool
     hit_upper_boundary: bool
+    failure_reason: str | None = None
 
 
 @dataclass(slots=True)

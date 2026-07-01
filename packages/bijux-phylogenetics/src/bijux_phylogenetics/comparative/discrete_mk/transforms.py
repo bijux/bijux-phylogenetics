@@ -367,6 +367,8 @@ def fit_discrete_mk_parameterized_transform_surface(
             for row in search_result.profile_rows
         ],
         warnings=transform_warning_rows,
+        converged=search_result.diagnostics.converged,
+        failure_reason=search_result.diagnostics.failure_reason,
     )
     return (
         transformed_tree,

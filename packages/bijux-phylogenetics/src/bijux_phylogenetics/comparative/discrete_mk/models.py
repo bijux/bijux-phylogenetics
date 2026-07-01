@@ -115,6 +115,8 @@ class DiscreteMkTransformFit:
     transformed_tree_maximum_tip_depth: float
     profile_rows: list[DiscreteMkTransformProfileRow]
     warnings: list[DiscreteMkTransformWarning]
+    converged: bool = True
+    failure_reason: str | None = None
 
 
 @dataclass(slots=True)

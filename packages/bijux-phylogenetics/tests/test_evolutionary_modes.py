@@ -477,6 +477,7 @@ def test_fit_continuous_evolutionary_mode_records_bounded_search_controls() -> N
     assert fit.optimizer_diagnostics.fine_grid_point_count == 31
     assert fit.optimizer_diagnostics.function_evaluation_count >= 71
     assert fit.optimizer_diagnostics.hit_upper_boundary is True
+    assert fit.optimizer_diagnostics.failure_reason is None
 
 
 def test_fit_continuous_evolutionary_mode_rejects_out_of_bounds_initial_parameter_value() -> (
@@ -752,6 +753,7 @@ def test_fit_continuous_evolutionary_mode_supports_early_burst() -> None:
     assert fit.aic > 0.0
     assert fit.optimizer_diagnostics is not None
     assert fit.optimizer_diagnostics.optimizer_name == "governed-two-stage-grid-search"
+    assert fit.optimizer_diagnostics.failure_reason is None
     assert [warning.kind for warning in fit.identifiability_warnings] == [
         "boundary_rate_change",
         "flat_likelihood_profile",
@@ -932,6 +934,7 @@ def test_fit_continuous_evolutionary_mode_supports_pagel_lambda_strong_signal() 
     assert fit.optimizer_diagnostics is not None
     assert fit.optimizer_diagnostics.hit_lower_boundary is False
     assert fit.optimizer_diagnostics.hit_upper_boundary is True
+    assert fit.optimizer_diagnostics.failure_reason is None
     assert fit.aicc >= fit.aic
     assert "phytools::phylosig" in fit.assumptions[1]
     assert [warning.kind for warning in fit.identifiability_warnings] == [
@@ -966,6 +969,7 @@ def test_fit_continuous_evolutionary_mode_supports_pagel_lambda_weak_signal() ->
     assert fit.optimizer_diagnostics is not None
     assert fit.optimizer_diagnostics.hit_lower_boundary is True
     assert fit.optimizer_diagnostics.hit_upper_boundary is False
+    assert fit.optimizer_diagnostics.failure_reason is None
     assert [warning.kind for warning in fit.identifiability_warnings] == [
         "boundary_lambda",
         "flat_likelihood",

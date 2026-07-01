@@ -570,6 +570,8 @@ def test_fit_discrete_mk_model_matches_governed_geiger_er_lambda_surface() -> No
         abs_tol=1e-12,
     )
     assert report.transform_fit.refinement_start_count == 1
+    assert report.transform_fit.converged is True
+    assert report.transform_fit.failure_reason is None
 
 
 @pytest.mark.slow
@@ -598,6 +600,8 @@ def test_fit_discrete_mk_model_marks_governed_geiger_lambda_weak_signal_surface(
         rel_tol=0.0,
         abs_tol=1e-6,
     )
+    assert report.transform_fit.converged is True
+    assert report.transform_fit.failure_reason is None
     assert any(
         warning.kind == "weak_phylogenetic_signal"
         for warning in report.transform_fit.warnings
@@ -1022,6 +1026,8 @@ def test_fit_discrete_mk_model_matches_governed_geiger_er_early_burst_surface() 
         rel_tol=0.0,
         abs_tol=1e-6,
     )
+    assert report.transform_fit.converged is True
+    assert report.transform_fit.failure_reason is None
     assert math.isclose(
         _single_allowed_rate(report),
         0.018860745234985883,
@@ -1056,6 +1062,8 @@ def test_fit_discrete_mk_model_marks_governed_geiger_early_burst_weak_signal_sur
         rel_tol=0.0,
         abs_tol=1e-6,
     )
+    assert report.transform_fit.converged is True
+    assert report.transform_fit.failure_reason is None
     assert any(
         warning.kind == "brownian_like_rate_change"
         for warning in report.transform_fit.warnings

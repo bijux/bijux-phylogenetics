@@ -97,6 +97,19 @@ def run_bounded_scalar_maximization(
         )
     )
     cache: dict[float, tuple[_PayloadT, float]] = {}
+    objective_tie_tolerance = 1e-12
+
+    def candidate_beats(
+        candidate_parameter: float,
+        candidate_objective_value: float,
+        incumbent_parameter: float,
+        incumbent_objective_value: float,
+    ) -> bool:
+        del candidate_parameter
+        del incumbent_parameter
+        return candidate_objective_value > (
+            incumbent_objective_value + objective_tie_tolerance
+        )
 
     def evaluate_cached(parameter_value: float) -> tuple[_PayloadT, float]:
         cache_key = round(parameter_value, 12)
@@ -124,7 +137,12 @@ def run_bounded_scalar_maximization(
         profile_by_parameter[round(candidate, 12)] = objective_value
         coarse_rows.append((candidate, objective_value))
         coarse_results.append((candidate, payload, objective_value))
-        if objective_value > best_objective_value:
+        if candidate_beats(
+            candidate,
+            objective_value,
+            best_parameter,
+            best_objective_value,
+        ):
             best_parameter = candidate
             best_payload = payload
             best_objective_value = objective_value
@@ -162,7 +180,12 @@ def run_bounded_scalar_maximization(
             evaluate=evaluate_cached,
             profile_by_parameter=profile_by_parameter,
         )
-        if candidate_best_objective > best_objective_value:
+        if candidate_beats(
+            candidate_best_parameter,
+            candidate_best_objective,
+            best_parameter,
+            best_objective_value,
+        ):
             best_parameter = candidate_best_parameter
             best_payload = candidate_best_payload
             best_objective_value = candidate_best_objective
