@@ -20,12 +20,18 @@ from bijux_phylogenetics.phylo.topology.clades import (
 )
 
 from .contracts import (
+    MaximumLikelihoodWrapperBenchmarkBundle,
     MaximumLikelihoodWrapperBenchmarkObservation,
     MaximumLikelihoodWrapperBenchmarkReport,
     MaximumLikelihoodWrapperBenchmarkSummaryRow,
     MaximumLikelihoodWrapperSupportComparison,
 )
 from .wrapper_references import MAXIMUM_LIKELIHOOD_WRAPPER_REFERENCE_PAYLOADS
+from .artifact_outputs import (
+    write_maximum_likelihood_wrapper_comparison_observation_table,
+    write_maximum_likelihood_wrapper_comparison_run_json,
+    write_maximum_likelihood_wrapper_comparison_summary_table,
+)
 
 _MAXIMUM_LIKELIHOOD_WRAPPER_BENCHMARK_STATUSES = (
     "tolerance-match",
@@ -104,6 +110,40 @@ def benchmark_maximum_likelihood_wrapper_comparison() -> (
             "the fasttree lane remains an expected model-assumption difference because FastTree uses an approximate JC+CAT likelihood surface and the cached tiny-alignment support output does not expose a separate comparable split-support table",
             "the raxml lane remains explicitly unsupported until one governed small-reference corpus with runtime, memory, likelihood, topology, and support evidence is checked in",
         ],
+    )
+
+
+def write_maximum_likelihood_wrapper_comparison_bundle(
+    output_root: Path,
+) -> MaximumLikelihoodWrapperBenchmarkBundle:
+    """Write one governed artifact bundle for the maximum-likelihood wrapper benchmark."""
+    if output_root.exists():
+        for path in sorted(output_root.rglob("*"), reverse=True):
+            if path.is_file():
+                path.unlink()
+            elif path.is_dir():
+                path.rmdir()
+    output_root.mkdir(parents=True, exist_ok=True)
+    report = benchmark_maximum_likelihood_wrapper_comparison()
+    summary_path = write_maximum_likelihood_wrapper_comparison_summary_table(
+        output_root / "summary.tsv",
+        report,
+    )
+    observation_table_path = (
+        write_maximum_likelihood_wrapper_comparison_observation_table(
+            output_root / "observations.tsv",
+            report,
+        )
+    )
+    run_json_path = write_maximum_likelihood_wrapper_comparison_run_json(
+        output_root / "run.json",
+        report,
+    )
+    return MaximumLikelihoodWrapperBenchmarkBundle(
+        output_root=output_root,
+        summary_path=summary_path,
+        observation_table_path=observation_table_path,
+        run_json_path=run_json_path,
     )
 
 

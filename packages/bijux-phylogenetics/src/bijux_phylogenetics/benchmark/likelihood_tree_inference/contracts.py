@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass(slots=True)
@@ -72,3 +73,13 @@ class MaximumLikelihoodWrapperBenchmarkReport:
     blocking_case_count: int
     all_supported_cases_clear: bool
     limitations: list[str]
+
+
+@dataclass(slots=True)
+class MaximumLikelihoodWrapperBenchmarkBundle:
+    """Written artifact bundle for one native-versus-wrapper ML benchmark run."""
+
+    output_root: Path
+    summary_path: Path
+    observation_table_path: Path
+    run_json_path: Path
