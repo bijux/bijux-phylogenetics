@@ -2122,6 +2122,7 @@ class ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport:
     log_likelihood: float
     function_evaluation_count: int
     converged: bool
+    fit_assessment: LikelihoodFitAssessment
     lower_invariant_proportion_bound: float
     upper_invariant_proportion_bound: float
     hit_lower_invariant_proportion_boundary: bool

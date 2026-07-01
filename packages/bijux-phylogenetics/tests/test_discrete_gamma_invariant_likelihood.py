@@ -81,6 +81,7 @@ def test_discrete_gamma_invariant_mixture_reports_alpha_invariant_and_total_like
     )
     assert report.function_evaluation_count == 46
     assert report.converged is True
+    assert report.fit_assessment.classification == "stable"
     assert report.optimizer_diagnostics is not None
     assert (
         report.optimizer_diagnostics.lower_bound
@@ -204,6 +205,7 @@ def test_discrete_gamma_invariant_mixture_boundary_warning_reports_bound_hit() -
     )
     assert report.hit_lower_invariant_proportion_boundary is True
     assert report.hit_upper_invariant_proportion_boundary is False
+    assert report.fit_assessment.classification == "boundary"
     assert report.boundary_warnings == [
         "invariant proportion hit lower search boundary"
     ]
@@ -234,6 +236,7 @@ def test_discrete_gamma_invariant_evaluation_wrapper_can_emit_boundary_warning()
 
     assert report.hit_lower_invariant_proportion_boundary is True
     assert report.hit_upper_invariant_proportion_boundary is False
+    assert report.fit_assessment.classification == "boundary"
     assert report.boundary_warnings == [
         "invariant proportion hit lower search boundary"
     ]
