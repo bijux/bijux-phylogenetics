@@ -151,6 +151,8 @@ __all__ = [
     "build_likelihood_stepwise_addition_tree_from_alignment",
     "build_base_frequency_boundary_warnings",
     "build_branch_length_boundary_warnings",
+    "build_invariant_proportion_boundary_warnings",
+    "build_rate_heterogeneity_alpha_boundary_warnings",
     "build_substitution_parameter_boundary_warnings",
     "compare_nucleotide_substitution_models",
     "compare_nucleotide_substitution_models_from_alignment",
