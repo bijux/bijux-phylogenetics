@@ -223,6 +223,8 @@ __all__ = [
     "evaluate_nucleotide_marginal_ancestral_probabilities_from_alignment",
     "evaluate_protein_poisson_tree_likelihood",
     "evaluate_protein_poisson_tree_likelihood_from_alignment",
+    "evaluate_protein_poisson_tree_likelihood_with_invariant_mixture",
+    "evaluate_protein_poisson_tree_likelihood_with_invariant_mixture_from_alignment",
     "evaluate_protein_poisson_branch_likelihood_diagnostics",
     "evaluate_protein_poisson_branch_likelihood_diagnostics_from_alignment",
     "evaluate_jc69_tree_likelihood",
