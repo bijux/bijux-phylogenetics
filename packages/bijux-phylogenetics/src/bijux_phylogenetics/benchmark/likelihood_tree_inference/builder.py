@@ -3,13 +3,22 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 from pathlib import Path
+import tempfile
 import time
 import tracemalloc
 
+from bijux_phylogenetics.benchmark._fixtures import (
+    NATIVE_MAXIMUM_LIKELIHOOD_SPEED_SIZE_CLASSES,
+    write_large_nucleotide_alignment,
+)
 from bijux_phylogenetics.io.newick import loads_newick
 from bijux_phylogenetics.phylo.likelihood import (
     bootstrap_nucleotide_likelihood_tree_inference_from_alignment,
     infer_nucleotide_likelihood_tree_from_alignment,
+    validate_nucleotide_likelihood_tree_inference_search_method,
+)
+from bijux_phylogenetics.phylo.likelihood.nucleotide_models import (
+    validate_selected_nucleotide_likelihood_model,
 )
 from bijux_phylogenetics.phylo.topology.clades import (
     canonical_bipartition,
@@ -25,6 +34,9 @@ from .contracts import (
     MaximumLikelihoodWrapperBenchmarkReport,
     MaximumLikelihoodWrapperBenchmarkSummaryRow,
     MaximumLikelihoodWrapperSupportComparison,
+    NativeMaximumLikelihoodSpeedBenchmarkObservation,
+    NativeMaximumLikelihoodSpeedBenchmarkReport,
+    NativeMaximumLikelihoodSpeedTrendRow,
 )
 from .wrapper_references import MAXIMUM_LIKELIHOOD_WRAPPER_REFERENCE_PAYLOADS
 from .artifact_outputs import (
@@ -41,6 +53,12 @@ _MAXIMUM_LIKELIHOOD_WRAPPER_BENCHMARK_STATUSES = (
 )
 _LIKELIHOOD_TOLERANCE = 1e-3
 _SUPPORT_TOLERANCE = 1e-9
+_SUPPORTED_NATIVE_MAXIMUM_LIKELIHOOD_SPEED_MODEL_NAMES = (
+    "jc69",
+    "k80",
+    "f81",
+    "hky85",
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -62,6 +80,86 @@ class _MeasuredNativeBootstrapSupport:
     tree_newick: str
     topology_signature: tuple[str, ...]
     support_by_split_id: dict[str, float]
+
+
+def benchmark_native_maximum_likelihood_speed(
+    *,
+    replicates: int = 1,
+    size_classes: list[tuple[str, int, int]] | None = None,
+    model_names: list[str] | tuple[str, ...] | None = None,
+    search_methods: list[str] | tuple[str, ...] | None = None,
+    start_tree_count: int = 1,
+    start_tree_seed: int = 17,
+    upper_branch_length_bound: float = 1.0,
+) -> NativeMaximumLikelihoodSpeedBenchmarkReport:
+    """Benchmark native ML runtime across governed model, size, and search lanes."""
+    if replicates < 1:
+        raise ValueError(f"replicates must be at least 1, got {replicates}")
+    if start_tree_count < 1:
+        raise ValueError(f"start_tree_count must be at least 1, got {start_tree_count}")
+    resolved_size_classes = _validate_native_maximum_likelihood_speed_size_classes(
+        size_classes or list(NATIVE_MAXIMUM_LIKELIHOOD_SPEED_SIZE_CLASSES)
+    )
+    resolved_model_names = _validate_native_maximum_likelihood_speed_model_names(
+        model_names or _SUPPORTED_NATIVE_MAXIMUM_LIKELIHOOD_SPEED_MODEL_NAMES
+    )
+    resolved_search_methods = [
+        validate_nucleotide_likelihood_tree_inference_search_method(search_method)
+        for search_method in (
+            search_methods
+            or ("nni", "spr", "tbr")
+        )
+    ]
+
+    observations: list[NativeMaximumLikelihoodSpeedBenchmarkObservation] = []
+    with tempfile.TemporaryDirectory(
+        prefix="bijux-native-maximum-likelihood-speed-"
+    ) as tmpdir:
+        tmp_path = Path(tmpdir)
+        for size_class, taxon_count, site_count in resolved_size_classes:
+            alignment_path = write_large_nucleotide_alignment(
+                tmp_path / f"{size_class}.fasta",
+                sequence_count=taxon_count,
+                sequence_length=site_count,
+            )
+            for model_name in resolved_model_names:
+                for search_method in resolved_search_methods:
+                    observations.append(
+                        _measure_native_maximum_likelihood_speed_observation(
+                            alignment_path,
+                            size_class=size_class,
+                            model_name=model_name,
+                            search_method=search_method,
+                            taxon_count=taxon_count,
+                            site_count=site_count,
+                            replicates=replicates,
+                            start_tree_count=start_tree_count,
+                            start_tree_seed=start_tree_seed,
+                            upper_branch_length_bound=upper_branch_length_bound,
+                        )
+                    )
+
+    size_class_labels = [label for label, _, _ in resolved_size_classes]
+    trend_rows = _build_native_maximum_likelihood_speed_trend_rows(
+        observations,
+        size_class_labels=size_class_labels,
+        model_names=resolved_model_names,
+        search_methods=resolved_search_methods,
+    )
+    return NativeMaximumLikelihoodSpeedBenchmarkReport(
+        replicates=replicates,
+        observations=observations,
+        trend_rows=trend_rows,
+        size_class_labels=size_class_labels,
+        model_names=list(resolved_model_names),
+        search_methods=resolved_search_methods,
+        limitations=[
+            "native maximum-likelihood speed lanes use deterministic synthetic nucleotide alignments so runtime trends measure owned search cost without external engine variance",
+            "replicates reuse the same governed start-tree seed so runtime comparisons stay lane-stable rather than mixing stochastic workload differences into the benchmark",
+            "the governed native speed roster currently excludes fixed-parameter GTR because fixed-tree native inference still requires caller-supplied exchangeabilities for that lane",
+            "peak memory is recorded with python tracemalloc as supporting context, but this benchmark treats runtime trend reporting as the primary completion signal",
+        ],
+    )
 
 
 def benchmark_maximum_likelihood_wrapper_comparison() -> (
@@ -208,6 +306,143 @@ def _measure_callback(callback):
         _, peak_memory_bytes = tracemalloc.get_traced_memory()
         tracemalloc.stop()
     return report, round(elapsed_seconds, 15), peak_memory_bytes
+
+
+def _measure_native_maximum_likelihood_speed_observation(
+    alignment_path: Path,
+    *,
+    size_class: str,
+    model_name: str,
+    search_method: str,
+    taxon_count: int,
+    site_count: int,
+    replicates: int,
+    start_tree_count: int,
+    start_tree_seed: int,
+    upper_branch_length_bound: float,
+) -> NativeMaximumLikelihoodSpeedBenchmarkObservation:
+    runtimes: list[float] = []
+    peak_memory_bytes = 0
+    report = None
+    for _ in range(replicates):
+        report, runtime_seconds, observed_peak_memory_bytes = _measure_callback(
+            lambda: infer_nucleotide_likelihood_tree_from_alignment(
+                alignment_path,
+                model_name=model_name,
+                search_method=search_method,
+                start_tree_count=start_tree_count,
+                start_tree_seed=start_tree_seed,
+                upper_branch_length_bound=upper_branch_length_bound,
+            )
+        )
+        runtimes.append(runtime_seconds)
+        peak_memory_bytes = max(peak_memory_bytes, observed_peak_memory_bytes)
+    assert report is not None
+    return NativeMaximumLikelihoodSpeedBenchmarkObservation(
+        label=(
+            f"{size_class}-{model_name}-{search_method}-"
+            f"{taxon_count}-taxa-{site_count}-sites"
+        ),
+        size_class=size_class,
+        model_name=model_name,
+        search_method=search_method,
+        taxon_count=taxon_count,
+        site_count=site_count,
+        runtime_seconds=round(sum(runtimes) / len(runtimes), 15),
+        peak_memory_bytes=peak_memory_bytes,
+        selected_model_name=report.selected_model_name,
+        best_run_source_label=report.best_run_source_label,
+        search_algorithm=report.best_search_report.algorithm,
+        final_log_likelihood=report.best_final_log_likelihood,
+    )
+
+
+def _build_native_maximum_likelihood_speed_trend_rows(
+    observations: list[NativeMaximumLikelihoodSpeedBenchmarkObservation],
+    *,
+    size_class_labels: list[str],
+    model_names: list[str] | tuple[str, ...],
+    search_methods: list[str],
+) -> list[NativeMaximumLikelihoodSpeedTrendRow]:
+    observation_by_key = {
+        (row.model_name, row.search_method, row.size_class): row for row in observations
+    }
+    trend_rows: list[NativeMaximumLikelihoodSpeedTrendRow] = []
+    for baseline_size_class, comparison_size_class in zip(
+        size_class_labels,
+        size_class_labels[1:],
+        strict=False,
+    ):
+        for model_name in model_names:
+            for search_method in search_methods:
+                baseline = observation_by_key[
+                    (model_name, search_method, baseline_size_class)
+                ]
+                comparison = observation_by_key[
+                    (model_name, search_method, comparison_size_class)
+                ]
+                trend_rows.append(
+                    NativeMaximumLikelihoodSpeedTrendRow(
+                        model_name=model_name,
+                        search_method=search_method,
+                        baseline_size_class=baseline_size_class,
+                        comparison_size_class=comparison_size_class,
+                        baseline_taxon_count=baseline.taxon_count,
+                        comparison_taxon_count=comparison.taxon_count,
+                        baseline_site_count=baseline.site_count,
+                        comparison_site_count=comparison.site_count,
+                        baseline_runtime_seconds=baseline.runtime_seconds,
+                        comparison_runtime_seconds=comparison.runtime_seconds,
+                        runtime_delta_seconds=round(
+                            comparison.runtime_seconds - baseline.runtime_seconds,
+                            15,
+                        ),
+                        runtime_ratio=round(
+                            comparison.runtime_seconds / baseline.runtime_seconds,
+                            15,
+                        ),
+                    )
+                )
+    return trend_rows
+
+
+def _validate_native_maximum_likelihood_speed_size_classes(
+    size_classes: list[tuple[str, int, int]],
+) -> list[tuple[str, int, int]]:
+    if not size_classes:
+        raise ValueError("size_classes must contain at least one size class")
+    validated_size_classes: list[tuple[str, int, int]] = []
+    seen_labels: set[str] = set()
+    for size_class, taxon_count, site_count in size_classes:
+        if not size_class.strip():
+            raise ValueError("size class labels must be non-empty")
+        if size_class in seen_labels:
+            raise ValueError(f"duplicate size class label: {size_class}")
+        if taxon_count < 4:
+            raise ValueError("native ML speed benchmark requires at least 4 taxa")
+        if site_count < 2:
+            raise ValueError("native ML speed benchmark requires at least 2 sites")
+        seen_labels.add(size_class)
+        validated_size_classes.append((size_class, taxon_count, site_count))
+    return validated_size_classes
+
+
+def _validate_native_maximum_likelihood_speed_model_names(
+    model_names: list[str] | tuple[str, ...],
+) -> list[str]:
+    if not model_names:
+        raise ValueError("model_names must contain at least one fixed model")
+    validated_model_names: list[str] = []
+    for model_name in model_names:
+        normalized_model_name = validate_selected_nucleotide_likelihood_model(model_name)
+        if normalized_model_name not in _SUPPORTED_NATIVE_MAXIMUM_LIKELIHOOD_SPEED_MODEL_NAMES:
+            supported = ", ".join(_SUPPORTED_NATIVE_MAXIMUM_LIKELIHOOD_SPEED_MODEL_NAMES)
+            raise ValueError(
+                "native ML speed benchmark supports fixed models "
+                f"{supported}; got {model_name!r}"
+            )
+        validated_model_names.append(normalized_model_name)
+    return validated_model_names
 
 
 def _build_iqtree_maximum_likelihood_observation(
