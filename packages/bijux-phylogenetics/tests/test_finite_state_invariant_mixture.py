@@ -12,12 +12,19 @@ from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.likelihood import (
     AlignmentSitePattern,
     CompressedAlignmentSitePatterns,
+    compress_alignment_site_patterns_from_records,
+    evaluate_empirical_protein_tree_likelihood_with_invariant_mixture,
     evaluate_finite_state_tree_likelihood_with_invariant_mixture,
     evaluate_finite_state_tree_log_likelihood,
 )
 from bijux_phylogenetics.phylo.likelihood.discrete_finite_state import (
     build_discrete_mk_finite_state_surface,
 )
+from bijux_phylogenetics.phylo.likelihood.protein_finite_state import (
+    build_empirical_protein_finite_state_surface,
+)
+from bijux_phylogenetics.phylo.likelihood.poisson import protein_poisson_rate_matrix
+from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -97,6 +104,55 @@ def test_finite_state_invariant_mixture_keeps_invariant_mass_inside_likelihood()
         first_row.mixture_likelihood,
         (0.35 * first_row.invariant_component_likelihood)
         + (0.65 * first_row.variable_component_likelihood),
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
+def test_empirical_protein_invariant_wrapper_matches_shared_finite_state_engine() -> None:
+    tree = load_tree(fixture("empirical_protein_likelihood_tree_2_taxa.nwk"))
+    records = load_fasta_alignment(
+        FIXTURES / "alignments" / "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"
+    )
+    rate_matrix = protein_poisson_rate_matrix()
+    root_prior = numpy.full(20, 1.0 / 20.0, dtype=float)
+
+    wrapper_report = evaluate_empirical_protein_tree_likelihood_with_invariant_mixture(
+        tree,
+        records,
+        rate_matrix=rate_matrix,
+        invariant_proportion=0.35,
+        root_prior=root_prior,
+        matrix_label="poisson-like",
+    )
+    finite_state_report = evaluate_finite_state_tree_likelihood_with_invariant_mixture(
+        tree,
+        compress_alignment_site_patterns_from_records(records),
+        surface=build_empirical_protein_finite_state_surface(
+            records,
+            rate_matrix=rate_matrix,
+            root_prior=root_prior,
+            matrix_label="poisson-like",
+        ),
+        invariant_proportion=0.35,
+    )
+
+    assert math.isclose(
+        wrapper_report.log_likelihood,
+        finite_state_report.log_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert len(wrapper_report.site_likelihoods) == len(finite_state_report.site_likelihoods)
+    assert math.isclose(
+        wrapper_report.site_likelihoods[0].invariant_component_likelihood,
+        finite_state_report.site_likelihoods[0].invariant_component_likelihood,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        wrapper_report.site_likelihoods[0].variable_component_likelihood,
+        finite_state_report.site_likelihoods[0].variable_component_likelihood,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
