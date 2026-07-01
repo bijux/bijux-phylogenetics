@@ -225,6 +225,36 @@ def test_fit_discrete_mk_model_reports_binary_ard_surface() -> None:
     )
 
 
+def test_fit_discrete_mk_model_reports_ordered_model_baselines() -> None:
+    symmetric_report = fit_discrete_mk_model(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_geography.tsv"),
+        trait="region",
+        taxon_column="taxon",
+        model="symmetric",
+        state_ordering="ordered",
+        ordered_states=["north", "south", "island"],
+    )
+    ard_report = fit_discrete_mk_model(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_geography.tsv"),
+        trait="region",
+        taxon_column="taxon",
+        model="all-rates-different",
+        state_ordering="ordered",
+        ordered_states=["north", "south", "island"],
+    )
+
+    assert symmetric_report.parameter_count == 2
+    assert symmetric_report.baseline_comparison is not None
+    assert symmetric_report.baseline_comparison.baseline_model == "equal-rates"
+    assert symmetric_report.baseline_comparison.preferred_model_by_aic == "equal-rates"
+    assert ard_report.parameter_count == 4
+    assert ard_report.baseline_comparison is not None
+    assert ard_report.baseline_comparison.baseline_model == "equal-rates"
+    assert ard_report.baseline_comparison.preferred_model_by_aic == "equal-rates"
+
+
 @pytest.mark.slow
 def test_fit_discrete_mk_model_reports_multistate_ard_surface() -> None:
     fixture_entry = get_shared_phytools_comparative_fixture(
@@ -573,6 +603,31 @@ def test_compare_discrete_mk_model_ranking_reports_ranked_model_surface() -> Non
     assert report.rows[0].selected is True
     assert report.rows[0].akaike_weight is not None
     assert "equal-rates" in report.uncertainty_language
+
+
+def test_compare_discrete_mk_model_ranking_supports_ordered_state_models() -> None:
+    report = compare_discrete_mk_model_ranking(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_geography.tsv"),
+        trait="region",
+        taxon_column="taxon",
+        state_ordering="ordered",
+        ordered_states=["north", "south", "island"],
+    )
+
+    assert report.better_model == "equal-rates"
+    assert [row.model for row in report.rows] == [
+        "equal-rates",
+        "symmetric",
+        "all-rates-different",
+    ]
+    assert report.rows[0].rank == 1
+    assert report.rows[1].rank == 2
+    assert report.rows[2].rank is None
+    assert report.rows[0].selected is True
+    assert report.rows[1].selected is False
+    assert report.rows[2].selected is False
+    assert report.rows[2].comparable is False
 
 
 @pytest.mark.slow

@@ -322,11 +322,7 @@ def fit_discrete_mk_model_from_dataset(
     )
     baseline_comparison: DiscreteModelBaselineComparison | None = None
     transform_baseline_comparison: DiscreteMkTransformBaselineComparison | None = None
-    if (
-        resolved_model != "equal-rates"
-        and allowed_transition_pairs is None
-        and state_ordering == "unordered"
-    ):
+    if resolved_model != "equal-rates" and allowed_transition_pairs is None:
         baseline_fit = fit_discrete_mk_model_from_dataset(
             dataset,
             model="equal-rates",
