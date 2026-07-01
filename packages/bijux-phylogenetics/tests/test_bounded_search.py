@@ -4,6 +4,7 @@ import math
 
 from bijux_phylogenetics.comparative.search import (
     BoundedSearchControls,
+    BoundedSearchDiagnostics,
     run_bounded_golden_section_maximization,
     run_bounded_maximization,
 )
@@ -24,6 +25,7 @@ def test_run_bounded_maximization_records_user_start_and_multi_start_count() -> 
 
     assert math.isclose(result.parameter_value, 1.75, rel_tol=0.0, abs_tol=5e-3)
     assert result.payload == result.parameter_value
+    assert isinstance(result.diagnostics, BoundedSearchDiagnostics)
     assert (
         result.diagnostics.starting_parameter_policy == "user-provided-first-evaluation"
     )
@@ -58,6 +60,7 @@ def test_run_bounded_maximization_can_escape_weaker_coarse_candidate_with_multi_
 
     assert math.isclose(result.parameter_value, 3.05, rel_tol=0.0, abs_tol=1e-2)
     assert result.diagnostics.refinement_start_count == 2
+    assert result.diagnostics.failure_reason is None
     assert not result.diagnostics.hit_lower_boundary
     assert not result.diagnostics.hit_upper_boundary
 
@@ -80,5 +83,19 @@ def test_run_bounded_golden_section_maximization_records_shared_audit_surface() 
     )
     assert result.diagnostics.function_evaluation_count >= 2
     assert result.diagnostics.refinement_start_count == 1
+    assert result.diagnostics.failure_reason is None
     assert not result.diagnostics.hit_lower_boundary
     assert not result.diagnostics.hit_upper_boundary
+
+
+def test_run_bounded_golden_section_maximization_reports_iteration_exhaustion() -> None:
+    result = run_bounded_golden_section_maximization(
+        lower_bound=-2.0,
+        upper_bound=2.0,
+        tolerance=1e-30,
+        max_iterations=1,
+        evaluate=lambda parameter: (parameter, -((parameter - 0.35) ** 2)),
+    )
+
+    assert result.diagnostics.converged is False
+    assert result.diagnostics.failure_reason == "max-iterations-exhausted"
