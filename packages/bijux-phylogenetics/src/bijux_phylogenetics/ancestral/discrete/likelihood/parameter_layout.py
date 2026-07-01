@@ -18,7 +18,7 @@ class DiscreteMkParameterArc:
 
 @dataclass(frozen=True, slots=True)
 class DiscreteMkParameterLayout:
-    """One stable parameter layout for an ER, SYM, or ARD discrete Mk surface."""
+    """One stable parameter layout for a supported discrete Mk surface."""
 
     state_order: tuple[str, ...]
     model: str

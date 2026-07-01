@@ -44,6 +44,27 @@ def test_discrete_reconstruction_rejects_asymmetric_constraints_under_symmetric_
         )
 
 
+def test_discrete_reconstruction_accepts_native_irreversible_model() -> None:
+    report = reconstruct_discrete_ancestral_states(
+        fixture("example_tree.nwk"),
+        fixture("example_traits_binary.tsv"),
+        trait="presence",
+        model="irreversible",
+        allowed_transition_pairs=[("1", "0")],
+    )
+
+    assert report.model == "irreversible"
+    assert report.parameter_count == 1
+    assert report.allowed_transition_pairs == [("1", "0")]
+    forbidden_row = next(
+        row
+        for row in report.transition_rate_rows
+        if row.source_state == "0" and row.target_state == "1"
+    )
+    assert forbidden_row.transition_allowed is False
+    assert forbidden_row.rate == 0.0
+
+
 def test_summarize_irreversible_discrete_reconstruction_prefers_constraint_on_simulated_losses(
     tmp_path: Path,
 ) -> None:

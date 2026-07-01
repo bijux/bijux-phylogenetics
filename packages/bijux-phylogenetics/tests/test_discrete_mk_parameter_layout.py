@@ -1,11 +1,17 @@
 from __future__ import annotations
 
+import pytest
+
 from bijux_phylogenetics.ancestral.discrete.likelihood.parameter_layout import (
     broadcast_discrete_mk_log_parameters,
     build_discrete_mk_parameter_layout,
 )
 from bijux_phylogenetics.ancestral.discrete.likelihood.rate_matrix import (
     rate_matrix_from_log_parameters,
+)
+from bijux_phylogenetics.ancestral.discrete.policy import (
+    resolve_allowed_transition_pairs,
+    resolve_discrete_model_name,
 )
 
 
@@ -59,6 +65,44 @@ def test_ard_layout_keeps_each_allowed_direction_in_its_own_slot() -> None:
     assert layout.parameter_index_for_pair(0, 1) != layout.parameter_index_for_pair(1, 0)
     assert layout.parameter_index_for_pair(0, 2) != layout.parameter_index_for_pair(2, 0)
     assert layout.parameter_index_for_pair(1, 2) != layout.parameter_index_for_pair(2, 1)
+
+
+def test_irreversible_model_name_aliases_resolve_to_native_surface() -> None:
+    assert resolve_discrete_model_name("irreversible") == "irreversible"
+    assert resolve_discrete_model_name("irrev") == "irreversible"
+
+
+def test_irreversible_layout_keeps_each_allowed_direction_in_its_own_slot() -> None:
+    layout = build_discrete_mk_parameter_layout(
+        state_order=["north", "south", "west"],
+        model="irreversible",
+        state_ordering="unordered",
+        allowed_transition_pairs={(0, 1), (0, 2)},
+    )
+
+    assert layout.parameter_count == 2
+    assert tuple((arc.source_index, arc.target_index) for arc in layout.arcs) == (
+        (0, 1),
+        (0, 2),
+    )
+
+
+def test_irreversible_policy_requires_explicit_nonreciprocal_transition_graph() -> None:
+    with pytest.raises(ValueError, match="requires explicit allowed_transition_pairs"):
+        resolve_allowed_transition_pairs(
+            ["present", "absent"],
+            model="irreversible",
+            state_ordering="unordered",
+            allowed_transition_pairs=None,
+        )
+
+    with pytest.raises(ValueError, match="forbids reciprocal allowed transitions"):
+        resolve_allowed_transition_pairs(
+            ["present", "absent"],
+            model="irreversible",
+            state_ordering="unordered",
+            allowed_transition_pairs=[("present", "absent"), ("absent", "present")],
+        )
 
 
 def test_broadcast_equal_rates_parameters_to_symmetric_and_ard_layouts() -> None:
@@ -147,3 +191,16 @@ def test_rate_matrix_rendering_keeps_ard_directions_distinct() -> None:
     assert rate_matrix[0, 1] != rate_matrix[1, 0]
     assert rate_matrix[0, 2] != rate_matrix[2, 0]
     assert rate_matrix[1, 2] != rate_matrix[2, 1]
+
+
+def test_rate_matrix_rendering_keeps_irreversible_reverse_arcs_structurally_zero() -> None:
+    rate_matrix = rate_matrix_from_log_parameters(
+        [0.1],
+        state_order=["present", "absent"],
+        model="irreversible",
+        state_ordering="unordered",
+        allowed_transition_pairs={(0, 1)},
+    )
+
+    assert rate_matrix[0, 1] > 0.0
+    assert rate_matrix[1, 0] == 0.0
