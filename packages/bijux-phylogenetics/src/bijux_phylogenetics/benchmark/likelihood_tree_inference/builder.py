@@ -64,6 +64,10 @@ _SUPPORTED_NATIVE_MAXIMUM_LIKELIHOOD_SPEED_MODEL_NAMES = (
     "f81",
     "hky85",
 )
+_DEFAULT_NATIVE_MAXIMUM_LIKELIHOOD_SPEED_MODEL_NAMES = (
+    "jc69",
+    "k80",
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -106,7 +110,7 @@ def benchmark_native_maximum_likelihood_speed(
         size_classes or list(NATIVE_MAXIMUM_LIKELIHOOD_SPEED_SIZE_CLASSES)
     )
     resolved_model_names = _validate_native_maximum_likelihood_speed_model_names(
-        model_names or _SUPPORTED_NATIVE_MAXIMUM_LIKELIHOOD_SPEED_MODEL_NAMES
+        model_names or _DEFAULT_NATIVE_MAXIMUM_LIKELIHOOD_SPEED_MODEL_NAMES
     )
     resolved_search_methods = [
         validate_nucleotide_likelihood_tree_inference_search_method(search_method)
@@ -161,6 +165,7 @@ def benchmark_native_maximum_likelihood_speed(
         limitations=[
             "native maximum-likelihood speed lanes use deterministic synthetic nucleotide alignments so runtime trends measure owned search cost without external engine variance",
             "replicates reuse the same governed start-tree seed so runtime comparisons stay lane-stable rather than mixing stochastic workload differences into the benchmark",
+            "the default governed speed roster samples jc69 and k80; f81 and hky85 remain available through explicit model overrides when broader model timing is needed",
             "the governed native speed roster currently excludes fixed-parameter GTR because fixed-tree native inference still requires caller-supplied exchangeabilities for that lane",
             "peak memory is recorded with python tracemalloc as supporting context, but this benchmark treats runtime trend reporting as the primary completion signal",
         ],

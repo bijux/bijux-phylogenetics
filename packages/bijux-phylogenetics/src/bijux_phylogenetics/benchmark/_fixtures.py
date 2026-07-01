@@ -61,7 +61,7 @@ LARGE_ALIGNMENT_SCALING_CLASSES: tuple[tuple[str, int, int], ...] = (
 )
 NATIVE_MAXIMUM_LIKELIHOOD_SPEED_SIZE_CLASSES: tuple[tuple[str, int, int], ...] = (
     ("tiny", 4, 12),
-    ("medium", 5, 16),
+    ("medium", 4, 16),
 )
 LARGE_TREE_SET_SCALING_CLASSES: tuple[tuple[str, int, int], ...] = (
     ("trees-128-taxa-48", 128, 48),
