@@ -258,6 +258,17 @@ def test_build_scientific_validation_report_separates_claim_statuses() -> None:
     assert report.goal_id == 249
     statuses = {claim.status for claim in report.claims}
     assert statuses >= {"validated", "experimental", "unvalidated", "unsafe"}
+    unvalidated_claim = next(
+        claim for claim in report.claims if claim.status == "unvalidated"
+    )
+    assert (
+        "goal-252 remains outside this iteration"
+        not in unvalidated_claim.evidence
+    )
+    assert any(
+        evidence.startswith("goal-252 shared continuous fixture catalog")
+        for evidence in unvalidated_claim.evidence
+    )
 
 
 def test_validate_simulation_reproducibility_confirms_same_seed_repeatability() -> None:

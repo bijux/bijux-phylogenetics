@@ -569,6 +569,19 @@ Its JSON metrics report:
 - `reference_parity_case_count`
 - `stress_workload_count`
 
+`report shared-continuous-fixture-catalog` is the governed inventory surface
+for the shared continuous trait fixtures currently consumed by the live
+`geiger::fitContinuous` parity harness. Its JSON metrics report:
+
+- `goal_id`
+- `fixture_count`
+- `live_case_count`
+
+The report body keeps each governed fixture id, linked tree and trait-table
+surface, supported model list, live-covered model list, taxon count, and
+trait-row count explicit so reviewers can inspect the actual live continuous
+coverage instead of inferring it from the broader generated parity tranche.
+
 `report tree-package` is the governed full tree review surface. It takes one
 tree and materializes a richer review directory than the older `report tree`
 diagnostic. Its JSON metrics report:

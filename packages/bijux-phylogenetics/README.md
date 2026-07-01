@@ -355,6 +355,7 @@ bijux-phylogenetics report alignment --alignment alignment.fasta --out artifacts
 bijux-phylogenetics report workflow-validation --out artifacts/workflow-validation-report.html --json
 bijux-phylogenetics report release-gate --out artifacts/level-1-release-gate.html --json
 bijux-phylogenetics report release-truth --test-report artifacts/pytest/full-suite.xml --real-engine-test-report artifacts/pytest/real-engine.xml --out artifacts/release-truth-report.html --json
+bijux-phylogenetics report shared-continuous-fixture-catalog --out artifacts/shared-continuous-fixture-catalog.html --json
 bijux-phylogenetics report supplementary-alignment-table --alignment alignment.fasta --filtered-alignment filtered-alignment.fasta --out artifacts/supplementary-alignment.tsv --json
 bijux-phylogenetics report supplementary-ancestral-state-table --tree tree.nwk --traits traits.tsv --trait habitat --reconstruction-kind discrete --model equal-rates --out artifacts/supplementary-ancestral-states.tsv --json
 bijux-phylogenetics phylo parsimony fitch tree.nwk discrete-character-matrix.tsv --character-weights character-weights.tsv --out-dir artifacts/parsimony-fitch --json
@@ -615,6 +616,13 @@ safe at small, medium, large, and HPC scale, use
 evidence into one HTML and JSON report that declares each workflow's applicable
 scale dimensions, highest proven readiness tier, and the workflows currently
 ready at each scale threshold.
+
+For one governed inventory of the shared continuous trait fixtures that the live
+`geiger::fitContinuous` parity harness actually consumes, use
+`report shared-continuous-fixture-catalog`. The report keeps fixture ids,
+supported models, live-covered models, taxon counts, and trait-row counts
+explicit so reviewers can see what the current live parity lane truly covers
+without inferring it from the generated geiger parity tranche.
 
 For a journal-oriented single-tree figure bundle, use `render` with
 `--package-dir`. The package writes one vector `figure.svg`, a structured
