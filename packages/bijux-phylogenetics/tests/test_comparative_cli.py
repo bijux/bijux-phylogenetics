@@ -2288,6 +2288,9 @@ def test_comparative_ou_pgls_cli_reports_alpha_metrics(capsys) -> None:
     assert payload["metrics"]["alpha"] == 1.0
     assert payload["metrics"]["alpha_estimation_mode"] == "fixed"
     assert payload["metrics"]["alpha_profile_point_count"] == 1
+    assert payload["metrics"]["alpha_optimizer_name"] is None
+    assert payload["metrics"]["alpha_optimizer_converged"] is None
+    assert payload["metrics"]["alpha_optimizer_function_evaluation_count"] is None
     assert payload["metrics"]["covariance_row_count"] == 16
     assert payload["metrics"]["aic"] > 0.0
     assert math.isclose(coefficients["intercept"], 0.43120431282304317, abs_tol=1e-6)
@@ -2322,6 +2325,9 @@ def test_comparative_ou_pgls_cli_writes_covariance_and_alpha_profile_tables(
     assert exit_code == 0
     assert payload["metrics"]["alpha_estimation_mode"] == "estimated"
     assert payload["metrics"]["alpha_profile_point_count"] == 8
+    assert payload["metrics"]["alpha_optimizer_name"] == "two-stage-grid-search"
+    assert payload["metrics"]["alpha_optimizer_converged"] is True
+    assert payload["metrics"]["alpha_optimizer_function_evaluation_count"] > 0
     assert covariance_out.exists()
     assert profile_out.exists()
     covariance_rows = covariance_out.read_text(encoding="utf-8").splitlines()

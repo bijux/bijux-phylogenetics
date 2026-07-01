@@ -41,6 +41,7 @@ def test_summarize_ou_covariance_pgls_matches_reference_fixture_case() -> None:
     )
     coefficients = {row.name: row.estimate for row in report.model.coefficients}
     assert report.alpha_estimation_mode == "fixed"
+    assert report.alpha_optimizer_diagnostics is None
     assert report.taxon_count == 4
     assert len(report.rows) == 16
     assert math.isclose(report.alpha, expected["alpha"], abs_tol=1e-12)
@@ -70,6 +71,10 @@ def test_summarize_ou_covariance_pgls_estimates_alpha_and_profile() -> None:
         alpha="estimate",
     )
     assert report.alpha_estimation_mode == "estimated"
+    assert report.alpha_optimizer_diagnostics is not None
+    assert report.alpha_optimizer_diagnostics.lower_bound > 0.0
+    assert report.alpha_optimizer_diagnostics.converged is True
+    assert report.alpha_optimizer_diagnostics.failure_reason is None
     assert len(report.alpha_profile_rows) == 8
     assert report.lower_95_confidence_interval is not None
     assert report.upper_95_confidence_interval is not None
