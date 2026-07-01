@@ -122,6 +122,10 @@ def run_discrete_model_comparative_evolution_command(
                     report.input_audit.pruned_missing_value_taxa
                 ),
                 "log_likelihood": report.log_likelihood,
+                "uncorrected_log_likelihood": report.uncorrected_log_likelihood,
+                "ascertainment_log_likelihood_delta": (
+                    report.ascertainment_log_likelihood_delta
+                ),
                 "ascertainment_conditioning_log_probability": (
                     report.ascertainment_conditioning_log_probability
                 ),

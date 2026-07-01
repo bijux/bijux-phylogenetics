@@ -38,5 +38,7 @@ def test_comparative_discrete_mk_cli_reports_lewis_ascertainment_metrics(
 
     assert exit_code == 0
     assert payload["metrics"]["ascertainment_policy"] == "lewis-variable-only"
+    assert payload["metrics"]["uncorrected_log_likelihood"] is not None
+    assert payload["metrics"]["ascertainment_log_likelihood_delta"] is not None
     assert payload["metrics"]["ascertainment_conditioning_log_probability"] is not None
     assert payload["metrics"]["invariant_pattern_log_probability"] is not None

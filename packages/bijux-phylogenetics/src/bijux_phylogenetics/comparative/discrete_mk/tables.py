@@ -21,6 +21,8 @@ def write_discrete_mk_summary_table(path: Path, report: DiscreteMkFitReport) -> 
             "taxon_column",
             "model",
             "ascertainment_policy",
+            "uncorrected_log_likelihood",
+            "ascertainment_log_likelihood_delta",
             "ascertainment_conditioning_log_probability",
             "invariant_pattern_log_probability",
             "transform",
@@ -86,6 +88,14 @@ def write_discrete_mk_summary_table(path: Path, report: DiscreteMkFitReport) -> 
                 "taxon_column": report.taxon_column,
                 "model": report.model,
                 "ascertainment_policy": report.ascertainment_policy,
+                "uncorrected_log_likelihood": format(
+                    report.uncorrected_log_likelihood,
+                    ".15g",
+                ),
+                "ascertainment_log_likelihood_delta": format(
+                    report.ascertainment_log_likelihood_delta,
+                    ".15g",
+                ),
                 "ascertainment_conditioning_log_probability": (
                     ""
                     if report.ascertainment_conditioning_log_probability is None

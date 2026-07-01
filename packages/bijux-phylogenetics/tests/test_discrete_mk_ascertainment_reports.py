@@ -31,6 +31,8 @@ def test_discrete_mk_summary_table_reports_ascertainment_terms(
     lines = output_path.read_text(encoding="utf-8").strip().splitlines()
 
     assert "ascertainment_policy" in lines[0]
+    assert "uncorrected_log_likelihood" in lines[0]
+    assert "ascertainment_log_likelihood_delta" in lines[0]
     assert "ascertainment_conditioning_log_probability" in lines[0]
     assert "invariant_pattern_log_probability" in lines[0]
     assert "lewis-variable-only" in lines[1]
