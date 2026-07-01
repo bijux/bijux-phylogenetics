@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 import math
 from pathlib import Path
 
@@ -9,6 +10,7 @@ from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.dna import (
+    DNA_STATE_ORDER,
     normalize_dna_exchangeabilities_by_anchor,
 )
 from bijux_phylogenetics.phylo.likelihood.f81 import (
@@ -39,6 +41,9 @@ from bijux_phylogenetics.phylo.likelihood.parameter_bounds import (
     validate_parameter_within_bounds,
     validate_positive_parameter_bounds,
 )
+from bijux_phylogenetics.phylo.likelihood.simplex_search import (
+    run_simplex_likelihood_search,
+)
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 _NUCLEOTIDE_SUBSTITUTION_OPTIMIZATION_MODELS = frozenset(
@@ -46,6 +51,7 @@ _NUCLEOTIDE_SUBSTITUTION_OPTIMIZATION_MODELS = frozenset(
 )
 _DEFAULT_KAPPA_BOUNDS = (0.05, 20.0)
 _DEFAULT_EXCHANGEABILITY_BOUNDS = (0.05, 20.0)
+_DEFAULT_MINIMUM_BASE_FREQUENCY = 1e-6
 _BOUNDARY_TOLERANCE = 1e-9
 
 
@@ -120,6 +126,8 @@ def optimize_nucleotide_substitution_parameters(
             initial_exchangeabilities=initial_exchangeabilities,
             lower_exchangeability_bound=lower_exchangeability_bound,
             upper_exchangeability_bound=upper_exchangeability_bound,
+            max_coordinate_passes=max_coordinate_passes,
+            improvement_tolerance=improvement_tolerance,
         )
     if normalized_model_name == "hky85":
         return _optimize_hky85_substitution_parameters(
@@ -381,6 +389,8 @@ def _optimize_f81_substitution_parameters(
     ),
     lower_exchangeability_bound: float | None,
     upper_exchangeability_bound: float | None,
+    max_coordinate_passes: int,
+    improvement_tolerance: float,
 ) -> NucleotideSubstitutionParameterOptimizationReport:
     _reject_irrelevant_parameter(
         "F81 substitution optimization",
@@ -413,18 +423,70 @@ def _optimize_f81_substitution_parameters(
         upper_exchangeability_bound,
     )
 
-    evaluation_report = evaluate_f81_tree_likelihood(
-        tree,
-        records,
-        base_frequencies=base_frequencies,
-    )
-    log_likelihood = evaluation_report.log_likelihood
+    if base_frequencies is not None:
+        evaluation_report = evaluate_f81_tree_likelihood(
+            tree,
+            records,
+            base_frequencies=base_frequencies,
+        )
+        initial_log_likelihood = evaluation_report.log_likelihood
+        optimized_log_likelihood = evaluation_report.log_likelihood
+        initial_aic = evaluation_report.aic
+        optimized_aic = evaluation_report.aic
+        optimization_pass_count = 0
+        function_evaluation_count = 1
+        converged = True
+        warnings: list[str] = []
+    else:
+        initial_report = evaluate_f81_tree_likelihood(tree, records)
+        search_result = run_simplex_likelihood_search(
+            initial_values_by_name={
+                "A": initial_report.base_frequency_a,
+                "C": initial_report.base_frequency_c,
+                "G": initial_report.base_frequency_g,
+                "T": initial_report.base_frequency_t,
+            },
+            expected_component_names=DNA_STATE_ORDER,
+            owner_name="F81 substitution optimization",
+            evaluate=lambda candidate: _evaluate_f81_frequency_candidate(
+                tree,
+                records,
+                candidate,
+            ),
+            minimum_component_value=_DEFAULT_MINIMUM_BASE_FREQUENCY,
+            improvement_tolerance=improvement_tolerance,
+            max_coordinate_passes=max_coordinate_passes,
+        )
+        evaluation_report = replace(
+            search_result.payload,
+            base_frequency_source="estimated",
+        )
+        initial_log_likelihood = initial_report.log_likelihood
+        optimized_log_likelihood = evaluation_report.log_likelihood
+        initial_aic = initial_report.aic
+        optimized_aic = evaluation_report.aic
+        optimization_pass_count = search_result.optimization_pass_count
+        function_evaluation_count = search_result.function_evaluation_count
+        converged = search_result.converged
+        warnings = []
+        if not search_result.converged:
+            warnings.append("F81 frequency search did not converge")
     boundary_warnings = build_base_frequency_boundary_warnings(
         base_frequency_source=evaluation_report.base_frequency_source,
         base_frequency_a=evaluation_report.base_frequency_a,
         base_frequency_c=evaluation_report.base_frequency_c,
         base_frequency_g=evaluation_report.base_frequency_g,
         base_frequency_t=evaluation_report.base_frequency_t,
+        lower_frequency_bound=(
+            _DEFAULT_MINIMUM_BASE_FREQUENCY
+            if base_frequencies is None
+            else 0.0
+        ),
+    )
+    warnings.extend(
+        warning
+        for warning in boundary_warning_messages(boundary_warnings)
+        if warning not in warnings
     )
     return NucleotideSubstitutionParameterOptimizationReport(
         model_name="F81",
@@ -440,15 +502,15 @@ def _optimize_f81_substitution_parameters(
         base_frequency_t=evaluation_report.base_frequency_t,
         fixed_parameter_values={},
         parameter_rows=[],
-        initial_log_likelihood=log_likelihood,
-        optimized_log_likelihood=log_likelihood,
-        initial_aic=evaluation_report.aic,
-        optimized_aic=evaluation_report.aic,
-        function_evaluation_count=1,
-        optimization_pass_count=0,
-        converged=True,
+        initial_log_likelihood=initial_log_likelihood,
+        optimized_log_likelihood=optimized_log_likelihood,
+        initial_aic=initial_aic,
+        optimized_aic=optimized_aic,
+        function_evaluation_count=function_evaluation_count,
+        optimization_pass_count=optimization_pass_count,
+        converged=converged,
         boundary_warnings=boundary_warnings,
-        warnings=boundary_warning_messages(boundary_warnings),
+        warnings=warnings,
     )
 
 
@@ -676,6 +738,19 @@ def _optimize_gtr_substitution_parameters(
         boundary_warnings=boundary_warnings,
         warnings=warnings,
     )
+
+
+def _evaluate_f81_frequency_candidate(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    candidate_base_frequencies: dict[str, float],
+) -> tuple[object, float]:
+    report = evaluate_f81_tree_likelihood(
+        tree,
+        records,
+        base_frequencies=candidate_base_frequencies,
+    )
+    return report, report.log_likelihood
 
 
 def _parameter_row_with_boundary_warnings(

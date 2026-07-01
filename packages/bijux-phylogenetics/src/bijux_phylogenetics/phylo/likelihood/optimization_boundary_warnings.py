@@ -57,6 +57,7 @@ def build_base_frequency_boundary_warnings(
     base_frequency_c: float | None,
     base_frequency_g: float | None,
     base_frequency_t: float | None,
+    lower_frequency_bound: float = 0.0,
 ) -> list[LikelihoodOptimizationBoundaryWarning]:
     """Render explicit lower-bound frequency warnings for estimated DNA frequencies."""
     if base_frequency_source != "estimated":
@@ -70,14 +71,19 @@ def build_base_frequency_boundary_warnings(
     ):
         if value is None:
             continue
-        if math.isclose(value, 0.0, rel_tol=0.0, abs_tol=_BOUNDARY_TOLERANCE):
+        if math.isclose(
+            value,
+            lower_frequency_bound,
+            rel_tol=0.0,
+            abs_tol=_BOUNDARY_TOLERANCE,
+        ):
             warnings.append(
                 LikelihoodOptimizationBoundaryWarning(
                     warning_kind="frequency-boundary",
                     affected_parameter=parameter_name,
                     boundary_side="lower",
                     observed_value=value,
-                    lower_bound=0.0,
+                    lower_bound=lower_frequency_bound,
                     upper_bound=1.0,
                     affected_branch_id=None,
                     affected_branch_clade_id=None,

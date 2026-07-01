@@ -103,22 +103,31 @@ def test_nucleotide_substitution_parameter_recovery_benchmark_reports_governed_m
     assert f81_report.base_frequency_source == "estimated"
     assert f81_report.parameter_rows == []
     assert f81_report.fixed_parameter_values == {}
-    assert f81_report.optimization_pass_count == 0
-    assert f81_report.function_evaluation_count == 1
+    assert f81_report.optimization_pass_count >= 1
+    assert f81_report.function_evaluation_count > 1
     assert f81_report.converged is True
     assert f81_report.warnings == []
+    assert f81_report.optimized_log_likelihood >= f81_report.initial_log_likelihood
+    assert f81_report.optimized_aic <= f81_report.initial_aic
     assert math.isclose(
-        f81_report.initial_log_likelihood,
-        f81_report.optimized_log_likelihood,
+        sum(
+            (
+                f81_report.base_frequency_a,
+                f81_report.base_frequency_c,
+                f81_report.base_frequency_g,
+                f81_report.base_frequency_t,
+            )
+        ),
+        1.0,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
-    assert math.isclose(
-        f81_report.initial_aic,
-        f81_report.optimized_aic,
-        rel_tol=0.0,
-        abs_tol=1e-12,
-    )
+    assert min(
+        f81_report.base_frequency_a,
+        f81_report.base_frequency_c,
+        f81_report.base_frequency_g,
+        f81_report.base_frequency_t,
+    ) > 0.0
 
     hky85_report = optimize_nucleotide_substitution_parameters_from_alignment(
         fixture("trees", "hky85_kappa_optimization_tree_2_taxa.nwk"),
