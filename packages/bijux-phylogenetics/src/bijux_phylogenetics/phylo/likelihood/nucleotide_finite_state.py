@@ -18,9 +18,11 @@ from bijux_phylogenetics.phylo.likelihood.finite_state import (
     CompiledFiniteStateLikelihoodAnalysis,
     FiniteStateLikelihoodSurface,
     compile_finite_state_likelihood_analysis,
+    evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture,
     evaluate_finite_state_tree_likelihood_with_invariant_mixture,
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
+    FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
     FiniteStateInvariantMixtureTreeLikelihoodReport,
 )
 from bijux_phylogenetics.phylo.likelihood.nucleotide_models import (
@@ -249,6 +251,124 @@ def evaluate_selected_nucleotide_tree_likelihood_with_invariant_mixture_from_ali
         model_name=model_name,
         owner_name=owner_name,
         invariant_proportion=invariant_proportion,
+        observation_policy=observation_policy,
+        kappa=kappa,
+        base_frequencies=base_frequencies,
+        exchangeabilities=exchangeabilities,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+    )
+
+
+def evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    model_name: str,
+    owner_name: str,
+    alpha: float,
+    invariant_proportion: float,
+    category_count: int = 4,
+    lower_invariant_proportion_bound: float | None = None,
+    upper_invariant_proportion_bound: float | None = None,
+    emit_boundary_warnings: bool = False,
+    observation_policy: str = "reject",
+    kappa: float | None = None,
+    base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    exchangeabilities: (
+        dict[tuple[str, str], float]
+        | dict[str, float]
+        | numpy.ndarray
+        | list[float]
+        | tuple[float, ...]
+        | None
+    ) = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
+) -> FiniteStateDiscreteGammaInvariantTreeLikelihoodReport:
+    """Evaluate one selected nucleotide likelihood surface under one active +G+I mixture."""
+    surface = build_selected_nucleotide_finite_state_surface(
+        records,
+        model_name=model_name,
+        owner_name=owner_name,
+        observation_policy=observation_policy,
+        kappa=kappa,
+        base_frequencies=base_frequencies,
+        exchangeabilities=exchangeabilities,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+    )
+    normalized_records = normalize_dna_likelihood_records(
+        records,
+        model_name=surface.model_name,
+        observation_policy=surface.observation_policy,
+    )
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
+    return evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+        tree,
+        compressed_patterns,
+        surface=surface,
+        alpha=alpha,
+        category_count=category_count,
+        invariant_proportion=invariant_proportion,
+        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        emit_boundary_warnings=emit_boundary_warnings,
+    )
+
+
+def evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
+    tree_path: Path,
+    alignment_path: Path,
+    *,
+    model_name: str,
+    owner_name: str,
+    alpha: float,
+    invariant_proportion: float,
+    category_count: int = 4,
+    lower_invariant_proportion_bound: float | None = None,
+    upper_invariant_proportion_bound: float | None = None,
+    emit_boundary_warnings: bool = False,
+    observation_policy: str = "reject",
+    kappa: float | None = None,
+    base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    exchangeabilities: (
+        dict[tuple[str, str], float]
+        | dict[str, float]
+        | numpy.ndarray
+        | list[float]
+        | tuple[float, ...]
+        | None
+    ) = None,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
+) -> FiniteStateDiscreteGammaInvariantTreeLikelihoodReport:
+    """Evaluate one selected nucleotide +G+I likelihood from tree and alignment paths."""
+    return evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+        load_tree(tree_path),
+        load_fasta_alignment(alignment_path),
+        model_name=model_name,
+        owner_name=owner_name,
+        alpha=alpha,
+        invariant_proportion=invariant_proportion,
+        category_count=category_count,
+        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        emit_boundary_warnings=emit_boundary_warnings,
         observation_policy=observation_policy,
         kappa=kappa,
         base_frequencies=base_frequencies,
