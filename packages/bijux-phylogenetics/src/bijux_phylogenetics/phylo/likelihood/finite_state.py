@@ -21,10 +21,15 @@ from bijux_phylogenetics.phylo.likelihood.models import (
     CompiledFiniteStatePartitionLogLikelihoodRow,
     CompiledFiniteStateSiteLogLikelihoodRow,
     DiscreteGammaSiteLikelihood,
+    FiniteStateInvariantMixtureTreeLikelihoodReport,
     FiniteStateDiscreteGammaTreeLikelihoodReport,
+    InvariantMixtureSiteLikelihood,
 )
 from bijux_phylogenetics.phylo.likelihood.gamma import (
     build_discrete_gamma_rate_categories,
+)
+from bijux_phylogenetics.phylo.likelihood.invariant import (
+    validate_invariant_proportion,
 )
 from bijux_phylogenetics.phylo.likelihood.logspace import log_weighted_sum_exp
 from bijux_phylogenetics.phylo.likelihood.patterns import (
@@ -570,6 +575,32 @@ def evaluate_finite_state_tree_log_likelihood(
     )
 
 
+def evaluate_finite_state_tree_likelihood_with_invariant_mixture(
+    tree: PhyloTree,
+    compressed_patterns: CompressedAlignmentSitePatterns,
+    *,
+    surface: FiniteStateLikelihoodSurface,
+    invariant_proportion: float,
+) -> FiniteStateInvariantMixtureTreeLikelihoodReport:
+    """Evaluate one shared finite-state surface under one invariant-site mixture."""
+    validate_explicit_branch_lengths(tree, model_name=surface.model_name)
+    validate_tree_taxa_against_patterns(
+        tree,
+        compressed_patterns,
+        model_name=surface.model_name,
+    )
+    validated_invariant_proportion = validate_invariant_proportion(
+        invariant_proportion,
+        model_name=f"{surface.model_name} +I",
+    )
+    context = compile_finite_state_likelihood_context(tree, surface)
+    return _evaluate_finite_state_tree_likelihood_with_invariant_mixture_from_patterns(
+        context,
+        compressed_patterns,
+        invariant_proportion=validated_invariant_proportion,
+    )
+
+
 def evaluate_finite_state_tree_likelihood_with_discrete_gamma(
     tree: PhyloTree,
     compressed_patterns: CompressedAlignmentSitePatterns,
@@ -648,6 +679,65 @@ def evaluate_finite_state_tree_likelihood_with_discrete_gamma(
         alpha=alpha,
         category_count=category_count,
         category_rates=list(categories),
+        site_likelihoods=site_likelihoods,
+        log_likelihood=total_log_likelihood,
+    )
+
+
+def _evaluate_finite_state_tree_likelihood_with_invariant_mixture_from_patterns(
+    context: CompiledFiniteStateLikelihoodContext,
+    compressed_patterns: CompressedAlignmentSitePatterns,
+    *,
+    invariant_proportion: float,
+) -> FiniteStateInvariantMixtureTreeLikelihoodReport:
+    site_likelihoods: list[InvariantMixtureSiteLikelihood] = []
+    total_log_likelihood = 0.0
+    for pattern in compressed_patterns.patterns:
+        variable_component_log_likelihood = evaluate_finite_state_site_log_likelihood(
+            context,
+            pattern.states,
+            taxon_order=compressed_patterns.taxon_order,
+        )
+        variable_component_likelihood = math.exp(variable_component_log_likelihood)
+        invariant_component_likelihood = _finite_state_invariant_component_likelihood(
+            context.surface,
+            pattern.states,
+            taxon_order=compressed_patterns.taxon_order,
+        )
+        pattern_log_likelihood = _invariant_mixture_log_likelihood(
+            invariant_proportion=invariant_proportion,
+            invariant_component_likelihood=invariant_component_likelihood,
+            variable_component_log_likelihood=variable_component_log_likelihood,
+        )
+        mixture_likelihood = math.exp(pattern_log_likelihood)
+        for site_position in pattern.site_positions:
+            site_likelihoods.append(
+                InvariantMixtureSiteLikelihood(
+                    pattern_id=pattern.pattern_id,
+                    pattern_weight=pattern.weight,
+                    site_position=site_position,
+                    site_states=pattern.states,
+                    invariant_component_likelihood=invariant_component_likelihood,
+                    variable_component_likelihood=variable_component_likelihood,
+                    mixture_likelihood=mixture_likelihood,
+                    log_likelihood=pattern_log_likelihood,
+                )
+            )
+        total_log_likelihood += pattern.weight * pattern_log_likelihood
+    return FiniteStateInvariantMixtureTreeLikelihoodReport(
+        taxa=compressed_patterns.taxon_order,
+        site_count=compressed_patterns.alignment_length,
+        pattern_count=compressed_patterns.pattern_count,
+        compression_used=(
+            compressed_patterns.pattern_count < compressed_patterns.alignment_length
+        ),
+        tree_newick=dumps_newick(context.tree),
+        model_name=context.surface.model_name,
+        state_count=context.surface.state_count,
+        root_prior_source=context.surface.root_prior_source,
+        observation_policy=context.surface.observation_policy,
+        normalization_policy=context.surface.normalization_policy,
+        invariant_proportion=invariant_proportion,
         site_likelihoods=site_likelihoods,
         log_likelihood=total_log_likelihood,
     )
@@ -1019,6 +1109,55 @@ def _compiled_transition_matrix(
     resolved_matrix.setflags(write=False)
     _SHARED_FINITE_STATE_TRANSITION_CACHE[transition_cache_key] = resolved_matrix
     return resolved_matrix
+
+
+def _finite_state_invariant_component_likelihood(
+    surface: FiniteStateLikelihoodSurface,
+    states: tuple[str, ...],
+    *,
+    taxon_order: list[str],
+) -> float:
+    if len(states) != len(taxon_order):
+        raise ValueError(
+            f"{surface.model_name} invariant component requires one observed state per taxon"
+        )
+    leaf_likelihood_vectors = [
+        surface.leaf_likelihood_vector_for_state(taxon_name, observed_state)
+        for taxon_name, observed_state in zip(taxon_order, states, strict=True)
+    ]
+    total = 0.0
+    for state_index, root_probability in enumerate(surface.root_prior):
+        compatible_probability = float(root_probability)
+        if compatible_probability == 0.0:
+            continue
+        for leaf_likelihood_vector in leaf_likelihood_vectors:
+            compatible_probability *= float(leaf_likelihood_vector[state_index])
+            if compatible_probability == 0.0:
+                break
+        total += compatible_probability
+    return total
+
+
+def _invariant_mixture_log_likelihood(
+    *,
+    invariant_proportion: float,
+    invariant_component_likelihood: float,
+    variable_component_log_likelihood: float,
+) -> float:
+    if invariant_proportion <= 0.0:
+        return variable_component_log_likelihood
+    invariant_component_log_likelihood = (
+        float("-inf")
+        if invariant_component_likelihood <= 0.0
+        else math.log(invariant_component_likelihood)
+    )
+    return log_weighted_sum_exp(
+        [
+            invariant_component_log_likelihood,
+            variable_component_log_likelihood,
+        ],
+        weights=[invariant_proportion, 1.0 - invariant_proportion],
+    )
 
 
 def _transition_model_state(
