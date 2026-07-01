@@ -199,6 +199,7 @@ __all__ = [
     "evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment",
     "evaluate_finite_state_site_log_likelihood",
     "evaluate_finite_state_tree_likelihood_with_invariant_mixture",
+    "evaluate_finite_state_tree_likelihood_with_invariant_mixture_from_patterns",
     "evaluate_finite_state_tree_likelihood_with_discrete_gamma",
     "evaluate_finite_state_tree_log_likelihood",
     "evaluate_finite_state_tree_log_likelihood_from_patterns",

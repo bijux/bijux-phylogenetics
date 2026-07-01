@@ -594,7 +594,7 @@ def evaluate_finite_state_tree_likelihood_with_invariant_mixture(
         model_name=f"{surface.model_name} +I",
     )
     context = compile_finite_state_likelihood_context(tree, surface)
-    return _evaluate_finite_state_tree_likelihood_with_invariant_mixture_from_patterns(
+    return evaluate_finite_state_tree_likelihood_with_invariant_mixture_from_patterns(
         context,
         compressed_patterns,
         invariant_proportion=validated_invariant_proportion,
@@ -684,7 +684,7 @@ def evaluate_finite_state_tree_likelihood_with_discrete_gamma(
     )
 
 
-def _evaluate_finite_state_tree_likelihood_with_invariant_mixture_from_patterns(
+def evaluate_finite_state_tree_likelihood_with_invariant_mixture_from_patterns(
     context: CompiledFiniteStateLikelihoodContext,
     compressed_patterns: CompressedAlignmentSitePatterns,
     *,

@@ -32,6 +32,7 @@ from bijux_phylogenetics.phylo.likelihood.models import (
     DiscreteGammaInvariantMixtureSiteLikelihood,
     DiscreteGammaRateCategory,
     DiscreteGammaSiteLikelihood,
+    FiniteStateInvariantMixtureTreeLikelihoodReport,
     InvariantMixtureSiteLikelihood,
     ProteinEmpiricalBranchLengthOptimizationReport,
     ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport,
@@ -46,6 +47,8 @@ from bijux_phylogenetics.phylo.likelihood.parameter_search import (
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
     FiniteStateLikelihoodSurface,
     compile_finite_state_likelihood_context,
+    evaluate_finite_state_tree_likelihood_with_invariant_mixture,
+    evaluate_finite_state_tree_likelihood_with_invariant_mixture_from_patterns,
     evaluate_finite_state_site_log_likelihood_rows_from_patterns,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
@@ -64,6 +67,9 @@ from bijux_phylogenetics.phylo.likelihood.protein import (
 from bijux_phylogenetics.phylo.likelihood.protein_empirical_models import (
     empirical_protein_rate_matrix,
     validate_empirical_protein_model_name,
+)
+from bijux_phylogenetics.phylo.likelihood.protein_finite_state import (
+    build_empirical_protein_finite_state_surface,
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
 from bijux_phylogenetics.phylo.likelihood.sites import (
@@ -650,7 +656,7 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         )
         return report, report.log_likelihood
 
-    initial_report, initial_log_likelihood = evaluate_candidate(
+    _initial_report, initial_log_likelihood = evaluate_candidate(
         validated_initial_invariant_proportion
     )
     search_result = run_bounded_likelihood_search(
@@ -884,40 +890,39 @@ def optimize_empirical_protein_tree_likelihood_with_invariant_mixture(
         rate_matrix,
         model_name="empirical protein matrix +I",
     )
-    validated_root_prior, root_prior_source = _resolve_empirical_protein_root_prior(
+    surface = build_empirical_protein_finite_state_surface(
         normalized_records,
-        owner_name="empirical protein matrix +I",
-        validated_rate_matrix=validated_rate_matrix,
+        rate_matrix=validated_rate_matrix,
         root_prior_policy=root_prior_policy,
         root_prior=root_prior,
         fixed_root_state=fixed_root_state,
+        matrix_label=matrix_label,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
     )
-    transition_by_node_id = {
-        child.node_id: transition_probability_matrix(
-            validated_rate_matrix,
-            max(float(child.branch_length or 0.0), 0.0),
-        )
-        for _parent, child in tree.iter_edges()
-    }
+    context = compile_finite_state_likelihood_context(tree, surface)
 
     def evaluate_candidate(
         invariant_proportion: float,
     ) -> tuple[ProteinEmpiricalInvariantMixtureTreeLikelihoodReport, float]:
-        report = _evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_patterns(
-            tree,
-            compressed_patterns,
-            root_prior=validated_root_prior,
-            root_prior_source=root_prior_source,
+        finite_state_report = (
+            evaluate_finite_state_tree_likelihood_with_invariant_mixture_from_patterns(
+                context,
+                compressed_patterns,
+                invariant_proportion=invariant_proportion,
+            )
+        )
+        report = _protein_empirical_invariant_mixture_report_from_finite_state(
+            finite_state_report,
             matrix_label=matrix_label,
             gap_policy=gap_policy,
             missing_policy=missing_policy,
-            invariant_proportion=invariant_proportion,
             initial_invariant_proportion=validated_initial_invariant_proportion,
             lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
             upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
-            transition_by_node_id=transition_by_node_id,
             function_evaluation_count=0,
             converged=False,
+            initial_log_likelihood=finite_state_report.log_likelihood,
         )
         return report, report.log_likelihood
 
@@ -1017,36 +1022,33 @@ def evaluate_empirical_protein_tree_likelihood_with_invariant_mixture(
         rate_matrix,
         model_name="empirical protein matrix +I",
     )
-    validated_root_prior, root_prior_source = _resolve_empirical_protein_root_prior(
+    surface = build_empirical_protein_finite_state_surface(
         normalized_records,
-        owner_name="empirical protein matrix +I",
-        validated_rate_matrix=validated_rate_matrix,
+        rate_matrix=validated_rate_matrix,
         root_prior_policy=root_prior_policy,
         root_prior=root_prior,
         fixed_root_state=fixed_root_state,
-    )
-    transition_by_node_id = {
-        child.node_id: transition_probability_matrix(
-            validated_rate_matrix,
-            max(float(child.branch_length or 0.0), 0.0),
-        )
-        for _parent, child in tree.iter_edges()
-    }
-    return _evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_patterns(
-        tree,
-        compressed_patterns,
-        root_prior=validated_root_prior,
-        root_prior_source=root_prior_source,
         matrix_label=matrix_label,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
+    )
+    finite_state_report = evaluate_finite_state_tree_likelihood_with_invariant_mixture(
+        tree,
+        compressed_patterns,
+        surface=surface,
         invariant_proportion=validated_invariant_proportion,
+    )
+    return _protein_empirical_invariant_mixture_report_from_finite_state(
+        finite_state_report,
+        matrix_label=matrix_label,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
         initial_invariant_proportion=validated_invariant_proportion,
         lower_invariant_proportion_bound=validated_invariant_proportion,
         upper_invariant_proportion_bound=validated_invariant_proportion,
-        transition_by_node_id=transition_by_node_id,
         function_evaluation_count=1,
         converged=True,
+        initial_log_likelihood=finite_state_report.log_likelihood,
     )
 
 
@@ -1075,6 +1077,48 @@ def evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_align
         matrix_label=matrix_label,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
+    )
+
+
+def _protein_empirical_invariant_mixture_report_from_finite_state(
+    report: FiniteStateInvariantMixtureTreeLikelihoodReport,
+    *,
+    matrix_label: str,
+    gap_policy: str,
+    missing_policy: str,
+    initial_invariant_proportion: float,
+    lower_invariant_proportion_bound: float,
+    upper_invariant_proportion_bound: float,
+    function_evaluation_count: int,
+    converged: bool,
+    initial_log_likelihood: float,
+) -> ProteinEmpiricalInvariantMixtureTreeLikelihoodReport:
+    normalization_policy = (
+        CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY
+        if report.normalization_policy is None
+        else report.normalization_policy
+    )
+    return ProteinEmpiricalInvariantMixtureTreeLikelihoodReport(
+        taxa=report.taxa,
+        site_count=report.site_count,
+        pattern_count=report.pattern_count,
+        compression_used=report.compression_used,
+        tree_newick=report.tree_newick,
+        state_count=report.state_count,
+        matrix_label=matrix_label,
+        root_prior_source=report.root_prior_source,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        normalization_policy=normalization_policy,
+        initial_invariant_proportion=initial_invariant_proportion,
+        invariant_proportion=report.invariant_proportion,
+        initial_log_likelihood=initial_log_likelihood,
+        log_likelihood=report.log_likelihood,
+        function_evaluation_count=function_evaluation_count,
+        converged=converged,
+        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        site_likelihoods=report.site_likelihoods,
     )
 
 
