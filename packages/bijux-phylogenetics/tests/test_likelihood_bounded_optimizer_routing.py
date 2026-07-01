@@ -123,6 +123,42 @@ def test_empirical_invariant_mixture_routes_through_shared_likelihood_search(
     assert observed_bounds == [(0.0, 0.95)]
 
 
+def test_empirical_gamma_invariant_mixture_routes_through_shared_likelihood_search(
+    monkeypatch,
+) -> None:
+    observed_bounds: list[tuple[float, float]] = []
+    original_search = empirical_module.run_bounded_likelihood_search
+
+    def observe_search(**kwargs):
+        observed_bounds.append((kwargs["lower_bound"], kwargs["upper_bound"]))
+        return original_search(**kwargs)
+
+    monkeypatch.setattr(
+        empirical_module,
+        "run_bounded_likelihood_search",
+        observe_search,
+    )
+
+    report = (
+        empirical_module.optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
+            fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+            fixture(
+                "alignments",
+                "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
+            ),
+            rate_matrix=_compact_polar_rate_matrix(),
+            root_prior=_biased_root_prior(),
+            alpha=0.8,
+            category_count=4,
+            matrix_label="compact-polar",
+            initial_invariant_proportion=0.1,
+        )
+    )
+
+    assert report.converged is True
+    assert observed_bounds == [(0.0, 0.95)]
+
+
 def test_gamma_candidate_routes_alpha_through_shared_coordinate_search(
     monkeypatch,
 ) -> None:
