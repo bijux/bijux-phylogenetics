@@ -7,6 +7,7 @@ import numpy
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
 import bijux_phylogenetics.phylo.likelihood.empirical as empirical_module
+import bijux_phylogenetics.phylo.likelihood.hky85 as hky85_module
 import bijux_phylogenetics.phylo.likelihood.jc69 as jc69_module
 import bijux_phylogenetics.phylo.likelihood.k80 as k80_module
 import bijux_phylogenetics.phylo.likelihood.substitution_model_selection as substitution_model_selection_module
@@ -61,6 +62,27 @@ def test_k80_kappa_optimization_routes_through_shared_likelihood_search(
     report = k80_module.optimize_k80_kappa_from_alignment(
         fixture("trees", "k80_kappa_optimization_tree_2_taxa.nwk"),
         fixture("alignments", "k80_kappa_optimization_alignment_2_taxa.fasta"),
+    )
+
+    assert report.converged is True
+    assert observed_bounds == [(0.05, 20.0)]
+
+
+def test_hky85_kappa_optimization_routes_through_shared_likelihood_search(
+    monkeypatch,
+) -> None:
+    observed_bounds: list[tuple[float, float]] = []
+    original_search = hky85_module.run_bounded_likelihood_search
+
+    def observe_search(**kwargs):
+        observed_bounds.append((kwargs["lower_bound"], kwargs["upper_bound"]))
+        return original_search(**kwargs)
+
+    monkeypatch.setattr(hky85_module, "run_bounded_likelihood_search", observe_search)
+
+    report = hky85_module.optimize_hky85_kappa_from_alignment(
+        fixture("trees", "hky85_kappa_optimization_tree_2_taxa.nwk"),
+        fixture("alignments", "hky85_kappa_optimization_alignment_2_taxa.fasta"),
     )
 
     assert report.converged is True
