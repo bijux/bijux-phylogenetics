@@ -12,6 +12,7 @@ import bijux_phylogenetics.validation as validation_api
 from bijux_phylogenetics.validation import (
     build_broken_benchmark_corpus,
     build_clean_benchmark_corpus,
+    build_invariant_mixture_family_coverage,
     build_large_alignment_scaling_benchmark_dashboard,
     build_large_tree_scaling_benchmark_dashboard,
     build_large_tree_set_scaling_benchmark_dashboard,
@@ -281,6 +282,31 @@ def test_validate_simulation_reproducibility_confirms_same_seed_repeatability() 
     assert all(case.digest for case in report.cases)
 
 
+def test_build_invariant_mixture_family_coverage_proves_supported_families() -> None:
+    report = build_invariant_mixture_family_coverage()
+
+    assert report.goal_id == 29
+    assert report.passed is True
+    assert report.family_count == 5
+    observed = {entry.family_name: entry for entry in report.families}
+    assert set(observed) == {
+        "nucleotide-jc69",
+        "protein-poisson",
+        "protein-empirical-wag",
+        "codon-ctmc",
+        "discrete-mk-unordered",
+    }
+
+    codon = observed["codon-ctmc"]
+    assert codon.surface_model_name == "codon CTMC"
+    assert codon.invariant_proportion == 0.35
+    assert codon.likelihood_changed is True
+    assert codon.invariant_component_active is True
+    assert codon.passed is True
+    assert codon.invariant_component_likelihood > 0.0
+    assert codon.variable_component_likelihood > 0.0
+
+
 def test_build_shared_continuous_fixture_catalog_tracks_live_consumed_fixtures() -> (
     None
 ):
@@ -353,6 +379,10 @@ def test_package_root_exports_validation_corpus_surfaces() -> None:
     assert (
         validation_api.build_shared_continuous_fixture_catalog
         is build_shared_continuous_fixture_catalog
+    )
+    assert (
+        validation_api.build_invariant_mixture_family_coverage
+        is build_invariant_mixture_family_coverage
     )
     assert (
         validation_api.build_shared_discrete_fixture_catalog
@@ -436,6 +466,19 @@ def test_write_validation_corpus_json_serializes_continuous_fixture_catalog(
     text = path.read_text(encoding="utf-8")
     assert '"goal_id": 252' in text
     assert '"geiger_continuous_missing_values_twenty_four_taxa"' in text
+
+
+def test_write_validation_corpus_json_serializes_invariant_family_coverage(
+    tmp_path: Path,
+) -> None:
+    path = write_validation_corpus_json(
+        tmp_path / "invariant-mixture-family-coverage.json",
+        build_invariant_mixture_family_coverage(),
+    )
+
+    text = path.read_text(encoding="utf-8")
+    assert '"goal_id": 29' in text
+    assert '"protein-empirical-wag"' in text
 
 
 def test_write_validation_corpus_json_serializes_discrete_fixture_catalog(
