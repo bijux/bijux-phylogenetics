@@ -257,3 +257,36 @@ class SharedContinuousFixtureCatalogReport:
     live_case_count: int
     fixtures: list[SharedContinuousFixtureCatalogEntry]
     limitations: list[str]
+
+
+@dataclass(slots=True)
+class SharedDiscreteFixtureCatalogEntry:
+    """One governed discrete-trait fixture used by live `geiger` parity."""
+
+    fixture_id: str
+    tree_fixture_id: str
+    trait_table_fixture_id: str
+    trait_name: str
+    taxon_column: str
+    trait_kind: str
+    taxon_count: int | None
+    trait_row_count: int
+    supported_model_names: list[str]
+    covered_model_names: list[str]
+    live_case_count: int
+    validation_expectation: str
+    geiger_reference_expectation: str
+    feature_tags: list[str]
+    transition_matrix_metadata: dict[str, object] | None
+    notes: str
+
+
+@dataclass(slots=True)
+class SharedDiscreteFixtureCatalogReport:
+    """Goal 253 governed inventory for live `geiger::fitDiscrete` fixtures."""
+
+    goal_id: int
+    fixture_count: int
+    live_case_count: int
+    fixtures: list[SharedDiscreteFixtureCatalogEntry]
+    limitations: list[str]
