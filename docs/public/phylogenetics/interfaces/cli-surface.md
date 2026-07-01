@@ -582,6 +582,20 @@ surface, supported model list, live-covered model list, taxon count, and
 trait-row count explicit so reviewers can inspect the actual live continuous
 coverage instead of inferring it from the broader generated parity tranche.
 
+`report shared-discrete-fixture-catalog` is the governed inventory surface for
+the shared discrete trait fixtures currently consumed by the live
+`geiger::fitDiscrete` parity harness. Its JSON metrics report:
+
+- `goal_id`
+- `fixture_count`
+- `live_case_count`
+
+The report body keeps each governed fixture id, linked tree and trait-table
+surface, trait kind, supported model list, live-covered model list, taxon
+count, trait-row count, and transition-matrix metadata explicit so reviewers
+can inspect the actual live discrete coverage instead of inferring it from the
+broader generated parity tranche.
+
 `report tree-package` is the governed full tree review surface. It takes one
 tree and materializes a richer review directory than the older `report tree`
 diagnostic. Its JSON metrics report:
