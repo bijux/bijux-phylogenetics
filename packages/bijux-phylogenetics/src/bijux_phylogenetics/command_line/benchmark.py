@@ -200,6 +200,15 @@ def add_benchmark_commands(subparsers: Any) -> None:
     )
     _add_manifest_argument(benchmark_large_tree_model)
 
+    benchmark_maximum_likelihood_wrapper = benchmark_subparsers.add_parser(
+        "maximum-likelihood-wrapper-comparison",
+        help="Benchmark native maximum-likelihood tree inference against cached IQ-TREE, FastTree, and explicit RAxML support lanes.",
+    )
+    benchmark_maximum_likelihood_wrapper.add_argument(
+        "--json", action="store_true", help="Emit the benchmark report as JSON."
+    )
+    _add_manifest_argument(benchmark_maximum_likelihood_wrapper)
+
     benchmark_real_dataset = benchmark_subparsers.add_parser(
         "real-dataset-macroevolution",
         help="Benchmark continuous and discrete macroevolution model fitting on the published Central European seashore flora dataset against stored local geiger references.",
@@ -322,6 +331,8 @@ def run_benchmark_command(args: Any) -> int:
         report = command_line_api.benchmark_large_dataset_stress_suite(tier=args.tier)
     elif args.benchmark_command == "large-tree-model-fitting":
         report = command_line_api.benchmark_large_tree_model_fitting(tier=args.tier)
+    elif args.benchmark_command == "maximum-likelihood-wrapper-comparison":
+        report = command_line_api.benchmark_maximum_likelihood_wrapper_comparison()
     elif args.benchmark_command == "real-dataset-macroevolution":
         report = command_line_api.benchmark_real_dataset_macroevolution()
     else:
@@ -335,12 +346,19 @@ def run_benchmark_command(args: Any) -> int:
         metrics = {
             "entry_count": len(report.entries),
         }
-    elif hasattr(report, "summary_rows"):
+    elif hasattr(report, "summary_rows") and hasattr(report, "model_rows"):
         metrics = {
             "summary_row_count": len(report.summary_rows),
             "model_row_count": len(report.model_rows),
             "alignment_review_row_count": len(report.alignment_review_rows),
             "parity_row_count": len(report.parity_rows),
+        }
+    elif hasattr(report, "summary_rows"):
+        metrics = {
+            "summary_row_count": len(report.summary_rows),
+            "observation_count": (
+                len(report.observations) if hasattr(report, "observations") else 0
+            ),
         }
     else:
         metrics = {
