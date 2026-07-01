@@ -158,6 +158,8 @@ class DiscreteMkFitReport:
     taxon_count: int
     input_audit: DiscreteMkInputAudit
     log_likelihood: float
+    uncorrected_log_likelihood: float
+    ascertainment_log_likelihood_delta: float
     ascertainment_conditioning_log_probability: float | None
     invariant_pattern_log_probability: float | None
     parameter_count: int

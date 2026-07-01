@@ -267,15 +267,16 @@ def fit_discrete_mk_model_from_dataset(
         delta_bounds=delta_bounds,
         early_burst_bounds=early_burst_bounds,
     )
-    log_likelihood = _tree_log_likelihood(
+    uncorrected_log_likelihood = _tree_log_likelihood(
         fit_tree,
         dataset.states_by_taxon,
         state_order=state_order,
         rate_matrix=rate_matrix,
         root_prior=root_prior,
         root_prior_mode="observed",
-        ascertainment_policy=resolved_ascertainment_policy,
+        ascertainment_policy="none",
     )
+    log_likelihood = uncorrected_log_likelihood
     ascertainment_conditioning_log_probability: float | None = None
     invariant_pattern_log_probability: float | None = None
     if resolved_ascertainment_policy == "lewis-variable-only":
@@ -287,6 +288,13 @@ def fit_discrete_mk_model_from_dataset(
             root_prior=root_prior,
             root_prior_mode="observed",
         )
+        if ascertainment_conditioning_log_probability == float("-inf"):
+            log_likelihood = float("-inf")
+        else:
+            log_likelihood = (
+                uncorrected_log_likelihood
+                - ascertainment_conditioning_log_probability
+            )
         invariant_pattern_log_probability = _invariant_pattern_log_probability(
             fit_tree,
             taxa=list(dataset.taxa),
@@ -295,6 +303,13 @@ def fit_discrete_mk_model_from_dataset(
             root_prior=root_prior,
             root_prior_mode="observed",
         )
+    ascertainment_log_likelihood_delta = (
+        log_likelihood - uncorrected_log_likelihood
+        if math.isfinite(log_likelihood)
+        else float("-inf")
+        if math.isfinite(uncorrected_log_likelihood)
+        else float("nan")
+    )
     parameter_count = discrete_parameter_count(
         state_count=len(state_order),
         model=resolved_model,
@@ -433,6 +448,8 @@ def fit_discrete_mk_model_from_dataset(
         taxon_count=len(dataset.taxa),
         input_audit=input_audit,
         log_likelihood=log_likelihood,
+        uncorrected_log_likelihood=uncorrected_log_likelihood,
+        ascertainment_log_likelihood_delta=ascertainment_log_likelihood_delta,
         ascertainment_conditioning_log_probability=(
             ascertainment_conditioning_log_probability
         ),

@@ -52,6 +52,52 @@ def test_discrete_mk_lewis_ascertainment_changes_variable_only_likelihood() -> N
         rel_tol=0.0,
         abs_tol=1e-12,
     )
+    assert corrected.ascertainment_conditioning_log_probability is not None
+    assert corrected.invariant_pattern_log_probability is not None
+    assert math.isclose(
+        corrected.log_likelihood,
+        corrected.uncorrected_log_likelihood
+        - corrected.ascertainment_conditioning_log_probability,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        corrected.ascertainment_conditioning_log_probability,
+        math.log1p(-math.exp(corrected.invariant_pattern_log_probability)),
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
+def test_discrete_mk_lewis_ascertainment_reports_explicit_likelihood_decomposition() -> (
+    None
+):
+    corrected = fit_discrete_mk_model(
+        fixture("trees", "example_tree.nwk"),
+        fixture("metadata", "example_traits_discrete_mk_variable_only_four_taxa.tsv"),
+        trait="state",
+        taxon_column="taxon",
+        model="equal-rates",
+        ascertainment_policy="lewis-variable-only",
+    )
+
+    assert corrected.uncorrected_log_likelihood is not None
+    assert corrected.ascertainment_log_likelihood_delta is not None
+    assert corrected.ascertainment_conditioning_log_probability is not None
+    assert corrected.ascertainment_log_likelihood_delta > 0.0
+    assert math.isclose(
+        corrected.log_likelihood,
+        corrected.uncorrected_log_likelihood
+        + corrected.ascertainment_log_likelihood_delta,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+    assert math.isclose(
+        corrected.ascertainment_log_likelihood_delta,
+        -corrected.ascertainment_conditioning_log_probability,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
 
 
 def test_discrete_mk_lewis_ascertainment_dataset_surface_matches_path_surface() -> None:
@@ -84,6 +130,14 @@ def test_discrete_mk_lewis_ascertainment_dataset_surface_matches_path_surface() 
     assert (
         dataset_report.invariant_pattern_log_probability
         == path_report.invariant_pattern_log_probability
+    )
+    assert (
+        dataset_report.uncorrected_log_likelihood
+        == path_report.uncorrected_log_likelihood
+    )
+    assert (
+        dataset_report.ascertainment_log_likelihood_delta
+        == path_report.ascertainment_log_likelihood_delta
     )
 
 
