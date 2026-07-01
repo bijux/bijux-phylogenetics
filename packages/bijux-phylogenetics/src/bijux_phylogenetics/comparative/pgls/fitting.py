@@ -17,6 +17,10 @@ from bijux_phylogenetics.comparative.common import (
     lambda_transform_covariance,
     load_comparative_dataset,
 )
+from bijux_phylogenetics.comparative.search import (
+    BoundedSearchControls,
+    fit_bounded_scalar_parameter,
+)
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
 from .design import inspect_pgls_inputs
@@ -289,6 +293,7 @@ def _resolve_lambda_fit(
             brownian_log_likelihood=brownian_log_likelihood,
             lower_95_confidence_interval=None,
             upper_95_confidence_interval=None,
+            optimizer_diagnostics=None,
             profile_rows=[
                 PGLSLambdaProfileRow(
                     lambda_value=resolved_lambda,
@@ -360,90 +365,47 @@ def _estimate_lambda_for_pgls(
     coarse_step: float = 0.05,
     fine_step: float = 0.005,
 ) -> PGLSLambdaFitReport:
-    coarse_values = _grid_values(0.0, 1.0, coarse_step)
-    coarse_best_lambda = max(coarse_values, key=log_likelihood_at_lambda)
-    fine_values = _grid_values(
-        max(0.0, coarse_best_lambda - coarse_step),
-        min(1.0, coarse_best_lambda + coarse_step),
-        fine_step,
-    )
-    fine_best_lambda = max(fine_values, key=log_likelihood_at_lambda)
-    lower_bound = max(0.0, fine_best_lambda - fine_step)
-    upper_bound = min(1.0, fine_best_lambda + fine_step)
-    resolved_lambda = _maximize_bounded_log_likelihood(
-        log_likelihood_at_lambda,
-        lower_bound=lower_bound,
-        upper_bound=upper_bound,
-    )
-    best_log_likelihood = log_likelihood_at_lambda(resolved_lambda)
-    threshold = best_log_likelihood - confidence_interval_drop
-    profile_rows = [
-        PGLSLambdaProfileRow(
-            lambda_value=candidate,
-            log_likelihood=log_likelihood_at_lambda(candidate),
-            delta_log_likelihood=best_log_likelihood
-            - log_likelihood_at_lambda(candidate),
-            within_95_confidence_interval=(
-                log_likelihood_at_lambda(candidate) >= threshold
+    fit = fit_bounded_scalar_parameter(
+        lower_bound=0.0,
+        upper_bound=1.0,
+        controls=BoundedSearchControls(
+            coarse_grid_point_count=_grid_point_count_for_step(1.0, coarse_step),
+            fine_grid_point_count=_grid_point_count_for_step(
+                min(1.0, 2.0 * coarse_step),
+                fine_step,
             ),
-        )
-        for candidate in _grid_values(0.0, 1.0, profile_step)
-    ]
-    supported_rows = [row for row in profile_rows if row.within_95_confidence_interval]
-    lower_bound = supported_rows[0].lambda_value if supported_rows else None
-    upper_bound = supported_rows[-1].lambda_value if supported_rows else None
+            refinement_start_count=3,
+        ),
+        evaluate=lambda lambda_value: (
+            lambda_value,
+            log_likelihood_at_lambda(lambda_value),
+        ),
+        profile_parameter_values=_grid_values(0.0, 1.0, profile_step),
+        confidence_interval_drop=confidence_interval_drop,
+        optimizer_name="two-stage-grid-search",
+        parameter_search_strategy=(
+            "bounded-coarse-grid-with-multi-start-golden-section-refinement"
+        ),
+    )
     return PGLSLambdaFitReport(
         mode="estimated",
-        lambda_value=resolved_lambda,
-        log_likelihood=best_log_likelihood,
+        lambda_value=fit.parameter_value,
+        log_likelihood=fit.objective_value,
         null_log_likelihood=null_log_likelihood,
         brownian_log_likelihood=brownian_log_likelihood,
-        lower_95_confidence_interval=lower_bound,
-        upper_95_confidence_interval=upper_bound,
-        profile_rows=profile_rows,
+        lower_95_confidence_interval=fit.lower_95_confidence_interval,
+        upper_95_confidence_interval=fit.upper_95_confidence_interval,
+        optimizer_diagnostics=fit.optimizer_diagnostics,
+        profile_rows=[
+            PGLSLambdaProfileRow(
+                lambda_value=row.parameter_value,
+                log_likelihood=row.objective_value,
+                delta_log_likelihood=row.delta_objective_value,
+                within_95_confidence_interval=row.within_95_confidence_interval,
+            )
+            for row in fit.profile_rows
+        ],
     )
-
-
-def _maximize_bounded_log_likelihood(
-    log_likelihood_at_lambda: Callable[[float], float],
-    *,
-    lower_bound: float,
-    upper_bound: float,
-    tolerance: float = 1e-9,
-    max_iterations: int = 80,
-) -> float:
-    if upper_bound <= lower_bound:
-        return lower_bound
-    inverse_phi = (math.sqrt(5.0) - 1.0) / 2.0
-    left = lower_bound
-    right = upper_bound
-    interior_left = right - inverse_phi * (right - left)
-    interior_right = left + inverse_phi * (right - left)
-    left_value = log_likelihood_at_lambda(interior_left)
-    right_value = log_likelihood_at_lambda(interior_right)
-    for _ in range(max_iterations):
-        if abs(right - left) <= tolerance:
-            break
-        if left_value <= right_value:
-            left = interior_left
-            interior_left = interior_right
-            left_value = right_value
-            interior_right = left + inverse_phi * (right - left)
-            right_value = log_likelihood_at_lambda(interior_right)
-        else:
-            right = interior_right
-            interior_right = interior_left
-            right_value = left_value
-            interior_left = right - inverse_phi * (right - left)
-            left_value = log_likelihood_at_lambda(interior_left)
-    candidate_values = {
-        lower_bound: log_likelihood_at_lambda(lower_bound),
-        upper_bound: log_likelihood_at_lambda(upper_bound),
-        interior_left: left_value,
-        interior_right: right_value,
-        (left + right) / 2.0: log_likelihood_at_lambda((left + right) / 2.0),
-    }
-    return max(candidate_values, key=candidate_values.get)
 
 
 def _lambda_log_likelihood(
@@ -476,3 +438,9 @@ def _grid_values(start: float, stop: float, step: float) -> list[float]:
         values.append(round(current, 6))
         current += step
     return values
+
+
+def _grid_point_count_for_step(span: float, step: float) -> int:
+    if step <= 0.0:
+        raise ValueError("step must be positive")
+    return int(round(span / step)) + 1

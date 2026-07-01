@@ -1940,6 +1940,9 @@ def test_comparative_pgls_cli_fits_multiple_predictors(capsys) -> None:
     assert coefficients["predictor_one"]["degrees_of_freedom"] == 1
     assert payload["metrics"]["lambda_estimation_mode"] == "fixed"
     assert payload["metrics"]["lambda_profile_point_count"] == 1
+    assert payload["metrics"]["lambda_optimizer_name"] is None
+    assert payload["metrics"]["lambda_optimizer_converged"] is None
+    assert payload["metrics"]["lambda_optimizer_function_evaluation_count"] is None
     assert payload["metrics"]["lambda_lower_95_confidence_interval"] is None
     assert payload["metrics"]["lambda_upper_95_confidence_interval"] is None
     assert (
@@ -1969,6 +1972,9 @@ def test_comparative_pgls_cli_reports_estimated_lambda_profile(capsys) -> None:
     assert payload["metrics"]["aic"] == payload["data"]["model"]["aic"]
     assert payload["metrics"]["lambda_estimation_mode"] == "estimated"
     assert payload["metrics"]["lambda_profile_point_count"] == 101
+    assert payload["metrics"]["lambda_optimizer_name"] == "two-stage-grid-search"
+    assert payload["metrics"]["lambda_optimizer_converged"] is True
+    assert payload["metrics"]["lambda_optimizer_function_evaluation_count"] > 0
     assert payload["metrics"]["lambda_lower_95_confidence_interval"] == 0.0
     assert payload["metrics"]["lambda_upper_95_confidence_interval"] == 1.0
     assert payload["data"]["model"]["lambda_fit"]["mode"] == "estimated"

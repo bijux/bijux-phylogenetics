@@ -39,6 +39,7 @@ def test_run_pgls_reports_fixed_lambda_fit_surface() -> None:
     assert report.lambda_fit.lambda_value == 0.0
     assert report.lambda_fit.lower_95_confidence_interval is None
     assert report.lambda_fit.upper_95_confidence_interval is None
+    assert report.lambda_fit.optimizer_diagnostics is None
     assert len(report.lambda_fit.profile_rows) == 1
     assert report.lambda_fit.profile_rows[0].lambda_value == 0.0
 
@@ -75,6 +76,11 @@ def test_run_pgls_estimated_lambda_matches_primate_reference_bundle() -> None:
         lambda_value="estimate",
     )
     assert report.lambda_fit.mode == "estimated"
+    assert report.lambda_fit.optimizer_diagnostics is not None
+    assert report.lambda_fit.optimizer_diagnostics.lower_bound == 0.0
+    assert report.lambda_fit.optimizer_diagnostics.upper_bound == 1.0
+    assert report.lambda_fit.optimizer_diagnostics.converged is True
+    assert report.lambda_fit.optimizer_diagnostics.failure_reason is None
     assert math.isclose(
         report.lambda_value,
         reference["r_estimated_lambda"]["lambda_value"],
