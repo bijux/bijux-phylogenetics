@@ -195,6 +195,8 @@ def fit_ornstein_uhlenbeck_model(
         evaluate=lambda alpha: _evaluate_ou_alpha_candidate(dataset, alpha),
         profile_parameter_values=alpha_profile_values,
         confidence_interval_drop=1.92,
+        parameter_name="alpha",
+        owner_name="OU trait model alpha fit",
         optimizer_name="two-stage-grid-search",
         parameter_search_strategy=(
             "bounded-coarse-grid-with-multi-start-golden-section-refinement"
@@ -599,6 +601,8 @@ def _estimate_lambda_for_values(
         ),
         profile_parameter_values=[index / 20.0 for index in range(21)],
         confidence_interval_drop=1.92,
+        parameter_name="lambda",
+        owner_name="continuous residual lambda fit",
         optimizer_name="two-stage-grid-search",
         parameter_search_strategy=(
             "bounded-coarse-grid-with-multi-start-golden-section-refinement"

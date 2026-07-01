@@ -222,11 +222,17 @@ def test_discrete_lambda_transform_routes_through_shared_bounded_scalar_search(
 def test_signal_pagel_lambda_routes_through_shared_bounded_scalar_fit(
     monkeypatch,
 ) -> None:
-    observed_bounds: list[tuple[float, float]] = []
+    observed_calls: list[tuple[tuple[float, float], str, str]] = []
     original_fit = signal_module.fit_bounded_scalar_parameter
 
     def observe_fit(**kwargs):
-        observed_bounds.append((kwargs["lower_bound"], kwargs["upper_bound"]))
+        observed_calls.append(
+            (
+                (kwargs["lower_bound"], kwargs["upper_bound"]),
+                kwargs["parameter_name"],
+                kwargs["owner_name"],
+            )
+        )
         return original_fit(**kwargs)
 
     monkeypatch.setattr(signal_module, "fit_bounded_scalar_parameter", observe_fit)
@@ -238,17 +244,25 @@ def test_signal_pagel_lambda_routes_through_shared_bounded_scalar_fit(
     )
 
     assert report.optimizer_diagnostics is not None
-    assert observed_bounds == [(0.0, 1.0)]
+    assert observed_calls == [
+        ((0.0, 1.0), "lambda", "phylogenetic signal Pagel lambda fit")
+    ]
 
 
 def test_pgls_pagel_lambda_routes_through_shared_bounded_scalar_fit(
     monkeypatch,
 ) -> None:
-    observed_bounds: list[tuple[float, float]] = []
+    observed_calls: list[tuple[tuple[float, float], str, str]] = []
     original_fit = pgls_fitting_module.fit_bounded_scalar_parameter
 
     def observe_fit(**kwargs):
-        observed_bounds.append((kwargs["lower_bound"], kwargs["upper_bound"]))
+        observed_calls.append(
+            (
+                (kwargs["lower_bound"], kwargs["upper_bound"]),
+                kwargs["parameter_name"],
+                kwargs["owner_name"],
+            )
+        )
         return original_fit(**kwargs)
 
     monkeypatch.setattr(pgls_fitting_module, "fit_bounded_scalar_parameter", observe_fit)
@@ -262,17 +276,23 @@ def test_pgls_pagel_lambda_routes_through_shared_bounded_scalar_fit(
     )
 
     assert report.lambda_fit.optimizer_diagnostics is not None
-    assert observed_bounds == [(0.0, 1.0)]
+    assert observed_calls == [((0.0, 1.0), "lambda", "PGLS lambda fit")]
 
 
 def test_ou_covariance_alpha_routes_through_shared_bounded_scalar_fit(
     monkeypatch,
 ) -> None:
-    observed_bounds: list[tuple[float, float]] = []
+    observed_calls: list[tuple[tuple[float, float], str, str]] = []
     original_fit = pgls_ou_covariance_module.fit_bounded_scalar_parameter
 
     def observe_fit(**kwargs):
-        observed_bounds.append((kwargs["lower_bound"], kwargs["upper_bound"]))
+        observed_calls.append(
+            (
+                (kwargs["lower_bound"], kwargs["upper_bound"]),
+                kwargs["parameter_name"],
+                kwargs["owner_name"],
+            )
+        )
         return original_fit(**kwargs)
 
     monkeypatch.setattr(
@@ -290,17 +310,26 @@ def test_ou_covariance_alpha_routes_through_shared_bounded_scalar_fit(
     )
 
     assert report.alpha_optimizer_diagnostics is not None
-    assert len(observed_bounds) == 1
-    assert observed_bounds[0][0] > 0.0
-    assert observed_bounds[0][1] > observed_bounds[0][0]
+    assert len(observed_calls) == 1
+    bounds, parameter_name, owner_name = observed_calls[0]
+    assert bounds[0] > 0.0
+    assert bounds[1] > bounds[0]
+    assert parameter_name == "alpha"
+    assert owner_name == "OU covariance PGLS alpha fit"
 
 
 def test_ou_trait_alpha_routes_through_shared_bounded_scalar_fit(monkeypatch) -> None:
-    observed_bounds: list[tuple[float, float]] = []
+    observed_calls: list[tuple[tuple[float, float], str, str]] = []
     original_fit = continuous_model_fitting_module.fit_bounded_scalar_parameter
 
     def observe_fit(**kwargs):
-        observed_bounds.append((kwargs["lower_bound"], kwargs["upper_bound"]))
+        observed_calls.append(
+            (
+                (kwargs["lower_bound"], kwargs["upper_bound"]),
+                kwargs["parameter_name"],
+                kwargs["owner_name"],
+            )
+        )
         return original_fit(**kwargs)
 
     monkeypatch.setattr(
@@ -316,6 +345,13 @@ def test_ou_trait_alpha_routes_through_shared_bounded_scalar_fit(monkeypatch) ->
     )
 
     assert report.optimizer_diagnostics is not None
-    assert observed_bounds[0][0] > 0.0
-    assert observed_bounds[0][1] > observed_bounds[0][0]
-    assert observed_bounds[1] == (0.0, 1.0)
+    first_bounds, first_parameter_name, first_owner_name = observed_calls[0]
+    assert first_bounds[0] > 0.0
+    assert first_bounds[1] > first_bounds[0]
+    assert first_parameter_name == "alpha"
+    assert first_owner_name == "OU trait model alpha fit"
+    assert observed_calls[1] == (
+        (0.0, 1.0),
+        "lambda",
+        "continuous residual lambda fit",
+    )

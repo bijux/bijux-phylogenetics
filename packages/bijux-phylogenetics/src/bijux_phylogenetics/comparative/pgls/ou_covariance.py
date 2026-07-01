@@ -382,6 +382,8 @@ def _resolve_alpha_fit(
         ),
         profile_parameter_values=alpha_profile_values,
         confidence_interval_drop=1.92,
+        parameter_name="alpha",
+        owner_name="OU covariance PGLS alpha fit",
         optimizer_name="two-stage-grid-search",
         parameter_search_strategy=(
             "bounded-coarse-grid-with-multi-start-golden-section-refinement"

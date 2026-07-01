@@ -382,6 +382,8 @@ def _estimate_lambda_for_pgls(
         ),
         profile_parameter_values=_grid_values(0.0, 1.0, profile_step),
         confidence_interval_drop=confidence_interval_drop,
+        parameter_name="lambda",
+        owner_name="PGLS lambda fit",
         optimizer_name="two-stage-grid-search",
         parameter_search_strategy=(
             "bounded-coarse-grid-with-multi-start-golden-section-refinement"

@@ -632,6 +632,8 @@ def _estimate_pagels_lambda_from_dataset(
         ),
         profile_parameter_values=_grid_values(0.0, 1.0, _PAGEL_LAMBDA_PROFILE_STEP),
         confidence_interval_drop=profile_threshold,
+        parameter_name="lambda",
+        owner_name="phylogenetic signal Pagel lambda fit",
         optimizer_name="two-stage-grid-search",
         parameter_search_strategy=(
             "bounded-coarse-grid-with-multi-start-golden-section-refinement"
