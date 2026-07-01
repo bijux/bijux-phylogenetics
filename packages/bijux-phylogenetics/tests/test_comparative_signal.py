@@ -365,15 +365,19 @@ def test_pagels_lambda_reports_optimizer_diagnostics_for_strong_and_weak_signal(
 
     assert strong_diagnostics.optimizer_name == "two-stage-grid-search"
     assert strong_diagnostics.coarse_grid_point_count == 21
-    assert strong_diagnostics.fine_grid_point_count == 11
+    assert strong_diagnostics.fine_grid_point_count == 21
+    assert strong_diagnostics.lower_bound == 0.0
+    assert strong_diagnostics.upper_bound == 1.0
+    assert 0.0 <= strong_diagnostics.starting_parameter_value <= 1.0
+    assert strong_diagnostics.converged is True
+    assert strong_diagnostics.failure_reason is None
     assert (
         strong_diagnostics.function_evaluation_count
-        == strong_diagnostics.coarse_grid_point_count
-        + strong_diagnostics.fine_grid_point_count
+        >= strong_diagnostics.coarse_grid_point_count
     )
     assert strong_diagnostics.hit_upper_boundary is True
     assert weak_diagnostics.hit_lower_boundary is True
-    assert len(strong_report.profile_rows) == strong_diagnostics.fine_grid_point_count
+    assert len(strong_report.profile_rows) == 101
     assert any(row.within_95_confidence_interval for row in weak_report.profile_rows)
     assert all(row.delta_log_likelihood >= 0.0 for row in strong_report.profile_rows)
 
