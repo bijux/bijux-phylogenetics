@@ -41,6 +41,7 @@ from bijux_phylogenetics.trees import (
 )
 from bijux_phylogenetics.validation import (
     CoreWorkflowValidationReport,
+    InvariantMixtureFamilyCoverageReport,
     LevelOneReleaseGateReport,
     ProductionScaleReadinessReport,
     ReleaseTruthReport,
@@ -228,6 +229,16 @@ class SharedContinuousFixtureCatalogReportBuildResult:
 
 
 @dataclass(frozen=True, slots=True)
+class InvariantMixtureFamilyCoverageReportBuildResult:
+    output_path: Path
+    machine_manifest_path: Path
+    report_kind: str
+    title: str
+    coverage: InvariantMixtureFamilyCoverageReport
+    machine_manifest: dict[str, object]
+
+
+@dataclass(frozen=True, slots=True)
 class SharedDiscreteFixtureCatalogReportBuildResult:
     output_path: Path
     machine_manifest_path: Path
@@ -240,6 +251,7 @@ class SharedDiscreteFixtureCatalogReportBuildResult:
 __all__ = [
     "AlignmentReportBuildResult",
     "DistanceReportBuildResult",
+    "InvariantMixtureFamilyCoverageReportBuildResult",
     "ProductionScaleReadinessReportBuildResult",
     "ReleaseGateReportBuildResult",
     "ReleaseTruthReportBuildResult",

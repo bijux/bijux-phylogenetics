@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .distance_reports import render_distance_report
 from .governance_reports import (
+    render_invariant_mixture_family_coverage_report,
     render_level_one_release_gate_report,
     render_production_scale_readiness_report,
     render_release_truth_report,
@@ -24,6 +25,7 @@ from .linkage import (
 from .models import (
     AlignmentReportBuildResult,
     DistanceReportBuildResult,
+    InvariantMixtureFamilyCoverageReportBuildResult,
     ProductionScaleReadinessReportBuildResult,
     ReleaseGateReportBuildResult,
     ReleaseTruthReportBuildResult,
@@ -47,6 +49,7 @@ from .tree_set_reports import (
 __all__ = [
     "AlignmentReportBuildResult",
     "DistanceReportBuildResult",
+    "InvariantMixtureFamilyCoverageReportBuildResult",
     "ProductionScaleReadinessReportBuildResult",
     "ReleaseGateReportBuildResult",
     "ReleaseTruthReportBuildResult",
@@ -64,6 +67,7 @@ __all__ = [
     "render_alignment_report",
     "render_dataset_report",
     "render_distance_report",
+    "render_invariant_mixture_family_coverage_report",
     "render_level_one_release_gate_report",
     "render_phylogenetics_report",
     "render_phylo_inputs_report",
