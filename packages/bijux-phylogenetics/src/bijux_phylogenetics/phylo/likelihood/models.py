@@ -1959,6 +1959,33 @@ class DiscreteGammaInvariantMixtureSiteLikelihood:
 
 
 @dataclass(slots=True)
+class FiniteStateDiscreteGammaInvariantTreeLikelihoodReport:
+    """Finite-state likelihood report with active gamma and invariant mixture."""
+
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    compression_used: bool
+    tree_newick: str
+    model_name: str
+    state_count: int
+    root_prior_source: str
+    observation_policy: str
+    normalization_policy: str | None
+    alpha: float
+    category_count: int
+    category_rates: list[DiscreteGammaRateCategory]
+    invariant_proportion: float
+    lower_invariant_proportion_bound: float
+    upper_invariant_proportion_bound: float
+    hit_lower_invariant_proportion_boundary: bool
+    hit_upper_invariant_proportion_boundary: bool
+    boundary_warnings: list[str]
+    site_likelihoods: list[DiscreteGammaInvariantMixtureSiteLikelihood]
+    log_likelihood: float
+
+
+@dataclass(slots=True)
 class ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport:
     """Empirical protein likelihood report with active gamma and invariant mixture."""
 
