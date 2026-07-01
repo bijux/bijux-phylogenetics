@@ -49,6 +49,29 @@ class BoundedCoordinateOptimizationResult(Generic[_PayloadT]):
     parameter_diagnostics: dict[str, BoundedParameterSearchDiagnostics]
 
 
+@dataclass(slots=True)
+class ProfiledBoundedParameterRow:
+    """One likelihood-profile row from one bounded parameter fit."""
+
+    parameter_value: float
+    objective_value: float
+    delta_objective_value: float
+    within_confidence_interval: bool
+
+
+@dataclass(slots=True)
+class ProfiledBoundedParameterOptimizationResult(Generic[_PayloadT]):
+    """Best result and profile support from one bounded parameter fit."""
+
+    parameter_value: float
+    payload: _PayloadT
+    objective_value: float
+    lower_confidence_interval: float | None
+    upper_confidence_interval: float | None
+    optimizer_diagnostics: BoundedParameterSearchDiagnostics
+    profile_rows: list[ProfiledBoundedParameterRow]
+
+
 def run_bounded_parameter_maximization(
     *,
     lower_bound: float,
@@ -243,12 +266,83 @@ def run_bounded_coordinate_optimization(
     )
 
 
+def fit_profiled_bounded_parameter(
+    *,
+    lower_bound: float,
+    upper_bound: float,
+    controls: BoundedParameterSearchControls,
+    evaluate: Callable[[float], tuple[_PayloadT, float]],
+    profile_parameter_values: list[float],
+    confidence_interval_drop: float,
+    parameter_name: str = "search parameter",
+    owner_name: str = "bounded parameter fit",
+    optimizer_name: str = "governed-two-stage-grid-search",
+    parameter_search_strategy: str = "bounded-two-stage-grid-search",
+) -> ProfiledBoundedParameterOptimizationResult[_PayloadT]:
+    """Fit one bounded parameter and build a supported profile interval."""
+    evaluation_cache: dict[float, tuple[_PayloadT, float]] = {}
+
+    def evaluate_cached(parameter_value: float) -> tuple[_PayloadT, float]:
+        cache_key = round(parameter_value, 12)
+        cached = evaluation_cache.get(cache_key)
+        if cached is not None:
+            return cached
+        result = evaluate(parameter_value)
+        evaluation_cache[cache_key] = result
+        return result
+
+    search_result = run_bounded_parameter_maximization(
+        lower_bound=lower_bound,
+        upper_bound=upper_bound,
+        controls=controls,
+        evaluate=evaluate_cached,
+        parameter_name=parameter_name,
+        owner_name=owner_name,
+        optimizer_name=optimizer_name,
+        parameter_search_strategy=parameter_search_strategy,
+    )
+    profile_rows: list[ProfiledBoundedParameterRow] = []
+    best_objective_value = search_result.objective_value
+    for parameter_value in profile_parameter_values:
+        _, objective_value = evaluate_cached(parameter_value)
+        delta_objective_value = max(0.0, best_objective_value - objective_value)
+        profile_rows.append(
+            ProfiledBoundedParameterRow(
+                parameter_value=parameter_value,
+                objective_value=objective_value,
+                delta_objective_value=delta_objective_value,
+                within_confidence_interval=(
+                    delta_objective_value <= confidence_interval_drop
+                ),
+            )
+        )
+    supported_parameter_values = [
+        row.parameter_value for row in profile_rows if row.within_confidence_interval
+    ]
+    return ProfiledBoundedParameterOptimizationResult(
+        parameter_value=search_result.parameter_value,
+        payload=search_result.payload,
+        objective_value=search_result.objective_value,
+        lower_confidence_interval=(
+            None if not supported_parameter_values else min(supported_parameter_values)
+        ),
+        upper_confidence_interval=(
+            None if not supported_parameter_values else max(supported_parameter_values)
+        ),
+        optimizer_diagnostics=search_result.diagnostics,
+        profile_rows=profile_rows,
+    )
+
+
 __all__ = [
     "BoundedCoordinateOptimizationResult",
     "BoundedParameterOptimizationResult",
     "BoundedParameterSearchControls",
     "BoundedParameterSearchDiagnostics",
     "BoundedParameterSearchProfileRow",
+    "ProfiledBoundedParameterOptimizationResult",
+    "ProfiledBoundedParameterRow",
+    "fit_profiled_bounded_parameter",
     "run_bounded_coordinate_optimization",
     "run_bounded_parameter_golden_section_maximization",
     "run_bounded_parameter_maximization",
