@@ -17,6 +17,9 @@ from bijux_phylogenetics.phylo.likelihood.ctmc import (
 from bijux_phylogenetics.phylo.likelihood.gamma import (
     build_discrete_gamma_rate_categories,
 )
+from bijux_phylogenetics.phylo.likelihood.fit_assessment import (
+    build_likelihood_fit_assessment,
+)
 from bijux_phylogenetics.phylo.likelihood.invariant import (
     invariant_component_site_likelihood,
     invariant_proportion_boundary_warnings,
@@ -40,6 +43,9 @@ from bijux_phylogenetics.phylo.likelihood.models import (
     ProteinEmpiricalDiscreteGammaTreeLikelihoodReport,
     ProteinEmpiricalInvariantMixtureTreeLikelihoodReport,
     ProteinEmpiricalMatrixTreeLikelihoodReport,
+)
+from bijux_phylogenetics.phylo.likelihood.optimization_boundary_warnings import (
+    build_branch_length_boundary_warnings,
 )
 from bijux_phylogenetics.phylo.likelihood.parameter_search import (
     run_bounded_coordinate_likelihood_search,
@@ -433,6 +439,18 @@ def optimize_empirical_protein_branch_lengths(
         )
         for node in edge_nodes
     ]
+    boundary_warnings = build_branch_length_boundary_warnings(
+        branches,
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
+    )
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=compressed_patterns.alignment_length,
+        pattern_count=compressed_patterns.pattern_count,
+        optimized_parameter_count=len(branches),
+        converged=search_result.converged,
+        boundary_warnings=boundary_warnings,
+    )
     return ProteinEmpiricalBranchLengthOptimizationReport(
         taxa=compressed_patterns.taxon_order,
         site_count=compressed_patterns.alignment_length,
@@ -453,6 +471,7 @@ def optimize_empirical_protein_branch_lengths(
         optimization_pass_count=search_result.optimization_pass_count,
         function_evaluation_count=search_result.function_evaluation_count,
         converged=search_result.converged,
+        fit_assessment=fit_assessment,
         lower_branch_length_bound=lower_branch_length_bound,
         upper_branch_length_bound=upper_branch_length_bound,
         branches=branches,

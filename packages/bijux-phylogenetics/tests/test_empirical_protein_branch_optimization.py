@@ -59,6 +59,7 @@ def test_empirical_protein_branch_optimization_improves_bad_fixed_rate_start_tre
     assert report.optimization_pass_count == 4
     assert report.function_evaluation_count == 401
     assert report.converged is False
+    assert report.fit_assessment.classification == "failed"
     assert report.lower_branch_length_bound == 0.0
     assert report.upper_branch_length_bound == 5.0
     assert len(report.branches) == report.branch_count
