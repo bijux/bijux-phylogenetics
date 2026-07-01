@@ -1663,7 +1663,10 @@ reference suite before any user dataset is interpreted. It validates
 equal-rates, symmetric, and all-rates-different likelihood reconstructions
 against checked-in `ape::ace` probability fixtures and then reruns the owned
 root-prior, ambiguity, ordered-state, and irreversible-transition policy
-surfaces on known examples. Its JSON metrics report:
+surfaces on known examples. The ordered-state policy lane now proves all three
+supported ordered Mk families, so the governed review no longer stops at the
+equal-rates case when checking whether ordered constraints still remove
+non-adjacent transitions. Its JSON metrics report:
 - `case_count`
 - `external_case_count`
 - `all_passed`
@@ -1684,7 +1687,10 @@ report:
 The command supports `equal-rates`, `symmetric`, and
 `all-rates-different`. It requires `--ordered-states`, which defines the
 durable ordered state vocabulary used to restrict transitions to adjacent
-states only.
+states only. The fit and summary ledgers preserve the ordered-versus-unordered
+parameter counts, so reviewers can see when SYM or ARD restrictions removed
+real degrees of freedom rather than assuming the ordered comparison is only an
+ER surface.
 
 When `--summary-out` is supplied, `ancestral ordered-discrete` writes one
 overall summary ledger. The row preserves:
@@ -3912,6 +3918,7 @@ non-ultrametric rooted tree.
 for one rooted tree and one categorical tip trait. Its JSON metrics report:
 - `taxon_count`
 - `model`
+- `ordered_state_count`
 - `observed_state_count`
 - `sparse_state_count`
 - `pruned_missing_value_taxon_count`
@@ -3929,6 +3936,8 @@ for one rooted tree and one categorical tip trait. Its JSON metrics report:
 - `optimizer_hit_upper_parameter_bound`
 - `overparameterized`
 - `transition_rate_count`
+- `allowed_transition_count`
+- `restricted_transition_count`
 - `baseline_model`
 - `baseline_aic`
 - `delta_aic`
@@ -3936,7 +3945,9 @@ for one rooted tree and one categorical tip trait. Its JSON metrics report:
 
 The command preserves the full fit report under `data`, including:
 - `input_audit`
+- `ordered_states`
 - `transition_rate_rows`
+- `allowed_transition_pairs`
 - `optimizer_diagnostics`
 - `baseline_comparison`
 
@@ -3947,6 +3958,7 @@ The governed policy is explicit rather than implicit:
 - optimizer non-convergence or boundary hits remain warnings, not silent success
 - ER fits are the governed live `phytools::fitMk(model='ER')` parity surface
 - unordered multistate SYM fits are the governed live `phytools::fitMk(model='SYM')` parity surface
+- ordered fits require explicit `--ordered-states` so skipped-state jumps are never inferred from incidental table order
 
 When `--summary-out` is supplied, `comparative discrete-mk` writes one flat
 summary ledger as CSV or TSV. The row preserves:
@@ -3954,10 +3966,13 @@ summary ledger as CSV or TSV. The row preserves:
 - `taxon_column`
 - `model`
 - `state_ordering`
+- `ordered_states`
 - `analyzed_taxon_count`
 - `excluded_taxon_count`
 - `observed_state_count`
 - `sparse_state_count`
+- `allowed_transition_count`
+- `restricted_transition_count`
 - `log_likelihood`
 - `parameter_count`
 - `aic`

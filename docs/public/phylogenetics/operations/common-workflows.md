@@ -1359,7 +1359,10 @@ fits the same discrete likelihood model twice on one tree: once with the
 supplied ordered state vocabulary and once with the unrestricted unordered
 baseline. It then writes the fit comparison, node-wise ancestral differences,
 and directed transition restrictions so reviewers can see exactly what the
-ordered assumption changed.
+ordered assumption changed. The ordered review supports ER, SYM, and ARD, and
+the output now keeps both ordered and unordered parameter counts so reviewers
+can see when adjacency constraints removed real directional-rate degrees of
+freedom rather than only changing an ER narrative.
 
 ```bash
 bijux-phylogenetics ancestral ordered-discrete \
@@ -2242,7 +2245,12 @@ adds one directional state-count seed plus a small deterministic perturbation
 set. The fit diagnostics preserve that budget through
 `optimizer_diagnostics.initial_candidate_count` and
 `optimizer_diagnostics.best_initial_scale`, so reviewers can see the restart
-policy directly instead of inferring it from runtime alone.
+policy directly instead of inferring it from runtime alone. The same workflow
+also supports ordered Mk review through `--state-ordering ordered` plus an
+explicit `--ordered-states` vocabulary. In that mode the summary and JSON
+surfaces keep `ordered_states`, `allowed_transition_count`, and
+`restricted_transition_count`, so reviewers can audit exactly how many
+directional rates remained allowed after adjacency restrictions.
 
 When the goal is to fit a standalone continuous-trait evolution model rather
 than a regression, use `comparative brownian`. This workflow keeps the
