@@ -191,6 +191,8 @@ __all__ = [
     "evaluate_nucleotide_branch_likelihood_diagnostics_from_alignment",
     "evaluate_f81_tree_likelihood",
     "evaluate_f81_tree_likelihood_from_alignment",
+    "evaluate_f81_tree_likelihood_with_discrete_gamma_and_invariant_mixture",
+    "evaluate_f81_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment",
     "evaluate_f81_tree_likelihood_with_invariant_mixture",
     "evaluate_f81_tree_likelihood_with_invariant_mixture_from_alignment",
     "evaluate_empirical_protein_tree_likelihood",
