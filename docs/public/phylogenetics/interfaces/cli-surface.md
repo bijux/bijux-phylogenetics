@@ -3922,11 +3922,16 @@ non-ultrametric rooted tree.
 for one rooted tree and one categorical tip trait. Its JSON metrics report:
 - `taxon_count`
 - `model`
+- `ascertainment_policy`
 - `ordered_state_count`
 - `observed_state_count`
 - `sparse_state_count`
 - `pruned_missing_value_taxon_count`
 - `log_likelihood`
+- `uncorrected_log_likelihood`
+- `ascertainment_log_likelihood_delta`
+- `ascertainment_conditioning_log_probability`
+- `invariant_pattern_log_probability`
 - `parameter_count`
 - `aic`
 - `aicc`
@@ -3960,6 +3965,10 @@ The governed policy is explicit rather than implicit:
 - overlapping missing trait values are pruned and reported under `input_audit`
 - sparse states are surfaced explicitly instead of hidden
 - optimizer non-convergence or boundary hits remain warnings, not silent success
+- `--ascertainment lewis-variable-only` is reserved for character matrices that
+  were retained only when at least one taxon changed state, so the likelihood
+  is conditioned on the variable-pattern observation rule instead of being left
+  as an unlabeled ordinary Mk fit
 - ER fits are the governed live `phytools::fitMk(model='ER')` parity surface
 - unordered multistate SYM fits are the governed live `phytools::fitMk(model='SYM')` parity surface
 - ordered fits require explicit `--ordered-states` so skipped-state jumps are never inferred from incidental table order
@@ -3978,6 +3987,10 @@ summary ledger as CSV or TSV. The row preserves:
 - `allowed_transition_count`
 - `restricted_transition_count`
 - `log_likelihood`
+- `uncorrected_log_likelihood`
+- `ascertainment_log_likelihood_delta`
+- `ascertainment_conditioning_log_probability`
+- `invariant_pattern_log_probability`
 - `parameter_count`
 - `aic`
 - `aicc`
@@ -3999,6 +4012,20 @@ rate-matrix ledger as CSV or TSV. Each row preserves:
 - `transition_allowed`
 - `step_distance`
 - `rate`
+
+When `--patterns-out` is supplied, the command also writes one observed
+pattern-likelihood ledger as CSV or TSV. Each row preserves:
+- `pattern_id`
+- `pattern_weight`
+- `tip_states`
+- `raw_log_likelihood`
+- `ascertainment_conditioning_log_probability`
+- `log_likelihood`
+
+That ledger is the reviewer-facing proof surface for Lewis correction. It shows
+the ordinary Mk site log-likelihood before conditioning, the shared
+variable-only conditioning term applied to retained patterns, and the final
+conditioned pattern log-likelihood that contributes to the fitted objective.
 
 The governed unordered ARD fit policy is explicit in this surface. The runtime
 does not spray random restart clouds across the parameter box. It evaluates a
