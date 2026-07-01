@@ -4,6 +4,9 @@ from bijux_phylogenetics.ancestral.discrete.likelihood.parameter_layout import (
     broadcast_discrete_mk_log_parameters,
     build_discrete_mk_parameter_layout,
 )
+from bijux_phylogenetics.ancestral.discrete.likelihood.rate_matrix import (
+    rate_matrix_from_log_parameters,
+)
 
 
 def _unordered_pairs() -> set[tuple[int, int]]:
@@ -116,3 +119,31 @@ def test_broadcast_symmetric_parameters_to_ard_layout_reuses_undirected_pair_val
     )
 
     assert ard_parameters == (0.1, 0.2, 0.1, 0.3, 0.2, 0.3)
+
+
+def test_rate_matrix_rendering_uses_shared_symmetric_parameter_slots() -> None:
+    rate_matrix = rate_matrix_from_log_parameters(
+        [0.1, 0.2, 0.3],
+        state_order=["north", "south", "west"],
+        model="symmetric",
+        state_ordering="unordered",
+        allowed_transition_pairs=_unordered_pairs(),
+    )
+
+    assert rate_matrix[0, 1] == rate_matrix[1, 0]
+    assert rate_matrix[0, 2] == rate_matrix[2, 0]
+    assert rate_matrix[1, 2] == rate_matrix[2, 1]
+
+
+def test_rate_matrix_rendering_keeps_ard_directions_distinct() -> None:
+    rate_matrix = rate_matrix_from_log_parameters(
+        [0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
+        state_order=["north", "south", "west"],
+        model="all-rates-different",
+        state_ordering="unordered",
+        allowed_transition_pairs=_unordered_pairs(),
+    )
+
+    assert rate_matrix[0, 1] != rate_matrix[1, 0]
+    assert rate_matrix[0, 2] != rate_matrix[2, 0]
+    assert rate_matrix[1, 2] != rate_matrix[2, 1]
