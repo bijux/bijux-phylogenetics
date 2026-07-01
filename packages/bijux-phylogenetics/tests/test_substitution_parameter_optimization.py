@@ -34,6 +34,7 @@ def test_nucleotide_substitution_parameter_recovery_benchmark_reports_governed_m
 
     assert jc69_report.model_name == "JC69"
     assert jc69_report.parameter_count == 0
+    assert jc69_report.fit_assessment.classification == "stable"
     assert jc69_report.parameter_rows == []
     assert jc69_report.fixed_parameter_values == {}
     assert jc69_report.optimization_pass_count == 0
@@ -68,6 +69,7 @@ def test_nucleotide_substitution_parameter_recovery_benchmark_reports_governed_m
     assert k80_report.site_count == 13
     assert k80_report.pattern_count == 9
     assert k80_report.parameter_count == 1
+    assert k80_report.fit_assessment.classification == "stable"
     assert k80_report.optimization_pass_count == 1
     assert k80_report.converged is True
     assert k80_report.warnings == []
@@ -100,6 +102,7 @@ def test_nucleotide_substitution_parameter_recovery_benchmark_reports_governed_m
     assert f81_report.site_count == 21
     assert f81_report.pattern_count == 5
     assert f81_report.parameter_count == 3
+    assert f81_report.fit_assessment.classification == "weak"
     assert f81_report.base_frequency_source == "estimated"
     assert f81_report.parameter_rows == []
     assert f81_report.fixed_parameter_values == {}
@@ -142,6 +145,7 @@ def test_nucleotide_substitution_parameter_recovery_benchmark_reports_governed_m
     assert hky85_report.site_count == 128
     assert hky85_report.pattern_count == 16
     assert hky85_report.parameter_count == 4
+    assert hky85_report.fit_assessment.classification == "stable"
     assert hky85_report.base_frequency_source == "estimated"
     assert hky85_report.optimization_pass_count >= 1
     assert hky85_report.converged is True
@@ -171,6 +175,7 @@ def test_nucleotide_substitution_parameter_recovery_benchmark_reports_governed_m
     assert gtr_report.site_count == 256
     assert gtr_report.pattern_count == 15
     assert gtr_report.parameter_count == 8
+    assert gtr_report.fit_assessment.classification == "weak"
     assert gtr_report.base_frequency_source == "estimated"
     assert gtr_report.fixed_parameter_values == {"AC": 1.0}
     assert gtr_report.optimization_pass_count >= 1

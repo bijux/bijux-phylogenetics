@@ -399,6 +399,7 @@ class NucleotideSubstitutionParameterOptimizationReport:
     function_evaluation_count: int
     optimization_pass_count: int
     converged: bool
+    fit_assessment: LikelihoodFitAssessment
     boundary_warnings: list[LikelihoodOptimizationBoundaryWarning]
     warnings: list[str]
     parameter_diagnostics: dict[str, BoundedScalarSearchDiagnostics] = field(
@@ -432,6 +433,7 @@ class FiniteStateFrequencyOptimizationReport:
     function_evaluation_count: int
     optimization_pass_count: int
     converged: bool
+    fit_assessment: LikelihoodFitAssessment
     minimum_state_frequency: float
     state_rows: list[StateFrequencyOptimizationRow]
     warnings: list[str]

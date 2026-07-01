@@ -16,6 +16,9 @@ from bijux_phylogenetics.phylo.likelihood.dna import (
 from bijux_phylogenetics.phylo.likelihood.f81 import (
     evaluate_f81_tree_likelihood,
 )
+from bijux_phylogenetics.phylo.likelihood.fit_assessment import (
+    build_likelihood_fit_assessment,
+)
 from bijux_phylogenetics.phylo.likelihood.gtr import (
     evaluate_gtr_tree_likelihood,
     optimize_gtr_exchangeabilities,
@@ -257,6 +260,13 @@ def _optimize_jc69_substitution_parameters(
     evaluation_report = evaluate_jc69_tree_likelihood(tree, records)
     log_likelihood = evaluation_report.log_likelihood
     aic = -2.0 * log_likelihood
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=evaluation_report.site_count,
+        pattern_count=evaluation_report.pattern_count,
+        optimized_parameter_count=0,
+        converged=True,
+        boundary_warnings=[],
+    )
     return NucleotideSubstitutionParameterOptimizationReport(
         model_name="JC69",
         taxa=evaluation_report.taxa,
@@ -278,6 +288,7 @@ def _optimize_jc69_substitution_parameters(
         function_evaluation_count=1,
         optimization_pass_count=0,
         converged=True,
+        fit_assessment=fit_assessment,
         boundary_warnings=[],
         warnings=[
             "JC69 has no free substitution parameters; skipping parameter search"
@@ -349,6 +360,13 @@ def _optimize_k80_substitution_parameters(
     if not optimization_report.converged:
         warnings.append("K80 substitution-parameter search did not converge")
     boundary_warnings = build_substitution_parameter_boundary_warnings([parameter_row])
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=optimization_report.site_count,
+        pattern_count=optimization_report.pattern_count,
+        optimized_parameter_count=1,
+        converged=optimization_report.converged,
+        boundary_warnings=boundary_warnings,
+    )
     return NucleotideSubstitutionParameterOptimizationReport(
         model_name="K80",
         taxa=optimization_report.taxa,
@@ -370,6 +388,7 @@ def _optimize_k80_substitution_parameters(
         function_evaluation_count=optimization_report.function_evaluation_count,
         optimization_pass_count=1,
         converged=optimization_report.converged,
+        fit_assessment=fit_assessment,
         boundary_warnings=boundary_warnings,
         warnings=warnings,
     )
@@ -492,6 +511,13 @@ def _optimize_f81_substitution_parameters(
         for warning in boundary_warning_messages(boundary_warnings)
         if warning not in warnings
     )
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=evaluation_report.site_count,
+        pattern_count=evaluation_report.pattern_count,
+        optimized_parameter_count=evaluation_report.parameter_count,
+        converged=converged,
+        boundary_warnings=boundary_warnings,
+    )
     return NucleotideSubstitutionParameterOptimizationReport(
         model_name="F81",
         taxa=evaluation_report.taxa,
@@ -513,6 +539,7 @@ def _optimize_f81_substitution_parameters(
         function_evaluation_count=function_evaluation_count,
         optimization_pass_count=optimization_pass_count,
         converged=converged,
+        fit_assessment=fit_assessment,
         boundary_warnings=boundary_warnings,
         warnings=warnings,
     )
@@ -618,6 +645,13 @@ def _optimize_hky85_substitution_parameters(
         for warning in boundary_warning_messages(boundary_warnings)
         if warning not in warnings
     )
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=optimization_report.site_count,
+        pattern_count=optimization_report.pattern_count,
+        optimized_parameter_count=optimization_report.parameter_count,
+        converged=converged,
+        boundary_warnings=boundary_warnings,
+    )
     return NucleotideSubstitutionParameterOptimizationReport(
         model_name="HKY85",
         taxa=optimization_report.taxa,
@@ -639,6 +673,7 @@ def _optimize_hky85_substitution_parameters(
         function_evaluation_count=function_evaluation_count,
         optimization_pass_count=optimization_pass_count,
         converged=converged,
+        fit_assessment=fit_assessment,
         boundary_warnings=boundary_warnings,
         warnings=warnings,
     )
@@ -768,6 +803,13 @@ def _optimize_gtr_substitution_parameters(
         for warning in boundary_warning_messages(boundary_warnings)
         if warning not in warnings
     )
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=optimization_report.site_count,
+        pattern_count=optimization_report.pattern_count,
+        optimized_parameter_count=optimization_report.parameter_count,
+        converged=converged,
+        boundary_warnings=boundary_warnings,
+    )
     return NucleotideSubstitutionParameterOptimizationReport(
         model_name="GTR",
         taxa=optimization_report.taxa,
@@ -789,6 +831,7 @@ def _optimize_gtr_substitution_parameters(
         function_evaluation_count=function_evaluation_count,
         optimization_pass_count=optimization_pass_count,
         converged=converged,
+        fit_assessment=fit_assessment,
         boundary_warnings=boundary_warnings,
         warnings=warnings,
     )

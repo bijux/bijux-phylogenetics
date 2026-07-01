@@ -11,6 +11,9 @@ from bijux_phylogenetics.core.categorical_probability_vectors import (
 from bijux_phylogenetics.phylo.likelihood.ctmc import (
     normalize_ctmc_rate_matrix_by_expected_substitution_rate,
 )
+from bijux_phylogenetics.phylo.likelihood.fit_assessment import (
+    build_likelihood_fit_assessment,
+)
 from bijux_phylogenetics.phylo.likelihood.models import (
     FiniteStateFrequencyOptimizationReport,
     LikelihoodOptimizationBoundaryWarning,
@@ -113,6 +116,13 @@ def optimize_finite_state_stationary_frequencies(
         for warning in boundary_warning_rows
     )
     optimized_payload = search_result.payload
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=int(getattr(optimized_payload, "site_count")),
+        pattern_count=int(getattr(optimized_payload, "pattern_count")),
+        optimized_parameter_count=max(len(state_labels) - 1, 0),
+        converged=search_result.converged,
+        boundary_warnings=boundary_warning_rows,
+    )
     return FiniteStateFrequencyOptimizationReport(
         model_name=model_name,
         taxa=list(getattr(optimized_payload, "taxa")),
@@ -126,6 +136,7 @@ def optimize_finite_state_stationary_frequencies(
         function_evaluation_count=search_result.function_evaluation_count + 1,
         optimization_pass_count=search_result.optimization_pass_count,
         converged=search_result.converged,
+        fit_assessment=fit_assessment,
         minimum_state_frequency=minimum_state_frequency,
         state_rows=state_rows,
         warnings=warnings,

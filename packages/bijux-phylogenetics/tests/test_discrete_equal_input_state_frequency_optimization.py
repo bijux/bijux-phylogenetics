@@ -41,6 +41,7 @@ def test_discrete_equal_input_state_frequency_optimization_keeps_simplex_valid()
     assert report.model_name == "finite-state equal-input"
     assert report.state_count == 4
     assert report.state_frequency_source == "optimized"
+    assert report.fit_assessment.classification in {"failed", "weak"}
     assert report.function_evaluation_count > 1
     assert report.optimization_pass_count >= 1
     assert report.optimized_log_likelihood >= report.initial_log_likelihood
@@ -83,6 +84,7 @@ def test_discrete_equal_input_state_frequency_optimization_emits_structured_floo
     )
 
     assert report.boundary_warning_rows
+    assert report.fit_assessment.classification == "overparameterized"
     assert all(
         warning.warning_kind == "frequency-boundary"
         for warning in report.boundary_warning_rows

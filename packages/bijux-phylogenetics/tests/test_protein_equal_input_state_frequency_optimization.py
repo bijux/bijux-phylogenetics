@@ -32,6 +32,7 @@ def test_protein_equal_input_state_frequency_optimization_improves_fixed_tree_li
     assert report.model_name == "protein equal-input"
     assert report.state_count == 20
     assert report.state_frequency_source == "optimized"
+    assert report.fit_assessment.classification in {"failed", "overparameterized"}
     assert report.function_evaluation_count > 1
     assert report.optimization_pass_count >= 1
     assert report.optimized_log_likelihood >= report.initial_log_likelihood
@@ -49,4 +50,3 @@ def test_protein_equal_input_state_frequency_optimization_improves_fixed_tree_li
             in report.warnings
         )
     assert report.parameter_diagnostics
-

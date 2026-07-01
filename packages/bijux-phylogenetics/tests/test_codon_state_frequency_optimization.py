@@ -26,6 +26,7 @@ def test_codon_state_frequency_optimization_improves_fixed_tree_likelihood() -> 
     assert report.model_name == "codon CTMC"
     assert report.state_count == 61
     assert report.state_frequency_source == "optimized"
+    assert report.fit_assessment.classification == "overparameterized"
     assert report.function_evaluation_count > 1
     assert report.optimization_pass_count >= 1
     assert report.optimized_log_likelihood >= report.initial_log_likelihood
@@ -40,4 +41,3 @@ def test_codon_state_frequency_optimization_improves_fixed_tree_likelihood() -> 
     if not report.converged:
         assert "codon CTMC stationary-frequency search did not converge" in report.warnings
     assert report.parameter_diagnostics
-
