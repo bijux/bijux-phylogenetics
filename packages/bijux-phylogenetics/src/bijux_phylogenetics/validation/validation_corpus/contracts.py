@@ -276,6 +276,62 @@ class InvariantMixtureFamilyCoverageReport:
 
 
 @dataclass(slots=True)
+class GammaInvariantMixtureModelCoverageCase:
+    """One eligible finite-state model checked under one active combined gamma-plus-invariant mixture."""
+
+    model_name: str
+    surface_model_name: str
+    alpha: float
+    category_count: int
+    invariant_proportion: float
+    site_count: int
+    pattern_count: int
+    gamma_log_likelihood: float
+    gamma_invariant_log_likelihood: float
+    likelihood_delta: float
+    invariant_component_likelihood: float
+    variable_component_likelihood: float
+    category_likelihood_count: int
+    likelihood_changed: bool
+    invariant_component_active: bool
+    variable_component_active: bool
+    boundary_warning_count: int
+    hit_lower_invariant_proportion_boundary: bool
+    hit_upper_invariant_proportion_boundary: bool
+    boundary_warnings: list[str]
+    passed: bool
+    notes: list[str]
+
+
+@dataclass(slots=True)
+class GammaInvariantMixtureFamilyCoverageEntry:
+    """One eligible finite-state family summarized across its governed gamma-plus-invariant cases."""
+
+    family_name: str
+    supported_model_names: list[str]
+    covered_model_names: list[str]
+    model_count: int
+    passed_model_count: int
+    passed: bool
+    model_cases: list[GammaInvariantMixtureModelCoverageCase]
+    notes: list[str]
+
+
+@dataclass(slots=True)
+class GammaInvariantMixtureFamilyCoverageReport:
+    """Reviewer-facing proof that combined gamma and invariant mass stay active across eligible models."""
+
+    goal_id: int
+    passed: bool
+    family_count: int
+    model_count: int
+    passed_family_count: int
+    passed_model_count: int
+    families: list[GammaInvariantMixtureFamilyCoverageEntry]
+    limitations: list[str]
+
+
+@dataclass(slots=True)
 class SharedContinuousFixtureCatalogEntry:
     """One governed continuous-trait fixture used by live `geiger` parity."""
 

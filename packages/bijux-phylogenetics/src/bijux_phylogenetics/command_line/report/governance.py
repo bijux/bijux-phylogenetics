@@ -7,6 +7,7 @@ from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.reports.service import (
+    render_gamma_invariant_family_coverage_report,
     render_invariant_mixture_family_coverage_report,
     render_level_one_release_gate_report,
     render_production_scale_readiness_report,
@@ -199,6 +200,18 @@ def add_governance_report_commands(report_subparsers: Any) -> None:
         "--json", action="store_true", help="Emit the report build result as JSON."
     )
     _add_manifest_argument(report_invariant_mixture_family_coverage)
+
+    report_gamma_invariant_family_coverage = report_subparsers.add_parser(
+        "gamma-invariant-family-coverage",
+        help="Render the governed gamma-plus-invariant family coverage report for eligible finite-state likelihood surfaces.",
+    )
+    report_gamma_invariant_family_coverage.add_argument(
+        "--out", required=True, type=Path
+    )
+    report_gamma_invariant_family_coverage.add_argument(
+        "--json", action="store_true", help="Emit the report build result as JSON."
+    )
+    _add_manifest_argument(report_gamma_invariant_family_coverage)
 
     report_shared_discrete_fixture_catalog = report_subparsers.add_parser(
         "shared-discrete-fixture-catalog",
@@ -400,6 +413,38 @@ def run_governance_report_command(args: Any) -> int | None:
 
     if args.report_command == "invariant-mixture-family-coverage":
         result = render_invariant_mixture_family_coverage_report(
+            out_path=args.out,
+        )
+        outputs = _finalize_outputs(
+            args,
+            command="report",
+            inputs=[],
+            outputs=[result.output_path, result.machine_manifest_path],
+        )
+        if args.json:
+            _print_result(
+                build_command_result(
+                    command="report",
+                    inputs=[],
+                    outputs=outputs,
+                    metrics={
+                        "goal_id": result.coverage.goal_id,
+                        "family_count": result.coverage.family_count,
+                        "model_count": result.coverage.model_count,
+                        "passed": result.coverage.passed,
+                        "passed_family_count": result.coverage.passed_family_count,
+                        "passed_model_count": result.coverage.passed_model_count,
+                    },
+                    data=result,
+                ),
+                json_output=True,
+            )
+            return 0
+        print(result.output_path)
+        return 0
+
+    if args.report_command == "gamma-invariant-family-coverage":
+        result = render_gamma_invariant_family_coverage_report(
             out_path=args.out,
         )
         outputs = _finalize_outputs(

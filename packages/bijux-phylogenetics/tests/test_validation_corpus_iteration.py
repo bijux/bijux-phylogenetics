@@ -12,6 +12,7 @@ import bijux_phylogenetics.validation as validation_api
 from bijux_phylogenetics.validation import (
     build_broken_benchmark_corpus,
     build_clean_benchmark_corpus,
+    build_gamma_invariant_family_coverage,
     build_invariant_mixture_family_coverage,
     build_large_alignment_scaling_benchmark_dashboard,
     build_large_tree_scaling_benchmark_dashboard,
@@ -319,6 +320,44 @@ def test_build_invariant_mixture_family_coverage_proves_supported_families() -> 
     assert gtr.variable_component_likelihood > 0.0
 
 
+def test_build_gamma_invariant_family_coverage_proves_supported_families() -> None:
+    report = build_gamma_invariant_family_coverage()
+
+    assert report.goal_id == 30
+    assert report.passed is True
+    assert report.family_count == 7
+    assert report.model_count == 17
+    assert report.passed_family_count == 7
+    assert report.passed_model_count == 17
+    observed = {entry.family_name: entry for entry in report.families}
+    assert set(observed) == {
+        "nucleotide",
+        "protein-poisson",
+        "protein-empirical",
+        "codon-ctmc",
+        "discrete-mk-unordered",
+        "discrete-mk-ordered",
+        "discrete-mk-irreversible",
+    }
+
+    empirical = observed["protein-empirical"]
+    assert empirical.supported_model_names == ["JTT", "WAG", "LG"]
+    assert empirical.covered_model_names == empirical.supported_model_names
+    assert empirical.passed_model_count == 3
+
+    wag = next(case for case in empirical.model_cases if case.model_name == "WAG")
+    assert wag.alpha == 0.8
+    assert wag.category_count == 4
+    assert wag.invariant_proportion == 0.35
+    assert wag.category_likelihood_count == 4
+    assert wag.invariant_component_active is True
+    assert wag.variable_component_active is True
+    assert wag.boundary_warnings == [
+        "invariant proportion hit lower search boundary"
+    ]
+    assert wag.passed is True
+
+
 def test_build_shared_continuous_fixture_catalog_tracks_live_consumed_fixtures() -> (
     None
 ):
@@ -391,6 +430,10 @@ def test_package_root_exports_validation_corpus_surfaces() -> None:
     assert (
         validation_api.build_shared_continuous_fixture_catalog
         is build_shared_continuous_fixture_catalog
+    )
+    assert (
+        validation_api.build_gamma_invariant_family_coverage
+        is build_gamma_invariant_family_coverage
     )
     assert (
         validation_api.build_invariant_mixture_family_coverage
@@ -492,6 +535,20 @@ def test_write_validation_corpus_json_serializes_invariant_family_coverage(
     assert '"goal_id": 29' in text
     assert '"protein-empirical"' in text
     assert '"LG"' in text
+
+
+def test_write_validation_corpus_json_serializes_gamma_invariant_family_coverage(
+    tmp_path: Path,
+) -> None:
+    path = write_validation_corpus_json(
+        tmp_path / "gamma-invariant-family-coverage.json",
+        build_gamma_invariant_family_coverage(),
+    )
+
+    text = path.read_text(encoding="utf-8")
+    assert '"goal_id": 30' in text
+    assert '"protein-empirical"' in text
+    assert '"boundary_warnings"' in text
 
 
 def test_write_validation_corpus_json_serializes_discrete_fixture_catalog(

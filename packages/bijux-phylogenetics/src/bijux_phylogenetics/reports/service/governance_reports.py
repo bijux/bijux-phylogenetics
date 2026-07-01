@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from .governance_reporting import (
+    render_gamma_invariant_family_coverage_report,
     render_invariant_mixture_family_coverage_report,
     render_level_one_release_gate_report,
     render_production_scale_readiness_report,
@@ -11,6 +12,7 @@ from .governance_reporting import (
 )
 
 __all__ = [
+    "render_gamma_invariant_family_coverage_report",
     "render_invariant_mixture_family_coverage_report",
     "render_level_one_release_gate_report",
     "render_production_scale_readiness_report",

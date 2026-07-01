@@ -103,6 +103,7 @@ What does not exist today:
 - `make help` to list repository automation targets
 - `make install` to sync the editable environment from the tracked `uv.lock`
 - `make check` to run the main verification pass: lock check, lint, tests, docs, and distribution verification
+- `uv run bijux-phylogenetics report gamma-invariant-family-coverage --out artifacts/gamma-invariant-family-coverage.html --json` to render the governed proof that combined `+G+I` likelihood stays active across the eligible nucleotide, protein, codon, and discrete Mk finite-state families
 - `uv run bijux-phylogenetics report invariant-mixture-family-coverage --out artifacts/invariant-mixture-family-coverage.html --json` to render the governed proof that `+I` likelihood mass stays active across the eligible nucleotide, protein, codon, and discrete Mk finite-state families
 - `make package-verify` to build the wheel and sdist, validate them with Twine,
   install each into a clean virtual environment, copy the packaged example

@@ -14,6 +14,9 @@ from .contracts import (
     BenchmarkDashboardRow,
     CorpusDatasetCase,
     CorpusDatasetCaseResult,
+    GammaInvariantMixtureFamilyCoverageEntry,
+    GammaInvariantMixtureFamilyCoverageReport,
+    GammaInvariantMixtureModelCoverageCase,
     LargeAlignmentScalingBenchmarkDashboard,
     LargeTreeScalingBenchmarkDashboard,
     LargeTreeSetScalingBenchmarkDashboard,
@@ -43,6 +46,9 @@ from .dataset_corpora import (
     build_clean_benchmark_corpus,
     build_messy_benchmark_corpus,
 )
+from .gamma_invariant_family_coverage import (
+    build_gamma_invariant_family_coverage,
+)
 from .presentation import write_validation_corpus_json
 from .regression_corpus import build_regression_dataset_corpus
 from .invariant_mixture_family_coverage import (
@@ -59,6 +65,7 @@ from .scientific_review import (
 __all__ = [
     "build_broken_benchmark_corpus",
     "build_clean_benchmark_corpus",
+    "build_gamma_invariant_family_coverage",
     "build_large_alignment_scaling_benchmark_dashboard",
     "build_large_tree_scaling_benchmark_dashboard",
     "build_large_tree_set_scaling_benchmark_dashboard",
@@ -77,6 +84,9 @@ __all__ = [
     "BenchmarkDashboardRow",
     "CorpusDatasetCase",
     "CorpusDatasetCaseResult",
+    "GammaInvariantMixtureFamilyCoverageEntry",
+    "GammaInvariantMixtureFamilyCoverageReport",
+    "GammaInvariantMixtureModelCoverageCase",
     "LargeAlignmentScalingBenchmarkDashboard",
     "LargeTreeScalingBenchmarkDashboard",
     "LargeTreeSetScalingBenchmarkDashboard",
