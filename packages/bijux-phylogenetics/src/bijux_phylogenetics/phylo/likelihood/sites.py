@@ -297,6 +297,12 @@ def _iter_sequence_site_log_likelihood_rows(
 def _site_log_likelihood_report_model_name(
     report: SequenceSiteLogLikelihoodReport,
 ) -> str:
+    if isinstance(report, FiniteStateDiscreteGammaInvariantTreeLikelihoodReport):
+        return f"{report.model_name} +G+I"
+    if isinstance(report, FiniteStateDiscreteGammaTreeLikelihoodReport):
+        return f"{report.model_name} +G"
+    if isinstance(report, FiniteStateInvariantMixtureTreeLikelihoodReport):
+        return f"{report.model_name} +I"
     if hasattr(report, "model_name"):
         return report.model_name
     if isinstance(report, ProteinPoissonTreeLikelihoodReport):
@@ -307,12 +313,6 @@ def _site_log_likelihood_report_model_name(
         return "empirical protein matrix"
     if isinstance(report, ProteinEmpiricalDiscreteGammaTreeLikelihoodReport):
         return "empirical protein matrix +G"
-    if isinstance(report, FiniteStateDiscreteGammaTreeLikelihoodReport):
-        return f"{report.model_name} +G"
-    if isinstance(report, FiniteStateDiscreteGammaInvariantTreeLikelihoodReport):
-        return f"{report.model_name} +G+I"
-    if isinstance(report, FiniteStateInvariantMixtureTreeLikelihoodReport):
-        return f"{report.model_name} +I"
     if isinstance(report, ProteinEmpiricalInvariantMixtureTreeLikelihoodReport):
         return "empirical protein matrix +I"
     if isinstance(report, ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport):
