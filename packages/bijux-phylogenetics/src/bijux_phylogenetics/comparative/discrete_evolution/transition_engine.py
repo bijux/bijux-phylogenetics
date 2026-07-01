@@ -37,6 +37,9 @@ def _resolve_state_order(
             return ordered_states
         if allowed_states:
             return allowed_states
+        raise ValueError(
+            "ordered discrete transition modeling requires explicit ordered_states"
+        )
     return sorted(observed_states)
 
 

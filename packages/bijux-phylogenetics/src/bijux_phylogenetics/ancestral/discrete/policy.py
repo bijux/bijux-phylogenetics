@@ -80,8 +80,10 @@ def resolve_state_order(
 ) -> list[str]:
     if state_ordering == "unordered":
         return list(observed_states)
-    if ordered_states is None:
-        return list(observed_states)
+    if not ordered_states:
+        raise ValueError(
+            "ordered discrete likelihood surfaces require explicit ordered_states"
+        )
     missing_states = sorted(set(observed_states) - set(ordered_states))
     if missing_states:
         raise ValueError(

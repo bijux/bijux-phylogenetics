@@ -344,6 +344,20 @@ def test_fit_discrete_mk_model_rejects_meristic_parity_claim() -> None:
     )
 
 
+def test_fit_discrete_mk_model_requires_explicit_ordered_states() -> None:
+    with pytest.raises(ValueError) as excinfo:
+        fit_discrete_mk_model(
+            fixture("example_tree.nwk"),
+            fixture("example_traits_geography.tsv"),
+            trait="region",
+            taxon_column="taxon",
+            model="equal-rates",
+            state_ordering="ordered",
+        )
+
+    assert "require explicit ordered_states" in str(excinfo.value)
+
+
 @pytest.mark.slow
 def test_fit_discrete_mk_model_reports_ard_pruned_missing_values() -> None:
     binary_fixture = get_shared_phytools_comparative_fixture(

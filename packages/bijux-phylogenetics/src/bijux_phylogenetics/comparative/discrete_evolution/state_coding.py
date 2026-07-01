@@ -95,6 +95,10 @@ def validate_discrete_state_coding(
     if state_ordering not in {"unordered", "ordered"}:
         raise ValueError(f"unsupported state ordering: {state_ordering}")
     ordered = list(ordered_states or [])
+    if state_ordering == "ordered" and not ordered:
+        raise AncestralReconstructionError(
+            "ordered discrete state validation requires explicit ordered_states"
+        )
     if ordered and len(set(ordered)) != len(ordered):
         raise AncestralReconstructionError(
             "ordered state vocabulary contains duplicate labels"
@@ -198,6 +202,10 @@ def audit_discrete_state_coding(
     tree_taxa = set(tree.tip_names)
     mapping = dict(coding_map or {})
     ordered = list(ordered_states or [])
+    if state_ordering == "ordered" and not ordered:
+        raise AncestralReconstructionError(
+            "ordered discrete state audit requires explicit ordered_states"
+        )
     allowed = list(allowed_states or ordered or [])
     allowed_set = set(allowed)
     rows: list[StateCodingAuditRow] = []

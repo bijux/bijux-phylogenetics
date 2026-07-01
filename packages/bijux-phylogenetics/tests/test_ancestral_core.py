@@ -493,6 +493,19 @@ def test_discrete_reconstruction_supports_ordered_state_models() -> None:
     )
 
 
+def test_discrete_reconstruction_requires_explicit_ordered_states() -> None:
+    with pytest.raises(ValueError) as excinfo:
+        reconstruct_discrete_ancestral_states(
+            fixture("example_tree.nwk"),
+            fixture("example_traits_geography.tsv"),
+            trait="region",
+            model="equal-rates",
+            state_ordering="ordered",
+        )
+
+    assert "require explicit ordered_states" in str(excinfo.value)
+
+
 def test_discrete_reconstruction_rejects_meristic_parity_claim() -> None:
     with pytest.raises(ValueError) as excinfo:
         reconstruct_discrete_ancestral_states(
