@@ -237,8 +237,15 @@ def fit_discrete_mk_model(
         best_log_parameters = best_run.log_parameters
     else:
         initial_candidates = build_discrete_initial_candidates(
+            tree,
+            states_by_taxon,
+            state_order=state_order,
             parameter_count=count,
             model=model,
+            state_ordering=state_ordering,
+            allowed_transition_pairs=allowed_transition_pairs,
+            root_prior_mode=root_prior_mode,
+            ascertainment_policy=ascertainment_policy,
         )
         best_log_parameters: numpy.ndarray | None = None
         best_log_likelihood = float("-inf")
