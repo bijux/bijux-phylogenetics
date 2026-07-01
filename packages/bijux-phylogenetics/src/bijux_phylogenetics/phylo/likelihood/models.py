@@ -395,6 +395,40 @@ class NucleotideSubstitutionParameterOptimizationReport:
 
 
 @dataclass(slots=True)
+class StateFrequencyOptimizationRow:
+    """One optimized stationary-frequency component under one simplex search."""
+
+    state_label: str
+    initial_value: float
+    optimized_value: float
+    hit_lower_bound: bool
+
+
+@dataclass(slots=True)
+class FiniteStateFrequencyOptimizationReport:
+    """Fixed-topology finite-state stationary-frequency optimization summary."""
+
+    model_name: str
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    tree_newick: str
+    state_count: int
+    state_frequency_source: str
+    initial_log_likelihood: float
+    optimized_log_likelihood: float
+    function_evaluation_count: int
+    optimization_pass_count: int
+    converged: bool
+    minimum_state_frequency: float
+    state_rows: list[StateFrequencyOptimizationRow]
+    warnings: list[str]
+    parameter_diagnostics: dict[str, BoundedScalarSearchDiagnostics] = field(
+        default_factory=dict
+    )
+
+
+@dataclass(slots=True)
 class NestedLikelihoodRatioModelFit:
     """One fitted nucleotide model summary used in one nested likelihood-ratio test."""
 
