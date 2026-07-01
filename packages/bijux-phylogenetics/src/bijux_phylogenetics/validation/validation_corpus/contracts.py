@@ -228,6 +228,37 @@ class SimulationReproducibilityReport:
 
 
 @dataclass(slots=True)
+class InvariantMixtureFamilyCoverageEntry:
+    """One eligible finite-state family checked under an active invariant mixture."""
+
+    family_name: str
+    surface_model_name: str
+    invariant_proportion: float
+    site_count: int
+    pattern_count: int
+    fixed_rate_log_likelihood: float
+    invariant_log_likelihood: float
+    likelihood_delta: float
+    invariant_component_likelihood: float
+    variable_component_likelihood: float
+    likelihood_changed: bool
+    invariant_component_active: bool
+    passed: bool
+    notes: list[str]
+
+
+@dataclass(slots=True)
+class InvariantMixtureFamilyCoverageReport:
+    """Reviewer-facing proof that invariant mass is active across eligible families."""
+
+    goal_id: int
+    passed: bool
+    family_count: int
+    families: list[InvariantMixtureFamilyCoverageEntry]
+    limitations: list[str]
+
+
+@dataclass(slots=True)
 class SharedContinuousFixtureCatalogEntry:
     """One governed continuous-trait fixture used by live `geiger` parity."""
 

@@ -17,6 +17,8 @@ from .contracts import (
     LargeAlignmentScalingBenchmarkDashboard,
     LargeTreeScalingBenchmarkDashboard,
     LargeTreeSetScalingBenchmarkDashboard,
+    InvariantMixtureFamilyCoverageEntry,
+    InvariantMixtureFamilyCoverageReport,
     MemoryBenchmarkDashboard,
     MethodAccuracyDashboard,
     MethodAccuracyRow,
@@ -42,6 +44,9 @@ from .dataset_corpora import (
 )
 from .presentation import write_validation_corpus_json
 from .regression_corpus import build_regression_dataset_corpus
+from .invariant_mixture_family_coverage import (
+    build_invariant_mixture_family_coverage,
+)
 from .reproducibility import validate_simulation_reproducibility
 from .shared_continuous_fixture_catalog import build_shared_continuous_fixture_catalog
 from .shared_discrete_fixture_catalog import build_shared_discrete_fixture_catalog
@@ -56,6 +61,7 @@ __all__ = [
     "build_large_alignment_scaling_benchmark_dashboard",
     "build_large_tree_scaling_benchmark_dashboard",
     "build_large_tree_set_scaling_benchmark_dashboard",
+    "build_invariant_mixture_family_coverage",
     "build_memory_benchmark_dashboard",
     "build_messy_benchmark_corpus",
     "build_method_accuracy_dashboard",
@@ -73,6 +79,8 @@ __all__ = [
     "LargeAlignmentScalingBenchmarkDashboard",
     "LargeTreeScalingBenchmarkDashboard",
     "LargeTreeSetScalingBenchmarkDashboard",
+    "InvariantMixtureFamilyCoverageEntry",
+    "InvariantMixtureFamilyCoverageReport",
     "MemoryBenchmarkDashboard",
     "MethodAccuracyDashboard",
     "MethodAccuracyRow",
