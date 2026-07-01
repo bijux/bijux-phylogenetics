@@ -203,6 +203,7 @@ __all__ = [
     "evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment",
     "evaluate_empirical_protein_tree_likelihood_with_invariant_mixture",
     "evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment",
+    "evaluate_discrete_mk_tree_likelihood_with_discrete_gamma_and_invariant_mixture",
     "evaluate_discrete_mk_tree_likelihood_with_invariant_mixture",
     "evaluate_finite_state_site_log_likelihood",
     "evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture",
