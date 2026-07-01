@@ -5,6 +5,66 @@ from pathlib import Path
 
 
 @dataclass(slots=True)
+class NativeMaximumLikelihoodSpeedBenchmarkObservation:
+    """One native ML speed observation for a fixed model, size class, and search mode."""
+
+    label: str
+    size_class: str
+    model_name: str
+    search_method: str
+    taxon_count: int
+    site_count: int
+    runtime_seconds: float
+    peak_memory_bytes: int
+    selected_model_name: str
+    best_run_source_label: str
+    search_algorithm: str
+    final_log_likelihood: float
+
+
+@dataclass(slots=True)
+class NativeMaximumLikelihoodSpeedTrendRow:
+    """One runtime trend comparison between two governed ML speed size classes."""
+
+    model_name: str
+    search_method: str
+    baseline_size_class: str
+    comparison_size_class: str
+    baseline_taxon_count: int
+    comparison_taxon_count: int
+    baseline_site_count: int
+    comparison_site_count: int
+    baseline_runtime_seconds: float
+    comparison_runtime_seconds: float
+    runtime_delta_seconds: float
+    runtime_ratio: float
+
+
+@dataclass(slots=True)
+class NativeMaximumLikelihoodSpeedBenchmarkReport:
+    """Native ML runtime benchmark across governed model, size, and search lanes."""
+
+    replicates: int
+    observations: list[NativeMaximumLikelihoodSpeedBenchmarkObservation]
+    trend_rows: list[NativeMaximumLikelihoodSpeedTrendRow]
+    size_class_labels: list[str]
+    model_names: list[str]
+    search_methods: list[str]
+    limitations: list[str]
+
+
+@dataclass(slots=True)
+class NativeMaximumLikelihoodSpeedBenchmarkBundle:
+    """Written artifact bundle for one native ML speed benchmark run."""
+
+    output_root: Path
+    summary_path: Path
+    observation_table_path: Path
+    trend_table_path: Path
+    run_json_path: Path
+
+
+@dataclass(slots=True)
 class MaximumLikelihoodWrapperSupportComparison:
     """One canonical split-support comparison between native and cached wrapper evidence."""
 
