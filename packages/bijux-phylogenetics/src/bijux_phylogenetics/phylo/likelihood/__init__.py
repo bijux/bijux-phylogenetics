@@ -183,6 +183,8 @@ __all__ = [
     "evaluate_codon_ctmc_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment",
     "evaluate_codon_ctmc_tree_likelihood_with_invariant_mixture",
     "evaluate_codon_ctmc_tree_likelihood_with_invariant_mixture_from_alignment",
+    "optimize_codon_ctmc_state_frequencies",
+    "optimize_codon_ctmc_state_frequencies_from_alignment",
     "evaluate_compiled_finite_state_likelihood_analysis",
     "evaluate_compiled_finite_state_partition_log_likelihood_rows",
     "evaluate_compiled_finite_state_site_log_likelihood_rows",

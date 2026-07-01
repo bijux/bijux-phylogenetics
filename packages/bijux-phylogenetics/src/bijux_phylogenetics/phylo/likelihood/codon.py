@@ -34,6 +34,7 @@ from bijux_phylogenetics.phylo.likelihood.finite_state_root_priors import (
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
     CodonCtmcTreeLikelihoodReport,
+    FiniteStateFrequencyOptimizationReport,
     FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
     FiniteStateInvariantMixtureTreeLikelihoodReport,
     SiteLogLikelihoodRow,
@@ -46,6 +47,9 @@ from bijux_phylogenetics.phylo.likelihood.pruning import (
     build_transition_matrix_evaluator,
     log_likelihood_from_root_prior,
     postorder_conditional_likelihoods,
+)
+from bijux_phylogenetics.phylo.likelihood.state_frequency_optimization import (
+    optimize_finite_state_stationary_frequencies,
 )
 from bijux_phylogenetics.phylo.likelihood.sites import (
     validate_site_log_likelihood_reconstruction,
@@ -180,6 +184,73 @@ def evaluate_codon_ctmc_tree_likelihood_from_alignment(
         fixed_root_state=fixed_root_state,
         genetic_code=genetic_code,
         observation_policy=observation_policy,
+    )
+
+
+def optimize_codon_ctmc_state_frequencies(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    initial_codon_frequencies: dict[str, float] | None = None,
+    genetic_code: int | str | None = None,
+    observation_policy: str = "reject",
+    minimum_state_frequency: float = 1e-6,
+    improvement_tolerance: float = 1e-9,
+    max_coordinate_passes: int = 12,
+) -> FiniteStateFrequencyOptimizationReport:
+    """Optimize one fixed-topology codon CTMC stationary simplex."""
+    normalized_records = normalize_codon_likelihood_records(
+        records,
+        genetic_code=genetic_code,
+        observation_policy=observation_policy,
+    )
+    state_space = resolve_codon_state_space(genetic_code)
+    if initial_codon_frequencies is None:
+        initial_values_by_name = _estimate_codon_state_frequencies(
+            normalized_records,
+            state_space=state_space,
+        )
+    else:
+        initial_values_by_name = dict(initial_codon_frequencies)
+    return optimize_finite_state_stationary_frequencies(
+        model_name="codon CTMC",
+        state_labels=state_space.state_order,
+        initial_values_by_name=initial_values_by_name,
+        evaluate=lambda candidate: _evaluate_codon_frequency_candidate(
+            tree,
+            normalized_records,
+            candidate,
+            genetic_code=genetic_code,
+            observation_policy=observation_policy,
+        ),
+        minimum_state_frequency=minimum_state_frequency,
+        improvement_tolerance=improvement_tolerance,
+        max_coordinate_passes=max_coordinate_passes,
+        nonconvergence_warning="codon CTMC stationary-frequency search did not converge",
+    )
+
+
+def optimize_codon_ctmc_state_frequencies_from_alignment(
+    tree_path: Path,
+    alignment_path: Path,
+    *,
+    initial_codon_frequencies: dict[str, float] | None = None,
+    genetic_code: int | str | None = None,
+    observation_policy: str = "reject",
+    minimum_state_frequency: float = 1e-6,
+    improvement_tolerance: float = 1e-9,
+    max_coordinate_passes: int = 12,
+) -> FiniteStateFrequencyOptimizationReport:
+    """Optimize one codon CTMC stationary simplex from tree and alignment paths."""
+    return optimize_codon_ctmc_state_frequencies(
+        load_tree(tree_path),
+        load_fasta_alignment(alignment_path),
+        initial_codon_frequencies=initial_codon_frequencies,
+        genetic_code=genetic_code,
+        observation_policy=observation_policy,
+        minimum_state_frequency=minimum_state_frequency,
+        improvement_tolerance=improvement_tolerance,
+        max_coordinate_passes=max_coordinate_passes,
     )
 
 
@@ -508,6 +579,43 @@ def resolve_codon_root_prior(
         stationary_frequencies=stationary_frequencies,
         sequence_tokenizer=iter_codon_tokens,
     )
+
+
+def _estimate_codon_state_frequencies(
+    records: list[AlignmentRecord],
+    *,
+    state_space: CodonStateSpace,
+) -> dict[str, float]:
+    codon_counts = dict.fromkeys(state_space.state_order, 0.0)
+    for record in records:
+        for codon in iter_codon_tokens(record.sequence):
+            if codon in codon_counts:
+                codon_counts[codon] += 1.0
+    total_count = sum(codon_counts.values())
+    if total_count <= 0.0:
+        uniform_mass = 1.0 / len(state_space.state_order)
+        return dict.fromkeys(state_space.state_order, uniform_mass)
+    return {
+        codon: count / total_count for codon, count in codon_counts.items()
+    }
+
+
+def _evaluate_codon_frequency_candidate(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    candidate_codon_frequencies: dict[str, float],
+    *,
+    genetic_code: int | str | None,
+    observation_policy: str,
+) -> tuple[CodonCtmcTreeLikelihoodReport, float]:
+    report = evaluate_codon_ctmc_tree_likelihood(
+        tree,
+        records,
+        codon_frequencies=candidate_codon_frequencies,
+        genetic_code=genetic_code,
+        observation_policy=observation_policy,
+    )
+    return report, report.log_likelihood
 
 
 def _evaluate_codon_ctmc_tree_likelihood_from_patterns(

@@ -75,7 +75,6 @@ def optimize_finite_state_stationary_frequencies(
     nonconvergence_warning: str | None = None,
 ) -> FiniteStateFrequencyOptimizationReport:
     """Optimize one finite-state stationary simplex while keeping every component valid."""
-    _, initial_log_likelihood = evaluate(dict(initial_values_by_name))
     search_result = run_simplex_likelihood_search(
         initial_values_by_name=initial_values_by_name,
         expected_component_names=tuple(state_labels),
@@ -86,6 +85,7 @@ def optimize_finite_state_stationary_frequencies(
         max_coordinate_passes=max_coordinate_passes,
     )
     initial_mapping = search_result.initial_parameterization.constrained_mapping()
+    _, initial_log_likelihood = evaluate(initial_mapping)
     optimized_mapping = search_result.optimized_parameterization.constrained_mapping()
     state_rows = [
         StateFrequencyOptimizationRow(
