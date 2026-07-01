@@ -219,6 +219,8 @@ __all__ = [
     "evaluate_gtr_tree_likelihood_from_alignment",
     "evaluate_hky85_tree_likelihood",
     "evaluate_hky85_tree_likelihood_from_alignment",
+    "evaluate_hky85_tree_likelihood_with_invariant_mixture",
+    "evaluate_hky85_tree_likelihood_with_invariant_mixture_from_alignment",
     "evaluate_k80_tree_likelihood",
     "evaluate_k80_tree_likelihood_from_alignment",
     "evaluate_k80_tree_likelihood_with_invariant_mixture",
