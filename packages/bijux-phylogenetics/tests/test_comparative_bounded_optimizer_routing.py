@@ -37,11 +37,17 @@ def fixture(name: str) -> Path:
 
 
 def test_pagel_lambda_routes_through_shared_bounded_scalar_search(monkeypatch) -> None:
-    observed_bounds: list[tuple[float, float]] = []
+    observed_calls: list[tuple[tuple[float, float], str, str]] = []
     original_search = continuous_search_module.run_bounded_maximization
 
     def observe_search(**kwargs):
-        observed_bounds.append((kwargs["lower_bound"], kwargs["upper_bound"]))
+        observed_calls.append(
+            (
+                (kwargs["lower_bound"], kwargs["upper_bound"]),
+                kwargs["parameter_name"],
+                kwargs["owner_name"],
+            )
+        )
         return original_search(**kwargs)
 
     monkeypatch.setattr(
@@ -62,15 +68,23 @@ def test_pagel_lambda_routes_through_shared_bounded_scalar_search(monkeypatch) -
     )
 
     assert fit.optimizer_diagnostics is not None
-    assert observed_bounds == [(0.0, 1.0)]
+    assert observed_calls == [
+        ((0.0, 1.0), "lambda", "Pagel lambda comparative mode fit")
+    ]
 
 
 def test_pagel_kappa_routes_through_shared_bounded_scalar_search(monkeypatch) -> None:
-    observed_bounds: list[tuple[float, float]] = []
+    observed_calls: list[tuple[tuple[float, float], str, str]] = []
     original_search = continuous_search_module.run_bounded_maximization
 
     def observe_search(**kwargs):
-        observed_bounds.append((kwargs["lower_bound"], kwargs["upper_bound"]))
+        observed_calls.append(
+            (
+                (kwargs["lower_bound"], kwargs["upper_bound"]),
+                kwargs["parameter_name"],
+                kwargs["owner_name"],
+            )
+        )
         return original_search(**kwargs)
 
     monkeypatch.setattr(
@@ -91,15 +105,23 @@ def test_pagel_kappa_routes_through_shared_bounded_scalar_search(monkeypatch) ->
     )
 
     assert fit.optimizer_diagnostics is not None
-    assert observed_bounds == [(0.0, 3.0)]
+    assert observed_calls == [
+        ((0.0, 3.0), "kappa", "Pagel kappa comparative mode fit")
+    ]
 
 
 def test_pagel_delta_routes_through_shared_bounded_scalar_search(monkeypatch) -> None:
-    observed_bounds: list[tuple[float, float]] = []
+    observed_calls: list[tuple[tuple[float, float], str, str]] = []
     original_search = continuous_search_module.run_bounded_maximization
 
     def observe_search(**kwargs):
-        observed_bounds.append((kwargs["lower_bound"], kwargs["upper_bound"]))
+        observed_calls.append(
+            (
+                (kwargs["lower_bound"], kwargs["upper_bound"]),
+                kwargs["parameter_name"],
+                kwargs["owner_name"],
+            )
+        )
         return original_search(**kwargs)
 
     monkeypatch.setattr(
@@ -120,17 +142,25 @@ def test_pagel_delta_routes_through_shared_bounded_scalar_search(monkeypatch) ->
     )
 
     assert fit.optimizer_diagnostics is not None
-    assert observed_bounds == [(0.0, 3.0)]
+    assert observed_calls == [
+        ((0.0, 3.0), "delta", "Pagel delta comparative mode fit")
+    ]
 
 
 def test_discrete_kappa_transform_routes_through_shared_bounded_scalar_search(
     monkeypatch,
 ) -> None:
-    observed_bounds: list[tuple[float, float]] = []
+    observed_calls: list[tuple[tuple[float, float], str, str]] = []
     original_search = discrete_transform_module.run_bounded_maximization
 
     def observe_search(**kwargs):
-        observed_bounds.append((kwargs["lower_bound"], kwargs["upper_bound"]))
+        observed_calls.append(
+            (
+                (kwargs["lower_bound"], kwargs["upper_bound"]),
+                kwargs["parameter_name"],
+                kwargs["owner_name"],
+            )
+        )
         return original_search(**kwargs)
 
     monkeypatch.setattr(
@@ -152,17 +182,25 @@ def test_discrete_kappa_transform_routes_through_shared_bounded_scalar_search(
     )
 
     assert report.transform_fit is not None
-    assert observed_bounds == [(0.0, 1.0)]
+    assert observed_calls == [
+        ((0.0, 1.0), "kappa", "discrete Mk kappa transform fit")
+    ]
 
 
 def test_discrete_delta_transform_routes_through_shared_bounded_scalar_search(
     monkeypatch,
 ) -> None:
-    observed_bounds: list[tuple[float, float]] = []
+    observed_calls: list[tuple[tuple[float, float], str, str]] = []
     original_search = discrete_transform_module.run_bounded_maximization
 
     def observe_search(**kwargs):
-        observed_bounds.append((kwargs["lower_bound"], kwargs["upper_bound"]))
+        observed_calls.append(
+            (
+                (kwargs["lower_bound"], kwargs["upper_bound"]),
+                kwargs["parameter_name"],
+                kwargs["owner_name"],
+            )
+        )
         return original_search(**kwargs)
 
     monkeypatch.setattr(
@@ -184,17 +222,29 @@ def test_discrete_delta_transform_routes_through_shared_bounded_scalar_search(
     )
 
     assert report.transform_fit is not None
-    assert observed_bounds == [(0.006737946999085467, 3.0)]
+    assert observed_calls == [
+        (
+            (0.006737946999085467, 3.0),
+            "delta",
+            "discrete Mk delta transform fit",
+        )
+    ]
 
 
 def test_discrete_lambda_transform_routes_through_shared_bounded_scalar_search(
     monkeypatch,
 ) -> None:
-    observed_bounds: list[tuple[float, float]] = []
+    observed_calls: list[tuple[tuple[float, float], str, str]] = []
     original_search = discrete_transform_module.run_bounded_maximization
 
     def observe_search(**kwargs):
-        observed_bounds.append((kwargs["lower_bound"], kwargs["upper_bound"]))
+        observed_calls.append(
+            (
+                (kwargs["lower_bound"], kwargs["upper_bound"]),
+                kwargs["parameter_name"],
+                kwargs["owner_name"],
+            )
+        )
         return original_search(**kwargs)
 
     monkeypatch.setattr(
@@ -216,7 +266,9 @@ def test_discrete_lambda_transform_routes_through_shared_bounded_scalar_search(
     )
 
     assert report.transform_fit is not None
-    assert observed_bounds == [(0.0, 1.0)]
+    assert observed_calls == [
+        ((0.0, 1.0), "lambda", "discrete Mk lambda transform fit")
+    ]
 
 
 def test_signal_pagel_lambda_routes_through_shared_bounded_scalar_fit(

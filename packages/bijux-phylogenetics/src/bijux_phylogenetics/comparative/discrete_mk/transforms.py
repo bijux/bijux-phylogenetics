@@ -301,6 +301,7 @@ def fit_discrete_mk_parameterized_transform_surface(
     list[DiscreteMkTransformWarning],
 ]:
     lower, upper = bounds
+    parameter_name = discrete_transform_parameter_name(transform)
     search_result = run_bounded_maximization(
         lower_bound=lower,
         upper_bound=upper,
@@ -321,6 +322,8 @@ def fit_discrete_mk_parameterized_transform_surface(
                 parameter_value=parameter_value,
             )
         ),
+        parameter_name=parameter_name,
+        owner_name=f"discrete Mk {transform} transform fit",
         optimizer_name="governed-two-stage-grid-search",
         parameter_search_strategy="bounded-two-stage-grid-search",
     )
@@ -343,7 +346,7 @@ def fit_discrete_mk_parameterized_transform_surface(
     )
     transform_fit = DiscreteMkTransformFit(
         transform_name=transform,
-        parameter_name=discrete_transform_parameter_name(transform),
+        parameter_name=parameter_name,
         parameter_value=best_parameter_value,
         lower_bound=lower,
         upper_bound=upper,
