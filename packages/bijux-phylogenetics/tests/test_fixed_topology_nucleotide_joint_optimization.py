@@ -41,6 +41,7 @@ def test_fixed_topology_k80_joint_optimization_records_branch_and_model_updates(
     )
 
     assert report.model_name == "K80"
+    assert report.fit_assessment.classification in {"failed", "weak", "boundary"}
     assert report.initial_tree_newick == "(A:0.8,B:0.8);"
     assert report.optimized_log_likelihood > report.initial_log_likelihood
     assert report.joint_optimization_pass_count >= 1
@@ -91,6 +92,7 @@ def test_fixed_topology_gtr_joint_optimization_reports_free_exchangeability_upda
         if row.update_kind == "substitution-parameters"
     ]
     assert report.model_name == "GTR"
+    assert report.fit_assessment.classification in {"failed", "weak", "boundary"}
     assert report.fixed_parameter_values == {"AC": 1.0}
     assert report.parameter_count == 8
     assert report.base_frequency_source == "estimated"

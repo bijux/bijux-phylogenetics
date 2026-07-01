@@ -12,6 +12,9 @@ from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.fixed_topology_branch_lengths import (
     optimize_fixed_topology_nucleotide_branch_lengths,
 )
+from bijux_phylogenetics.phylo.likelihood.fit_assessment import (
+    build_likelihood_fit_assessment,
+)
 from bijux_phylogenetics.phylo.likelihood.gtr import (
     evaluate_gtr_tree_likelihood,
 )
@@ -220,6 +223,7 @@ def optimize_fixed_topology_nucleotide_branches_and_model_with_restarts(
         attempt_count=len(attempt_rows),
         selected_attempt_index=selected_attempt_index,
         selected_solution_reason=selected_solution_reason,
+        fit_assessment=selected_report.fit_assessment,
         selected_report=selected_report,
         attempt_rows=attempt_rows,
     )
@@ -499,6 +503,15 @@ def optimize_fixed_topology_nucleotide_branches_and_model(
     for warning in boundary_warning_messages(boundary_warnings):
         if warning not in warnings:
             warnings.append(warning)
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=latest_branch_report.site_count,
+        pattern_count=latest_branch_report.pattern_count,
+        optimized_parameter_count=(
+            len(final_branch_rows) + latest_model_report.parameter_count
+        ),
+        converged=(schedule_converged and inner_converged),
+        boundary_warnings=boundary_warnings,
+    )
     return FixedTopologyNucleotideJointOptimizationReport(
         model_name=latest_model_report.model_name,
         taxa=latest_branch_report.taxa,
@@ -526,6 +539,7 @@ def optimize_fixed_topology_nucleotide_branches_and_model(
         joint_optimization_pass_count=executed_joint_pass_count,
         converged=(schedule_converged and inner_converged),
         convergence_reason=convergence_reason,
+        fit_assessment=fit_assessment,
         lower_branch_length_bound=lower_branch_length_bound,
         upper_branch_length_bound=upper_branch_length_bound,
         update_rows=update_rows,

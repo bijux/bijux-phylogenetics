@@ -1819,6 +1819,7 @@ class FixedTopologyNucleotideJointOptimizationReport:
     joint_optimization_pass_count: int
     converged: bool
     convergence_reason: str
+    fit_assessment: LikelihoodFitAssessment
     lower_branch_length_bound: float
     upper_branch_length_bound: float
     update_rows: list[JointNucleotideOptimizationUpdateRow]
@@ -1852,6 +1853,7 @@ class FixedTopologyNucleotideJointOptimizationRestartReport:
     attempt_count: int
     selected_attempt_index: int
     selected_solution_reason: str
+    fit_assessment: LikelihoodFitAssessment
     selected_report: FixedTopologyNucleotideJointOptimizationReport
     attempt_rows: list[JointNucleotideOptimizationRestartAttemptRow]
 

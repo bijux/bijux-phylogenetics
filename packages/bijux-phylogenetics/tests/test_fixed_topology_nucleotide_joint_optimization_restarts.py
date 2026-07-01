@@ -39,6 +39,7 @@ def test_fixed_topology_nucleotide_joint_restart_none_keeps_single_attempt() -> 
     )
 
     assert report.restart_policy == "none"
+    assert report.fit_assessment is report.selected_report.fit_assessment
     assert report.attempt_count == 1
     assert report.selected_attempt_index == 1
     assert report.attempt_rows[0].trigger_reason == "initial-attempt"
@@ -62,6 +63,7 @@ def test_fixed_topology_gtr_joint_restart_policy_records_attempts_and_selects_be
     )
 
     assert report.model_name == "GTR"
+    assert report.fit_assessment is report.selected_report.fit_assessment
     assert report.attempt_count == 3
     assert report.selected_solution_reason == "best-available-attempt"
     assert [row.attempt_index for row in report.attempt_rows] == [1, 2, 3]
