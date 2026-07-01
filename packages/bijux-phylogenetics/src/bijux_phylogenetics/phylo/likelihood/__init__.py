@@ -219,6 +219,8 @@ __all__ = [
     "evaluate_finite_state_tree_log_likelihood_from_patterns",
     "evaluate_gtr_tree_likelihood",
     "evaluate_gtr_tree_likelihood_from_alignment",
+    "evaluate_gtr_tree_likelihood_with_discrete_gamma_and_invariant_mixture",
+    "evaluate_gtr_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment",
     "evaluate_gtr_tree_likelihood_with_invariant_mixture",
     "evaluate_gtr_tree_likelihood_with_invariant_mixture_from_alignment",
     "evaluate_hky85_tree_likelihood",

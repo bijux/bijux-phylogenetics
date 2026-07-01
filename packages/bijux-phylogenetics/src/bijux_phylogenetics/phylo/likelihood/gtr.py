@@ -33,6 +33,7 @@ from bijux_phylogenetics.phylo.likelihood.dna_simplex_coordinates import (
     resolve_anchor_normalized_dna_exchangeabilities_from_unconstrained,
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
+    FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
     FiniteStateInvariantMixtureTreeLikelihoodReport,
     GtrExchangeabilityOptimizationReport,
     GtrTreeLikelihoodReport,
@@ -304,6 +305,104 @@ def evaluate_gtr_tree_likelihood_with_invariant_mixture_from_alignment(
         invariant_proportion=invariant_proportion,
         exchangeabilities=exchangeabilities,
         base_frequencies=base_frequencies,
+        observation_policy=observation_policy,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+    )
+
+
+def evaluate_gtr_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    alpha: float,
+    invariant_proportion: float,
+    exchangeabilities: (
+        dict[tuple[str, str], float]
+        | dict[str, float]
+        | numpy.ndarray
+        | list[float]
+        | tuple[float, ...]
+    ),
+    base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    category_count: int = 4,
+    lower_invariant_proportion_bound: float | None = None,
+    upper_invariant_proportion_bound: float | None = None,
+    emit_boundary_warnings: bool = False,
+    observation_policy: str = "reject",
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
+) -> FiniteStateDiscreteGammaInvariantTreeLikelihoodReport:
+    """Evaluate one GTR likelihood surface under one active +G+I mixture."""
+    from bijux_phylogenetics.phylo.likelihood.nucleotide_finite_state import (
+        evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture,
+    )
+
+    return evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+        tree,
+        records,
+        model_name="gtr",
+        owner_name="GTR likelihood",
+        alpha=alpha,
+        invariant_proportion=invariant_proportion,
+        category_count=category_count,
+        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        emit_boundary_warnings=emit_boundary_warnings,
+        observation_policy=observation_policy,
+        base_frequencies=base_frequencies,
+        exchangeabilities=exchangeabilities,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+    )
+
+
+def evaluate_gtr_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
+    tree_path: Path,
+    alignment_path: Path,
+    *,
+    alpha: float,
+    invariant_proportion: float,
+    exchangeabilities: (
+        dict[tuple[str, str], float]
+        | dict[str, float]
+        | numpy.ndarray
+        | list[float]
+        | tuple[float, ...]
+    ),
+    base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    category_count: int = 4,
+    lower_invariant_proportion_bound: float | None = None,
+    upper_invariant_proportion_bound: float | None = None,
+    emit_boundary_warnings: bool = False,
+    observation_policy: str = "reject",
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
+) -> FiniteStateDiscreteGammaInvariantTreeLikelihoodReport:
+    """Evaluate one GTR +G+I likelihood from tree and alignment paths."""
+    return evaluate_gtr_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+        load_tree(tree_path),
+        load_fasta_alignment(alignment_path),
+        alpha=alpha,
+        invariant_proportion=invariant_proportion,
+        exchangeabilities=exchangeabilities,
+        base_frequencies=base_frequencies,
+        category_count=category_count,
+        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        emit_boundary_warnings=emit_boundary_warnings,
         observation_policy=observation_policy,
         root_prior_policy=root_prior_policy,
         root_prior=root_prior,
