@@ -21,6 +21,10 @@ from bijux_phylogenetics.phylo.likelihood.finite_state import (
     CompiledFiniteStateLikelihoodAnalysis,
     FiniteStateLikelihoodSurface,
     compile_finite_state_likelihood_analysis,
+    evaluate_finite_state_tree_likelihood_with_invariant_mixture,
+)
+from bijux_phylogenetics.phylo.likelihood.models import (
+    FiniteStateInvariantMixtureTreeLikelihoodReport,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
@@ -129,6 +133,43 @@ def compile_discrete_mk_likelihood_analysis(
         partition_map=partition_map,
         site_weight_by_position=site_weight_by_position,
         source_path=source_path,
+    )
+
+
+def evaluate_discrete_mk_tree_likelihood_with_invariant_mixture(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    state_order: list[str] | tuple[str, ...],
+    rate_matrix: numpy.ndarray,
+    invariant_proportion: float,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
+    observation_policy: str = "reject",
+    model_name: str = "discrete Mk",
+) -> FiniteStateInvariantMixtureTreeLikelihoodReport:
+    """Evaluate one discrete Mk likelihood surface under one active +I mixture."""
+    surface = build_discrete_mk_finite_state_surface(
+        state_order=state_order,
+        rate_matrix=rate_matrix,
+        records=records,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        observation_policy=observation_policy,
+        model_name=model_name,
+    )
+    compressed_patterns = _compile_discrete_patterns(records, source_path=None)
+    return evaluate_finite_state_tree_likelihood_with_invariant_mixture(
+        tree,
+        compressed_patterns,
+        surface=surface,
+        invariant_proportion=invariant_proportion,
     )
 
 def _compile_discrete_patterns(
