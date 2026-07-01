@@ -2252,6 +2252,39 @@ surfaces keep `ordered_states`, `allowed_transition_count`, and
 `restricted_transition_count`, so reviewers can audit exactly how many
 directional rates remained allowed after adjacency restrictions.
 
+When the trait matrix is variable-only by construction, the same workflow also
+supports Lewis ascertainment correction through
+`--ascertainment lewis-variable-only`. Use that mode only when invariant
+characters were excluded before the matrix reached Bijux. In that policy the
+reported `log_likelihood` becomes the conditioned Lewis objective, while the
+summary and JSON surfaces keep `uncorrected_log_likelihood`,
+`ascertainment_log_likelihood_delta`,
+`ascertainment_conditioning_log_probability`, and
+`invariant_pattern_log_probability` so reviewers can see exactly how much the
+conditioning changed the fit. When reviewers need the per-pattern audit rather
+than only one fit summary, add `--patterns-out` to write one pattern ledger
+with the raw Mk site likelihood, the shared conditioning term, and the final
+conditioned site likelihood carried into the objective.
+
+```bash
+bijux-phylogenetics comparative discrete-mk \
+  artifacts/morphology-tree.nwk \
+  artifacts/morphology-variable-only.tsv \
+  --trait character_state \
+  --taxon-column taxon \
+  --model equal-rates \
+  --ascertainment lewis-variable-only \
+  --summary-out artifacts/morphology.lewis-summary.tsv \
+  --patterns-out artifacts/morphology.lewis-patterns.tsv \
+  --json
+```
+
+The governed interpretation is narrow on purpose:
+- use ordinary Mk when invariant characters were retained
+- use Lewis correction when invariant characters were filtered before fitting
+- do not treat the corrected likelihood as interchangeable with one uncorrected
+  Mk fit from another matrix-retention policy
+
 When the goal is to fit a standalone continuous-trait evolution model rather
 than a regression, use `comparative brownian`. This workflow keeps the
 Brownian motion surface explicit by reporting the fitted root state,
