@@ -1929,7 +1929,15 @@ four-state weak-identification review panel. Bijux exposes that owned side
 through `fit_discrete_mk_model(model='all-rates-different')`, and the stable
 binary and missing-value ARD cases now compare the full directed rate table,
 log-likelihood, AIC, and AICc against real local `geiger` outputs. The
-four-state ARD surface remains in the live lane as a governed weakly
+owned unordered ARD search is now also governed explicitly: every fit starts
+from three uniform ER-scale seeds, projects the optimized ER fit into the
+target layout, optionally adds one reciprocal-edge symmetric warm start when
+the constrained transition graph supports a valid symmetric CTMC, and keeps
+one directional state-count seed plus a small deterministic perturbation set
+instead of a blind random restart cloud. The fit report surfaces that policy
+through `optimizer_diagnostics.initial_candidate_count`, so weakly identified
+multistate reviews can show how much restart budget was actually used.
+The four-state ARD surface remains in the live lane as a governed weakly
 identified review case with a relaxed directional-rate tolerance, because
 local `geiger` and Bijux reach near-equivalent maxima on that twelve-parameter
 surface while still agreeing on the likelihood envelope and the need for

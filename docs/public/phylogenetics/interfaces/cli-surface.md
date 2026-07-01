@@ -3923,6 +3923,8 @@ for one rooted tree and one categorical tip trait. Its JSON metrics report:
 - `optimizer_converged`
 - `optimizer_iteration_count`
 - `optimizer_function_evaluation_count`
+- `optimizer_initial_candidate_count`
+- `optimizer_best_initial_scale`
 - `optimizer_hit_lower_parameter_bound`
 - `optimizer_hit_upper_parameter_bound`
 - `overparameterized`
@@ -3964,6 +3966,8 @@ summary ledger as CSV or TSV. The row preserves:
 - `optimizer_converged`
 - `optimizer_iteration_count`
 - `optimizer_function_evaluation_count`
+- `optimizer_initial_candidate_count`
+- `optimizer_best_initial_scale`
 - `optimizer_hit_lower_parameter_bound`
 - `optimizer_hit_upper_parameter_bound`
 - `overparameterized`
@@ -3976,6 +3980,16 @@ rate-matrix ledger as CSV or TSV. Each row preserves:
 - `transition_allowed`
 - `step_distance`
 - `rate`
+
+The governed unordered ARD fit policy is explicit in this surface. The runtime
+does not spray random restart clouds across the parameter box. It evaluates a
+bounded deterministic seed set built from uniform ER scales, the optimized ER
+fit projected into the target layout, one reciprocal-edge symmetric warm start
+when the constrained transition graph still supports a valid connected
+symmetric CTMC, one directional state-count seed, and a small perturbation set
+around the governed warm starts. The JSON diagnostics expose how many of those
+seeds were actually used through `optimizer_diagnostics.initial_candidate_count`
+and which seed scale won through `optimizer_diagnostics.best_initial_scale`.
 
 `comparative brownian` is the governed standalone Brownian trait-evolution
 surface for one numeric trait on a rooted tree with branch lengths. Its JSON

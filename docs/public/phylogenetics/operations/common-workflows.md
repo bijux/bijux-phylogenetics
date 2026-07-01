@@ -2234,7 +2234,15 @@ missing-value-pruned multistate fixtures. ARD fits now track
 `phytools::fitMk(model='ARD')` on governed binary and missing-value-pruned
 binary fixtures at full rate-row parity, while the governed multistate ARD
 claim stays at summary parity when the optimizer reports weakly identified
-boundary rates.
+boundary rates. The owned unordered ARD search policy is bounded and explicit:
+it starts from governed ER-scale seeds, projects the optimized ER fit into the
+target rate layout, adds a reciprocal-edge symmetric warm start only when the
+allowed-transition graph supports a valid connected symmetric CTMC, and then
+adds one directional state-count seed plus a small deterministic perturbation
+set. The fit diagnostics preserve that budget through
+`optimizer_diagnostics.initial_candidate_count` and
+`optimizer_diagnostics.best_initial_scale`, so reviewers can see the restart
+policy directly instead of inferring it from runtime alone.
 
 When the goal is to fit a standalone continuous-trait evolution model rather
 than a regression, use `comparative brownian`. This workflow keeps the
