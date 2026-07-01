@@ -3,6 +3,7 @@ from __future__ import annotations
 from bijux_phylogenetics.phylo.likelihood import (
     DNA_EXCHANGEABILITY_LABELS,
     SimplexCoordinateParameterization,
+    SimplexLikelihoodSearchResult,
     evaluate_gtr_tree_likelihood_from_unconstrained_exchangeabilities,
     evaluate_gtr_tree_likelihood_from_unconstrained_exchangeabilities_from_alignment,
     parameterize_dna_base_frequency_simplex,
@@ -13,6 +14,8 @@ from bijux_phylogenetics.phylo.likelihood import (
     resolve_dna_base_frequency_simplex_from_unconstrained,
     resolve_dna_exchangeability_simplex_from_unconstrained,
     resolve_named_simplex_from_unconstrained,
+    resolve_simplex_coordinate_search_bounds,
+    run_simplex_likelihood_search,
 )
 from bijux_phylogenetics.phylo.likelihood.dna_simplex_coordinates import (
     DNA_EXCHANGEABILITY_LABELS as dna_exchangeability_labels_impl,
@@ -50,11 +53,21 @@ from bijux_phylogenetics.phylo.likelihood.simplex_coordinates import (
 from bijux_phylogenetics.phylo.likelihood.simplex_coordinates import (
     resolve_named_simplex_from_unconstrained as resolve_named_simplex_from_unconstrained_impl,
 )
+from bijux_phylogenetics.phylo.likelihood.simplex_search import (
+    SimplexLikelihoodSearchResult as simplex_likelihood_search_result_impl,
+)
+from bijux_phylogenetics.phylo.likelihood.simplex_search import (
+    resolve_simplex_coordinate_search_bounds as resolve_simplex_coordinate_search_bounds_impl,
+)
+from bijux_phylogenetics.phylo.likelihood.simplex_search import (
+    run_simplex_likelihood_search as run_simplex_likelihood_search_impl,
+)
 
 
 def test_phylo_likelihood_exports_simplex_coordinate_surface() -> None:
     assert DNA_EXCHANGEABILITY_LABELS is dna_exchangeability_labels_impl
     assert SimplexCoordinateParameterization is simplex_coordinate_parameterization_impl
+    assert SimplexLikelihoodSearchResult is simplex_likelihood_search_result_impl
     assert parameterize_named_simplex is parameterize_named_simplex_impl
     assert (
         parameterize_dna_base_frequency_simplex
@@ -67,6 +80,10 @@ def test_phylo_likelihood_exports_simplex_coordinate_surface() -> None:
     assert (
         resolve_named_simplex_from_unconstrained
         is resolve_named_simplex_from_unconstrained_impl
+    )
+    assert (
+        resolve_simplex_coordinate_search_bounds
+        is resolve_simplex_coordinate_search_bounds_impl
     )
     assert (
         resolve_dna_base_frequency_simplex_from_unconstrained
@@ -92,3 +109,4 @@ def test_phylo_likelihood_exports_simplex_coordinate_surface() -> None:
         evaluate_gtr_tree_likelihood_from_unconstrained_exchangeabilities_from_alignment
         is evaluate_gtr_tree_likelihood_from_unconstrained_exchangeabilities_from_alignment_impl
     )
+    assert run_simplex_likelihood_search is run_simplex_likelihood_search_impl
