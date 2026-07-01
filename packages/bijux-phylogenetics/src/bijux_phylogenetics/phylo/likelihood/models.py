@@ -364,6 +364,18 @@ class LikelihoodOptimizationBoundaryWarning:
 
 
 @dataclass(slots=True)
+class LikelihoodFitAssessment:
+    """Trustworthiness classification for one fitted likelihood optimization result."""
+
+    classification: str
+    summary: str
+    optimized_parameter_count: int
+    boundary_warning_count: int
+    warning_kinds: list[str]
+    stable_conclusion_supported: bool
+
+
+@dataclass(slots=True)
 class NucleotideSubstitutionParameterOptimizationReport:
     """Fixed-topology nucleotide substitution-parameter optimization summary."""
 
