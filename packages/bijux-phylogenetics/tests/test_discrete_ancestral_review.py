@@ -211,6 +211,34 @@ def test_reconstruct_discrete_ancestral_states_flags_overparameterized_sym_case(
     )
 
 
+def test_reconstruct_discrete_ancestral_states_uses_canonical_ard_plateau_choice() -> (
+    None
+):
+    report = reconstruct_discrete_ancestral_states(
+        fixture("example_tree_six_taxa.nwk"),
+        fixture("example_traits_geography_biased.tsv"),
+        trait="region",
+        model="all-rates-different",
+    )
+    root = next(
+        estimate for estimate in report.estimates if estimate.node == "A|B|C|D|E|F"
+    )
+    ef_clade = next(
+        estimate for estimate in report.estimates if estimate.node == "E|F"
+    )
+    transition_pairs = {
+        (row.source_state, row.target_state): row.rate
+        for row in report.transition_rate_rows
+    }
+
+    assert root.most_likely_state == "island"
+    assert root.state_probabilities["island"] == pytest.approx(0.5322, abs=0.001)
+    assert root.state_probabilities["south"] == pytest.approx(0.4114, abs=0.001)
+    assert ef_clade.most_likely_state == "south"
+    assert ef_clade.state_probabilities["south"] == pytest.approx(0.6106, abs=0.001)
+    assert transition_pairs[("island", "north")] > transition_pairs[("south", "north")]
+
+
 @pytest.mark.slow
 def test_write_discrete_ancestral_ard_fit_table_tracks_directional_rates_and_weak_fit_warnings(
     tmp_path: Path,

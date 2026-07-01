@@ -31,6 +31,8 @@ from .optimizer_search import (
 from .posterior_probabilities import estimate_marginal_state_probabilities
 from .rate_matrix import build_transition_rate_rows, rate_matrix_from_log_parameters
 
+_DISCRETE_OPTIMIZATION_TIE_TOLERANCE = 1e-8
+
 
 def reconstruct_likelihood_estimates(
     dataset,
@@ -265,7 +267,11 @@ def fit_discrete_mk_model(
                 initial_log_parameters=initial,
                 initial_scale=initial_scale,
             )
-            if run.log_likelihood > best_log_likelihood:
+            if _candidate_run_is_better(
+                run,
+                incumbent_run=best_run,
+                incumbent_log_likelihood=best_log_likelihood,
+            ):
                 best_run = run
                 best_log_parameters = run.log_parameters
                 best_log_likelihood = run.log_likelihood
@@ -317,3 +323,26 @@ def fit_discrete_mk_model(
             ),
         ),
     )
+
+
+def _candidate_run_is_better(
+    candidate_run: _DiscreteOptimizationRun,
+    *,
+    incumbent_run: _DiscreteOptimizationRun | None,
+    incumbent_log_likelihood: float,
+) -> bool:
+    if incumbent_run is None:
+        return True
+    if (
+        candidate_run.log_likelihood
+        > incumbent_log_likelihood + _DISCRETE_OPTIMIZATION_TIE_TOLERANCE
+    ):
+        return True
+    if (
+        candidate_run.log_likelihood
+        < incumbent_log_likelihood - _DISCRETE_OPTIMIZATION_TIE_TOLERANCE
+    ):
+        return False
+    return tuple(
+        float(value) for value in candidate_run.log_parameters.tolist()
+    ) > tuple(float(value) for value in incumbent_run.log_parameters.tolist())
