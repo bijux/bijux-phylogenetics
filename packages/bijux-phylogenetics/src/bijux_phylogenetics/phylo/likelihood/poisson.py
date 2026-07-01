@@ -13,12 +13,14 @@ from bijux_phylogenetics.phylo.likelihood.ctmc import (
     EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
+    FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
     FiniteStateInvariantMixtureTreeLikelihoodReport,
     ProteinPoissonTreeLikelihoodReport,
 )
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
     compile_finite_state_likelihood_context,
     evaluate_finite_state_site_log_likelihood_rows_from_patterns,
+    evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture,
     evaluate_finite_state_tree_likelihood_with_invariant_mixture,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
@@ -201,6 +203,104 @@ def evaluate_protein_poisson_tree_likelihood_with_invariant_mixture_from_alignme
         load_tree(tree_path),
         load_fasta_alignment(alignment_path),
         invariant_proportion=invariant_proportion,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
+    )
+
+
+def evaluate_protein_poisson_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    alpha: float,
+    invariant_proportion: float,
+    category_count: int = 4,
+    lower_invariant_proportion_bound: float | None = None,
+    upper_invariant_proportion_bound: float | None = None,
+    emit_boundary_warnings: bool = False,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
+    gap_policy: str = "treat-as-missing",
+    missing_policy: str = "treat-as-missing",
+    ambiguity_policy: str = "reject",
+) -> FiniteStateDiscreteGammaInvariantTreeLikelihoodReport:
+    """Evaluate one protein Poisson likelihood surface under one active +G+I mixture."""
+    from bijux_phylogenetics.phylo.likelihood.protein_finite_state import (
+        build_protein_poisson_finite_state_surface,
+    )
+
+    normalized_records = normalize_protein_likelihood_records(
+        records,
+        model_name="protein Poisson",
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
+    )
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
+    surface = build_protein_poisson_finite_state_surface(
+        normalized_records,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
+    )
+    return evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+        tree,
+        compressed_patterns,
+        surface=surface,
+        alpha=alpha,
+        category_count=category_count,
+        invariant_proportion=invariant_proportion,
+        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        emit_boundary_warnings=emit_boundary_warnings,
+    )
+
+
+def evaluate_protein_poisson_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
+    tree_path: Path,
+    alignment_path: Path,
+    *,
+    alpha: float,
+    invariant_proportion: float,
+    category_count: int = 4,
+    lower_invariant_proportion_bound: float | None = None,
+    upper_invariant_proportion_bound: float | None = None,
+    emit_boundary_warnings: bool = False,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
+    gap_policy: str = "treat-as-missing",
+    missing_policy: str = "treat-as-missing",
+    ambiguity_policy: str = "reject",
+) -> FiniteStateDiscreteGammaInvariantTreeLikelihoodReport:
+    """Evaluate one protein Poisson +G+I likelihood from tree and alignment paths."""
+    return evaluate_protein_poisson_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+        load_tree(tree_path),
+        load_fasta_alignment(alignment_path),
+        alpha=alpha,
+        invariant_proportion=invariant_proportion,
+        category_count=category_count,
+        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        emit_boundary_warnings=emit_boundary_warnings,
         root_prior_policy=root_prior_policy,
         root_prior=root_prior,
         fixed_root_state=fixed_root_state,
