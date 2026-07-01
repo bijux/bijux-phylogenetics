@@ -39,6 +39,7 @@ __all__ = [
     "DiscreteGammaSiteLikelihood",
     "F81TreeLikelihoodReport",
     "FiniteStateDiscreteGammaTreeLikelihoodReport",
+    "FiniteStateInvariantMixtureTreeLikelihoodReport",
     "FiniteStateJointAssignmentPass",
     "FiniteStateLikelihoodSurface",
     "FiniteStatePruningPass",

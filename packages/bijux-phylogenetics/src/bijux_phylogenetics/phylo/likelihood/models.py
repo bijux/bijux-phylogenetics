@@ -1898,6 +1898,25 @@ class InvariantMixtureSiteLikelihood:
 
 
 @dataclass(slots=True)
+class FiniteStateInvariantMixtureTreeLikelihoodReport:
+    """Finite-state likelihood report with one active invariant-site mixture."""
+
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    compression_used: bool
+    tree_newick: str
+    model_name: str
+    state_count: int
+    root_prior_source: str
+    observation_policy: str
+    normalization_policy: str | None
+    invariant_proportion: float
+    site_likelihoods: list[InvariantMixtureSiteLikelihood]
+    log_likelihood: float
+
+
+@dataclass(slots=True)
 class ProteinEmpiricalInvariantMixtureTreeLikelihoodReport:
     """Empirical protein likelihood report with one fitted invariant-site mixture."""
 

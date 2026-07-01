@@ -11,6 +11,7 @@ from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from .models import (
     CodonCtmcTreeLikelihoodReport,
     FiniteStateDiscreteGammaTreeLikelihoodReport,
+    FiniteStateInvariantMixtureTreeLikelihoodReport,
     FixedTopologySiteLogLikelihoodReport,
     LocalClockLikelihoodReport,
     ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport,
@@ -30,6 +31,7 @@ from .patterns import (
 SequenceSiteLogLikelihoodReport = (
     CodonCtmcTreeLikelihoodReport
     | FiniteStateDiscreteGammaTreeLikelihoodReport
+    | FiniteStateInvariantMixtureTreeLikelihoodReport
     | FixedTopologySiteLogLikelihoodReport
     | LocalClockLikelihoodReport
     | ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport
@@ -241,6 +243,17 @@ def _iter_sequence_site_log_likelihood_rows(
             )
             for row in report.site_likelihoods
         ]
+    if isinstance(report, FiniteStateInvariantMixtureTreeLikelihoodReport):
+        return [
+            SiteLogLikelihoodRow(
+                pattern_id=row.pattern_id,
+                pattern_weight=row.pattern_weight,
+                site_position=row.site_position,
+                site_states=row.site_states,
+                log_likelihood=row.log_likelihood,
+            )
+            for row in report.site_likelihoods
+        ]
     if isinstance(report, ProteinEmpiricalInvariantMixtureTreeLikelihoodReport):
         return [
             SiteLogLikelihoodRow(
@@ -283,6 +296,8 @@ def _site_log_likelihood_report_model_name(
         return "empirical protein matrix +G"
     if isinstance(report, FiniteStateDiscreteGammaTreeLikelihoodReport):
         return f"{report.model_name} +G"
+    if isinstance(report, FiniteStateInvariantMixtureTreeLikelihoodReport):
+        return f"{report.model_name} +I"
     if isinstance(report, ProteinEmpiricalInvariantMixtureTreeLikelihoodReport):
         return "empirical protein matrix +I"
     if isinstance(report, ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport):
