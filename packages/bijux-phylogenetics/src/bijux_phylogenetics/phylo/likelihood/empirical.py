@@ -1046,6 +1046,7 @@ def optimize_empirical_protein_tree_likelihood_with_invariant_mixture(
         log_likelihood=optimized_report.log_likelihood,
         function_evaluation_count=search_result.function_evaluation_count,
         converged=search_result.converged,
+        fit_assessment=optimized_report.fit_assessment,
         lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
         hit_lower_invariant_proportion_boundary=(
@@ -1200,6 +1201,13 @@ def _protein_empirical_invariant_mixture_report_from_finite_state(
         if report.normalization_policy is None
         else report.normalization_policy
     )
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=report.site_count,
+        pattern_count=report.pattern_count,
+        optimized_parameter_count=1,
+        converged=converged,
+        boundary_warnings=report.boundary_warning_rows,
+    )
     return ProteinEmpiricalInvariantMixtureTreeLikelihoodReport(
         taxa=report.taxa,
         site_count=report.site_count,
@@ -1218,6 +1226,7 @@ def _protein_empirical_invariant_mixture_report_from_finite_state(
         log_likelihood=report.log_likelihood,
         function_evaluation_count=function_evaluation_count,
         converged=converged,
+        fit_assessment=fit_assessment,
         lower_invariant_proportion_bound=lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=upper_invariant_proportion_bound,
         hit_lower_invariant_proportion_boundary=(

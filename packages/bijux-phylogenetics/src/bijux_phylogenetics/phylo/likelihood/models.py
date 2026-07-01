@@ -2039,6 +2039,7 @@ class ProteinEmpiricalInvariantMixtureTreeLikelihoodReport:
     log_likelihood: float
     function_evaluation_count: int
     converged: bool
+    fit_assessment: LikelihoodFitAssessment
     lower_invariant_proportion_bound: float
     upper_invariant_proportion_bound: float
     site_likelihoods: list[InvariantMixtureSiteLikelihood]

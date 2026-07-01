@@ -61,6 +61,7 @@ def test_empirical_protein_invariant_mixture_estimates_nonzero_proportion() -> N
     assert report.log_likelihood > report.initial_log_likelihood
     assert report.function_evaluation_count == 46
     assert report.optimizer_diagnostics is not None
+    assert report.fit_assessment.classification == "stable"
     assert (
         report.optimizer_diagnostics.lower_bound
         == report.lower_invariant_proportion_bound
@@ -94,6 +95,7 @@ def test_empirical_protein_invariant_mixture_rows_emit_real_component_activity()
     assert report.initial_invariant_proportion == 0.35
     assert report.function_evaluation_count == 1
     assert report.converged is True
+    assert report.fit_assessment.classification == "stable"
     assert report.optimizer_diagnostics is None
     assert math.isclose(
         report.log_likelihood,
@@ -204,6 +206,7 @@ def test_empirical_protein_invariant_mixture_boundary_warning_reports_bound_hit(
 
     assert report.hit_lower_invariant_proportion_boundary is True
     assert report.hit_upper_invariant_proportion_boundary is False
+    assert report.fit_assessment.classification == "boundary"
     assert report.boundary_warnings == [
         "invariant proportion hit lower search boundary"
     ]
