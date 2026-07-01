@@ -24,6 +24,7 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from .fixed_topology_branch_lengths import (
     evaluate_selected_nucleotide_log_likelihood_from_patterns,
 )
+from .neighbor_joining_start_tree import build_likelihood_neighbor_joining_tree
 from .starting_tree_generation import build_random_likelihood_start_tree
 from .starting_tree_validation import (
     validate_nucleotide_likelihood_starting_tree,
@@ -132,7 +133,7 @@ def build_nucleotide_likelihood_starting_tree_pool_from_alignment(
 def validate_nucleotide_likelihood_random_start_tree_count(
     random_start_tree_count: int,
 ) -> int:
-    """Require at least one random-seeded start so the pool spans strategies and seeds."""
+    """Require at least one random-seeded start so the pool spans deterministic and stochastic starts."""
     if random_start_tree_count < 1:
         raise ValueError("random_start_tree_count must be at least one")
     return random_start_tree_count
@@ -162,6 +163,12 @@ def _prepare_distinct_starting_trees(
         records,
         model_name="jc69",
     )
+    neighbor_joining_tree, _neighbor_joining_report = (
+        build_likelihood_neighbor_joining_tree(
+            records,
+            distance_model="p-distance",
+        )
+    )
     prepared_trees = [
         _PreparedStartingTree(
             tree_id="input-tree",
@@ -176,6 +183,19 @@ def _prepare_distinct_starting_trees(
             tree=stepwise_tree.refresh(),
         ),
     ]
+    deterministic_hashes = {
+        rooted_topology_fingerprint(prepared_tree.tree) for prepared_tree in prepared_trees
+    }
+    neighbor_joining_topology_hash = rooted_topology_fingerprint(neighbor_joining_tree)
+    if neighbor_joining_topology_hash not in deterministic_hashes:
+        prepared_trees.append(
+            _PreparedStartingTree(
+                tree_id="neighbor-joining-tree",
+                source_strategy="neighbor-joining-tree",
+                generation_seed=None,
+                tree=neighbor_joining_tree.refresh(),
+            )
+        )
     for seed in range(
         random_start_tree_seed,
         random_start_tree_seed + random_start_tree_count,

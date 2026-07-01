@@ -12,10 +12,16 @@ _SUPPORTED_STARTING_TREE_SELECTION_POLICIES = frozenset(
     {"all", "best", "random-k", "strategy-priority"}
 )
 _SUPPORTED_STARTING_TREE_STRATEGIES = frozenset(
-    {"input-tree", "likelihood-stepwise-addition-tree", "random-tree"}
+    {
+        "input-tree",
+        "neighbor-joining-tree",
+        "likelihood-stepwise-addition-tree",
+        "random-tree",
+    }
 )
 _DEFAULT_STARTING_TREE_STRATEGY_PRIORITY = (
     "likelihood-stepwise-addition-tree",
+    "neighbor-joining-tree",
     "input-tree",
     "random-tree",
 )

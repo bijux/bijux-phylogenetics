@@ -140,3 +140,29 @@ def test_likelihood_starting_tree_pool_preserves_declared_tree_input_path() -> N
             fixture("trees", "jc69_likelihood_spr_start_tree_5_taxa.nwk")
         ).tip_names
     )
+
+
+def test_likelihood_starting_tree_pool_includes_neighbor_joining_when_distinct() -> (
+    None
+):
+    report = build_nucleotide_likelihood_starting_tree_pool_from_alignment(
+        fixture("trees", "jc69_likelihood_spr_start_tree_5_taxa.nwk"),
+        fixture("alignments", "jc69_likelihood_spr_alignment_5_taxa.fasta"),
+        model_name="jc69",
+        random_start_tree_count=1,
+        random_start_tree_seed=23,
+    )
+
+    assert [row.tree_id for row in report.starting_tree_summaries] == [
+        "input-tree",
+        "likelihood-stepwise-addition-tree",
+        "neighbor-joining-tree",
+        "random-tree-seed-23",
+    ]
+    assert [row.source_strategy for row in report.starting_tree_summaries] == [
+        "input-tree",
+        "likelihood-stepwise-addition-tree",
+        "neighbor-joining-tree",
+        "random-tree",
+    ]
+    assert len({row.topology_hash for row in report.starting_tree_summaries}) == 4

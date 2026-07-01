@@ -96,8 +96,8 @@ def test_likelihood_starting_tree_selection_validators_reject_invalid_requests()
         is None
     )
     assert validate_nucleotide_likelihood_starting_tree_strategy_priority(
-        ["random-tree", "input-tree"]
-    ) == ("random-tree", "input-tree")
+        ["random-tree", "neighbor-joining-tree", "input-tree"]
+    ) == ("random-tree", "neighbor-joining-tree", "input-tree")
 
     try:
         validate_nucleotide_likelihood_starting_tree_selection_policy("first")
