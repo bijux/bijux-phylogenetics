@@ -72,6 +72,19 @@ def test_fixed_topology_strict_clock_model_definition_requires_sampled_clock_rat
         )
 
 
+def test_fixed_topology_strict_clock_model_definition_requires_supported_time_tree_prior() -> (
+    None
+):
+    with pytest.raises(
+        PhylogeneticsError,
+        match="requires one supported rooted time-tree prior model",
+    ):
+        build_fixed_topology_strict_clock_model_definition(
+            time_tree_prior=object(),
+            global_clock_rate_prior=build_exponential_clock_model_scalar_prior(rate=2.0),
+        )
+
+
 def test_fixed_topology_strict_clock_model_definition_requires_unique_calibrations() -> (
     None
 ):
