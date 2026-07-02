@@ -347,14 +347,10 @@ def _validate_independent_chain_reports(
 def _fingerprint_chain_trace(chain_report: MetropolisHastingsRunReport) -> str:
     return _fingerprint_payload(
         {
-            "initial_state": serialize_bayesian_phylogenetic_state(
-                chain_report.initial_state
-            ),
-            "final_state": serialize_bayesian_phylogenetic_state(
-                chain_report.final_state
-            ),
+            "initial_state": _serialize_chain_state(chain_report.initial_state),
+            "final_state": _serialize_chain_state(chain_report.final_state),
             "sampled_states": [
-                serialize_bayesian_phylogenetic_state(sampled_state)
+                _serialize_chain_state(sampled_state)
                 for sampled_state in chain_report.sampled_states
             ],
             "step_rows": [
@@ -365,7 +361,13 @@ def _fingerprint_chain_trace(chain_report: MetropolisHastingsRunReport) -> str:
 
 
 def _fingerprint_state(state: BayesianPhylogeneticState) -> str:
-    return _fingerprint_payload(serialize_bayesian_phylogenetic_state(state))
+    return _fingerprint_payload(_serialize_chain_state(state))
+
+
+def _serialize_chain_state(state: BayesianPhylogeneticState) -> dict[str, object]:
+    payload = serialize_bayesian_phylogenetic_state(state)
+    payload.pop("random_state", None)
+    return payload
 
 
 def _fingerprint_payload(payload: object) -> str:
