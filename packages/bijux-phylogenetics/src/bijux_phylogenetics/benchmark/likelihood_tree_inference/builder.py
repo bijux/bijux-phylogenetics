@@ -14,7 +14,9 @@ from bijux_phylogenetics.benchmark._fixtures import (
 from bijux_phylogenetics.io.newick import loads_newick
 from bijux_phylogenetics.phylo.likelihood import (
     bootstrap_nucleotide_likelihood_tree_inference_from_alignment,
+    infer_nucleotide_likelihood_tree,
     infer_nucleotide_likelihood_tree_from_alignment,
+    optimize_fixed_topology_nucleotide_branch_lengths,
     validate_nucleotide_likelihood_tree_inference_search_method,
 )
 from bijux_phylogenetics.phylo.likelihood.nucleotide_models import (
@@ -34,6 +36,9 @@ from .contracts import (
     MaximumLikelihoodWrapperBenchmarkReport,
     MaximumLikelihoodWrapperBenchmarkSummaryRow,
     MaximumLikelihoodWrapperSupportComparison,
+    NativeMaximumLikelihoodAccuracyBenchmarkBundle,
+    NativeMaximumLikelihoodAccuracyBenchmarkObservation,
+    NativeMaximumLikelihoodAccuracyBenchmarkReport,
     NativeMaximumLikelihoodMemoryBenchmarkBundle,
     NativeMaximumLikelihoodMemoryBenchmarkObservation,
     NativeMaximumLikelihoodMemoryBenchmarkReport,
@@ -43,11 +48,20 @@ from .contracts import (
     NativeMaximumLikelihoodSpeedBenchmarkReport,
     NativeMaximumLikelihoodSpeedTrendRow,
 )
+from .accuracy_fixtures import (
+    build_native_maximum_likelihood_accuracy_truth_tree,
+    governed_native_maximum_likelihood_accuracy_cases,
+    simulate_native_maximum_likelihood_accuracy_alignment,
+)
 from .wrapper_references import MAXIMUM_LIKELIHOOD_WRAPPER_REFERENCE_PAYLOADS
 from .artifact_outputs import (
     write_maximum_likelihood_wrapper_comparison_observation_table,
     write_maximum_likelihood_wrapper_comparison_run_json,
     write_maximum_likelihood_wrapper_comparison_summary_table,
+    write_native_maximum_likelihood_accuracy_observation_table,
+    write_native_maximum_likelihood_accuracy_run_json,
+    write_native_maximum_likelihood_accuracy_summary_table,
+    write_native_maximum_likelihood_accuracy_wrapper_table,
     write_native_maximum_likelihood_memory_observation_table,
     write_native_maximum_likelihood_memory_run_json,
     write_native_maximum_likelihood_memory_summary_table,
@@ -76,6 +90,7 @@ _DEFAULT_NATIVE_MAXIMUM_LIKELIHOOD_SPEED_MODEL_NAMES = (
     "jc69",
     "k80",
 )
+_NATIVE_MAXIMUM_LIKELIHOOD_ACCURACY_SHORTFALL_TOLERANCE = 0.25
 _ELEVATED_MEMORY_RATIO_THRESHOLD = 1.25
 _ELEVATED_MEMORY_DELTA_THRESHOLD_BYTES = 100_000
 _MEMORY_BLOWUP_RATIO_THRESHOLD = 2.0
@@ -117,6 +132,102 @@ class _MeasuredNativeMaximumLikelihoodLane:
     best_run_source_label: str
     search_algorithm: str
     final_log_likelihood: float
+
+
+def benchmark_native_maximum_likelihood_accuracy(
+    *,
+    model_names: list[str] | tuple[str, ...] | None = None,
+    search_methods: list[str] | tuple[str, ...] | None = None,
+    start_tree_count: int = 1,
+    start_tree_seed: int = 17,
+    upper_branch_length_bound: float = 1.0,
+) -> NativeMaximumLikelihoodAccuracyBenchmarkReport:
+    """Benchmark native ML recovery against governed simulated truth cases."""
+    if start_tree_count < 1:
+        raise ValueError(f"start_tree_count must be at least 1, got {start_tree_count}")
+    resolved_model_names = _resolve_native_maximum_likelihood_accuracy_model_names(
+        model_names
+    )
+    resolved_search_methods = [
+        validate_nucleotide_likelihood_tree_inference_search_method(search_method)
+        for search_method in (search_methods or ("nni",))
+    ]
+    cases = [
+        case
+        for case in governed_native_maximum_likelihood_accuracy_cases()
+        if case.model_name in resolved_model_names
+    ]
+    observations: list[NativeMaximumLikelihoodAccuracyBenchmarkObservation] = []
+    for case in cases:
+        records = simulate_native_maximum_likelihood_accuracy_alignment(case)
+        true_topology_log_likelihood = _optimize_native_accuracy_truth_topology(
+            case,
+            records,
+            upper_branch_length_bound=upper_branch_length_bound,
+        )
+        for search_method in resolved_search_methods:
+            inference_report = infer_nucleotide_likelihood_tree(
+                records,
+                model_name=case.model_name,
+                search_method=search_method,
+                start_tree_count=start_tree_count,
+                start_tree_seed=start_tree_seed,
+                upper_branch_length_bound=upper_branch_length_bound,
+            )
+            observations.append(
+                _build_native_maximum_likelihood_accuracy_observation(
+                    case,
+                    search_method=search_method,
+                    inference_report=inference_report,
+                    true_topology_log_likelihood=true_topology_log_likelihood,
+                )
+            )
+    wrapper_report = benchmark_maximum_likelihood_wrapper_comparison()
+    topology_recovery_case_count = sum(
+        1 for row in observations if row.topology_recovered
+    )
+    parameter_recovery_case_count = sum(
+        1 for row in observations if row.parameter_recovery_status == "parameter-recovered"
+    )
+    parameter_not_applicable_case_count = sum(
+        1 for row in observations if row.parameter_recovery_status == "parameter-not-applicable"
+    )
+    likelihood_quality_case_count = sum(
+        1
+        for row in observations
+        if row.likelihood_quality_status == "no-likelihood-shortfall"
+    )
+    wrapper_clear_case_count = sum(
+        1 for row in wrapper_report.observations if row.supported and not row.blocking
+    )
+    all_truth_cases_clear = all(
+        row.topology_recovered
+        and row.likelihood_quality_status == "no-likelihood-shortfall"
+        and row.parameter_recovery_status
+        in {"parameter-recovered", "parameter-not-applicable"}
+        for row in observations
+    )
+    return NativeMaximumLikelihoodAccuracyBenchmarkReport(
+        observations=observations,
+        wrapper_observations=wrapper_report.observations,
+        model_names=resolved_model_names,
+        search_methods=resolved_search_methods,
+        topology_recovery_case_count=topology_recovery_case_count,
+        parameter_recovery_case_count=parameter_recovery_case_count,
+        parameter_not_applicable_case_count=parameter_not_applicable_case_count,
+        likelihood_quality_case_count=likelihood_quality_case_count,
+        wrapper_supported_case_count=wrapper_report.supported_case_count,
+        wrapper_clear_case_count=wrapper_clear_case_count,
+        all_truth_cases_clear=all_truth_cases_clear,
+        all_supported_wrapper_cases_clear=wrapper_report.all_supported_cases_clear,
+        limitations=[
+            "governed accuracy fixtures use deterministic native simulation seeds so topology and parameter recovery can be compared to known truth instead of anecdotal ad hoc examples",
+            "the default governed accuracy roster runs the K80 truth lane; the F81 composition-bias lane remains available through explicit model overrides when additional parameter-recovery coverage is needed",
+            "parameter recovery is scored from the fixed-model selection surface that seeds tree search, because the current native tree-inference workflow keeps substitution parameters fixed during local topology search",
+            "likelihood quality is measured as shortfall against the true simulated topology scored under the known generating substitution parameters with native branch-length optimization, so search shortfalls remain explicit without turning the benchmark into a second full fitting workflow",
+            "wrapper evidence remains limited to the cached governed JC69 comparison lanes already owned in-repository, so external-engine coverage is narrower than the native simulated truth roster",
+        ],
+    )
 
 
 def benchmark_native_maximum_likelihood_speed(
@@ -371,6 +482,55 @@ def write_native_maximum_likelihood_speed_bundle(
     )
 
 
+def write_native_maximum_likelihood_accuracy_bundle(
+    output_root: Path,
+    *,
+    model_names: list[str] | tuple[str, ...] | None = None,
+    search_methods: list[str] | tuple[str, ...] | None = None,
+    start_tree_count: int = 1,
+    start_tree_seed: int = 17,
+    upper_branch_length_bound: float = 1.0,
+) -> NativeMaximumLikelihoodAccuracyBenchmarkBundle:
+    """Write one governed artifact bundle for the native ML accuracy benchmark."""
+    if output_root.exists():
+        for path in sorted(output_root.rglob("*"), reverse=True):
+            if path.is_file():
+                path.unlink()
+            elif path.is_dir():
+                path.rmdir()
+    output_root.mkdir(parents=True, exist_ok=True)
+    report = benchmark_native_maximum_likelihood_accuracy(
+        model_names=model_names,
+        search_methods=search_methods,
+        start_tree_count=start_tree_count,
+        start_tree_seed=start_tree_seed,
+        upper_branch_length_bound=upper_branch_length_bound,
+    )
+    summary_path = write_native_maximum_likelihood_accuracy_summary_table(
+        output_root / "summary.tsv",
+        report,
+    )
+    observation_table_path = write_native_maximum_likelihood_accuracy_observation_table(
+        output_root / "observations.tsv",
+        report,
+    )
+    wrapper_observation_table_path = write_native_maximum_likelihood_accuracy_wrapper_table(
+        output_root / "wrapper_observations.tsv",
+        report,
+    )
+    run_json_path = write_native_maximum_likelihood_accuracy_run_json(
+        output_root / "run.json",
+        report,
+    )
+    return NativeMaximumLikelihoodAccuracyBenchmarkBundle(
+        output_root=output_root,
+        summary_path=summary_path,
+        observation_table_path=observation_table_path,
+        wrapper_observation_table_path=wrapper_observation_table_path,
+        run_json_path=run_json_path,
+    )
+
+
 def write_native_maximum_likelihood_memory_bundle(
     output_root: Path,
     *,
@@ -519,6 +679,154 @@ def _measure_callback(callback):
         _, peak_memory_bytes = tracemalloc.get_traced_memory()
         tracemalloc.stop()
     return report, round(elapsed_seconds, 15), peak_memory_bytes
+
+
+def _build_native_maximum_likelihood_accuracy_observation(
+    case,
+    *,
+    search_method: str,
+    inference_report,
+    true_topology_log_likelihood: float,
+) -> NativeMaximumLikelihoodAccuracyBenchmarkObservation:
+    topology_recovered, rf_distance, normalized_rf = _compare_topology(
+        case.tree_newick,
+        inference_report.best_final_tree_newick,
+    )
+    estimated_parameter_values = _extract_native_accuracy_parameter_estimates(
+        inference_report.model_selection_report.rows[0].parameter_values,
+        parameter_names=tuple(case.parameter_truth),
+    )
+    parameter_absolute_deltas = {
+        parameter_name: round(
+            abs(estimated_parameter_values[parameter_name] - truth_value),
+            15,
+        )
+        for parameter_name, truth_value in case.parameter_truth.items()
+    }
+    return NativeMaximumLikelihoodAccuracyBenchmarkObservation(
+        case_id=case.case_id,
+        model_name=case.model_name,
+        search_method=search_method,
+        taxon_count=inference_report.taxon_count,
+        site_count=inference_report.site_count,
+        simulation_seed=case.simulation_seed,
+        selected_model_name=inference_report.selected_model_name,
+        true_topology_fingerprint=_topology_signature_label(case.tree_newick),
+        inferred_topology_fingerprint=_topology_signature_label(
+            inference_report.best_final_tree_newick
+        ),
+        topology_recovered=topology_recovered,
+        topology_recovery_status=(
+            "topology-recovered" if topology_recovered else "topology-miss"
+        ),
+        robinson_foulds_distance=rf_distance,
+        normalized_robinson_foulds=normalized_rf,
+        parameter_truth=dict(case.parameter_truth),
+        estimated_parameter_values=estimated_parameter_values,
+        parameter_absolute_deltas=parameter_absolute_deltas,
+        parameter_recovery_status=_classify_native_accuracy_parameter_recovery(
+            parameter_absolute_deltas,
+            parameter_tolerances=case.parameter_tolerances,
+        ),
+        true_topology_log_likelihood=true_topology_log_likelihood,
+        inferred_log_likelihood=inference_report.best_final_log_likelihood,
+        likelihood_shortfall=round(
+            max(
+                0.0,
+                true_topology_log_likelihood - inference_report.best_final_log_likelihood,
+            ),
+            15,
+        ),
+        likelihood_quality_status=(
+            "no-likelihood-shortfall"
+            if max(
+                0.0,
+                true_topology_log_likelihood - inference_report.best_final_log_likelihood,
+            )
+            <= _NATIVE_MAXIMUM_LIKELIHOOD_ACCURACY_SHORTFALL_TOLERANCE
+            else "likelihood-shortfall"
+        ),
+    )
+
+
+def _resolve_native_maximum_likelihood_accuracy_model_names(
+    model_names: list[str] | tuple[str, ...] | None,
+) -> list[str]:
+    roster = model_names or ("k80",)
+    resolved = _validate_native_maximum_likelihood_benchmark_model_names(roster)
+    available = {
+        case.model_name for case in governed_native_maximum_likelihood_accuracy_cases()
+    }
+    unsupported = [model_name for model_name in resolved if model_name not in available]
+    if unsupported:
+        supported = ", ".join(sorted(available))
+        raise ValueError(
+            "native ML accuracy benchmark supports simulated truth cases for "
+            f"{supported}; got {', '.join(unsupported)}"
+        )
+    return resolved
+
+
+def _optimize_native_accuracy_truth_topology(
+    case,
+    records,
+    *,
+    upper_branch_length_bound: float,
+) -> float:
+    truth_tree = build_native_maximum_likelihood_accuracy_truth_tree(case)
+    optimization_report = optimize_fixed_topology_nucleotide_branch_lengths(
+        truth_tree,
+        records,
+        model_name=case.model_name,
+        kappa=case.parameter_truth.get("kappa"),
+        base_frequencies=_native_accuracy_base_frequencies(case),
+        upper_branch_length_bound=upper_branch_length_bound,
+    )
+    return optimization_report.optimized_log_likelihood
+
+
+def _native_accuracy_base_frequencies(case) -> dict[str, float] | None:
+    if case.model_name in {"jc69", "k80"}:
+        return None
+    return {
+        "A": case.parameter_truth["base_frequency_a"],
+        "C": case.parameter_truth["base_frequency_c"],
+        "G": case.parameter_truth["base_frequency_g"],
+        "T": case.parameter_truth["base_frequency_t"],
+    }
+
+
+def _extract_native_accuracy_parameter_estimates(
+    parameter_values: dict[str, float],
+    *,
+    parameter_names: tuple[str, ...],
+) -> dict[str, float]:
+    return {
+        parameter_name: float(parameter_values[parameter_name])
+        for parameter_name in parameter_names
+    }
+
+
+def _classify_native_accuracy_parameter_recovery(
+    parameter_absolute_deltas: dict[str, float],
+    *,
+    parameter_tolerances: dict[str, float],
+) -> str:
+    if not parameter_absolute_deltas:
+        return "parameter-not-applicable"
+    return (
+        "parameter-recovered"
+        if all(
+            parameter_absolute_deltas[parameter_name]
+            <= parameter_tolerances[parameter_name]
+            for parameter_name in parameter_absolute_deltas
+        )
+        else "parameter-miss"
+    )
+
+
+def _topology_signature_label(tree_newick: str) -> str:
+    return " | ".join(_unrooted_topology_signature(tree_newick))
 
 
 def _measure_native_maximum_likelihood_benchmark_lanes(
