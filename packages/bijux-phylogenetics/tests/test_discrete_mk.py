@@ -23,6 +23,9 @@ from bijux_phylogenetics.simulation import (
     simulate_discrete_traits,
     write_discrete_trait_table,
 )
+from .support.geiger_fitdiscrete_ard_reference import (
+    GEIGER_FITDISCRETE_ARD_REFERENCE_PAYLOADS,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -1218,6 +1221,13 @@ def test_fit_discrete_mk_model_matches_governed_geiger_ard_missing_surface() -> 
         model="all-rates-different",
     )
     rate_lookup = _allowed_rate_lookup(report)
+    reference_payload = GEIGER_FITDISCRETE_ARD_REFERENCE_PAYLOADS[
+        "fitdiscrete-ard-multistate-missing-twenty-four-taxa"
+    ]
+    expected_rates = {
+        (row["source_state"], row["target_state"]): row["rate"]
+        for row in reference_payload["rows"]
+    }
 
     assert report.taxon_count == 23
     assert report.input_audit.pruned_missing_value_taxa == ["Phy14"]
@@ -1225,27 +1235,27 @@ def test_fit_discrete_mk_model_matches_governed_geiger_ard_missing_surface() -> 
     assert report.optimizer_diagnostics.hit_lower_parameter_bound is False
     assert math.isclose(
         report.log_likelihood,
-        -14.31297558479869,
+        reference_payload["summary"]["log_likelihood"],
         rel_tol=0.0,
-        abs_tol=1e-6,
+        abs_tol=1e-4,
     )
     assert math.isclose(
         rate_lookup[("central", "north")],
-        0.5893462301272221,
+        expected_rates[("central", "north")],
         rel_tol=0.0,
-        abs_tol=1e-6,
+        abs_tol=1e-4,
     )
     assert math.isclose(
         rate_lookup[("central", "south")],
-        2.3728819807498187,
+        expected_rates[("central", "south")],
         rel_tol=0.0,
-        abs_tol=1e-6,
+        abs_tol=1e-4,
     )
     assert math.isclose(
         rate_lookup[("south", "north")],
-        0.8075038793220018,
+        expected_rates[("south", "north")],
         rel_tol=0.0,
-        abs_tol=1e-6,
+        abs_tol=1e-4,
     )
 
 

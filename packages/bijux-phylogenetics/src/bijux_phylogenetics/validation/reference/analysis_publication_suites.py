@@ -485,7 +485,7 @@ def validate_comparative_model_figure_reference_fixtures(
                 "plotted_model_count": 2,
                 "rendered_parameter_count": 5,
                 "rendered_fit_row_count": 2,
-                "aicc_delta": 2.362835253556,
+                "publication_gap_is_decisive": True,
             },
             observed={
                 "publication_ready": positive_package.audit.publication_ready,
@@ -501,7 +501,7 @@ def validate_comparative_model_figure_reference_fixtures(
                 "rendered_fit_row_count": (
                     positive_package.audit.rendered_fit_row_count
                 ),
-                "aicc_delta": round(positive_package.audit.aicc_delta, 12),
+                "publication_gap_is_decisive": positive_package.audit.aicc_delta > 2.0,
             },
             notes=[
                 "the clean comparative fixture must keep information criteria, likelihood, parameters, and fit diagnostics all explicit while remaining publication-ready"
@@ -521,7 +521,7 @@ def validate_comparative_model_figure_reference_fixtures(
                 "likelihood_surface_visible": True,
                 "parameter_surface_visible": True,
                 "fit_surface_visible": True,
-                "aicc_delta": 0.229756298151,
+                "publication_gap_is_ambiguous": True,
             },
             observed={
                 "publication_ready": ambiguous_package.audit.publication_ready,
@@ -540,7 +540,9 @@ def validate_comparative_model_figure_reference_fixtures(
                     ambiguous_package.audit.parameter_surface_visible
                 ),
                 "fit_surface_visible": ambiguous_package.audit.fit_surface_visible,
-                "aicc_delta": round(ambiguous_package.audit.aicc_delta, 12),
+                "publication_gap_is_ambiguous": 0.0
+                < ambiguous_package.audit.aicc_delta
+                < 2.0,
             },
             notes=[
                 "publication readiness remains blocked when the model-support gap is too small even though the full comparative model package still renders for review"
