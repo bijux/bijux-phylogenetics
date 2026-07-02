@@ -6,7 +6,9 @@ from pathlib import Path
 import pytest
 
 from bijux_phylogenetics.bayesian.branch_length_priors import (
+    BranchLengthPriorModel,
     build_exponential_branch_length_prior,
+    build_uniform_branch_length_prior,
 )
 from bijux_phylogenetics.bayesian.fixed_topology_dna import (
     FixedTopologyDnaRunReport,
@@ -145,6 +147,41 @@ def test_replay_fixed_topology_dna_run_manifest_reproduces_retained_sample_ids(
     assert replay_report.replayed_retained_sample_ids == manifest.retained_sample_ids
 
 
+def test_replay_fixed_topology_dna_run_manifest_supports_uniform_branch_length_prior(
+    tmp_path: Path,
+) -> None:
+    tree_path = fixture("trees", "hky85_likelihood_tree_2_taxa.nwk")
+    alignment_path = fixture("alignments", "hky85_likelihood_alignment_2_taxa.fasta")
+    run_report = _build_fixed_topology_dna_run_report(
+        tree_path=tree_path,
+        alignment_path=alignment_path,
+        seed=19,
+        branch_length_prior=build_uniform_branch_length_prior(
+            lower_bound=0.05,
+            upper_bound=0.5,
+        ),
+    )
+    sample_id_path = _write_sample_id_output(
+        tmp_path / "retained-sample-ids.json",
+        run_report,
+    )
+    manifest = build_fixed_topology_dna_run_manifest(
+        run_report=run_report,
+        tree_path=tree_path,
+        alignment_path=alignment_path,
+        output_paths=[sample_id_path],
+    )
+
+    replay_report = replay_fixed_topology_dna_run_manifest(manifest)
+
+    assert manifest.prior_rows[0].family == "uniform"
+    assert manifest.prior_rows[0].parameter_values == {
+        "lower_bound": 0.05,
+        "upper_bound": 0.5,
+    }
+    assert replay_report.matches_retained_sample_ids is True
+
+
 def test_replay_fixed_topology_dna_run_manifest_rejects_input_checksum_drift(
     tmp_path: Path,
 ) -> None:
@@ -195,10 +232,16 @@ def _build_fixed_topology_dna_run_report(
     tree_path: Path,
     alignment_path: Path,
     seed: int,
+    branch_length_prior: BranchLengthPriorModel | None = None,
 ) -> FixedTopologyDnaRunReport:
+    resolved_branch_length_prior = (
+        branch_length_prior
+        if branch_length_prior is not None
+        else build_exponential_branch_length_prior(rate=4.0)
+    )
     model_definition = build_fixed_topology_dna_model_definition(
         substitution_model_name="HKY85",
-        branch_length_prior=build_exponential_branch_length_prior(rate=4.0),
+        branch_length_prior=resolved_branch_length_prior,
         substitution_parameter_prior_bundle=build_substitution_parameter_prior_bundle(
             kappa_prior=build_exponential_positive_substitution_parameter_prior(
                 rate=1.5
