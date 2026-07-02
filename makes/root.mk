@@ -12,6 +12,7 @@ UV_SYNC := UV_PROJECT_ENVIRONMENT="$(ROOT_CHECK_VENV)" $(UV) sync --frozen --gro
 CLI := $(ROOT_CHECK_VENV)/bin/bijux-phylogenetics
 DEV_RUN = PYTHONPATH="$(ROOT_DEV_PYTHONPATH)$${PYTHONPATH:+:$$PYTHONPATH}" "$(ROOT_CHECK_PYTHON)"
 DOCS_RENDER_SERVE_CONFIG := 0
+ROOT_ARTIFACT_ALIAS_SCRIPT := $(ROOT_MAKEFILE_DIR)/repository_artifact_aliases.py
 ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time
 ROOT_TARGET_GROUPS_test-all ?= check
 ROOT_TARGET_GROUPS_test-all-plus-run-time ?= check
