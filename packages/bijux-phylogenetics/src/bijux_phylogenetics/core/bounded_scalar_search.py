@@ -395,7 +395,10 @@ def _linspace(start: float, stop: float, count: int) -> list[float]:
     if count < 2:
         return [start]
     step = (stop - start) / float(count - 1)
-    return [start + (step * index) for index in range(count)]
+    values = [start + (step * index) for index in range(count)]
+    values[0] = start
+    values[-1] = stop
+    return values
 
 
 def _search_bracket(

@@ -126,3 +126,28 @@ def test_fit_profiled_bounded_parameter_reports_supported_interval() -> None:
     assert [row.parameter_value for row in fit.profile_rows] == [0.0, 1.0, 1.5, 2.0, 4.0]
     assert fit.profile_rows[2].within_confidence_interval is True
     assert fit.profile_rows[0].within_confidence_interval is False
+
+
+def test_run_bounded_parameter_maximization_preserves_exact_interval_endpoints() -> None:
+    visited: list[float] = []
+
+    result = run_bounded_parameter_maximization(
+        lower_bound=0.016667,
+        upper_bound=3.333333,
+        controls=BoundedParameterSearchControls(
+            coarse_grid_point_count=81,
+            fine_grid_point_count=11,
+            initial_parameter_value=0.333333,
+            refinement_start_count=3,
+        ),
+        evaluate=lambda parameter_value: (
+            visited.append(parameter_value) or parameter_value,
+            -((parameter_value - 1.0) ** 2),
+        ),
+        parameter_name="alpha",
+        owner_name="OU trait model alpha fit",
+    )
+
+    assert result.converged is True
+    assert min(visited) >= 0.016667
+    assert max(visited) <= 3.333333
