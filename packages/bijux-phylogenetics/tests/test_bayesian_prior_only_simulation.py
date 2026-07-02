@@ -16,8 +16,10 @@ from bijux_phylogenetics.bayesian.prior_sampling import (
 )
 from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
     build_beta_probability_substitution_parameter_prior,
+    build_dirichlet_codon_frequency_substitution_parameter_prior,
     build_dirichlet_simplex_substitution_parameter_prior,
     build_exponential_positive_substitution_parameter_prior,
+    build_fixed_codon_frequency_substitution_parameter_prior,
     build_fixed_positive_substitution_parameter_prior,
     build_fixed_simplex_substitution_parameter_prior,
     build_gamma_positive_substitution_parameter_prior,
@@ -29,6 +31,7 @@ from bijux_phylogenetics.bayesian.tree_topology_priors import (
 from bijux_phylogenetics.phylo.likelihood.dna_simplex_coordinates import (
     DNA_EXCHANGEABILITY_LABELS,
 )
+from bijux_phylogenetics.phylo.likelihood.codon_states import resolve_codon_state_space
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 
@@ -59,6 +62,10 @@ def test_seeded_prior_only_simulation_is_reproducible_without_alignment() -> Non
                 "G": 3.0,
                 "T": 1.5,
             },
+        ),
+        codon_frequency_prior=build_dirichlet_codon_frequency_substitution_parameter_prior(
+            concentration_parameters=[1.0]
+            * len(resolve_codon_state_space().state_order)
         ),
         gamma_alpha_prior=build_exponential_positive_substitution_parameter_prior(
             rate=0.75
@@ -94,11 +101,15 @@ def test_seeded_prior_only_simulation_is_reproducible_without_alignment() -> Non
     assert left_report == right_report
     assert changed_report != left_report
     assert left_report.sample_count == 2
-    assert left_report.substitution_prior_count == 5
+    assert left_report.substitution_prior_count == 6
     assert len(left_report.samples) == 2
     assert left_report.samples[0].branch_rows
     assert left_report.samples[0].substitution_prior_rows
     assert left_report.samples[0].substitution_parameter_state.kappa is not None
+    assert (
+        left_report.samples[0].substitution_parameter_state.codon_frequencies
+        is not None
+    )
     assert math.isclose(
         left_report.samples[0].total_log_prior,
         left_report.samples[0].topology_log_prior
@@ -112,6 +123,20 @@ def test_seeded_prior_only_simulation_is_reproducible_without_alignment() -> Non
 def test_prior_only_simulation_surfaces_fixed_parameter_samples() -> None:
     topology_prior = build_uniform_rooted_tree_topology_prior(["A", "B", "C", "D"])
     branch_length_prior = build_fixed_branch_length_prior(fixed_value=0.5)
+    codon_component_names = resolve_codon_state_space().state_order
+    codon_fixed_values = {
+        component_name: weight
+        for component_name, weight in zip(
+            codon_component_names,
+            (
+                5.0,
+                3.0,
+                2.0,
+                *([1.0] * (len(codon_component_names) - 3)),
+            ),
+            strict=True,
+        )
+    }
     substitution_prior = build_substitution_parameter_prior_bundle(
         kappa_prior=build_fixed_positive_substitution_parameter_prior(fixed_value=2.0),
         exchangeability_prior=build_fixed_simplex_substitution_parameter_prior(
@@ -134,6 +159,9 @@ def test_prior_only_simulation_surfaces_fixed_parameter_samples() -> None:
                 "T": 0.4,
             },
         ),
+        codon_frequency_prior=build_fixed_codon_frequency_substitution_parameter_prior(
+            fixed_values=codon_fixed_values
+        ),
         gamma_alpha_prior=build_fixed_positive_substitution_parameter_prior(
             fixed_value=1.5
         ),
@@ -146,24 +174,34 @@ def test_prior_only_simulation_surfaces_fixed_parameter_samples() -> None:
         seed=5,
     )
 
-    assert sample.substitution_parameter_state == PriorOnlySubstitutionParameterState(
-        kappa=2.0,
-        exchangeabilities={
-            "AC": 0.1,
-            "AG": 0.2,
-            "AT": 0.15,
-            "CG": 0.1,
-            "CT": 0.25,
-            "GT": 0.2,
-        },
-        base_frequencies={
-            "A": 0.3,
-            "C": 0.2,
-            "G": 0.1,
-            "T": 0.4,
-        },
-        gamma_alpha=1.5,
-        invariant_proportion=None,
+    assert sample.substitution_parameter_state.kappa == 2.0
+    assert sample.substitution_parameter_state.exchangeabilities == {
+        "AC": 0.1,
+        "AG": 0.2,
+        "AT": 0.15,
+        "CG": 0.1,
+        "CT": 0.25,
+        "GT": 0.2,
+    }
+    assert sample.substitution_parameter_state.base_frequencies == {
+        "A": 0.3,
+        "C": 0.2,
+        "G": 0.1,
+        "T": 0.4,
+    }
+    assert sample.substitution_parameter_state.gamma_alpha == 1.5
+    assert sample.substitution_parameter_state.invariant_proportion is None
+    expected_codon_frequencies = {
+        component_name: weight / sum(codon_fixed_values.values())
+        for component_name, weight in codon_fixed_values.items()
+    }
+    assert sample.substitution_parameter_state.codon_frequencies is not None
+    assert list(sample.substitution_parameter_state.codon_frequencies) == list(
+        expected_codon_frequencies
+    )
+    assert sample.substitution_parameter_state.codon_frequencies == pytest.approx(
+        expected_codon_frequencies,
+        abs=1e-12,
     )
     assert all(
         math.isclose(

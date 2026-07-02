@@ -46,6 +46,7 @@ class PriorOnlySubstitutionParameterState:
     kappa: float | None = None
     exchangeabilities: dict[str, float] | None = None
     base_frequencies: dict[str, float] | None = None
+    codon_frequencies: dict[str, float] | None = None
     gamma_alpha: float | None = None
     invariant_proportion: float | None = None
 
@@ -171,6 +172,7 @@ def _sample_prior_only_phylogenetic_state(
             kappa=substitution_parameter_state.kappa,
             exchangeabilities=substitution_parameter_state.exchangeabilities,
             base_frequencies=substitution_parameter_state.base_frequencies,
+            codon_frequencies=substitution_parameter_state.codon_frequencies,
             gamma_alpha=substitution_parameter_state.gamma_alpha,
             invariant_proportion=substitution_parameter_state.invariant_proportion,
         )
@@ -280,6 +282,11 @@ def _sample_substitution_parameter_state(
         if prior_bundle.base_frequency_prior is not None
         else None
     )
+    codon_frequencies = (
+        _sample_simplex_prior_values(prior_bundle.codon_frequency_prior, rng=rng)
+        if prior_bundle.codon_frequency_prior is not None
+        else None
+    )
     gamma_alpha = (
         _round_float(
             _sample_positive_prior_value(prior_bundle.gamma_alpha_prior, rng=rng)
@@ -301,6 +308,7 @@ def _sample_substitution_parameter_state(
         kappa=kappa,
         exchangeabilities=exchangeabilities,
         base_frequencies=base_frequencies,
+        codon_frequencies=codon_frequencies,
         gamma_alpha=gamma_alpha,
         invariant_proportion=invariant_proportion,
     )

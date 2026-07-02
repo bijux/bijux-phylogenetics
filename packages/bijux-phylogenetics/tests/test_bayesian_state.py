@@ -23,10 +23,12 @@ from bijux_phylogenetics.bayesian.state import (
 )
 from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
     build_beta_probability_substitution_parameter_prior,
+    build_dirichlet_codon_frequency_substitution_parameter_prior,
     build_dirichlet_simplex_substitution_parameter_prior,
     build_exponential_positive_substitution_parameter_prior,
     build_substitution_parameter_prior_bundle,
 )
+from bijux_phylogenetics.phylo.likelihood.codon_states import resolve_codon_state_space
 from bijux_phylogenetics.bayesian.tree_topology_priors import (
     build_uniform_rooted_tree_topology_prior,
 )
@@ -67,6 +69,10 @@ def test_bayesian_state_round_trip_preserves_posterior_score_exactly() -> None:
                     "T": 1.0,
                 },
             ),
+            codon_frequency_prior=build_dirichlet_codon_frequency_substitution_parameter_prior(
+                concentration_parameters=[1.0]
+                * len(resolve_codon_state_space().state_order)
+            ),
             invariant_proportion_prior=build_beta_probability_substitution_parameter_prior(
                 alpha=2.0,
                 beta=5.0,
@@ -87,6 +93,10 @@ def test_bayesian_state_round_trip_preserves_posterior_score_exactly() -> None:
     assert (
         restored_state.posterior_log_score
         == restored_state.total_log_prior + restored_state.log_likelihood
+    )
+    assert (
+        restored_state.model_parameters.vector_parameters["codon-frequencies"]
+        == state.model_parameters.vector_parameters["codon-frequencies"]
     )
 
 

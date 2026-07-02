@@ -538,6 +538,10 @@ def build_bayesian_phylogenetic_state_from_prior_only_sample(
         vector_parameters["base-frequencies"] = (
             sample.substitution_parameter_state.base_frequencies
         )
+    if sample.substitution_parameter_state.codon_frequencies is not None:
+        vector_parameters["codon-frequencies"] = (
+            sample.substitution_parameter_state.codon_frequencies
+        )
     prior_components = [
         build_bayesian_prior_component_state(
             component_name="tree-topology",
