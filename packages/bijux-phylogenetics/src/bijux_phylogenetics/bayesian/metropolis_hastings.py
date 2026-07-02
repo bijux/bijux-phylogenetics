@@ -21,8 +21,10 @@ from bijux_phylogenetics.bayesian.state import (
     BayesianModelParameterState,
     BayesianPhylogeneticState,
     BayesianPriorComponentState,
+    MetropolisHastingsRandomState,
     build_bayesian_model_parameter_state,
     build_bayesian_phylogenetic_state,
+    build_metropolis_hastings_random_state,
     deserialize_bayesian_phylogenetic_state,
     serialize_bayesian_phylogenetic_state,
 )
@@ -126,15 +128,6 @@ class MetropolisHastingsRunReport:
 
 
 @dataclass(frozen=True, slots=True)
-class MetropolisHastingsRandomState:
-    """One serialized Python random-generator state for exact chain resumption."""
-
-    version: int
-    internal_state: list[int]
-    gaussian_spare: float | None
-
-
-@dataclass(frozen=True, slots=True)
 class MetropolisHastingsCheckpoint:
     """One resumable Metropolis-Hastings sampler checkpoint."""
 
@@ -234,42 +227,6 @@ def build_metropolis_hastings_proposal(
             proposed_model_parameters=proposed_model_parameters,
         )
     )
-
-
-def build_metropolis_hastings_random_state(
-    *,
-    version: int,
-    internal_state: Sequence[int],
-    gaussian_spare: float | None,
-) -> MetropolisHastingsRandomState:
-    """Build one validated serialized random-generator state."""
-    validated_version = _validate_integer_field(
-        value=version,
-        field_name="version",
-        owner_name="metropolis-hastings random state",
-    )
-    validated_internal_state = _validate_integer_sequence(
-        values=internal_state,
-        field_name="internal_state",
-        owner_name="metropolis-hastings random state",
-        minimum_length=1,
-    )
-    validated_gaussian_spare = (
-        _validate_finite_float(
-            value=gaussian_spare,
-            field_name="gaussian_spare",
-            owner_name="metropolis-hastings random state",
-        )
-        if gaussian_spare is not None
-        else None
-    )
-    return MetropolisHastingsRandomState(
-        version=validated_version,
-        internal_state=validated_internal_state,
-        gaussian_spare=validated_gaussian_spare,
-    )
-
-
 def build_metropolis_hastings_checkpoint(
     *,
     iteration_count: int,

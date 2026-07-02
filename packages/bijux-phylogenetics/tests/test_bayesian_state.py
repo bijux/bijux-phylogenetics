@@ -9,10 +9,13 @@ from bijux_phylogenetics.bayesian.prior_sampling import (
     sample_prior_only_phylogenetic_state,
 )
 from bijux_phylogenetics.bayesian.state import (
+    build_bayesian_likelihood_context_state,
+    build_bayesian_likelihood_partition_state,
     build_bayesian_model_parameter_state,
     build_bayesian_phylogenetic_state,
     build_bayesian_phylogenetic_state_from_prior_only_sample,
     build_bayesian_prior_component_state,
+    build_metropolis_hastings_random_state,
     deserialize_bayesian_phylogenetic_state,
     deserialize_bayesian_phylogenetic_state_json,
     serialize_bayesian_phylogenetic_state,
@@ -87,6 +90,71 @@ def test_bayesian_state_round_trip_preserves_posterior_score_exactly() -> None:
     )
 
 
+def test_bayesian_state_round_trip_preserves_likelihood_context_and_rng_state() -> None:
+    state = build_bayesian_phylogenetic_state(
+        tree=PhyloTree(
+            TreeNode(
+                children=[
+                    TreeNode(name="A", branch_length=0.1),
+                    TreeNode(name="B", branch_length=0.2),
+                ]
+            ),
+            rooted=True,
+        ),
+        model_parameters=build_bayesian_model_parameter_state(
+            categorical_parameters={"substitution-model": "HKY85"},
+            scalar_parameters={"kappa": 2.0},
+        ),
+        likelihood_context=build_bayesian_likelihood_context_state(
+            analysis_name="fixed-topology-dna",
+            observation_kind="alignment-site",
+            taxon_names=("A", "B"),
+            observation_count=8,
+            pattern_count=3,
+            missing_data_policy="reject",
+            categorical_metadata={"substitution-model": "HKY85"},
+            partition_contexts=[
+                build_bayesian_likelihood_partition_state(
+                    partition_name="full-alignment",
+                    observation_kind="alignment-site",
+                    taxon_names=("A", "B"),
+                    observation_count=8,
+                    pattern_count=3,
+                    data_type="dna",
+                    model_name="HKY85",
+                )
+            ],
+        ),
+        prior_components=[
+            build_bayesian_prior_component_state(
+                component_name="tree-topology",
+                family="uniform-rooted-labeled-bifurcating",
+                log_prior=-1.0,
+            ),
+            build_bayesian_prior_component_state(
+                component_name="branch-lengths",
+                family="exponential",
+                log_prior=-0.7,
+            ),
+        ],
+        log_likelihood=-4.25,
+        random_state=build_metropolis_hastings_random_state(
+            version=3,
+            internal_state=[1, 2, 3, 4],
+            gaussian_spare=0.125,
+        ),
+    )
+
+    restored_state = deserialize_bayesian_phylogenetic_state_json(
+        serialize_bayesian_phylogenetic_state_json(state)
+    )
+
+    assert restored_state == state
+    assert restored_state.likelihood_context.analysis_name == "fixed-topology-dna"
+    assert restored_state.likelihood_context.partition_contexts[0].model_name == "HKY85"
+    assert restored_state.random_state == state.random_state
+
+
 def test_bayesian_state_deserialization_rejects_tampered_posterior_score() -> None:
     state = build_bayesian_phylogenetic_state(
         tree=PhyloTree(
@@ -145,3 +213,30 @@ def test_bayesian_state_requires_nonempty_prior_components() -> None:
             prior_components=[],
             log_likelihood=0.0,
         )
+
+
+def test_bayesian_state_builds_generic_likelihood_context_when_unspecified() -> None:
+    state = build_bayesian_phylogenetic_state(
+        tree=PhyloTree(
+            TreeNode(
+                children=[
+                    TreeNode(name="A", branch_length=0.1),
+                    TreeNode(name="B", branch_length=0.2),
+                ]
+            ),
+            rooted=True,
+        ),
+        model_parameters=build_bayesian_model_parameter_state(),
+        prior_components=[
+            build_bayesian_prior_component_state(
+                component_name="branch-lengths",
+                family="exponential",
+                log_prior=-0.7,
+            )
+        ],
+        log_likelihood=-1.5,
+    )
+
+    assert state.likelihood_context.analysis_name == "generic-bayesian-state"
+    assert state.likelihood_context.observation_kind == "unspecified"
+    assert state.random_state is None
