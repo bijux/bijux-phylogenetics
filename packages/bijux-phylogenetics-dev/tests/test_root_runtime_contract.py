@@ -348,6 +348,17 @@ def test_runtime_package_make_test_all_targets_full_test_tree_without_marker_ski
     assert '-m "not slow and not real_local and not evaluation"' not in dry_run
 
 
+def test_runtime_package_make_test_all_plus_run_time_targets_full_test_tree() -> (
+    None
+):
+    dry_run = _runtime_package_make_dry_run("test-all-plus-run-time")
+
+    assert "Running full test suite on tests" in dry_run
+    assert '"packages/bijux-phylogenetics/tests"' in dry_run
+    assert '"packages/bijux-phylogenetics/tests/smoke"' not in dry_run
+    assert "--durations=0 --durations-min=0" in dry_run
+
+
 def test_dev_package_make_excludes_slow_tests_by_default() -> None:
     dev_make = (
         REPO_ROOT / "makes" / "packages" / "bijux-phylogenetics-dev.mk"
