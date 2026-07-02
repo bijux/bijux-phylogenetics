@@ -79,6 +79,14 @@ def test_fixed_topology_strict_clock_runner_emits_clock_rate_and_node_age_summar
     assert root_summary.sample_count == len(report.posterior_rows)
     assert root_summary.hpd_95_lower <= root_summary.posterior_mean
     assert root_summary.posterior_mean <= root_summary.hpd_95_upper
+    assert all(
+        state.likelihood_context.analysis_name == "fixed-topology-strict-clock"
+        for state in report.chain_report.sampled_states
+    )
+    assert all(
+        state.likelihood_context.categorical_metadata["clock-model"] == "strict-clock"
+        for state in report.chain_report.sampled_states
+    )
 
 
 def test_fixed_topology_strict_clock_runner_clock_rate_posterior_changes_under_calibration() -> (

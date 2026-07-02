@@ -37,6 +37,8 @@ from bijux_phylogenetics.bayesian.state import (
     BayesianModelParameterState,
     BayesianPhylogeneticState,
     BayesianPriorComponentState,
+    build_bayesian_likelihood_context_state,
+    build_bayesian_likelihood_partition_state,
     build_bayesian_prior_component_state,
 )
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
@@ -417,6 +419,12 @@ def run_fixed_topology_partitioned_dna_metropolis_hastings(
     initial_state = score_bayesian_phylogenetic_state(
         tree=fixed_tree,
         model_parameters=initial_model_parameters,
+        likelihood_context=_build_partitioned_dna_likelihood_context(
+            tree=fixed_tree,
+            partition_records_by_name=partition_records_by_name,
+            model_definition=model_definition,
+            observation_policy=validated_observation_policy,
+        ),
         update_prior_components=lambda state: (
             _build_fixed_topology_partitioned_dna_prior_components(
                 state=state,
@@ -478,6 +486,85 @@ def run_fixed_topology_partitioned_dna_metropolis_hastings(
         observation_policy=validated_observation_policy,
         chain_report=chain_report,
         posterior_rows=posterior_rows,
+    )
+
+
+def _build_partitioned_dna_likelihood_context(
+    *,
+    tree: PhyloTree,
+    partition_records_by_name: dict[str, list[AlignmentRecord]],
+    model_definition: FixedTopologyPartitionedDnaModelDefinition,
+    observation_policy: str,
+):
+    partition_model_by_name = {
+        partition_model.partition_name: partition_model
+        for partition_model in model_definition.partition_models
+    }
+    partition_contexts = []
+    total_pattern_count = 0
+    for partition_name in (
+        partition_model.partition_name for partition_model in model_definition.partition_models
+    ):
+        partition_records = partition_records_by_name[partition_name]
+        partition_alignment_length = _resolve_alignment_length(partition_records)
+        partition_pattern_count = _count_alignment_patterns(
+            partition_records,
+            partition_alignment_length,
+        )
+        total_pattern_count += partition_pattern_count
+        partition_model = partition_model_by_name[partition_name]
+        partition_contexts.append(
+            build_bayesian_likelihood_partition_state(
+                partition_name=partition_name,
+                observation_kind="alignment-site",
+                taxon_names=tree.tip_names,
+                observation_count=partition_alignment_length,
+                pattern_count=partition_pattern_count,
+                data_type=partition_model.data_type or "dna",
+                model_name=partition_model.model_name,
+                categorical_metadata={
+                    "topology-policy": "fixed",
+                    "base-model": partition_model.base_model_name,
+                },
+            )
+        )
+    return build_bayesian_likelihood_context_state(
+        analysis_name="fixed-topology-partitioned-dna",
+        observation_kind="alignment-site",
+        taxon_names=tree.tip_names,
+        observation_count=sum(
+            _resolve_alignment_length(partition_records)
+            for partition_records in partition_records_by_name.values()
+        ),
+        pattern_count=total_pattern_count,
+        missing_data_policy=observation_policy,
+        categorical_metadata={
+            "data-type": "dna",
+            "substitution-model": _MODEL_NAME,
+            "topology-policy": "fixed",
+        },
+        partition_contexts=partition_contexts,
+    )
+
+
+def _resolve_alignment_length(records: Sequence[AlignmentRecord]) -> int:
+    if not records:
+        raise PhylogeneticsError(
+            "partitioned DNA likelihood context requires at least one alignment record per partition",
+            code="partitioned_dna_likelihood_context_records_empty",
+        )
+    return len(records[0].sequence)
+
+
+def _count_alignment_patterns(
+    records: Sequence[AlignmentRecord],
+    alignment_length: int,
+) -> int:
+    return len(
+        {
+            tuple(record.sequence[position] for record in records)
+            for position in range(alignment_length)
+        }
     )
 
 

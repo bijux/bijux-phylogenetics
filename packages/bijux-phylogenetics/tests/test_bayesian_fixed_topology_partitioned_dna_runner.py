@@ -122,3 +122,16 @@ def test_fixed_topology_partitioned_dna_runner_samples_partition_likelihoods_and
     }
     assert ("kappa-shared", "kappa-shared") in linkage_layouts
     assert ("gene_alpha", "gene_beta") in linkage_layouts
+    assert all(
+        state.likelihood_context.analysis_name == "fixed-topology-partitioned-dna"
+        for state in report.chain_report.sampled_states
+    )
+    assert all(
+        len(state.likelihood_context.partition_contexts) == 2
+        for state in report.chain_report.sampled_states
+    )
+    assert all(
+        [partition.partition_name for partition in state.likelihood_context.partition_contexts]
+        == ["gene_alpha", "gene_beta"]
+        for state in report.chain_report.sampled_states
+    )

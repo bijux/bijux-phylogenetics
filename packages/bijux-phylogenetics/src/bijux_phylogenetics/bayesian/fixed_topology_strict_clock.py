@@ -29,6 +29,8 @@ from bijux_phylogenetics.bayesian.posterior_sets.diagnostics import (
 from bijux_phylogenetics.bayesian.state import (
     BayesianPhylogeneticState,
     BayesianPriorComponentState,
+    build_bayesian_likelihood_context_state,
+    build_bayesian_likelihood_partition_state,
     build_bayesian_model_parameter_state,
     build_bayesian_prior_component_state,
 )
@@ -254,6 +256,13 @@ def run_fixed_topology_strict_clock_metropolis_hastings(
     initial_state = score_bayesian_phylogenetic_state(
         tree=initial_tree,
         model_parameters=initial_model_parameters,
+        likelihood_context=_build_clock_tree_likelihood_context(
+            analysis_name="fixed-topology-strict-clock",
+            dated_tree=initial_tree,
+            substitution_tree=fixed_substitution_tree,
+            model_name=_MODEL_NAME,
+            calibration_count=len(model_definition.calibration_priors),
+        ),
         update_prior_components=lambda state: (
             _build_fixed_topology_strict_clock_prior_components(
                 state=state,
@@ -318,6 +327,55 @@ def run_fixed_topology_strict_clock_metropolis_hastings(
             fixed_topology_id=fixed_topology_id,
         ),
     )
+
+
+def _build_clock_tree_likelihood_context(
+    *,
+    analysis_name: str,
+    dated_tree: PhyloTree,
+    substitution_tree: PhyloTree,
+    model_name: str,
+    calibration_count: int,
+    rate_policy: str | None = None,
+):
+    branch_count = _count_tree_branches(dated_tree)
+    categorical_metadata = {
+        "data-type": "time-tree",
+        "clock-model": model_name,
+        "topology-policy": "fixed",
+    }
+    if rate_policy is not None:
+        categorical_metadata["rate-policy"] = rate_policy
+    return build_bayesian_likelihood_context_state(
+        analysis_name=analysis_name,
+        observation_kind="dated-tree-branch",
+        taxon_names=dated_tree.tip_names,
+        observation_count=branch_count,
+        categorical_metadata=categorical_metadata,
+        scalar_metadata={
+            "calibration-prior-count": float(calibration_count),
+            "substitution-branch-count": float(_count_tree_branches(substitution_tree)),
+        },
+        partition_contexts=[
+            build_bayesian_likelihood_partition_state(
+                partition_name="dated-tree",
+                observation_kind="dated-tree-branch",
+                taxon_names=dated_tree.tip_names,
+                observation_count=branch_count,
+                data_type="time-tree",
+                model_name=model_name,
+                categorical_metadata={
+                    key: value
+                    for key, value in categorical_metadata.items()
+                    if key != "data-type"
+                },
+            )
+        ],
+    )
+
+
+def _count_tree_branches(tree: PhyloTree) -> int:
+    return sum(1 for _parent, _child in tree.iter_edges())
 
 
 def _validate_time_tree_prior_model(

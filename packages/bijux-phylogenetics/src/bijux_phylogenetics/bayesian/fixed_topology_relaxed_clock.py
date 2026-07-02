@@ -16,6 +16,9 @@ from bijux_phylogenetics.bayesian.clock_models import (
     build_relaxed_lognormal_clock_model,
     evaluate_relaxed_lognormal_clock_tree_log_prior,
 )
+from bijux_phylogenetics.bayesian.fixed_topology_strict_clock import (
+    _build_clock_tree_likelihood_context,
+)
 from bijux_phylogenetics.bayesian.metropolis_hastings import (
     MetropolisHastingsRunReport,
     propose_clock_rate_move,
@@ -327,6 +330,14 @@ def run_fixed_topology_relaxed_clock_metropolis_hastings(
     initial_state = score_bayesian_phylogenetic_state(
         tree=fixed_dated_tree,
         model_parameters=initial_model_parameters,
+        likelihood_context=_build_clock_tree_likelihood_context(
+            analysis_name="fixed-topology-relaxed-clock",
+            dated_tree=fixed_dated_tree,
+            substitution_tree=fixed_substitution_tree,
+            model_name=_MODEL_NAME,
+            calibration_count=len(model_definition.calibration_priors),
+            rate_policy=model_definition.rate_policy,
+        ),
         update_prior_components=lambda state: (
             _build_fixed_topology_relaxed_clock_prior_components(
                 state=state,

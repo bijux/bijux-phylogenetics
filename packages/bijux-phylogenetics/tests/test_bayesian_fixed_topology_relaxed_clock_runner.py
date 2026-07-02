@@ -98,6 +98,14 @@ def test_fixed_topology_relaxed_clock_runner_emits_branch_rate_and_node_age_summ
         summary.node_kind == "internal" and summary.hpd_95_lower < summary.hpd_95_upper
         for summary in report.node_age_summaries
     )
+    assert all(
+        state.likelihood_context.analysis_name == "fixed-topology-relaxed-clock"
+        for state in report.chain_report.sampled_states
+    )
+    assert all(
+        state.likelihood_context.categorical_metadata["rate-policy"] == "independent"
+        for state in report.chain_report.sampled_states
+    )
 
 
 def test_fixed_topology_relaxed_clock_runner_rejects_unrooted_substitution_tree() -> (
