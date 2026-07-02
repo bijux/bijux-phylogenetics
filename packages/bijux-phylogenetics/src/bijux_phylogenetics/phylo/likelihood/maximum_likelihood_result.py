@@ -33,6 +33,9 @@ from bijux_phylogenetics.phylo.likelihood.sh_like_branch_support import (
 from bijux_phylogenetics.phylo.likelihood.tree_inference import (
     infer_nucleotide_likelihood_tree,
 )
+from bijux_phylogenetics.phylo.likelihood.wrapper_correspondence import (
+    summarize_likelihood_wrapper_correspondence,
+)
 
 
 @dataclass(slots=True)
@@ -200,6 +203,7 @@ def infer_nucleotide_maximum_likelihood_result(
     bootstrap_seed: int = 1,
     sh_like_resampling_replicate_count: int | None = None,
     sh_like_resampling_seed: int = 1,
+    include_wrapper_correspondence_benchmark: bool = False,
     lower_branch_length_bound: float = 0.0,
     upper_branch_length_bound: float = 5.0,
     improvement_tolerance: float = 1e-9,
@@ -246,6 +250,9 @@ def infer_nucleotide_maximum_likelihood_result(
     return build_nucleotide_maximum_likelihood_result(
         inference_report,
         support_reports=support_reports,
+        benchmark_metadata=_infer_benchmark_metadata(
+            include_wrapper_correspondence_benchmark
+        ),
     )
 
 
@@ -262,6 +269,7 @@ def infer_nucleotide_maximum_likelihood_result_from_alignment(
     bootstrap_seed: int = 1,
     sh_like_resampling_replicate_count: int | None = None,
     sh_like_resampling_seed: int = 1,
+    include_wrapper_correspondence_benchmark: bool = False,
     lower_branch_length_bound: float = 0.0,
     upper_branch_length_bound: float = 5.0,
     improvement_tolerance: float = 1e-9,
@@ -280,6 +288,9 @@ def infer_nucleotide_maximum_likelihood_result_from_alignment(
         bootstrap_seed=bootstrap_seed,
         sh_like_resampling_replicate_count=sh_like_resampling_replicate_count,
         sh_like_resampling_seed=sh_like_resampling_seed,
+        include_wrapper_correspondence_benchmark=(
+            include_wrapper_correspondence_benchmark
+        ),
         lower_branch_length_bound=lower_branch_length_bound,
         upper_branch_length_bound=upper_branch_length_bound,
         improvement_tolerance=improvement_tolerance,
@@ -461,6 +472,16 @@ def _selected_model_exchangeabilities(
         if f"exchangeability_{label.lower()}" in selected_model_row.parameter_values
     }
     return prefixed_exchangeabilities or None
+
+
+def _infer_benchmark_metadata(
+    include_wrapper_correspondence_benchmark: bool,
+) -> NucleotideMaximumLikelihoodBenchmarkMetadata | None:
+    if not include_wrapper_correspondence_benchmark:
+        return None
+    return build_nucleotide_maximum_likelihood_benchmark_metadata(
+        summarize_likelihood_wrapper_correspondence()
+    )
 
 
 def _unique_in_order(values: list[str]) -> list[str]:

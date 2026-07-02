@@ -184,3 +184,20 @@ def test_infer_nucleotide_maximum_likelihood_result_from_alignment_can_attach_su
     assert result.support_reports.bootstrap.replicate_count == 3
     assert result.support_reports.sh_like is not None
     assert result.support_reports.sh_like.resampling_replicate_count == 3
+
+
+def test_infer_nucleotide_maximum_likelihood_result_can_attach_benchmark_metadata() -> (
+    None
+):
+    result = infer_nucleotide_maximum_likelihood_result_from_alignment(
+        fixture("alignments", "jc69_likelihood_nni_alignment_4_taxa.fasta"),
+        model_name="jc69",
+        search_method="nni",
+        start_tree_count=3,
+        start_tree_seed=17,
+        include_wrapper_correspondence_benchmark=True,
+        upper_branch_length_bound=1.0,
+    )
+
+    assert result.benchmark_metadata is not None
+    assert result.benchmark_metadata.wrapper_correspondence_case_count >= 1
