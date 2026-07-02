@@ -82,13 +82,15 @@ TEST_PYCACHE_PREFIX_ABS   := $(abspath $(TEST_PYCACHE_PREFIX))
 TEST_PYCACHE_ENV          := $(if $(strip $(TEST_PYCACHE_PREFIX)),PYTHONPYCACHEPREFIX="$(TEST_PYCACHE_PREFIX_ABS)",)
 pytest_abs_path           = $(abspath $(if $(filter /%,$(strip $(1))),$(strip $(1)),$(PROJECT_DIR_ABS)/$(strip $(1))))
 to_pytest_path            = $(if $(strip $(1)),$(patsubst $(PYTEST_ROOTDIR_ABS)/%,%,$(call pytest_abs_path,$(1))),)
-TEST_PATH_ARGS            := $(foreach path,$(TEST_PATHS),"$(call to_pytest_path,$(path))")
-TEST_PATHS_UNIT_ARG       := $(call to_pytest_path,$(TEST_PATHS_UNIT))
-TEST_PATHS_E2E_ARG        := $(call to_pytest_path,$(TEST_PATHS_E2E))
-TEST_PATHS_REGRESSION_ARG := $(call to_pytest_path,$(TEST_PATHS_REGRESSION))
-TEST_PATHS_EVALUATION_ARG := $(call to_pytest_path,$(TEST_PATHS_EVALUATION))
-TEST_REAL_LOCAL_ARG       := $(call to_pytest_path,$(TEST_REAL_LOCAL_PATH))
-TEST_COVERAGE_TARGET_ARGS := $(foreach path,$(TEST_COVERAGE_TARGETS),"$(call to_pytest_path,$(path))")
+# Keep pytest path expansion late-bound so target-specific overrides such as
+# `test-all: TEST_PATHS = ...` resolve to the intended test tree.
+TEST_PATH_ARGS            = $(foreach path,$(TEST_PATHS),"$(call to_pytest_path,$(path))")
+TEST_PATHS_UNIT_ARG       = $(call to_pytest_path,$(TEST_PATHS_UNIT))
+TEST_PATHS_E2E_ARG        = $(call to_pytest_path,$(TEST_PATHS_E2E))
+TEST_PATHS_REGRESSION_ARG = $(call to_pytest_path,$(TEST_PATHS_REGRESSION))
+TEST_PATHS_EVALUATION_ARG = $(call to_pytest_path,$(TEST_PATHS_EVALUATION))
+TEST_REAL_LOCAL_ARG       = $(call to_pytest_path,$(TEST_REAL_LOCAL_PATH))
+TEST_COVERAGE_TARGET_ARGS = $(foreach path,$(TEST_COVERAGE_TARGETS),"$(call to_pytest_path,$(path))")
 
 PYTEST_COV_FLAGS = $(foreach path,$(TEST_COVERAGE_SOURCE_ABS),--cov="$(path)")
 
