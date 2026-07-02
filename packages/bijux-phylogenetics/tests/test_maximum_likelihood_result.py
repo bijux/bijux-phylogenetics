@@ -13,6 +13,7 @@ from bijux_phylogenetics.phylo.likelihood.maximum_likelihood_result import (
     build_nucleotide_maximum_likelihood_result,
     build_nucleotide_maximum_likelihood_benchmark_metadata,
     build_nucleotide_maximum_likelihood_support_reports,
+    infer_nucleotide_maximum_likelihood_result_from_alignment,
     load_nucleotide_maximum_likelihood_result_json,
     write_nucleotide_maximum_likelihood_result_json,
 )
@@ -160,3 +161,26 @@ def test_maximum_likelihood_result_builds_benchmark_metadata_summary() -> None:
     assert metadata.wrapper_correspondence_blocking_case_count == 0
     assert metadata.wrapper_correspondence_all_supported_cases_clear is True
     assert metadata.wrapper_correspondence_summary_rows == correspondence_report.summary_rows
+
+
+def test_infer_nucleotide_maximum_likelihood_result_from_alignment_can_attach_support() -> (
+    None
+):
+    result = infer_nucleotide_maximum_likelihood_result_from_alignment(
+        fixture("alignments", "jc69_likelihood_nni_alignment_4_taxa.fasta"),
+        model_name="jc69",
+        search_method="nni",
+        start_tree_count=3,
+        start_tree_seed=17,
+        bootstrap_replicate_count=3,
+        bootstrap_seed=5,
+        sh_like_resampling_replicate_count=3,
+        sh_like_resampling_seed=11,
+        upper_branch_length_bound=1.0,
+    )
+
+    assert result.model_name == "JC69"
+    assert result.support_reports.bootstrap is not None
+    assert result.support_reports.bootstrap.replicate_count == 3
+    assert result.support_reports.sh_like is not None
+    assert result.support_reports.sh_like.resampling_replicate_count == 3

@@ -6,6 +6,11 @@ from pathlib import Path
 import types
 from typing import Any, Union, get_args, get_origin, get_type_hints
 
+from bijux_phylogenetics.io.newick import loads_newick
+from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.bootstrap_inference import (
+    bootstrap_nucleotide_likelihood_tree_inference,
+)
 from bijux_phylogenetics.phylo.likelihood.models import (
     LikelihoodOptimizationBoundaryWarning,
     LikelihoodWrapperCorrespondenceReport,
@@ -21,6 +26,12 @@ from bijux_phylogenetics.phylo.likelihood.models import (
     NucleotideLikelihoodTreeInferenceReport,
     NucleotideShLikeBranchSupportReport,
     SubstitutionModelSelectionRow,
+)
+from bijux_phylogenetics.phylo.likelihood.sh_like_branch_support import (
+    evaluate_nucleotide_sh_like_branch_support,
+)
+from bijux_phylogenetics.phylo.likelihood.tree_inference import (
+    infer_nucleotide_likelihood_tree,
 )
 
 
@@ -176,6 +187,106 @@ def build_nucleotide_maximum_likelihood_benchmark_metadata(
     )
 
 
+def infer_nucleotide_maximum_likelihood_result(
+    records: list[AlignmentRecord] | Path,
+    *,
+    model_name: str = "auto",
+    model_selection_criterion: str = "aic",
+    search_method: str = "nni",
+    start_tree_count: int = 4,
+    start_tree_seed: int = 1,
+    branch_reoptimization_policy: str = "coordinate-branch-lengths",
+    bootstrap_replicate_count: int | None = None,
+    bootstrap_seed: int = 1,
+    sh_like_resampling_replicate_count: int | None = None,
+    sh_like_resampling_seed: int = 1,
+    lower_branch_length_bound: float = 0.0,
+    upper_branch_length_bound: float = 5.0,
+    improvement_tolerance: float = 1e-9,
+    max_coordinate_passes: int = 12,
+) -> NucleotideMaximumLikelihoodResult:
+    """Infer one unified native ML tree result with optional support evidence."""
+    inference_report = infer_nucleotide_likelihood_tree(
+        records,
+        model_name=model_name,
+        model_selection_criterion=model_selection_criterion,
+        search_method=search_method,
+        start_tree_count=start_tree_count,
+        start_tree_seed=start_tree_seed,
+        branch_reoptimization_policy=branch_reoptimization_policy,
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
+        improvement_tolerance=improvement_tolerance,
+        max_coordinate_passes=max_coordinate_passes,
+    )
+    support_reports = build_nucleotide_maximum_likelihood_support_reports(
+        inference_report,
+        bootstrap_report=_infer_bootstrap_support_report(
+            records,
+            inference_report=inference_report,
+            bootstrap_replicate_count=bootstrap_replicate_count,
+            bootstrap_seed=bootstrap_seed,
+            start_tree_count=start_tree_count,
+            start_tree_seed=start_tree_seed,
+            branch_reoptimization_policy=branch_reoptimization_policy,
+            model_selection_criterion=model_selection_criterion,
+            search_method=search_method,
+            lower_branch_length_bound=lower_branch_length_bound,
+            upper_branch_length_bound=upper_branch_length_bound,
+            improvement_tolerance=improvement_tolerance,
+            max_coordinate_passes=max_coordinate_passes,
+        ),
+        sh_like_report=_infer_sh_like_support_report(
+            records,
+            inference_report=inference_report,
+            sh_like_resampling_replicate_count=sh_like_resampling_replicate_count,
+            sh_like_resampling_seed=sh_like_resampling_seed,
+        ),
+    )
+    return build_nucleotide_maximum_likelihood_result(
+        inference_report,
+        support_reports=support_reports,
+    )
+
+
+def infer_nucleotide_maximum_likelihood_result_from_alignment(
+    alignment_path: Path,
+    *,
+    model_name: str = "auto",
+    model_selection_criterion: str = "aic",
+    search_method: str = "nni",
+    start_tree_count: int = 4,
+    start_tree_seed: int = 1,
+    branch_reoptimization_policy: str = "coordinate-branch-lengths",
+    bootstrap_replicate_count: int | None = None,
+    bootstrap_seed: int = 1,
+    sh_like_resampling_replicate_count: int | None = None,
+    sh_like_resampling_seed: int = 1,
+    lower_branch_length_bound: float = 0.0,
+    upper_branch_length_bound: float = 5.0,
+    improvement_tolerance: float = 1e-9,
+    max_coordinate_passes: int = 12,
+) -> NucleotideMaximumLikelihoodResult:
+    """Infer one unified native ML tree result from one FASTA alignment path."""
+    return infer_nucleotide_maximum_likelihood_result(
+        alignment_path,
+        model_name=model_name,
+        model_selection_criterion=model_selection_criterion,
+        search_method=search_method,
+        start_tree_count=start_tree_count,
+        start_tree_seed=start_tree_seed,
+        branch_reoptimization_policy=branch_reoptimization_policy,
+        bootstrap_replicate_count=bootstrap_replicate_count,
+        bootstrap_seed=bootstrap_seed,
+        sh_like_resampling_replicate_count=sh_like_resampling_replicate_count,
+        sh_like_resampling_seed=sh_like_resampling_seed,
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
+        improvement_tolerance=improvement_tolerance,
+        max_coordinate_passes=max_coordinate_passes,
+    )
+
+
 def write_nucleotide_maximum_likelihood_result_json(
     path: Path,
     result: NucleotideMaximumLikelihoodResult,
@@ -264,6 +375,92 @@ def _validate_sh_like_report(
         raise ValueError(
             "SH-like support report model does not match the inference result model"
         )
+
+
+def _infer_bootstrap_support_report(
+    records: list[AlignmentRecord] | Path,
+    *,
+    inference_report: NucleotideLikelihoodTreeInferenceReport,
+    bootstrap_replicate_count: int | None,
+    bootstrap_seed: int,
+    start_tree_count: int,
+    start_tree_seed: int,
+    branch_reoptimization_policy: str,
+    model_selection_criterion: str,
+    search_method: str,
+    lower_branch_length_bound: float,
+    upper_branch_length_bound: float,
+    improvement_tolerance: float,
+    max_coordinate_passes: int,
+) -> NucleotideLikelihoodBootstrapTreeInferenceReport | None:
+    if bootstrap_replicate_count is None:
+        return None
+    return bootstrap_nucleotide_likelihood_tree_inference(
+        records,
+        model_name=inference_report.selected_model_name.lower(),
+        model_selection_criterion=model_selection_criterion,
+        search_method=search_method,
+        start_tree_count=start_tree_count,
+        start_tree_seed=start_tree_seed,
+        branch_reoptimization_policy=branch_reoptimization_policy,
+        replicate_count=bootstrap_replicate_count,
+        bootstrap_seed=bootstrap_seed,
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
+        improvement_tolerance=improvement_tolerance,
+        max_coordinate_passes=max_coordinate_passes,
+    )
+
+
+def _infer_sh_like_support_report(
+    records: list[AlignmentRecord] | Path,
+    *,
+    inference_report: NucleotideLikelihoodTreeInferenceReport,
+    sh_like_resampling_replicate_count: int | None,
+    sh_like_resampling_seed: int,
+) -> NucleotideShLikeBranchSupportReport | None:
+    if sh_like_resampling_replicate_count is None:
+        return None
+    selected_model_row = _selected_model_row(inference_report)
+    return evaluate_nucleotide_sh_like_branch_support(
+        loads_newick(inference_report.best_final_tree_newick),
+        records,
+        model_name=inference_report.selected_model_name.lower(),
+        resampling_replicate_count=sh_like_resampling_replicate_count,
+        resampling_seed=sh_like_resampling_seed,
+        kappa=selected_model_row.parameter_values.get("kappa"),
+        base_frequencies=_selected_model_base_frequencies(selected_model_row),
+        exchangeabilities=_selected_model_exchangeabilities(selected_model_row),
+    )
+
+
+def _selected_model_base_frequencies(
+    selected_model_row: SubstitutionModelSelectionRow,
+) -> dict[str, float] | None:
+    base_frequencies = {
+        state: selected_model_row.parameter_values[f"base_frequency_{state.lower()}"]
+        for state in ("A", "C", "G", "T")
+        if f"base_frequency_{state.lower()}" in selected_model_row.parameter_values
+    }
+    return base_frequencies or None
+
+
+def _selected_model_exchangeabilities(
+    selected_model_row: SubstitutionModelSelectionRow,
+) -> dict[str, float] | None:
+    exchangeabilities = {
+        label: selected_model_row.parameter_values[label]
+        for label in ("AC", "AG", "AT", "CG", "CT", "GT")
+        if label in selected_model_row.parameter_values
+    }
+    if exchangeabilities:
+        return exchangeabilities
+    prefixed_exchangeabilities = {
+        label: selected_model_row.parameter_values[f"exchangeability_{label.lower()}"]
+        for label in ("AC", "AG", "AT", "CG", "CT", "GT")
+        if f"exchangeability_{label.lower()}" in selected_model_row.parameter_values
+    }
+    return prefixed_exchangeabilities or None
 
 
 def _unique_in_order(values: list[str]) -> list[str]:
