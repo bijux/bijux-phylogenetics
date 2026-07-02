@@ -26,6 +26,8 @@ from bijux_phylogenetics.bayesian.posterior_sets.diagnostics import (
 from bijux_phylogenetics.bayesian.state import (
     BayesianPhylogeneticState,
     BayesianPriorComponentState,
+    build_bayesian_likelihood_context_state,
+    build_bayesian_likelihood_partition_state,
     build_bayesian_model_parameter_state,
     build_bayesian_prior_component_state,
 )
@@ -262,6 +264,11 @@ def run_brownian_continuous_trait_metropolis_hastings(
     initial_state = score_bayesian_phylogenetic_state(
         tree=normalized_tree,
         model_parameters=initial_model_parameters,
+        likelihood_context=_build_continuous_trait_likelihood_context(
+            analysis_name="brownian-continuous-trait",
+            taxa=taxa,
+            model_name=_BROWNIAN_MODEL_NAME,
+        ),
         update_prior_components=lambda state: (
             _build_brownian_continuous_trait_prior_components(
                 state=state,
@@ -321,6 +328,35 @@ def run_brownian_continuous_trait_metropolis_hastings(
         chain_report=chain_report,
         posterior_rows=posterior_rows,
         parameter_summaries=_build_parameter_summaries(posterior_rows),
+    )
+
+
+def _build_continuous_trait_likelihood_context(
+    *,
+    analysis_name: str,
+    taxa: list[str],
+    model_name: str,
+):
+    return build_bayesian_likelihood_context_state(
+        analysis_name=analysis_name,
+        observation_kind="trait-tip",
+        taxon_names=taxa,
+        observation_count=len(taxa),
+        categorical_metadata={
+            "trait-model": model_name,
+            "topology-policy": "fixed",
+        },
+        partition_contexts=[
+            build_bayesian_likelihood_partition_state(
+                partition_name="continuous-trait",
+                observation_kind="trait-tip",
+                taxon_names=taxa,
+                observation_count=len(taxa),
+                data_type="continuous-trait",
+                model_name=model_name,
+                categorical_metadata={"topology-policy": "fixed"},
+            )
+        ],
     )
 
 

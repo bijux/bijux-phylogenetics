@@ -41,6 +41,8 @@ from bijux_phylogenetics.bayesian.metropolis_hastings import (
 from bijux_phylogenetics.bayesian.state import (
     BayesianPhylogeneticState,
     BayesianPriorComponentState,
+    build_bayesian_likelihood_context_state,
+    build_bayesian_likelihood_partition_state,
     build_bayesian_model_parameter_state,
     build_bayesian_prior_component_state,
 )
@@ -258,6 +260,12 @@ def run_discrete_trait_mk_metropolis_hastings(
         initial_state=score_bayesian_phylogenetic_state(
             tree=normalized_tree,
             model_parameters=initial_model_parameters,
+            likelihood_context=_build_discrete_trait_likelihood_context(
+                taxa=normalized_tree.tip_names,
+                state_order=state_order,
+                tip_states=normalized_tip_states,
+                model_definition=model_definition,
+            ),
             update_prior_components=lambda state: (
                 _build_discrete_trait_mk_prior_components(
                     state=state,
@@ -319,6 +327,43 @@ def run_discrete_trait_mk_metropolis_hastings(
         taxa=normalized_tree.tip_names,
         chain_report=chain_report,
         posterior_rows=posterior_rows,
+    )
+
+
+def _build_discrete_trait_likelihood_context(
+    *,
+    taxa: list[str],
+    state_order: list[str],
+    tip_states: Mapping[str, str],
+    model_definition: DiscreteTraitMkModelDefinition,
+):
+    observed_state_count = len(set(tip_states.values()))
+    return build_bayesian_likelihood_context_state(
+        analysis_name="discrete-trait-mk",
+        observation_kind="trait-tip",
+        taxon_names=taxa,
+        observation_count=len(taxa),
+        categorical_metadata={
+            "trait-model": model_definition.transition_model_name,
+            "root-prior-mode": model_definition.root_prior_mode,
+            "topology-policy": "fixed",
+        },
+        scalar_metadata={"observed-state-count": float(observed_state_count)},
+        partition_contexts=[
+            build_bayesian_likelihood_partition_state(
+                partition_name="discrete-trait",
+                observation_kind="trait-tip",
+                taxon_names=taxa,
+                observation_count=len(taxa),
+                data_type="discrete-trait",
+                model_name=model_definition.transition_model_name,
+                categorical_metadata={
+                    "state-ordering": _DISCRETE_TRAIT_STATE_ORDERING,
+                    "state-space": ",".join(state_order),
+                },
+                scalar_metadata={"observed-state-count": float(observed_state_count)},
+            )
+        ],
     )
 
 

@@ -120,6 +120,14 @@ def test_brownian_continuous_trait_runner_emits_parameter_summaries() -> None:
         summary_by_parameter["sigma-squared"].hpd_95_lower
         <= summary_by_parameter["sigma-squared"].hpd_95_upper
     )
+    assert all(
+        state.likelihood_context.analysis_name == "brownian-continuous-trait"
+        for state in report.chain_report.sampled_states
+    )
+    assert all(
+        state.likelihood_context.categorical_metadata["trait-model"] == "brownian"
+        for state in report.chain_report.sampled_states
+    )
 
 
 def test_brownian_continuous_trait_runner_requires_exact_tip_taxa() -> None:

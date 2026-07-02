@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import math
 import random
 
@@ -15,6 +15,8 @@ from bijux_phylogenetics.bayesian.metropolis_hastings import (
 from bijux_phylogenetics.bayesian.state import (
     BayesianPhylogeneticState,
     BayesianPriorComponentState,
+    MetropolisHastingsRandomState,
+    build_metropolis_hastings_random_state,
 )
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
@@ -364,9 +366,10 @@ def run_adaptive_tuned_metropolis_hastings_sampler(
                 "iteration_count": validated_iteration_count,
                 "burnin_iteration_count": tuning_controller.burnin_iteration_count,
             },
-        )
+    )
     rng = random.Random(validated_seed)  # nosec B311
-    current_state = initial_state
+    initialized_state = _with_random_state(initial_state, _capture_rng_state(rng))
+    current_state = initialized_state
     sampled_states: list[BayesianPhylogeneticState] = [current_state]
     retained_sampled_states: list[BayesianPhylogeneticState] = []
     step_rows: list[MetropolisHastingsStepRow] = []
@@ -389,6 +392,7 @@ def run_adaptive_tuned_metropolis_hastings_sampler(
             proposed_state = score_bayesian_phylogenetic_state(
                 tree=proposal.proposed_tree,
                 model_parameters=proposal.proposed_model_parameters,
+                likelihood_context=current_state.likelihood_context,
                 update_prior_components=update_prior_components,
                 update_log_likelihood=update_log_likelihood,
             )
@@ -404,6 +408,7 @@ def run_adaptive_tuned_metropolis_hastings_sampler(
             if accepted:
                 current_state = proposed_state
                 accepted_count += 1
+        current_state = _with_random_state(current_state, _capture_rng_state(rng))
         window_attempted_count += 1
         if accepted:
             window_accepted_count += 1
@@ -473,7 +478,7 @@ def run_adaptive_tuned_metropolis_hastings_sampler(
         accepted_count=accepted_count,
         rejected_count=validated_iteration_count - accepted_count,
         acceptance_rate=accepted_count / validated_iteration_count,
-        initial_state=initial_state,
+        initial_state=initialized_state,
         final_state=current_state,
         sampled_states=sampled_states,
         step_rows=step_rows,
@@ -494,6 +499,27 @@ def run_adaptive_tuned_metropolis_hastings_sampler(
         retained_sampled_states=retained_sampled_states,
         tuning_report=tuning_report,
     )
+
+
+def _capture_rng_state(rng: random.Random) -> MetropolisHastingsRandomState:
+    version, internal_state, gaussian_spare = rng.getstate()
+    if not isinstance(internal_state, tuple):
+        raise PhylogeneticsError(
+            "adaptive metropolis-hastings sampler expected one tuple-backed random internal state",
+            code="adaptive_metropolis_hastings_random_state_internal_type_invalid",
+        )
+    return build_metropolis_hastings_random_state(
+        version=version,
+        internal_state=internal_state,
+        gaussian_spare=gaussian_spare,
+    )
+
+
+def _with_random_state(
+    state: BayesianPhylogeneticState,
+    random_state: MetropolisHastingsRandomState,
+) -> BayesianPhylogeneticState:
+    return replace(state, random_state=random_state)
 
 
 def _validate_nonblank_name(

@@ -72,6 +72,14 @@ def test_discrete_trait_mk_runner_samples_er_sym_and_ard_transition_rate_posteri
         == transition_model_name
         for state in report.chain_report.sampled_states
     )
+    assert all(
+        state.likelihood_context.analysis_name == "discrete-trait-mk"
+        for state in report.chain_report.sampled_states
+    )
+    assert all(
+        state.likelihood_context.categorical_metadata["root-prior-mode"] == "equal"
+        for state in report.chain_report.sampled_states
+    )
     assert any(
         changed_field.startswith("vector_parameters.discrete-trait-rates.")
         for step_row in report.chain_report.step_rows

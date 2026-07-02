@@ -13,6 +13,9 @@ from bijux_phylogenetics.bayesian.continuous_trait_model_priors import (
     ContinuousTraitScalarPriorModel,
     evaluate_continuous_trait_scalar_log_prior,
 )
+from bijux_phylogenetics.bayesian.brownian_continuous_trait import (
+    _build_continuous_trait_likelihood_context,
+)
 from bijux_phylogenetics.bayesian.metropolis_hastings import (
     MetropolisHastingsRunReport,
     propose_clock_rate_move,
@@ -332,6 +335,11 @@ def run_ornstein_uhlenbeck_continuous_trait_metropolis_hastings(
                 _OPTIMUM_PARAMETER_NAME: initial_optimum,
                 _SIGMA_SQUARED_PARAMETER_NAME: initial_sigma_squared,
             },
+        ),
+        likelihood_context=_build_continuous_trait_likelihood_context(
+            analysis_name="ornstein-uhlenbeck-continuous-trait",
+            taxa=taxa,
+            model_name=_MODEL_NAME,
         ),
         update_prior_components=lambda state: _build_ou_prior_components(
             state=state,

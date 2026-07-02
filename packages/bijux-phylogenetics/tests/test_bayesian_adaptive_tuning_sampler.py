@@ -73,6 +73,8 @@ def test_adaptive_tuning_sampler_adjusts_scale_during_burnin_and_freezes_afterwa
         for row in report.tuning_report.window_rows
         if row.window_start_iteration >= report.freeze_iteration_index
     )
+    assert report.chain_report.initial_state.random_state is not None
+    assert report.chain_report.final_state.random_state is not None
 
 
 def test_adaptive_tuning_sampler_requires_retained_iterations_after_burnin() -> None:
