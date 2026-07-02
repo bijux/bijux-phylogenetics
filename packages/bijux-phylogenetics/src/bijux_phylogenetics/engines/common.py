@@ -18,6 +18,8 @@ from bijux_phylogenetics.runtime.errors import (
     InvalidAlignmentError,
 )
 
+from .external_access import require_external_engine_access
+
 _WARNING_PATTERN = re.compile(r"\b(warn(?:ing)?|caution)\b", re.IGNORECASE)
 
 
@@ -128,6 +130,10 @@ def build_engine_output_error(
 
 def resolve_engine_executable(executable: str | Path) -> str:
     """Resolve an engine executable from PATH or an explicit filesystem path."""
+    require_external_engine_access(
+        surface="external engine executable resolution",
+        executable=executable,
+    )
     candidate = Path(executable)
     if candidate.is_absolute() or candidate.parent != Path("."):
         if not candidate.exists():
@@ -185,6 +191,11 @@ def read_engine_version(
     timeout_seconds: float | None = None,
 ) -> EngineVersionInfo:
     """Run the engine-specific version command and capture its text."""
+    require_external_engine_access(
+        surface="external engine version inspection",
+        engine_name=engine_name,
+        executable=executable,
+    )
     validate_timeout_seconds(timeout_seconds)
     resolved = resolve_engine_executable(executable)
     command = [resolved, *version_args]
@@ -543,6 +554,11 @@ def execute_engine_command(
     timeout_seconds: float | None = None,
 ) -> EngineRunReport:
     """Execute an engine command, capture logs, and validate expected outputs."""
+    require_external_engine_access(
+        surface=f"external engine workflow execution ({workflow})",
+        engine_name=engine_name,
+        executable=executable,
+    )
     validate_timeout_seconds(timeout_seconds)
     work_dir.mkdir(parents=True, exist_ok=True)
     stdout_path.parent.mkdir(parents=True, exist_ok=True)

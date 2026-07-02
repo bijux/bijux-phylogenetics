@@ -84,6 +84,10 @@ class EngineWorkflowError(PhylogeneticsError):
     code = "engine_workflow_error"
 
 
+class ExternalEngineAccessError(EngineWorkflowError):
+    code = "external_engine_access_forbidden"
+
+
 class EvidenceContractError(PhylogeneticsError):
     code = "evidence_contract_error"
 
