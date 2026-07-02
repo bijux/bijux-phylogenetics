@@ -67,6 +67,23 @@ def test_fixed_topology_relaxed_clock_model_definition_requires_sampled_clock_hy
         )
 
 
+def test_fixed_topology_relaxed_clock_model_definition_requires_supported_time_tree_prior() -> (
+    None
+):
+    with pytest.raises(
+        PhylogeneticsError,
+        match="requires one supported rooted time-tree prior model",
+    ):
+        build_fixed_topology_relaxed_clock_model_definition(
+            rate_policy="independent",
+            time_tree_prior=object(),
+            mean_clock_rate_prior=build_exponential_clock_model_scalar_prior(rate=2.0),
+            log_standard_deviation_prior=build_exponential_clock_model_scalar_prior(
+                rate=3.0
+            ),
+        )
+
+
 def test_fixed_topology_relaxed_clock_model_definition_requires_unique_calibrations() -> (
     None
 ):

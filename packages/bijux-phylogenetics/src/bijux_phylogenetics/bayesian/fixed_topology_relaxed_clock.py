@@ -39,15 +39,15 @@ from bijux_phylogenetics.bayesian.state import (
     build_bayesian_model_parameter_state,
     build_bayesian_prior_component_state,
 )
+from bijux_phylogenetics.bayesian.tree_topology_priors import (
+    evaluate_time_tree_topology_log_prior,
+    require_time_tree_topology_prior_model,
+)
 from bijux_phylogenetics.bayesian.time_tree_priors import (
     BirthDeathTreePriorModel,
     ConstantPopulationCoalescentPriorModel,
     SkylineCoalescentPriorModel,
     YuleTreePriorModel,
-    evaluate_birth_death_tree_log_prior,
-    evaluate_constant_population_coalescent_tree_log_prior,
-    evaluate_skyline_coalescent_tree_log_prior,
-    evaluate_yule_tree_log_prior,
 )
 from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
     APE_ULTRAMETRIC_TOLERANCE,
@@ -433,18 +433,9 @@ def _validate_time_tree_prior_model(
     | ConstantPopulationCoalescentPriorModel
     | SkylineCoalescentPriorModel
 ):
-    if isinstance(
+    return require_time_tree_topology_prior_model(
         time_tree_prior,
-        (
-            YuleTreePriorModel,
-            BirthDeathTreePriorModel,
-            ConstantPopulationCoalescentPriorModel,
-            SkylineCoalescentPriorModel,
-        ),
-    ):
-        return time_tree_prior
-    raise PhylogeneticsError(
-        "fixed-topology relaxed-clock posterior model requires one supported rooted time-tree prior model",
+        owner_name="fixed-topology relaxed-clock posterior model",
         code="fixed_topology_relaxed_clock_time_tree_prior_type_invalid",
     )
 
@@ -606,7 +597,7 @@ def _build_fixed_topology_relaxed_clock_prior_components(
         )
     )
     dated_tree = state.tree.to_tree()
-    time_tree_prior_report = _evaluate_time_tree_log_prior(
+    time_tree_prior_report = evaluate_time_tree_topology_log_prior(
         tree=dated_tree,
         prior_model=model_definition.time_tree_prior,
     )
@@ -968,30 +959,6 @@ def _require_fixed_topology_relaxed_clock_state_consistency(
             details={"parameter_name": str(error)},
         ) from error
     return mean_clock_rate, log_standard_deviation
-
-
-def _evaluate_time_tree_log_prior(
-    *,
-    tree: PhyloTree,
-    prior_model: (
-        YuleTreePriorModel
-        | BirthDeathTreePriorModel
-        | ConstantPopulationCoalescentPriorModel
-        | SkylineCoalescentPriorModel
-    ),
-):
-    if isinstance(prior_model, YuleTreePriorModel):
-        return evaluate_yule_tree_log_prior(tree, prior_model)
-    if isinstance(prior_model, BirthDeathTreePriorModel):
-        return evaluate_birth_death_tree_log_prior(tree, prior_model)
-    if isinstance(prior_model, ConstantPopulationCoalescentPriorModel):
-        return evaluate_constant_population_coalescent_tree_log_prior(
-            tree,
-            prior_model,
-        )
-    if isinstance(prior_model, SkylineCoalescentPriorModel):
-        return evaluate_skyline_coalescent_tree_log_prior(tree, prior_model)
-    raise AssertionError("unsupported time-tree prior model reached evaluation")
 
 
 def _evaluate_relaxed_clock_branch_rows(
