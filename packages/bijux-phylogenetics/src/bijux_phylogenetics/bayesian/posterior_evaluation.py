@@ -1,12 +1,27 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 import math
 
-from bijux_phylogenetics.bayesian.state import BayesianPhylogeneticState
+from bijux_phylogenetics.bayesian.state import (
+    BayesianLikelihoodContextState,
+    BayesianModelParameterState,
+    BayesianPhylogeneticState,
+    BayesianPriorComponentState,
+    MetropolisHastingsRandomState,
+    build_bayesian_phylogenetic_state,
+)
+from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 _POSTERIOR_DECOMPOSITION_TOLERANCE = 1e-12
+
+BayesianPriorUpdate = Callable[
+    [BayesianPhylogeneticState],
+    list[BayesianPriorComponentState],
+]
+BayesianLikelihoodUpdate = Callable[[BayesianPhylogeneticState], float]
 
 
 @dataclass(slots=True)
@@ -37,6 +52,50 @@ class BayesianPosteriorEvaluationReport:
     decomposition_valid: bool
     state: BayesianPhylogeneticState
     rows: list[BayesianPosteriorDecompositionRow]
+
+
+def evaluate_bayesian_posterior(
+    *,
+    tree: PhyloTree,
+    model_parameters: BayesianModelParameterState,
+    likelihood_context: BayesianLikelihoodContextState | None = None,
+    update_prior_components: BayesianPriorUpdate,
+    update_log_likelihood: BayesianLikelihoodUpdate,
+    random_state: MetropolisHastingsRandomState | None = None,
+    identity_tolerance: float = _POSTERIOR_DECOMPOSITION_TOLERANCE,
+) -> BayesianPosteriorEvaluationReport:
+    """Evaluate one native Bayesian posterior from owned tree and parameter inputs."""
+    provisional_state = build_bayesian_phylogenetic_state(
+        tree=tree,
+        model_parameters=model_parameters,
+        likelihood_context=likelihood_context,
+        prior_components=[
+            BayesianPriorComponentState(
+                component_name="evaluation-baseline",
+                family=None,
+                log_prior=0.0,
+            )
+        ],
+        log_likelihood=0.0,
+    )
+    updated_prior_components = update_prior_components(provisional_state)
+    if not updated_prior_components:
+        raise PhylogeneticsError(
+            "bayesian posterior evaluation requires at least one prior component",
+            code="bayesian_posterior_evaluation_prior_components_empty",
+        )
+    scored_state = build_bayesian_phylogenetic_state(
+        tree=provisional_state.tree.to_tree(),
+        model_parameters=provisional_state.model_parameters,
+        likelihood_context=provisional_state.likelihood_context,
+        prior_components=updated_prior_components,
+        log_likelihood=update_log_likelihood(provisional_state),
+        random_state=random_state,
+    )
+    return summarize_bayesian_posterior_decomposition(
+        scored_state,
+        identity_tolerance=identity_tolerance,
+    )
 
 
 def summarize_bayesian_posterior_decomposition(
@@ -108,5 +167,6 @@ def _validate_identity_tolerance(value: float) -> float:
 __all__ = [
     "BayesianPosteriorDecompositionRow",
     "BayesianPosteriorEvaluationReport",
+    "evaluate_bayesian_posterior",
     "summarize_bayesian_posterior_decomposition",
 ]
