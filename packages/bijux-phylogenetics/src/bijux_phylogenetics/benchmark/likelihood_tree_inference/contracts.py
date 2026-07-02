@@ -5,6 +5,63 @@ from pathlib import Path
 
 
 @dataclass(slots=True)
+class NativeMaximumLikelihoodAccuracyBenchmarkObservation:
+    """One governed native ML accuracy observation against simulated truth."""
+
+    case_id: str
+    model_name: str
+    search_method: str
+    taxon_count: int
+    site_count: int
+    simulation_seed: int
+    selected_model_name: str
+    true_topology_fingerprint: str
+    inferred_topology_fingerprint: str
+    topology_recovered: bool
+    topology_recovery_status: str
+    robinson_foulds_distance: int
+    normalized_robinson_foulds: float
+    parameter_truth: dict[str, float]
+    estimated_parameter_values: dict[str, float]
+    parameter_absolute_deltas: dict[str, float]
+    parameter_recovery_status: str
+    true_topology_log_likelihood: float
+    inferred_log_likelihood: float
+    likelihood_shortfall: float
+    likelihood_quality_status: str
+
+
+@dataclass(slots=True)
+class NativeMaximumLikelihoodAccuracyBenchmarkReport:
+    """Native ML accuracy benchmark over governed simulated and wrapper lanes."""
+
+    observations: list[NativeMaximumLikelihoodAccuracyBenchmarkObservation]
+    wrapper_observations: list[MaximumLikelihoodWrapperBenchmarkObservation]
+    model_names: list[str]
+    search_methods: list[str]
+    topology_recovery_case_count: int
+    parameter_recovery_case_count: int
+    parameter_not_applicable_case_count: int
+    likelihood_quality_case_count: int
+    wrapper_supported_case_count: int
+    wrapper_clear_case_count: int
+    all_truth_cases_clear: bool
+    all_supported_wrapper_cases_clear: bool
+    limitations: list[str]
+
+
+@dataclass(slots=True)
+class NativeMaximumLikelihoodAccuracyBenchmarkBundle:
+    """Written artifact bundle for one native ML accuracy benchmark run."""
+
+    output_root: Path
+    summary_path: Path
+    observation_table_path: Path
+    wrapper_observation_table_path: Path
+    run_json_path: Path
+
+
+@dataclass(slots=True)
 class NativeMaximumLikelihoodSpeedBenchmarkObservation:
     """One native ML speed observation for a fixed model, size class, and search mode."""
 

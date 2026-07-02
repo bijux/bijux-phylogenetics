@@ -7,10 +7,191 @@ from pathlib import Path
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 
 from .contracts import (
+    NativeMaximumLikelihoodAccuracyBenchmarkReport,
     MaximumLikelihoodWrapperBenchmarkReport,
     NativeMaximumLikelihoodMemoryBenchmarkReport,
     NativeMaximumLikelihoodSpeedBenchmarkReport,
 )
+
+
+def write_native_maximum_likelihood_accuracy_summary_table(
+    path: Path,
+    report: NativeMaximumLikelihoodAccuracyBenchmarkReport,
+) -> Path:
+    """Write the stable summary counts for one native ML accuracy benchmark run."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "observation_count",
+            "wrapper_observation_count",
+            "model_names",
+            "search_methods",
+            "topology_recovery_case_count",
+            "parameter_recovery_case_count",
+            "parameter_not_applicable_case_count",
+            "likelihood_quality_case_count",
+            "wrapper_supported_case_count",
+            "wrapper_clear_case_count",
+            "all_truth_cases_clear",
+            "all_supported_wrapper_cases_clear",
+            "limitations",
+        ],
+        rows=[
+            {
+                "observation_count": len(report.observations),
+                "wrapper_observation_count": len(report.wrapper_observations),
+                "model_names": " | ".join(report.model_names),
+                "search_methods": " | ".join(report.search_methods),
+                "topology_recovery_case_count": report.topology_recovery_case_count,
+                "parameter_recovery_case_count": report.parameter_recovery_case_count,
+                "parameter_not_applicable_case_count": (
+                    report.parameter_not_applicable_case_count
+                ),
+                "likelihood_quality_case_count": report.likelihood_quality_case_count,
+                "wrapper_supported_case_count": report.wrapper_supported_case_count,
+                "wrapper_clear_case_count": report.wrapper_clear_case_count,
+                "all_truth_cases_clear": report.all_truth_cases_clear,
+                "all_supported_wrapper_cases_clear": (
+                    report.all_supported_wrapper_cases_clear
+                ),
+                "limitations": " | ".join(report.limitations),
+            }
+        ],
+    )
+
+
+def write_native_maximum_likelihood_accuracy_observation_table(
+    path: Path,
+    report: NativeMaximumLikelihoodAccuracyBenchmarkReport,
+) -> Path:
+    """Write one stable observation row per governed native ML accuracy lane."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "case_id",
+            "model_name",
+            "search_method",
+            "taxon_count",
+            "site_count",
+            "simulation_seed",
+            "selected_model_name",
+            "topology_recovered",
+            "topology_recovery_status",
+            "robinson_foulds_distance",
+            "normalized_robinson_foulds",
+            "parameter_recovery_status",
+            "parameter_truth",
+            "estimated_parameter_values",
+            "parameter_absolute_deltas",
+            "true_topology_log_likelihood",
+            "inferred_log_likelihood",
+            "likelihood_shortfall",
+            "likelihood_quality_status",
+        ],
+        rows=[
+            {
+                "case_id": row.case_id,
+                "model_name": row.model_name,
+                "search_method": row.search_method,
+                "taxon_count": row.taxon_count,
+                "site_count": row.site_count,
+                "simulation_seed": row.simulation_seed,
+                "selected_model_name": row.selected_model_name,
+                "topology_recovered": row.topology_recovered,
+                "topology_recovery_status": row.topology_recovery_status,
+                "robinson_foulds_distance": row.robinson_foulds_distance,
+                "normalized_robinson_foulds": format(
+                    row.normalized_robinson_foulds,
+                    ".15g",
+                ),
+                "parameter_recovery_status": row.parameter_recovery_status,
+                "parameter_truth": json.dumps(row.parameter_truth, sort_keys=True),
+                "estimated_parameter_values": json.dumps(
+                    row.estimated_parameter_values,
+                    sort_keys=True,
+                ),
+                "parameter_absolute_deltas": json.dumps(
+                    row.parameter_absolute_deltas,
+                    sort_keys=True,
+                ),
+                "true_topology_log_likelihood": format(
+                    row.true_topology_log_likelihood,
+                    ".15g",
+                ),
+                "inferred_log_likelihood": format(
+                    row.inferred_log_likelihood,
+                    ".15g",
+                ),
+                "likelihood_shortfall": format(row.likelihood_shortfall, ".15g"),
+                "likelihood_quality_status": row.likelihood_quality_status,
+            }
+            for row in report.observations
+        ],
+    )
+
+
+def write_native_maximum_likelihood_accuracy_wrapper_table(
+    path: Path,
+    report: NativeMaximumLikelihoodAccuracyBenchmarkReport,
+) -> Path:
+    """Write one stable wrapper-evidence row per native ML accuracy benchmark run."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "case_id",
+            "wrapper_engine",
+            "status",
+            "supported",
+            "blocking",
+            "topology_equal",
+            "native_log_likelihood",
+            "wrapper_log_likelihood",
+            "log_likelihood_delta",
+            "support_split_count",
+            "notes",
+        ],
+        rows=[
+            {
+                "case_id": row.case_id,
+                "wrapper_engine": row.wrapper_engine,
+                "status": row.status,
+                "supported": row.supported,
+                "blocking": row.blocking,
+                "topology_equal": row.topology_equal,
+                "native_log_likelihood": (
+                    ""
+                    if row.native_log_likelihood is None
+                    else format(row.native_log_likelihood, ".15g")
+                ),
+                "wrapper_log_likelihood": (
+                    ""
+                    if row.wrapper_log_likelihood is None
+                    else format(row.wrapper_log_likelihood, ".15g")
+                ),
+                "log_likelihood_delta": (
+                    ""
+                    if row.log_likelihood_delta is None
+                    else format(row.log_likelihood_delta, ".15g")
+                ),
+                "support_split_count": len(row.support_comparisons),
+                "notes": " | ".join(row.notes),
+            }
+            for row in report.wrapper_observations
+        ],
+    )
+
+
+def write_native_maximum_likelihood_accuracy_run_json(
+    path: Path,
+    report: NativeMaximumLikelihoodAccuracyBenchmarkReport,
+) -> Path:
+    """Write the machine-readable native ML accuracy benchmark payload."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(asdict(report), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return path
 
 
 def write_native_maximum_likelihood_memory_summary_table(
