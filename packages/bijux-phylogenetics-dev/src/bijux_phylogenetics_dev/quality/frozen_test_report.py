@@ -2,16 +2,23 @@
 
 from __future__ import annotations
 
+import argparse
 from dataclasses import asdict, dataclass
 import hashlib
+import json
+import os
 from pathlib import Path
+import shutil
 from typing import Any, Literal
 from xml.etree import ElementTree
+
+from ..trusted_process import run_text
 
 JsonObject = dict[str, Any]
 Outcome = Literal["passed", "failed", "error", "skipped"]
 OutputChangeKind = Literal["added", "modified", "removed"]
 DriftKind = Literal["test", "output"]
+DEFAULT_CURRENT_REF = "HEAD"
 
 _EXCLUDED_OUTPUT_SEGMENTS = frozenset(
     {
@@ -22,6 +29,7 @@ _EXCLUDED_OUTPUT_SEGMENTS = frozenset(
         "hypothesis",
         "npm_cache",
         "pycache",
+        "runner",
         "tmp",
         "uv_cache",
         "venv",
@@ -77,6 +85,29 @@ class ScientificDriftRecord:
     kind: DriftKind
     identifier: str
     summary: str
+
+
+@dataclass(frozen=True, slots=True)
+class ReferenceRecord:
+    """Describe one Git reference used during frozen validation."""
+
+    input_ref: str
+    resolved_ref: str
+
+
+@dataclass(frozen=True, slots=True)
+class SuiteRunRecord:
+    """Capture one isolated full-suite run used in frozen validation."""
+
+    repo_root: str
+    artifacts_root: str
+    junit_xml: str
+    command: tuple[str, ...]
+    exit_code: int
+    stdout_log: str
+    stderr_log: str
+    test_count: int
+    output_count: int
 
 
 def _normalized_nodeid(testcase: ElementTree.Element) -> str:
@@ -151,7 +182,9 @@ def build_output_manifest(artifacts_root: Path) -> dict[str, OutputFileRecord]:
     manifest: dict[str, OutputFileRecord] = {}
     if not artifacts_root.exists():
         return manifest
-    for path in sorted(candidate for candidate in artifacts_root.rglob("*") if candidate.is_file()):
+    for path in sorted(
+        candidate for candidate in artifacts_root.rglob("*") if candidate.is_file()
+    ):
         relative_path = path.relative_to(artifacts_root)
         if not is_governed_output_file(relative_path):
             continue
@@ -271,3 +304,268 @@ def serialize_scientific_drift(
 ) -> list[JsonObject]:
     """Convert scientific drift records into JSON-friendly payloads."""
     return [asdict(record) for record in drift_records]
+
+
+def _git_executable() -> str:
+    resolved = shutil.which("git")
+    if resolved is None:
+        raise SystemExit("git executable not found")
+    return resolved
+
+
+def _make_executable() -> str:
+    resolved = shutil.which("make")
+    if resolved is None:
+        raise SystemExit("make executable not found")
+    return resolved
+
+
+def _write_json(path: Path, payload: JsonObject) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+
+def _resolve_reference(
+    repo_root: Path,
+    ref: str,
+    *,
+    git_executable: str,
+) -> ReferenceRecord:
+    completed = run_text(
+        [git_executable, "-C", str(repo_root), "rev-parse", ref],
+        check=True,
+        capture_output=True,
+    )
+    return ReferenceRecord(input_ref=ref, resolved_ref=completed.stdout.strip())
+
+
+def _prepare_frozen_worktree(
+    repo_root: Path,
+    worktree_root: Path,
+    *,
+    frozen_ref: ReferenceRecord,
+    git_executable: str,
+) -> Path:
+    worktree_root.parent.mkdir(parents=True, exist_ok=True)
+    run_text(
+        [git_executable, "-C", str(repo_root), "worktree", "prune"],
+        check=False,
+        capture_output=True,
+    )
+    run_text(
+        [
+            git_executable,
+            "-C",
+            str(repo_root),
+            "worktree",
+            "remove",
+            "--force",
+            str(worktree_root),
+        ],
+        check=False,
+        capture_output=True,
+    )
+    shutil.rmtree(worktree_root, ignore_errors=True)
+    run_text(
+        [
+            git_executable,
+            "-C",
+            str(repo_root),
+            "worktree",
+            "add",
+            "--detach",
+            str(worktree_root),
+            frozen_ref.resolved_ref,
+        ],
+        check=True,
+        capture_output=True,
+    )
+    return worktree_root
+
+
+def _package_make_command(
+    repo_root: Path,
+    *,
+    package: str,
+    artifacts_root: Path,
+    make_executable: str,
+    target: str = "test-all",
+) -> list[str]:
+    package_root = repo_root / "packages" / package
+    profile_path = os.path.relpath(
+        repo_root / "makes" / "packages" / f"{package}.mk",
+        start=package_root,
+    )
+    venv_root = artifacts_root / "venv"
+    return [
+        make_executable,
+        "-C",
+        str(package_root),
+        "-f",
+        profile_path,
+        target,
+        f"PROJECT_SLUG={package}",
+        f"MONOREPO_ROOT={repo_root}",
+        f"ROOT_MAKE_DIR={repo_root / 'makes'}",
+        f"CONFIG_DIR={repo_root / 'configs'}",
+        f"PROJECT_DIR={package_root}",
+        f"PROJECT_ARTIFACTS_DIR={artifacts_root}",
+        f"API_DIR={repo_root / 'apis' / package}",
+        f"VENV={venv_root}",
+        f"VENV_PYTHON={venv_root / 'bin' / 'python'}",
+        f"PYTHON={venv_root / 'bin' / 'python'}",
+        f"ACT={venv_root / 'bin'}",
+    ]
+
+
+def _run_full_suite(
+    repo_root: Path,
+    *,
+    package: str,
+    artifacts_root: Path,
+    make_executable: str,
+) -> tuple[SuiteRunRecord, dict[str, SuiteTestRecord], dict[str, OutputFileRecord]]:
+    artifacts_root.mkdir(parents=True, exist_ok=True)
+    command = _package_make_command(
+        repo_root,
+        package=package,
+        artifacts_root=artifacts_root,
+        make_executable=make_executable,
+    )
+    completed = run_text(
+        command,
+        check=False,
+        capture_output=True,
+        cwd=repo_root,
+    )
+    stdout_log = artifacts_root / "runner" / "stdout.log"
+    stderr_log = artifacts_root / "runner" / "stderr.log"
+    stdout_log.parent.mkdir(parents=True, exist_ok=True)
+    stdout_log.write_text(completed.stdout, encoding="utf-8")
+    stderr_log.write_text(completed.stderr, encoding="utf-8")
+    junit_xml = artifacts_root / "test" / "junit.xml"
+    test_records = parse_junit_report(junit_xml) if junit_xml.exists() else {}
+    output_manifest = build_output_manifest(artifacts_root)
+    return (
+        SuiteRunRecord(
+            repo_root=repo_root.as_posix(),
+            artifacts_root=artifacts_root.as_posix(),
+            junit_xml=junit_xml.as_posix(),
+            command=tuple(command),
+            exit_code=completed.returncode,
+            stdout_log=stdout_log.as_posix(),
+            stderr_log=stderr_log.as_posix(),
+            test_count=len(test_records),
+            output_count=len(output_manifest),
+        ),
+        test_records,
+        output_manifest,
+    )
+
+
+def build_frozen_test_report(
+    repo_root: Path,
+    *,
+    package: str,
+    frozen_ref: str,
+    artifacts_root: Path,
+    git_executable: str | None = None,
+    make_executable: str | None = None,
+) -> JsonObject:
+    """Run current and frozen full suites and compare their observed outputs."""
+    repo_root = repo_root.resolve()
+    artifacts_root = artifacts_root.resolve()
+    git_bin = git_executable or _git_executable()
+    make_bin = make_executable or _make_executable()
+    current_reference = _resolve_reference(
+        repo_root, DEFAULT_CURRENT_REF, git_executable=git_bin
+    )
+    frozen_reference = _resolve_reference(repo_root, frozen_ref, git_executable=git_bin)
+    frozen_worktree = _prepare_frozen_worktree(
+        repo_root,
+        artifacts_root / "worktrees" / f"frozen-{frozen_reference.resolved_ref[:12]}",
+        frozen_ref=frozen_reference,
+        git_executable=git_bin,
+    )
+    current_run, current_tests, current_outputs = _run_full_suite(
+        repo_root,
+        package=package,
+        artifacts_root=artifacts_root / "current",
+        make_executable=make_bin,
+    )
+    frozen_run, frozen_tests, frozen_outputs = _run_full_suite(
+        frozen_worktree,
+        package=package,
+        artifacts_root=artifacts_root / "frozen",
+        make_executable=make_bin,
+    )
+    changed_tests = diff_test_records(current_tests, frozen_tests)
+    changed_outputs = diff_output_manifests(current_outputs, frozen_outputs)
+    scientific_drift = build_scientific_drift_records(changed_tests, changed_outputs)
+    return {
+        "schema_version": 1,
+        "package": package,
+        "current_ref": asdict(current_reference),
+        "frozen_ref": asdict(frozen_reference),
+        "current_run": asdict(current_run),
+        "frozen_run": asdict(frozen_run),
+        "changed_test_count": len(changed_tests),
+        "changed_tests": serialize_test_differences(changed_tests),
+        "changed_output_count": len(changed_outputs),
+        "changed_outputs": serialize_output_differences(changed_outputs),
+        "scientific_drift_count": len(scientific_drift),
+        "scientific_drift": serialize_scientific_drift(scientific_drift),
+        "current_run_succeeded": current_run.exit_code == 0,
+        "frozen_run_succeeded": frozen_run.exit_code == 0,
+    }
+
+
+def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments for frozen full-suite comparison."""
+    parser = argparse.ArgumentParser(
+        description="Compare package full-suite results against a chosen frozen ref."
+    )
+    parser.add_argument("command", choices=("report", "check"))
+    parser.add_argument("--repo-root", default=".")
+    parser.add_argument("--package", required=True)
+    parser.add_argument("--frozen-ref", required=True)
+    parser.add_argument("--artifacts-root")
+    parser.add_argument("--json-out")
+    return parser.parse_args()
+
+
+def main() -> int:
+    """Run the frozen full-suite comparison entry point."""
+    args = parse_args()
+    repo_root = Path(args.repo_root).resolve()
+    artifacts_root = (
+        Path(args.artifacts_root).resolve()
+        if args.artifacts_root
+        else (repo_root / "artifacts" / args.package / "test-frozen")
+    )
+    payload = build_frozen_test_report(
+        repo_root,
+        package=args.package,
+        frozen_ref=args.frozen_ref,
+        artifacts_root=artifacts_root,
+    )
+    json_out = (
+        Path(args.json_out).resolve()
+        if args.json_out
+        else artifacts_root / "report.json"
+    )
+    _write_json(json_out, payload)
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    if args.command == "check" and (
+        not payload["current_run_succeeded"]
+        or not payload["frozen_run_succeeded"]
+        or payload["scientific_drift_count"]
+    ):
+        raise SystemExit("frozen full-suite validation detected drift")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
