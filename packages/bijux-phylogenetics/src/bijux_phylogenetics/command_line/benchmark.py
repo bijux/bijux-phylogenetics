@@ -103,6 +103,40 @@ def _resolve_native_maximum_likelihood_benchmark_size_classes(args: Any) -> (
     return classes
 
 
+def _add_native_maximum_likelihood_accuracy_benchmark_arguments(parser: Any) -> None:
+    parser.add_argument(
+        "--model",
+        action="append",
+        dest="model_names",
+        help="Add one governed native nucleotide model to benchmark. Repeat to benchmark multiple truth cases.",
+    )
+    parser.add_argument(
+        "--search-method",
+        action="append",
+        dest="search_methods",
+        help="Add one native topology-search method to benchmark. Repeat to benchmark multiple search lanes.",
+    )
+    parser.add_argument(
+        "--start-tree-count",
+        type=int,
+        default=1,
+    )
+    parser.add_argument(
+        "--start-tree-seed",
+        type=int,
+        default=17,
+    )
+    parser.add_argument(
+        "--upper-branch-length-bound",
+        type=float,
+        default=1.0,
+    )
+    parser.add_argument(
+        "--json", action="store_true", help="Emit the benchmark report as JSON."
+    )
+    _add_manifest_argument(parser)
+
+
 def add_benchmark_commands(subparsers: Any) -> None:
     benchmark = subparsers.add_parser(
         get_command_spec("benchmark").name, help=get_command_spec("benchmark").summary
@@ -304,6 +338,14 @@ def add_benchmark_commands(subparsers: Any) -> None:
         benchmark_native_maximum_likelihood_memory
     )
 
+    benchmark_native_maximum_likelihood_accuracy = benchmark_subparsers.add_parser(
+        "native-maximum-likelihood-accuracy",
+        help="Benchmark native maximum-likelihood topology, parameter, and likelihood recovery across governed simulated truth lanes.",
+    )
+    _add_native_maximum_likelihood_accuracy_benchmark_arguments(
+        benchmark_native_maximum_likelihood_accuracy
+    )
+
     benchmark_maximum_likelihood_wrapper = benchmark_subparsers.add_parser(
         "maximum-likelihood-wrapper-comparison",
         help="Benchmark native maximum-likelihood tree inference against cached IQ-TREE, FastTree, and explicit RAxML support lanes.",
@@ -457,6 +499,14 @@ def run_benchmark_command(args: Any) -> int:
             start_tree_seed=args.start_tree_seed,
             upper_branch_length_bound=args.upper_branch_length_bound,
         )
+    elif args.benchmark_command == "native-maximum-likelihood-accuracy":
+        report = command_line_api.benchmark_native_maximum_likelihood_accuracy(
+            model_names=args.model_names,
+            search_methods=args.search_methods,
+            start_tree_count=args.start_tree_count,
+            start_tree_seed=args.start_tree_seed,
+            upper_branch_length_bound=args.upper_branch_length_bound,
+        )
     elif args.benchmark_command == "maximum-likelihood-wrapper-comparison":
         report = command_line_api.benchmark_maximum_likelihood_wrapper_comparison()
     elif args.benchmark_command == "real-dataset-macroevolution":
@@ -504,6 +554,14 @@ def run_benchmark_command(args: Any) -> int:
         metrics["trend_row_count"] = len(report.trend_rows)
     if hasattr(report, "memory_blowup_case_count"):
         metrics["memory_blowup_case_count"] = report.memory_blowup_case_count
+    if hasattr(report, "topology_recovery_case_count"):
+        metrics["topology_recovery_case_count"] = report.topology_recovery_case_count
+    if hasattr(report, "parameter_recovery_case_count"):
+        metrics["parameter_recovery_case_count"] = report.parameter_recovery_case_count
+    if hasattr(report, "likelihood_quality_case_count"):
+        metrics["likelihood_quality_case_count"] = report.likelihood_quality_case_count
+    if hasattr(report, "wrapper_clear_case_count"):
+        metrics["wrapper_clear_case_count"] = report.wrapper_clear_case_count
     if hasattr(report, "geiger_match_case_count"):
         metrics["geiger_match_case_count"] = report.geiger_match_case_count
     if hasattr(report, "threshold_pass_case_count"):
