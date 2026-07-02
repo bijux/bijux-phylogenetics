@@ -733,9 +733,34 @@ def _build_summary_rows(
     return rows
 
 
+def _filter_reference_observations_by_method(
+    observations: list[ReferenceParityObservation],
+    *,
+    methods: list[str] | None,
+) -> list[ReferenceParityObservation]:
+    if methods is None:
+        return observations
+    available_methods = {observation.method for observation in observations}
+    missing_methods = [
+        method_name for method_name in methods if method_name not in available_methods
+    ]
+    if missing_methods:
+        raise ValueError(
+            "unknown reference parity methods: "
+            + ", ".join(sorted(missing_methods))
+        )
+    selected_methods = set(methods)
+    return [
+        observation
+        for observation in observations
+        if observation.method in selected_methods
+    ]
+
+
 def validate_reference_parity_examples(
     *,
     include_extended: bool = False,
+    methods: list[str] | None = None,
 ) -> ReferenceParityReport:
     """Validate core numerical methods against checked-in external reference outputs."""
     observations, comparative_tools = _build_comparative_observations()
@@ -776,6 +801,10 @@ def validate_reference_parity_examples(
         limitations.append(
             "The extended suite adds governed primate comparative parity checks and a larger posterior tree-set parity check for optional validation lanes."
         )
+    observations = _filter_reference_observations_by_method(
+        observations,
+        methods=methods,
+    )
     summary_rows = _build_summary_rows(observations)
     case_count = len(observations)
     passed_case_count = sum(1 for observation in observations if observation.passed)
