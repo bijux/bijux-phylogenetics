@@ -7,6 +7,7 @@ import pytest
 from bijux_phylogenetics.bayesian.branch_length_priors import (
     build_exponential_branch_length_prior,
     build_fixed_branch_length_prior,
+    build_uniform_branch_length_prior,
 )
 from bijux_phylogenetics.bayesian.prior_sampling import (
     PriorOnlySubstitutionParameterState,
@@ -178,6 +179,41 @@ def test_prior_only_simulation_surfaces_fixed_parameter_samples() -> None:
     assert math.isclose(
         sample.total_log_prior,
         sample.topology_log_prior,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
+def test_prior_only_simulation_samples_uniform_branch_lengths_within_support() -> None:
+    topology_prior = build_uniform_rooted_tree_topology_prior(["A", "B", "C", "D"])
+    branch_length_prior = build_uniform_branch_length_prior(
+        lower_bound=0.2,
+        upper_bound=0.7,
+    )
+
+    sample = sample_prior_only_phylogenetic_state(
+        tree_topology_prior=topology_prior,
+        branch_length_prior=branch_length_prior,
+        seed=11,
+    )
+
+    expected_branch_log_density = -math.log(0.5)
+
+    assert sample.branch_length_prior_family == "uniform"
+    assert sample.branch_rows
+    assert all(0.2 <= branch_row.branch_length <= 0.7 for branch_row in sample.branch_rows)
+    assert all(
+        math.isclose(
+            branch_row.log_prior_contribution,
+            expected_branch_log_density,
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        )
+        for branch_row in sample.branch_rows
+    )
+    assert math.isclose(
+        sample.branch_length_log_prior,
+        len(sample.branch_rows) * expected_branch_log_density,
         rel_tol=0.0,
         abs_tol=1e-12,
     )

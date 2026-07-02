@@ -345,6 +345,18 @@ def _sample_branch_length_value(
             log_mean,
             log_standard_deviation,
         )
+    if prior_model.family == "uniform":
+        lower_bound = require_present(
+            prior_model.lower_bound,
+            owner_name="prior-only branch-length sampling",
+            field_name="lower_bound",
+        )
+        upper_bound = require_present(
+            prior_model.upper_bound,
+            owner_name="prior-only branch-length sampling",
+            field_name="upper_bound",
+        )
+        return rng.uniform(lower_bound, upper_bound)
     if prior_model.family == "fixed":
         return require_present(
             prior_model.fixed_value,
