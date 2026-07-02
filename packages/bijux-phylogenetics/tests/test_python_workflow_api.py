@@ -12,11 +12,14 @@ from bijux_phylogenetics.api import (
     ConfiguredPhyloWorkflowResult,
     FastaValidationResult,
     InferenceWorkflowResult,
+    NATIVE_MAXIMUM_LIKELIHOOD_ONLY_ENV_VAR,
     ReportWorkflowResult,
     SequenceToTreeWorkflowResult,
     SupportWorkflowResult,
     TreeComparisonWorkflowResult,
     TrimmingWorkflowResult,
+    is_native_maximum_likelihood_only_mode_enabled,
+    native_maximum_likelihood_only_mode,
     render_report_workflow,
     run_alignment_workflow,
     run_ancestral_reconstruction_workflow,
@@ -266,6 +269,38 @@ def test_python_workflow_api_blocks_missing_iqtree_before_sequence_to_tree_start
     assert error.value.code == "engine_preflight_workflow_blocked"
     assert error.value.details["blocking_engines"] == ["IQ-TREE"]
     assert (tmp_path / "workflow").exists() is False
+
+
+def test_python_workflow_api_native_only_mode_blocks_external_tree_inference(
+    tmp_path: Path,
+) -> None:
+    from tests.support.fake_external_engines import fake_iqtree
+
+    assert NATIVE_MAXIMUM_LIKELIHOOD_ONLY_ENV_VAR.endswith(
+        "NATIVE_MAXIMUM_LIKELIHOOD_ONLY"
+    )
+    assert is_native_maximum_likelihood_only_mode_enabled() is False
+
+    with native_maximum_likelihood_only_mode():
+        assert is_native_maximum_likelihood_only_mode_enabled() is True
+        with pytest.raises(
+            EngineWorkflowError,
+            match="native maximum-likelihood only mode forbids external engine access",
+        ) as error:
+            run_tree_inference_workflow(
+                fixture("alignments/example_alignment.fasta"),
+                out_dir=tmp_path / "inference",
+                model="GTR+G",
+                executable=fake_iqtree(tmp_path / "iqtree-fixture"),
+                sequence_type="dna",
+            )
+
+    assert error.value.code == "external_engine_access_forbidden"
+    assert (
+        error.value.details["surface"]
+        == "external engine surface inspection (maximum-likelihood-tree)"
+    )
+    assert (tmp_path / "inference").exists() is False
 
 
 def test_python_workflow_api_runs_tree_comparative_and_ancestral_workflows() -> None:
