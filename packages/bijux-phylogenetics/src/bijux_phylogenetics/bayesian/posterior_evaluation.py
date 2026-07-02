@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+import csv
 from dataclasses import asdict, dataclass
+import json
 import math
 from pathlib import Path
 
@@ -15,10 +17,6 @@ from bijux_phylogenetics.bayesian.state import (
     serialize_bayesian_phylogenetic_state,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
-from bijux_phylogenetics.reports.service.artifacts import (
-    write_json_artifact,
-    write_tabular_artifact,
-)
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 _POSTERIOR_DECOMPOSITION_TOLERANCE = 1e-12
@@ -159,33 +157,49 @@ def write_bayesian_posterior_decomposition_table(
     report: BayesianPosteriorEvaluationReport,
 ) -> Path:
     """Write one row per posterior term with decomposition identity fields."""
-    return write_tabular_artifact(
-        path,
-        [
-            {
-                "term_kind": row.term_kind,
-                "term_name": row.term_name,
-                "family": row.family,
-                "log_value": format(row.log_value, ".15g"),
-                "parameter_values": row.parameter_values,
-                "analysis_name": report.analysis_name,
-                "topology_id": report.topology_id,
-                "hastings_independent_log_posterior": format(
-                    report.hastings_independent_log_posterior,
-                    ".15g",
-                ),
-                "log_likelihood": format(report.log_likelihood, ".15g"),
-                "total_log_prior": format(report.total_log_prior, ".15g"),
-                "decomposition_delta": format(report.decomposition_delta, ".15g"),
-                "decomposition_valid": str(report.decomposition_valid).lower(),
-                "posterior_term_source": report.posterior_term_source,
-                "likelihood_term_source": report.likelihood_term_source,
-                "prior_term_source": report.prior_term_source,
-                "identity_tolerance": format(report.identity_tolerance, ".15g"),
-            }
-            for row in report.rows
-        ],
-    )
+    rows = [
+        {
+            "term_kind": row.term_kind,
+            "term_name": row.term_name,
+            "family": row.family,
+            "log_value": format(row.log_value, ".15g"),
+            "parameter_values": row.parameter_values,
+            "analysis_name": report.analysis_name,
+            "topology_id": report.topology_id,
+            "hastings_independent_log_posterior": format(
+                report.hastings_independent_log_posterior,
+                ".15g",
+            ),
+            "log_likelihood": format(report.log_likelihood, ".15g"),
+            "total_log_prior": format(report.total_log_prior, ".15g"),
+            "decomposition_delta": format(report.decomposition_delta, ".15g"),
+            "decomposition_valid": str(report.decomposition_valid).lower(),
+            "posterior_term_source": report.posterior_term_source,
+            "likelihood_term_source": report.likelihood_term_source,
+            "prior_term_source": report.prior_term_source,
+            "identity_tolerance": format(report.identity_tolerance, ".15g"),
+        }
+        for row in report.rows
+    ]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fieldnames: list[str] = []
+    for row in rows:
+        for key in row:
+            if key not in fieldnames:
+                fieldnames.append(key)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames, delimiter="\t")
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(
+                {
+                    key: json.dumps(value, sort_keys=True)
+                    if isinstance(value, (dict, list))
+                    else value
+                    for key, value in row.items()
+                }
+            )
+    return path
 
 
 def write_bayesian_posterior_evaluation_artifacts(
@@ -196,25 +210,31 @@ def write_bayesian_posterior_evaluation_artifacts(
     decomposition_table_path = output_directory / "posterior-decomposition.tsv"
     summary_path = output_directory / "posterior-evaluation.json"
     write_bayesian_posterior_decomposition_table(decomposition_table_path, report)
-    write_json_artifact(
-        summary_path,
-        {
-            "analysis_name": report.analysis_name,
-            "topology_id": report.topology_id,
-            "posterior_term_source": report.posterior_term_source,
-            "likelihood_term_source": report.likelihood_term_source,
-            "prior_term_source": report.prior_term_source,
-            "identity_tolerance": report.identity_tolerance,
-            "log_likelihood": report.log_likelihood,
-            "total_log_prior": report.total_log_prior,
-            "hastings_independent_log_posterior": (
-                report.hastings_independent_log_posterior
-            ),
-            "decomposition_delta": report.decomposition_delta,
-            "decomposition_valid": report.decomposition_valid,
-            "state": serialize_bayesian_phylogenetic_state(report.state),
-            "rows": [asdict(row) for row in report.rows],
-        },
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
+    summary_path.write_text(
+        json.dumps(
+            {
+                "analysis_name": report.analysis_name,
+                "topology_id": report.topology_id,
+                "posterior_term_source": report.posterior_term_source,
+                "likelihood_term_source": report.likelihood_term_source,
+                "prior_term_source": report.prior_term_source,
+                "identity_tolerance": report.identity_tolerance,
+                "log_likelihood": report.log_likelihood,
+                "total_log_prior": report.total_log_prior,
+                "hastings_independent_log_posterior": (
+                    report.hastings_independent_log_posterior
+                ),
+                "decomposition_delta": report.decomposition_delta,
+                "decomposition_valid": report.decomposition_valid,
+                "state": serialize_bayesian_phylogenetic_state(report.state),
+                "rows": [asdict(row) for row in report.rows],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
     )
     return {
         "decomposition_table_path": decomposition_table_path,

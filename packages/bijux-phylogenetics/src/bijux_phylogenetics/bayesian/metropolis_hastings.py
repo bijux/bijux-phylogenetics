@@ -17,6 +17,9 @@ from bijux_phylogenetics.bayesian.partition_model_state import (
     resolve_partition_parameter_states_from_model_parameters,
     strip_partition_model_parameter_state,
 )
+from bijux_phylogenetics.bayesian.posterior_evaluation import (
+    evaluate_bayesian_posterior,
+)
 from bijux_phylogenetics.bayesian.state import (
     BayesianLikelihoodContextState,
     BayesianModelParameterState,
@@ -2168,33 +2171,14 @@ def score_bayesian_phylogenetic_state(
     random_state: MetropolisHastingsRandomState | None = None,
 ) -> BayesianPhylogeneticState:
     """Score one Bayesian state from owned tree and model-parameter surfaces."""
-    provisional_state = build_bayesian_phylogenetic_state(
+    return evaluate_bayesian_posterior(
         tree=tree,
         model_parameters=model_parameters,
         likelihood_context=likelihood_context,
-        prior_components=[
-            BayesianPriorComponentState(
-                component_name="provisional",
-                family=None,
-                log_prior=0.0,
-            )
-        ],
-        log_likelihood=0.0,
-    )
-    updated_prior_components = update_prior_components(provisional_state)
-    if not updated_prior_components:
-        raise PhylogeneticsError(
-            "metropolis-hastings state scoring requires at least one prior component",
-            code="metropolis_hastings_prior_components_empty",
-        )
-    return build_bayesian_phylogenetic_state(
-        tree=provisional_state.tree.to_tree(),
-        model_parameters=provisional_state.model_parameters,
-        likelihood_context=provisional_state.likelihood_context,
-        prior_components=updated_prior_components,
-        log_likelihood=update_log_likelihood(provisional_state),
+        update_prior_components=update_prior_components,
+        update_log_likelihood=update_log_likelihood,
         random_state=random_state,
-    )
+    ).state
 
 
 def run_metropolis_hastings_sampler(
