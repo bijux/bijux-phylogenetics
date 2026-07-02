@@ -44,6 +44,7 @@ from bijux_phylogenetics.bayesian import (
     RELAXED_CLOCK_RATE_POLICIES,
     SIMPLEX_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES,
     SUBSTITUTION_PARAMETER_PRIOR_TARGETS,
+    TIME_TREE_TOPOLOGY_PRIOR_FAMILIES,
     TIME_TREE_PRIOR_CONDITIONING_MODES,
     TREE_TOPOLOGY_PRIOR_FAMILIES,
     YULE_TREE_PRIOR_FAMILIES,
@@ -315,6 +316,7 @@ from bijux_phylogenetics.bayesian import (
     evaluate_skyline_coalescent_tree_log_prior,
     evaluate_strict_clock_tree_log_prior,
     evaluate_substitution_parameter_log_prior,
+    evaluate_time_tree_topology_log_prior,
     evaluate_tree_topology_log_prior,
     evaluate_yule_tree_log_prior,
     infer_bayesian_model_id,
@@ -347,6 +349,7 @@ from bijux_phylogenetics.bayesian import (
     replay_fixed_topology_dna_run_manifest,
     resolve_partition_parameter_linkage_plan_from_model_parameters,
     resolve_partition_parameter_states_from_model_parameters,
+    require_time_tree_topology_prior_model,
     run_adaptive_tuned_metropolis_hastings_sampler,
     run_beast_posterior_inference,
     run_brownian_continuous_trait_metropolis_hastings,
@@ -397,6 +400,7 @@ from bijux_phylogenetics.bayesian import (
     summarize_ornstein_uhlenbeck_continuous_trait_posterior_missing_values,
     summarize_posterior_model_averaged_estimates,
     summarize_posterior_predictive_p_values,
+    supports_time_tree_topology_prior_model,
     validate_partition_substitution_model_name,
     validate_tree_topology_prior_taxa,
     write_bayesian_posterior_decomposition_table,
@@ -1350,6 +1354,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.SUBSTITUTION_PARAMETER_PRIOR_TARGETS
         is SUBSTITUTION_PARAMETER_PRIOR_TARGETS
+    )
+    assert (
+        bayesian_api.TIME_TREE_TOPOLOGY_PRIOR_FAMILIES
+        is TIME_TREE_TOPOLOGY_PRIOR_FAMILIES
     )
     assert bayesian_api.TREE_TOPOLOGY_PRIOR_FAMILIES is TREE_TOPOLOGY_PRIOR_FAMILIES
     assert (
@@ -2561,6 +2569,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is deserialize_bayesian_phylogenetic_state_json
     )
     assert (
+        bayesian_api.evaluate_time_tree_topology_log_prior
+        is evaluate_time_tree_topology_log_prior
+    )
+    assert (
         bayesian_api.evaluate_tree_topology_log_prior
         is evaluate_tree_topology_log_prior
     )
@@ -2576,6 +2588,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.load_local_clock_regime_definitions
         is load_local_clock_regime_definitions
+    )
+    assert (
+        bayesian_api.require_time_tree_topology_prior_model
+        is require_time_tree_topology_prior_model
     )
     assert (
         bayesian_api.validate_partition_substitution_model_name
@@ -2609,6 +2625,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is write_posterior_ancestral_state_probability_table
     )
     assert bayesian_api.write_posterior_tree_subsample is write_posterior_tree_subsample
+    assert (
+        bayesian_api.supports_time_tree_topology_prior_model
+        is supports_time_tree_topology_prior_model
+    )
     assert (
         bayesian_api.validate_tree_topology_prior_taxa
         is validate_tree_topology_prior_taxa

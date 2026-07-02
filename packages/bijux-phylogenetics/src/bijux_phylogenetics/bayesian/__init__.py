@@ -667,12 +667,16 @@ from .trace_posterior_intervals import (
     summarize_metropolis_hastings_trace_posterior_intervals,
 )
 from .tree_topology_priors import (
+    TIME_TREE_TOPOLOGY_PRIOR_FAMILIES,
     TREE_TOPOLOGY_PRIOR_FAMILIES,
     TreeTopologyPriorEvaluationReport,
     TreeTopologyPriorModel,
     build_uniform_rooted_tree_topology_prior,
     count_rooted_labeled_bifurcating_topologies,
+    evaluate_time_tree_topology_log_prior,
     evaluate_tree_topology_log_prior,
+    require_time_tree_topology_prior_model,
+    supports_time_tree_topology_prior_model,
     validate_tree_topology_prior_taxa,
 )
 from .wrapper_correspondence import (
@@ -921,6 +925,7 @@ __all__ = [
     "BayesianPriorComponentState",
     "BayesianStateBranchRow",
     "BayesianTreeState",
+    "TIME_TREE_TOPOLOGY_PRIOR_FAMILIES",
     "TimeTreeFigurePackageResult",
     "TimeTreePublicationAudit",
     "TimeTreeReadinessReport",
@@ -1065,6 +1070,7 @@ __all__ = [
     "evaluate_relaxed_lognormal_clock_tree_log_prior",
     "evaluate_strict_clock_tree_log_prior",
     "evaluate_substitution_parameter_log_prior",
+    "evaluate_time_tree_topology_log_prior",
     "evaluate_tree_branch_length_log_prior",
     "evaluate_tree_topology_log_prior",
     "evaluate_yule_tree_log_prior",
@@ -1192,6 +1198,8 @@ __all__ = [
     "MetropolisHastingsBurninPolicy",
     "MetropolisHastingsBurninReport",
     "replay_fixed_topology_dna_run_manifest",
+    "require_time_tree_topology_prior_model",
+    "supports_time_tree_topology_prior_model",
     "validate_beast_posterior_log",
     "validate_beast_analysis_xml",
     "validate_fossil_calibration_table",
