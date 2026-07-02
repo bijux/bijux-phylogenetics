@@ -37,7 +37,7 @@ BUILD_TEMP_CLEAN_PATHS := build dist *.egg-info
 BUILD_POST_TARGETS := build-install-smoke
 PACKAGE_NAME := bijux-phylogenetics
 SBOM_REQUIREMENTS_WRITER := -m bijux_phylogenetics_dev.quality.requirements_writer
-FROZEN_TEST_REPORT_PYTHON := $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python
+FROZEN_TEST_REPORT_PYTHON = $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python
 
 quality-compileall:
 	@"$(VENV_PYTHON)" -m compileall src | tee "$(PROJECT_ARTIFACTS_DIR)/quality/compileall.log"

@@ -21,7 +21,7 @@ SECURITY_EXTRA_TARGETS := sync-license-assets-package
 ENABLE_PYDOCSTYLE := 1
 SKIP_MYPY := 0
 PACKAGE_ALL_TARGETS := clean install test lint quality security build sbom
-FROZEN_TEST_REPORT_PYTHON := $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python
+FROZEN_TEST_REPORT_PYTHON = $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python
 
 sync-license-assets-package:
 	@"$(VENV_PYTHON)" -m bijux_phylogenetics_dev.release.license_assets sync

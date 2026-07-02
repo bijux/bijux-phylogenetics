@@ -249,7 +249,7 @@ def test_phylogenetic_alias_make_exposes_frozen_full_suite_surface() -> None:
     )
 
     assert (
-        "FROZEN_TEST_REPORT_PYTHON := $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python"
+        "FROZEN_TEST_REPORT_PYTHON = $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python"
         in alias_make
     )
     assert (
@@ -358,7 +358,7 @@ def test_runtime_package_make_exposes_frozen_full_suite_surface() -> None:
     ).read_text(encoding="utf-8")
 
     assert (
-        "FROZEN_TEST_REPORT_PYTHON := $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python"
+        "FROZEN_TEST_REPORT_PYTHON = $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python"
         in runtime_make
     )
     assert (
@@ -465,7 +465,7 @@ def test_dev_package_make_exposes_frozen_full_suite_surface() -> None:
     ).read_text(encoding="utf-8")
 
     assert (
-        "FROZEN_TEST_REPORT_PYTHON := $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python"
+        "FROZEN_TEST_REPORT_PYTHON = $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python"
         in dev_make
     )
     assert (
