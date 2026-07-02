@@ -8,6 +8,7 @@ from typing import Any, Union, get_args, get_origin, get_type_hints
 
 from bijux_phylogenetics.phylo.likelihood.models import (
     LikelihoodOptimizationBoundaryWarning,
+    LikelihoodWrapperCorrespondenceReport,
     LikelihoodWrapperCorrespondenceSummaryRow,
     NucleotideLikelihoodBootstrapTreeInferenceReport,
     NucleotideLikelihoodMultiStartRunSummary,
@@ -111,6 +112,11 @@ def build_nucleotide_maximum_likelihood_result(
 ) -> NucleotideMaximumLikelihoodResult:
     """Build one unified native ML result from a completed tree-inference report."""
     selected_model_row = _selected_model_row(inference_report)
+    resolved_support_reports = (
+        NucleotideMaximumLikelihoodSupportReports()
+        if support_reports is None
+        else _validate_support_reports(inference_report, support_reports)
+    )
     return NucleotideMaximumLikelihoodResult(
         inference_report=inference_report,
         final_tree_newick=inference_report.best_final_tree_newick,
@@ -123,16 +129,50 @@ def build_nucleotide_maximum_likelihood_result(
         search_method=inference_report.search_method,
         run_summaries=list(inference_report.run_summaries),
         search_trace_rows=list(inference_report.best_search_report.trace_rows),
-        support_reports=(
-            NucleotideMaximumLikelihoodSupportReports()
-            if support_reports is None
-            else support_reports
-        ),
+        support_reports=resolved_support_reports,
         warning_messages=_collect_inference_warning_messages(
             inference_report,
             selected_model_row=selected_model_row,
+            support_reports=resolved_support_reports,
         ),
         benchmark_metadata=benchmark_metadata,
+    )
+
+
+def build_nucleotide_maximum_likelihood_support_reports(
+    inference_report: NucleotideLikelihoodTreeInferenceReport,
+    *,
+    bootstrap_report: NucleotideLikelihoodBootstrapTreeInferenceReport | None = None,
+    sh_like_report: NucleotideShLikeBranchSupportReport | None = None,
+) -> NucleotideMaximumLikelihoodSupportReports:
+    """Build one validated support bundle for a completed native ML tree result."""
+    return _validate_support_reports(
+        inference_report,
+        NucleotideMaximumLikelihoodSupportReports(
+            bootstrap=bootstrap_report,
+            sh_like=sh_like_report,
+        ),
+    )
+
+
+def build_nucleotide_maximum_likelihood_benchmark_metadata(
+    correspondence_report: LikelihoodWrapperCorrespondenceReport,
+) -> NucleotideMaximumLikelihoodBenchmarkMetadata:
+    """Condense one wrapper-correspondence report into stable ML benchmark metadata."""
+    return NucleotideMaximumLikelihoodBenchmarkMetadata(
+        wrapper_correspondence_case_count=correspondence_report.case_count,
+        wrapper_correspondence_supported_case_count=(
+            correspondence_report.supported_case_count
+        ),
+        wrapper_correspondence_blocking_case_count=(
+            correspondence_report.blocking_case_count
+        ),
+        wrapper_correspondence_all_supported_cases_clear=(
+            correspondence_report.all_supported_cases_clear
+        ),
+        wrapper_correspondence_summary_rows=list(
+            correspondence_report.summary_rows
+        ),
     )
 
 
@@ -166,6 +206,7 @@ def _collect_inference_warning_messages(
     inference_report: NucleotideLikelihoodTreeInferenceReport,
     *,
     selected_model_row: SubstitutionModelSelectionRow,
+    support_reports: NucleotideMaximumLikelihoodSupportReports,
 ) -> list[str]:
     warnings: list[str] = []
     warnings.extend(inference_report.model_selection_report.warnings)
@@ -178,7 +219,51 @@ def _collect_inference_warning_messages(
     warnings.extend(inference_report.best_search_report.substitution_parameter_warnings)
     for row in inference_report.best_search_report.trace_rows:
         warnings.extend(row.boundary_warning_messages)
+    if support_reports.sh_like is not None:
+        warnings.append(support_reports.sh_like.caution_label)
     return _unique_in_order(warnings)
+
+
+def _validate_support_reports(
+    inference_report: NucleotideLikelihoodTreeInferenceReport,
+    support_reports: NucleotideMaximumLikelihoodSupportReports,
+) -> NucleotideMaximumLikelihoodSupportReports:
+    if support_reports.bootstrap is not None:
+        _validate_bootstrap_report(inference_report, support_reports.bootstrap)
+    if support_reports.sh_like is not None:
+        _validate_sh_like_report(inference_report, support_reports.sh_like)
+    return support_reports
+
+
+def _validate_bootstrap_report(
+    inference_report: NucleotideLikelihoodTreeInferenceReport,
+    bootstrap_report: NucleotideLikelihoodBootstrapTreeInferenceReport,
+) -> None:
+    if bootstrap_report.reference_tree_newick != inference_report.best_final_tree_newick:
+        raise ValueError(
+            "bootstrap support report tree does not match the inference result tree"
+        )
+    if (
+        bootstrap_report.selected_reference_model_name
+        != inference_report.selected_model_name
+    ):
+        raise ValueError(
+            "bootstrap support report model does not match the inference result model"
+        )
+
+
+def _validate_sh_like_report(
+    inference_report: NucleotideLikelihoodTreeInferenceReport,
+    sh_like_report: NucleotideShLikeBranchSupportReport,
+) -> None:
+    if sh_like_report.reference_tree_newick != inference_report.best_final_tree_newick:
+        raise ValueError(
+            "SH-like support report tree does not match the inference result tree"
+        )
+    if sh_like_report.model_name.upper() != inference_report.selected_model_name.upper():
+        raise ValueError(
+            "SH-like support report model does not match the inference result model"
+        )
 
 
 def _unique_in_order(values: list[str]) -> list[str]:
