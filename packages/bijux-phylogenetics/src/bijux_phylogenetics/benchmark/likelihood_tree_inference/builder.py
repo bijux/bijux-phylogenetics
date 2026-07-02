@@ -34,6 +34,10 @@ from .contracts import (
     MaximumLikelihoodWrapperBenchmarkReport,
     MaximumLikelihoodWrapperBenchmarkSummaryRow,
     MaximumLikelihoodWrapperSupportComparison,
+    NativeMaximumLikelihoodMemoryBenchmarkBundle,
+    NativeMaximumLikelihoodMemoryBenchmarkObservation,
+    NativeMaximumLikelihoodMemoryBenchmarkReport,
+    NativeMaximumLikelihoodMemoryTrendRow,
     NativeMaximumLikelihoodSpeedBenchmarkBundle,
     NativeMaximumLikelihoodSpeedBenchmarkObservation,
     NativeMaximumLikelihoodSpeedBenchmarkReport,
@@ -44,6 +48,10 @@ from .artifact_outputs import (
     write_maximum_likelihood_wrapper_comparison_observation_table,
     write_maximum_likelihood_wrapper_comparison_run_json,
     write_maximum_likelihood_wrapper_comparison_summary_table,
+    write_native_maximum_likelihood_memory_observation_table,
+    write_native_maximum_likelihood_memory_run_json,
+    write_native_maximum_likelihood_memory_summary_table,
+    write_native_maximum_likelihood_memory_trend_table,
     write_native_maximum_likelihood_speed_observation_table,
     write_native_maximum_likelihood_speed_run_json,
     write_native_maximum_likelihood_speed_summary_table,
@@ -68,6 +76,10 @@ _DEFAULT_NATIVE_MAXIMUM_LIKELIHOOD_SPEED_MODEL_NAMES = (
     "jc69",
     "k80",
 )
+_ELEVATED_MEMORY_RATIO_THRESHOLD = 1.25
+_ELEVATED_MEMORY_DELTA_THRESHOLD_BYTES = 100_000
+_MEMORY_BLOWUP_RATIO_THRESHOLD = 2.0
+_MEMORY_BLOWUP_DELTA_THRESHOLD_BYTES = 500_000
 
 
 @dataclass(frozen=True, slots=True)
@@ -175,6 +187,88 @@ def benchmark_native_maximum_likelihood_speed(
     )
 
 
+def benchmark_native_maximum_likelihood_memory(
+    *,
+    replicates: int = 1,
+    size_classes: list[tuple[str, int, int]] | None = None,
+    model_names: list[str] | tuple[str, ...] | None = None,
+    search_methods: list[str] | tuple[str, ...] | None = None,
+    start_tree_count: int = 1,
+    start_tree_seed: int = 17,
+    upper_branch_length_bound: float = 1.0,
+) -> NativeMaximumLikelihoodMemoryBenchmarkReport:
+    """Benchmark native ML peak memory across governed model, size, and search lanes."""
+    if replicates < 1:
+        raise ValueError(f"replicates must be at least 1, got {replicates}")
+    if start_tree_count < 1:
+        raise ValueError(f"start_tree_count must be at least 1, got {start_tree_count}")
+    resolved_size_classes = _validate_native_maximum_likelihood_benchmark_size_classes(
+        size_classes or list(NATIVE_MAXIMUM_LIKELIHOOD_SPEED_SIZE_CLASSES)
+    )
+    resolved_model_names = _validate_native_maximum_likelihood_benchmark_model_names(
+        model_names or _DEFAULT_NATIVE_MAXIMUM_LIKELIHOOD_SPEED_MODEL_NAMES
+    )
+    resolved_search_methods = [
+        validate_nucleotide_likelihood_tree_inference_search_method(search_method)
+        for search_method in (
+            search_methods
+            or ("nni", "spr", "tbr")
+        )
+    ]
+
+    measured_lanes = _measure_native_maximum_likelihood_benchmark_lanes(
+        size_classes=resolved_size_classes,
+        model_names=resolved_model_names,
+        search_methods=resolved_search_methods,
+        replicates=replicates,
+        start_tree_count=start_tree_count,
+        start_tree_seed=start_tree_seed,
+        upper_branch_length_bound=upper_branch_length_bound,
+        temporary_directory_prefix="bijux-native-maximum-likelihood-memory-",
+    )
+    observations = [
+        _build_native_maximum_likelihood_memory_observation(lane)
+        for lane in measured_lanes
+    ]
+    size_class_labels = [label for label, _, _ in resolved_size_classes]
+    trend_rows = _build_native_maximum_likelihood_memory_trend_rows(
+        observations,
+        size_class_labels=size_class_labels,
+        model_names=resolved_model_names,
+        search_methods=resolved_search_methods,
+    )
+    stable_memory_case_count = sum(
+        1
+        for row in trend_rows
+        if row.memory_growth_status == "stable-memory-growth"
+    )
+    elevated_memory_case_count = sum(
+        1
+        for row in trend_rows
+        if row.memory_growth_status == "elevated-memory-growth"
+    )
+    memory_blowup_case_count = sum(
+        1 for row in trend_rows if row.memory_growth_status == "memory-blowup"
+    )
+    return NativeMaximumLikelihoodMemoryBenchmarkReport(
+        replicates=replicates,
+        observations=observations,
+        trend_rows=trend_rows,
+        size_class_labels=size_class_labels,
+        model_names=list(resolved_model_names),
+        search_methods=resolved_search_methods,
+        stable_memory_case_count=stable_memory_case_count,
+        elevated_memory_case_count=elevated_memory_case_count,
+        memory_blowup_case_count=memory_blowup_case_count,
+        limitations=[
+            "native maximum-likelihood memory lanes use python tracemalloc peak allocations, so they reflect owned likelihood context and cache growth rather than full process resident memory",
+            "memory growth status is classified from both peak-memory ratio and absolute byte growth between governed size classes so trivial allocation noise does not appear as a blowup",
+            "the default governed memory roster samples jc69 and k80; f81 and hky85 remain available through explicit model overrides when broader model memory review is needed",
+            "the governed native memory roster currently excludes fixed-parameter gtr because fixed-tree native inference still requires caller-supplied exchangeabilities for that lane",
+        ],
+    )
+
+
 def benchmark_maximum_likelihood_wrapper_comparison() -> (
     MaximumLikelihoodWrapperBenchmarkReport
 ):
@@ -269,6 +363,59 @@ def write_native_maximum_likelihood_speed_bundle(
         report,
     )
     return NativeMaximumLikelihoodSpeedBenchmarkBundle(
+        output_root=output_root,
+        summary_path=summary_path,
+        observation_table_path=observation_table_path,
+        trend_table_path=trend_table_path,
+        run_json_path=run_json_path,
+    )
+
+
+def write_native_maximum_likelihood_memory_bundle(
+    output_root: Path,
+    *,
+    replicates: int = 1,
+    size_classes: list[tuple[str, int, int]] | None = None,
+    model_names: list[str] | tuple[str, ...] | None = None,
+    search_methods: list[str] | tuple[str, ...] | None = None,
+    start_tree_count: int = 1,
+    start_tree_seed: int = 17,
+    upper_branch_length_bound: float = 1.0,
+) -> NativeMaximumLikelihoodMemoryBenchmarkBundle:
+    """Write one governed artifact bundle for the native ML memory benchmark."""
+    if output_root.exists():
+        for path in sorted(output_root.rglob("*"), reverse=True):
+            if path.is_file():
+                path.unlink()
+            elif path.is_dir():
+                path.rmdir()
+    output_root.mkdir(parents=True, exist_ok=True)
+    report = benchmark_native_maximum_likelihood_memory(
+        replicates=replicates,
+        size_classes=size_classes,
+        model_names=model_names,
+        search_methods=search_methods,
+        start_tree_count=start_tree_count,
+        start_tree_seed=start_tree_seed,
+        upper_branch_length_bound=upper_branch_length_bound,
+    )
+    summary_path = write_native_maximum_likelihood_memory_summary_table(
+        output_root / "summary.tsv",
+        report,
+    )
+    observation_table_path = write_native_maximum_likelihood_memory_observation_table(
+        output_root / "observations.tsv",
+        report,
+    )
+    trend_table_path = write_native_maximum_likelihood_memory_trend_table(
+        output_root / "trends.tsv",
+        report,
+    )
+    run_json_path = write_native_maximum_likelihood_memory_run_json(
+        output_root / "run.json",
+        report,
+    )
+    return NativeMaximumLikelihoodMemoryBenchmarkBundle(
         output_root=output_root,
         summary_path=summary_path,
         observation_table_path=observation_table_path,
@@ -481,6 +628,29 @@ def _build_native_maximum_likelihood_speed_observation(
     )
 
 
+def _build_native_maximum_likelihood_memory_observation(
+    lane: _MeasuredNativeMaximumLikelihoodLane,
+) -> NativeMaximumLikelihoodMemoryBenchmarkObservation:
+    return NativeMaximumLikelihoodMemoryBenchmarkObservation(
+        label=(
+            f"{lane.size_class}-{lane.model_name}-{lane.search_method}-"
+            f"{lane.taxon_count}-taxa-{lane.site_count}-sites"
+        ),
+        size_class=lane.size_class,
+        model_name=lane.model_name,
+        search_method=lane.search_method,
+        taxon_count=lane.taxon_count,
+        site_count=lane.site_count,
+        runtime_seconds=lane.runtime_seconds,
+        peak_memory_bytes=lane.peak_memory_bytes,
+        memory_observation_kind=lane.memory_observation_kind,
+        selected_model_name=lane.selected_model_name,
+        best_run_source_label=lane.best_run_source_label,
+        search_algorithm=lane.search_algorithm,
+        final_log_likelihood=lane.final_log_likelihood,
+    )
+
+
 def _build_native_maximum_likelihood_speed_trend_rows(
     observations: list[NativeMaximumLikelihoodSpeedBenchmarkObservation],
     *,
@@ -528,6 +698,79 @@ def _build_native_maximum_likelihood_speed_trend_rows(
                     )
                 )
     return trend_rows
+
+
+def _build_native_maximum_likelihood_memory_trend_rows(
+    observations: list[NativeMaximumLikelihoodMemoryBenchmarkObservation],
+    *,
+    size_class_labels: list[str],
+    model_names: list[str] | tuple[str, ...],
+    search_methods: list[str],
+) -> list[NativeMaximumLikelihoodMemoryTrendRow]:
+    observation_by_key = {
+        (row.model_name, row.search_method, row.size_class): row for row in observations
+    }
+    trend_rows: list[NativeMaximumLikelihoodMemoryTrendRow] = []
+    for baseline_size_class, comparison_size_class in zip(
+        size_class_labels,
+        size_class_labels[1:],
+        strict=False,
+    ):
+        for model_name in model_names:
+            for search_method in search_methods:
+                baseline = observation_by_key[
+                    (model_name, search_method, baseline_size_class)
+                ]
+                comparison = observation_by_key[
+                    (model_name, search_method, comparison_size_class)
+                ]
+                peak_memory_ratio = round(
+                    comparison.peak_memory_bytes
+                    / max(baseline.peak_memory_bytes, 1),
+                    15,
+                )
+                peak_memory_delta_bytes = (
+                    comparison.peak_memory_bytes - baseline.peak_memory_bytes
+                )
+                trend_rows.append(
+                    NativeMaximumLikelihoodMemoryTrendRow(
+                        model_name=model_name,
+                        search_method=search_method,
+                        baseline_size_class=baseline_size_class,
+                        comparison_size_class=comparison_size_class,
+                        baseline_taxon_count=baseline.taxon_count,
+                        comparison_taxon_count=comparison.taxon_count,
+                        baseline_site_count=baseline.site_count,
+                        comparison_site_count=comparison.site_count,
+                        baseline_peak_memory_bytes=baseline.peak_memory_bytes,
+                        comparison_peak_memory_bytes=comparison.peak_memory_bytes,
+                        peak_memory_delta_bytes=peak_memory_delta_bytes,
+                        peak_memory_ratio=peak_memory_ratio,
+                        memory_growth_status=_classify_native_maximum_likelihood_memory_growth(
+                            peak_memory_ratio=peak_memory_ratio,
+                            peak_memory_delta_bytes=peak_memory_delta_bytes,
+                        ),
+                    )
+                )
+    return trend_rows
+
+
+def _classify_native_maximum_likelihood_memory_growth(
+    *,
+    peak_memory_ratio: float,
+    peak_memory_delta_bytes: int,
+) -> str:
+    if (
+        peak_memory_ratio >= _MEMORY_BLOWUP_RATIO_THRESHOLD
+        and peak_memory_delta_bytes >= _MEMORY_BLOWUP_DELTA_THRESHOLD_BYTES
+    ):
+        return "memory-blowup"
+    if (
+        peak_memory_ratio >= _ELEVATED_MEMORY_RATIO_THRESHOLD
+        and peak_memory_delta_bytes >= _ELEVATED_MEMORY_DELTA_THRESHOLD_BYTES
+    ):
+        return "elevated-memory-growth"
+    return "stable-memory-growth"
 
 
 def _validate_native_maximum_likelihood_benchmark_size_classes(

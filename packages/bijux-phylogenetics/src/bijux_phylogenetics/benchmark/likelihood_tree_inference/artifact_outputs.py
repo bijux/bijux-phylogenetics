@@ -8,8 +8,144 @@ from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 
 from .contracts import (
     MaximumLikelihoodWrapperBenchmarkReport,
+    NativeMaximumLikelihoodMemoryBenchmarkReport,
     NativeMaximumLikelihoodSpeedBenchmarkReport,
 )
+
+
+def write_native_maximum_likelihood_memory_summary_table(
+    path: Path,
+    report: NativeMaximumLikelihoodMemoryBenchmarkReport,
+) -> Path:
+    """Write the stable summary counts for one native ML memory benchmark run."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "replicates",
+            "observation_count",
+            "trend_row_count",
+            "size_class_labels",
+            "model_names",
+            "search_methods",
+            "stable_memory_case_count",
+            "elevated_memory_case_count",
+            "memory_blowup_case_count",
+            "limitations",
+        ],
+        rows=[
+            {
+                "replicates": report.replicates,
+                "observation_count": len(report.observations),
+                "trend_row_count": len(report.trend_rows),
+                "size_class_labels": " | ".join(report.size_class_labels),
+                "model_names": " | ".join(report.model_names),
+                "search_methods": " | ".join(report.search_methods),
+                "stable_memory_case_count": report.stable_memory_case_count,
+                "elevated_memory_case_count": report.elevated_memory_case_count,
+                "memory_blowup_case_count": report.memory_blowup_case_count,
+                "limitations": " | ".join(report.limitations),
+            }
+        ],
+    )
+
+
+def write_native_maximum_likelihood_memory_observation_table(
+    path: Path,
+    report: NativeMaximumLikelihoodMemoryBenchmarkReport,
+) -> Path:
+    """Write one stable observation row per native ML memory benchmark lane."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "label",
+            "size_class",
+            "model_name",
+            "search_method",
+            "taxon_count",
+            "site_count",
+            "runtime_seconds",
+            "peak_memory_bytes",
+            "memory_observation_kind",
+            "selected_model_name",
+            "best_run_source_label",
+            "search_algorithm",
+            "final_log_likelihood",
+        ],
+        rows=[
+            {
+                "label": row.label,
+                "size_class": row.size_class,
+                "model_name": row.model_name,
+                "search_method": row.search_method,
+                "taxon_count": row.taxon_count,
+                "site_count": row.site_count,
+                "runtime_seconds": format(row.runtime_seconds, ".15g"),
+                "peak_memory_bytes": row.peak_memory_bytes,
+                "memory_observation_kind": row.memory_observation_kind,
+                "selected_model_name": row.selected_model_name,
+                "best_run_source_label": row.best_run_source_label,
+                "search_algorithm": row.search_algorithm,
+                "final_log_likelihood": format(row.final_log_likelihood, ".15g"),
+            }
+            for row in report.observations
+        ],
+    )
+
+
+def write_native_maximum_likelihood_memory_trend_table(
+    path: Path,
+    report: NativeMaximumLikelihoodMemoryBenchmarkReport,
+) -> Path:
+    """Write one stable peak-memory growth row per native ML model and search lane."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "model_name",
+            "search_method",
+            "baseline_size_class",
+            "comparison_size_class",
+            "baseline_taxon_count",
+            "comparison_taxon_count",
+            "baseline_site_count",
+            "comparison_site_count",
+            "baseline_peak_memory_bytes",
+            "comparison_peak_memory_bytes",
+            "peak_memory_delta_bytes",
+            "peak_memory_ratio",
+            "memory_growth_status",
+        ],
+        rows=[
+            {
+                "model_name": row.model_name,
+                "search_method": row.search_method,
+                "baseline_size_class": row.baseline_size_class,
+                "comparison_size_class": row.comparison_size_class,
+                "baseline_taxon_count": row.baseline_taxon_count,
+                "comparison_taxon_count": row.comparison_taxon_count,
+                "baseline_site_count": row.baseline_site_count,
+                "comparison_site_count": row.comparison_site_count,
+                "baseline_peak_memory_bytes": row.baseline_peak_memory_bytes,
+                "comparison_peak_memory_bytes": row.comparison_peak_memory_bytes,
+                "peak_memory_delta_bytes": row.peak_memory_delta_bytes,
+                "peak_memory_ratio": format(row.peak_memory_ratio, ".15g"),
+                "memory_growth_status": row.memory_growth_status,
+            }
+            for row in report.trend_rows
+        ],
+    )
+
+
+def write_native_maximum_likelihood_memory_run_json(
+    path: Path,
+    report: NativeMaximumLikelihoodMemoryBenchmarkReport,
+) -> Path:
+    """Write the machine-readable native ML memory benchmark payload."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(asdict(report), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return path
 
 
 def write_native_maximum_likelihood_speed_summary_table(
