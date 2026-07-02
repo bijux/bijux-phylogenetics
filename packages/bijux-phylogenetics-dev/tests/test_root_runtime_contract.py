@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import ast
 from configparser import ConfigParser
+import os
 from pathlib import Path
+import subprocess
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PACKAGE_INIT = (
@@ -28,6 +30,9 @@ EXPECTED_ROOT_GATEWAYS = [
     "phylo",
     "trees",
 ]
+RUNTIME_PACKAGE_ROOT = REPO_ROOT / "packages" / "bijux-phylogenetics"
+RUNTIME_PACKAGE_PROFILE = REPO_ROOT / "makes" / "packages" / "bijux-phylogenetics.mk"
+RUNTIME_PACKAGE_VENV = REPO_ROOT / "artifacts" / "bijux-phylogenetics" / "venv"
 
 
 def _tox_config() -> ConfigParser:
@@ -109,6 +114,37 @@ def _stress_marked_functions(module_path: Path) -> set[str]:
 
 def _package_init_module() -> ast.Module:
     return ast.parse(PACKAGE_INIT.read_text(encoding="utf-8"))
+
+
+def _runtime_package_make_dry_run(target: str) -> str:
+    profile_path = os.path.relpath(RUNTIME_PACKAGE_PROFILE, start=RUNTIME_PACKAGE_ROOT)
+    completed = subprocess.run(
+        [
+            "make",
+            "-n",
+            "-C",
+            str(RUNTIME_PACKAGE_ROOT),
+            "-f",
+            profile_path,
+            target,
+            "PROJECT_SLUG=bijux-phylogenetics",
+            f"MONOREPO_ROOT={REPO_ROOT}",
+            f"ROOT_MAKE_DIR={REPO_ROOT / 'makes'}",
+            f"CONFIG_DIR={REPO_ROOT / 'configs'}",
+            f"PROJECT_DIR={RUNTIME_PACKAGE_ROOT}",
+            f"PROJECT_ARTIFACTS_DIR={REPO_ROOT / 'artifacts' / 'bijux-phylogenetics'}",
+            f"API_DIR={REPO_ROOT / 'apis' / 'bijux-phylogenetics'}",
+            f"VENV={RUNTIME_PACKAGE_VENV}",
+            f"VENV_PYTHON={RUNTIME_PACKAGE_VENV / 'bin' / 'python'}",
+            f"PYTHON={RUNTIME_PACKAGE_VENV / 'bin' / 'python'}",
+            f"ACT={RUNTIME_PACKAGE_VENV / 'bin'}",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
+    return completed.stdout
 
 
 def _package_init_exports() -> list[str]:
@@ -291,6 +327,14 @@ def test_runtime_package_make_exposes_unfiltered_test_all_plus_run_time_surface(
         in runtime_make
     )
     assert "test-all-plus-run-time: test" in runtime_make
+
+
+def test_runtime_package_make_default_test_lane_targets_smoke_suite() -> None:
+    dry_run = _runtime_package_make_dry_run("test")
+
+    assert "Running development smoke suite on tests/smoke" in dry_run
+    assert '"packages/bijux-phylogenetics/tests/smoke"' in dry_run
+    assert '-m "not slow and not real_local and not evaluation"' in dry_run
 
 
 def test_dev_package_make_excludes_slow_tests_by_default() -> None:
