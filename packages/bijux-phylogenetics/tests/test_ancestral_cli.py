@@ -418,7 +418,7 @@ def test_ancestral_discrete_reference_cli_reports_passing_cases(capsys) -> None:
     payload = json.loads(capsys.readouterr().out)
 
     assert exit_code == 0
-    assert payload["metrics"]["case_count"] == 10
+    assert payload["metrics"]["case_count"] == 12
     assert payload["metrics"]["external_case_count"] == 6
     assert payload["metrics"]["all_passed"] is True
 
