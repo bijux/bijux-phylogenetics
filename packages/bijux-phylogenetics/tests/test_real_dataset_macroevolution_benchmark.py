@@ -94,7 +94,13 @@ def test_benchmark_real_dataset_macroevolution_reports_native_and_review_surface
         parity_rows[
             ("lifeform-native-model-table", "all-rates-different", "native-model-table")
         ].within_aicc_tolerance
-        is False
+        is True
+    )
+    assert any(
+        "weakly identified" in note
+        for note in parity_rows[
+            ("lifeform-native-model-table", "all-rates-different", "native-model-table")
+        ].notes
     )
     assert (
         parity_rows[
