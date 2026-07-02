@@ -82,6 +82,32 @@ def test_parity_cli_restricts_live_geiger_cases(tmp_path: Path, capsys) -> None:
     assert observation["model_name"] == "lambda"
 
 
+def test_parity_cli_restricts_live_geiger_shards(tmp_path: Path, capsys) -> None:
+    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+
+    exit_code = main(
+        [
+            "parity",
+            "--reference-source",
+            "geiger-live",
+            "--geiger-rscript-executable",
+            str(rscript),
+            "--geiger-shard",
+            "geiger-fitcontinuous-model-lambda",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["function_count"] == 1
+    assert {
+        observation["function_name"]
+        for observation in payload["data"]["report"]["observations"]
+    } == {"geiger::fitContinuous(model='lambda')"}
+
+
 def test_parity_cli_writes_geiger_optimizer_triage_table_for_single_case(
     tmp_path: Path,
     capsys,

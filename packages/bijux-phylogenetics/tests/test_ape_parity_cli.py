@@ -65,3 +65,29 @@ def test_parity_cli_restricts_live_ape_cases(tmp_path: Path, capsys) -> None:
     assert payload["metrics"]["case_count"] == 1
     report = payload["data"]["report"]
     assert report["observations"][0]["case_id"] == "get-mrca-balanced-two-tip"
+
+
+def test_parity_cli_restricts_live_ape_shards(tmp_path: Path, capsys) -> None:
+    rscript = fake_ape_rscript(tmp_path / "fake-ape-rscript")
+
+    exit_code = main(
+        [
+            "parity",
+            "--reference-source",
+            "ape-live",
+            "--ape-rscript-executable",
+            str(rscript),
+            "--ape-shard",
+            "find_tree_mrca",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["function_count"] == 1
+    assert {
+        observation["python_function_name"]
+        for observation in payload["data"]["report"]["observations"]
+    } == {"find_tree_mrca"}

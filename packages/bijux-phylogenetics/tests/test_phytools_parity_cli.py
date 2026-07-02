@@ -97,3 +97,29 @@ def test_parity_cli_restricts_live_phytools_sim_history_root_prior_case(
         "0": 0.2,
         "1": 0.8,
     }
+
+
+def test_parity_cli_restricts_live_phytools_shards(tmp_path: Path, capsys) -> None:
+    rscript = fake_phytools_rscript(tmp_path / "fake-phytools-rscript")
+
+    exit_code = main(
+        [
+            "parity",
+            "--reference-source",
+            "phytools-live",
+            "--phytools-rscript-executable",
+            str(rscript),
+            "--phytools-shard",
+            "phytools-make-simmap-model-er",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["status"] == "ok"
+    assert payload["metrics"]["function_count"] == 1
+    assert {
+        observation["function_name"]
+        for observation in payload["data"]["report"]["observations"]
+    } == {"phytools::make.simmap(model='ER')"}

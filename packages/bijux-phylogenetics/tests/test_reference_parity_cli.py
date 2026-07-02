@@ -30,3 +30,20 @@ def test_reference_parity_cli_reports_pass_and_writes_tables(
     assert payload["metrics"]["extended"] is False
     assert Path(payload["data"]["summary_table"]).exists()
     assert Path(payload["data"]["observation_table"]).exists()
+
+
+def test_reference_parity_cli_restricts_checked_fixture_methods(capsys) -> None:
+    exit_code = main(
+        [
+            "parity",
+            "--reference-method",
+            "pgls",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["all_passed"] is True
+    assert payload["metrics"]["case_count"] == 3
+    assert payload["metrics"]["method_count"] == 1
