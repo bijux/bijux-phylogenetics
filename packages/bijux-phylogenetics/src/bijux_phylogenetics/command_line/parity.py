@@ -28,7 +28,10 @@ from bijux_phylogenetics.parity import (
     write_reference_parity_observation_table,
     write_reference_parity_summary_table,
 )
+from bijux_phylogenetics.parity.live_access import require_live_parity_access
 from bijux_phylogenetics.runtime.results import build_command_result
+
+_LIVE_REFERENCE_SOURCES = frozenset({"ape-live", "phytools-live", "geiger-live"})
 
 
 def add_parity_command(subparsers: Any) -> None:
@@ -39,7 +42,10 @@ def add_parity_command(subparsers: Any) -> None:
         "--reference-source",
         choices=("checked-fixture", "ape-live", "phytools-live", "geiger-live"),
         default="checked-fixture",
-        help="Choose the checked fixture parity suite or one of the live external execution harnesses.",
+        help=(
+            "Choose the checked fixture parity suite or one of the live external "
+            "execution harnesses. Live sources require RUN_LIVE_PARITY=1."
+        ),
     )
     parity.add_argument(
         "--extended",
@@ -139,15 +145,37 @@ def _command_line_api() -> Any:
     return command_line_api
 
 
+def _require_live_reference_source_access(args: Any) -> None:
+    if args.reference_source == "ape-live":
+        require_live_parity_access(
+            surface="parity command live reference dispatch",
+            reference_source="ape-live",
+            executable=args.ape_rscript_executable,
+        )
+        return
+    if args.reference_source == "phytools-live":
+        require_live_parity_access(
+            surface="parity command live reference dispatch",
+            reference_source="phytools-live",
+            executable=args.phytools_rscript_executable,
+        )
+        return
+    if args.reference_source == "geiger-live":
+        require_live_parity_access(
+            surface="parity command live reference dispatch",
+            reference_source="geiger-live",
+            executable=args.geiger_rscript_executable,
+        )
+
+
 def run_parity_command(args: Any) -> int:
     command_line_api = _command_line_api()
-    if (
-        args.reference_source in {"ape-live", "phytools-live", "geiger-live"}
-        and args.extended
-    ):
+    if args.reference_source in _LIVE_REFERENCE_SOURCES and args.extended:
         raise ValueError(
             "--extended is only supported for the checked fixture parity suite"
         )
+    if args.reference_source in _LIVE_REFERENCE_SOURCES:
+        _require_live_reference_source_access(args)
     if args.reference_source == "ape-live":
         report = run_ape_parity_cases(
             case_ids=args.ape_cases,
