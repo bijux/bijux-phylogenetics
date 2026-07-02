@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.bayesian import inference as bayesian_inference
 from bijux_phylogenetics.bayesian.branch_length_priors import (
     build_exponential_branch_length_prior,
@@ -26,6 +28,7 @@ from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
+from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -163,6 +166,93 @@ def test_run_bayesian_inference_dispatches_joint_topology_dna_runner(
         "seed": 7,
         "observation_policy": "reject",
     }
+
+
+def test_run_bayesian_inference_rejects_unsupported_model_definition_type() -> None:
+    with pytest.raises(PhylogeneticsError) as error_info:
+        bayesian_inference.run_bayesian_inference(
+            tree=_build_ambiguous_start_tree(),
+            records=_build_ambiguous_alignment_records(),
+            model_definition=object(),
+            proposal_schedule=_build_joint_topology_proposal_schedule(),
+            iteration_count=10,
+        )
+
+    assert error_info.value.code == "bayesian_inference_model_definition_type_invalid"
+
+
+def test_run_bayesian_inference_rejects_unsupported_proposal_schedule_type() -> None:
+    with pytest.raises(PhylogeneticsError) as error_info:
+        bayesian_inference.run_bayesian_inference(
+            tree=_build_ambiguous_start_tree(),
+            records=_build_ambiguous_alignment_records(),
+            model_definition=_build_joint_topology_model_definition(),
+            proposal_schedule=object(),
+            iteration_count=10,
+        )
+
+    assert error_info.value.code == "bayesian_inference_proposal_schedule_type_invalid"
+
+
+def test_run_bayesian_inference_rejects_mismatched_model_and_schedule() -> None:
+    with pytest.raises(PhylogeneticsError) as error_info:
+        bayesian_inference.run_bayesian_inference(
+            tree=_build_ambiguous_start_tree(),
+            records=_build_ambiguous_alignment_records(),
+            model_definition=_build_fixed_topology_model_definition(),
+            proposal_schedule=_build_joint_topology_proposal_schedule(),
+            iteration_count=10,
+        )
+
+    assert error_info.value.code == "bayesian_inference_model_schedule_mismatch"
+
+
+def _build_fixed_topology_model_definition():
+    return build_fixed_topology_dna_model_definition(
+        substitution_model_name="HKY85",
+        branch_length_prior=build_exponential_branch_length_prior(rate=4.0),
+        substitution_parameter_prior_bundle=build_substitution_parameter_prior_bundle(
+            kappa_prior=build_exponential_positive_substitution_parameter_prior(
+                rate=1.5
+            ),
+            base_frequency_prior=build_dirichlet_simplex_substitution_parameter_prior(
+                expected_component_names=("A", "C", "G", "T"),
+                concentration_parameters={"A": 2.0, "C": 2.0, "G": 2.0, "T": 2.0},
+            ),
+        ),
+    )
+
+
+def _build_joint_sequence_model_definition():
+    return build_fixed_topology_dna_model_definition(
+        substitution_model_name="K80",
+        branch_length_prior=build_exponential_branch_length_prior(rate=4.0),
+        substitution_parameter_prior_bundle=build_substitution_parameter_prior_bundle(
+            kappa_prior=build_exponential_positive_substitution_parameter_prior(
+                rate=1.5
+            )
+        ),
+    )
+
+
+def _build_joint_topology_model_definition():
+    return build_joint_topology_dna_model_definition(
+        sequence_model_definition=_build_joint_sequence_model_definition(),
+        topology_prior=build_uniform_rooted_tree_topology_prior(["A", "B", "C", "D"]),
+    )
+
+
+def _build_joint_topology_proposal_schedule():
+    return build_joint_topology_dna_proposal_schedule(
+        sequence_proposal_schedule=build_fixed_topology_dna_proposal_schedule(
+            model_definition=_build_joint_sequence_model_definition(),
+            branch_length_move_weight=1.0,
+            branch_length_log_scale_standard_deviation=0.25,
+            kappa_move_weight=1.0,
+            kappa_log_scale_standard_deviation=0.35,
+        ),
+        nni_move_weight=1.0,
+    )
 
 
 def _build_ambiguous_start_tree() -> PhyloTree:

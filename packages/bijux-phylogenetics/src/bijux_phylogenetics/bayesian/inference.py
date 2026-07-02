@@ -50,6 +50,24 @@ def run_bayesian_inference(
     observation_policy: str = "reject",
 ) -> BayesianInferenceRunReport:
     """Run one native Bayesian inference chain through the stable public entry point."""
+    if not isinstance(
+        model_definition,
+        FixedTopologyDnaModelDefinition | JointTopologyDnaModelDefinition,
+    ):
+        raise PhylogeneticsError(
+            "native Bayesian inference requires one supported model definition",
+            code="bayesian_inference_model_definition_type_invalid",
+            details={"model_definition_type": type(model_definition).__name__},
+        )
+    if not isinstance(
+        proposal_schedule,
+        FixedTopologyDnaProposalSchedule | JointTopologyDnaProposalSchedule,
+    ):
+        raise PhylogeneticsError(
+            "native Bayesian inference requires one supported proposal schedule",
+            code="bayesian_inference_proposal_schedule_type_invalid",
+            details={"proposal_schedule_type": type(proposal_schedule).__name__},
+        )
     if isinstance(model_definition, FixedTopologyDnaModelDefinition) and isinstance(
         proposal_schedule, FixedTopologyDnaProposalSchedule
     ):
@@ -77,8 +95,8 @@ def run_bayesian_inference(
             observation_policy=observation_policy,
         )
     raise PhylogeneticsError(
-        "native Bayesian inference requires one supported model-definition and proposal-schedule pair",
-        code="bayesian_inference_model_schedule_unsupported",
+        "native Bayesian inference requires one matching model-definition and proposal-schedule pair",
+        code="bayesian_inference_model_schedule_mismatch",
         details={
             "model_definition_type": type(model_definition).__name__,
             "proposal_schedule_type": type(proposal_schedule).__name__,
