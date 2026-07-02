@@ -215,11 +215,14 @@ def test_build_frozen_test_report_compares_current_run_against_frozen_ref(
     tmp_path: Path,
 ) -> None:
     repo_root, frozen_ref = _synthetic_repo(tmp_path)
+    artifacts_root = tmp_path / "artifacts"
+    _write(artifacts_root / "current" / "stale.txt", "stale\n")
+    _write(artifacts_root / "frozen" / "stale.txt", "stale\n")
     payload = build_frozen_test_report(
         repo_root,
         package="demo-package",
         frozen_ref=frozen_ref,
-        artifacts_root=tmp_path / "artifacts",
+        artifacts_root=artifacts_root,
         git_executable=_git(),
         make_executable=_fake_make_executable(tmp_path),
     )
@@ -232,3 +235,7 @@ def test_build_frozen_test_report_compares_current_run_against_frozen_ref(
     assert payload["changed_output_count"] == 1
     assert payload["scientific_drift_count"] == 2
     assert payload["changed_outputs"][0]["relative_path"] == "tree-report.json"
+    assert all(
+        difference["relative_path"] != "stale.txt"
+        for difference in payload["changed_outputs"]
+    )

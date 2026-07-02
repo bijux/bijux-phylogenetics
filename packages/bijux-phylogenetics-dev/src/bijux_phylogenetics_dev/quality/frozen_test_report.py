@@ -427,6 +427,7 @@ def _run_full_suite(
     artifacts_root: Path,
     make_executable: str,
 ) -> tuple[SuiteRunRecord, dict[str, SuiteTestRecord], dict[str, OutputFileRecord]]:
+    shutil.rmtree(artifacts_root, ignore_errors=True)
     artifacts_root.mkdir(parents=True, exist_ok=True)
     command = _package_make_command(
         repo_root,
