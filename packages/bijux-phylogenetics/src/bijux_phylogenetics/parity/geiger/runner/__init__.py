@@ -11,6 +11,7 @@ from ..likelihood_policy import build_geiger_likelihood_policy_rows
 from ..model_confidence import build_geiger_model_confidence_rows
 from ..optimizer_triage import build_geiger_optimizer_triage_rows
 from ..parameterization_registry import build_geiger_parameterization_registry_rows
+from ...live_access import require_live_parity_access
 from ..registry import (
     GeigerParityCase,
 )
@@ -105,6 +106,11 @@ def run_geiger_parity_cases(
     failure_root: Path | None = None,
 ) -> GeigerParityReport:
     """Run governed live `geiger` parity cases through the checked-in R runner."""
+    require_live_parity_access(
+        surface="geiger live parity runner",
+        reference_source="geiger-live",
+        executable=rscript_executable,
+    )
     selected_case_ids = resolve_geiger_parity_case_ids(
         case_ids=case_ids,
         shard_ids=shard_ids,

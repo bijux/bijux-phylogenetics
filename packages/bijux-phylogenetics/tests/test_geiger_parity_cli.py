@@ -10,15 +10,88 @@ from bijux_phylogenetics.parity.geiger.generated_report import (
     GeneratedGeigerParityReport,
 )
 from tests.support.fake_geiger_parity import fake_geiger_rscript
+from tests.support.geiger_fitcontinuous_brownian_reference import (
+    GEIGER_FITCONTINUOUS_BROWNIAN_REFERENCE_PAYLOADS,
+)
+from tests.support.geiger_fitcontinuous_delta_reference import (
+    GEIGER_FITCONTINUOUS_DELTA_REFERENCE_PAYLOADS,
+)
+from tests.support.geiger_fitcontinuous_early_burst_reference import (
+    GEIGER_FITCONTINUOUS_EARLY_BURST_REFERENCE_PAYLOADS,
+)
+from tests.support.geiger_fitcontinuous_kappa_reference import (
+    GEIGER_FITCONTINUOUS_KAPPA_REFERENCE_PAYLOADS,
+)
+from tests.support.geiger_fitcontinuous_lambda_reference import (
+    GEIGER_FITCONTINUOUS_LAMBDA_REFERENCE_PAYLOADS,
+)
+from tests.support.geiger_fitcontinuous_model_comparison_reference import (
+    GEIGER_FITCONTINUOUS_MODEL_COMPARISON_REFERENCE_PAYLOADS,
+)
+from tests.support.geiger_fitcontinuous_ou_reference import (
+    GEIGER_FITCONTINUOUS_OU_REFERENCE_PAYLOADS,
+)
+from tests.support.geiger_fitcontinuous_white_reference import (
+    GEIGER_FITCONTINUOUS_WHITE_REFERENCE_PAYLOADS,
+)
+from tests.support.geiger_fitdiscrete_ard_reference import (
+    GEIGER_FITDISCRETE_ARD_REFERENCE_PAYLOADS,
+)
+from tests.support.geiger_fitdiscrete_delta_reference import (
+    GEIGER_FITDISCRETE_DELTA_REFERENCE_PAYLOADS,
+)
+from tests.support.geiger_fitdiscrete_early_burst_reference import (
+    GEIGER_FITDISCRETE_EARLY_BURST_REFERENCE_PAYLOADS,
+)
+from tests.support.geiger_fitdiscrete_er_reference import (
+    GEIGER_FITDISCRETE_ER_REFERENCE_PAYLOADS,
+)
+from tests.support.geiger_fitdiscrete_kappa_reference import (
+    GEIGER_FITDISCRETE_KAPPA_REFERENCE_PAYLOADS,
+)
+from tests.support.geiger_fitdiscrete_lambda_reference import (
+    GEIGER_FITDISCRETE_LAMBDA_REFERENCE_PAYLOADS,
+)
+from tests.support.geiger_fitdiscrete_sym_reference import (
+    GEIGER_FITDISCRETE_SYM_REFERENCE_PAYLOADS,
+)
 
-pytestmark = pytest.mark.slow
+pytestmark = [
+    pytest.mark.slow,
+    pytest.mark.usefixtures("enable_live_parity_access"),
+]
+
+_GEIGER_CLI_REFERENCE_PAYLOADS = (
+    GEIGER_FITCONTINUOUS_BROWNIAN_REFERENCE_PAYLOADS
+    | GEIGER_FITCONTINUOUS_DELTA_REFERENCE_PAYLOADS
+    | GEIGER_FITCONTINUOUS_EARLY_BURST_REFERENCE_PAYLOADS
+    | GEIGER_FITCONTINUOUS_KAPPA_REFERENCE_PAYLOADS
+    | GEIGER_FITCONTINUOUS_LAMBDA_REFERENCE_PAYLOADS
+    | GEIGER_FITCONTINUOUS_MODEL_COMPARISON_REFERENCE_PAYLOADS
+    | GEIGER_FITCONTINUOUS_OU_REFERENCE_PAYLOADS
+    | GEIGER_FITCONTINUOUS_WHITE_REFERENCE_PAYLOADS
+    | GEIGER_FITDISCRETE_ARD_REFERENCE_PAYLOADS
+    | GEIGER_FITDISCRETE_DELTA_REFERENCE_PAYLOADS
+    | GEIGER_FITDISCRETE_EARLY_BURST_REFERENCE_PAYLOADS
+    | GEIGER_FITDISCRETE_ER_REFERENCE_PAYLOADS
+    | GEIGER_FITDISCRETE_KAPPA_REFERENCE_PAYLOADS
+    | GEIGER_FITDISCRETE_LAMBDA_REFERENCE_PAYLOADS
+    | GEIGER_FITDISCRETE_SYM_REFERENCE_PAYLOADS
+)
+
+
+def _fake_geiger_cli_rscript(path: Path) -> Path:
+    return fake_geiger_rscript(
+        path,
+        reference_payloads=_GEIGER_CLI_REFERENCE_PAYLOADS,
+    )
 
 
 def test_parity_cli_runs_live_geiger_harness_and_writes_tables(
     tmp_path: Path,
     capsys,
 ) -> None:
-    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    rscript = _fake_geiger_cli_rscript(tmp_path / "fake-geiger-rscript")
     summary_path = tmp_path / "geiger-parity-summary.tsv"
     observation_path = tmp_path / "geiger-parity-observations.tsv"
     triage_path = tmp_path / "geiger-optimizer-triage.tsv"
@@ -58,7 +131,7 @@ def test_parity_cli_runs_live_geiger_harness_and_writes_tables(
 
 
 def test_parity_cli_restricts_live_geiger_cases(tmp_path: Path, capsys) -> None:
-    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    rscript = _fake_geiger_cli_rscript(tmp_path / "fake-geiger-rscript")
 
     exit_code = main(
         [
@@ -83,7 +156,7 @@ def test_parity_cli_restricts_live_geiger_cases(tmp_path: Path, capsys) -> None:
 
 
 def test_parity_cli_restricts_live_geiger_shards(tmp_path: Path, capsys) -> None:
-    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    rscript = _fake_geiger_cli_rscript(tmp_path / "fake-geiger-rscript")
 
     exit_code = main(
         [
@@ -112,7 +185,7 @@ def test_parity_cli_writes_geiger_optimizer_triage_table_for_single_case(
     tmp_path: Path,
     capsys,
 ) -> None:
-    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    rscript = _fake_geiger_cli_rscript(tmp_path / "fake-geiger-rscript")
     triage_path = tmp_path / "geiger-optimizer-triage.tsv"
 
     exit_code = main(
@@ -144,7 +217,7 @@ def test_parity_cli_writes_geiger_boundary_warning_table_for_single_case(
     tmp_path: Path,
     capsys,
 ) -> None:
-    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    rscript = _fake_geiger_cli_rscript(tmp_path / "fake-geiger-rscript")
     boundary_path = tmp_path / "geiger-boundary-warning.tsv"
 
     exit_code = main(
@@ -177,7 +250,7 @@ def test_parity_cli_writes_geiger_model_confidence_table_for_single_case(
     tmp_path: Path,
     capsys,
 ) -> None:
-    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    rscript = _fake_geiger_cli_rscript(tmp_path / "fake-geiger-rscript")
     confidence_path = tmp_path / "geiger-model-confidence.tsv"
 
     exit_code = main(
@@ -210,7 +283,7 @@ def test_parity_cli_writes_geiger_parameterization_registry_for_single_case(
     tmp_path: Path,
     capsys,
 ) -> None:
-    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    rscript = _fake_geiger_cli_rscript(tmp_path / "fake-geiger-rscript")
     registry_path = tmp_path / "geiger-parameterization-registry.tsv"
 
     exit_code = main(
@@ -244,7 +317,7 @@ def test_parity_cli_writes_geiger_likelihood_policy_table_for_single_case(
     tmp_path: Path,
     capsys,
 ) -> None:
-    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    rscript = _fake_geiger_cli_rscript(tmp_path / "fake-geiger-rscript")
     policy_path = tmp_path / "geiger-likelihood-policy.tsv"
 
     exit_code = main(
@@ -276,7 +349,7 @@ def test_parity_cli_restricts_live_geiger_discrete_cases(
     tmp_path: Path,
     capsys,
 ) -> None:
-    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    rscript = _fake_geiger_cli_rscript(tmp_path / "fake-geiger-rscript")
 
     exit_code = main(
         [
@@ -304,7 +377,7 @@ def test_parity_cli_restricts_live_geiger_symmetric_discrete_cases(
     tmp_path: Path,
     capsys,
 ) -> None:
-    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    rscript = _fake_geiger_cli_rscript(tmp_path / "fake-geiger-rscript")
 
     exit_code = main(
         [
@@ -332,7 +405,7 @@ def test_parity_cli_restricts_live_geiger_lambda_discrete_cases(
     tmp_path: Path,
     capsys,
 ) -> None:
-    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    rscript = _fake_geiger_cli_rscript(tmp_path / "fake-geiger-rscript")
 
     exit_code = main(
         [
@@ -360,7 +433,7 @@ def test_parity_cli_restricts_live_geiger_kappa_discrete_cases(
     tmp_path: Path,
     capsys,
 ) -> None:
-    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    rscript = _fake_geiger_cli_rscript(tmp_path / "fake-geiger-rscript")
 
     exit_code = main(
         [
@@ -388,7 +461,7 @@ def test_parity_cli_restricts_live_geiger_delta_discrete_cases(
     tmp_path: Path,
     capsys,
 ) -> None:
-    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    rscript = _fake_geiger_cli_rscript(tmp_path / "fake-geiger-rscript")
 
     exit_code = main(
         [
@@ -416,7 +489,7 @@ def test_parity_cli_restricts_live_geiger_early_burst_discrete_cases(
     tmp_path: Path,
     capsys,
 ) -> None:
-    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    rscript = _fake_geiger_cli_rscript(tmp_path / "fake-geiger-rscript")
 
     exit_code = main(
         [
@@ -444,7 +517,7 @@ def test_parity_cli_restricts_live_geiger_ard_discrete_cases(
     tmp_path: Path,
     capsys,
 ) -> None:
-    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    rscript = _fake_geiger_cli_rscript(tmp_path / "fake-geiger-rscript")
 
     exit_code = main(
         [
@@ -473,7 +546,7 @@ def test_parity_cli_writes_generated_geiger_report(
     capsys,
     monkeypatch,
 ) -> None:
-    rscript = fake_geiger_rscript(tmp_path / "fake-geiger-rscript")
+    rscript = _fake_geiger_cli_rscript(tmp_path / "fake-geiger-rscript")
     markdown_path = tmp_path / "geiger-parity-report.md"
     json_path = tmp_path / "geiger-parity-report.json"
 

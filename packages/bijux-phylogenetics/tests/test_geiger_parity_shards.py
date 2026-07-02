@@ -2,11 +2,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.parity import (
     list_geiger_parity_shards,
     run_geiger_parity_cases,
 )
 from tests.support.fake_geiger_parity import fake_geiger_rscript
+
+pytestmark = pytest.mark.usefixtures("enable_live_parity_access")
 
 
 def test_list_geiger_parity_shards_groups_cases_by_function_and_model() -> None:

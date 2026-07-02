@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.parity.geiger.boundary_warning_registry import (
     GeigerBoundaryWarningRow,
 )
@@ -31,6 +33,26 @@ from bijux_phylogenetics.parity.geiger.runner import (
     GeigerParityReport,
     GeigerParitySummaryRow,
 )
+from bijux_phylogenetics.parity.live_access import RUN_LIVE_PARITY_ENV_VAR
+from bijux_phylogenetics.runtime.errors import ExternalEngineAccessError
+
+
+def test_build_generated_geiger_parity_report_requires_live_opt_in_for_refresh(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv(RUN_LIVE_PARITY_ENV_VAR, raising=False)
+
+    with pytest.raises(
+        ExternalEngineAccessError,
+        match="set RUN_LIVE_PARITY=1 to continue",
+    ) as error:
+        build_generated_geiger_parity_report()
+
+    assert error.value.code == "external_engine_access_forbidden"
+    assert (
+        error.value.details["surface"]
+        == "geiger generated parity report live refresh"
+    )
 
 
 def test_build_generated_geiger_parity_report_aggregates_live_and_artifact_evidence(
