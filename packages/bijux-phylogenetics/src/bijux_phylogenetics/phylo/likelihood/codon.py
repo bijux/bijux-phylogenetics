@@ -25,6 +25,7 @@ from bijux_phylogenetics.phylo.likelihood.ctmc import (
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
     FiniteStateLikelihoodSurface,
     compile_finite_state_likelihood_context,
+    evaluate_finite_state_tree_log_likelihood_from_patterns,
     evaluate_finite_state_site_log_likelihood_rows_from_patterns,
     evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture,
 )
@@ -117,7 +118,15 @@ def evaluate_codon_ctmc_tree_likelihood(
         fixed_root_state=fixed_root_state,
         stationary_frequencies=resolved_model.stationary_frequencies,
     )
-    site_log_likelihoods, log_likelihood = (
+    log_likelihood = _evaluate_codon_ctmc_tree_likelihood_from_patterns(
+        tree,
+        compressed_patterns,
+        state_space=resolved_model.state_space,
+        rate_matrix=resolved_model.rate_matrix,
+        root_prior=resolved_root_prior.root_prior,
+        observation_policy=resolved_model.observation_policy,
+    )
+    site_log_likelihoods, reconstructed_log_likelihood = (
         _evaluate_codon_ctmc_tree_likelihood_rows_from_patterns(
             tree,
             compressed_patterns,
@@ -129,7 +138,7 @@ def evaluate_codon_ctmc_tree_likelihood(
     )
     validate_site_log_likelihood_reconstruction(
         site_log_likelihoods,
-        expected_total_log_likelihood=log_likelihood,
+        expected_total_log_likelihood=reconstructed_log_likelihood,
         expected_site_count=compressed_patterns.alignment_length,
         expected_pattern_count=compressed_patterns.pattern_count,
         owner_name="codon CTMC likelihood",
@@ -627,19 +636,51 @@ def _evaluate_codon_ctmc_tree_likelihood_from_patterns(
     root_prior: numpy.ndarray,
     observation_policy: str,
 ) -> float:
-    site_log_likelihoods, log_likelihood = (
-        _evaluate_codon_ctmc_tree_likelihood_rows_from_patterns(
-            tree,
-            compressed_patterns,
-            state_space=state_space,
-            rate_matrix=rate_matrix,
+    validate_explicit_branch_lengths(tree, model_name="codon CTMC")
+    validate_tree_taxa_against_patterns(
+        tree,
+        compressed_patterns,
+        model_name="codon CTMC",
+    )
+    transition_evaluator = build_transition_matrix_evaluator(rate_matrix)
+    context = compile_finite_state_likelihood_context(
+        tree,
+        FiniteStateLikelihoodSurface(
+            model_name="codon CTMC",
+            state_labels=tuple(state_space.state_order),
             root_prior=root_prior,
+            root_prior_source="provided",
             observation_policy=observation_policy,
+            normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+            transition_rate_matrix=rate_matrix,
+            transition_matrix_for_branch_length=(
+                transition_evaluator.transition_probability_matrix
+            ),
+            leaf_likelihood_vector_for_state=lambda taxon_name, observed_state: (
+                resolve_codon_observation_leaf_vector(
+                    observed_state,
+                    model_name="codon CTMC",
+                    node_name=taxon_name,
+                    observation_policy=observation_policy,
+                    state_order=state_space.state_order,
+                    state_index=state_space.state_index,
+                )
+            ),
+        ),
+    )
+    log_likelihood = evaluate_finite_state_tree_log_likelihood_from_patterns(
+        context,
+        compressed_patterns,
+    )
+    site_log_likelihoods, reconstructed_log_likelihood = (
+        evaluate_finite_state_site_log_likelihood_rows_from_patterns(
+            context,
+            compressed_patterns,
         )
     )
     validate_site_log_likelihood_reconstruction(
         site_log_likelihoods,
-        expected_total_log_likelihood=log_likelihood,
+        expected_total_log_likelihood=reconstructed_log_likelihood,
         expected_site_count=compressed_patterns.alignment_length,
         expected_pattern_count=compressed_patterns.pattern_count,
         owner_name="codon CTMC likelihood",
