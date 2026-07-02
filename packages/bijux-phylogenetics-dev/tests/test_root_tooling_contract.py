@@ -46,6 +46,7 @@ REQUIRED_ROOT_TARGET_SNIPPETS = {
     "check-release-readiness:",
     "test-all:",
     "test-all-plus-run-time:",
+    "test-all-frozen:",
     "check: sync-license-assets lock-check check-config-ssot check-evidence-governance check-execution-surfaces check-package-boundaries lint test quality security docs build sbom",
 }
 
@@ -55,9 +56,11 @@ def _root_pyproject() -> dict[str, Any]:
         return tomllib.load(handle)
 
 
-def _root_make_dry_run(target: str, *, package: str) -> str:
+def _root_make_dry_run(
+    target: str, *, package: str, extra_args: tuple[str, ...] = ()
+) -> str:
     completed = subprocess.run(
-        ["make", "-n", target, f"PACKAGE={package}"],
+        ["make", "-n", target, f"PACKAGE={package}", *extra_args],
         check=True,
         capture_output=True,
         text=True,
@@ -105,7 +108,10 @@ def test_root_make_wires_config_ssot_into_repository_checks() -> None:
 def test_root_make_routes_test_all_across_repository_packages() -> None:
     root_make = (REPO_ROOT / "makes" / "root.mk").read_text(encoding="utf-8")
 
-    assert "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time" in root_make
+    assert (
+        "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time test-all-frozen"
+        in root_make
+    )
     assert "ROOT_TARGET_GROUPS_test-all ?= check" in root_make
     assert "ROOT_TARGET_SHARED_ENV_test-all ?= 1" in root_make
     assert "ROOT_TARGET_PACKAGES_test-all := $(CHECK_PACKAGES)" in root_make
@@ -131,7 +137,10 @@ def test_root_make_dispatches_test_all_to_requested_package_surface() -> None:
 def test_root_make_routes_test_all_plus_run_time_across_repository_packages() -> None:
     root_make = (REPO_ROOT / "makes" / "root.mk").read_text(encoding="utf-8")
 
-    assert "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time" in root_make
+    assert (
+        "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time test-all-frozen"
+        in root_make
+    )
     assert "ROOT_TARGET_GROUPS_test-all-plus-run-time ?= check" in root_make
     assert "ROOT_TARGET_SHARED_ENV_test-all-plus-run-time ?= 1" in root_make
     assert (
@@ -141,6 +150,35 @@ def test_root_make_routes_test_all_plus_run_time_across_repository_packages() ->
         "test-all-plus-run-time: ## Run every repository test surface and report per-test durations"
         in root_make
     )
+
+
+def test_root_make_routes_test_all_frozen_across_repository_packages() -> None:
+    root_make = (REPO_ROOT / "makes" / "root.mk").read_text(encoding="utf-8")
+
+    assert (
+        "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time test-all-frozen"
+        in root_make
+    )
+    assert "ROOT_TARGET_GROUPS_test-all-frozen ?= check" in root_make
+    assert "ROOT_TARGET_SHARED_ENV_test-all-frozen ?= 0" in root_make
+    assert "ROOT_TARGET_PACKAGES_test-all-frozen := $(CHECK_PACKAGES)" in root_make
+    assert (
+        "test-all-frozen: ## Compare every repository test surface against TEST_ALL_FROZEN_REF"
+        in root_make
+    )
+
+
+def test_root_make_dispatches_test_all_frozen_to_requested_package_surface() -> None:
+    dry_run = _root_make_dry_run(
+        "test-all-frozen",
+        package="bijux-phylogenetics",
+        extra_args=("TEST_ALL_FROZEN_REF=HEAD",),
+    )
+
+    assert "resolved_package=\"bijux-phylogenetics\"" in dry_run
+    assert "echo \"==> $package: test-all-frozen\"" in dry_run
+    assert 'make -C "packages/$package" -f "$profile_path"' in dry_run
+    assert " test-all-frozen; then failures=" in dry_run
 
 
 def test_package_makefiles_defer_monorepo_root_dependent_paths() -> None:

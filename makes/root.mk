@@ -13,17 +13,20 @@ CLI := $(ROOT_CHECK_VENV)/bin/bijux-phylogenetics
 DEV_RUN = PYTHONPATH="$(ROOT_DEV_PYTHONPATH)$${PYTHONPATH:+:$$PYTHONPATH}" "$(ROOT_CHECK_PYTHON)"
 DOCS_RENDER_SERVE_CONFIG := 0
 ROOT_ARTIFACT_ALIAS_SCRIPT := $(ROOT_MAKEFILE_DIR)/repository_artifact_aliases.py
-ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time
+ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time test-all-frozen
 ROOT_TARGET_GROUPS_test-all ?= check
 ROOT_TARGET_GROUPS_test-all-plus-run-time ?= check
+ROOT_TARGET_GROUPS_test-all-frozen ?= check
 ROOT_TARGET_SHARED_ENV_test-all ?= 1
 ROOT_TARGET_SHARED_ENV_test-all-plus-run-time ?= 1
+ROOT_TARGET_SHARED_ENV_test-all-frozen ?= 0
 
 include $(ROOT_MAKEFILE_DIR)/bijux-py/repository/root.mk
 
 include $(ROOT_MAKEFILE_DIR)/bijux-py/root/package-dispatch.mk
 ROOT_TARGET_PACKAGES_test-all := $(CHECK_PACKAGES)
 ROOT_TARGET_PACKAGES_test-all-plus-run-time := $(CHECK_PACKAGES)
+ROOT_TARGET_PACKAGES_test-all-frozen := $(CHECK_PACKAGES)
 include $(ROOT_MAKEFILE_DIR)/bijux-py/root/docs.mk
 include $(ROOT_MAKEFILE_DIR)/bijux-docs.mk
 include $(ROOT_MAKEFILE_DIR)/bijux-std.mk
@@ -54,6 +57,7 @@ check: sync-license-assets lock-check check-config-ssot check-evidence-governanc
 
 test-all: ## Run every repository test surface, including slow, evaluation, and real-local tests
 test-all-plus-run-time: ## Run every repository test surface and report per-test durations
+test-all-frozen: ## Compare every repository test surface against TEST_ALL_FROZEN_REF
 
 install-external-engine-runtime: ## Install the local external engine lane dependencies on macOS with Homebrew
 	@command -v brew >/dev/null || { echo "Homebrew is required for install-external-engine-runtime"; exit 2; }

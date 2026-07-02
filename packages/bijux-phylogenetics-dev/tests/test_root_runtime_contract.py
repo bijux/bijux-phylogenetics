@@ -189,9 +189,13 @@ def test_root_make_declares_shared_maintainer_commands() -> None:
     root_make = (REPO_ROOT / "makes" / "root.mk").read_text(encoding="utf-8")
 
     assert "check:" in root_make
-    assert "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time" in root_make
+    assert (
+        "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time test-all-frozen"
+        in root_make
+    )
     assert "ROOT_TARGET_GROUPS_test-all ?= check" in root_make
     assert "ROOT_TARGET_GROUPS_test-all-plus-run-time ?= check" in root_make
+    assert "ROOT_TARGET_GROUPS_test-all-frozen ?= check" in root_make
     assert "sync-badges:" in root_make
     assert "check-badges:" in root_make
     assert "validate-evidence-book:" in root_make
@@ -669,7 +673,10 @@ def test_repository_test_all_surface_disables_pytest_timeout_in_all_packages() -
         encoding="utf-8"
     )
 
-    assert "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time" in root_make
+    assert (
+        "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time test-all-frozen"
+        in root_make
+    )
     assert "ROOT_TARGET_PACKAGES_test-all := $(CHECK_PACKAGES)" in root_make
     assert "test-all: TEST_MAIN_ARGS =" in dev_make
     assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in dev_make
@@ -689,7 +696,10 @@ def test_repository_test_all_plus_run_time_surface_disables_timeout_and_reports_
         encoding="utf-8"
     )
 
-    assert "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time" in root_make
+    assert (
+        "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time test-all-frozen"
+        in root_make
+    )
     assert (
         "ROOT_TARGET_PACKAGES_test-all-plus-run-time := $(CHECK_PACKAGES)" in root_make
     )
@@ -702,6 +712,27 @@ def test_repository_test_all_plus_run_time_surface_disables_timeout_and_reports_
         "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 --durations=0 --durations-min=0"
         in alias_make
     )
+
+
+def test_repository_test_all_frozen_surface_routes_across_all_package_profiles() -> (
+    None
+):
+    root_make = (REPO_ROOT / "makes" / "root.mk").read_text(encoding="utf-8")
+    dev_make = (
+        REPO_ROOT / "makes" / "packages" / "bijux-phylogenetics-dev.mk"
+    ).read_text(encoding="utf-8")
+    alias_make = (REPO_ROOT / "makes" / "packages" / "phylogenetic.mk").read_text(
+        encoding="utf-8"
+    )
+
+    assert (
+        "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time test-all-frozen"
+        in root_make
+    )
+    assert "ROOT_TARGET_PACKAGES_test-all-frozen := $(CHECK_PACKAGES)" in root_make
+    assert "ROOT_TARGET_SHARED_ENV_test-all-frozen ?= 0" in root_make
+    assert "test-all-frozen:" in dev_make
+    assert "test-all-frozen:" in alias_make
 
 
 def test_root_conftest_registers_markers_from_repository_pytest_config() -> None:
