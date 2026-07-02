@@ -394,3 +394,32 @@ class SharedDiscreteFixtureCatalogReport:
     live_case_count: int
     fixtures: list[SharedDiscreteFixtureCatalogEntry]
     limitations: list[str]
+
+
+@dataclass(slots=True)
+class SubstitutionParameterPriorCoverageEntry:
+    """One governed substitution-prior target checked for score sensitivity."""
+
+    target_name: str
+    surface_name: str
+    prior_family: str
+    contribution_count: int
+    covered_names: list[str]
+    baseline_log_prior: float
+    comparison_log_prior: float
+    log_prior_delta: float
+    changed: bool
+    passed: bool
+    notes: list[str]
+
+
+@dataclass(slots=True)
+class SubstitutionParameterPriorCoverageReport:
+    """Proof that governed substitution-prior targets change prior scores."""
+
+    goal_id: int
+    passed: bool
+    target_count: int
+    passed_target_count: int
+    entries: list[SubstitutionParameterPriorCoverageEntry]
+    limitations: list[str]

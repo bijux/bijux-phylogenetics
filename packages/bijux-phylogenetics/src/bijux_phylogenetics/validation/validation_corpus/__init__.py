@@ -37,6 +37,8 @@ from .contracts import (
     SharedContinuousFixtureCatalogReport,
     SharedDiscreteFixtureCatalogEntry,
     SharedDiscreteFixtureCatalogReport,
+    SubstitutionParameterPriorCoverageEntry,
+    SubstitutionParameterPriorCoverageReport,
     SimulationReproducibilityCase,
     SimulationReproducibilityReport,
     WorkflowPracticalLimitDashboard,
@@ -60,6 +62,9 @@ from .shared_discrete_fixture_catalog import build_shared_discrete_fixture_catal
 from .scientific_review import (
     build_method_limitation_registry,
     build_scientific_validation_report,
+)
+from .substitution_parameter_prior_coverage import (
+    build_substitution_parameter_prior_coverage,
 )
 
 __all__ = [
@@ -107,9 +112,12 @@ __all__ = [
     "SharedContinuousFixtureCatalogReport",
     "SharedDiscreteFixtureCatalogEntry",
     "SharedDiscreteFixtureCatalogReport",
+    "SubstitutionParameterPriorCoverageEntry",
+    "SubstitutionParameterPriorCoverageReport",
     "SimulationReproducibilityCase",
     "SimulationReproducibilityReport",
     "WorkflowPracticalLimitDashboard",
+    "build_substitution_parameter_prior_coverage",
     "validate_simulation_reproducibility",
     "write_validation_corpus_json",
 ]
