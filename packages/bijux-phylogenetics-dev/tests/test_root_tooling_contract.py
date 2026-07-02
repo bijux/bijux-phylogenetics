@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 import tomllib
 from typing import Any
@@ -54,6 +55,17 @@ def _root_pyproject() -> dict[str, Any]:
         return tomllib.load(handle)
 
 
+def _root_make_dry_run(target: str, *, package: str) -> str:
+    completed = subprocess.run(
+        ["make", "-n", target, f"PACKAGE={package}"],
+        check=True,
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
+    return completed.stdout
+
+
 def test_root_pyproject_declares_shared_quality_tooling() -> None:
     tool_section = _root_pyproject()["tool"]
     interrogate = tool_section["interrogate"]
@@ -101,6 +113,19 @@ def test_root_make_routes_test_all_across_repository_packages() -> None:
         "test-all: ## Run every repository test surface, including slow, evaluation, and real-local tests"
         in root_make
     )
+
+
+def test_root_make_dispatches_test_all_to_requested_package_surface() -> None:
+    dry_run = _root_make_dry_run("test-all", package="bijux-phylogenetics")
+
+    assert "resolved_package=\"bijux-phylogenetics\"" in dry_run
+    assert "echo \"==> $package: test-all\"" in dry_run
+    assert (
+        "bijux-phylogenetics=/Users/bijan/bijux/bijux-phylogenetics/makes/packages/bijux-phylogenetics.mk"
+        in dry_run
+    )
+    assert 'make -C "packages/$package" -f "$profile_path"' in dry_run
+    assert " test-all; then failures=" in dry_run
 
 
 def test_root_make_routes_test_all_plus_run_time_across_repository_packages() -> None:
