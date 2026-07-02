@@ -106,6 +106,20 @@ def test_fixed_topology_relaxed_clock_runner_emits_branch_rate_and_node_age_summ
         state.likelihood_context.categorical_metadata["rate-policy"] == "independent"
         for state in report.chain_report.sampled_states
     )
+    first_prior_components = {
+        component.component_name: component
+        for component in report.chain_report.sampled_states[0].prior_components
+    }
+    assert first_prior_components["time-tree"].parameter_values == {
+        "speciation_rate": 0.4
+    }
+    assert first_prior_components["clock:mean-clock-rate"].parameter_values == {
+        "rate": 3.0
+    }
+    assert (
+        first_prior_components["clock:log-standard-deviation"].parameter_values
+        == {"rate": 4.0}
+    )
 
 
 def test_fixed_topology_relaxed_clock_runner_rejects_unrooted_substitution_tree() -> (

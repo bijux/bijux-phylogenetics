@@ -87,6 +87,16 @@ def test_fixed_topology_strict_clock_runner_emits_clock_rate_and_node_age_summar
         state.likelihood_context.categorical_metadata["clock-model"] == "strict-clock"
         for state in report.chain_report.sampled_states
     )
+    first_prior_components = {
+        component.component_name: component
+        for component in report.chain_report.sampled_states[0].prior_components
+    }
+    assert first_prior_components["time-tree"].parameter_values == {
+        "speciation_rate": 0.4
+    }
+    assert first_prior_components["clock:global-clock-rate"].parameter_values == {
+        "rate": 1.5
+    }
 
 
 def test_fixed_topology_strict_clock_runner_clock_rate_posterior_changes_under_calibration() -> (

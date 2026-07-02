@@ -26,6 +26,9 @@ from bijux_phylogenetics.bayesian.metropolis_hastings import (
 from bijux_phylogenetics.bayesian.posterior_sets.diagnostics import (
     highest_posterior_density_interval,
 )
+from bijux_phylogenetics.bayesian.prior_protocol import (
+    summarize_bayesian_prior_model,
+)
 from bijux_phylogenetics.bayesian.state import (
     BayesianPhylogeneticState,
     BayesianPriorComponentState,
@@ -544,24 +547,28 @@ def _build_fixed_topology_strict_clock_prior_components(
         tree=dated_tree,
         prior_model=model_definition.time_tree_prior,
     )
+    time_tree_prior_summary = summarize_bayesian_prior_model(
+        model_definition.time_tree_prior
+    )
+    global_clock_rate_prior_summary = summarize_bayesian_prior_model(
+        model_definition.global_clock_rate_prior
+    )
     prior_components = [
         build_bayesian_prior_component_state(
             component_name="time-tree",
-            family=time_tree_prior_report.family,
+            family=time_tree_prior_summary.family,
             log_prior=time_tree_prior_report.log_prior,
-            parameter_values=_time_tree_prior_parameter_values(
-                model_definition.time_tree_prior
-            ),
+            parameter_values=time_tree_prior_summary.parameter_values,
         ),
         build_bayesian_prior_component_state(
             component_name="clock:global-clock-rate",
-            family=model_definition.global_clock_rate_prior.family,
+            family=global_clock_rate_prior_summary.family,
             log_prior=evaluate_clock_model_scalar_log_prior(
                 parameter_value=global_clock_rate,
                 prior_model=model_definition.global_clock_rate_prior,
                 parameter_name=_GLOBAL_CLOCK_RATE_PARAMETER_NAME,
             ),
-            parameter_values=model_definition.global_clock_rate_prior.parameter_values(),
+            parameter_values=global_clock_rate_prior_summary.parameter_values,
         ),
     ]
     if model_definition.calibration_priors:
@@ -912,43 +919,6 @@ def _invalid_prior_support_reason(
             "strict-clock proposal moved dated tree outside calibration prior support"
         )
     return None
-
-
-def _time_tree_prior_parameter_values(
-    prior_model: (
-        YuleTreePriorModel
-        | BirthDeathTreePriorModel
-        | ConstantPopulationCoalescentPriorModel
-        | SkylineCoalescentPriorModel
-    ),
-) -> dict[str, float]:
-    if isinstance(prior_model, YuleTreePriorModel):
-        return {"speciation_rate": prior_model.speciation_rate}
-    if isinstance(prior_model, BirthDeathTreePriorModel):
-        return {
-            "speciation_rate": prior_model.speciation_rate,
-            "extinction_rate": prior_model.extinction_rate,
-            "sampling_fraction": prior_model.sampling_fraction,
-        }
-    if isinstance(prior_model, ConstantPopulationCoalescentPriorModel):
-        return {"effective_population_size": prior_model.effective_population_size}
-    if isinstance(prior_model, SkylineCoalescentPriorModel):
-        parameter_values: dict[str, float] = {
-            "epoch_count": float(len(prior_model.epochs))
-        }
-        for index, epoch in enumerate(prior_model.epochs, start=1):
-            parameter_values[f"epoch_{index}_younger_boundary_age"] = (
-                epoch.younger_boundary_age
-            )
-            if epoch.older_boundary_age is not None:
-                parameter_values[f"epoch_{index}_older_boundary_age"] = (
-                    epoch.older_boundary_age
-                )
-            parameter_values[f"epoch_{index}_effective_population_size"] = (
-                epoch.effective_population_size
-            )
-        return parameter_values
-    raise AssertionError("unsupported time-tree prior model reached parameter export")
 
 
 def _derive_dated_tree_from_strict_clock_rate(
