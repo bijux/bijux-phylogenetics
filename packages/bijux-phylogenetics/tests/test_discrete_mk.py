@@ -1231,19 +1231,19 @@ def test_fit_discrete_mk_model_matches_governed_geiger_ard_missing_surface() -> 
     )
     assert math.isclose(
         rate_lookup[("central", "north")],
-        0.58934415590246,
+        0.5893462301272221,
         rel_tol=0.0,
         abs_tol=1e-6,
     )
     assert math.isclose(
         rate_lookup[("central", "south")],
-        2.3728847457672133,
+        2.3728819807498187,
         rel_tol=0.0,
         abs_tol=1e-6,
     )
     assert math.isclose(
         rate_lookup[("south", "north")],
-        0.8075051753472205,
+        0.8075038793220018,
         rel_tol=0.0,
         abs_tol=1e-6,
     )

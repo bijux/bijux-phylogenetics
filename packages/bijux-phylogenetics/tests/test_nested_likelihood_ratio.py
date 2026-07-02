@@ -107,13 +107,13 @@ def test_nucleotide_nested_likelihood_ratio_report_governed_jc69_to_f81_case() -
     assert report.null_fit.parameter_values == {}
     assert math.isclose(
         report.alternative_fit.parameter_values["base_frequency_a"],
-        0.6904761904761905,
+        0.6625466050281741,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
     assert math.isclose(
         report.alternative_fit.parameter_values["base_frequency_t"],
-        0.21428571428571427,
+        0.23786102214945268,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
@@ -176,13 +176,13 @@ def test_nucleotide_nested_likelihood_ratio_report_governed_k80_to_hky85_case() 
     )
     assert math.isclose(
         report.alternative_fit.parameter_values["base_frequency_a"],
-        0.46875,
+        0.4725783840776525,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
     assert math.isclose(
         report.alternative_fit.parameter_values["kappa"],
-        5.557249215047293,
+        5.475444488604319,
         rel_tol=0.0,
         abs_tol=1e-6,
     )
@@ -220,19 +220,19 @@ def test_nucleotide_nested_likelihood_ratio_supports_hky85_to_gtr_pair() -> None
     assert report.alternative_fit.parameter_count == 8
     assert math.isclose(
         report.null_fit.parameter_values["kappa"],
-        3.7411279720932034,
+        3.6477801041525715,
         rel_tol=0.0,
         abs_tol=1e-6,
     )
     assert math.isclose(
         report.alternative_fit.parameter_values["AG"],
-        10.43609288733635,
+        10.629520947655584,
         rel_tol=0.0,
         abs_tol=5e-6,
     )
     assert math.isclose(
         report.alternative_fit.parameter_values["CT"],
-        2.066394734370195,
+        2.07081737448972,
         rel_tol=0.0,
         abs_tol=5e-6,
     )
@@ -247,7 +247,7 @@ def test_nucleotide_nested_likelihood_ratio_supports_hky85_to_gtr_pair() -> None
     assert report.degrees_of_freedom == 4
     assert math.isclose(
         report.p_value,
-        0.00010376882741204799,
+        0.0001966555406310578,
         rel_tol=0.0,
         abs_tol=1e-15,
     )

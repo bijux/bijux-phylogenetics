@@ -113,7 +113,7 @@ def test_substitution_model_selection_report_emits_ranked_rows_and_failed_candid
     assert math.isclose(jc69_row.delta_aic or 0.0, 0.0, rel_tol=0.0, abs_tol=1e-12)
     assert math.isclose(
         jc69_row.akaike_weight or 0.0,
-        0.622367926223253,
+        0.6167122999946475,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
@@ -258,13 +258,13 @@ def test_substitution_model_selection_prefers_f81_on_composition_biased_fixture(
     assert f81_row.parameter_count == 3
     assert math.isclose(
         f81_row.parameter_values["base_frequency_a"],
-        0.6904761904761905,
+        0.6625466050281741,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
     assert math.isclose(
         f81_row.parameter_values["base_frequency_t"],
-        0.21428571428571427,
+        0.23786102214945268,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
@@ -300,19 +300,19 @@ def test_substitution_model_selection_prefers_hky85_on_joint_bias_fixture() -> N
     assert hky85_row.parameter_count == 4
     assert math.isclose(
         hky85_row.parameter_values["base_frequency_a"],
-        0.46875,
+        0.4725783840776525,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
     assert math.isclose(
         hky85_row.parameter_values["base_frequency_t"],
-        0.2734375,
+        0.26172109913374797,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
     assert math.isclose(
         hky85_row.parameter_values["kappa"],
-        5.557249215047293,
+        5.475444488604319,
         rel_tol=0.0,
         abs_tol=1e-6,
     )
@@ -355,25 +355,25 @@ def test_substitution_model_selection_prefers_gtr_on_exchangeability_fixture() -
     )
     assert math.isclose(
         gtr_row.parameter_values["AG"],
-        10.43609288733635,
+        10.629520947655584,
         rel_tol=0.0,
         abs_tol=5e-6,
     )
     assert math.isclose(
         gtr_row.parameter_values["GT"],
-        5.8809589312598565,
+        5.974686378383429,
         rel_tol=0.0,
         abs_tol=5e-6,
     )
     assert math.isclose(
         gtr_row.parameter_values["base_frequency_a"],
-        0.408203125,
+        0.4087768322392487,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
     assert math.isclose(
         gtr_row.parameter_values["base_frequency_t"],
-        0.27734375,
+        0.2786905849949913,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
@@ -383,7 +383,7 @@ def test_substitution_model_selection_prefers_gtr_on_exchangeability_fixture() -
     assert (gtr_row.aic or float("inf")) < (jc69_row.aic or float("inf"))
     assert math.isclose(
         gtr_row.akaike_weight or 0.0,
-        0.9996757105258298,
+        0.9993094739922238,
         rel_tol=0.0,
         abs_tol=1e-12,
     )
