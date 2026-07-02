@@ -100,3 +100,51 @@ def test_phylo_run_cli_rejects_invalid_config_before_engine_preflight(
     assert payload["status"] == "error"
     assert payload["errors"][0]["code"] == "workflow_config_invalid"
     assert sentinel_path.exists() is False
+
+
+def test_phylo_run_cli_native_only_mode_blocks_wrapper_execution(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    input_path = tmp_path / "input.fasta"
+    input_path.write_text(">A\nACTGACTG\n>B\nACTGACTA\n", encoding="utf-8")
+    sentinel_path = tmp_path / "engine-invoked.txt"
+    config_path = _write_config(
+        tmp_path / "workflow-config.yaml",
+        input_path=input_path,
+        mafft_executable=_sentinel_engine(
+            tmp_path / "mafft-sentinel",
+            sentinel_path,
+            "mafft v7.999",
+        ),
+        trimal_executable=_sentinel_engine(
+            tmp_path / "trimal-sentinel",
+            sentinel_path,
+            "trimAl v2.0",
+        ),
+        iqtree_executable=_sentinel_engine(
+            tmp_path / "iqtree-sentinel",
+            sentinel_path,
+            "IQ-TREE multicore version 2.9.9",
+        ),
+    )
+
+    exit_code = main(
+        [
+            "--native-maximum-likelihood-only",
+            "phylo",
+            "run",
+            str(config_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"][0]["code"] == "external_engine_access_forbidden"
+    assert (
+        payload["errors"][0]["details"]["surface"]
+        == "external engine preflight inspection"
+    )
+    assert sentinel_path.exists() is False

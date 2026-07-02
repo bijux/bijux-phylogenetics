@@ -163,3 +163,30 @@ def test_phylo_preflight_cli_fails_early_for_blocked_selected_workflow(
     assert payload["errors"][0]["code"] == "engine_preflight_workflow_blocked"
     assert payload["errors"][0]["details"]["workflow_id"] == "beast-posterior"
     assert payload["errors"][0]["details"]["blocking_engines"] == ["BEAST"]
+
+
+def test_phylo_preflight_cli_native_only_mode_blocks_external_inspection(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    mafft = _fake_mafft(tmp_path / "mafft-fixture")
+
+    exit_code = main(
+        [
+            "--native-maximum-likelihood-only",
+            "phylo",
+            "preflight",
+            "--mafft-executable",
+            str(mafft),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 2
+    assert payload["status"] == "error"
+    assert payload["errors"][0]["code"] == "external_engine_access_forbidden"
+    assert (
+        payload["errors"][0]["details"]["surface"]
+        == "external engine preflight inspection"
+    )

@@ -137,6 +137,7 @@ from bijux_phylogenetics.command_line.tree import (
     run_validate_command,
 )
 from bijux_phylogenetics.core.environment import inspect_environment
+from bijux_phylogenetics.engines import native_maximum_likelihood_only_mode
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 from bijux_phylogenetics.runtime.results import build_command_result, build_error_result
 
@@ -144,6 +145,14 @@ from bijux_phylogenetics.runtime.results import build_command_result, build_erro
 def build_parser() -> argparse.ArgumentParser:
     """Build the repository CLI parser."""
     parser = argparse.ArgumentParser(prog="bijux-phylogenetics")
+    parser.add_argument(
+        "--native-maximum-likelihood-only",
+        action="store_true",
+        help=(
+            "Forbid external-engine access for this command so wrapper-backed "
+            "maximum-likelihood workflows fail instead of shelling out."
+        ),
+    )
     parser.add_argument(
         "--version", action="version", version=f"%(prog)s {__version__}"
     )
@@ -339,4 +348,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     args._argv = list(argv) if argv is not None else list(sys.argv[1:])
+    if args.native_maximum_likelihood_only:
+        with native_maximum_likelihood_only_mode():
+            return run_command(args, parser=parser)
     return run_command(args, parser=parser)
