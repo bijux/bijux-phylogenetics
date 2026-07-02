@@ -353,6 +353,7 @@ from bijux_phylogenetics.bayesian import (
     resolve_partition_parameter_states_from_model_parameters,
     require_time_tree_topology_prior_model,
     run_adaptive_tuned_metropolis_hastings_sampler,
+    run_bayesian_inference,
     run_beast_posterior_inference,
     run_brownian_continuous_trait_metropolis_hastings,
     run_discrete_trait_mk_metropolis_hastings,
@@ -2160,6 +2161,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.run_adaptive_tuned_metropolis_hastings_sampler
         is run_adaptive_tuned_metropolis_hastings_sampler
     )
+    assert bayesian_api.run_bayesian_inference is run_bayesian_inference
     assert (
         bayesian_api.score_bayesian_phylogenetic_state
         is score_bayesian_phylogenetic_state

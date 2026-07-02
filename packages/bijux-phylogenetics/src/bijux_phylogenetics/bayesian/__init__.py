@@ -255,6 +255,12 @@ from .independent_chains import (
     build_independent_metropolis_hastings_diagnostics_report,
     run_independent_metropolis_hastings_chains,
 )
+from .inference import (
+    BayesianInferenceModelDefinition,
+    BayesianInferenceProposalSchedule,
+    BayesianInferenceRunReport,
+    run_bayesian_inference,
+)
 from .joint_topology_dna import (
     JOINT_TOPOLOGY_DNA_TOPOLOGY_MOVE_KINDS,
     JointTopologyDnaModelDefinition,
@@ -879,6 +885,9 @@ __all__ = [
     "BayesianPosteriorEvaluationReport",
     "BayesianPosteriorTreeSample",
     "BayesianPosteriorTreeSampleArchive",
+    "BayesianInferenceModelDefinition",
+    "BayesianInferenceProposalSchedule",
+    "BayesianInferenceRunReport",
     "BayesianRunBurninPolicy",
     "BayesianRunManifest",
     "BayesianRunManifestReplayReport",
@@ -1045,6 +1054,7 @@ __all__ = [
     "apply_independent_metropolis_hastings_burnin_policy",
     "apply_metropolis_hastings_burnin_policy",
     "run_adaptive_tuned_metropolis_hastings_sampler",
+    "run_bayesian_inference",
     "resume_metropolis_hastings_sampler",
     "run_checkpointed_metropolis_hastings_sampler",
     "run_metropolis_hastings_sampler",
