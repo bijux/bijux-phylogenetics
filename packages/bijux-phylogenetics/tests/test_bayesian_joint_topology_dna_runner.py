@@ -83,6 +83,18 @@ def test_joint_topology_dna_runner_samples_multiple_topologies_and_model_paramet
         state.model_parameters.categorical_parameters["substitution-model"] == "K80"
         for state in report.chain_report.sampled_states
     )
+    assert all(
+        state.likelihood_context.analysis_name == "joint-topology-dna"
+        for state in report.chain_report.sampled_states
+    )
+    assert all(
+        state.likelihood_context.categorical_metadata["topology-policy"] == "joint"
+        for state in report.chain_report.sampled_states
+    )
+    assert all(
+        state.likelihood_context.partition_contexts[0].model_name == "K80"
+        for state in report.chain_report.sampled_states
+    )
     assert any(
         changed_field.startswith("tree.topology:nni:")
         for step_row in report.chain_report.step_rows

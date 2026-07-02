@@ -103,3 +103,15 @@ def test_fixed_topology_dna_runner_samples_hky85_branch_lengths_and_model_parame
         state.model_parameters.categorical_parameters["substitution-model"] == "HKY85"
         for state in report.chain_report.sampled_states
     )
+    assert all(
+        state.likelihood_context.analysis_name == "fixed-topology-dna"
+        for state in report.chain_report.sampled_states
+    )
+    assert all(
+        state.likelihood_context.categorical_metadata["topology-policy"] == "fixed"
+        for state in report.chain_report.sampled_states
+    )
+    assert all(
+        state.likelihood_context.partition_contexts[0].partition_name == "full-alignment"
+        for state in report.chain_report.sampled_states
+    )
