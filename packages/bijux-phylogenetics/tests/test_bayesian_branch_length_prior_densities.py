@@ -7,6 +7,7 @@ from bijux_phylogenetics.bayesian.branch_length_priors import (
     build_fixed_branch_length_prior,
     build_gamma_branch_length_prior,
     build_lognormal_branch_length_prior,
+    build_uniform_branch_length_prior,
     evaluate_branch_length_log_prior,
 )
 
@@ -61,3 +62,25 @@ def test_fixed_branch_length_prior_matches_and_rejects_mismatch() -> None:
     assert evaluate_branch_length_log_prior(0.1, prior_model) == 0.0
     assert evaluate_branch_length_log_prior(0.1000000005, prior_model) == 0.0
     assert evaluate_branch_length_log_prior(0.11, prior_model) == -math.inf
+
+
+def test_uniform_branch_length_prior_matches_analytical_fixture() -> None:
+    prior_model = build_uniform_branch_length_prior(
+        lower_bound=0.1,
+        upper_bound=0.6,
+    )
+
+    observed = evaluate_branch_length_log_prior(0.2, prior_model)
+    expected = -math.log(0.6 - 0.1)
+
+    assert math.isclose(observed, expected, rel_tol=0.0, abs_tol=1e-12)
+
+
+def test_uniform_branch_length_prior_rejects_values_outside_support() -> None:
+    prior_model = build_uniform_branch_length_prior(
+        lower_bound=0.1,
+        upper_bound=0.6,
+    )
+
+    assert evaluate_branch_length_log_prior(0.05, prior_model) == -math.inf
+    assert evaluate_branch_length_log_prior(0.61, prior_model) == -math.inf

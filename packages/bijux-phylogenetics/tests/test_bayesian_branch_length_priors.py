@@ -10,6 +10,7 @@ from bijux_phylogenetics.bayesian.branch_length_priors import (
     build_fixed_branch_length_prior,
     build_gamma_branch_length_prior,
     build_lognormal_branch_length_prior,
+    build_uniform_branch_length_prior,
     evaluate_tree_branch_length_log_prior,
 )
 from bijux_phylogenetics.io.trees import load_tree
@@ -90,6 +91,16 @@ def test_tree_branch_length_prior_requires_explicit_branch_lengths() -> None:
             build_fixed_branch_length_prior,
             {"fixed_value": -0.1},
             "requires 'fixed_value' to be non-negative",
+        ),
+        (
+            build_uniform_branch_length_prior,
+            {"lower_bound": -0.1, "upper_bound": 0.5},
+            "requires 'lower_bound' to be non-negative",
+        ),
+        (
+            build_uniform_branch_length_prior,
+            {"lower_bound": 0.2, "upper_bound": 0.2},
+            "requires 'upper_bound' to exceed 'lower_bound'",
         ),
     ],
 )

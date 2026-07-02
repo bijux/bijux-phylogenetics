@@ -16,6 +16,7 @@ BRANCH_LENGTH_PRIOR_FAMILIES = (
     "fixed",
     "gamma",
     "lognormal",
+    "uniform",
 )
 
 
@@ -29,6 +30,8 @@ class BranchLengthPriorModel:
     scale: float | None = None
     log_mean: float | None = None
     log_standard_deviation: float | None = None
+    lower_bound: float | None = None
+    upper_bound: float | None = None
     fixed_value: float | None = None
     fixed_tolerance: float | None = None
 
@@ -44,6 +47,10 @@ class BranchLengthPriorModel:
             parameter_values["log_mean"] = self.log_mean
         if self.log_standard_deviation is not None:
             parameter_values["log_standard_deviation"] = self.log_standard_deviation
+        if self.lower_bound is not None:
+            parameter_values["lower_bound"] = self.lower_bound
+        if self.upper_bound is not None:
+            parameter_values["upper_bound"] = self.upper_bound
         if self.fixed_value is not None:
             parameter_values["fixed_value"] = self.fixed_value
         if self.fixed_tolerance is not None:
@@ -151,6 +158,39 @@ def build_fixed_branch_length_prior(
     )
 
 
+def build_uniform_branch_length_prior(
+    *,
+    lower_bound: float,
+    upper_bound: float,
+) -> BranchLengthPriorModel:
+    """Build one uniform branch-length prior over one closed finite interval."""
+    validated_lower_bound = _validate_nonnegative_finite_parameter(
+        parameter_name="lower_bound",
+        value=lower_bound,
+        family="uniform",
+    )
+    validated_upper_bound = _validate_positive_finite_parameter(
+        parameter_name="upper_bound",
+        value=upper_bound,
+        family="uniform",
+    )
+    if validated_upper_bound <= validated_lower_bound:
+        raise PhylogeneticsError(
+            "uniform branch-length prior requires 'upper_bound' to exceed 'lower_bound'",
+            code="branch_length_prior_parameter_invalid",
+            details={
+                "family": "uniform",
+                "lower_bound": lower_bound,
+                "upper_bound": upper_bound,
+            },
+        )
+    return BranchLengthPriorModel(
+        family="uniform",
+        lower_bound=validated_lower_bound,
+        upper_bound=validated_upper_bound,
+    )
+
+
 def evaluate_branch_length_log_prior(
     branch_length: float,
     prior_model: BranchLengthPriorModel,
@@ -217,6 +257,20 @@ def evaluate_branch_length_log_prior(
             )
             else -math.inf
         )
+    if prior_model.family == "uniform":
+        lower_bound = require_present(
+            prior_model.lower_bound,
+            owner_name="branch-length prior evaluation",
+            field_name="lower_bound",
+        )
+        upper_bound = require_present(
+            prior_model.upper_bound,
+            owner_name="branch-length prior evaluation",
+            field_name="upper_bound",
+        )
+        if validated_branch_length < lower_bound or validated_branch_length > upper_bound:
+            return -math.inf
+        return -math.log(upper_bound - lower_bound)
     raise PhylogeneticsError(
         "branch-length prior family is unsupported",
         code="branch_length_prior_family_invalid",
@@ -387,6 +441,7 @@ __all__ = [
     "build_fixed_branch_length_prior",
     "build_gamma_branch_length_prior",
     "build_lognormal_branch_length_prior",
+    "build_uniform_branch_length_prior",
     "evaluate_branch_length_log_prior",
     "evaluate_tree_branch_length_log_prior",
 ]
