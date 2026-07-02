@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 from pathlib import Path
 
 import pytest
@@ -9,10 +10,12 @@ from bijux_phylogenetics.bayesian.branch_length_priors import (
     build_exponential_branch_length_prior,
 )
 from bijux_phylogenetics.bayesian.fixed_topology_dna import (
+    FixedTopologyDnaRunReport,
     build_fixed_topology_dna_model_definition,
     build_fixed_topology_dna_proposal_schedule,
 )
 from bijux_phylogenetics.bayesian.joint_topology_dna import (
+    JointTopologyDnaRunReport,
     build_joint_topology_dna_model_definition,
     build_joint_topology_dna_proposal_schedule,
 )
@@ -207,6 +210,59 @@ def test_run_bayesian_inference_rejects_mismatched_model_and_schedule() -> None:
     assert error_info.value.code == "bayesian_inference_model_schedule_mismatch"
 
 
+def test_run_bayesian_inference_runs_native_fixed_topology_chain() -> None:
+    report = bayesian_inference.run_bayesian_inference(
+        tree=load_tree(fixture("trees", "hky85_likelihood_tree_2_taxa.nwk")),
+        records=load_fasta_alignment(
+            fixture("alignments", "hky85_likelihood_alignment_2_taxa.fasta")
+        ),
+        model_definition=_build_fixed_topology_model_definition(),
+        proposal_schedule=_build_fixed_topology_proposal_schedule(),
+        iteration_count=9,
+        sample_every=1,
+        seed=0,
+    )
+
+    assert isinstance(report, FixedTopologyDnaRunReport)
+    assert report.chain_report.accepted_count >= 1
+    assert all(
+        row.substitution_model_name == "HKY85" for row in report.posterior_rows
+    )
+
+
+def test_run_bayesian_inference_runs_native_joint_topology_chain() -> None:
+    report = bayesian_inference.run_bayesian_inference(
+        tree=_build_ambiguous_start_tree(),
+        records=_build_ambiguous_alignment_records(),
+        model_definition=_build_joint_topology_model_definition(),
+        proposal_schedule=_build_joint_topology_proposal_schedule(),
+        iteration_count=20,
+        sample_every=1,
+        seed=0,
+    )
+
+    assert isinstance(report, JointTopologyDnaRunReport)
+    assert report.chain_report.accepted_count >= 1
+    assert report.distinct_topology_count > 1
+
+
+def test_run_bayesian_inference_module_avoids_wrapper_imports() -> None:
+    module_path = Path(bayesian_inference.__file__).resolve()
+    module_tree = ast.parse(module_path.read_text(encoding="utf-8"))
+    imported_modules = {
+        node.module or ""
+        for node in ast.walk(module_tree)
+        if isinstance(node, ast.ImportFrom)
+    }
+
+    assert all("beast" not in module_name for module_name in imported_modules)
+    assert all("mrbayes" not in module_name for module_name in imported_modules)
+    assert all(
+        "posterior_execution" not in module_name for module_name in imported_modules
+    )
+    assert all("wrapper" not in module_name for module_name in imported_modules)
+
+
 def _build_fixed_topology_model_definition():
     return build_fixed_topology_dna_model_definition(
         substitution_model_name="HKY85",
@@ -220,6 +276,18 @@ def _build_fixed_topology_model_definition():
                 concentration_parameters={"A": 2.0, "C": 2.0, "G": 2.0, "T": 2.0},
             ),
         ),
+    )
+
+
+def _build_fixed_topology_proposal_schedule():
+    return build_fixed_topology_dna_proposal_schedule(
+        model_definition=_build_fixed_topology_model_definition(),
+        branch_length_move_weight=1.0,
+        branch_length_log_scale_standard_deviation=0.25,
+        kappa_move_weight=1.0,
+        kappa_log_scale_standard_deviation=0.35,
+        base_frequency_move_weight=1.0,
+        base_frequency_coordinate_standard_deviation=0.45,
     )
 
 
