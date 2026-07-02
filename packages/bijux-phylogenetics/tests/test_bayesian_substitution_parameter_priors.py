@@ -6,8 +6,10 @@ import pytest
 
 from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
     build_beta_probability_substitution_parameter_prior,
+    build_dirichlet_codon_frequency_substitution_parameter_prior,
     build_dirichlet_simplex_substitution_parameter_prior,
     build_exponential_positive_substitution_parameter_prior,
+    build_fixed_codon_frequency_substitution_parameter_prior,
     build_fixed_positive_substitution_parameter_prior,
     build_fixed_probability_substitution_parameter_prior,
     build_fixed_simplex_substitution_parameter_prior,
@@ -15,6 +17,7 @@ from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
     build_substitution_parameter_prior_bundle,
     evaluate_substitution_parameter_log_prior,
 )
+from bijux_phylogenetics.phylo.likelihood.codon_states import resolve_codon_state_space
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 
@@ -219,3 +222,134 @@ def test_substitution_parameter_prior_bundle_requires_values_for_configured_prio
         match="requires gamma_alpha",
     ):
         evaluate_substitution_parameter_log_prior(prior_bundle=prior_bundle)
+
+
+def test_codon_frequency_substitution_prior_matches_analytical_density_fixture() -> (
+    None
+):
+    component_names = resolve_codon_state_space().state_order
+    prior_bundle = build_substitution_parameter_prior_bundle(
+        codon_frequency_prior=build_dirichlet_codon_frequency_substitution_parameter_prior(
+            concentration_parameters={
+                component_name: concentration
+                for component_name, concentration in zip(
+                    component_names,
+                    (
+                        2.0,
+                        3.0,
+                        4.0,
+                        *([1.0] * (len(component_names) - 3)),
+                    ),
+                    strict=True,
+                )
+            }
+        )
+    )
+    codon_frequencies = {
+        component_name: weight
+        for component_name, weight in zip(
+            component_names,
+            (
+                5.0,
+                3.0,
+                2.0,
+                *([1.0] * (len(component_names) - 3)),
+            ),
+            strict=True,
+        )
+    }
+
+    report = evaluate_substitution_parameter_log_prior(
+        prior_bundle=prior_bundle,
+        codon_frequencies=codon_frequencies,
+    )
+
+    normalized_values = tuple(
+        codon_frequencies[component_name] / sum(codon_frequencies.values())
+        for component_name in component_names
+    )
+    expected_total_log_prior = _dirichlet_log_density(
+        normalized_values,
+        (
+            2.0,
+            3.0,
+            4.0,
+            *([1.0] * (len(component_names) - 3)),
+        ),
+    )
+
+    assert report.prior_count == 1
+    assert [row.target_name for row in report.rows] == ["codon-frequencies"]
+    assert math.isclose(
+        report.total_log_prior,
+        expected_total_log_prior,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    )
+
+
+def test_codon_frequency_substitution_prior_requires_realized_values() -> None:
+    prior_bundle = build_substitution_parameter_prior_bundle(
+        codon_frequency_prior=build_dirichlet_codon_frequency_substitution_parameter_prior(
+            concentration_parameters=[1.0] * len(resolve_codon_state_space().state_order)
+        )
+    )
+
+    with pytest.raises(
+        PhylogeneticsError,
+        match="requires codon frequencies",
+    ):
+        evaluate_substitution_parameter_log_prior(prior_bundle=prior_bundle)
+
+
+def test_substitution_parameter_bundle_rejects_unsupported_codon_component_order() -> (
+    None
+):
+    with pytest.raises(
+        PhylogeneticsError,
+        match="requires one supported codon state order",
+    ):
+        build_substitution_parameter_prior_bundle(
+            codon_frequency_prior=build_fixed_simplex_substitution_parameter_prior(
+                expected_component_names=("AAA", "AAC", "AAG"),
+                fixed_values=(0.4, 0.3, 0.3),
+            )
+        )
+
+
+def test_fixed_codon_frequency_substitution_prior_distinguishes_exact_and_mismatched_values() -> (
+    None
+):
+    component_names = resolve_codon_state_space().state_order
+    fixed_values = {
+        component_name: weight
+        for component_name, weight in zip(
+            component_names,
+            (
+                5.0,
+                3.0,
+                2.0,
+                *([1.0] * (len(component_names) - 3)),
+            ),
+            strict=True,
+        )
+    }
+    prior_bundle = build_substitution_parameter_prior_bundle(
+        codon_frequency_prior=build_fixed_codon_frequency_substitution_parameter_prior(
+            fixed_values=fixed_values
+        )
+    )
+    exact_report = evaluate_substitution_parameter_log_prior(
+        prior_bundle=prior_bundle,
+        codon_frequencies=fixed_values,
+    )
+    mismatched_values = dict(fixed_values)
+    mismatched_values[component_names[0]] = 6.0
+    mismatched_values[component_names[1]] = 2.0
+    mismatched_report = evaluate_substitution_parameter_log_prior(
+        prior_bundle=prior_bundle,
+        codon_frequencies=mismatched_values,
+    )
+
+    assert exact_report.total_log_prior == pytest.approx(0.0, abs=1e-12)
+    assert mismatched_report.total_log_prior == -math.inf

@@ -4,9 +4,11 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 import math
 
+from Bio.Data import CodonTable
 import numpy
 
 from bijux_phylogenetics.bayesian.required_values import require_present
+from bijux_phylogenetics.phylo.likelihood.codon_states import resolve_codon_state_space
 from bijux_phylogenetics.phylo.likelihood.dna_simplex_coordinates import (
     DNA_EXCHANGEABILITY_LABELS,
     parameterize_dna_base_frequency_simplex,
@@ -28,6 +30,7 @@ PROBABILITY_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES = ("beta", "fixed")
 SIMPLEX_SUBSTITUTION_PARAMETER_PRIOR_FAMILIES = ("dirichlet", "fixed")
 SUBSTITUTION_PARAMETER_PRIOR_TARGETS = (
     "base-frequencies",
+    "codon-frequencies",
     "exchangeabilities",
     "gamma-alpha",
     "invariant-proportion",
@@ -138,6 +141,7 @@ class SubstitutionParameterPriorBundle:
     kappa_prior: PositiveSubstitutionParameterPriorModel | None = None
     exchangeability_prior: SimplexSubstitutionParameterPriorModel | None = None
     base_frequency_prior: SimplexSubstitutionParameterPriorModel | None = None
+    codon_frequency_prior: SimplexSubstitutionParameterPriorModel | None = None
     gamma_alpha_prior: PositiveSubstitutionParameterPriorModel | None = None
     invariant_proportion_prior: ProbabilitySubstitutionParameterPriorModel | None = None
 
@@ -148,6 +152,7 @@ class SubstitutionParameterPriorBundle:
                 self.kappa_prior,
                 self.exchangeability_prior,
                 self.base_frequency_prior,
+                self.codon_frequency_prior,
                 self.gamma_alpha_prior,
                 self.invariant_proportion_prior,
             )
@@ -349,11 +354,38 @@ def build_fixed_simplex_substitution_parameter_prior(
     )
 
 
+def build_dirichlet_codon_frequency_substitution_parameter_prior(
+    *,
+    concentration_parameters: Mapping[str, float] | Sequence[float],
+    genetic_code: int | str | None = None,
+) -> SimplexSubstitutionParameterPriorModel:
+    """Build one Dirichlet prior on one codon stationary-frequency simplex."""
+    return build_dirichlet_simplex_substitution_parameter_prior(
+        expected_component_names=resolve_codon_state_space(genetic_code).state_order,
+        concentration_parameters=concentration_parameters,
+    )
+
+
+def build_fixed_codon_frequency_substitution_parameter_prior(
+    *,
+    fixed_values: Mapping[str, float] | Sequence[float],
+    genetic_code: int | str | None = None,
+    fixed_tolerance: float = _FIXED_PRIOR_TOLERANCE,
+) -> SimplexSubstitutionParameterPriorModel:
+    """Build one fixed prior on one codon stationary-frequency simplex."""
+    return build_fixed_simplex_substitution_parameter_prior(
+        expected_component_names=resolve_codon_state_space(genetic_code).state_order,
+        fixed_values=fixed_values,
+        fixed_tolerance=fixed_tolerance,
+    )
+
+
 def build_substitution_parameter_prior_bundle(
     *,
     kappa_prior: PositiveSubstitutionParameterPriorModel | None = None,
     exchangeability_prior: SimplexSubstitutionParameterPriorModel | None = None,
     base_frequency_prior: SimplexSubstitutionParameterPriorModel | None = None,
+    codon_frequency_prior: SimplexSubstitutionParameterPriorModel | None = None,
     gamma_alpha_prior: PositiveSubstitutionParameterPriorModel | None = None,
     invariant_proportion_prior: ProbabilitySubstitutionParameterPriorModel
     | None = None,
@@ -371,10 +403,13 @@ def build_substitution_parameter_prior_bundle(
             expected_component_names=_DNA_BASE_FREQUENCY_COMPONENT_NAMES,
             target_name="base frequencies",
         )
+    if codon_frequency_prior is not None:
+        _require_supported_codon_component_names(codon_frequency_prior)
     bundle = SubstitutionParameterPriorBundle(
         kappa_prior=kappa_prior,
         exchangeability_prior=exchangeability_prior,
         base_frequency_prior=base_frequency_prior,
+        codon_frequency_prior=codon_frequency_prior,
         gamma_alpha_prior=gamma_alpha_prior,
         invariant_proportion_prior=invariant_proportion_prior,
     )
@@ -400,6 +435,9 @@ def evaluate_substitution_parameter_log_prior(
     base_frequencies: (
         Mapping[str, float] | numpy.ndarray | Sequence[float] | None
     ) = None,
+    codon_frequencies: (
+        Mapping[str, float] | numpy.ndarray | Sequence[float] | None
+    ) = None,
     gamma_alpha: float | None = None,
     invariant_proportion: float | None = None,
 ) -> SubstitutionParameterPriorEvaluationReport:
@@ -423,14 +461,16 @@ def evaluate_substitution_parameter_log_prior(
                 "substitution-parameter prior evaluation requires exchangeabilities when one prior is configured",
                 code="substitution_parameter_prior_missing_exchangeabilities",
             )
-        normalized_exchangeability_simplex = parameterize_dna_exchangeability_simplex(
-            exchangeabilities
+        normalized_exchangeabilities = _resolve_normalized_simplex_mapping(
+            component_names=DNA_EXCHANGEABILITY_LABELS,
+            raw_values=exchangeabilities,
+            owner_name="substitution-parameter prior evaluation",
         )
         rows.append(
             _evaluate_simplex_prior_row(
                 target_name="exchangeabilities",
                 component_names=DNA_EXCHANGEABILITY_LABELS,
-                realized_values=normalized_exchangeability_simplex.constrained_mapping(),
+                realized_values=normalized_exchangeabilities,
                 prior_model=prior_bundle.exchangeability_prior,
             )
         )
@@ -440,15 +480,36 @@ def evaluate_substitution_parameter_log_prior(
                 "substitution-parameter prior evaluation requires base frequencies when one prior is configured",
                 code="substitution_parameter_prior_missing_base_frequencies",
             )
-        normalized_base_frequency_simplex = parameterize_dna_base_frequency_simplex(
-            base_frequencies
+        normalized_base_frequencies = _resolve_normalized_simplex_mapping(
+            component_names=_DNA_BASE_FREQUENCY_COMPONENT_NAMES,
+            raw_values=base_frequencies,
+            owner_name="substitution-parameter prior evaluation",
         )
         rows.append(
             _evaluate_simplex_prior_row(
                 target_name="base-frequencies",
                 component_names=_DNA_BASE_FREQUENCY_COMPONENT_NAMES,
-                realized_values=normalized_base_frequency_simplex.constrained_mapping(),
+                realized_values=normalized_base_frequencies,
                 prior_model=prior_bundle.base_frequency_prior,
+            )
+        )
+    if prior_bundle.codon_frequency_prior is not None:
+        if codon_frequencies is None:
+            raise PhylogeneticsError(
+                "substitution-parameter prior evaluation requires codon frequencies when one prior is configured",
+                code="substitution_parameter_prior_missing_codon_frequencies",
+            )
+        normalized_codon_frequencies = _resolve_normalized_simplex_mapping(
+            component_names=prior_bundle.codon_frequency_prior.component_names,
+            raw_values=codon_frequencies,
+            owner_name="substitution-parameter prior evaluation",
+        )
+        rows.append(
+            _evaluate_simplex_prior_row(
+                target_name="codon-frequencies",
+                component_names=prior_bundle.codon_frequency_prior.component_names,
+                realized_values=normalized_codon_frequencies,
+                prior_model=prior_bundle.codon_frequency_prior,
             )
         )
     if prior_bundle.gamma_alpha_prior is not None:
@@ -758,11 +819,59 @@ def _validate_simplex_values(
         return parameterize_dna_base_frequency_simplex(raw_values).constrained_values
     if component_names == DNA_EXCHANGEABILITY_LABELS:
         return parameterize_dna_exchangeability_simplex(raw_values).constrained_values
-    raise PhylogeneticsError(
-        f"{owner_name} does not support simplex components {component_names!r}",
-        code="substitution_parameter_prior_simplex_components_unsupported",
-        details={"component_names": list(component_names)},
+    resolved_values = _resolve_named_component_values(
+        component_names=component_names,
+        raw_values=raw_values,
+        owner_name=owner_name,
     )
+    if any(not math.isfinite(value) for value in resolved_values):
+        raise PhylogeneticsError(
+            f"{owner_name} requires finite simplex component values",
+            code="substitution_parameter_prior_simplex_components_nonfinite",
+            details={"component_names": list(component_names)},
+        )
+    if any(value < 0.0 for value in resolved_values):
+        raise PhylogeneticsError(
+            f"{owner_name} requires nonnegative simplex component values",
+            code="substitution_parameter_prior_simplex_components_negative",
+            details={"component_names": list(component_names)},
+        )
+    total = math.fsum(resolved_values)
+    if total <= 0.0:
+        raise PhylogeneticsError(
+            f"{owner_name} requires simplex component values with positive total mass",
+            code="substitution_parameter_prior_simplex_components_zero_mass",
+            details={"component_names": list(component_names)},
+        )
+    normalized_values = tuple(value / total for value in resolved_values)
+    if sum(value > 0.0 for value in normalized_values) < 2:
+        raise PhylogeneticsError(
+            f"{owner_name} requires positive mass on at least two simplex components",
+            code="substitution_parameter_prior_simplex_components_degenerate",
+            details={"component_names": list(component_names)},
+        )
+    return normalized_values
+
+
+def _resolve_normalized_simplex_mapping(
+    *,
+    component_names: Sequence[str],
+    raw_values: Mapping[str, float] | Sequence[float],
+    owner_name: str,
+) -> dict[str, float]:
+    normalized_values = _validate_simplex_values(
+        component_names=tuple(component_names),
+        raw_values=raw_values,
+        owner_name=owner_name,
+    )
+    return {
+        component_name: normalized_value
+        for component_name, normalized_value in zip(
+            component_names,
+            normalized_values,
+            strict=True,
+        )
+    }
 
 
 def _resolve_named_component_values(
@@ -812,6 +921,24 @@ def _require_expected_component_names(
             details={
                 "target_name": target_name,
                 "expected_component_names": list(expected_component_names),
+                "observed_component_names": list(prior_model.component_names),
+            },
+        )
+
+
+def _require_supported_codon_component_names(
+    prior_model: SimplexSubstitutionParameterPriorModel,
+) -> None:
+    supported_component_orders = {
+        resolve_codon_state_space(genetic_code).state_order
+        for genetic_code in (None, *sorted(CodonTable.unambiguous_dna_by_id))
+    }
+    if prior_model.component_names not in supported_component_orders:
+        raise PhylogeneticsError(
+            "substitution-parameter prior bundle requires one supported codon state order for codon frequencies",
+            code="substitution_parameter_prior_codon_component_order_invalid",
+            details={
+                "target_name": "codon-frequencies",
                 "observed_component_names": list(prior_model.component_names),
             },
         )
