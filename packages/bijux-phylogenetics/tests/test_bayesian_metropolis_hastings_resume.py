@@ -55,6 +55,9 @@ def test_resumed_metropolis_hastings_chain_matches_uninterrupted_chain() -> None
     assert [
         checkpoint.completed_iteration_count for checkpoint in resumed_run.checkpoints
     ] == [12]
+    assert interrupted_run.current_state.random_state == interrupted_run.checkpoints[-1].random_state
+    assert resumed_chain.initial_state.random_state is not None
+    assert resumed_chain.final_state.random_state is not None
     assert resumed_chain == full_run
 
 

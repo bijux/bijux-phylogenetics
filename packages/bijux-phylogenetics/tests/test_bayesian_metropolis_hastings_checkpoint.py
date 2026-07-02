@@ -48,6 +48,8 @@ def test_metropolis_hastings_checkpoint_round_trip_preserves_trace_state() -> No
     assert checkpoint.current_state == checkpointed_report.current_state
     assert checkpoint.completed_iteration_count == 6
     assert len(checkpoint.sampled_states) == 4
+    assert checkpoint.current_state.random_state == checkpoint.random_state
+    assert checkpoint.sampled_states[-1].random_state == checkpoint.random_state
 
 
 def test_metropolis_hastings_checkpoint_rejects_inconsistent_trace_counts() -> None:
@@ -71,6 +73,31 @@ def test_metropolis_hastings_checkpoint_rejects_inconsistent_trace_counts() -> N
     with pytest.raises(
         PhylogeneticsError,
         match="accepted_count",
+    ):
+        deserialize_metropolis_hastings_checkpoint(broken_payload)
+
+
+def test_metropolis_hastings_checkpoint_rejects_state_rng_mismatch() -> None:
+    checkpointed_report = run_checkpointed_metropolis_hastings_sampler(
+        initial_state=_build_scored_normal_target_state(0.0),
+        propose_state=_propose_normal_random_walk_state,
+        update_prior_components=_normal_target_prior_components,
+        update_log_likelihood=_zero_log_likelihood,
+        iteration_count=5,
+        sample_every=1,
+        seed=11,
+        checkpoint_iteration_indexes=(5,),
+    )
+
+    broken_payload = serialize_metropolis_hastings_checkpoint(
+        checkpointed_report.checkpoints[-1]
+    )
+    broken_payload["current_state"]["random_state"]["internal_state"] = [9, 9, 9]
+    broken_payload["sampled_states"][-1]["random_state"]["internal_state"] = [9, 9, 9]
+
+    with pytest.raises(
+        PhylogeneticsError,
+        match="current_state.random_state",
     ):
         deserialize_metropolis_hastings_checkpoint(broken_payload)
 
