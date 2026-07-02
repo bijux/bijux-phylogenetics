@@ -543,6 +543,12 @@ from .probability_vectors import (
     CategoricalProbabilityVector,
     build_categorical_probability_vector,
 )
+from .prior_protocol import (
+    BayesianPriorModelProtocol,
+    BayesianPriorModelSummary,
+    summarize_bayesian_prior_model,
+    supports_bayesian_prior_model_protocol,
+)
 from .run_manifest import (
     BAYESIAN_BURNIN_POLICY_NAMES,
     BayesianRunBurninPolicy,
@@ -690,6 +696,8 @@ __all__ = [
     "BayesianPosteriorReportBuildResult",
     "BayesianPosteriorScenarioComparisonReport",
     "BayesianRunComparisonReportBuildResult",
+    "BayesianPriorModelProtocol",
+    "BayesianPriorModelSummary",
     "BayesianRunTreeComparison",
     "BayesianScenarioAgeDifference",
     "BeastAnalysisXmlIssue",
@@ -1111,6 +1119,7 @@ __all__ = [
     "summarize_beast_posterior_decomposition",
     "summarize_beast_posterior_topology_diversity",
     "summarize_beast_posterior_trees",
+    "summarize_bayesian_prior_model",
     "summarize_maximum_clade_credibility_tree",
     "summarize_mrbayes_parameter_diagnostics",
     "summarize_mrbayes_posterior_decomposition",
@@ -1185,6 +1194,7 @@ __all__ = [
     "validate_beast_analysis_xml",
     "validate_fossil_calibration_table",
     "validate_partition_substitution_model_name",
+    "supports_bayesian_prior_model_protocol",
     "validate_tree_topology_prior_taxa",
     "validate_tip_dating_metadata",
     "write_bayesian_limitations_text",
