@@ -65,6 +65,71 @@ class NativeMaximumLikelihoodSpeedBenchmarkBundle:
 
 
 @dataclass(slots=True)
+class NativeMaximumLikelihoodMemoryBenchmarkObservation:
+    """One native ML peak-memory observation for a fixed model, size class, and search mode."""
+
+    label: str
+    size_class: str
+    model_name: str
+    search_method: str
+    taxon_count: int
+    site_count: int
+    runtime_seconds: float
+    peak_memory_bytes: int
+    memory_observation_kind: str
+    selected_model_name: str
+    best_run_source_label: str
+    search_algorithm: str
+    final_log_likelihood: float
+
+
+@dataclass(slots=True)
+class NativeMaximumLikelihoodMemoryTrendRow:
+    """One peak-memory growth comparison between two governed ML memory size classes."""
+
+    model_name: str
+    search_method: str
+    baseline_size_class: str
+    comparison_size_class: str
+    baseline_taxon_count: int
+    comparison_taxon_count: int
+    baseline_site_count: int
+    comparison_site_count: int
+    baseline_peak_memory_bytes: int
+    comparison_peak_memory_bytes: int
+    peak_memory_delta_bytes: int
+    peak_memory_ratio: float
+    memory_growth_status: str
+
+
+@dataclass(slots=True)
+class NativeMaximumLikelihoodMemoryBenchmarkReport:
+    """Native ML peak-memory benchmark across governed model, size, and search lanes."""
+
+    replicates: int
+    observations: list[NativeMaximumLikelihoodMemoryBenchmarkObservation]
+    trend_rows: list[NativeMaximumLikelihoodMemoryTrendRow]
+    size_class_labels: list[str]
+    model_names: list[str]
+    search_methods: list[str]
+    stable_memory_case_count: int
+    elevated_memory_case_count: int
+    memory_blowup_case_count: int
+    limitations: list[str]
+
+
+@dataclass(slots=True)
+class NativeMaximumLikelihoodMemoryBenchmarkBundle:
+    """Written artifact bundle for one native ML peak-memory benchmark run."""
+
+    output_root: Path
+    summary_path: Path
+    observation_table_path: Path
+    trend_table_path: Path
+    run_json_path: Path
+
+
+@dataclass(slots=True)
 class MaximumLikelihoodWrapperSupportComparison:
     """One canonical split-support comparison between native and cached wrapper evidence."""
 
