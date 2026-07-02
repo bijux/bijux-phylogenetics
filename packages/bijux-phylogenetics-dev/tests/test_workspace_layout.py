@@ -17,6 +17,7 @@ ARTIFACT_ALIAS_SCRIPT = (
     / "repository"
     / "artifact_aliases.py"
 )
+ROOT_ARTIFACT_ALIAS_WRAPPER = REPO_ROOT / "makes" / "repository_artifact_aliases.py"
 PACKAGE_ARTIFACT_LINKS = {
     "artifacts": "",
     ".venv": "venv",
@@ -93,6 +94,59 @@ def test_setup_materializes_governed_artifact_aliases(tmp_path: Path) -> None:
     )
 
     for link_name, expected_target in ROOT_ARTIFACT_LINKS.items():
+        _assert_symlink(
+            link_path=repo_root / link_name,
+            expected_target=expected_target,
+        )
+
+    for package_name in sorted(cast(list[str], workspace["packages"])):
+        package_root = packages_dir / package_name
+        for link_name in PACKAGE_ARTIFACT_LINKS:
+            _assert_symlink(
+                link_path=package_root / link_name,
+                expected_target=_expected_package_link_target(package_name, link_name),
+            )
+
+
+def test_root_setup_preserves_existing_local_root_venv_directory(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace_metadata()
+    repo_root = tmp_path / "repo"
+    packages_dir = repo_root / "packages"
+    packages_dir.mkdir(parents=True)
+    preserved_root_venv = repo_root / ".venv"
+    preserved_root_venv.mkdir()
+    (preserved_root_venv / "pyvenv.cfg").write_text("home = /tmp/python\n")
+
+    for package_name in sorted(cast(list[str], workspace["packages"])):
+        package_root = packages_dir / package_name
+        package_root.mkdir()
+        (package_root / "pyproject.toml").write_text("[project]\nname='test'\n")
+
+    subprocess.run(
+        [
+            sys.executable,
+            str(ROOT_ARTIFACT_ALIAS_WRAPPER),
+            "root",
+            "--repo-root",
+            str(repo_root),
+            "--packages-dir",
+            str(packages_dir),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert preserved_root_venv.exists()
+    assert preserved_root_venv.is_dir()
+    assert not preserved_root_venv.is_symlink()
+    assert (repo_root / "artifacts" / "root" / "check-venv").is_dir()
+
+    for link_name, expected_target in ROOT_ARTIFACT_LINKS.items():
+        if link_name == ".venv":
+            continue
         _assert_symlink(
             link_path=repo_root / link_name,
             expected_target=expected_target,
