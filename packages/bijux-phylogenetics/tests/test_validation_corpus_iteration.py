@@ -26,6 +26,7 @@ from bijux_phylogenetics.validation import (
     build_scientific_validation_report,
     build_shared_continuous_fixture_catalog,
     build_shared_discrete_fixture_catalog,
+    build_substitution_parameter_prior_coverage,
     build_workflow_practical_limit_dashboard,
     validate_simulation_reproducibility,
     write_validation_corpus_json,
@@ -405,6 +406,42 @@ def test_build_shared_discrete_fixture_catalog_tracks_live_consumed_fixtures() -
     assert all(fixture.live_case_count > 0 for fixture in report.fixtures)
 
 
+def test_build_substitution_parameter_prior_coverage_reports_supported_targets() -> (
+    None
+):
+    report = build_substitution_parameter_prior_coverage()
+
+    assert report.goal_id == 76
+    assert report.passed is True
+    assert report.target_count == 7
+    assert report.passed_target_count == 7
+    observed = {entry.target_name: entry for entry in report.entries}
+    assert set(observed) == {
+        "kappa",
+        "exchangeabilities",
+        "base-frequencies",
+        "gamma-alpha",
+        "invariant-proportion",
+        "codon-frequencies",
+        "mk-rates",
+    }
+
+    codon_frequencies = observed["codon-frequencies"]
+    assert codon_frequencies.surface_name == "substitution-parameter-bundle"
+    assert codon_frequencies.prior_family == "dirichlet"
+    assert codon_frequencies.contribution_count == 1
+    assert len(codon_frequencies.covered_names) == 61
+    assert codon_frequencies.changed is True
+    assert codon_frequencies.passed is True
+
+    mk_rates = observed["mk-rates"]
+    assert mk_rates.surface_name == "discrete-trait-rate-prior"
+    assert mk_rates.prior_family == "exponential"
+    assert mk_rates.covered_names == ["0->1", "1->0"]
+    assert mk_rates.changed is True
+    assert mk_rates.passed is True
+
+
 def test_package_root_exports_validation_corpus_surfaces() -> None:
     assert validation_api.build_clean_benchmark_corpus is build_clean_benchmark_corpus
     assert (
@@ -442,6 +479,10 @@ def test_package_root_exports_validation_corpus_surfaces() -> None:
     assert (
         validation_api.build_shared_discrete_fixture_catalog
         is build_shared_discrete_fixture_catalog
+    )
+    assert (
+        validation_api.build_substitution_parameter_prior_coverage
+        is build_substitution_parameter_prior_coverage
     )
     assert (
         validation_api.validate_simulation_reproducibility
@@ -562,6 +603,20 @@ def test_write_validation_corpus_json_serializes_discrete_fixture_catalog(
     text = path.read_text(encoding="utf-8")
     assert '"goal_id": 253' in text
     assert '"geiger_discrete_sym_three_state_twenty_four_taxa"' in text
+
+
+def test_write_validation_corpus_json_serializes_substitution_prior_coverage(
+    tmp_path: Path,
+) -> None:
+    path = write_validation_corpus_json(
+        tmp_path / "substitution-prior-coverage.json",
+        build_substitution_parameter_prior_coverage(),
+    )
+
+    text = path.read_text(encoding="utf-8")
+    assert '"goal_id": 76' in text
+    assert '"codon-frequencies"' in text
+    assert '"mk-rates"' in text
 
 
 @pytest.mark.slow
