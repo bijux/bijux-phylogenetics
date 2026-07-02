@@ -239,6 +239,25 @@ def test_phylogenetic_alias_security_audits_the_installed_environment() -> None:
     assert 'PIP_AUDIT_INPUTS = -r "$(SECURITY_REQS)"' not in package_make
 
 
+def test_phylogenetic_alias_make_exposes_frozen_full_suite_surface() -> None:
+    alias_make = (REPO_ROOT / "makes" / "packages" / "phylogenetic.mk").read_text(
+        encoding="utf-8"
+    )
+
+    assert (
+        "FROZEN_TEST_REPORT_PYTHON := $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python"
+        in alias_make
+    )
+    assert (
+        "test-all-frozen: ## Compare the full-suite output against TEST_ALL_FROZEN_REF"
+        in alias_make
+    )
+    assert (
+        '"$(FROZEN_TEST_REPORT_PYTHON)" -m bijux_phylogenetics_dev.quality.frozen_test_report check'
+        in alias_make
+    )
+
+
 def test_top_level_runtime_exports_define_curated_domain_gateways() -> None:
     assert _package_init_exports() == EXPECTED_ROOT_GATEWAYS
 
@@ -434,6 +453,25 @@ def test_dev_package_make_exposes_unfiltered_test_all_plus_run_time_surface() ->
         in dev_make
     )
     assert "test-all-plus-run-time: test" in dev_make
+
+
+def test_dev_package_make_exposes_frozen_full_suite_surface() -> None:
+    dev_make = (
+        REPO_ROOT / "makes" / "packages" / "bijux-phylogenetics-dev.mk"
+    ).read_text(encoding="utf-8")
+
+    assert (
+        "FROZEN_TEST_REPORT_PYTHON := $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python"
+        in dev_make
+    )
+    assert (
+        "test-all-frozen: ## Compare the full-suite output against TEST_ALL_FROZEN_REF"
+        in dev_make
+    )
+    assert (
+        '"$(FROZEN_TEST_REPORT_PYTHON)" -m bijux_phylogenetics_dev.quality.frozen_test_report check'
+        in dev_make
+    )
 
 
 def test_long_running_runtime_workflows_stay_slow_marked() -> None:
@@ -636,6 +674,8 @@ def test_repository_test_all_surface_disables_pytest_timeout_in_all_packages() -
     assert "test-all: TEST_MAIN_ARGS =" in dev_make
     assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in dev_make
     assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in alias_make
+    assert "test-all-frozen:" in dev_make
+    assert "test-all-frozen:" in alias_make
 
 
 def test_repository_test_all_plus_run_time_surface_disables_timeout_and_reports_durations_in_all_packages() -> (
