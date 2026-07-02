@@ -226,6 +226,7 @@ from bijux_phylogenetics.bayesian import (
     build_bayesian_tree_state,
     build_beta_continuous_trait_probability_prior,
     build_beta_probability_substitution_parameter_prior,
+    build_dirichlet_codon_frequency_substitution_parameter_prior,
     build_brownian_continuous_trait_model_definition,
     build_brownian_continuous_trait_proposal_schedule,
     build_categorical_probability_vector,
@@ -254,6 +255,7 @@ from bijux_phylogenetics.bayesian import (
     build_fixed_topology_partitioned_dna_proposal_schedule,
     build_fixed_topology_relaxed_clock_model_definition,
     build_fixed_topology_relaxed_clock_proposal_schedule,
+    build_fixed_codon_frequency_substitution_parameter_prior,
     build_fixed_topology_strict_clock_model_definition,
     build_fixed_topology_strict_clock_proposal_schedule,
     build_gamma_clock_model_scalar_prior,
@@ -1852,6 +1854,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         is build_beta_probability_substitution_parameter_prior
     )
     assert (
+        bayesian_api.build_dirichlet_codon_frequency_substitution_parameter_prior
+        is build_dirichlet_codon_frequency_substitution_parameter_prior
+    )
+    assert (
         bayesian_api.build_categorical_probability_vector
         is build_categorical_probability_vector
     )
@@ -1914,6 +1920,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert (
         bayesian_api.build_fixed_topology_relaxed_clock_proposal_schedule
         is build_fixed_topology_relaxed_clock_proposal_schedule
+    )
+    assert (
+        bayesian_api.build_fixed_codon_frequency_substitution_parameter_prior
+        is build_fixed_codon_frequency_substitution_parameter_prior
     )
     assert (
         bayesian_api.build_fixed_topology_strict_clock_model_definition

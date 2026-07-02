@@ -12,8 +12,10 @@ from bijux_phylogenetics.bayesian import (
     SubstitutionParameterPriorEvaluationReport,
     SubstitutionParameterPriorRow,
     build_beta_probability_substitution_parameter_prior,
+    build_dirichlet_codon_frequency_substitution_parameter_prior,
     build_dirichlet_simplex_substitution_parameter_prior,
     build_exponential_positive_substitution_parameter_prior,
+    build_fixed_codon_frequency_substitution_parameter_prior,
     build_fixed_positive_substitution_parameter_prior,
     build_fixed_probability_substitution_parameter_prior,
     build_fixed_simplex_substitution_parameter_prior,
@@ -56,10 +58,16 @@ from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
     build_beta_probability_substitution_parameter_prior as build_beta_probability_substitution_parameter_prior_impl,
 )
 from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
+    build_dirichlet_codon_frequency_substitution_parameter_prior as build_dirichlet_codon_frequency_substitution_parameter_prior_impl,
+)
+from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
     build_dirichlet_simplex_substitution_parameter_prior as build_dirichlet_simplex_substitution_parameter_prior_impl,
 )
 from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
     build_exponential_positive_substitution_parameter_prior as build_exponential_positive_substitution_parameter_prior_impl,
+)
+from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
+    build_fixed_codon_frequency_substitution_parameter_prior as build_fixed_codon_frequency_substitution_parameter_prior_impl,
 )
 from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
     build_fixed_positive_substitution_parameter_prior as build_fixed_positive_substitution_parameter_prior_impl,
@@ -124,12 +132,20 @@ def test_bayesian_exports_substitution_parameter_prior_surface() -> None:
         is build_beta_probability_substitution_parameter_prior_impl
     )
     assert (
+        build_dirichlet_codon_frequency_substitution_parameter_prior
+        is build_dirichlet_codon_frequency_substitution_parameter_prior_impl
+    )
+    assert (
         build_dirichlet_simplex_substitution_parameter_prior
         is build_dirichlet_simplex_substitution_parameter_prior_impl
     )
     assert (
         build_exponential_positive_substitution_parameter_prior
         is build_exponential_positive_substitution_parameter_prior_impl
+    )
+    assert (
+        build_fixed_codon_frequency_substitution_parameter_prior
+        is build_fixed_codon_frequency_substitution_parameter_prior_impl
     )
     assert (
         build_fixed_positive_substitution_parameter_prior
