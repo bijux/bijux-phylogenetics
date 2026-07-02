@@ -52,6 +52,8 @@ from bijux_phylogenetics.bayesian import (
     AdaptiveTuningReport,
     AdaptiveTuningWindowRow,
     BayesianModelParameterState,
+    BayesianPosteriorDecompositionRow,
+    BayesianPosteriorEvaluationReport,
     BayesianPhylogeneticState,
     BayesianPosteriorTreeSample,
     BayesianPosteriorTreeSampleArchive,
@@ -296,6 +298,7 @@ from bijux_phylogenetics.bayesian import (
     deserialize_bayesian_phylogenetic_state,
     deserialize_bayesian_phylogenetic_state_json,
     diagnose_metropolis_hastings_burnin,
+    evaluate_bayesian_posterior,
     evaluate_birth_death_tree_log_prior,
     evaluate_calibration_tree_log_prior,
     evaluate_clock_model_scalar_log_prior,
@@ -368,6 +371,7 @@ from bijux_phylogenetics.bayesian import (
     simulate_ornstein_uhlenbeck_continuous_trait_posterior_predictive,
     simulate_prior_only_phylogenetic_states,
     strip_partition_model_parameter_state,
+    summarize_bayesian_posterior_decomposition,
     summarize_bayesian_wrapper_correspondence,
     summarize_beast_log,
     summarize_brownian_continuous_trait_posterior_ancestral_states,
@@ -395,6 +399,8 @@ from bijux_phylogenetics.bayesian import (
     summarize_posterior_predictive_p_values,
     validate_partition_substitution_model_name,
     validate_tree_topology_prior_taxa,
+    write_bayesian_posterior_decomposition_table,
+    write_bayesian_posterior_evaluation_artifacts,
     write_bayesian_posterior_tree_sample_archive,
     write_bayesian_run_manifest,
     write_beast_log_summary_table,
@@ -1743,6 +1749,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
     assert bayesian_api.BayesianStateBranchRow is BayesianStateBranchRow
     assert bayesian_api.BayesianTreeState is BayesianTreeState
     assert bayesian_api.BayesianModelParameterState is BayesianModelParameterState
+    assert (
+        bayesian_api.BayesianPosteriorDecompositionRow
+        is BayesianPosteriorDecompositionRow
+    )
+    assert (
+        bayesian_api.BayesianPosteriorEvaluationReport
+        is BayesianPosteriorEvaluationReport
+    )
     assert bayesian_api.BayesianPriorComponentState is BayesianPriorComponentState
     assert bayesian_api.BayesianPhylogeneticState is BayesianPhylogeneticState
     assert bayesian_api.MetropolisHastingsProposal is MetropolisHastingsProposal
@@ -2132,6 +2146,7 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.score_bayesian_phylogenetic_state
         is score_bayesian_phylogenetic_state
     )
+    assert bayesian_api.evaluate_bayesian_posterior is evaluate_bayesian_posterior
     assert (
         bayesian_api.run_metropolis_hastings_sampler is run_metropolis_hastings_sampler
     )
@@ -2366,6 +2381,14 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.write_bayesian_posterior_tree_sample_archive
         is write_bayesian_posterior_tree_sample_archive
     )
+    assert (
+        bayesian_api.write_bayesian_posterior_decomposition_table
+        is write_bayesian_posterior_decomposition_table
+    )
+    assert (
+        bayesian_api.write_bayesian_posterior_evaluation_artifacts
+        is write_bayesian_posterior_evaluation_artifacts
+    )
     assert bayesian_api.write_bayesian_run_manifest is write_bayesian_run_manifest
     assert (
         bayesian_api.summarize_brownian_continuous_trait_posterior_ancestral_states
@@ -2564,6 +2587,10 @@ def test_public_package_exports_comparative_and_bayesian_workflows() -> None:
         bayesian_api.run_mrbayes_posterior_inference is run_mrbayes_posterior_inference
     )
     assert bayesian_api.summarize_beast_log is summarize_beast_log
+    assert (
+        bayesian_api.summarize_bayesian_posterior_decomposition
+        is summarize_bayesian_posterior_decomposition
+    )
     assert (
         bayesian_api.summarize_mrbayes_posterior_trees
         is summarize_mrbayes_posterior_trees

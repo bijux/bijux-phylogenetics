@@ -423,6 +423,14 @@ from .posterior_model_averaging import (
     summarize_metropolis_hastings_model_averaged_estimates,
     summarize_posterior_model_averaged_estimates,
 )
+from .posterior_evaluation import (
+    BayesianPosteriorDecompositionRow,
+    BayesianPosteriorEvaluationReport,
+    evaluate_bayesian_posterior,
+    summarize_bayesian_posterior_decomposition,
+    write_bayesian_posterior_decomposition_table,
+    write_bayesian_posterior_evaluation_artifacts,
+)
 from .posterior_predictive_p_values import (
     PosteriorPredictivePValueReport,
     PosteriorPredictivePValueRow,
@@ -852,6 +860,8 @@ __all__ = [
     "PosteriorModelAveragingReport",
     "PosteriorModelEstimateRow",
     "PosteriorModelSupportRow",
+    "BayesianPosteriorDecompositionRow",
+    "BayesianPosteriorEvaluationReport",
     "BayesianPosteriorTreeSample",
     "BayesianPosteriorTreeSampleArchive",
     "BayesianRunBurninPolicy",
@@ -1115,6 +1125,7 @@ __all__ = [
     "summarize_fixed_topology_partitioned_dna_posterior_missing_states",
     "summarize_joint_topology_dna_posterior_missing_states",
     "summarize_metropolis_hastings_model_averaged_estimates",
+    "summarize_bayesian_posterior_decomposition",
     "summarize_nucleotide_posterior_missing_states",
     "summarize_nucleotide_posterior_ancestral_sequences",
     "summarize_ornstein_uhlenbeck_continuous_trait_posterior_ancestral_states",
@@ -1153,6 +1164,7 @@ __all__ = [
     "IndependentMetropolisHastingsTracePosteriorIntervalReport",
     "compute_equal_tail_interval",
     "compute_highest_posterior_density_interval",
+    "evaluate_bayesian_posterior",
     "BAYESIAN_WRAPPER_CORRESPONDENCE_STATUSES",
     "BayesianWrapperCorrespondenceObservation",
     "BayesianWrapperCorrespondenceReport",
@@ -1181,6 +1193,8 @@ __all__ = [
     "write_beast_log_summary_table",
     "write_beast_posterior_decomposition_table",
     "write_beast_posterior_tree_set",
+    "write_bayesian_posterior_decomposition_table",
+    "write_bayesian_posterior_evaluation_artifacts",
     "write_mrbayes_burnin_sensitivity_slice_table",
     "write_mrbayes_posterior_decomposition_table",
     "write_mrbayes_parameter_summary_table",
