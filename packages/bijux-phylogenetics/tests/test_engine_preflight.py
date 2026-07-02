@@ -4,6 +4,11 @@ from pathlib import Path
 
 import pytest
 
+from bijux_phylogenetics.engines import (
+    NATIVE_MAXIMUM_LIKELIHOOD_ONLY_ENV_VAR,
+    is_native_maximum_likelihood_only_mode_enabled,
+    native_maximum_likelihood_only_mode,
+)
 from bijux_phylogenetics.engines.validation.preflight import (
     inspect_external_engine_preflight,
     inspect_external_engine_surface,
@@ -186,3 +191,45 @@ def test_engine_preflight_blocks_direct_surface_when_engine_is_unsupported(
 
     assert error.value.code == "engine_preflight_workflow_blocked"
     assert error.value.details["blocking_engines"] == ["IQ-TREE"]
+
+
+def test_engine_preflight_native_only_mode_blocks_surface_inspection(
+    fake_engine_metadata,
+) -> None:
+    assert is_native_maximum_likelihood_only_mode_enabled() is False
+
+    with native_maximum_likelihood_only_mode():
+        assert is_native_maximum_likelihood_only_mode_enabled() is True
+        with pytest.raises(
+            EngineWorkflowError,
+            match="native maximum-likelihood only mode forbids external engine access",
+        ) as error:
+            inspect_external_engine_surface(
+                workflow_id="maximum-likelihood-tree",
+                summary="IQ-TREE maximum-likelihood tree-inference workflow.",
+                required_engines=("iqtree",),
+                executables={"iqtree": "iqtree2"},
+            )
+
+    assert error.value.code == "external_engine_access_forbidden"
+    assert (
+        error.value.details["surface"]
+        == "external engine surface inspection (maximum-likelihood-tree)"
+    )
+
+
+def test_engine_preflight_environment_switch_blocks_external_preflight(
+    fake_engine_metadata,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(NATIVE_MAXIMUM_LIKELIHOOD_ONLY_ENV_VAR, "true")
+
+    assert is_native_maximum_likelihood_only_mode_enabled() is True
+    with pytest.raises(
+        EngineWorkflowError,
+        match="native maximum-likelihood only mode forbids external engine access",
+    ) as error:
+        inspect_external_engine_preflight()
+
+    assert error.value.code == "external_engine_access_forbidden"
+    assert error.value.details["surface"] == "external engine preflight inspection"
