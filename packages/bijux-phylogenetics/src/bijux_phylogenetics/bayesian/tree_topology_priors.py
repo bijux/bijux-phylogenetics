@@ -23,6 +23,13 @@ class TreeTopologyPriorModel:
     topology_count: int
     log_topology_probability: float
 
+    def parameter_values(self) -> dict[str, float]:
+        return {
+            "taxon_count": float(len(self.taxa)),
+            "topology_count": float(self.topology_count),
+            "log_topology_probability": self.log_topology_probability,
+        }
+
 
 @dataclass(frozen=True, slots=True)
 class TreeTopologyPriorEvaluationReport:

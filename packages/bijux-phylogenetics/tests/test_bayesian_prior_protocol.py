@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
 import pytest
@@ -39,6 +40,9 @@ from bijux_phylogenetics.bayesian.time_tree_priors import (
     build_crown_conditioned_birth_death_tree_prior,
     build_crown_conditioned_yule_tree_prior,
     build_skyline_coalescent_tree_prior,
+)
+from bijux_phylogenetics.bayesian.tree_topology_priors import (
+    build_uniform_rooted_tree_topology_prior,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -156,6 +160,15 @@ def fixture(group: str, name: str) -> Path:
                 "epoch_1_effective_population_size": 1000.0,
                 "epoch_2_younger_boundary_age": 0.5,
                 "epoch_2_effective_population_size": 2500.0,
+            },
+        ),
+        (
+            build_uniform_rooted_tree_topology_prior(["D", "B", "A", "C"]),
+            "uniform-rooted-labeled-bifurcating",
+            {
+                "taxon_count": 4.0,
+                "topology_count": 15.0,
+                "log_topology_probability": -math.log(15.0),
             },
         ),
     ],
