@@ -84,6 +84,7 @@ from .runtime import (
 from .runtime import (
     write_case_file as _write_case_file,
 )
+from ..shards import resolve_geiger_parity_case_ids
 
 
 def _build_bijux_case_payload(
@@ -99,11 +100,16 @@ def _build_bijux_case_payload(
 def run_geiger_parity_cases(
     *,
     case_ids: list[str] | None = None,
+    shard_ids: list[str] | None = None,
     rscript_executable: str = "Rscript",
     failure_root: Path | None = None,
 ) -> GeigerParityReport:
     """Run governed live `geiger` parity cases through the checked-in R runner."""
-    selected = _selected_cases(case_ids)
+    selected_case_ids = resolve_geiger_parity_case_ids(
+        case_ids=case_ids,
+        shard_ids=shard_ids,
+    )
+    selected = _selected_cases(selected_case_ids)
     observations: list[GeigerParityObservation] = []
     active_failure_root = _failure_root() if failure_root is None else failure_root
     bijux_version = _bijux_version()
