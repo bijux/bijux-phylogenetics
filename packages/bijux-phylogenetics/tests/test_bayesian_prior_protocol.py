@@ -33,6 +33,13 @@ from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
     build_dirichlet_simplex_substitution_parameter_prior,
     build_exponential_positive_substitution_parameter_prior,
 )
+from bijux_phylogenetics.bayesian.time_tree_priors import (
+    SkylineCoalescentEpoch,
+    build_constant_population_coalescent_tree_prior,
+    build_crown_conditioned_birth_death_tree_prior,
+    build_crown_conditioned_yule_tree_prior,
+    build_skyline_coalescent_tree_prior,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -100,6 +107,56 @@ def fixture(group: str, name: str) -> Path:
             build_beta_continuous_trait_probability_prior(alpha=1.5, beta=2.5),
             "beta",
             {"alpha": 1.5, "beta": 2.5},
+        ),
+        (
+            build_crown_conditioned_yule_tree_prior(speciation_rate=0.4),
+            "crown-conditioned-yule",
+            {"speciation_rate": 0.4},
+        ),
+        (
+            build_crown_conditioned_birth_death_tree_prior(
+                speciation_rate=1.0,
+                extinction_rate=0.25,
+                sampling_fraction=0.8,
+            ),
+            "crown-conditioned-birth-death",
+            {
+                "speciation_rate": 1.0,
+                "extinction_rate": 0.25,
+                "sampling_fraction": 0.8,
+            },
+        ),
+        (
+            build_constant_population_coalescent_tree_prior(
+                effective_population_size=1500.0
+            ),
+            "constant-population-coalescent",
+            {"effective_population_size": 1500.0},
+        ),
+        (
+            build_skyline_coalescent_tree_prior(
+                [
+                    SkylineCoalescentEpoch(
+                        younger_boundary_age=0.0,
+                        older_boundary_age=0.5,
+                        effective_population_size=1000.0,
+                    ),
+                    SkylineCoalescentEpoch(
+                        younger_boundary_age=0.5,
+                        older_boundary_age=None,
+                        effective_population_size=2500.0,
+                    ),
+                ]
+            ),
+            "skyline-coalescent",
+            {
+                "epoch_count": 2.0,
+                "epoch_1_younger_boundary_age": 0.0,
+                "epoch_1_older_boundary_age": 0.5,
+                "epoch_1_effective_population_size": 1000.0,
+                "epoch_2_younger_boundary_age": 0.5,
+                "epoch_2_effective_population_size": 2500.0,
+            },
         ),
     ],
 )

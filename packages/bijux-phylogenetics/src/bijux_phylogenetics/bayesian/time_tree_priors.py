@@ -33,6 +33,9 @@ class YuleTreePriorModel:
     family: str
     speciation_rate: float
 
+    def parameter_values(self) -> dict[str, float]:
+        return {"speciation_rate": self.speciation_rate}
+
 
 @dataclass(frozen=True, slots=True)
 class YuleTreePriorIntervalRow:
@@ -73,6 +76,13 @@ class BirthDeathTreePriorModel:
     extinction_rate: float
     sampling_fraction: float
 
+    def parameter_values(self) -> dict[str, float]:
+        return {
+            "speciation_rate": self.speciation_rate,
+            "extinction_rate": self.extinction_rate,
+            "sampling_fraction": self.sampling_fraction,
+        }
+
 
 @dataclass(frozen=True, slots=True)
 class BirthDeathTreePriorBranchingRow:
@@ -112,6 +122,9 @@ class ConstantPopulationCoalescentPriorModel:
 
     family: str
     effective_population_size: float
+
+    def parameter_values(self) -> dict[str, float]:
+        return {"effective_population_size": self.effective_population_size}
 
 
 @dataclass(frozen=True, slots=True)
@@ -161,6 +174,21 @@ class SkylineCoalescentPriorModel:
 
     family: str
     epochs: list[SkylineCoalescentEpoch]
+
+    def parameter_values(self) -> dict[str, float]:
+        parameter_values: dict[str, float] = {"epoch_count": float(len(self.epochs))}
+        for index, epoch in enumerate(self.epochs, start=1):
+            parameter_values[f"epoch_{index}_younger_boundary_age"] = (
+                epoch.younger_boundary_age
+            )
+            if epoch.older_boundary_age is not None:
+                parameter_values[f"epoch_{index}_older_boundary_age"] = (
+                    epoch.older_boundary_age
+                )
+            parameter_values[f"epoch_{index}_effective_population_size"] = (
+                epoch.effective_population_size
+            )
+        return parameter_values
 
 
 @dataclass(frozen=True, slots=True)
