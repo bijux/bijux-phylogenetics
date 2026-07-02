@@ -8,6 +8,7 @@ import tempfile
 
 from ..registry import _selected_cases, _write_case_file
 from ..shards import resolve_phytools_parity_case_ids
+from ...live_access import require_live_parity_access
 from .comparison import (
     load_json as _load_json,
 )
@@ -77,6 +78,11 @@ def run_phytools_parity_cases(
     failure_root: Path | None = None,
 ) -> PhytoolsParityReport:
     """Run governed live `phytools` parity cases through the checked-in R runner."""
+    require_live_parity_access(
+        surface="phytools live parity runner",
+        reference_source="phytools-live",
+        executable=rscript_executable,
+    )
     selected_case_ids = resolve_phytools_parity_case_ids(
         case_ids=case_ids,
         shard_ids=shard_ids,

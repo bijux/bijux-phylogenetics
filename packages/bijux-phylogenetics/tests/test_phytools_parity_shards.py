@@ -2,11 +2,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.parity import (
     list_phytools_parity_shards,
     run_phytools_parity_cases,
 )
 from tests.support.fake_phytools_parity import fake_phytools_rscript
+
+pytestmark = pytest.mark.usefixtures("enable_live_parity_access")
 
 
 def test_list_phytools_parity_shards_groups_cases_by_reference_call() -> None:
