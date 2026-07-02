@@ -7,13 +7,16 @@ ENABLE_MYPY := 1
 ENABLE_CODESPELL := 0
 ENABLE_RADON := 0
 ENABLE_PYDOCSTYLE := 0
-TEST_PATHS := tests
-TEST_PATHS_UNIT := tests
+TEST_SMOKE_PATHS := tests/smoke
+TEST_FULL_PATHS := tests
+TEST_PATHS := $(TEST_SMOKE_PATHS)
+TEST_PATHS_UNIT := $(TEST_FULL_PATHS)
 TEST_PATHS_EVALUATION = $(MONOREPO_ROOT)/packages/bijux-phylogenetics/tests
 TEST_REAL_LOCAL_PATH = $(MONOREPO_ROOT)/packages/bijux-phylogenetics/tests/real_local
 TEST_MAIN_ARGS = -m "not slow and not real_local and not evaluation" --maxfail=1 -q
 TEST_UNIT_DIR_ARGS = -m "not slow and not real_local and not evaluation" --maxfail=1 -q
 TEST_UNIT_FALLBACK_ARGS = -k "not e2e and not integration and not functional" -m "not slow and not real_local and not evaluation" --maxfail=1 -q
+TEST_LABEL = development smoke suite
 TEST_EVALUATION_ARGS = -m "evaluation and scientific_validation and not slow" -s -p no:cov
 TEST_REAL_LOCAL_ARGS = -m "real_local and engine_real and not scientific_validation and not slow" -s -p no:cov
 TEST_CLEAN_PATHS = "$(MONOREPO_ROOT)/.pytest_cache" "$(MONOREPO_ROOT)/.ruff_cache"
@@ -43,11 +46,15 @@ sync-license-assets-package:
 	@"$(VENV_PYTHON)" -m bijux_phylogenetics_dev.release.license_assets sync
 .PHONY: sync-license-assets-package
 
+test-all: TEST_LABEL = full test suite
+test-all: TEST_PATHS = $(TEST_FULL_PATHS)
 test-all: TEST_MAIN_ARGS =
 test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0
 test-all: test
 .PHONY: test-all
 
+test-all-plus-run-time: TEST_LABEL = full test suite
+test-all-plus-run-time: TEST_PATHS = $(TEST_FULL_PATHS)
 test-all-plus-run-time: TEST_MAIN_ARGS =
 test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 --durations=0 --durations-min=0
 test-all-plus-run-time: test

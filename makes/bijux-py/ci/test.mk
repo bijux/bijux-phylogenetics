@@ -15,6 +15,7 @@ COV_XML                   ?= $(TEST_ARTIFACTS_DIR)/coverage.xml
 ENABLE_BENCH              ?= 1
 PYTEST_ADDOPTS_EXTRA      ?=
 TEST_PRE_TARGETS          ?=
+TEST_LABEL                ?= test suite
 TEST_MAIN_ARGS            ?=
 TEST_UNIT_DIR_ARGS        ?= -m "not slow" --maxfail=1 -q
 TEST_UNIT_FALLBACK_ARGS   ?= -k "not e2e and not integration and not functional" -m "not slow" --maxfail=1 -q
@@ -105,7 +106,7 @@ PYTEST_INFO_FLAGS = -o cache_dir="$(CACHE_DIR_ABS)"
 .PHONY: test test-unit test-e2e test-regression test-evaluation test-ci test-clean test-syntax coverage-core real-local
 
 test:
-	@echo "→ Running full test suite on $(TEST_PATHS)"
+	@echo "→ Running $(TEST_LABEL) on $(TEST_PATHS)"
 	$(call run_make_targets,$(TEST_PRE_TARGETS),$(TEST_SELF_MAKE))
 	$(call run_test_syntax)
 	@if [ "$(TEST_RESET_PYCACHE)" = "1" ]; then find . -type d -name '__pycache__' -exec rm -rf {} + >/dev/null 2>&1 || true; fi
