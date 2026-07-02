@@ -9,6 +9,7 @@ import tempfile
 
 from ..registry import _selected_cases, _write_case_file
 from ..shards import resolve_ape_parity_case_ids
+from ...live_access import require_live_parity_access
 from .comparison import (
     _apply_expected_status_contract,
     _determine_reference_mismatch_reason,
@@ -67,6 +68,11 @@ def run_ape_parity_cases(
     fixtures_root: Path | None = None,
 ) -> ApeParityReport:
     """Run governed live `ape` parity cases through the checked-in R runner."""
+    require_live_parity_access(
+        surface="ape live parity runner",
+        reference_source="ape-live",
+        executable=rscript_executable,
+    )
     selected_case_ids = resolve_ape_parity_case_ids(
         case_ids=case_ids,
         shard_ids=shard_ids,

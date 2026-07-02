@@ -8,6 +8,8 @@ import pytest
 from bijux_phylogenetics.command_line import main
 from tests.support.fake_reference_parity import fake_ape_rscript
 
+pytestmark = pytest.mark.usefixtures("enable_live_parity_access")
+
 
 @pytest.mark.slow
 def test_parity_cli_runs_live_ape_harness_and_writes_tables(
