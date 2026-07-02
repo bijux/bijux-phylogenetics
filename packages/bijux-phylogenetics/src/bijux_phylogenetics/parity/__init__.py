@@ -3,8 +3,10 @@
 from .ape import (
     ApeParityObservation,
     ApeParityReport,
+    ApeParityShard,
     ApeParitySummaryRow,
     list_ape_parity_cases,
+    list_ape_parity_shards,
     run_ape_parity_cases,
     write_ape_parity_observation_table,
     write_ape_parity_summary_table,
@@ -60,6 +62,7 @@ from .reference import (
 __all__ = [
     "ApeParityObservation",
     "ApeParityReport",
+    "ApeParityShard",
     "ApeParitySummaryRow",
     "GeigerParityObservation",
     "GeigerParityReport",
@@ -84,6 +87,7 @@ __all__ = [
     "ReferenceParityReport",
     "ReferenceParitySummaryRow",
     "list_ape_parity_cases",
+    "list_ape_parity_shards",
     "list_geiger_parity_cases",
     "list_phytools_parity_cases",
     "build_generated_geiger_parity_report",
