@@ -75,6 +75,7 @@ from .branch_length_priors import (
     build_fixed_branch_length_prior,
     build_gamma_branch_length_prior,
     build_lognormal_branch_length_prior,
+    build_uniform_branch_length_prior,
     evaluate_branch_length_log_prior,
     evaluate_tree_branch_length_log_prior,
 )
@@ -974,6 +975,7 @@ __all__ = [
     "build_lognormal_discrete_trait_rate_prior",
     "build_lognormal_branch_length_prior",
     "build_lognormal_positive_substitution_parameter_prior",
+    "build_uniform_branch_length_prior",
     "build_categorical_probability_vector",
     "build_bayesian_posterior_tree_sample",
     "build_bayesian_posterior_tree_sample_archive",

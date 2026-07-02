@@ -9,6 +9,7 @@ from bijux_phylogenetics.bayesian import (
     build_fixed_branch_length_prior,
     build_gamma_branch_length_prior,
     build_lognormal_branch_length_prior,
+    build_uniform_branch_length_prior,
     evaluate_branch_length_log_prior,
     evaluate_tree_branch_length_log_prior,
 )
@@ -37,6 +38,9 @@ from bijux_phylogenetics.bayesian.branch_length_priors import (
     build_lognormal_branch_length_prior as build_lognormal_branch_length_prior_impl,
 )
 from bijux_phylogenetics.bayesian.branch_length_priors import (
+    build_uniform_branch_length_prior as build_uniform_branch_length_prior_impl,
+)
+from bijux_phylogenetics.bayesian.branch_length_priors import (
     evaluate_branch_length_log_prior as evaluate_branch_length_log_prior_impl,
 )
 from bijux_phylogenetics.bayesian.branch_length_priors import (
@@ -58,6 +62,7 @@ def test_bayesian_exports_branch_length_prior_surface() -> None:
         build_lognormal_branch_length_prior is build_lognormal_branch_length_prior_impl
     )
     assert build_fixed_branch_length_prior is build_fixed_branch_length_prior_impl
+    assert build_uniform_branch_length_prior is build_uniform_branch_length_prior_impl
     assert evaluate_branch_length_log_prior is evaluate_branch_length_log_prior_impl
     assert (
         evaluate_tree_branch_length_log_prior

@@ -7,6 +7,7 @@ import pytest
 
 from bijux_phylogenetics.bayesian.branch_length_priors import (
     build_exponential_branch_length_prior,
+    build_uniform_branch_length_prior,
 )
 from bijux_phylogenetics.bayesian.calibration_priors import (
     load_calibration_prior_definitions,
@@ -59,6 +60,14 @@ def fixture(group: str, name: str) -> Path:
             build_exponential_branch_length_prior(rate=2.0),
             "exponential",
             {"rate": 2.0},
+        ),
+        (
+            build_uniform_branch_length_prior(
+                lower_bound=0.1,
+                upper_bound=0.6,
+            ),
+            "uniform",
+            {"lower_bound": 0.1, "upper_bound": 0.6},
         ),
         (
             build_exponential_positive_substitution_parameter_prior(rate=0.75),
