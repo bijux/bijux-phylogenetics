@@ -37,6 +37,7 @@ BUILD_TEMP_CLEAN_PATHS := build dist *.egg-info
 BUILD_POST_TARGETS := build-install-smoke
 PACKAGE_NAME := bijux-phylogenetics
 SBOM_REQUIREMENTS_WRITER := -m bijux_phylogenetics_dev.quality.requirements_writer
+FROZEN_TEST_REPORT_PYTHON := $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python
 
 quality-compileall:
 	@"$(VENV_PYTHON)" -m compileall src | tee "$(PROJECT_ARTIFACTS_DIR)/quality/compileall.log"
@@ -59,6 +60,12 @@ test-all-plus-run-time: TEST_MAIN_ARGS =
 test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 --durations=0 --durations-min=0
 test-all-plus-run-time: test
 .PHONY: test-all-plus-run-time
+
+test-all-frozen: ## Compare the full-suite output against TEST_ALL_FROZEN_REF
+	@test -n "$(TEST_ALL_FROZEN_REF)" || { echo "TEST_ALL_FROZEN_REF is required"; exit 2; }
+	@$(MAKE) -C "$(MONOREPO_ROOT)" root-check-env >/dev/null
+	@"$(FROZEN_TEST_REPORT_PYTHON)" -m bijux_phylogenetics_dev.quality.frozen_test_report check --repo-root "$(MONOREPO_ROOT)" --package "$(PROJECT_SLUG)" --frozen-ref "$(TEST_ALL_FROZEN_REF)" --artifacts-root "$(PROJECT_ARTIFACTS_DIR)/test-frozen" --json-out "$(PROJECT_ARTIFACTS_DIR)/test-frozen/report.json"
+.PHONY: test-all-frozen
 
 build-install-smoke:
 	@rm -rf "$(PROJECT_ARTIFACTS_DIR)/tmp/build-install-smoke"

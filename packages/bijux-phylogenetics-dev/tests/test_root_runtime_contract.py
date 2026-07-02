@@ -329,6 +329,26 @@ def test_runtime_package_make_exposes_unfiltered_test_all_plus_run_time_surface(
     assert "test-all-plus-run-time: test" in runtime_make
 
 
+def test_runtime_package_make_exposes_frozen_full_suite_surface() -> None:
+    runtime_make = (
+        REPO_ROOT / "makes" / "packages" / "bijux-phylogenetics.mk"
+    ).read_text(encoding="utf-8")
+
+    assert (
+        "FROZEN_TEST_REPORT_PYTHON := $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python"
+        in runtime_make
+    )
+    assert (
+        "test-all-frozen: ## Compare the full-suite output against TEST_ALL_FROZEN_REF"
+        in runtime_make
+    )
+    assert 'TEST_ALL_FROZEN_REF is required' in runtime_make
+    assert (
+        '"$(FROZEN_TEST_REPORT_PYTHON)" -m bijux_phylogenetics_dev.quality.frozen_test_report check'
+        in runtime_make
+    )
+
+
 def test_runtime_package_make_default_test_lane_targets_smoke_suite() -> None:
     dry_run = _runtime_package_make_dry_run("test")
 
@@ -357,6 +377,30 @@ def test_runtime_package_make_test_all_plus_run_time_targets_full_test_tree() ->
     assert '"packages/bijux-phylogenetics/tests"' in dry_run
     assert '"packages/bijux-phylogenetics/tests/smoke"' not in dry_run
     assert "--durations=0 --durations-min=0" in dry_run
+
+
+def test_runtime_package_make_test_all_frozen_uses_repository_owned_comparison_tool() -> (
+    None
+):
+    dry_run = _runtime_package_make_dry_run("test-all-frozen")
+
+    assert (
+        'test -n "" || { echo "TEST_ALL_FROZEN_REF is required"; exit 2; }'
+        in dry_run
+    )
+    assert (
+        'make -C "/Users/bijan/bijux/bijux-phylogenetics" root-check-env >/dev/null'
+        in dry_run
+    )
+    assert (
+        '"/Users/bijan/bijux/bijux-phylogenetics/artifacts/root/check-venv/bin/python" -m bijux_phylogenetics_dev.quality.frozen_test_report check'
+        in dry_run
+    )
+    assert '--package "bijux-phylogenetics"' in dry_run
+    assert (
+        '--artifacts-root "/Users/bijan/bijux/bijux-phylogenetics/artifacts/bijux-phylogenetics/test-frozen"'
+        in dry_run
+    )
 
 
 def test_dev_package_make_excludes_slow_tests_by_default() -> None:
