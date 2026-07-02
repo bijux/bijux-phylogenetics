@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 import math
+from pathlib import Path
 
 from bijux_phylogenetics.bayesian.state import (
     BayesianLikelihoodContextState,
@@ -11,8 +12,13 @@ from bijux_phylogenetics.bayesian.state import (
     BayesianPriorComponentState,
     MetropolisHastingsRandomState,
     build_bayesian_phylogenetic_state,
+    serialize_bayesian_phylogenetic_state,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
+from bijux_phylogenetics.reports.service.artifacts import (
+    write_json_artifact,
+    write_tabular_artifact,
+)
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 _POSTERIOR_DECOMPOSITION_TOLERANCE = 1e-12
@@ -148,6 +154,74 @@ def summarize_bayesian_posterior_decomposition(
     )
 
 
+def write_bayesian_posterior_decomposition_table(
+    path: Path,
+    report: BayesianPosteriorEvaluationReport,
+) -> Path:
+    """Write one row per posterior term with decomposition identity fields."""
+    return write_tabular_artifact(
+        path,
+        [
+            {
+                "term_kind": row.term_kind,
+                "term_name": row.term_name,
+                "family": row.family,
+                "log_value": format(row.log_value, ".15g"),
+                "parameter_values": row.parameter_values,
+                "analysis_name": report.analysis_name,
+                "topology_id": report.topology_id,
+                "hastings_independent_log_posterior": format(
+                    report.hastings_independent_log_posterior,
+                    ".15g",
+                ),
+                "log_likelihood": format(report.log_likelihood, ".15g"),
+                "total_log_prior": format(report.total_log_prior, ".15g"),
+                "decomposition_delta": format(report.decomposition_delta, ".15g"),
+                "decomposition_valid": str(report.decomposition_valid).lower(),
+                "posterior_term_source": report.posterior_term_source,
+                "likelihood_term_source": report.likelihood_term_source,
+                "prior_term_source": report.prior_term_source,
+                "identity_tolerance": format(report.identity_tolerance, ".15g"),
+            }
+            for row in report.rows
+        ],
+    )
+
+
+def write_bayesian_posterior_evaluation_artifacts(
+    output_directory: Path,
+    report: BayesianPosteriorEvaluationReport,
+) -> dict[str, Path]:
+    """Write one native posterior evaluation bundle for artifact-based review."""
+    decomposition_table_path = output_directory / "posterior-decomposition.tsv"
+    summary_path = output_directory / "posterior-evaluation.json"
+    write_bayesian_posterior_decomposition_table(decomposition_table_path, report)
+    write_json_artifact(
+        summary_path,
+        {
+            "analysis_name": report.analysis_name,
+            "topology_id": report.topology_id,
+            "posterior_term_source": report.posterior_term_source,
+            "likelihood_term_source": report.likelihood_term_source,
+            "prior_term_source": report.prior_term_source,
+            "identity_tolerance": report.identity_tolerance,
+            "log_likelihood": report.log_likelihood,
+            "total_log_prior": report.total_log_prior,
+            "hastings_independent_log_posterior": (
+                report.hastings_independent_log_posterior
+            ),
+            "decomposition_delta": report.decomposition_delta,
+            "decomposition_valid": report.decomposition_valid,
+            "state": serialize_bayesian_phylogenetic_state(report.state),
+            "rows": [asdict(row) for row in report.rows],
+        },
+    )
+    return {
+        "decomposition_table_path": decomposition_table_path,
+        "summary_path": summary_path,
+    }
+
+
 def _validate_identity_tolerance(value: float) -> float:
     if not isinstance(value, int | float) or isinstance(value, bool):
         raise PhylogeneticsError(
@@ -169,4 +243,6 @@ __all__ = [
     "BayesianPosteriorEvaluationReport",
     "evaluate_bayesian_posterior",
     "summarize_bayesian_posterior_decomposition",
+    "write_bayesian_posterior_decomposition_table",
+    "write_bayesian_posterior_evaluation_artifacts",
 ]
