@@ -3,8 +3,11 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.bayesian.branch_length_priors import (
     build_exponential_branch_length_prior,
+    build_uniform_branch_length_prior,
 )
 from bijux_phylogenetics.bayesian.fixed_topology_partitioned_dna import (
     build_fixed_topology_partitioned_dna_model_definition,
@@ -23,6 +26,7 @@ from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.partitions import parse_locus_partitions
+from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -134,4 +138,123 @@ def test_fixed_topology_partitioned_dna_runner_samples_partition_likelihoods_and
         [partition.partition_name for partition in state.likelihood_context.partition_contexts]
         == ["gene_alpha", "gene_beta"]
         for state in report.chain_report.sampled_states
+    )
+
+
+def test_fixed_topology_partitioned_dna_runner_supports_uniform_branch_length_prior() -> (
+    None
+):
+    locus_partitions = parse_locus_partitions(
+        fixture("metadata", "partitioned_dna_partitions_4_taxa.txt")
+    )
+    model_definition = build_fixed_topology_partitioned_dna_model_definition(
+        locus_partitions=locus_partitions,
+        partition_prior_bundle=build_partition_model_prior_bundle(
+            partition_models=tuple(
+                build_partition_substitution_model_definition(
+                    partition_name=partition.name,
+                    model_name="K80",
+                )
+                for partition in locus_partitions
+            ),
+            linkage_plan=build_partition_parameter_linkage_plan(
+                partition_names=tuple(partition.name for partition in locus_partitions),
+                linkage_policies={"kappa": "linked"},
+            ),
+            substitution_prior_bundle=build_substitution_parameter_prior_bundle(
+                kappa_prior=build_exponential_positive_substitution_parameter_prior(
+                    rate=1.2
+                )
+            ),
+        ),
+        branch_length_prior=build_uniform_branch_length_prior(
+            lower_bound=0.05,
+            upper_bound=0.5,
+        ),
+    )
+    proposal_schedule = build_fixed_topology_partitioned_dna_proposal_schedule(
+        model_definition=model_definition,
+        branch_length_move_weight=1.0,
+        branch_length_log_scale_standard_deviation=0.2,
+        kappa_move_weight=1.0,
+        kappa_log_scale_standard_deviation=0.3,
+        linkage_move_weight=2.0,
+    )
+
+    report = run_fixed_topology_partitioned_dna_metropolis_hastings(
+        tree=load_tree(fixture("trees", "partitioned_dna_tree_4_taxa.nwk")),
+        records=load_fasta_alignment(
+            fixture("alignments", "partitioned_dna_alignment_4_taxa.fasta")
+        ),
+        model_definition=model_definition,
+        proposal_schedule=proposal_schedule,
+        iteration_count=20,
+        sample_every=1,
+        seed=9,
+    )
+
+    assert report.chain_report.accepted_count >= 1
+    assert all(
+        0.05 <= branch_length <= 0.5
+        for row in report.posterior_rows
+        for branch_length in row.branch_lengths.values()
+    )
+
+
+def test_fixed_topology_partitioned_dna_runner_rejects_initial_tree_outside_uniform_support() -> (
+    None
+):
+    locus_partitions = parse_locus_partitions(
+        fixture("metadata", "partitioned_dna_partitions_4_taxa.txt")
+    )
+    model_definition = build_fixed_topology_partitioned_dna_model_definition(
+        locus_partitions=locus_partitions,
+        partition_prior_bundle=build_partition_model_prior_bundle(
+            partition_models=tuple(
+                build_partition_substitution_model_definition(
+                    partition_name=partition.name,
+                    model_name="K80",
+                )
+                for partition in locus_partitions
+            ),
+            linkage_plan=build_partition_parameter_linkage_plan(
+                partition_names=tuple(partition.name for partition in locus_partitions),
+                linkage_policies={"kappa": "linked"},
+            ),
+            substitution_prior_bundle=build_substitution_parameter_prior_bundle(
+                kappa_prior=build_exponential_positive_substitution_parameter_prior(
+                    rate=1.2
+                )
+            ),
+        ),
+        branch_length_prior=build_uniform_branch_length_prior(
+            lower_bound=0.05,
+            upper_bound=0.08,
+        ),
+    )
+    proposal_schedule = build_fixed_topology_partitioned_dna_proposal_schedule(
+        model_definition=model_definition,
+        branch_length_move_weight=1.0,
+        branch_length_log_scale_standard_deviation=0.2,
+        kappa_move_weight=1.0,
+        kappa_log_scale_standard_deviation=0.3,
+        linkage_move_weight=2.0,
+    )
+
+    with pytest.raises(PhylogeneticsError) as error_info:
+        run_fixed_topology_partitioned_dna_metropolis_hastings(
+            tree=load_tree(fixture("trees", "partitioned_dna_tree_4_taxa.nwk")),
+            records=load_fasta_alignment(
+                fixture("alignments", "partitioned_dna_alignment_4_taxa.fasta")
+            ),
+            model_definition=model_definition,
+            proposal_schedule=proposal_schedule,
+            iteration_count=20,
+            sample_every=1,
+            seed=9,
+        )
+
+    assert (
+        error_info.value.code
+        == "fixed_topology_partitioned_dna_initial_branch_lengths_outside_prior_support"
     )

@@ -2,8 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics.bayesian.branch_length_priors import (
     build_exponential_branch_length_prior,
+    build_uniform_branch_length_prior,
 )
 from bijux_phylogenetics.bayesian.fixed_topology_dna import (
     build_fixed_topology_dna_model_definition,
@@ -17,6 +20,7 @@ from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
 )
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -114,4 +118,97 @@ def test_fixed_topology_dna_runner_samples_hky85_branch_lengths_and_model_parame
     assert all(
         state.likelihood_context.partition_contexts[0].partition_name == "full-alignment"
         for state in report.chain_report.sampled_states
+    )
+
+
+def test_fixed_topology_dna_runner_supports_uniform_branch_length_prior() -> None:
+    model_definition = build_fixed_topology_dna_model_definition(
+        substitution_model_name="HKY85",
+        branch_length_prior=build_uniform_branch_length_prior(
+            lower_bound=0.05,
+            upper_bound=0.5,
+        ),
+        substitution_parameter_prior_bundle=build_substitution_parameter_prior_bundle(
+            kappa_prior=build_exponential_positive_substitution_parameter_prior(
+                rate=1.5
+            ),
+            base_frequency_prior=build_dirichlet_simplex_substitution_parameter_prior(
+                expected_component_names=("A", "C", "G", "T"),
+                concentration_parameters={"A": 2.0, "C": 2.0, "G": 2.0, "T": 2.0},
+            ),
+        ),
+    )
+    proposal_schedule = build_fixed_topology_dna_proposal_schedule(
+        model_definition=model_definition,
+        branch_length_move_weight=1.0,
+        branch_length_log_scale_standard_deviation=0.2,
+        kappa_move_weight=1.0,
+        kappa_log_scale_standard_deviation=0.35,
+        base_frequency_move_weight=1.0,
+        base_frequency_coordinate_standard_deviation=0.45,
+    )
+
+    report = run_fixed_topology_dna_metropolis_hastings(
+        tree=load_tree(fixture("trees", "hky85_likelihood_tree_2_taxa.nwk")),
+        records=load_fasta_alignment(
+            fixture("alignments", "hky85_likelihood_alignment_2_taxa.fasta")
+        ),
+        model_definition=model_definition,
+        proposal_schedule=proposal_schedule,
+        iteration_count=9,
+        sample_every=1,
+        seed=13,
+    )
+
+    assert report.chain_report.accepted_count >= 1
+    assert all(
+        0.05 <= branch_length <= 0.5
+        for row in report.posterior_rows
+        for branch_length in row.branch_lengths.values()
+    )
+
+
+def test_fixed_topology_dna_runner_rejects_initial_tree_outside_uniform_support() -> None:
+    model_definition = build_fixed_topology_dna_model_definition(
+        substitution_model_name="HKY85",
+        branch_length_prior=build_uniform_branch_length_prior(
+            lower_bound=0.05,
+            upper_bound=0.15,
+        ),
+        substitution_parameter_prior_bundle=build_substitution_parameter_prior_bundle(
+            kappa_prior=build_exponential_positive_substitution_parameter_prior(
+                rate=1.5
+            ),
+            base_frequency_prior=build_dirichlet_simplex_substitution_parameter_prior(
+                expected_component_names=("A", "C", "G", "T"),
+                concentration_parameters={"A": 2.0, "C": 2.0, "G": 2.0, "T": 2.0},
+            ),
+        ),
+    )
+    proposal_schedule = build_fixed_topology_dna_proposal_schedule(
+        model_definition=model_definition,
+        branch_length_move_weight=1.0,
+        branch_length_log_scale_standard_deviation=0.2,
+        kappa_move_weight=1.0,
+        kappa_log_scale_standard_deviation=0.35,
+        base_frequency_move_weight=1.0,
+        base_frequency_coordinate_standard_deviation=0.45,
+    )
+
+    with pytest.raises(PhylogeneticsError) as error_info:
+        run_fixed_topology_dna_metropolis_hastings(
+            tree=load_tree(fixture("trees", "hky85_likelihood_tree_2_taxa.nwk")),
+            records=load_fasta_alignment(
+                fixture("alignments", "hky85_likelihood_alignment_2_taxa.fasta")
+            ),
+            model_definition=model_definition,
+            proposal_schedule=proposal_schedule,
+            iteration_count=9,
+            sample_every=1,
+            seed=13,
+        )
+
+    assert (
+        error_info.value.code
+        == "fixed_topology_dna_initial_branch_lengths_outside_prior_support"
     )

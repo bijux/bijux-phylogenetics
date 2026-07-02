@@ -386,6 +386,10 @@ def run_fixed_topology_dna_metropolis_hastings(
     )
     fixed_tree = tree.copy()
     fixed_tree.rooted = tree.rooted
+    _require_initial_tree_within_branch_length_prior_support(
+        tree=fixed_tree,
+        branch_length_prior=model_definition.branch_length_prior,
+    )
     initial_model_parameters = _build_initial_model_parameters(
         model_definition=model_definition,
         records=normalized_records,
@@ -554,6 +558,36 @@ def _count_alignment_patterns(
             tuple(record.sequence[position] for record in records)
             for position in range(alignment_length)
         }
+    )
+
+
+def _require_initial_tree_within_branch_length_prior_support(
+    *,
+    tree: PhyloTree,
+    branch_length_prior: BranchLengthPriorModel,
+) -> None:
+    branch_length_prior_report = evaluate_tree_branch_length_log_prior(
+        tree,
+        branch_length_prior,
+    )
+    if math.isfinite(branch_length_prior_report.total_log_prior):
+        return
+    violating_branches = [
+        {
+            "branch_id": row.branch_id,
+            "child_name": row.child_name,
+            "branch_length": row.branch_length,
+        }
+        for row in branch_length_prior_report.branch_rows
+        if not math.isfinite(row.log_density)
+    ]
+    raise PhylogeneticsError(
+        "fixed-topology DNA posterior runner requires starting tree branch lengths to lie within branch-length prior support",
+        code="fixed_topology_dna_initial_branch_lengths_outside_prior_support",
+        details={
+            "family": branch_length_prior_report.family,
+            "violating_branches": violating_branches,
+        },
     )
 
 
