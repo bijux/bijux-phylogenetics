@@ -14,6 +14,7 @@ Public trust in this repository depends on explicit checks and explicit limits.
 ## Read This Section Next
 
 - [test strategy](test-strategy.md)
+- [validation lanes](validation-lanes.md)
 - [native benchmark evidence](native-benchmark-evidence.md)
 - [release review workflow](release-review-workflow.md)
 - [release and publication gates](release-and-publication-gates.md)

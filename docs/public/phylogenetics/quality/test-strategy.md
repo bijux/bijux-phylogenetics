@@ -4,7 +4,7 @@ audience: public
 type: explanation
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-13
+last_reviewed: 2026-07-03
 ---
 
 # Test Strategy
@@ -27,6 +27,10 @@ It uses:
 
 That layered strategy matters because a green runtime test suite alone does not
 prove the public repository is honest or publishable.
+
+For the public reading model behind those separate lanes, start with
+[validation lanes](validation-lanes.md). This page focuses on the repository's
+testing strategy and the concrete lane boundaries it maintains.
 
 ## External Engine Lanes
 

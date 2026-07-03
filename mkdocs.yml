@@ -93,6 +93,7 @@ nav:
           - Quality:
               - Overview: public/phylogenetics/quality/index.md
               - Test Strategy: public/phylogenetics/quality/test-strategy.md
+              - Validation Lanes: public/phylogenetics/quality/validation-lanes.md
               - Native Benchmark Evidence: public/phylogenetics/quality/native-benchmark-evidence.md
               - Release Review Workflow: public/phylogenetics/quality/release-review-workflow.md
               - Release and Publication Gates: public/phylogenetics/quality/release-and-publication-gates.md
