@@ -4,7 +4,7 @@ audience: public
 type: study-guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-04
 ---
 
 # PCM5: Cichlid Phylogenetic Generalized Linear Mixed Models
@@ -40,6 +40,8 @@ distinct model families and distinct scientific questions:
 - dataset and provenance registration for the cichlid workflow
 - an evidence decomposition that keeps the Poisson, multinomial, ancestral, and
   repeated-measure questions separate
+- one governed parity bundle ID for each lecture slice, `evidence-001` through
+  `evidence-009`
 - nearby binary comparative regression support, though not a full PGLMM
   replacement
 

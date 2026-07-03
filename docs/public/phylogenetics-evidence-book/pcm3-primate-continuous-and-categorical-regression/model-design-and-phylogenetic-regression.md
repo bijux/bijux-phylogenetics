@@ -43,7 +43,7 @@ Nearby runtime surfaces already exist for:
 - comparative model-selection ledgers
 - residual review after phylogenetic regression
 
-Those surfaces now sit beside governed review bundles for each PCM3 evidence
+Those surfaces now sit beside governed parity bundle IDs for each PCM3 evidence
 slice. That means the study is no longer dossier-only. It is still not a
 closed parity suite, because the lecture-specific coefficient and diagnostic
 ledgers remain open.

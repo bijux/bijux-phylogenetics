@@ -4,7 +4,7 @@ audience: public
 type: study-guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-04
 ---
 
 # PCM3: Primate Continuous And Categorical Regression
@@ -39,14 +39,17 @@ This study is useful when you need to understand:
 - a checked-in source record for the full lecture family
 - repository-owned comparative regression and PGLS surfaces that match much of
   the lecture's analytical shape
+- one governed parity bundle ID for each lecture slice, `evidence-001` through
+  `evidence-008`
 - a study breakdown that keeps each lecture question separate instead of
   collapsing everything into one regression claim
 
 ## What PCM3 Does Not Prove
 
-- It does not yet provide one checked-in bundle for every lecture slice.
-- It does not turn a documented lecture sequence into a blanket claim of full
-  numerical parity.
+- It does not turn deployed parity-style bundle IDs into a blanket claim of
+  full numerical parity.
+- It does not mean each PCM3 bundle already closes its lecture-specific
+  coefficient or diagnostic verdict.
 - It does not replace the need to inspect the checked-in source record when you
   need detailed provenance.
 

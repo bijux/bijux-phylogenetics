@@ -247,7 +247,7 @@
       "read_only": true
     },
     {
-      "entry_count": 2,
+      "entry_count": 3,
       "input_id": "source-input-002",
       "kind": "repository-reference",
       "label": "checked-in primate signal reference scripts",

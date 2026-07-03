@@ -1,7 +1,7 @@
 # PCM5 Runtime Reference Mapping
 
-Governed review bundles are now checked in for each PCM5 evidence slice, but
-no governed repository surface currently reproduces the central `MCMCglmm`
+Governed parity bundle IDs are now checked in for each PCM5 evidence slice,
+but no governed repository surface currently reproduces the central `MCMCglmm`
 PGLMM workflows from PCM5.
 
 Relevant nearby repository surfaces exist, but they are narrower:
@@ -21,5 +21,5 @@ They do not provide:
 - multi-random-effect variance partitions equivalent to the lecture
 
 This dossier makes that boundary explicit so PCM5 is documented and deployed as
-source-backed, bundle-backed review scope, not over-claimed as present-day
-repository parity.
+source-backed, parity-bundle-backed review scope, not over-claimed as
+present-day repository parity.

@@ -580,6 +580,7 @@
         "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
         "evidence-book/studies/primate-longevity-signal/datasets/registry.json",
         "evidence-book/studies/primate-longevity-signal/provenance/lund-course-sources.json",
+        "evidence-book/studies/primate-longevity-signal/reference/README.md",
         "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_bijux.py",
         "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R"
       ],
@@ -750,6 +751,7 @@
       "source_paths": [
         "evidence-book/studies/primate-pgls-and-signal/datasets/registry.json",
         "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
+        "evidence-book/studies/primate-pgls-and-signal/reference/README.md",
         "evidence-book/studies/primate-pgls-and-signal/reference/primate_pgls_and_signal_reference_r.R",
         "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json"
       ],

@@ -14,9 +14,10 @@ phylogenetics runtime.
 
 The five study families come from course material that the repository has
 turned into checked-in, reviewable evidence. All five now have governed
-bundle IDs. Some bundles carry direct parity records, while others stay
-explicitly open because the scientific workflow still depends on an
-external engine or an unclosed lecture-specific boundary.
+parity-style bundle IDs. Some studies already carry stronger numerical
+parity records, while others keep parity verdicts open because the
+scientific workflow still depends on an external engine or an unclosed
+lecture-specific boundary.
 
 ```mermaid
 flowchart LR
@@ -51,13 +52,13 @@ live repository status rather than the stable narrative on this page.
 
 ## Study Atlas
 
-| Study | Main question | Current repository state |
-| --- | --- | --- |
-| [Cichlid Bayesian Linear And Phylogenetic Mixed Models](./pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md) | Where does the cichlid workflow move from standard regression into Bayesian mixed models with a phylogenetic effect? | Governed evidence bundles deployed; posterior workflow still external |
-| [Cichlid Phylogenetic Generalized Linear Mixed Models](./pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md) | How do count models, binary-style models, repeated measures, and posterior signal estimates fit together in one study family? | Governed evidence bundles deployed; posterior workflow still external |
-| [Primate Continuous And Categorical Regression](./pcm3-primate-continuous-and-categorical-regression/index.md) | How should continuous predictors, categorical predictors, and interactions be interpreted together in comparative regression? | Governed evidence bundles deployed; lecture-specific parity verdicts remain open |
-| [Primate Longevity Signal](./pcm1-primate-longevity-signal/index.md) | How do primate traits and tree preparation become a usable signal and ancestral-state workflow? | Bundle-backed comparative evidence available |
-| [Primate PGLS And Signal](./pcm2-primate-pgls-and-signal/index.md) | How do baseline GLS, PGLS, transformed trees, and signal tests behave on the same primate dataset? | Bundle-backed comparative evidence available |
+| Study | Main question | Evidence IDs | Current repository state |
+| --- | --- | --- | --- |
+| [Cichlid Bayesian Linear And Phylogenetic Mixed Models](./pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md) | Where does the cichlid workflow move from standard regression into Bayesian mixed models with a phylogenetic effect? | `evidence-001` to `evidence-007` (7 bundles) | Governed parity bundle program deployed; posterior workflow still external |
+| [Cichlid Phylogenetic Generalized Linear Mixed Models](./pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md) | How do count models, binary-style models, repeated measures, and posterior signal estimates fit together in one study family? | `evidence-001` to `evidence-009` (9 bundles) | Governed parity bundle program deployed; posterior workflow still external |
+| [Primate Continuous And Categorical Regression](./pcm3-primate-continuous-and-categorical-regression/index.md) | How should continuous predictors, categorical predictors, and interactions be interpreted together in comparative regression? | `evidence-001` to `evidence-008` (8 bundles) | Governed parity bundle program deployed; lecture-specific verdicts remain open |
+| [Primate Longevity Signal](./pcm1-primate-longevity-signal/index.md) | How do primate traits and tree preparation become a usable signal and ancestral-state workflow? | `evidence-001` to `evidence-009` (9 bundles) | Governed parity bundles deployed; plotting boundary remains explicit |
+| [Primate PGLS And Signal](./pcm2-primate-pgls-and-signal/index.md) | How do baseline GLS, PGLS, transformed trees, and signal tests behave on the same primate dataset? | `evidence-001` to `evidence-010` (10 bundles) | Governed parity bundles deployed; one coverage boundary remains explicit |
 
 ## When To Use These Pages
 

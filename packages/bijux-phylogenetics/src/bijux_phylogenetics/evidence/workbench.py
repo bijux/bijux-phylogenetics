@@ -218,9 +218,10 @@ def render_docs_evidence_overview(
         "",
         "The five study families come from course material that the repository has",
         "turned into checked-in, reviewable evidence. All five now have governed",
-        "bundle IDs. Some bundles carry direct parity records, while others stay",
-        "explicitly open because the scientific workflow still depends on an",
-        "external engine or an unclosed lecture-specific boundary.",
+        "parity-style bundle IDs. Some studies already carry stronger numerical",
+        "parity records, while others keep parity verdicts open because the",
+        "scientific workflow still depends on an external engine or an unclosed",
+        "lecture-specific boundary.",
         "",
         "```mermaid",
         "flowchart LR",
@@ -255,21 +256,29 @@ def render_docs_evidence_overview(
         "",
         "## Study Atlas",
         "",
-        "| Study | Main question | Current repository state |",
-        "| --- | --- | --- |",
+        "| Study | Main question | Evidence IDs | Current repository state |",
+        "| --- | --- | --- | --- |",
     ]
     for study in index_payload["studies"]:
         study_id = str(study["study_id"])
         study_page = study_page_by_id[study_id]
         state = "Documented study family with open limits"
-        if "teaching-study" in study["study_categories"]:
-            state = "Bundle-backed comparative evidence available"
+        evidence_ids = [str(entry["evidence_id"]) for entry in study["evidence"]]
+        evidence_span = (
+            f"`{evidence_ids[0]}` to `{evidence_ids[-1]}` ({len(evidence_ids)} bundles)"
+            if evidence_ids
+            else "none"
+        )
+        if study_id == "primate-longevity-signal":
+            state = "Governed parity bundles deployed; plotting boundary remains explicit"
+        elif study_id == "primate-pgls-and-signal":
+            state = "Governed parity bundles deployed; one coverage boundary remains explicit"
         elif study_id == "primate-continuous-and-categorical-regression":
-            state = "Governed evidence bundles deployed; lecture-specific parity verdicts remain open"
+            state = "Governed parity bundle program deployed; lecture-specific verdicts remain open"
         elif study_id.startswith("cichlid-"):
-            state = "Governed evidence bundles deployed; posterior workflow still external"
+            state = "Governed parity bundle program deployed; posterior workflow still external"
         lines.append(
-            f"| [{study['study_title']}](./{study_page}/index.md) | {study_question_by_id[study_id]} | {state} |"
+            f"| [{study['study_title']}](./{study_page}/index.md) | {study_question_by_id[study_id]} | {evidence_span} | {state} |"
         )
     lines.extend(
         [

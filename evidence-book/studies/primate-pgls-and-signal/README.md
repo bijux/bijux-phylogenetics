@@ -12,7 +12,10 @@ diagnostics, and explicit open boundaries all live here.
 
 - study id: `primate-pgls-and-signal`
 - lecture family: `PCM2_modes_pgls`
-- deployment state: `governed_parity_deployed`
+- deployment state: `governed_parity_deployed_with_open_boundary`
+- current runtime posture:
+  `comparative_regression_and_signal_workflow_governed_with_one_open_coverage_boundary`
+- governed evidence ids: `evidence-001` through `evidence-010`
 - evidence rule: keep every major lecture claim in its own bundle, and treat
   any uncovered fragment as an explicit boundary rather than silent scope
 
@@ -29,18 +32,18 @@ workflow becomes statistically richer:
 
 ## Evidence Map
 
-| Evidence ID | Focus |
-| --- | --- |
-| `primate-pgls-and-signal/evidence-001` | Reload semantics |
-| `primate-pgls-and-signal/evidence-002` | Baseline GLS parity |
-| `primate-pgls-and-signal/evidence-003` | Pagel-lambda regression parity |
-| `primate-pgls-and-signal/evidence-004` | Phylogenetic signal parity |
-| `primate-pgls-and-signal/evidence-005` | Residual diagnostics parity |
-| `primate-pgls-and-signal/evidence-006` | Transformed-tree parity |
-| `primate-pgls-and-signal/evidence-007` | Evolutionary mode-fit parity |
-| `primate-pgls-and-signal/evidence-008` | Likelihood-ratio parity |
-| `primate-pgls-and-signal/evidence-009` | Ancestral-mode parity |
-| `primate-pgls-and-signal/evidence-010` | Intercept-sweep coverage boundary |
+| Evidence ID | Focus | Current repository state |
+| --- | --- | --- |
+| `primate-pgls-and-signal/evidence-001` | Reload semantics | Governed parity bundle deployed |
+| `primate-pgls-and-signal/evidence-002` | Baseline GLS parity | Governed parity bundle deployed |
+| `primate-pgls-and-signal/evidence-003` | Pagel-lambda regression parity | Governed parity bundle deployed |
+| `primate-pgls-and-signal/evidence-004` | Phylogenetic signal parity | Governed parity bundle deployed |
+| `primate-pgls-and-signal/evidence-005` | Residual diagnostics parity | Governed parity bundle deployed |
+| `primate-pgls-and-signal/evidence-006` | Transformed-tree parity | Governed parity bundle deployed |
+| `primate-pgls-and-signal/evidence-007` | Evolutionary mode-fit parity | Governed parity bundle deployed |
+| `primate-pgls-and-signal/evidence-008` | Likelihood-ratio parity | Governed parity bundle deployed |
+| `primate-pgls-and-signal/evidence-009` | Ancestral-mode parity | Governed parity bundle deployed with explicit unresolved mismatches |
+| `primate-pgls-and-signal/evidence-010` | Intercept-sweep coverage boundary | Governed boundary bundle deployed; parity verdict intentionally open |
 
 ## Ideal Comparative Checks
 
@@ -64,4 +67,4 @@ workflow becomes statistically richer:
 
 - [datasets](./datasets/)
 - [provenance](./provenance/)
-- [reference adapters](./reference/)
+- [runtime reference mapping](./reference/README.md)

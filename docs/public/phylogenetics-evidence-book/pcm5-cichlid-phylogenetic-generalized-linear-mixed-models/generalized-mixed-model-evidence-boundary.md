@@ -17,7 +17,7 @@ that is fully documented but not yet fully reproduced inside the repository.
 
 - the lecture scripts and supplementary code references
 - the cichlid observation table, phylogeny, and saved workspace
-- governed review bundles for each checked-in evidence ID
+- governed parity bundle IDs for each checked-in evidence ID
 - the evidence map for posterior signal, ancestral values, count models,
   infection models, and repeated-measure random effects
 

@@ -18,7 +18,7 @@ posterior summaries, convergence checks, and phylogenetic variance estimates.
 - the cichlid dataset and tree provenance
 - the species-level summarization step used by the lecture
 - the decomposition of the lecture into smaller evidence slices
-- governed review bundles for each checked-in evidence ID
+- governed parity bundle IDs for each checked-in evidence ID
 - the Brownian PGLS comparator named at the end of the lecture
 
 ## What Is Not Yet A Repository-Owned Parity Claim

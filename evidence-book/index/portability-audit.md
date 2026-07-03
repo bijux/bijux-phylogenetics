@@ -3,7 +3,7 @@
 This audit enforces portable path semantics for checked-in evidence payloads.
 
 - audited json files: `390`
-- report-like files: `597`
+- report-like files: `599`
 - action required: `0`
 
 ## Rules

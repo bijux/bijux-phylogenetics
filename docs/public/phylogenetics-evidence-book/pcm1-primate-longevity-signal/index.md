@@ -4,7 +4,7 @@ audience: public
 type: study-guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-04
 ---
 
 # PCM1: Primate Longevity Signal
@@ -47,7 +47,11 @@ evidence slices that support this public guide.
 
 ## Current Repository State
 
-- The PCM1 study family is fully deployed as governed evidence.
+- Governed parity bundles are deployed for `evidence-001` through
+  `evidence-009`.
+- The checked-in evidence record includes the summary bundle plus the
+  component-level parity bundles for preprocessing, tree handling, signal, and
+  ancestral reporting.
 - The repository does not claim plot-for-plot identity with the R plotting
   stack.
 - PCM1 remains an introductory study; it does not stand in for the broader

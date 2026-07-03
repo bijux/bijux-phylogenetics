@@ -5,16 +5,17 @@ mixed models for count data, binomial response data, repeated measures, and
 posterior-based phylogenetic signal calculations.
 
 The repository now carries a complete study dossier for this lecture family
-with governed evidence bundles for each lecture slice. That means the lecture
-sources, datasets, evidence decomposition, runtime boundaries, and bundle-local
-review artifacts are all explicit. It does not mean the repository already
-owns a governed `MCMCglmm`-equivalent PGLMM surface.
+with governed parity-style evidence bundles for each lecture slice. That means
+the lecture sources, datasets, evidence decomposition, runtime boundaries, and
+bundle-local review artifacts are all explicit. It does not mean the
+repository already owns a governed `MCMCglmm`-equivalent PGLMM surface.
 
 ## Study Metadata
 
 - study id: `cichlid-phylogenetic-generalized-linear-mixed-models`
 - lecture family: `PCM5_PGLMM`
-- deployment state: `governed_review_bundles_deployed_with_external_posterior_boundary`
+- deployment state: `governed_parity_bundle_program_deployed_with_external_posterior_boundary`
+- governed evidence ids: `evidence-001` through `evidence-009`
 - current runtime posture:
   `generalized_phylogenetic_mixed_model_parity_open_with_partial_binary_regression_support`
 - evidence rule: isolate phylogenetic signal, ancestral-state extraction,
@@ -40,15 +41,15 @@ uncertainty, and repeated measures in one workflow.
 
 | Evidence ID | Focus | Current repository state |
 | --- | --- | --- |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-001` | Fish workspace reload and repeated-measure data contract | Governed review bundle deployed |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-002` | Posterior-derived phylogenetic signal for the Gaussian mixed model | Governed review bundle deployed |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-003` | Ancestral-state posterior extraction and export rules | Governed review bundle deployed |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-004` | Tree-linked ancestral plotting contract | Governed review bundle deployed |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-005` | Poisson phylogenetic count model for parasite abundance | Governed review bundle deployed |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-006` | Multinomial infection model and logit-scale summaries | Governed review bundle deployed |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-007` | Probability-scale back-transformation for intercepts and slopes | Governed review bundle deployed |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-008` | Repeated-measure random effects for `species + treetip` | Governed review bundle deployed |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-009` | Variance partition between phylogeny, species, and residual components | Governed review bundle deployed |
+| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-001` | Fish workspace reload and repeated-measure data contract | Governed parity bundle deployed; posterior verdict still open |
+| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-002` | Posterior-derived phylogenetic signal for the Gaussian mixed model | Governed parity bundle deployed; posterior verdict still open |
+| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-003` | Ancestral-state posterior extraction and export rules | Governed parity bundle deployed; posterior verdict still open |
+| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-004` | Tree-linked ancestral plotting contract | Governed parity bundle deployed; posterior verdict still open |
+| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-005` | Poisson phylogenetic count model for parasite abundance | Governed parity bundle deployed; posterior verdict still open |
+| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-006` | Multinomial infection model and logit-scale summaries | Governed parity bundle deployed; posterior verdict still open |
+| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-007` | Probability-scale back-transformation for intercepts and slopes | Governed parity bundle deployed; posterior verdict still open |
+| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-008` | Repeated-measure random effects for `species + treetip` | Governed parity bundle deployed; posterior verdict still open |
+| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-009` | Variance partition between phylogeny, species, and residual components | Governed parity bundle deployed; posterior verdict still open |
 
 ## Ideal Comparative Checks
 
@@ -78,4 +79,4 @@ uncertainty, and repeated measures in one workflow.
 - [datasets](./datasets/)
 - [provenance](./provenance/)
 - [runtime reference mapping](./reference/README.md)
-- governed evidence bundles: `evidence-001` to `evidence-009`
+- governed parity bundles: `evidence-001` to `evidence-009`

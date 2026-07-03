@@ -4,7 +4,7 @@ audience: public
 type: study-guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-04
 ---
 
 # PCM2: Primate PGLS And Signal
@@ -40,7 +40,11 @@ boundary that still remains visible.
 
 ## Current Repository State
 
-- The PCM2 study family is deployed as governed parity bundles.
+- Governed parity bundles are deployed for `evidence-001` through
+  `evidence-010`.
+- The checked-in evidence record covers reload semantics, baseline GLS, PGLS,
+  transformed trees, evolutionary modes, likelihood ratios, and ancestral
+  review on the same lecture family.
 - The repository keeps the remaining intercept-sweep fragment explicit rather
   than rounding it into a broader success claim.
 - PCM2 still focuses on one primate system; it does not cover the later

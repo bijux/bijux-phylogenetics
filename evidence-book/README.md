@@ -25,20 +25,21 @@ flowchart LR
 The public guides explain the scientific story. The `studies/` directories hold
 the durable repository record that backs those guides.
 
-All five PCM study families now carry governed evidence IDs in the repository.
-What still differs sharply from study to study is the verdict depth: PCM1 and
-PCM2 include direct parity bundles, while PCM3 to PCM5 mainly use governed
-review bundles that keep open lecture boundaries explicit.
+All five PCM study families now carry governed parity-style `evidence-###`
+bundle IDs in the repository. What still differs from study to study is the
+verdict depth: PCM1 and PCM2 already carry stronger checked-in numerical parity
+records, while PCM3 to PCM5 deploy the same durable bundle structure with
+explicitly open lecture or posterior boundaries.
 
 ## Study Catalog
 
-| Study | Lecture family | Current checked-in state |
-| --- | --- | --- |
-| [`primate-longevity-signal`](./studies/primate-longevity-signal/) | PCM1 plots, signal, and ancestral reconstruction | Bundle-backed parity record available |
-| [`primate-pgls-and-signal`](./studies/primate-pgls-and-signal/) | PCM2 evolutionary modes, PGLS, and signal testing | Bundle-backed parity record available |
-| [`primate-continuous-and-categorical-regression`](./studies/primate-continuous-and-categorical-regression/) | PCM3 multivariable regression with categorical predictors and interactions | Governed evidence bundles deployed; lecture-specific parity verdicts remain open |
-| [`cichlid-bayesian-linear-and-phylogenetic-mixed-models`](./studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/) | PCM4 Bayesian linear models and phylogenetic mixed models | Governed evidence bundles deployed; posterior workflow still external |
-| [`cichlid-phylogenetic-generalized-linear-mixed-models`](./studies/cichlid-phylogenetic-generalized-linear-mixed-models/) | PCM5 phylogenetic generalized linear mixed models | Governed evidence bundles deployed; posterior workflow still external |
+| Study | Lecture family | Evidence IDs | Current checked-in state |
+| --- | --- | --- | --- |
+| [`primate-longevity-signal`](./studies/primate-longevity-signal/) | PCM1 plots, signal, and ancestral reconstruction | `evidence-001` to `evidence-009` | Governed parity bundles deployed; plotting surfaces remain outside the numeric parity claim |
+| [`primate-pgls-and-signal`](./studies/primate-pgls-and-signal/) | PCM2 evolutionary modes, PGLS, and signal testing | `evidence-001` to `evidence-010` | Governed parity bundles deployed; one explicit coverage boundary remains open |
+| [`primate-continuous-and-categorical-regression`](./studies/primate-continuous-and-categorical-regression/) | PCM3 multivariable regression with categorical predictors and interactions | `evidence-001` to `evidence-008` | Governed parity bundle program deployed; lecture-specific verdicts remain open |
+| [`cichlid-bayesian-linear-and-phylogenetic-mixed-models`](./studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/) | PCM4 Bayesian linear models and phylogenetic mixed models | `evidence-001` to `evidence-007` | Governed parity bundle program deployed; posterior engine remains external |
+| [`cichlid-phylogenetic-generalized-linear-mixed-models`](./studies/cichlid-phylogenetic-generalized-linear-mixed-models/) | PCM5 phylogenetic generalized linear mixed models | `evidence-001` to `evidence-009` | Governed parity bundle program deployed; posterior engine remains external |
 
 ## Repository-Wide Reports
 
@@ -66,6 +67,7 @@ These index pages remain the repository-wide review surfaces:
 ## How To Use This Directory
 
 - Start with the study README that matches the lecture family you care about.
+- Confirm which `evidence-###` range belongs to that study family.
 - Follow its dataset registry, source provenance, and bundle-level reports.
 - Move to the index reports when you need repository-wide status rather than one
   study family.
@@ -74,7 +76,7 @@ These index pages remain the repository-wide review surfaces:
 
 - It does not claim that every documented study is already reproduced end to
   end inside the repository.
-- It does not treat a documented source record as equivalent to a bundle-backed
-  parity claim.
+- It does not treat a checked-in parity-style bundle ID as equivalent to a
+  matched lecture verdict.
 - It does keep those differences explicit so readers can see where the evidence
   is strong and where work remains.

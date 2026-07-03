@@ -4,7 +4,7 @@ audience: public
 type: study-guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-04
 ---
 
 # PCM4: Cichlid Bayesian Linear And Phylogenetic Mixed Models
@@ -34,7 +34,10 @@ random-effect uncertainty, and a phylogenetic inverse covariance passed into
 
 - a complete checked-in source record for the cichlid lecture family
 - explicit dataset and provenance registration
-- a named evidence decomposition showing how the lecture should be reviewed
+- a named parity-style evidence decomposition showing how the lecture should be
+  reviewed
+- one governed parity bundle ID for each lecture slice, `evidence-001` through
+  `evidence-007`
 - a Brownian PGLS comparator surface that matches the lecture's final
   comparison step
 

@@ -4,17 +4,18 @@ This study captures PCM3, the Lund lecture on multivariable comparative
 regression with continuous predictors, categorical predictors, interactions,
 and phylogenetically corrected regression.
 
-It is deployed here as a complete study dossier with governed evidence bundles
-for each lecture slice: source provenance, dataset registry, evidence
-decomposition, runtime-surface mapping, and bundle-local review artifacts are
-all checked in. What remains open is the lecture-specific parity verdict for
-each slice.
+It is deployed here as a complete study dossier with governed parity-style
+evidence bundles for each lecture slice: source provenance, dataset registry,
+evidence decomposition, runtime-surface mapping, and bundle-local review
+artifacts are all checked in. What remains open is the lecture-specific parity
+verdict for each slice.
 
 ## Study Metadata
 
 - study id: `primate-continuous-and-categorical-regression`
 - lecture family: `PCM3_contcat`
-- deployment state: `governed_review_bundles_deployed_with_open_parity`
+- deployment state: `governed_parity_bundle_program_deployed_with_open_verdicts`
+- governed evidence ids: `evidence-001` through `evidence-008`
 - current runtime posture:
   `comparative_regression_surface_available_but_lecture_parity_not_yet_governed`
 - evidence rule: keep each lecture claim separate enough to show whether the
@@ -39,14 +40,14 @@ later mixed-model lectures.
 
 | Evidence ID | Focus | Current repository state |
 | --- | --- | --- |
-| `primate-continuous-and-categorical-regression/evidence-001` | Source intake, primate workspace reload, and shared dataset alignment | Governed review bundle deployed |
-| `primate-continuous-and-categorical-regression/evidence-002` | Baseline GLS with one continuous and one categorical predictor | Governed review bundle deployed |
-| `primate-continuous-and-categorical-regression/evidence-003` | Log-response repair, residual diagnostics, and marginal versus sequential tests | Governed review bundle deployed |
-| `primate-continuous-and-categorical-regression/evidence-004` | Intercept-free parameterization for group-specific estimates | Governed review bundle deployed |
-| `primate-continuous-and-categorical-regression/evidence-005` | Continuous-by-categorical interaction coefficients and interpretation | Governed review bundle deployed |
-| `primate-continuous-and-categorical-regression/evidence-006` | Predictor scaling and intercept semantics after standardization | Governed review bundle deployed |
-| `primate-continuous-and-categorical-regression/evidence-007` | Phylogenetic regression with categorical predictors and `corMartins` covariance | Governed review bundle deployed |
-| `primate-continuous-and-categorical-regression/evidence-008` | Post-correction diagnostics and hypothesis testing | Governed review bundle deployed |
+| `primate-continuous-and-categorical-regression/evidence-001` | Source intake, primate workspace reload, and shared dataset alignment | Governed parity bundle deployed; verdict still open |
+| `primate-continuous-and-categorical-regression/evidence-002` | Baseline GLS with one continuous and one categorical predictor | Governed parity bundle deployed; verdict still open |
+| `primate-continuous-and-categorical-regression/evidence-003` | Log-response repair, residual diagnostics, and marginal versus sequential tests | Governed parity bundle deployed; verdict still open |
+| `primate-continuous-and-categorical-regression/evidence-004` | Intercept-free parameterization for group-specific estimates | Governed parity bundle deployed; verdict still open |
+| `primate-continuous-and-categorical-regression/evidence-005` | Continuous-by-categorical interaction coefficients and interpretation | Governed parity bundle deployed; verdict still open |
+| `primate-continuous-and-categorical-regression/evidence-006` | Predictor scaling and intercept semantics after standardization | Governed parity bundle deployed; verdict still open |
+| `primate-continuous-and-categorical-regression/evidence-007` | Phylogenetic regression with categorical predictors and `corMartins` covariance | Governed parity bundle deployed; verdict still open |
+| `primate-continuous-and-categorical-regression/evidence-008` | Post-correction diagnostics and hypothesis testing | Governed parity bundle deployed; verdict still open |
 
 ## Ideal Comparative Checks
 
@@ -76,4 +77,4 @@ later mixed-model lectures.
 - [datasets](./datasets/)
 - [provenance](./provenance/)
 - [runtime reference mapping](./reference/README.md)
-- governed evidence bundles: `evidence-001` to `evidence-008`
+- governed parity bundles: `evidence-001` to `evidence-008`

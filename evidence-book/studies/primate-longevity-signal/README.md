@@ -8,9 +8,13 @@ It is the introductory comparative study in the evidence book, but it is not
 lightweight. The repository already carries the full evidence breakdown rather
 than one monolithic summary claim.
 
-Study metadata:
+## Study Metadata
 
 - study id: `primate-longevity-signal`
+- lecture family: `PCM1_plots_signal`
+- deployment state: `governed_parity_deployed_with_plotting_boundary`
+- current runtime posture:
+  `primate_signal_and_ancestral_workflow_governed_with_explicit_plot_boundary`
 - summary evidence id: `evidence-001`
 - component evidence ids: `evidence-002` through `evidence-009`
 - current reviewer status: `analytical_alignment_complete`
@@ -31,17 +35,17 @@ block, the study keeps them separated as explicit evidence IDs.
 
 ## Evidence Map
 
-| Evidence ID | Focus |
-| --- | --- |
-| `primate-longevity-signal/evidence-001` | End-to-end summary bundle across the full lecture workflow |
-| `primate-longevity-signal/evidence-002` | Workbook-loading parity |
-| `primate-longevity-signal/evidence-003` | Type-repair parity |
-| `primate-longevity-signal/evidence-004` | Missing-data accounting parity |
-| `primate-longevity-signal/evidence-005` | Duplicate-species aggregation parity |
-| `primate-longevity-signal/evidence-006` | Tree import parity |
-| `primate-longevity-signal/evidence-007` | Tree diagnostics parity |
-| `primate-longevity-signal/evidence-008` | Tree-data correspondence parity |
-| `primate-longevity-signal/evidence-009` | Processed-export parity |
+| Evidence ID | Focus | Current repository state |
+| --- | --- | --- |
+| `primate-longevity-signal/evidence-001` | End-to-end summary bundle across the full lecture workflow | Governed parity bundle deployed |
+| `primate-longevity-signal/evidence-002` | Workbook-loading parity | Governed parity bundle deployed |
+| `primate-longevity-signal/evidence-003` | Type-repair parity | Governed parity bundle deployed |
+| `primate-longevity-signal/evidence-004` | Missing-data accounting parity | Governed parity bundle deployed |
+| `primate-longevity-signal/evidence-005` | Duplicate-species aggregation parity | Governed parity bundle deployed |
+| `primate-longevity-signal/evidence-006` | Tree import parity | Governed parity bundle deployed |
+| `primate-longevity-signal/evidence-007` | Tree diagnostics parity | Governed parity bundle deployed |
+| `primate-longevity-signal/evidence-008` | Tree-data correspondence parity | Governed parity bundle deployed |
+| `primate-longevity-signal/evidence-009` | Processed-export parity | Governed parity bundle deployed |
 
 ## Ideal Comparative Checks
 
@@ -59,13 +63,9 @@ block, the study keeps them separated as explicit evidence IDs.
 - Track every lecture block that matters to later studies so PCM2 and PCM3 do
   not need to rediscover baseline primate assumptions.
 
-## Checked-In Sources
-
-- [R reference checks](./reference/primate_lifespan_signal_reference_r.R)
-- [Python `bijux-phylogenetics` checks](./reference/primate_lifespan_signal_reference_bijux.py)
-
 ## Study Surfaces
 
 - [Summary evidence bundle](./evidence-001/README.md)
 - [Shared datasets](./datasets/)
 - [Study provenance](./provenance/)
+- [runtime reference mapping](./reference/README.md)

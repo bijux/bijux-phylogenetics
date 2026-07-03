@@ -1,8 +1,8 @@
 # PCM3 Runtime Reference Mapping
 
 The repository already exposes several runtime surfaces that line up with the
-PCM3 lecture family, and the evidence book now checks in governed review
-bundles for each PCM3 evidence slice. What remains open is the lecture-specific
+PCM3 lecture family, and the evidence book now checks in governed parity bundle
+IDs for each PCM3 evidence slice. What remains open is the lecture-specific
 parity verdict for those slices.
 
 Relevant owned surfaces include:
