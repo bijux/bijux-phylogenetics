@@ -13,36 +13,46 @@ PCM5 is the most demanding lecture family in the current evidence book. It
 combines posterior phylogenetic signal, ancestral-state extraction, count
 models, binomial-style models, and repeated measures.
 
-## Why PCM5 Matters
+```mermaid
+flowchart LR
+    A[Count models] --> B[Binary-style models]
+    B --> C[Repeated measures]
+    C --> D[Posterior signal and ancestral summaries]
+```
 
-This study family is where the documentation has to stay especially clear.
-Without that clarity, it is easy to blur together:
+## What PCM5 Answers
+
+PCM5 needs especially careful documentation because it is easy to blur together
+distinct model families and distinct scientific questions:
 
 - Gaussian versus non-Gaussian models
 - logit-scale versus probability-scale summaries
 - species-level versus observation-level analyses
-- repository-owned approximations versus the lecture's posterior mixed-model
-  workflow
+- repository-owned approximations versus the lecture's posterior mixed-model workflow
 
-## What The Repository Already Has
+## Read PCM5 In Order
 
-- a complete checked-in study dossier for the lecture family
+1. [generalized mixed-model evidence boundary](generalized-mixed-model-evidence-boundary.md)
+
+## What The Repository Already Provides
+
+- a complete checked-in source record for the lecture family
 - dataset and provenance registration for the cichlid workflow
 - an evidence decomposition that keeps the Poisson, multinomial, ancestral, and
   repeated-measure questions separate
 - nearby binary comparative regression support, though not a full PGLMM
   replacement
 
-## Read This Study Next
+## What PCM5 Does Not Prove
 
-1. [generalized mixed-model evidence boundary](generalized-mixed-model-evidence-boundary.md)
+- It does not claim a full repository-owned replacement for the lecture's
+  posterior PGLMM workflow.
+- It does not merge count, binary-style, and repeated-measure results into one
+  oversimplified summary.
+- It does not treat a nearby binary regression surface as proof of full mixed
+  model reproduction.
 
-## Checked-In Study Dossier
+## Checked-In Evidence Record
 
-The full dossier lives in the repository under
+The full checked-in record lives under
 [`evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/README.md).
-
-## Current Repository State
-
-PCM5 is deployed as a source-backed study family, but the posterior PGLMM core
-remains outside the repository's governed parity surface today.

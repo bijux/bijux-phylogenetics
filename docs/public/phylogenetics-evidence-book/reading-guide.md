@@ -9,17 +9,28 @@ last_reviewed: 2026-07-03
 
 # Evidence Book Reading Guide
 
-Use this section when you want to understand the comparative case studies as
-studies, not just as API surfaces or repository status reports.
+Use this section when you want to read the comparative case studies as studies:
+what question each one asks, what the repository already reproduces, and where
+important limits still remain.
+
+```mermaid
+flowchart LR
+    A[PCM1 data and signal] --> B[PCM2 PGLS and diagnostics]
+    B --> C[PCM3 multivariable regression]
+    C --> D[PCM4 Bayesian mixed models]
+    D --> E[PCM5 generalized mixed models]
+```
 
 ## Choose A Starting Point
 
-- If you want the introductory primate workflow, start with PCM1.
-- If you want comparative model fitting and PGLS, continue to PCM2.
-- If you want multivariable regression with interactions and categorical
-  predictors, read PCM3.
-- If you want Bayesian mixed-model lecture families, read PCM4 and PCM5
-  together because they share the cichlid dataset and the same `MCMCglmm`
+- Start with PCM1 if you want the full preparation path from raw primate traits
+  and tree files to signal estimation and ancestral reconstruction.
+- Continue to PCM2 if you want to see how the same primate system behaves under
+  GLS, PGLS, transformed trees, and signal testing.
+- Read PCM3 if your main question is regression interpretation: standardized
+  predictors, categorical predictors, and interactions.
+- Read PCM4 and PCM5 together if you are interested in the cichlid mixed-model
+  lectures, because they share the same dataset and the same posterior-sampling
   dependency.
 
 ## Core Reading Order
@@ -33,23 +44,35 @@ For a serious first pass through the course-derived studies, read:
 5. `PCM4`
 6. `PCM5`
 
-That order mirrors the course progression. It starts with tree and data
-preparation, moves through comparative regression, and ends at the Bayesian
-mixed-model lectures where the repository boundary is currently sharpest.
+That order mirrors the course progression. It starts with data and tree
+preparation, moves through comparative regression, and ends with the cichlid
+mixed-model lectures where the repository depends most heavily on external
+posterior tooling.
+
+## How To Read A Study Page
+
+Each study guide is meant to answer four reader questions quickly:
+
+- What is the lecture family trying to show?
+- Which parts already have checked-in repository evidence?
+- Which parts are still documentation rather than full reproduction?
+- Where should I go next if I need the underlying checked-in record?
 
 ## When To Leave These Pages
 
 - Leave for the main phylogenetics handbook when you need installation,
-  commands, or public runtime entry points.
-- Leave for the checked-in study dossier in `evidence-book/studies/` when you
-  need dataset registries, source provenance, or the full evidence map.
-- Leave for `evidence-book/index/` when you need repository-wide freshness,
-  integrity, or coverage reports rather than one study family.
+  commands, or runtime entry points rather than study interpretation.
+- Leave for the checked-in study record in
+  [`evidence-book/README.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/README.md)
+  when you need dataset registries, provenance, or bundle-level reports.
+- Leave for
+  [`evidence-book/index/`](https://github.com/bijux/bijux-phylogenetics/tree/main/evidence-book/index)
+  when you need freshness, integrity, coverage, or repository-wide review
+  status.
 
-## What These Pages Deliberately Do
+## What These Pages Deliberately Do Not Do
 
-- They explain the scientific workflow in reader-facing language.
-- They separate a documented source lecture from a reproduced repository
-  workflow.
-- They keep open boundaries visible, especially for PCM4 and PCM5, where the
-  main posterior workflows still depend on external tooling.
+- They do not claim that every lecture has already been reproduced end to end.
+- They do not hide external-tool dependencies just because nearby Python
+  surfaces exist in the repository.
+- They do keep those limits visible, especially for PCM4 and PCM5.

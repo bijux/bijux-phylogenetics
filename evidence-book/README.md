@@ -1,34 +1,41 @@
 # Evidence Book
 
-This directory is the checked-in study atlas for `bijux-phylogenetics`.
-It records which comparative case studies are represented in the repository,
-which evidence slices have already been deployed, and where the remaining
-runtime boundaries still sit.
+This directory is the checked-in study record for `bijux-phylogenetics`.
+It shows which comparative case studies are represented in the repository,
+which bundle-level checks already exist, and where important analytical limits
+still remain.
 
-Use it for study-grounded review. Use `artifacts/` for scratch outputs and
-local runs that should not become repository trust surfaces on their own.
+Use this directory for durable review. Use `artifacts/` for local scratch runs
+and temporary outputs that should not become part of the checked-in record.
 
-## Read This Directory In Two Layers
+```mermaid
+flowchart LR
+    A[Public study guide] --> B[Evidence-book study record]
+    B --> C[Bundle-level reports]
+    B --> D[Repository-wide index reports]
+```
 
-- Reader-facing study overviews live under
-  [`../docs/public/phylogenetics-evidence-book/`](../docs/public/phylogenetics-evidence-book/)
-- Checked-in study dossiers, datasets, and provenance live under
+## Start In Two Layers
+
+- Reader-facing study guides live under
+  [`docs/public/phylogenetics-evidence-book/`](../docs/public/phylogenetics-evidence-book/)
+- Checked-in study records, datasets, and provenance live under
   [`studies/`](./studies/)
 
-The public docs explain the analytical story. The `evidence-book/studies/`
-directories hold the durable repository record for each study family.
+The public guides explain the scientific story. The `studies/` directories hold
+the durable repository record that backs those guides.
 
-## Study Atlas
+## Study Catalog
 
-| Study | Lecture family | Repository state |
+| Study | Lecture family | Current checked-in state |
 | --- | --- | --- |
-| [`primate-longevity-signal`](./studies/primate-longevity-signal/) | PCM1 plots, signal, and ancestral reconstruction | Governed parity bundles deployed |
-| [`primate-pgls-and-signal`](./studies/primate-pgls-and-signal/) | PCM2 evolutionary modes, PGLS, and signal testing | Governed parity bundles deployed |
-| [`primate-continuous-and-categorical-regression`](./studies/primate-continuous-and-categorical-regression/) | PCM3 multivariable regression with categorical predictors and interactions | Study dossier deployed, runtime parity surface partially available |
-| [`cichlid-bayesian-linear-and-phylogenetic-mixed-models`](./studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/) | PCM4 Bayesian linear models and phylogenetic mixed models | Study dossier deployed, runtime parity boundary still open |
-| [`cichlid-phylogenetic-generalized-linear-mixed-models`](./studies/cichlid-phylogenetic-generalized-linear-mixed-models/) | PCM5 phylogenetic generalized linear mixed models | Study dossier deployed, runtime parity boundary still open |
+| [`primate-longevity-signal`](./studies/primate-longevity-signal/) | PCM1 plots, signal, and ancestral reconstruction | Bundle-backed parity record available |
+| [`primate-pgls-and-signal`](./studies/primate-pgls-and-signal/) | PCM2 evolutionary modes, PGLS, and signal testing | Bundle-backed parity record available |
+| [`primate-continuous-and-categorical-regression`](./studies/primate-continuous-and-categorical-regression/) | PCM3 multivariable regression with categorical predictors and interactions | Source record and provenance available; bundle packaging still open |
+| [`cichlid-bayesian-linear-and-phylogenetic-mixed-models`](./studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/) | PCM4 Bayesian linear models and phylogenetic mixed models | Source record available; posterior workflow still external |
+| [`cichlid-phylogenetic-generalized-linear-mixed-models`](./studies/cichlid-phylogenetic-generalized-linear-mixed-models/) | PCM5 phylogenetic generalized linear mixed models | Source record available; posterior workflow still external |
 
-## Repository Reports
+## Repository-Wide Reports
 
 These index pages remain the repository-wide review surfaces:
 
@@ -51,10 +58,18 @@ These index pages remain the repository-wide review surfaces:
 - Completion gates:
   [`index/completion-gates.md`](./index/completion-gates.md)
 
-## Reading Order
+## How To Use This Directory
 
-Start with the study README that matches the lecture family you care about.
-Then follow its dataset registry, source provenance, and evidence map.
+- Start with the study README that matches the lecture family you care about.
+- Follow its dataset registry, source provenance, and bundle-level reports.
+- Move to the index reports when you need repository-wide status rather than one
+  study family.
 
-When you need repository-wide status rather than one study story, move from
-the study dossier into the index reports above.
+## What This Directory Does Not Claim
+
+- It does not claim that every documented study is already reproduced end to
+  end inside the repository.
+- It does not treat a documented source record as equivalent to a bundle-backed
+  parity claim.
+- It does keep those differences explicit so readers can see where the evidence
+  is strong and where work remains.
