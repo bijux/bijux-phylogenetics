@@ -18,6 +18,9 @@ def test_repository_evidence_book_passes_validation() -> None:
 
 def test_repository_evidence_book_only_keeps_pcm_studies() -> None:
     assert sorted(path.name for path in STUDIES_ROOT.iterdir() if path.is_dir()) == [
+        "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+        "cichlid-phylogenetic-generalized-linear-mixed-models",
+        "primate-continuous-and-categorical-regression",
         "primate-longevity-signal",
         "primate-pgls-and-signal",
     ]
@@ -56,6 +59,40 @@ def test_repository_evidence_book_study_roots_are_minimal() -> None:
         "evidence-008",
         "evidence-009",
         "evidence-010",
+        "provenance",
+        "reference",
+    }
+    assert {
+        path.name
+        for path in (
+            STUDIES_ROOT / "primate-continuous-and-categorical-regression"
+        ).iterdir()
+    } == {
+        "README.md",
+        "datasets",
+        "provenance",
+        "reference",
+    }
+    assert {
+        path.name
+        for path in (
+            STUDIES_ROOT / "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+        ).iterdir()
+    } == {
+        "README.md",
+        "datasets",
+        "provenance",
+        "reference",
+    }
+    assert {
+        path.name
+        for path in (
+            STUDIES_ROOT
+            / "cichlid-phylogenetic-generalized-linear-mixed-models"
+        ).iterdir()
+    } == {
+        "README.md",
+        "datasets",
         "provenance",
         "reference",
     }
