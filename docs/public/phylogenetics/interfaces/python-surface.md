@@ -4,7 +4,7 @@ audience: public
 type: reference
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-16
+last_reviewed: 2026-07-03
 ---
 
 # Python Surface
@@ -191,6 +191,32 @@ downstream recovery tests. It now underlies the governed live
 cases, comparing total-transition summaries, transition-count rows,
 time-in-state rows, and tip-state-frequency rows without claiming exact
 cross-language history identity.
+
+The owned native maximum-likelihood tree-inference contract now also exposes
+one unified result surface through
+`bijux_phylogenetics.phylo.likelihood.infer_nucleotide_maximum_likelihood_result(...)`
+plus the stable `NucleotideMaximumLikelihoodResult` payload and writer helpers.
+That result bundles the selected model, final tree Newick, topology
+fingerprint, final log likelihood, parameter values, multi-start run
+summaries, search trace rows, optional support evidence, warning messages, and
+optional wrapper-correspondence benchmark metadata in one reviewable contract.
+The same family also exposes
+`infer_nucleotide_maximum_likelihood_result_from_alignment(...)` when one
+caller already holds a loaded alignment rather than a path-like workflow
+entrypoint.
+
+The owned native Bayesian surface now also exposes
+`bijux_phylogenetics.bayesian.run_bayesian_inference(...)` as one stable public
+entry point for the currently supported DNA workflows. Today that public
+contract is intentionally narrower than the full Bayesian package breadth: the
+public dispatcher accepts one supported fixed-topology or joint-topology DNA
+model definition plus one matching proposal schedule and returns one matching
+native run report instead of routing through BEAST, MrBayes, or one wrapper
+import. The broader Bayesian package also exposes owned priors, proposal
+builders, checkpoints, independent-chain diagnostics, posterior summaries, and
+clock-model surfaces, but those should still be read through the documented
+family boundaries rather than as one blanket promise that every Bayesian
+submodule is equally mature.
 
 For end-to-end external-engine orchestration, the public engine surface includes
 `bijux_phylogenetics.run_fasta_to_tree_workflow(...)`. That workflow owns the

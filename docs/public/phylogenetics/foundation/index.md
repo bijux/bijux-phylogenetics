@@ -4,14 +4,15 @@ audience: public
 type: explanation
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-10
+last_reviewed: 2026-07-03
 ---
 
 # What This Runtime Is For
 
 `bijux-phylogenetics` is a reproducible phylogenetics runtime for inspection,
 comparison, annotation, comparative analysis, ancestral reconstruction,
-adapter-driven engine workflows, and evidence-linked reporting.
+native likelihood and inference, adapter-driven engine workflows, and
+evidence-linked reporting.
 
 It is not trying to replace every upstream inference engine. Its value comes
 from making important phylogenetic operations reviewable, repeatable, and
@@ -24,14 +25,17 @@ outputs:
 
 - tree validation, rooting, comparison, and rendering
 - alignment diagnostics, trimming, coding checks, and translation
+- native finite-state likelihood, native maximum-likelihood tree inference, and supported native Bayesian inference surfaces
 - comparative trait analysis and ancestral-state reconstruction
 - adapter workflows for external alignment and inference tools
 - report, bundle, and artifact generation for downstream review
 
 ## What The Runtime Does Not Claim
 
-- it does not claim to be a native maximum-likelihood or Bayesian inference
-  engine
+- it does not claim that every inference workflow in the repository is native,
+  benchmark-closed, or equally mature
+- it does not claim that wrapper-backed workflow orchestration should be
+  described as if it were native implementation ownership
 - it does not claim that the evidence-book already closes every runtime surface
 - it does not flatten serious scientific questions into one generic success
   message

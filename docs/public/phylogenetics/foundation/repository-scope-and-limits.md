@@ -4,7 +4,7 @@ audience: public
 type: explanation
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-10
+last_reviewed: 2026-07-03
 ---
 
 # Repository Scope and Limits
@@ -16,6 +16,7 @@ repository can support today without borrowing credibility from future work.
 ## In Scope
 
 - deterministic tree and alignment workflows
+- native finite-state likelihood and supported native inference contracts
 - comparative and ancestral analysis over governed inputs
 - adapter surfaces that orchestrate external engines honestly
 - evidence-linked reporting and publication-style artifact packaging
@@ -23,7 +24,10 @@ repository can support today without borrowing credibility from future work.
 ## Out Of Scope
 
 - claiming broader scientific validation than the evidence-book proves
-- treating external engines as if they were reimplemented locally
+- treating every wrapper-backed workflow as if it had already been
+  reimplemented locally
+- describing narrow native inference ownership as if it already covered every
+  model family and every phylogenetic workflow in the repository
 - hiding unresolved runtime or evidence limits behind marketing language
 
 ## Why This Matters

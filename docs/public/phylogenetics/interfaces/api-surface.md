@@ -4,7 +4,7 @@ audience: reader
 type: reference
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-11
+last_reviewed: 2026-07-03
 ---
 
 # API Surface
@@ -58,6 +58,21 @@ Each result object delegates the underlying CLI-grade runtime report through a
 `report` field and attribute passthrough, adds stable `write_json(...)`
 serialization, and provides `write_tsv(...)` for workflow summaries where a
 tabular export is meaningful.
+
+## Native Runtime Entry Points
+
+The public Python contract is no longer only workflow-shaped.
+
+The native runtime also exposes named import families for:
+
+- likelihood and tree-inference surfaces under `bijux_phylogenetics.phylo.likelihood`
+- Bayesian priors, proposal schedules, diagnostics, and public inference entry
+  points under `bijux_phylogenetics.bayesian`
+- benchmark contracts under `bijux_phylogenetics.benchmark`
+
+Those are still narrower than the full internal module tree. If you need the
+native public contract, stay with the named surfaces that the public docs call
+out directly rather than assuming every helper in those packages is stable.
 
 ## Frozen HTTP Contract
 
