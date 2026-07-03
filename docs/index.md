@@ -49,6 +49,9 @@ quality automation.
 ## Read this next
 
 - public runtime guide: [Phylogenetics product guide](public/phylogenetics/index.md)
+- native maximum-likelihood workflows: [Native maximum-likelihood workflows](public/phylogenetics/operations/native-maximum-likelihood-workflows.md)
+- native Bayesian workflows: [Native Bayesian workflows](public/phylogenetics/operations/native-bayesian-workflows.md)
+- native benchmark review: [Native benchmark review](public/phylogenetics/operations/native-benchmark-review.md)
 - public evidence guide: [Evidence-book guide](public/phylogenetics-evidence-book/index.md)
 - internal maintainer guide: [Internal documentation](internal/index.md)
 

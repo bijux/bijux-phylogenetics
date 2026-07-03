@@ -50,6 +50,15 @@ digging through package names, maintainer scripts, or evidence internals.
 - how do I judge trust, limits, and release readiness:
   [quality](quality/index.md)
 
+## Native Flagship Guides
+
+When the question is specifically about the current owned native surfaces, jump
+straight to the practical guides:
+
+- [native maximum-likelihood workflows](operations/native-maximum-likelihood-workflows.md)
+- [native Bayesian workflows](operations/native-bayesian-workflows.md)
+- [native benchmark review](operations/native-benchmark-review.md)
+
 ## Public Versus Internal
 
 The public handbook explains the product and runtime surface. Internal

@@ -94,6 +94,15 @@ The suite report keeps four status families explicit:
 That distinction matters because the repository treats benchmark evidence as a
 review surface, not as one generic pass or fail badge.
 
+## Use The Matching Practical Guides
+
+This page is the reference boundary. For day-to-day usage, start from the
+matching public workflow guides:
+
+- [native maximum-likelihood workflows](../operations/native-maximum-likelihood-workflows.md)
+- [native Bayesian workflows](../operations/native-bayesian-workflows.md)
+- [native benchmark review](../operations/native-benchmark-review.md)
+
 ## Public Reading Rule
 
 When you need an owned inference contract, start from these named public native

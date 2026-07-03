@@ -124,6 +124,12 @@ Those surfaces are intentionally more explicit than the older workflow-only
 story: native runtime ownership, wrapper-backed orchestration, and evidence
 closure are related, but they are not the same claim.
 
+Practical public guides for those surfaces live at:
+
+- [Native maximum-likelihood workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-maximum-likelihood-workflows/)
+- [Native Bayesian workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-bayesian-workflows/)
+- [Native benchmark review](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-benchmark-review/)
+
 ## Native Tree Model
 
 The owned in-memory tree surface now lives on `bijux_phylogenetics.PhyloTree`
