@@ -93,11 +93,11 @@
       "study_id": "primate-pgls-and-signal"
     },
     {
-      "bundle_digest": "307d58190c5d98a535def382c91b9807004e58325d1e8ee67cafdcd1274cc8ce",
+      "bundle_digest": "5044d5439e548d7e74ab5f04b5f4f238af45da5e04059c4da8315893717719ec",
       "evidence_id": "evidence-002",
       "file_count": 14,
       "integrity_status": "tracked",
-      "manifest_digest": "334357eebe52decd08d453ab9f707dac0396f9042080399513f4f79670c5e273",
+      "manifest_digest": "d55814ab549e9421c3bd1f09143e2e99de7e717b2670487b33332dfc42022064",
       "relative_path": "studies/primate-pgls-and-signal/evidence-002",
       "study_id": "primate-pgls-and-signal"
     },
