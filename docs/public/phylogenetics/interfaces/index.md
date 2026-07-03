@@ -33,4 +33,5 @@ touch directly.
 - [API surface](api-surface.md)
 - [Python surface](python-surface.md)
 - [native inference and benchmarks](native-inference-and-benchmarks.md)
+- [artifact consumption guide](artifact-consumption-guide.md)
 - [artifact contracts](artifact-contracts.md)
