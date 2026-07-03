@@ -4,18 +4,32 @@ audience: public
 type: reference
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-04
 ---
 
 # Artifact Contracts
 
-The runtime emits review artifacts, not just terminal text. Those artifacts are
-part of the public surface when the documentation names them as governed output
-families.
+The runtime writes files that are meant to be read by people, automation, or
+both. This page explains which output families are safe to depend on as public
+artifacts.
+
+If you only need day-to-day guidance, start with the
+[artifact consumption guide](artifact-consumption-guide.md). This page is the
+short reference for what counts as a durable public output family.
+
+```mermaid
+flowchart LR
+    A[Need an output] --> B[Human review]
+    A --> C[Automation]
+    A --> D[Multi-file workflow bundle]
+    B --> E[HTML and SVG]
+    C --> F[JSON and TSV]
+    D --> G[Manifest plus linked files]
+```
 
 ## Main Public Artifact Families
 
-Common governed families include:
+Common public output families include:
 
 - SVG tree figures
 - HTML reports
@@ -37,31 +51,25 @@ The most important schema-governed public families include:
 - workflow and report manifests such as `prefix.manifest.json` and
   `comparative-report.manifest.json`
 
-When the repository documents one family at that level, downstream code should
-anchor on the stable headers or top-level keys instead of scraping ad hoc
-examples.
+When the documentation names one family here, downstream code should depend on
+its stable headers or top-level keys instead of scraping one ad hoc example.
 
-## Contract Reading Rule
+## How To Read These Outputs
 
-- use HTML and SVG outputs for human review
-- use JSON and TSV outputs for downstream automation
-- use manifests when one workflow emits multiple linked files
-- use benchmark and parity summaries through their documented output surfaces
-  rather than inferring structure from one test fixture
+- Use HTML and SVG outputs for human review.
+- Use JSON and TSV outputs for downstream automation.
+- Use manifests when one workflow emits multiple linked files.
+- Use benchmark and parity summaries through their documented output surfaces
+  rather than inferring structure from one fixture or screenshot.
 
-## What This Page Does Not Claim
+## What This Page Does Not Promise
 
-- it does not claim that every output file ever written by the repository is a
-  stable public contract
-- it does not claim that every artifact is equally important for trust or
-  publication review
-- it does not turn one output schema into proof that the underlying science is
-  already closed
+- It does not claim that every output file ever written by the repository is a
+  stable public contract.
+- It does not claim that every artifact is equally important for trust or
+  publication review.
+- It does not turn one output schema into proof that the underlying science is
+  already closed.
 
-Those outputs matter because they let downstream readers inspect the result
-instead of trusting a one-line success message.
-
-## Matching Practical Guide
-
-For day-to-day output handling, start with the
-[artifact consumption guide](artifact-consumption-guide.md).
+These files matter because they let you inspect the result instead of relying
+on a one-line success message.
