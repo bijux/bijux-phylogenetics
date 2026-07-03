@@ -4,21 +4,33 @@ audience: public
 type: explanation
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-04
 ---
 
 # Release And Publication Gates
 
-Release readiness is governed, not assumed.
+Release readiness is earned, not assumed.
 
-The repository checks package boundaries, shared standards sync, package build
-proof, evidence-governance rules, and publication-readiness reports before
-claiming a clean release state.
+Before this project claims a clean release state, it checks package metadata,
+shared standards sync, build proof, evidence-governance rules, and
+publication-readiness reports together.
 
-That is especially important here because the repository has both runtime and
-evidence responsibilities, and those do not mature at the same speed.
+That matters here because runtime breadth and evidence closure do not always
+move at the same speed. A trustworthy release has to describe both honestly.
 
-## Release Questions This Repository Has To Answer
+```mermaid
+flowchart TD
+    A[Release candidate] --> B[Package metadata]
+    A --> C[Public docs and READMEs]
+    A --> D[Build and smoke proof]
+    A --> E[Evidence and quality reports]
+    B --> F[Release decision]
+    C --> F
+    D --> F
+    E --> F
+```
+
+## Questions A Release Must Answer
 
 - do the documented public packages, READMEs, and handbook pages describe the
   runtime truthfully
@@ -31,7 +43,7 @@ evidence responsibilities, and those do not mature at the same speed.
 - do publication-readiness and evidence-governance reports stay green on the
   repository state being released
 
-## Practical Reading Rule
+## What A Reader Should Look For
 
 Release readiness here is not one badge and not one green test lane.
 
@@ -61,7 +73,7 @@ Use the practical guide in
 [release review workflow](release-review-workflow.md) for how those surfaces
 fit together during one serious release audit.
 
-## Failure Pattern To Reject
+## Failure Patterns To Reject
 
 The release state should be treated as weak, even if some checks are green,
 when any of these remain true:

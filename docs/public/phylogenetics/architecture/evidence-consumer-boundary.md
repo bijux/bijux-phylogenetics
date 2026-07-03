@@ -4,19 +4,28 @@ audience: public
 type: explanation
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-04
 ---
 
 # Evidence Consumer Boundary
 
-The evidence-book consumes the runtime. It is not the runtime.
+The evidence-book uses runtime outputs, but it is not the runtime itself.
 
-That distinction matters because the evidence-book carries scientific trust and
-teaching responsibilities that are different from the runtime’s operational
-responsibility. Public docs should not blur those surfaces together.
+That separation helps readers avoid a common mistake: using runtime usage docs
+to answer trust questions, or using study dossiers to answer execution
+questions.
 
-Use the runtime handbook when the question is operational. Use the evidence-book
-public guide when the question is parity, study design, or bounded trust.
+```mermaid
+flowchart TD
+    A[What are you trying to learn?] --> B[How do I run this?]
+    A --> C[How much should I trust this claim?]
+    B --> D[Runtime handbook]
+    C --> E[Evidence Book]
+```
+
+Use the runtime handbook when your question is operational. Use the
+evidence-book public guide when your question is about study reproduction,
+parity, freshness, or bounded trust.
 
 ## Practical Reading Rule
 
@@ -29,6 +38,6 @@ Ask which question you are actually trying to answer:
   Which claims are benchmarked, parity-reviewed, study-backed, stale, bounded,
   or still open.
 
-Keeping those questions separate is part of the repository's honesty model.
-The runtime can be broader than the currently closed evidence surface without
-that difference being hidden.
+Keeping those questions separate is part of the public honesty model. The
+runtime can be broader than the currently closed evidence surface without that
+difference being hidden.

@@ -4,23 +4,31 @@ audience: public
 type: evidence-navigation
 status: active
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-04
 ---
 
 # Evidence Book
 
-This section documents the five lecture-derived comparative study families
-tracked in `bijux-phylogenetics`.
+This section helps you read the comparative study record that sits behind the
+public phylogenetics runtime.
 
-It is the best place to understand how the repository moves from course
-examples into checked-in evidence: what has already been reproduced, what has
-been cataloged but not yet turned into governed parity, and which analytical
-questions each study is meant to answer.
+The five study families come from course material that the repository has been
+turning into checked-in, reviewable evidence. Some study slices are already
+reproduced in governed bundles. Others are documented clearly, but still stop
+at a study dossier or an external-tool boundary.
+
+```mermaid
+flowchart LR
+    A[Source lecture] --> B[Public study guide]
+    B --> C[Checked-in evidence dossier]
+    C --> D[Freshness and integrity reports]
+    C --> E[Reader-facing evidence pages]
+```
 
 ## Start Here
 
 - [evidence book reading guide](reading-guide.md)
-- repository evidence root:
+- checked-in study dossiers:
   [`evidence-book/README.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/README.md)
 - repository-wide review reports:
   [`evidence-book/index/`](https://github.com/bijux/bijux-phylogenetics/tree/main/evidence-book/index)
@@ -38,7 +46,7 @@ live repository status rather than the stable narrative on this page.
 | [PCM4: cichlid Bayesian linear and phylogenetic mixed models](pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md) | How does the workflow move from Gaussian regression to Bayesian mixed models with a phylogenetic random effect? | Study dossier deployed; core posterior workflow still external |
 | [PCM5: cichlid phylogenetic generalized linear mixed models](pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md) | How are count models, binomial-style models, posterior signal estimates, and repeated measures handled together? | Study dossier deployed; core posterior workflow still external |
 
-## Studies
+## What Each Study Page Does
 
 Each study page does three jobs:
 
@@ -47,15 +55,15 @@ Each study page does three jobs:
 - state clearly whether the repository already reproduces the lecture or is
   still documenting an external boundary
 
-## Practical Boundary
+## How To Use This Section
 
-Use these study pages when the question is:
+Use these study pages when you want to know:
 
 - what a given lecture family is trying to show
 - which repository surfaces have already been checked against that lecture
 - where a study remains documented but not yet fully reproduced
 
-Use the main phylogenetics handbook when the question is:
+Use the main phylogenetics handbook when you need:
 
 - how to install or run the package
 - which API or CLI surfaces are public
