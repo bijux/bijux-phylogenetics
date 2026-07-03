@@ -29,7 +29,6 @@ node_modules/
 pip-wheel-metadata/
 
 artifacts/*
-!artifacts/.gitkeep
 packages/*/artifacts/
 packages/*/artifacts
 
