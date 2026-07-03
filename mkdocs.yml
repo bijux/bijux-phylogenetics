@@ -101,4 +101,7 @@ nav:
           - PCM2 Signal Diagnostics and Open Boundaries: public/phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/signal-diagnostics-and-open-boundaries.md
   - Internal:
       - Overview: internal/index.md
-      - Maintainer: internal/maintain/index.md
+      - Maintainer:
+          - Overview: internal/maintain/index.md
+          - Documentation Ownership: internal/maintain/documentation-ownership.md
+          - Release Surface Alignment: internal/maintain/release-surface-alignment.md

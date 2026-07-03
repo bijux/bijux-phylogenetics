@@ -4,10 +4,27 @@ audience: maintainer
 type: handbook
 status: active
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-05-10
+last_reviewed: 2026-07-03
 ---
 
 # Maintainer Guide
 
 Use the maintainer handbook when the question is about repository health rather
 than runtime product usage.
+
+The main internal responsibilities covered here are:
+
+- keeping public docs, package READMEs, and metadata aligned with the actual
+  runtime surface
+- preserving the boundary between native runtime ownership, wrapper-backed
+  workflow ownership, and evidence-book closure
+- preparing a release story that stays truthful across package metadata, docs,
+  and release-readiness reports
+
+## Read By Maintainer Question
+
+- how should public docs and package READMEs map to the runtime surface:
+  [documentation ownership](documentation-ownership.md)
+- how do I check that metadata, docs, and release surfaces all say the same
+  thing:
+  [release surface alignment](release-surface-alignment.md)
