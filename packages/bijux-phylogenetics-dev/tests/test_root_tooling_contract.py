@@ -154,6 +154,17 @@ def test_root_make_routes_test_all_plus_run_time_across_repository_packages() ->
     )
 
 
+def test_root_make_cleans_disposable_root_aliases() -> None:
+    root_make = (REPO_ROOT / "makes" / "root.mk").read_text(encoding="utf-8")
+
+    assert "ROOT_DISPOSABLE_ALIAS_PATHS :=" in root_make
+    for alias_name in (".venv", ".tox", ".hypothesis", ".benchmarks"):
+        assert f'"$(CURDIR)/{alias_name}"' in root_make
+    assert 'if [ -L "$$path" ]; then' in root_make
+    assert 'elif [ -d "$$path" ]; then' in root_make
+    assert "rm -rf $(ROOT_FORBIDDEN_ARTIFACTS) || true" in root_make
+
+
 def test_root_make_routes_test_all_frozen_across_repository_packages() -> None:
     root_make = (REPO_ROOT / "makes" / "root.mk").read_text(encoding="utf-8")
 
