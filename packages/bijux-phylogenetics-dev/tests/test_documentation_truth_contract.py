@@ -242,6 +242,123 @@ def test_public_evidence_and_release_guides_avoid_fragile_summary_claims() -> No
     assert "docs say more than metadata" in release_gates
 
 
+def test_public_quality_and_foundation_guides_explain_trust_boundaries() -> None:
+    quality_index = _read(
+        REPO_ROOT / "docs" / "public" / "phylogenetics" / "quality" / "index.md"
+    )
+    validation_lanes = _read(
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics"
+        / "quality"
+        / "validation-lanes.md"
+    )
+    test_strategy = _read(
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics"
+        / "quality"
+        / "test-strategy.md"
+    )
+    foundation_index = _read(
+        REPO_ROOT / "docs" / "public" / "phylogenetics" / "foundation" / "index.md"
+    )
+    claim_reading_guide = _read(
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics"
+        / "foundation"
+        / "claim-reading-guide.md"
+    )
+    evidence_boundary = _read(
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics"
+        / "foundation"
+        / "evidence-boundary.md"
+    )
+
+    assert "validation lanes" in quality_index
+    assert "runtime behavior lanes" in validation_lanes
+    assert "scientific-validation lanes" in validation_lanes
+    assert "a runtime unit or integration test does not prove broader scientific closure" in (
+        validation_lanes
+    )
+    assert "validation lanes" in test_strategy
+    assert "claim reading guide" in foundation_index
+    assert "native ownership claim" in claim_reading_guide
+    assert "wrapper claim" in claim_reading_guide
+    assert "a documented runtime surface is not automatically evidence-closed" in (
+        claim_reading_guide
+    )
+    assert "claim reading guide" in evidence_boundary
+
+
+def test_public_pcm_study_guides_name_scope_order_and_boundaries() -> None:
+    pcm1_index = _read(
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics-evidence-book"
+        / "pcm1-primate-longevity-signal"
+        / "index.md"
+    )
+    pcm1_preparation = _read(
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics-evidence-book"
+        / "pcm1-primate-longevity-signal"
+        / "data-and-tree-preparation.md"
+    )
+    pcm1_results = _read(
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics-evidence-book"
+        / "pcm1-primate-longevity-signal"
+        / "signal-and-ancestral-results.md"
+    )
+    pcm2_index = _read(
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics-evidence-book"
+        / "pcm2-primate-pgls-and-signal"
+        / "index.md"
+    )
+    pcm2_models = _read(
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics-evidence-book"
+        / "pcm2-primate-pgls-and-signal"
+        / "model-comparisons-and-pgls.md"
+    )
+    pcm2_boundaries = _read(
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics-evidence-book"
+        / "pcm2-primate-pgls-and-signal"
+        / "signal-diagnostics-and-open-boundaries.md"
+    )
+
+    assert "Read PCM1 In Order" in pcm1_index
+    assert "What PCM1 Does Not Prove" in pcm1_index
+    assert "What This Part Answers" in pcm1_preparation
+    assert "What To Keep In Mind" in pcm1_results
+    assert "Read PCM2 In Order" in pcm2_index
+    assert "What PCM2 Does Not Prove" in pcm2_index
+    assert "What This Part Answers" in pcm2_models
+    assert "Reading Rule" in pcm2_boundaries
+    assert "open boundaries are part of the study's value" in pcm2_boundaries
+
+
 def test_runtime_and_alias_metadata_publish_beta_native_runtime_story() -> None:
     runtime_pyproject = _load_toml(
         REPO_ROOT / "packages" / "bijux-phylogenetics" / "pyproject.toml"
@@ -313,6 +430,8 @@ def test_package_readmes_link_package_roles_to_native_runtime_and_docs() -> None
 
     assert "Surface selection guide" in root_readme
     assert "Artifact consumption guide" in root_readme
+    assert "Validation lanes" in root_readme
+    assert "Claim reading guide" in root_readme
     assert "Surface selection guide" in runtime_readme
     assert "Artifact consumption guide" in runtime_readme
     assert "Native Inference And Benchmark Surfaces" in runtime_readme
@@ -406,3 +525,22 @@ def test_internal_docs_name_public_interface_and_artifact_maintenance_rule() -> 
     assert "public interface and artifact maintenance" in maintainer_index
     assert "surface-selection guidance" in interface_maintenance
     assert "The usual failure is partial interface drift" in interface_maintenance
+
+
+def test_internal_docs_name_trust_lane_and_study_guide_maintenance_rule() -> None:
+    internal_index = _read(REPO_ROOT / "docs" / "internal" / "index.md")
+    maintainer_index = _read(
+        REPO_ROOT / "docs" / "internal" / "maintain" / "index.md"
+    )
+    trust_lane_maintenance = _read(
+        REPO_ROOT
+        / "docs"
+        / "internal"
+        / "maintain"
+        / "trust-lane-and-study-guide-maintenance.md"
+    )
+
+    assert "trust lane and study guide maintenance" in internal_index
+    assert "trust lane and study guide maintenance" in maintainer_index
+    assert "quality pages that explain validation lanes" in trust_lane_maintenance
+    assert "The failure here is trust compression" in trust_lane_maintenance
