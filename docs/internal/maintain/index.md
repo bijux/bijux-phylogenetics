@@ -23,6 +23,8 @@ The main internal responsibilities covered here are:
 
 ## Read By Maintainer Question
 
+- how do repository runs keep root aliases disposable and avoid root clutter:
+  [artifact hygiene](artifact-hygiene.md)
 - how should public docs and package READMEs map to the runtime surface:
   [documentation ownership](documentation-ownership.md)
 - how do native flagship surfaces stay documented across reference, workflow,

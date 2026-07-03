@@ -527,6 +527,23 @@ def test_internal_docs_name_public_interface_and_artifact_maintenance_rule() -> 
     assert "The usual failure is partial interface drift" in interface_maintenance
 
 
+def test_internal_docs_name_artifact_hygiene_rule() -> None:
+    internal_index = _read(REPO_ROOT / "docs" / "internal" / "index.md")
+    maintainer_index = _read(
+        REPO_ROOT / "docs" / "internal" / "maintain" / "index.md"
+    )
+    artifact_hygiene = _read(
+        REPO_ROOT / "docs" / "internal" / "maintain" / "artifact-hygiene.md"
+    )
+
+    assert "artifact hygiene" in internal_index
+    assert "artifact hygiene" in maintainer_index
+    assert "canonical artifact-owned paths" in artifact_hygiene
+    assert "The root `.venv`, `.tox`, `.hypothesis`, and `.benchmarks` paths should be" in (
+        artifact_hygiene
+    )
+
+
 def test_internal_docs_name_trust_lane_and_study_guide_maintenance_rule() -> None:
     internal_index = _read(REPO_ROOT / "docs" / "internal" / "index.md")
     maintainer_index = _read(

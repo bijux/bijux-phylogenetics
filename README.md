@@ -139,6 +139,11 @@ Important current limits:
 - curated checked-in comparative trust studies belong under `evidence-book/`; they are
   repository evidence bundles rather than transient execution products
 - the shared root environment lives at `artifacts/root/check-venv/`
+- maintainer commands should prefer `artifacts/root/check-venv/` directly over
+  depending on a root alias path
+- root `.venv`, `.tox`, `.hypothesis`, and `.benchmarks` are disposable
+  compatibility aliases into `artifacts/root/`; `make setup` may recreate them
+  and `make clean-root-artifacts` may remove them
 - the MkDocs site builds to `artifacts/root/docs/site/`
 
 ## Repository Layout
