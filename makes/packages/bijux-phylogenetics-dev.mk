@@ -22,18 +22,20 @@ ENABLE_PYDOCSTYLE := 1
 SKIP_MYPY := 0
 PACKAGE_ALL_TARGETS := clean install test lint quality security build sbom
 FROZEN_TEST_REPORT_PYTHON = $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python
+FULL_SUITE_PYTEST_WORKERS ?= 8
+FULL_SUITE_PYTEST_DISTRIBUTION ?= worksteal
 
 sync-license-assets-package:
 	@"$(VENV_PYTHON)" -m bijux_phylogenetics_dev.release.license_assets sync
 .PHONY: sync-license-assets-package
 
 test-all: TEST_MAIN_ARGS =
-test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0
+test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION)
 test-all: test
 .PHONY: test-all
 
 test-all-plus-run-time: TEST_MAIN_ARGS =
-test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 --durations=0 --durations-min=0
+test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION) --durations=0 --durations-min=0
 test-all-plus-run-time: test
 .PHONY: test-all-plus-run-time
 

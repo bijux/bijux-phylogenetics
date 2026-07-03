@@ -38,6 +38,8 @@ BUILD_POST_TARGETS := build-install-smoke
 PACKAGE_NAME := bijux-phylogenetics
 SBOM_REQUIREMENTS_WRITER := -m bijux_phylogenetics_dev.quality.requirements_writer
 FROZEN_TEST_REPORT_PYTHON = $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python
+FULL_SUITE_PYTEST_WORKERS ?= 8
+FULL_SUITE_PYTEST_DISTRIBUTION ?= worksteal
 
 quality-compileall:
 	@"$(VENV_PYTHON)" -m compileall src | tee "$(PROJECT_ARTIFACTS_DIR)/quality/compileall.log"
@@ -50,14 +52,14 @@ sync-license-assets-package:
 test-all: TEST_LABEL = full test suite
 test-all: TEST_PATHS = $(TEST_FULL_PATHS)
 test-all: TEST_MAIN_ARGS =
-test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0
+test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION)
 test-all: test
 .PHONY: test-all
 
 test-all-plus-run-time: TEST_LABEL = full test suite
 test-all-plus-run-time: TEST_PATHS = $(TEST_FULL_PATHS)
 test-all-plus-run-time: TEST_MAIN_ARGS =
-test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 --durations=0 --durations-min=0
+test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION) --durations=0 --durations-min=0
 test-all-plus-run-time: test
 .PHONY: test-all-plus-run-time
 
