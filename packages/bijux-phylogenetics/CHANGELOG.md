@@ -1,37 +1,46 @@
 # Changelog
 
-## Unreleased
+## 0.1.0 - 2026-07-04
 
-- initialize the runtime package scaffold
-- add alignment trimming, coding diagnostics, coding translation, and pairwise identity-matrix workflows
-- add DNA distance matrices with p-distance and Jukes-Cantor models, deterministic TSV export, and NJ/UPGMA tree building
-- add imported distance-matrix validation, tree-assumption diagnostics, and HTML distance-analysis reports
-- add tree-set loading, majority-rule consensus trees, clade-frequency tables, RF distance matrices, topology clusters, and instability summaries
-- add posterior tree-set comparison workflows and HTML tree-uncertainty reports
-- add seeded birth-death and coalescent tree simulation, Brownian and OU continuous-trait simulation, discrete-trait simulation, and DNA or protein alignment simulation
-- add local scientific benchmarks for tree validation, tree comparison, and alignment diagnostics across increasing problem sizes
-- add outgroup rooting and midpoint rerooting transforms
-- add comparative readiness checks, phylogenetic independent contrasts, Blomberg's K, Pagel's lambda, permutation-based signal tests, and phylogenetic GLS workflows
-- add standalone Brownian and OU comparative fits, confidence intervals, identifiability warnings, formula-audited PGLS interactions, repeated-test correction, comparative audit and influence outputs, and report or comparison surfaces across trees and pruning policies
-- add continuous and discrete ancestral-state reconstruction, uncertainty reporting, model comparison, annotated ancestral-tree rendering, table export, and HTML ancestral-state reports
-- add governed external-engine workflows for alignment, trimming, model selection, ML inference, bootstrap consensus, fast-tree comparison, and engine provenance capture
-- add inference resume safeguards, HTML inference workflow reports, and initial MrBayes preparation, posterior-tree summary, trace parsing, and ESS workflows
-- add explicit MrBayes convergence diagnostics, posterior HTML reports, BEAST-style XML preparation, fossil-calibration and tip-date validation, BEAST log parsing, calibration audit reports, and Bayesian evidence packages
-- embed coding diagnostics and identity matrices in phylo-input reports
-- add tree diagnostics for child counts, singleton nodes, missing branch-length localization, branch outliers, and support-label interpretation
-- add tree integrity validation, validity decisions, rootedness confidence, node-stable forensic reporting, and external-label safety audits
-- add audited topology transforms, pruning artifact summaries, taxon-identity conflict detection, and cross-format tree roundtrip validation with semantic-loss reporting
-- add alignment readiness decisions, raw-versus-aligned FASTA classification, sliding-window region diagnostics, raw length outlier detection, ambiguity-aware uncertainty accounting, and partial-codon reporting
-- add mixed coding versus noncoding detection, named alignment-filtering profiles, cleaned-alignment comparison, filtering risk warnings, transparent alignment quality scoring, alignment forensic reporting, and one-shot dataset audits
-- add dataset crosswalk tables, completeness matrices, exclusion tables, taxon-ordering drift audits, pruning step retention summaries, group-imbalance warnings, and named readiness levels
-- expand distance analysis with Kimura 2-parameter and amino-acid p-distance models, ambiguity policies, saturation and low-information diagnostics, bootstrap support summaries, reference checks, and reproducibility bundles
-- add pruning information-loss accounting, taxon synonym audits and reversible resolution, namespace-mixing diagnostics, workflow taxon loss and stability reports, and explicit UPGMA assumption validation surfaces
-- expand ancestral-state workflows with node-level low-confidence warnings, sensitivity summaries, supplement-style reports, publication figure bundles, ordered discrete-state modeling, and ER/SYM/ARD discrete-state reporting
-- expand discrete-state evolution workflows with transition reference validation, rate-uncertainty diagnostics, dominant-state and sparse-state warnings, model-sensitive ancestral-region comparison, stochastic-map summaries, and richer report caveats
-- add geographic-analysis readiness gates, state-coding audits, biogeographic interpretation reports, alignment inference-readiness audits, engine-output validation, metadata clustering checks, inference-failure taxonomy, and bootstrap tree-set validation
-- expand inference workflows with bootstrap support distributions, weak-backbone detection, model and engine tree comparisons, sensitivity reports, model-selection limitations reports, supplement-style workflow reports, and checksummed evidence bundles
-- add bootstrap-versus-posterior support comparison and HTML tree-set comparison reports for cross-analysis uncertainty review
-- add Bayesian posterior-tree thinning, maximum clade credibility and node-age summaries, BEAST posterior-log diagnostics, posterior run or scenario comparison reports, and reviewer-facing Bayesian diagnostics outputs
-- deepen posterior uncertainty workflows with topology diversity and multimodality analysis, clade-conflict and uncertainty-conclusion tables, posterior figure packages, supplementary diagnostics tables, and Bayesian methods summaries
-- add low-information, duplicate-policy, ambiguity-column, and sequence-ranking alignment diagnostics with dedicated alignment and taxonomy report contracts plus dataset input ledgers
-- add Level 1 reference validation suites, workflow failure galleries, maturity labels, workflow-validation reports, and release-gate reporting
+### Added
+
+- Added the canonical public runtime for tree validation, tree comparison,
+  rooting, pruning, rendering, and report generation.
+- Added alignment diagnostics, filtering, trimming, coding diagnostics,
+  translation, and sequence-readiness audit surfaces.
+- Added distance analysis with p-distance, JC69, K80, F81, HKY85, protein
+  p-distance, NJ, and UPGMA surfaces plus reproducibility bundles and
+  suitability diagnostics.
+- Added comparative workflows for phylogenetic independent contrasts,
+  Blomberg's K, Pagel's lambda, permutation-based signal tests, PGLS, Brownian
+  fits, OU fits, multiple-testing review, and comparative sensitivity reports.
+- Added ancestral-state reconstruction, discrete-state evolution analysis,
+  ordered and unordered parsimony surfaces, and governed uncertainty tables
+  and figure bundles.
+- Added simulation surfaces for trees, continuous traits, discrete traits, and
+  DNA or protein alignments.
+- Added governed external-engine orchestration for alignment, trimming, model
+  selection, maximum-likelihood inference, bootstrap support, posterior
+  summaries, and engine provenance capture.
+- Added native finite-state likelihood foundations, native
+  maximum-likelihood tree inference results, native benchmark suites, and
+  public native Bayesian inference entry points.
+- Added packaged datasets, packaged example inputs, CLI smoke-proof support,
+  and stable artifact schemas for downstream automation.
+
+### Changed
+
+- Curated the public runtime around explicit method tiers, evidence-aware
+  trust boundaries, and reader-facing workflow guidance instead of implicit
+  “all surfaces are equally mature” claims.
+- Strengthened schema-governed JSON and TSV outputs so reviewer-facing
+  artifacts fail on exact drift instead of only through broader fixture
+  mismatches later.
+- Expanded reference parity, failure galleries, workflow validation, and
+  maturity labeling so serious runtime surfaces ship with stronger review
+  posture and reproducibility expectations.
+
+### Fixed
+
+- Stabilized package metadata, packaged legal files, build smoke installs, and
+  fallback version surfaces around the `0.1.0` first-release line.
