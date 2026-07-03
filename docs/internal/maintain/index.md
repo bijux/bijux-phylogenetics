@@ -31,6 +31,9 @@ The main internal responsibilities covered here are:
 - how do architecture, evidence, release, and package docs stay aligned as one
   public trust story:
   [public trust surface maintenance](public-trust-surface-maintenance.md)
+- how do interface, output, and metadata guides stay aligned as one public
+  contract story:
+  [public interface and artifact maintenance](public-interface-and-artifact-maintenance.md)
 - how do I check that metadata, docs, and release surfaces all say the same
   thing:
   [release surface alignment](release-surface-alignment.md)
