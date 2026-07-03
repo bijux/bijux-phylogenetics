@@ -54,16 +54,18 @@ def test_build_runtime_budget_report_classifies_governed_long_running_cases(
             "1217.48s call     packages/bijux-phylogenetics/tests/test_geiger_parity_cli.py::test_parity_cli_runs_live_geiger_harness_and_writes_tables",
             "138.42s call     packages/bijux-phylogenetics/tests/test_native_maximum_likelihood_accuracy_benchmark.py::test_benchmark_native_maximum_likelihood_accuracy_reports_truth_and_wrapper_lanes",
             "107.52s call     packages/bijux-phylogenetics/tests/test_runtime.py::test_cli_evidence_book_build_selected_evidence_json_output",
+            "101.00s call     packages/bijux-phylogenetics-dev/tests/test_publish_readiness.py::test_build_publish_readiness_report_exposes_repository_blockers",
         ],
     )
 
     payload = build_runtime_budget_report(REPO_ROOT, log_path)
 
     assert payload["issue_count"] == 0
-    assert payload["observation_count"] == 3
-    assert payload["classified_observation_count"] == 3
+    assert payload["observation_count"] == 4
+    assert payload["classified_observation_count"] == 4
     assert payload["counts_by_classification"]["split"] == 2
     assert payload["counts_by_classification"]["optimize"] == 1
+    assert payload["counts_by_classification"]["frozen"] == 1
     observations = {row["nodeid"]: row for row in payload["observations"]}
     assert (
         observations[
@@ -76,6 +78,12 @@ def test_build_runtime_budget_report_classifies_governed_long_running_cases(
             "packages/bijux-phylogenetics/tests/test_native_maximum_likelihood_accuracy_benchmark.py::test_benchmark_native_maximum_likelihood_accuracy_reports_truth_and_wrapper_lanes"
         ]["classification"]
         == "optimize"
+    )
+    assert (
+        observations[
+            "packages/bijux-phylogenetics-dev/tests/test_publish_readiness.py::test_build_publish_readiness_report_exposes_repository_blockers"
+        ]["classification"]
+        == "frozen"
     )
     assert all(row["slow_marked"] is True for row in payload["observations"])
 

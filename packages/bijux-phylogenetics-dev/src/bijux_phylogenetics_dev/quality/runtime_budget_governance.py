@@ -236,6 +236,24 @@ _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
             "the continuous mode recovery workflow preserves governed benchmark evidence and is best kept as an explicit frozen audit surface"
         ),
     ),
+    RuntimeBudgetPolicy(
+        nodeid_prefix=(
+            "packages/bijux-phylogenetics-dev/tests/test_publish_readiness.py::"
+        ),
+        classification="frozen",
+        rationale=(
+            "publish-readiness audits aggregate repository governance evidence and should be preserved as explicit frozen maintainer review surfaces"
+        ),
+    ),
+    RuntimeBudgetPolicy(
+        nodeid_prefix=(
+            "packages/bijux-phylogenetics-dev/tests/test_publication_guard.py::"
+        ),
+        classification="frozen",
+        rationale=(
+            "the publication guard protects governed release evidence and belongs on a frozen maintainer audit lane rather than a routine local check"
+        ),
+    ),
 )
 
 
