@@ -166,6 +166,41 @@ def render_docs_evidence_overview(
         for criterion in closure_payload["criteria"]
         if criterion["criterion_id"] == "reviewer-readiness"
     )
+    study_page_by_id = {
+        "primate-longevity-signal": "pcm1-primate-longevity-signal",
+        "primate-pgls-and-signal": "pcm2-primate-pgls-and-signal",
+        "primate-continuous-and-categorical-regression": (
+            "pcm3-primate-continuous-and-categorical-regression"
+        ),
+        "cichlid-bayesian-linear-and-phylogenetic-mixed-models": (
+            "pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+        ),
+        "cichlid-phylogenetic-generalized-linear-mixed-models": (
+            "pcm5-cichlid-phylogenetic-generalized-linear-mixed-models"
+        ),
+    }
+    study_question_by_id = {
+        "primate-longevity-signal": (
+            "How do primate traits and tree preparation become a usable signal and"
+            " ancestral-state workflow?"
+        ),
+        "primate-pgls-and-signal": (
+            "How do baseline GLS, PGLS, transformed trees, and signal tests behave"
+            " on the same primate dataset?"
+        ),
+        "primate-continuous-and-categorical-regression": (
+            "How should continuous predictors, categorical predictors, and"
+            " interactions be interpreted together in comparative regression?"
+        ),
+        "cichlid-bayesian-linear-and-phylogenetic-mixed-models": (
+            "Where does the cichlid workflow move from standard regression into"
+            " Bayesian mixed models with a phylogenetic effect?"
+        ),
+        "cichlid-phylogenetic-generalized-linear-mixed-models": (
+            "How do count models, binary-style models, repeated measures, and"
+            " posterior signal estimates fit together in one study family?"
+        ),
+    }
     lines = [
         "---",
         "title: Evidence Book",
@@ -173,62 +208,89 @@ def render_docs_evidence_overview(
         "type: evidence-navigation",
         "status: active",
         "owner: bijux-phylogenetics-dev",
-        "last_reviewed: 2026-05-10",
+        "last_reviewed: 2026-07-04",
         "---",
         "",
         "# Evidence Book",
         "",
-        "The evidence-book is the repository trust surface for governed parity,",
-        "teaching, migration, and explicit coverage boundaries.",
+        "This section explains the comparative study record behind the public",
+        "phylogenetics runtime.",
+        "",
+        "The five study families come from course material that the repository has",
+        "turned into checked-in, reviewable evidence. Some parts already have",
+        "bundle-level parity records. Others are documented carefully, but still",
+        "stop at an external-tool or research-workflow limit.",
+        "",
+        "```mermaid",
+        "flowchart LR",
+        "    A[Source lecture] --> B[Public study guide]",
+        "    B --> C[Checked-in evidence dossier]",
+        "    C --> D[Freshness and integrity reports]",
+        "    C --> E[Study-specific evidence bundles]",
+        "```",
+        "",
+        "## Start Here",
+        "",
+        "- [evidence book reading guide](reading-guide.md)",
+        "- checked-in study dossiers:",
+        "  [`evidence-book/README.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/README.md)",
+        "- repository-wide review reports:",
+        "  [`evidence-book/index/`](https://github.com/bijux/bijux-phylogenetics/tree/main/evidence-book/index)",
+        "",
+        "Treat those checked-in reports as the current source of truth when you need",
+        "live repository status rather than the stable narrative on this page.",
+        "",
+        "## At A Glance",
         "",
         f"- studies: `{index_payload['study_count']}`",
         f"- evidence bundles: `{index_payload['evidence_count']}`",
         f"- teaching studies: `{teaching_payload['teaching_study_count']}`",
         f"- migration studies: `{teaching_payload['migration_study_count']}`",
         f"- freshness statuses: `{', '.join(f'{key}={value}' for key, value in freshness_payload['freshness_status_counts'].items())}`",
-        f"- coverage gaps: `{coverage_payload['coverage_gap_count']}` debt entries",
+        f"- coverage gaps still tracked: `{coverage_payload['coverage_gap_count']}`",
         f"- foundational numerical trust: `{foundational_status}`",
         f"- reviewer readiness: `{reviewer_status}`",
         f"- maturity tier: `{scorecard_payload['maturity_tier']}`",
         "",
-        "## Review Surfaces",
+        "## Study Atlas",
         "",
-        "- repository evidence root: [`evidence-book/README.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/README.md)",
-        "- teaching and migration index: [`evidence-book/index/teaching-and-migration.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/teaching-and-migration.md)",
-        "- parity dashboard: [`evidence-book/index/parity-dashboard.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/parity-dashboard.md)",
-        "- freshness report: [`evidence-book/index/freshness-report.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/freshness-report.md)",
-        "- integrity report: [`evidence-book/index/integrity-report.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/integrity-report.md)",
-        "- coverage gaps: [`evidence-book/index/coverage-gaps.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/coverage-gaps.md)",
-        "- claim re-audit: [`evidence-book/index/claim-reaudit.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/claim-reaudit.md)",
-        "- analytical surface coverage: [`evidence-book/index/analytical-surface-coverage.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/analytical-surface-coverage.md)",
-        "- closure criteria: [`evidence-book/index/closure-criteria.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/closure-criteria.md)",
-        "- maturity scorecard: [`evidence-book/index/evidence-maturity-scorecard.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/evidence-maturity-scorecard.md)",
-        "- completion gates: [`evidence-book/index/completion-gates.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/completion-gates.md)",
-        "",
-        "## Studies",
-        "",
+        "| Study | Main question | Current repository state |",
+        "| --- | --- | --- |",
     ]
     for study in index_payload["studies"]:
-        lines.append(f"### {study['study_title']}")
-        lines.append("")
-        lines.append(f"- study id: `{study['study_id']}`")
-        lines.append(f"- categories: `{', '.join(study['study_categories'])}`")
-        lines.append(f"- bundles: `{study['bundle_count']}`")
+        study_id = str(study["study_id"])
+        study_page = study_page_by_id[study_id]
+        state = "Documented study family with open limits"
+        if "teaching-study" in study["study_categories"]:
+            state = "Bundle-backed comparative evidence available"
+        elif study_id == "primate-continuous-and-categorical-regression":
+            state = "Study guide and source dossier available; bundle packaging still open"
+        elif study_id.startswith("cichlid-"):
+            state = "Study guide and source dossier available; posterior workflow still external"
         lines.append(
-            f"- study root: [GitHub](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/{study['study_id']}/README.md)"
+            f"| [{study['study_title']}](./{study_page}/index.md) | {study_question_by_id[study_id]} | {state} |"
         )
-        lines.append("")
     lines.extend(
         [
-            "## Integrity",
             "",
-            f"- tracked bundles: `{integrity_payload['bundle_count']}`",
-            f"- action required: `{integrity_payload['action_required_count']}`",
+            "## When To Use These Pages",
             "",
-            "## Coverage",
+            "- Use the public study guides when you want the scientific story in plain language.",
+            "- Use the checked-in evidence-book when you need provenance, registries, or bundle-level proof.",
+            "- Use the index reports when you need freshness, integrity, or repository-wide gap tracking.",
             "",
-            f"- family gaps: `{coverage_payload['family_gap_count']}`",
-            f"- debt gaps: `{coverage_payload['coverage_gap_count']}`",
+            "## Review Reports",
+            "",
+            "- teaching and migration index: [`evidence-book/index/teaching-and-migration.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/teaching-and-migration.md)",
+            "- parity dashboard: [`evidence-book/index/parity-dashboard.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/parity-dashboard.md)",
+            "- freshness report: [`evidence-book/index/freshness-report.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/freshness-report.md)",
+            "- integrity report: [`evidence-book/index/integrity-report.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/integrity-report.md)",
+            "- coverage gaps: [`evidence-book/index/coverage-gaps.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/coverage-gaps.md)",
+            "- claim re-audit: [`evidence-book/index/claim-reaudit.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/claim-reaudit.md)",
+            "- closure criteria: [`evidence-book/index/closure-criteria.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/closure-criteria.md)",
+            "",
+            "The study record is useful because it keeps strong results visible without",
+            "pretending that every workflow is fully reproduced inside the repository.",
             "",
         ]
     )

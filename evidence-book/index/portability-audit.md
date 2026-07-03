@@ -25,7 +25,7 @@ Portable checked-in reports and plots must reference their governed sources thro
 
 ## Locator Kinds
 
-- `external_locator`: `94`
+- `external_locator`: `96`
 - `repo_relative`: `1220`
 - `suspicious_path_like`: `349`
 

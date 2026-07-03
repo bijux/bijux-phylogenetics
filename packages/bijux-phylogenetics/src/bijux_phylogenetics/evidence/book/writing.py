@@ -6,7 +6,7 @@ from pathlib import Path
 from ..teaching import (
     TEACHING_AND_MIGRATION_INDEX_FILENAME,
     TEACHING_AND_MIGRATION_SUMMARY_FILENAME,
-    build_teaching_and_migration_index,
+    build_repository_teaching_and_migration_index,
     render_teaching_and_migration_index_markdown,
 )
 from .aggregation import (
@@ -67,10 +67,8 @@ def write_evidence_book_index(repo_root: Path) -> tuple[Path, Path]:
     teaching_migration_summary_path = (
         index_root / TEACHING_AND_MIGRATION_SUMMARY_FILENAME
     )
-    teaching_migration_payload = build_teaching_and_migration_index(
-        [],
-        [],
-        [],
+    teaching_migration_payload = build_repository_teaching_and_migration_index(
+        repo_root
     )
     teaching_migration_path.write_text(
         json.dumps(teaching_migration_payload, indent=2, sort_keys=True) + "\n",

@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from bijux_phylogenetics.evidence.teaching import (
+    build_repository_teaching_and_migration_index,
     build_migration_guide,
     build_student_safe_reproducibility_contract,
     build_teaching_and_migration_index,
@@ -173,3 +176,16 @@ def test_teaching_and_migration_index_aggregates_guides() -> None:
         "Teaching And Migration Evidence"
         in render_teaching_and_migration_index_markdown(index_payload)
     )
+
+
+def test_repository_teaching_and_migration_index_includes_pcm_studies() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+
+    payload = build_repository_teaching_and_migration_index(repo_root)
+
+    assert payload["teaching_study_count"] == 2
+    assert payload["migration_study_count"] == 2
+    assert {study["study_id"] for study in payload["teaching_studies"]} == {
+        "primate-longevity-signal",
+        "primate-pgls-and-signal",
+    }

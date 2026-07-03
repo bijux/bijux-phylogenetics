@@ -8,6 +8,9 @@ from bijux_phylogenetics.evidence.book import (
     build_evidence_claim_map,
     build_evidence_parity_dashboard,
 )
+from bijux_phylogenetics.evidence.teaching import (
+    build_repository_teaching_and_migration_index,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -24,3 +27,6 @@ def test_repository_index_outputs_match_generated_payloads() -> None:
     assert json.loads(
         (index_root / "parity-dashboard.json").read_text(encoding="utf-8")
     ) == build_evidence_parity_dashboard(REPO_ROOT)
+    assert json.loads(
+        (index_root / "teaching-and-migration.json").read_text(encoding="utf-8")
+    ) == build_repository_teaching_and_migration_index(REPO_ROOT)

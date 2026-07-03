@@ -9,20 +9,20 @@ last_reviewed: 2026-07-04
 
 # Evidence Book
 
-This section helps you read the comparative study record that sits behind the
-public phylogenetics runtime.
+This section explains the comparative study record behind the public
+phylogenetics runtime.
 
-The five study families come from course material that the repository has been
-turning into checked-in, reviewable evidence. Some study slices are already
-reproduced in governed bundles. Others are documented clearly, but still stop
-at a study dossier or an external-tool boundary.
+The five study families come from course material that the repository has
+turned into checked-in, reviewable evidence. Some parts already have
+bundle-level parity records. Others are documented carefully, but still
+stop at an external-tool or research-workflow limit.
 
 ```mermaid
 flowchart LR
     A[Source lecture] --> B[Public study guide]
     B --> C[Checked-in evidence dossier]
     C --> D[Freshness and integrity reports]
-    C --> E[Reader-facing evidence pages]
+    C --> E[Study-specific evidence bundles]
 ```
 
 ## Start Here
@@ -36,35 +36,43 @@ flowchart LR
 Treat those checked-in reports as the current source of truth when you need
 live repository status rather than the stable narrative on this page.
 
+## At A Glance
+
+- studies: `5`
+- evidence bundles: `19`
+- teaching studies: `2`
+- migration studies: `2`
+- freshness statuses: `current=9, stale=10`
+- coverage gaps still tracked: `4`
+- foundational numerical trust: `bounded`
+- reviewer readiness: `bounded`
+- maturity tier: `reviewable_but_incomplete`
+
 ## Study Atlas
 
 | Study | Main question | Current repository state |
 | --- | --- | --- |
-| [PCM1: primate longevity signal](pcm1-primate-longevity-signal/index.md) | How do raw primate traits and trees become a usable comparative dataset, signal estimate, and ancestral reconstruction? | Governed parity deployed |
-| [PCM2: primate PGLS and signal](pcm2-primate-pgls-and-signal/index.md) | How do transformed trees, comparative model fitting, PGLS, and diagnostics behave on the same primate system? | Governed parity deployed |
-| [PCM3: primate continuous and categorical regression](pcm3-primate-continuous-and-categorical-regression/index.md) | How should multivariable regression, categorical predictors, interactions, and phylogenetic correction be interpreted together? | Study dossier deployed; lecture parity not yet packaged as governed bundles |
-| [PCM4: cichlid Bayesian linear and phylogenetic mixed models](pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md) | How does the workflow move from Gaussian regression to Bayesian mixed models with a phylogenetic random effect? | Study dossier deployed; core posterior workflow still external |
-| [PCM5: cichlid phylogenetic generalized linear mixed models](pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md) | How are count models, binomial-style models, posterior signal estimates, and repeated measures handled together? | Study dossier deployed; core posterior workflow still external |
+| [Cichlid Bayesian Linear And Phylogenetic Mixed Models](./pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md) | Where does the cichlid workflow move from standard regression into Bayesian mixed models with a phylogenetic effect? | Study guide and source dossier available; posterior workflow still external |
+| [Cichlid Phylogenetic Generalized Linear Mixed Models](./pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md) | How do count models, binary-style models, repeated measures, and posterior signal estimates fit together in one study family? | Study guide and source dossier available; posterior workflow still external |
+| [Primate Continuous And Categorical Regression](./pcm3-primate-continuous-and-categorical-regression/index.md) | How should continuous predictors, categorical predictors, and interactions be interpreted together in comparative regression? | Study guide and source dossier available; bundle packaging still open |
+| [Primate Longevity Signal](./pcm1-primate-longevity-signal/index.md) | How do primate traits and tree preparation become a usable signal and ancestral-state workflow? | Bundle-backed comparative evidence available |
+| [Primate PGLS And Signal](./pcm2-primate-pgls-and-signal/index.md) | How do baseline GLS, PGLS, transformed trees, and signal tests behave on the same primate dataset? | Bundle-backed comparative evidence available |
 
-## What Each Study Page Does
+## When To Use These Pages
 
-Each study page does three jobs:
+- Use the public study guides when you want the scientific story in plain language.
+- Use the checked-in evidence-book when you need provenance, registries, or bundle-level proof.
+- Use the index reports when you need freshness, integrity, or repository-wide gap tracking.
 
-- explain the analytical story in plain language
-- point to the checked-in evidence dossier under `evidence-book/studies/`
-- state clearly whether the repository already reproduces the lecture or is
-  still documenting an external boundary
+## Review Reports
 
-## How To Use This Section
+- teaching and migration index: [`evidence-book/index/teaching-and-migration.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/teaching-and-migration.md)
+- parity dashboard: [`evidence-book/index/parity-dashboard.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/parity-dashboard.md)
+- freshness report: [`evidence-book/index/freshness-report.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/freshness-report.md)
+- integrity report: [`evidence-book/index/integrity-report.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/integrity-report.md)
+- coverage gaps: [`evidence-book/index/coverage-gaps.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/coverage-gaps.md)
+- claim re-audit: [`evidence-book/index/claim-reaudit.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/claim-reaudit.md)
+- closure criteria: [`evidence-book/index/closure-criteria.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/closure-criteria.md)
 
-Use these study pages when you want to know:
-
-- what a given lecture family is trying to show
-- which repository surfaces have already been checked against that lecture
-- where a study remains documented but not yet fully reproduced
-
-Use the main phylogenetics handbook when you need:
-
-- how to install or run the package
-- which API or CLI surfaces are public
-- how native and wrapper-backed runtime families are organized
+The study record is useful because it keeps strong results visible without
+pretending that every workflow is fully reproduced inside the repository.
