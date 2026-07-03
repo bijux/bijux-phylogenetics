@@ -15,7 +15,7 @@ COV_XML                   ?= $(TEST_ARTIFACTS_DIR)/coverage.xml
 ENABLE_BENCH              ?= 1
 PYTEST_ADDOPTS_EXTRA      ?=
 TEST_PRE_TARGETS          ?=
-TEST_LABEL               ?= full test suite
+TEST_LABEL                ?= full test suite
 TEST_MAIN_ARGS            ?=
 TEST_UNIT_DIR_ARGS        ?= -m "not slow" --maxfail=1 -q
 TEST_UNIT_FALLBACK_ARGS   ?= -k "not e2e and not integration and not functional" -m "not slow" --maxfail=1 -q
