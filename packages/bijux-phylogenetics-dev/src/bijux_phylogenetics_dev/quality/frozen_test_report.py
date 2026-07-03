@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 import hashlib
 import json
 import os
 from pathlib import Path
 import shutil
-from typing import Any, Literal
-from xml.etree import ElementTree
+from typing import Any, Literal, Protocol, cast
+
+from defusedxml import ElementTree
 
 from ..trusted_process import run_text
 
@@ -19,6 +21,19 @@ Outcome = Literal["passed", "failed", "error", "skipped"]
 OutputChangeKind = Literal["added", "modified", "removed"]
 DriftKind = Literal["test", "output"]
 DEFAULT_CURRENT_REF = "HEAD"
+
+
+class XmlElement(Protocol):
+    """Minimal XML element contract needed for JUnit normalization."""
+
+    text: str | None
+
+    def find(self, path: str) -> XmlElement | None: ...
+
+    def get(self, key: str, default: str | None = None) -> str | None: ...
+
+    def iterfind(self, path: str) -> Iterable[XmlElement]: ...
+
 
 _EXCLUDED_OUTPUT_SEGMENTS = frozenset(
     {
@@ -111,10 +126,10 @@ class SuiteRunRecord:
     full_suite_worker_count: int | None
 
 
-def _normalized_nodeid(testcase: ElementTree.Element) -> str:
-    file_name = testcase.get("file", "").strip()
-    test_name = testcase.get("name", "").strip()
-    class_name = testcase.get("classname", "").strip()
+def _normalized_nodeid(testcase: XmlElement) -> str:
+    file_name = _attribute_value(testcase, "file")
+    test_name = _attribute_value(testcase, "name")
+    class_name = _attribute_value(testcase, "classname")
     if file_name and test_name:
         return f"{file_name}::{test_name}"
     if class_name and test_name:
@@ -124,7 +139,12 @@ def _normalized_nodeid(testcase: ElementTree.Element) -> str:
     raise ValueError("junit testcase is missing name metadata")
 
 
-def _test_message(testcase: ElementTree.Element) -> str:
+def _attribute_value(testcase: XmlElement, attribute_name: str) -> str:
+    value = testcase.get(attribute_name, "")
+    return "" if value is None else value.strip()
+
+
+def _test_message(testcase: XmlElement) -> str:
     for outcome_tag in ("failure", "error", "skipped"):
         child = testcase.find(outcome_tag)
         if child is None:
@@ -137,7 +157,7 @@ def _test_message(testcase: ElementTree.Element) -> str:
     return ""
 
 
-def _test_outcome(testcase: ElementTree.Element) -> Outcome:
+def _test_outcome(testcase: XmlElement) -> Outcome:
     if testcase.find("failure") is not None:
         return "failed"
     if testcase.find("error") is not None:
@@ -149,7 +169,9 @@ def _test_outcome(testcase: ElementTree.Element) -> Outcome:
 
 def parse_junit_report(junit_xml: Path) -> dict[str, SuiteTestRecord]:
     """Parse a pytest JUnit XML report into normalized test records."""
-    root = ElementTree.fromstring(junit_xml.read_text(encoding="utf-8"))
+    root = cast(
+        XmlElement, ElementTree.fromstring(junit_xml.read_text(encoding="utf-8"))
+    )
     records: dict[str, SuiteTestRecord] = {}
     for testcase in root.iterfind(".//testcase"):
         nodeid = _normalized_nodeid(testcase)
@@ -211,9 +233,13 @@ def diff_test_records(
         differences.append(
             TestDifference(
                 nodeid=nodeid,
-                current_outcome=None if current_record is None else current_record.outcome,
+                current_outcome=None
+                if current_record is None
+                else current_record.outcome,
                 frozen_outcome=None if frozen_record is None else frozen_record.outcome,
-                current_message="" if current_record is None else current_record.message,
+                current_message=""
+                if current_record is None
+                else current_record.message,
                 frozen_message="" if frozen_record is None else frozen_record.message,
             )
         )
@@ -241,7 +267,9 @@ def diff_output_manifests(
             OutputDifference(
                 relative_path=relative_path,
                 change_kind=change_kind,
-                current_sha256=None if current_record is None else current_record.sha256,
+                current_sha256=None
+                if current_record is None
+                else current_record.sha256,
                 frozen_sha256=None if frozen_record is None else frozen_record.sha256,
             )
         )

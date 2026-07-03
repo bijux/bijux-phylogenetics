@@ -252,6 +252,7 @@ provides-extras = ["dev", "docs"]
 name = "bijux-phylogenetics-dev"
 source = { editable = "packages/bijux-phylogenetics-dev" }
 dependencies = [
+    { name = "defusedxml" },
     { name = "pyyaml" },
 ]
 
@@ -285,6 +286,7 @@ requires-dist = [
     { name = "bandit", marker = "extra == 'dev'", specifier = ">=1.8.6,<2.0" },
     { name = "build", marker = "extra == 'dev'", specifier = ">=1.3.0,<2.0" },
     { name = "codespell", marker = "extra == 'dev'", specifier = ">=2.4.1,<3.0" },
+    { name = "defusedxml", specifier = ">=0.7.1,<1.0" },
     { name = "deptry", marker = "extra == 'dev'", specifier = ">=0.24.0,<1.0" },
     { name = "hatch", marker = "extra == 'dev'", specifier = ">=1.14.0,<2.0" },
     { name = "interrogate", marker = "extra == 'dev'", specifier = ">=1.7.0,<2.0" },

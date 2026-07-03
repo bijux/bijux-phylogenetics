@@ -13,6 +13,7 @@ authors = [
     { name = "Bijan Mousavi", email = "bijan@bijux.io" },
 ]
 dependencies = [
+    "defusedxml>=0.7.1,<1.0",
     "PyYAML>=6.0,<7.0",
 ]
 dynamic = ["version"]
