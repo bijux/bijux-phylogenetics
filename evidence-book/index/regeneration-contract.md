@@ -3,7 +3,34 @@
 This contract records which study files are governed sources, which are
 generated durable outputs, and how each study is rerun.
 
-- studies: `2`
+- studies: `5`
+
+## Cichlid Bayesian Linear And Phylogenetic Mixed Models
+
+- study id: `cichlid-bayesian-linear-and-phylogenetic-mixed-models`
+- build script: `None`
+- rerun command: `UV_PROJECT_ENVIRONMENT=artifacts/root/venv uv run --python 3.11 python -m bijux_phylogenetics.command_line evidence book build --study-id cichlid-bayesian-linear-and-phylogenetic-mixed-models`
+- bundle ids: ``
+- source path count: `3`
+- generated path count: `1`
+
+## Cichlid Phylogenetic Generalized Linear Mixed Models
+
+- study id: `cichlid-phylogenetic-generalized-linear-mixed-models`
+- build script: `None`
+- rerun command: `UV_PROJECT_ENVIRONMENT=artifacts/root/venv uv run --python 3.11 python -m bijux_phylogenetics.command_line evidence book build --study-id cichlid-phylogenetic-generalized-linear-mixed-models`
+- bundle ids: ``
+- source path count: `3`
+- generated path count: `1`
+
+## Primate Continuous And Categorical Regression
+
+- study id: `primate-continuous-and-categorical-regression`
+- build script: `None`
+- rerun command: `UV_PROJECT_ENVIRONMENT=artifacts/root/venv uv run --python 3.11 python -m bijux_phylogenetics.command_line evidence book build --study-id primate-continuous-and-categorical-regression`
+- bundle ids: ``
+- source path count: `3`
+- generated path count: `1`
 
 ## Primate Longevity Signal
 

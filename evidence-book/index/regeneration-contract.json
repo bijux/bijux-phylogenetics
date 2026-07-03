@@ -3,6 +3,51 @@
   "studies": [
     {
       "build_script_path": null,
+      "bundle_ids": [],
+      "generated_paths": [
+        "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/README.md"
+      ],
+      "rerun_command": "UV_PROJECT_ENVIRONMENT=artifacts/root/venv uv run --python 3.11 python -m bijux_phylogenetics.command_line evidence book build --study-id cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+      "source_paths": [
+        "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/registry.json",
+        "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/provenance/lund-course-sources.json",
+        "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/reference/README.md"
+      ],
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+      "study_title": "Cichlid Bayesian Linear And Phylogenetic Mixed Models"
+    },
+    {
+      "build_script_path": null,
+      "bundle_ids": [],
+      "generated_paths": [
+        "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/README.md"
+      ],
+      "rerun_command": "UV_PROJECT_ENVIRONMENT=artifacts/root/venv uv run --python 3.11 python -m bijux_phylogenetics.command_line evidence book build --study-id cichlid-phylogenetic-generalized-linear-mixed-models",
+      "source_paths": [
+        "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/registry.json",
+        "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/provenance/lund-course-sources.json",
+        "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/reference/README.md"
+      ],
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models"
+    },
+    {
+      "build_script_path": null,
+      "bundle_ids": [],
+      "generated_paths": [
+        "evidence-book/studies/primate-continuous-and-categorical-regression/README.md"
+      ],
+      "rerun_command": "UV_PROJECT_ENVIRONMENT=artifacts/root/venv uv run --python 3.11 python -m bijux_phylogenetics.command_line evidence book build --study-id primate-continuous-and-categorical-regression",
+      "source_paths": [
+        "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/registry.json",
+        "evidence-book/studies/primate-continuous-and-categorical-regression/provenance/lund-course-sources.json",
+        "evidence-book/studies/primate-continuous-and-categorical-regression/reference/README.md"
+      ],
+      "study_id": "primate-continuous-and-categorical-regression",
+      "study_title": "Primate Continuous And Categorical Regression"
+    },
+    {
+      "build_script_path": null,
       "bundle_ids": [
         "evidence-001",
         "evidence-002",
@@ -373,5 +418,5 @@
       "study_title": "Primate PGLS And Signal"
     }
   ],
-  "study_count": 2
+  "study_count": 5
 }
