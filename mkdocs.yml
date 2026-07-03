@@ -65,6 +65,7 @@ nav:
           - Overview: public/phylogenetics/index.md
           - Foundation:
               - Overview: public/phylogenetics/foundation/index.md
+              - Claim Reading Guide: public/phylogenetics/foundation/claim-reading-guide.md
               - Repository Scope and Limits: public/phylogenetics/foundation/repository-scope-and-limits.md
               - Product Surface and Ownership: public/phylogenetics/foundation/product-surface-and-ownership.md
               - Runtime and Evidence Boundary: public/phylogenetics/foundation/evidence-boundary.md

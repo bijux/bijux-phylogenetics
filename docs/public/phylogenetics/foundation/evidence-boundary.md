@@ -34,5 +34,12 @@ The runtime handbook and the evidence-book answer different questions.
 - the evidence-book can stay narrower than the runtime without making the
   runtime docs false, as long as the narrower evidence boundary stays explicit
 
+## Reading Rule
+
+If you need a more explicit reading model for those different claim types, use
+the [claim reading guide](claim-reading-guide.md). This page states the core
+boundary; the reading guide explains how to interpret runtime, native, wrapper,
+evidence, and release claims without collapsing them together.
+
 The runtime can be broader than the currently closed evidence surface. That is
 not a contradiction as long as the documentation says so plainly.

@@ -42,6 +42,8 @@ outputs:
 
 ## Use This Section Next
 
+- [claim reading guide](claim-reading-guide.md) for how to interpret public,
+  native, wrapper, evidence, and release claims
 - [repository scope and limits](repository-scope-and-limits.md) for the hard
   boundary
 - [product surface and ownership](product-surface-and-ownership.md) for the
