@@ -34,6 +34,9 @@ from bijux_phylogenetics.phylo.likelihood.k80 import (
     optimize_k80_kappa,
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
+    F81TreeLikelihoodReport,
+    GtrTreeLikelihoodReport,
+    Hky85TreeLikelihoodReport,
     NucleotideSubstitutionParameterOptimizationReport,
     SubstitutionParameterOptimizationRow,
 )
@@ -501,9 +504,7 @@ def _optimize_f81_substitution_parameters(
         base_frequency_g=evaluation_report.base_frequency_g,
         base_frequency_t=evaluation_report.base_frequency_t,
         lower_frequency_bound=(
-            _DEFAULT_MINIMUM_BASE_FREQUENCY
-            if base_frequencies is None
-            else 0.0
+            _DEFAULT_MINIMUM_BASE_FREQUENCY if base_frequencies is None else 0.0
         ),
     )
     warnings.extend(
@@ -634,9 +635,7 @@ def _optimize_hky85_substitution_parameters(
             base_frequency_g=optimization_report.base_frequency_g,
             base_frequency_t=optimization_report.base_frequency_t,
             lower_frequency_bound=(
-                _DEFAULT_MINIMUM_BASE_FREQUENCY
-                if base_frequencies is None
-                else 0.0
+                _DEFAULT_MINIMUM_BASE_FREQUENCY if base_frequencies is None else 0.0
             ),
         )
     )
@@ -792,9 +791,7 @@ def _optimize_gtr_substitution_parameters(
             base_frequency_g=optimization_report.base_frequency_g,
             base_frequency_t=optimization_report.base_frequency_t,
             lower_frequency_bound=(
-                _DEFAULT_MINIMUM_BASE_FREQUENCY
-                if base_frequencies is None
-                else 0.0
+                _DEFAULT_MINIMUM_BASE_FREQUENCY if base_frequencies is None else 0.0
             ),
         )
     )
@@ -841,7 +838,7 @@ def _evaluate_f81_frequency_candidate(
     tree: PhyloTree,
     records: list[AlignmentRecord],
     candidate_base_frequencies: dict[str, float],
-) -> tuple[object, float]:
+) -> tuple[F81TreeLikelihoodReport, float]:
     report = evaluate_f81_tree_likelihood(
         tree,
         records,
@@ -910,11 +907,10 @@ def _optimize_estimated_hky85_kappa_and_base_frequencies(
         )
         total_function_evaluation_count += kappa_report.function_evaluation_count
         scalar_searches_converged = scalar_searches_converged and kappa_report.converged
-        if (
-            frequency_search.payload.log_likelihood
-            <= (current_objective + improvement_tolerance)
-            and kappa_report.optimized_log_likelihood
-            <= (current_objective + improvement_tolerance)
+        if frequency_search.payload.log_likelihood <= (
+            current_objective + improvement_tolerance
+        ) and kappa_report.optimized_log_likelihood <= (
+            current_objective + improvement_tolerance
         ):
             schedule_converged = True
             break
@@ -943,7 +939,7 @@ def _evaluate_hky85_frequency_candidate(
     candidate_base_frequencies: dict[str, float],
     *,
     current_kappa: float,
-) -> tuple[object, float]:
+) -> tuple[Hky85TreeLikelihoodReport, float]:
     report = evaluate_hky85_tree_likelihood(
         tree,
         records,
@@ -1031,11 +1027,10 @@ def _optimize_estimated_gtr_exchangeabilities_and_base_frequencies(
             base_frequency_g=current_base_frequencies["G"],
             base_frequency_t=current_base_frequencies["T"],
         )
-        if (
-            frequency_search.payload.log_likelihood
-            <= (current_objective + improvement_tolerance)
-            and current_optimization_report.optimized_log_likelihood
-            <= (current_objective + improvement_tolerance)
+        if frequency_search.payload.log_likelihood <= (
+            current_objective + improvement_tolerance
+        ) and current_optimization_report.optimized_log_likelihood <= (
+            current_objective + improvement_tolerance
         ):
             schedule_converged = True
             break
@@ -1059,7 +1054,7 @@ def _evaluate_gtr_frequency_candidate(
     candidate_base_frequencies: dict[str, float],
     *,
     current_exchangeabilities: dict[str, float],
-) -> tuple[object, float]:
+) -> tuple[GtrTreeLikelihoodReport, float]:
     report = evaluate_gtr_tree_likelihood(
         tree,
         records,

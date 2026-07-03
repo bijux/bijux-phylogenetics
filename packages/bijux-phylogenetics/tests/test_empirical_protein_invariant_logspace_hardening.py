@@ -48,6 +48,7 @@ def test_invariant_mixture_empirical_protein_deep_tree_avoids_variable_underflow
     assert math.isclose(report.log_likelihood, expected, rel_tol=0.0, abs_tol=1e-12)
     assert report.site_likelihoods[0].invariant_component_likelihood == 0.0
     assert report.site_likelihoods[0].mixture_likelihood == 0.0
+    assert report.fit_assessment.optimized_parameter_count == 1
 
 
 def test_discrete_gamma_invariant_empirical_protein_deep_tree_matches_high_precision_mixture() -> (
@@ -91,6 +92,7 @@ def test_discrete_gamma_invariant_empirical_protein_deep_tree_matches_high_preci
     assert math.isclose(report.log_likelihood, expected, rel_tol=0.0, abs_tol=1e-12)
     assert report.site_likelihoods[0].invariant_component_likelihood == 0.0
     assert report.site_likelihoods[0].mixture_likelihood == 0.0
+    assert report.fit_assessment.optimized_parameter_count == 1
 
 
 def _deep_tree():

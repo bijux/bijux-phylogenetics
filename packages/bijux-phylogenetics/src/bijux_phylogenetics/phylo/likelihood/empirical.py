@@ -46,6 +46,7 @@ from bijux_phylogenetics.phylo.likelihood.models import (
 )
 from bijux_phylogenetics.phylo.likelihood.optimization_boundary_warnings import (
     build_branch_length_boundary_warnings,
+    build_invariant_proportion_boundary_warnings,
 )
 from bijux_phylogenetics.phylo.likelihood.parameter_search import (
     run_bounded_coordinate_likelihood_search,
@@ -667,18 +668,16 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
     def evaluate_candidate(
         invariant_proportion: float,
     ) -> tuple[ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport, float]:
-        finite_state_report = (
-            evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns(
-                contexts,
-                compressed_patterns,
-                surface=surface,
-                alpha=alpha,
-                category_rates=categories,
-                invariant_proportion=invariant_proportion,
-                lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
-                upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
-                emit_boundary_warnings=False,
-            )
+        finite_state_report = evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns(
+            contexts,
+            compressed_patterns,
+            surface=surface,
+            alpha=alpha,
+            category_rates=categories,
+            invariant_proportion=invariant_proportion,
+            lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
+            upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
+            emit_boundary_warnings=False,
         )
         report = _protein_empirical_discrete_gamma_invariant_report_from_finite_state(
             finite_state_report,
@@ -705,31 +704,31 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         parameter_name="invariant_proportion",
         owner_name="empirical protein gamma-invariant fit",
     )
-    optimized_finite_state_report = (
-        evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns(
-            contexts,
-            compressed_patterns,
-            surface=surface,
-            alpha=alpha,
-            category_rates=categories,
-            invariant_proportion=search_result.parameter_value,
-            lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
-            upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
-            emit_boundary_warnings=True,
-        )
-    )
-    optimized_report = _protein_empirical_discrete_gamma_invariant_report_from_finite_state(
-        optimized_finite_state_report,
+    optimized_finite_state_report = evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns(
+        contexts,
+        compressed_patterns,
+        surface=surface,
         alpha=alpha,
-        matrix_label=matrix_label,
-        gap_policy=gap_policy,
-        missing_policy=missing_policy,
-        initial_invariant_proportion=validated_initial_invariant_proportion,
+        category_rates=categories,
+        invariant_proportion=search_result.parameter_value,
         lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
-        function_evaluation_count=search_result.function_evaluation_count,
-        converged=search_result.converged,
-        initial_log_likelihood=initial_log_likelihood,
+        emit_boundary_warnings=True,
+    )
+    optimized_report = (
+        _protein_empirical_discrete_gamma_invariant_report_from_finite_state(
+            optimized_finite_state_report,
+            alpha=alpha,
+            matrix_label=matrix_label,
+            gap_policy=gap_policy,
+            missing_policy=missing_policy,
+            initial_invariant_proportion=validated_initial_invariant_proportion,
+            lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
+            upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
+            function_evaluation_count=search_result.function_evaluation_count,
+            converged=search_result.converged,
+            initial_log_likelihood=initial_log_likelihood,
+        )
     )
     return ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport(
         taxa=optimized_report.taxa,
@@ -850,16 +849,18 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         gap_policy=gap_policy,
         missing_policy=missing_policy,
     )
-    finite_state_report = evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-        tree,
-        compressed_patterns,
-        surface=surface,
-        alpha=alpha,
-        category_count=category_count,
-        invariant_proportion=validated_invariant_proportion,
-        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
-        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
-        emit_boundary_warnings=emit_boundary_warnings,
+    finite_state_report = (
+        evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+            tree,
+            compressed_patterns,
+            surface=surface,
+            alpha=alpha,
+            category_count=category_count,
+            invariant_proportion=validated_invariant_proportion,
+            lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+            upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+            emit_boundary_warnings=emit_boundary_warnings,
+        )
     )
     return _protein_empirical_discrete_gamma_invariant_report_from_finite_state(
         finite_state_report,
@@ -1814,6 +1815,22 @@ def _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invarian
         hit_lower_invariant_proportion_boundary = False
         hit_upper_invariant_proportion_boundary = False
         boundary_warnings = []
+    boundary_warning_rows = (
+        build_invariant_proportion_boundary_warnings(
+            invariant_proportion=invariant_proportion,
+            lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+            upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        )
+        if emit_boundary_warnings
+        else []
+    )
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=compressed_patterns.alignment_length,
+        pattern_count=compressed_patterns.pattern_count,
+        optimized_parameter_count=1,
+        converged=converged,
+        boundary_warnings=boundary_warning_rows,
+    )
     return ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport(
         taxa=compressed_patterns.taxon_order,
         site_count=compressed_patterns.alignment_length,
@@ -1835,11 +1852,13 @@ def _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invarian
         log_likelihood=total_log_likelihood,
         function_evaluation_count=function_evaluation_count,
         converged=converged,
+        fit_assessment=fit_assessment,
         lower_invariant_proportion_bound=lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=upper_invariant_proportion_bound,
         hit_lower_invariant_proportion_boundary=hit_lower_invariant_proportion_boundary,
         hit_upper_invariant_proportion_boundary=hit_upper_invariant_proportion_boundary,
         boundary_warnings=boundary_warnings,
+        boundary_warning_rows=boundary_warning_rows,
         optimizer_diagnostics=None,
         site_likelihoods=site_likelihoods,
     )
@@ -1912,6 +1931,18 @@ def _evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_patt
         expected_pattern_count=compressed_patterns.pattern_count,
         owner_name="empirical protein matrix +I likelihood",
     )
+    boundary_warning_rows = build_invariant_proportion_boundary_warnings(
+        invariant_proportion=invariant_proportion,
+        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+    )
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=compressed_patterns.alignment_length,
+        pattern_count=compressed_patterns.pattern_count,
+        optimized_parameter_count=1,
+        converged=converged,
+        boundary_warnings=boundary_warning_rows,
+    )
     return ProteinEmpiricalInvariantMixtureTreeLikelihoodReport(
         taxa=compressed_patterns.taxon_order,
         site_count=compressed_patterns.alignment_length,
@@ -1930,8 +1961,17 @@ def _evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_patt
         log_likelihood=total_log_likelihood,
         function_evaluation_count=function_evaluation_count,
         converged=converged,
+        fit_assessment=fit_assessment,
         lower_invariant_proportion_bound=lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        hit_lower_invariant_proportion_boundary=any(
+            warning.boundary_side == "lower" for warning in boundary_warning_rows
+        ),
+        hit_upper_invariant_proportion_boundary=any(
+            warning.boundary_side == "upper" for warning in boundary_warning_rows
+        ),
+        boundary_warnings=[warning.message for warning in boundary_warning_rows],
+        boundary_warning_rows=boundary_warning_rows,
         optimizer_diagnostics=None,
         site_likelihoods=site_likelihoods,
     )
