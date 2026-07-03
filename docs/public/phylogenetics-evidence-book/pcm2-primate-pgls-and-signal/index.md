@@ -28,7 +28,7 @@ comparison enter the picture.
 
 The full study dossier lives in the repository under
 [`evidence-book/studies/primate-pgls-and-signal/`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/README.md).
-That dossier carries the governed evidence bundles and the one explicit open
+That dossier carries the governed parity bundles and the one explicit open
 boundary that still remains visible.
 
 ## What PCM2 Does Not Prove

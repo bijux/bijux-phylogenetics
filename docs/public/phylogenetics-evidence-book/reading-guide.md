@@ -4,7 +4,7 @@ audience: public
 type: evidence-navigation
 status: canonical
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-04
 ---
 
 # Evidence Book Reading Guide
@@ -54,8 +54,8 @@ posterior tooling.
 Each study guide is meant to answer four reader questions quickly:
 
 - What is the lecture family trying to show?
-- Which parts already have checked-in repository evidence?
-- Which parts are still documentation rather than full reproduction?
+- Which parts already have governed parity bundles or bounded parity evidence?
+- Which parts still keep verdicts open instead of claiming full reproduction?
 - Where should I go next if I need the underlying checked-in record?
 
 ## When To Leave These Pages

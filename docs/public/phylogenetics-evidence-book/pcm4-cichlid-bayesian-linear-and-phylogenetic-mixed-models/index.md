@@ -34,7 +34,7 @@ random-effect uncertainty, and a phylogenetic inverse covariance passed into
 
 - a complete checked-in source record for the cichlid lecture family
 - explicit dataset and provenance registration
-- a named parity-style evidence decomposition showing how the lecture should be
+- a named governed parity decomposition showing how the lecture should be
   reviewed
 - one governed parity bundle ID for each lecture slice, `evidence-001` through
   `evidence-007`

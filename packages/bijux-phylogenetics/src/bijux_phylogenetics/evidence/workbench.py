@@ -218,7 +218,7 @@ def render_docs_evidence_overview(
         "",
         "The five study families come from course material that the repository has",
         "turned into checked-in, reviewable evidence. All five now have governed",
-        "parity-style bundle IDs. Some studies already carry stronger numerical",
+        "parity bundle IDs. Some studies already carry stronger numerical",
         "parity records, while others keep parity verdicts open because the",
         "scientific workflow still depends on an external engine or an unclosed",
         "lecture-specific boundary.",
@@ -274,9 +274,9 @@ def render_docs_evidence_overview(
         elif study_id == "primate-pgls-and-signal":
             state = "Governed parity bundles deployed; one coverage boundary remains explicit"
         elif study_id == "primate-continuous-and-categorical-regression":
-            state = "Governed parity bundle program deployed; lecture-specific verdicts remain open"
+            state = "Governed parity bundles deployed; lecture-specific verdicts remain open"
         elif study_id.startswith("cichlid-"):
-            state = "Governed parity bundle program deployed; posterior workflow still external"
+            state = "Governed parity bundles deployed; posterior workflow still external"
         lines.append(
             f"| [{study['study_title']}](./{study_page}/index.md) | {study_question_by_id[study_id]} | {evidence_span} | {state} |"
         )

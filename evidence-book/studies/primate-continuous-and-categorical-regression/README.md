@@ -4,7 +4,7 @@ This study captures PCM3, the Lund lecture on multivariable comparative
 regression with continuous predictors, categorical predictors, interactions,
 and phylogenetically corrected regression.
 
-It is deployed here as a complete study dossier with governed parity-style
+It is deployed here as a complete study dossier with governed parity
 evidence bundles for each lecture slice: source provenance, dataset registry,
 evidence decomposition, runtime-surface mapping, and bundle-local review
 artifacts are all checked in. What remains open is the lecture-specific parity

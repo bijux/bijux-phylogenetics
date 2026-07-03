@@ -25,8 +25,8 @@ flowchart LR
 The public guides explain the scientific story. The `studies/` directories hold
 the durable repository record that backs those guides.
 
-All five PCM study families now carry governed parity-style `evidence-###`
-bundle IDs in the repository. What still differs from study to study is the
+All five PCM study families now carry governed parity `evidence-###` bundles
+in the repository. What still differs from study to study is the
 verdict depth: PCM1 and PCM2 already carry stronger checked-in numerical parity
 records, while PCM3 to PCM5 deploy the same durable bundle structure with
 explicitly open lecture or posterior boundaries.
@@ -37,9 +37,9 @@ explicitly open lecture or posterior boundaries.
 | --- | --- | --- | --- |
 | [`primate-longevity-signal`](./studies/primate-longevity-signal/) | PCM1 plots, signal, and ancestral reconstruction | `evidence-001` to `evidence-009` | Governed parity bundles deployed; plotting surfaces remain outside the numeric parity claim |
 | [`primate-pgls-and-signal`](./studies/primate-pgls-and-signal/) | PCM2 evolutionary modes, PGLS, and signal testing | `evidence-001` to `evidence-010` | Governed parity bundles deployed; one explicit coverage boundary remains open |
-| [`primate-continuous-and-categorical-regression`](./studies/primate-continuous-and-categorical-regression/) | PCM3 multivariable regression with categorical predictors and interactions | `evidence-001` to `evidence-008` | Governed parity bundle program deployed; lecture-specific verdicts remain open |
-| [`cichlid-bayesian-linear-and-phylogenetic-mixed-models`](./studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/) | PCM4 Bayesian linear models and phylogenetic mixed models | `evidence-001` to `evidence-007` | Governed parity bundle program deployed; posterior engine remains external |
-| [`cichlid-phylogenetic-generalized-linear-mixed-models`](./studies/cichlid-phylogenetic-generalized-linear-mixed-models/) | PCM5 phylogenetic generalized linear mixed models | `evidence-001` to `evidence-009` | Governed parity bundle program deployed; posterior engine remains external |
+| [`primate-continuous-and-categorical-regression`](./studies/primate-continuous-and-categorical-regression/) | PCM3 multivariable regression with categorical predictors and interactions | `evidence-001` to `evidence-008` | Governed parity bundles deployed; lecture-specific verdicts remain open |
+| [`cichlid-bayesian-linear-and-phylogenetic-mixed-models`](./studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/) | PCM4 Bayesian linear models and phylogenetic mixed models | `evidence-001` to `evidence-007` | Governed parity bundles deployed; posterior engine remains external |
+| [`cichlid-phylogenetic-generalized-linear-mixed-models`](./studies/cichlid-phylogenetic-generalized-linear-mixed-models/) | PCM5 phylogenetic generalized linear mixed models | `evidence-001` to `evidence-009` | Governed parity bundles deployed; posterior engine remains external |
 
 ## Repository-Wide Reports
 
@@ -76,7 +76,7 @@ These index pages remain the repository-wide review surfaces:
 
 - It does not claim that every documented study is already reproduced end to
   end inside the repository.
-- It does not treat a checked-in parity-style bundle ID as equivalent to a
+- It does not treat a checked-in governed parity bundle ID as equivalent to a
   matched lecture verdict.
 - It does keep those differences explicit so readers can see where the evidence
   is strong and where work remains.

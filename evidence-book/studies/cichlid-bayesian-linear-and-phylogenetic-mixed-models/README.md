@@ -5,7 +5,7 @@ Gaussian regression into Bayesian linear mixed models and then into a
 phylogenetic random-effect formulation on cichlid parasite data.
 
 The repository now carries a complete study dossier for this lecture family
-with governed parity-style evidence bundles for each lecture slice: dataset
+with governed parity evidence bundles for each lecture slice: dataset
 registry, source provenance, evidence decomposition, explicit runtime
 boundaries, and bundle-local review artifacts are all checked in. What it does
 not claim is full governed parity with the `MCMCglmm` posterior workflow.

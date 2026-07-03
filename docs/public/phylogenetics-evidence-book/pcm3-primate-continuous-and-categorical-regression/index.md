@@ -46,7 +46,7 @@ This study is useful when you need to understand:
 
 ## What PCM3 Does Not Prove
 
-- It does not turn deployed parity-style bundle IDs into a blanket claim of
+- It does not turn deployed governed parity bundles into a blanket claim of
   full numerical parity.
 - It does not mean each PCM3 bundle already closes its lecture-specific
   coefficient or diagnostic verdict.

@@ -5,7 +5,7 @@ mixed models for count data, binomial response data, repeated measures, and
 posterior-based phylogenetic signal calculations.
 
 The repository now carries a complete study dossier for this lecture family
-with governed parity-style evidence bundles for each lecture slice. That means
+with governed parity evidence bundles for each lecture slice. That means
 the lecture sources, datasets, evidence decomposition, runtime boundaries, and
 bundle-local review artifacts are all explicit. It does not mean the
 repository already owns a governed `MCMCglmm`-equivalent PGLMM surface.
