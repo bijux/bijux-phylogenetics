@@ -108,6 +108,96 @@ def test_public_operations_pages_publish_native_flagship_workflows() -> None:
     assert "benchmark native-maximum-likelihood-suite --json" in native_benchmark_review
 
 
+def test_public_architecture_pages_describe_package_roles_and_runtime_families() -> (
+    None
+):
+    architecture_index = _read(
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics"
+        / "architecture"
+        / "index.md"
+    )
+    package_map = _read(
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics"
+        / "architecture"
+        / "package-map.md"
+    )
+    runtime_system_map = _read(
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics"
+        / "architecture"
+        / "runtime-system-map.md"
+    )
+    evidence_boundary = _read(
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics"
+        / "architecture"
+        / "evidence-consumer-boundary.md"
+    )
+
+    assert "which package should I install or depend on" in architecture_index
+    assert "`bijux-phylogenetics` is the public center of gravity" in package_map
+    assert "`phylogenetic` is the shorter compatibility install surface" in package_map
+    assert "`bijux-phylogenetics-dev` is repository-owned maintainer tooling" in package_map
+    assert "likelihood and inference" in runtime_system_map
+    assert "native maximum-likelihood and native Bayesian DNA workflows" in (
+        runtime_system_map
+    )
+    assert "runtime question" in evidence_boundary
+    assert "evidence question" in evidence_boundary
+
+
+def test_public_evidence_and_release_guides_avoid_fragile_summary_claims() -> None:
+    evidence_index = _read(
+        REPO_ROOT / "docs" / "public" / "phylogenetics-evidence-book" / "index.md"
+    )
+    evidence_reading_guide = _read(
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics-evidence-book"
+        / "reading-guide.md"
+    )
+    release_review_workflow = _read(
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics"
+        / "quality"
+        / "release-review-workflow.md"
+    )
+    release_gates = _read(
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics"
+        / "quality"
+        / "release-and-publication-gates.md"
+    )
+
+    assert "evidence book reading guide" in evidence_index
+    assert "Treat those checked-in reports as the current source of truth" in (
+        evidence_index
+    )
+    assert "teaching studies: `0`" not in evidence_index
+    assert "migration studies: `0`" not in evidence_index
+    assert "Core Reading Order" in evidence_reading_guide
+    assert "make report-publish-readiness" in release_review_workflow
+    assert "make check-release-readiness" in release_review_workflow
+    assert "bijux-phylogenetics report release-truth" in release_review_workflow
+    assert "Governed Release Surfaces" in release_gates
+    assert "docs say more than metadata" in release_gates
+
+
 def test_runtime_and_alias_metadata_publish_beta_native_runtime_story() -> None:
     runtime_pyproject = _load_toml(
         REPO_ROOT / "packages" / "bijux-phylogenetics" / "pyproject.toml"
@@ -162,12 +252,19 @@ def test_package_readmes_link_package_roles_to_native_runtime_and_docs() -> None
     assert "Native maximum-likelihood workflows" in runtime_readme
     assert "Native Bayesian workflows" in runtime_readme
     assert "Native benchmark review" in runtime_readme
+    assert "Runtime architecture" in runtime_readme
+    assert "Release review workflow" in runtime_readme
+    assert "Evidence-book guide" in runtime_readme
     assert "benchmark, workflow, and reporting surfaces" in alias_readme
     assert "Native maximum-likelihood workflows" in alias_readme
     assert "Native Bayesian workflows" in alias_readme
     assert "Native benchmark review" in alias_readme
+    assert "Runtime architecture" in alias_readme
+    assert "Release review workflow" in alias_readme
+    assert "Evidence-book guide" in alias_readme
     assert "Documentation ownership" in dev_readme
     assert "Native surface documentation" in dev_readme
+    assert "Public trust surface maintenance" in dev_readme
     assert "Release surface alignment" in dev_readme
 
 
@@ -197,4 +294,25 @@ def test_internal_docs_name_native_surface_documentation_rule() -> None:
     )
     assert "Minimum Public Coverage For One Flagship Native Surface" in (
         native_surface_documentation
+    )
+
+
+def test_internal_docs_name_public_trust_surface_maintenance_rule() -> None:
+    internal_index = _read(REPO_ROOT / "docs" / "internal" / "index.md")
+    maintainer_index = _read(
+        REPO_ROOT / "docs" / "internal" / "maintain" / "index.md"
+    )
+    trust_surface_maintenance = _read(
+        REPO_ROOT
+        / "docs"
+        / "internal"
+        / "maintain"
+        / "public-trust-surface-maintenance.md"
+    )
+
+    assert "public trust surface maintenance" in internal_index
+    assert "public trust surface maintenance" in maintainer_index
+    assert "runtime architecture pages" in trust_surface_maintenance
+    assert "The common failure is not one missing page. It is partial alignment" in (
+        trust_surface_maintenance
     )
