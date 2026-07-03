@@ -9,59 +9,48 @@ last_reviewed: 2026-07-03
 
 # Evidence Book
 
-The evidence-book is the repository trust surface for governed parity, study
-evidence, freshness review, and explicit coverage boundaries.
+This section documents the five lecture-derived comparative study families
+tracked in `bijux-phylogenetics`.
 
-It should be read as a bounded review system around the runtime, not as a
-replacement for the runtime handbook.
+It is the best place to understand how the repository moves from course
+examples into checked-in evidence: what has already been reproduced, what has
+been cataloged but not yet turned into governed parity, and which analytical
+questions each study is meant to answer.
 
 ## Start Here
 
 - [evidence book reading guide](reading-guide.md)
 - repository evidence root:
   [`evidence-book/README.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/README.md)
-- claim re-audit:
-  [`evidence-book/index/claim-reaudit.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/claim-reaudit.md)
-- analytical surface coverage:
-  [`evidence-book/index/analytical-surface-coverage.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/analytical-surface-coverage.md)
-- completion gates:
-  [`evidence-book/index/completion-gates.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/completion-gates.md)
+- repository-wide review reports:
+  [`evidence-book/index/`](https://github.com/bijux/bijux-phylogenetics/tree/main/evidence-book/index)
 
-## Live Status Reports
+## Study Atlas
 
-The evidence-book has volatile status surfaces that change as studies are
-re-audited. Treat those checked-in reports as the current source of truth
-rather than relying on hard-coded summary counts in this page.
-
-- freshness report:
-  [`evidence-book/index/freshness-report.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/freshness-report.md)
-- integrity report:
-  [`evidence-book/index/integrity-report.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/integrity-report.md)
-- coverage gaps:
-  [`evidence-book/index/coverage-gaps.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/coverage-gaps.md)
-- maturity scorecard:
-  [`evidence-book/index/evidence-maturity-scorecard.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/evidence-maturity-scorecard.md)
-- closure criteria:
-  [`evidence-book/index/closure-criteria.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/closure-criteria.md)
+| Study | Main question | Current repository state |
+| --- | --- | --- |
+| [PCM1: primate longevity signal](pcm1-primate-longevity-signal/index.md) | How do raw primate traits and trees become a usable comparative dataset, signal estimate, and ancestral reconstruction? | Governed parity deployed |
+| [PCM2: primate PGLS and signal](pcm2-primate-pgls-and-signal/index.md) | How do transformed trees, comparative model fitting, PGLS, and diagnostics behave on the same primate system? | Governed parity deployed |
+| [PCM3: primate continuous and categorical regression](pcm3-primate-continuous-and-categorical-regression/index.md) | How should multivariable regression, categorical predictors, interactions, and phylogenetic correction be interpreted together? | Study dossier deployed; lecture parity not yet packaged as governed bundles |
+| [PCM4: cichlid Bayesian linear and phylogenetic mixed models](pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md) | How does the workflow move from Gaussian regression to Bayesian mixed models with a phylogenetic random effect? | Study dossier deployed; core posterior workflow still external |
+| [PCM5: cichlid phylogenetic generalized linear mixed models](pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md) | How are count models, binomial-style models, posterior signal estimates, and repeated measures handled together? | Study dossier deployed; core posterior workflow still external |
 
 ## Studies
 
-The public study guides currently documented here are:
+Each study page does three jobs:
 
-- [PCM1: primate longevity signal](pcm1-primate-longevity-signal/index.md)
-- [PCM2: primate PGLS and signal](pcm2-primate-pgls-and-signal/index.md)
-
-Those pages explain the analytical story of the studies. The repository-root
-`evidence-book/` directory and linked index reports carry the broader governed
-freshness, integrity, and gap surfaces.
+- explain the analytical story in plain language
+- point to the checked-in evidence dossier under `evidence-book/studies/`
+- state clearly whether the repository already reproduces the lecture or is
+  still documenting an external boundary
 
 ## Practical Boundary
 
-Use the evidence-book when the question is:
+Use these study pages when the question is:
 
-- which runtime claims are reviewed or still open
-- where freshness or coverage debt remains
-- what one study demonstrates and what it does not demonstrate
+- what a given lecture family is trying to show
+- which repository surfaces have already been checked against that lecture
+- where a study remains documented but not yet fully reproduced
 
 Use the main phylogenetics handbook when the question is:
 

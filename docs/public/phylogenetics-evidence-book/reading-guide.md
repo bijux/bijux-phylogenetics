@@ -9,40 +9,47 @@ last_reviewed: 2026-07-03
 
 # Evidence Book Reading Guide
 
-Use the evidence-book when the question is not only "what can the runtime do"
-but "what has been reviewed, bounded, or left open".
+Use this section when you want to understand the comparative case studies as
+studies, not just as API surfaces or repository status reports.
 
-## Start By Question
+## Choose A Starting Point
 
-- what studies exist and what do they cover
-  Start from the evidence-book overview and the individual study pages.
-- which claims are fresh, stale, or need re-audit
-  Read the freshness report, integrity report, and claim re-audit.
-- which runtime families are covered and which remain open
-  Read analytical surface coverage, coverage gaps, closure criteria, and the
-  maturity scorecard.
-- can I trust this specific release story yet
-  Read completion gates together with the public release and publication guide.
+- If you want the introductory primate workflow, start with PCM1.
+- If you want comparative model fitting and PGLS, continue to PCM2.
+- If you want multivariable regression with interactions and categorical
+  predictors, read PCM3.
+- If you want Bayesian mixed-model lecture families, read PCM4 and PCM5
+  together because they share the cichlid dataset and the same `MCMCglmm`
+  dependency.
 
 ## Core Reading Order
 
-For a serious first pass, read:
+For a serious first pass through the course-derived studies, read:
 
 1. `overview`
-2. `claim re-audit`
-3. `analytical surface coverage`
-4. `coverage gaps`
-5. `completion gates`
+2. `PCM1`
+3. `PCM2`
+4. `PCM3`
+5. `PCM4`
+6. `PCM5`
 
-That sequence tells you what the repository claims, how much of it has bounded
-evidence, what is stale, and what still blocks stronger closure.
+That order mirrors the course progression. It starts with tree and data
+preparation, moves through comparative regression, and ends at the Bayesian
+mixed-model lectures where the repository boundary is currently sharpest.
 
-## What The Evidence Book Is Not
+## When To Leave These Pages
 
-- it is not the runtime handbook
-- it is not one substitute for API or workflow documentation
-- it is not proof that every runtime family is equally mature
-- it is not one generic badge or success label
+- Leave for the main phylogenetics handbook when you need installation,
+  commands, or public runtime entry points.
+- Leave for the checked-in study dossier in `evidence-book/studies/` when you
+  need dataset registries, source provenance, or the full evidence map.
+- Leave for `evidence-book/index/` when you need repository-wide freshness,
+  integrity, or coverage reports rather than one study family.
 
-The evidence-book is the bounded trust surface for the repository's public
-claims.
+## What These Pages Deliberately Do
+
+- They explain the scientific workflow in reader-facing language.
+- They separate a documented source lecture from a reproduced repository
+  workflow.
+- They keep open boundaries visible, especially for PCM4 and PCM5, where the
+  main posterior workflows still depend on external tooling.

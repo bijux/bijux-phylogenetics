@@ -108,6 +108,12 @@ nav:
           - PCM2: public/phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/index.md
           - PCM2 Model Comparisons and PGLS: public/phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/model-comparisons-and-pgls.md
           - PCM2 Signal Diagnostics and Open Boundaries: public/phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/signal-diagnostics-and-open-boundaries.md
+          - PCM3: public/phylogenetics-evidence-book/pcm3-primate-continuous-and-categorical-regression/index.md
+          - PCM3 Model Design and Phylogenetic Regression: public/phylogenetics-evidence-book/pcm3-primate-continuous-and-categorical-regression/model-design-and-phylogenetic-regression.md
+          - PCM4: public/phylogenetics-evidence-book/pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md
+          - PCM4 Mixed-Model Evidence Boundary: public/phylogenetics-evidence-book/pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/mixed-model-evidence-boundary.md
+          - PCM5: public/phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md
+          - PCM5 Generalized Mixed-Model Evidence Boundary: public/phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/generalized-mixed-model-evidence-boundary.md
   - Internal:
       - Overview: internal/index.md
       - Maintainer:

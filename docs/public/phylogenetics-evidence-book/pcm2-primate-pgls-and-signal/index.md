@@ -9,36 +9,36 @@ last_reviewed: 2026-07-03
 
 # PCM2: Primate PGLS And Signal
 
-PCM2 is the deeper study family built from the Lund lecture material on
-evolutionary modes, PGLS, and signal testing.
+PCM2 is the deeper primate comparative study. It covers transformed trees,
+comparative model fitting, likelihood-ratio comparisons, baseline GLS,
+Pagel-lambda regression, and signal diagnostics on the same lecture family.
 
-If PCM1 is the introduction study, PCM2 is the harder comparative methods
-study. It covers transformed trees, model fitting, likelihood comparisons,
-baseline GLS, Pagel-lambda regression, and signal diagnostics.
+## Why PCM2 Matters
 
-## What PCM2 Covers
-
-PCM2 is the repository's deeper comparative trust study for model behavior and
-phylogenetically corrected regression. It is where the public evidence story
-starts to ask whether the runtime can support more serious comparative methods
-without drifting from the governed R reference path.
+PCM1 proves the study inputs. PCM2 asks whether more demanding comparative
+methods still behave coherently once phylogenetic correction and model
+comparison enter the picture.
 
 ## Read PCM2 In Order
 
 1. [model comparisons and PGLS](model-comparisons-and-pgls.md)
 2. [signal diagnostics and open boundaries](signal-diagnostics-and-open-boundaries.md)
 
-That order keeps the main comparative fit story visible before the study moves
-into diagnostics and remaining open edges.
+## Checked-In Study Dossier
 
-## What PCM2 Does Not Prove
+The full study dossier lives in the repository under
+[`evidence-book/studies/primate-pgls-and-signal/`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/README.md).
+That dossier carries the governed evidence bundles and the one explicit open
+boundary that still remains visible.
 
-- it does not close every comparative model in the repository
-- it does not erase remaining open boundaries named inside the study
-- it does not substitute for release review or broader evidence-book coverage
-  reports
+## Current Repository State
+
+- The PCM2 study family is deployed as governed parity bundles.
+- The repository keeps the remaining intercept-sweep fragment explicit rather
+  than rounding it into a broader success claim.
+- PCM2 still focuses on one primate system; it does not cover the later
+  categorical-regression or mixed-model lecture families.
 
 ## Read This Study Next
 
-- [model comparisons and PGLS](model-comparisons-and-pgls.md)
-- [signal diagnostics and open boundaries](signal-diagnostics-and-open-boundaries.md)
+- [PCM3: primate continuous and categorical regression](../pcm3-primate-continuous-and-categorical-regression/index.md)
