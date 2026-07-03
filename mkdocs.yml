@@ -86,6 +86,7 @@ nav:
               - Common Workflows: public/phylogenetics/operations/common-workflows.md
               - Native Maximum-Likelihood Workflows: public/phylogenetics/operations/native-maximum-likelihood-workflows.md
               - Native Bayesian Workflows: public/phylogenetics/operations/native-bayesian-workflows.md
+              - Native Benchmark Review: public/phylogenetics/operations/native-benchmark-review.md
               - Operational Boundaries: public/phylogenetics/operations/operational-boundaries.md
           - Quality:
               - Overview: public/phylogenetics/quality/index.md

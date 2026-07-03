@@ -12,6 +12,10 @@ last_reviewed: 2026-07-03
 The repository now keeps native benchmark evidence as one public trust surface,
 not as one hidden maintainer-only utility.
 
+For the practical command workflow, start with
+[native benchmark review](../operations/native-benchmark-review.md). This page
+explains how to interpret the benchmark family once those reports exist.
+
 ## What The Benchmark Family Covers
 
 The native maximum-likelihood benchmark family covers:

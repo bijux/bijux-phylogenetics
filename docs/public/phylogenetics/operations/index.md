@@ -18,4 +18,5 @@ without drifting into maintainer-only surfaces.
 - [common workflows](common-workflows.md)
 - [native maximum-likelihood workflows](native-maximum-likelihood-workflows.md)
 - [native Bayesian workflows](native-bayesian-workflows.md)
+- [native benchmark review](native-benchmark-review.md)
 - [operational boundaries](operational-boundaries.md)

@@ -45,6 +45,12 @@ the stable dispatcher, the supported fixed-topology and joint-topology DNA
 families, and the explicit model-definition and proposal-schedule inputs they
 require.
 
+When the goal is to review the native maximum-likelihood release posture rather
+than to produce one inference result, use
+[native benchmark review](native-benchmark-review.md). That guide keeps the
+unified suite, the narrower benchmark lanes, and the governed status classes
+in one public how-to surface.
+
 Serious workflow JSON outputs now also publish one explicit method tier:
 
 - `supported` for surfaces backed by reference parity or real-engine validation
