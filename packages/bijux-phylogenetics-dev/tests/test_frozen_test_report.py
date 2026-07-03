@@ -223,6 +223,7 @@ def test_build_frozen_test_report_compares_current_run_against_frozen_ref(
         package="demo-package",
         frozen_ref=frozen_ref,
         artifacts_root=artifacts_root,
+        full_suite_worker_count=6,
         git_executable=_git(),
         make_executable=_fake_make_executable(tmp_path),
     )
@@ -234,6 +235,10 @@ def test_build_frozen_test_report_compares_current_run_against_frozen_ref(
     assert payload["changed_test_count"] == 1
     assert payload["changed_output_count"] == 1
     assert payload["scientific_drift_count"] == 2
+    assert payload["current_run"]["full_suite_worker_count"] == 6
+    assert payload["frozen_run"]["full_suite_worker_count"] == 6
+    assert "FULL_SUITE_PYTEST_WORKERS=6" in payload["current_run"]["command"]
+    assert "FULL_SUITE_PYTEST_WORKERS=6" in payload["frozen_run"]["command"]
     assert payload["changed_outputs"][0]["relative_path"] == "tree-report.json"
     assert all(
         difference["relative_path"] != "stale.txt"

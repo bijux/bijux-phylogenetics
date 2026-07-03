@@ -260,6 +260,7 @@ def test_phylogenetic_alias_make_exposes_frozen_full_suite_surface() -> None:
         '"$(FROZEN_TEST_REPORT_PYTHON)" -m bijux_phylogenetics_dev.quality.frozen_test_report check'
         in alias_make
     )
+    assert '--full-suite-workers "$(FULL_SUITE_PYTEST_WORKERS)"' in alias_make
 
 
 def test_top_level_runtime_exports_define_curated_domain_gateways() -> None:
@@ -328,8 +329,13 @@ def test_runtime_package_make_exposes_unfiltered_test_all_surface() -> None:
         'TEST_MAIN_ARGS = -m "not slow and not real_local and not evaluation"'
         in runtime_make
     )
+    assert "FULL_SUITE_PYTEST_WORKERS ?= 8" in runtime_make
+    assert "FULL_SUITE_PYTEST_DISTRIBUTION ?= worksteal" in runtime_make
     assert "test-all: TEST_MAIN_ARGS =" in runtime_make
-    assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in runtime_make
+    assert (
+        "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION)"
+        in runtime_make
+    )
     assert "test-all: test" in runtime_make
 
 
@@ -346,7 +352,7 @@ def test_runtime_package_make_exposes_unfiltered_test_all_plus_run_time_surface(
     )
     assert "test-all-plus-run-time: TEST_MAIN_ARGS =" in runtime_make
     assert (
-        "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 --durations=0 --durations-min=0"
+        "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION) --durations=0 --durations-min=0"
         in runtime_make
     )
     assert "test-all-plus-run-time: test" in runtime_make
@@ -370,6 +376,7 @@ def test_runtime_package_make_exposes_frozen_full_suite_surface() -> None:
         '"$(FROZEN_TEST_REPORT_PYTHON)" -m bijux_phylogenetics_dev.quality.frozen_test_report check'
         in runtime_make
     )
+    assert '--full-suite-workers "$(FULL_SUITE_PYTEST_WORKERS)"' in runtime_make
 
 
 def test_runtime_package_make_default_test_lane_targets_smoke_suite() -> None:
@@ -389,6 +396,7 @@ def test_runtime_package_make_test_all_targets_full_test_tree_without_marker_ski
     assert '"packages/bijux-phylogenetics/tests"' in dry_run
     assert '"packages/bijux-phylogenetics/tests/smoke"' not in dry_run
     assert '-m "not slow and not real_local and not evaluation"' not in dry_run
+    assert "-n 8 --dist worksteal" in dry_run
 
 
 def test_runtime_package_make_test_all_plus_run_time_targets_full_test_tree() -> (
@@ -399,6 +407,7 @@ def test_runtime_package_make_test_all_plus_run_time_targets_full_test_tree() ->
     assert "Running full test suite on tests" in dry_run
     assert '"packages/bijux-phylogenetics/tests"' in dry_run
     assert '"packages/bijux-phylogenetics/tests/smoke"' not in dry_run
+    assert "-n 8 --dist worksteal" in dry_run
     assert "--durations=0 --durations-min=0" in dry_run
 
 
@@ -424,6 +433,7 @@ def test_runtime_package_make_test_all_frozen_uses_repository_owned_comparison_t
         '--artifacts-root "/Users/bijan/bijux/bijux-phylogenetics/artifacts/bijux-phylogenetics/test-frozen"'
         in dry_run
     )
+    assert '--full-suite-workers "8"' in dry_run
 
 
 def test_dev_package_make_excludes_slow_tests_by_default() -> None:
@@ -440,8 +450,13 @@ def test_dev_package_make_exposes_unfiltered_test_all_surface() -> None:
     ).read_text(encoding="utf-8")
 
     assert 'TEST_MAIN_ARGS = -m "not slow"' in dev_make
+    assert "FULL_SUITE_PYTEST_WORKERS ?= 8" in dev_make
+    assert "FULL_SUITE_PYTEST_DISTRIBUTION ?= worksteal" in dev_make
     assert "test-all: TEST_MAIN_ARGS =" in dev_make
-    assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in dev_make
+    assert (
+        "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION)"
+        in dev_make
+    )
     assert "test-all: test" in dev_make
 
 
@@ -453,7 +468,7 @@ def test_dev_package_make_exposes_unfiltered_test_all_plus_run_time_surface() ->
     assert 'TEST_MAIN_ARGS = -m "not slow"' in dev_make
     assert "test-all-plus-run-time: TEST_MAIN_ARGS =" in dev_make
     assert (
-        "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 --durations=0 --durations-min=0"
+        "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION) --durations=0 --durations-min=0"
         in dev_make
     )
     assert "test-all-plus-run-time: test" in dev_make
@@ -476,6 +491,7 @@ def test_dev_package_make_exposes_frozen_full_suite_surface() -> None:
         '"$(FROZEN_TEST_REPORT_PYTHON)" -m bijux_phylogenetics_dev.quality.frozen_test_report check'
         in dev_make
     )
+    assert '--full-suite-workers "$(FULL_SUITE_PYTEST_WORKERS)"' in dev_make
 
 
 def test_long_running_runtime_workflows_stay_slow_marked() -> None:
@@ -688,8 +704,14 @@ def test_repository_test_all_surface_disables_pytest_timeout_in_all_packages() -
     )
     assert "ROOT_TARGET_PACKAGES_test-all := $(CHECK_PACKAGES)" in root_make
     assert "test-all: TEST_MAIN_ARGS =" in dev_make
-    assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in dev_make
-    assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in alias_make
+    assert (
+        "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION)"
+        in dev_make
+    )
+    assert (
+        "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION)"
+        in alias_make
+    )
     assert "test-all-frozen:" in dev_make
     assert "test-all-frozen:" in alias_make
 
@@ -714,11 +736,11 @@ def test_repository_test_all_plus_run_time_surface_disables_timeout_and_reports_
     )
     assert "test-all-plus-run-time: TEST_MAIN_ARGS =" in dev_make
     assert (
-        "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 --durations=0 --durations-min=0"
+        "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION) --durations=0 --durations-min=0"
         in dev_make
     )
     assert (
-        "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 --durations=0 --durations-min=0"
+        "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION) --durations=0 --durations-min=0"
         in alias_make
     )
 
