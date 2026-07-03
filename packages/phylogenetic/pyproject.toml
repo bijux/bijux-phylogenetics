@@ -12,7 +12,14 @@ license-files = []
 authors = [
     { name = "Bijan Mousavi", email = "bijan@bijux.io" },
 ]
-keywords = ["bioinformatics", "comparative-biology", "evolution", "phylogenetics"]
+keywords = [
+    "bayesian-inference",
+    "bioinformatics",
+    "comparative-biology",
+    "evolution",
+    "maximum-likelihood",
+    "phylogenetics",
+]
 dynamic = ["version"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -28,6 +35,9 @@ dependencies = [
 
 [project.urls]
 Documentation = "https://bijux.io/bijux-phylogenetics/public/phylogenetics/"
+"Native Workflows" = "https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/"
+"Evidence Book" = "https://bijux.io/bijux-phylogenetics/public/phylogenetics-evidence-book/"
+Benchmarks = "https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-benchmark-review/"
 Repository = "https://github.com/bijux/bijux-phylogenetics"
 Issues = "https://github.com/bijux/bijux-phylogenetics/issues"
 Changelog = "https://github.com/bijux/bijux-phylogenetics/blob/main/packages/phylogenetic/CHANGELOG.md"
