@@ -22,6 +22,7 @@ class EvidenceBundleTemplateSpec:
     claim_summary: str
     analytical_surfaces: tuple[str, ...]
     claim_tags: tuple[str, ...]
+    comparison_mode: str
     source_basis_locators: tuple[str, ...]
     governed_code_paths: tuple[str, ...]
     limitation: str
@@ -57,6 +58,7 @@ def build_evidence_bundle_template(
             "analytical_surfaces": list(spec.analytical_surfaces),
         },
         "claim_tags": list(spec.claim_tags),
+        "comparison_mode": spec.comparison_mode,
         "verdict": {
             "status": "not_comparable",
             "summary": "Template placeholder until governed evidence is generated.",

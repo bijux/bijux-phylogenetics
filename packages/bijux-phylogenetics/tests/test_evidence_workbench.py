@@ -14,10 +14,13 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 pytestmark = pytest.mark.slow
 
 
-def test_list_registered_evidence_studies_only_reports_pcm_studies() -> None:
+def test_list_registered_evidence_studies_cover_all_pcm_studies() -> None:
     studies = list_registered_evidence_studies(REPO_ROOT)
 
     assert [study.study_id for study in studies] == [
+        "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+        "cichlid-phylogenetic-generalized-linear-mixed-models",
+        "primate-continuous-and-categorical-regression",
         "primate-longevity-signal",
         "primate-pgls-and-signal",
     ]

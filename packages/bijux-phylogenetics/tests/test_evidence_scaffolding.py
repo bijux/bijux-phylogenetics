@@ -22,6 +22,7 @@ def _template_spec() -> EvidenceBundleTemplateSpec:
         claim_summary="Template claim summary.",
         analytical_surfaces=("templates", "scaffolding"),
         claim_tags=("template", "scaffolding"),
+        comparison_mode="direct_parity",
         source_basis_locators=(
             "packages/bijux-phylogenetics/tests/fixtures/trees/example_tree.nwk",
         ),
@@ -43,6 +44,7 @@ def test_build_evidence_bundle_template_uses_governed_portable_locators() -> Non
     assert manifest["freshness"]["governed_code_paths"] == [
         "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/scaffolding.py"
     ]
+    assert manifest["comparison_mode"] == "direct_parity"
     assert manifest["verdict"]["status"] == "not_comparable"
     assert template["report_filename"] == "results/comparison-observation.json"
     assert template["checks"]["required_result_artifacts"] == [
