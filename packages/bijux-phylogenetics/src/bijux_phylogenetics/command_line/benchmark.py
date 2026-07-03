@@ -137,6 +137,61 @@ def _add_native_maximum_likelihood_accuracy_benchmark_arguments(parser: Any) -> 
     _add_manifest_argument(parser)
 
 
+def _add_native_maximum_likelihood_suite_benchmark_arguments(parser: Any) -> None:
+    parser.add_argument("--replicates", type=int, default=1)
+    parser.add_argument(
+        "--size-class",
+        action="append",
+        dest="size_class_labels",
+        help="Add one native scaling size-class label. Repeat alongside --taxon-count and --site-count.",
+    )
+    parser.add_argument(
+        "--taxon-count",
+        action="append",
+        dest="taxon_counts",
+        type=int,
+        help="Add one taxon count for the native scaling lanes. Repeat alongside --size-class and --site-count.",
+    )
+    parser.add_argument(
+        "--site-count",
+        action="append",
+        dest="site_counts",
+        type=int,
+        help="Add one aligned-site count for the native scaling lanes. Repeat alongside --size-class and --taxon-count.",
+    )
+    parser.add_argument(
+        "--scaling-model",
+        action="append",
+        dest="scaling_model_names",
+        help="Add one fixed native model for the speed and memory lanes. Repeat to benchmark multiple scaling lanes.",
+    )
+    parser.add_argument(
+        "--scaling-search-method",
+        action="append",
+        dest="scaling_search_methods",
+        help="Add one native search method for the speed and memory lanes. Repeat to benchmark multiple scaling lanes.",
+    )
+    parser.add_argument(
+        "--accuracy-model",
+        action="append",
+        dest="accuracy_model_names",
+        help="Add one governed native model for the truth-recovery lanes. Repeat to benchmark multiple truth lanes.",
+    )
+    parser.add_argument(
+        "--accuracy-search-method",
+        action="append",
+        dest="accuracy_search_methods",
+        help="Add one native search method for the truth-recovery lanes. Repeat to benchmark multiple truth lanes.",
+    )
+    parser.add_argument("--start-tree-count", type=int, default=1)
+    parser.add_argument("--start-tree-seed", type=int, default=17)
+    parser.add_argument("--upper-branch-length-bound", type=float, default=1.0)
+    parser.add_argument(
+        "--json", action="store_true", help="Emit the benchmark report as JSON."
+    )
+    _add_manifest_argument(parser)
+
+
 def add_benchmark_commands(subparsers: Any) -> None:
     benchmark = subparsers.add_parser(
         get_command_spec("benchmark").name, help=get_command_spec("benchmark").summary
@@ -346,6 +401,14 @@ def add_benchmark_commands(subparsers: Any) -> None:
         benchmark_native_maximum_likelihood_accuracy
     )
 
+    benchmark_native_maximum_likelihood_suite = benchmark_subparsers.add_parser(
+        "native-maximum-likelihood-suite",
+        help="Benchmark native maximum-likelihood scaling, wrapper parity, support, and truth recovery in one governed report.",
+    )
+    _add_native_maximum_likelihood_suite_benchmark_arguments(
+        benchmark_native_maximum_likelihood_suite
+    )
+
     benchmark_maximum_likelihood_wrapper = benchmark_subparsers.add_parser(
         "maximum-likelihood-wrapper-comparison",
         help="Benchmark native maximum-likelihood tree inference against cached IQ-TREE, FastTree, and explicit RAxML support lanes.",
@@ -507,6 +570,19 @@ def run_benchmark_command(args: Any) -> int:
             start_tree_seed=args.start_tree_seed,
             upper_branch_length_bound=args.upper_branch_length_bound,
         )
+    elif args.benchmark_command == "native-maximum-likelihood-suite":
+        classes = _resolve_native_maximum_likelihood_benchmark_size_classes(args)
+        report = command_line_api.benchmark_native_maximum_likelihood_suite(
+            replicates=args.replicates,
+            size_classes=classes,
+            scaling_model_names=args.scaling_model_names,
+            scaling_search_methods=args.scaling_search_methods,
+            accuracy_model_names=args.accuracy_model_names,
+            accuracy_search_methods=args.accuracy_search_methods,
+            start_tree_count=args.start_tree_count,
+            start_tree_seed=args.start_tree_seed,
+            upper_branch_length_bound=args.upper_branch_length_bound,
+        )
     elif args.benchmark_command == "maximum-likelihood-wrapper-comparison":
         report = command_line_api.benchmark_maximum_likelihood_wrapper_comparison()
     elif args.benchmark_command == "real-dataset-macroevolution":
@@ -554,6 +630,16 @@ def run_benchmark_command(args: Any) -> int:
         metrics["trend_row_count"] = len(report.trend_rows)
     if hasattr(report, "memory_blowup_case_count"):
         metrics["memory_blowup_case_count"] = report.memory_blowup_case_count
+    if hasattr(report, "native_advantage_case_count"):
+        metrics["native_advantage_case_count"] = report.native_advantage_case_count
+    if hasattr(report, "native_bug_case_count"):
+        metrics["native_bug_case_count"] = report.native_bug_case_count
+    if hasattr(report, "expected_assumption_difference_case_count"):
+        metrics["expected_assumption_difference_case_count"] = (
+            report.expected_assumption_difference_case_count
+        )
+    if hasattr(report, "unsupported_case_count"):
+        metrics["unsupported_case_count"] = report.unsupported_case_count
     if hasattr(report, "topology_recovery_case_count"):
         metrics["topology_recovery_case_count"] = report.topology_recovery_case_count
     if hasattr(report, "parameter_recovery_case_count"):
