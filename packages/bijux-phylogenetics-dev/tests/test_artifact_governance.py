@@ -97,6 +97,43 @@ def test_build_artifact_governance_report_flags_toxworkdir_drift(
     assert "tox-artifact-path-drift" in issue_codes
 
 
+def test_build_artifact_governance_report_flags_root_alias_conflict(
+    tmp_path: Path,
+) -> None:
+    repo_root = _minimal_repo(tmp_path)
+    (repo_root / ".venv").mkdir()
+
+    report = build_artifact_governance_report(repo_root)
+
+    issue_codes = {issue["code"] for issue in report["issues"]}
+    assert "root-artifact-alias-conflict" in issue_codes
+
+
+def test_build_artifact_governance_report_flags_root_alias_target_drift(
+    tmp_path: Path,
+) -> None:
+    repo_root = _minimal_repo(tmp_path)
+    (repo_root / "tmp").mkdir()
+    (repo_root / ".venv").symlink_to("tmp")
+
+    report = build_artifact_governance_report(repo_root)
+
+    issue_codes = {issue["code"] for issue in report["issues"]}
+    assert "root-artifact-alias-drift" in issue_codes
+
+
+def test_build_artifact_governance_report_flags_forbidden_root_cache(
+    tmp_path: Path,
+) -> None:
+    repo_root = _minimal_repo(tmp_path)
+    (repo_root / ".pytest_cache").mkdir()
+
+    report = build_artifact_governance_report(repo_root)
+
+    issue_codes = {issue["code"] for issue in report["issues"]}
+    assert "forbidden-root-cache" in issue_codes
+
+
 def test_repository_artifact_governance_report_is_clean() -> None:
     report = build_artifact_governance_report(REPO_ROOT)
 

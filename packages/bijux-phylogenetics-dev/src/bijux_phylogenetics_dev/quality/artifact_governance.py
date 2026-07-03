@@ -11,6 +11,17 @@ from typing import Any
 DEFAULT_JSON_OUT = Path("artifacts/root/artifact-governance.json")
 ROOT_MAKEFILE = Path("makes/root.mk")
 TOX_FILE = Path("tox.ini")
+ROOT_ALIAS_TARGETS = {
+    ".venv": "artifacts/root/check-venv",
+    ".tox": "artifacts/root/tox",
+    ".hypothesis": "artifacts/root/hypothesis",
+    ".benchmarks": "artifacts/root/benchmarks",
+}
+ROOT_FORBIDDEN_CACHE_PATHS = (
+    ".pytest_cache",
+    ".ruff_cache",
+    ".mypy_cache",
+)
 REQUIRED_MAKE_TARGETS = {
     "list-evidence-studies": "$(ROOT_ARTIFACTS_DIR)/evidence-studies.json",
     "build-evidence-book": "$(ROOT_ARTIFACTS_DIR)/evidence-book-build.json",
@@ -61,6 +72,77 @@ def _target_bodies(root_make_text: str) -> dict[str, str]:
         current_target = target_name
         bodies.setdefault(target_name, [])
     return {target: "\n".join(lines) for target, lines in bodies.items()}
+
+
+def _audit_root_aliases(
+    repo_root: Path,
+    *,
+    issues: list[ArtifactGovernanceIssue],
+) -> list[dict[str, Any]]:
+    reports: list[dict[str, Any]] = []
+    for alias_name, expected_target in sorted(ROOT_ALIAS_TARGETS.items()):
+        alias_path = repo_root / alias_name
+        exists = alias_path.exists() or alias_path.is_symlink()
+        is_symlink = alias_path.is_symlink()
+        observed_target = alias_path.readlink().as_posix() if is_symlink else None
+        expected_relative_target = expected_target
+        status = "absent"
+        if exists and not is_symlink:
+            status = "conflict"
+            issues.append(
+                ArtifactGovernanceIssue(
+                    code="root-artifact-alias-conflict",
+                    path=alias_name,
+                    message=(
+                        f"root alias {alias_name} must be absent or a symlink to "
+                        f"{expected_relative_target}"
+                    ),
+                )
+            )
+        elif is_symlink and observed_target != expected_relative_target:
+            status = "drift"
+            issues.append(
+                ArtifactGovernanceIssue(
+                    code="root-artifact-alias-drift",
+                    path=alias_name,
+                    message=(
+                        f"root alias {alias_name} must target "
+                        f"{expected_relative_target}"
+                    ),
+                )
+            )
+        elif is_symlink:
+            status = "governed"
+        reports.append(
+            {
+                "alias_name": alias_name,
+                "status": status,
+                "expected_target": expected_relative_target,
+                "observed_target": observed_target,
+            }
+        )
+    return reports
+
+
+def _audit_forbidden_root_caches(
+    repo_root: Path,
+    *,
+    issues: list[ArtifactGovernanceIssue],
+) -> list[dict[str, Any]]:
+    reports: list[dict[str, Any]] = []
+    for path_name in ROOT_FORBIDDEN_CACHE_PATHS:
+        path = repo_root / path_name
+        present = path.exists()
+        if present:
+            issues.append(
+                ArtifactGovernanceIssue(
+                    code="forbidden-root-cache",
+                    path=path_name,
+                    message=f"root cache {path_name} must stay out of the repository root",
+                )
+            )
+        reports.append({"path": path_name, "present": present})
+    return reports
 
 
 def build_artifact_governance_report(repo_root: Path) -> dict[str, Any]:
@@ -121,11 +203,16 @@ def build_artifact_governance_report(repo_root: Path) -> dict[str, Any]:
             }
         )
 
+    root_aliases = _audit_root_aliases(repo_root, issues=issues)
+    forbidden_root_caches = _audit_forbidden_root_caches(repo_root, issues=issues)
+
     return {
         "schema_version": 1,
         "toxworkdir": toxworkdir_line,
         "expected_toxworkdir": expected_toxworkdir,
         "make_targets": make_targets,
+        "root_aliases": root_aliases,
+        "forbidden_root_caches": forbidden_root_caches,
         "issue_count": len(issues),
         "issues": [asdict(issue) for issue in issues],
     }
