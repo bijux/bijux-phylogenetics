@@ -12,6 +12,10 @@ last_reviewed: 2026-07-03
 Some runtime surfaces are safe operational tools. Others depend on stronger
 scientific judgment.
 
+If the first question is which public surface to use at all, start from the
+[surface selection guide](../interfaces/surface-selection.md) before applying
+these operational boundaries.
+
 ## Safe To Treat As Operational
 
 - tree validation and inspection

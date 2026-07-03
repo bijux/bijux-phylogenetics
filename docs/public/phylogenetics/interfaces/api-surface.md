@@ -14,6 +14,10 @@ should treat the CLI, Python import surface, and checked-in evidence files as
 the main public contract. The HTTP-facing surface is frozen as a checked-in
 OpenAPI bundle, not as a live server promise.
 
+Use this page when the question is about integration boundaries. Use the
+[surface selection guide](surface-selection.md) when the question is which
+public surface should own the work in the first place.
+
 ## The Main Public Surfaces
 
 - the `bijux-phylogenetics` and `phylogenetic` console scripts
@@ -94,3 +98,10 @@ The freeze bundle lives here:
 If you need an integration contract, start from the CLI, the named Python
 surface, or the frozen OpenAPI bundle. If an internal module or helper is not
 named in those surfaces, assume it can move.
+
+## Matching Practical Guides
+
+- [surface selection guide](surface-selection.md)
+- [native maximum-likelihood workflows](../operations/native-maximum-likelihood-workflows.md)
+- [native Bayesian workflows](../operations/native-bayesian-workflows.md)
+- [native benchmark review](../operations/native-benchmark-review.md)

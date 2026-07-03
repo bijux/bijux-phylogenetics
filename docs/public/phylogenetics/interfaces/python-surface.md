@@ -15,6 +15,18 @@ Use the canonical package name when you need the durable runtime API. The
 `phylogenetic` package exists as a compatibility alias, not as a second
 independent runtime.
 
+Use this page when you already know Python is the right public surface. If you
+still need to choose between CLI, workflow Python, native Python, or evidence
+surfaces, start from the [surface selection guide](surface-selection.md).
+
+## Reading Rule
+
+- use `bijux_phylogenetics.api` for workflow-shaped notebook and pipeline use
+- use named native import families when you need one owned runtime contract
+  directly
+- use the CLI when the main output should be one governed artifact or report
+  bundle rather than one in-memory Python object
+
 The owned native tree API now lives on `bijux_phylogenetics.PhyloTree`,
 `bijux_phylogenetics.TreeNode`, and `bijux_phylogenetics.TaxonLabel`. That
 surface is the single in-memory tree contract for native traversal, topology
@@ -225,3 +237,9 @@ tree, support-summary table, log, and manifest contract used by the CLI.
 
 The public promise is ownership clarity: imports should resolve to one runtime
 family, not to competing public surfaces with different meanings.
+
+## Matching Practical Guides
+
+- [surface selection guide](surface-selection.md)
+- [native maximum-likelihood workflows](../operations/native-maximum-likelihood-workflows.md)
+- [native Bayesian workflows](../operations/native-bayesian-workflows.md)

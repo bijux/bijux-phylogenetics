@@ -102,6 +102,7 @@ matching public workflow guides:
 - [native maximum-likelihood workflows](../operations/native-maximum-likelihood-workflows.md)
 - [native Bayesian workflows](../operations/native-bayesian-workflows.md)
 - [native benchmark review](../operations/native-benchmark-review.md)
+- [surface selection guide](surface-selection.md)
 
 ## Public Reading Rule
 

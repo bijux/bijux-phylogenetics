@@ -16,6 +16,11 @@ live under `bijux_phylogenetics.api`. They return typed workflow result
 objects that wrap the same CLI-grade runtime reports used internally and add
 stable JSON plus TSV export helpers.
 
+Use the CLI when the main goal is one governed command, one reviewer-facing
+artifact bundle, or one release-facing report surface. If that is not the
+question, start from the [surface selection guide](surface-selection.md)
+instead of assuming the CLI is always the right boundary.
+
 ## Major Command Families
 
 - `validate`, `inspect`, `compare`, `annotate`, `render`
