@@ -19,14 +19,17 @@
 [![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
 <!-- bijux-phylogenetics-badges:generated:end -->
 
-Canonical runtime package for the bijux-phylogenetics repository.
+Canonical runtime package for the `bijux-phylogenetics` repository.
 
-This package provides the Python API and CLI for tree validation, inspection,
+This package is the public Python API and CLI for tree validation, inspection,
 comparison, metadata linkage, comparative trait analysis, ancestral-state
 reconstruction, discrete-state evolution analysis, external engine
 orchestration, native likelihood and inference, Bayesian posterior
 summarization, diversification and macroevolution analysis, evidence bundle
 creation, explicit parsimony scoring, and HTML report generation.
+
+Choose this package when you want the full runtime contract rather than the
+shorter compatibility alias.
 
 ## Install
 
@@ -2584,7 +2587,15 @@ through a single kitchen-sink file.
 
 ## Read this next
 
-- package docs: [Runtime package docs](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
-- source directory: [Runtime source directory](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics)
-- changelog: [Runtime package changelog](https://github.com/bijux/bijux-phylogenetics/blob/main/packages/bijux-phylogenetics/CHANGELOG.md)
-- security policy: [Security policy](https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md)
+- [Runtime product guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
+- [Surface selection guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/surface-selection/)
+- [Artifact consumption guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/artifact-consumption-guide/)
+- [Native maximum-likelihood workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-maximum-likelihood-workflows/)
+- [Native Bayesian workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-bayesian-workflows/)
+- [Native benchmark review](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-benchmark-review/)
+- [Runtime architecture](https://bijux.io/bijux-phylogenetics/public/phylogenetics/architecture/)
+- [Release review workflow](https://bijux.io/bijux-phylogenetics/public/phylogenetics/quality/release-review-workflow/)
+- [Evidence-book guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics-evidence-book/)
+- [Runtime package source on GitHub](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics)
+- [Runtime package changelog](https://github.com/bijux/bijux-phylogenetics/blob/main/packages/bijux-phylogenetics/CHANGELOG.md)
+- [Security policy](https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md)

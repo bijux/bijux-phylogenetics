@@ -33,27 +33,28 @@ under `.bijux/`, repository-owned `makes/` and `configs/`, a root `uv`
 workspace, one canonical runtime package, one compatibility alias package, and
 one repository-owned maintainer package.
 
-This repository publishes `2` packages. Each release tag builds two staged
-bundles, uploads both distributions to PyPI, publishes each release bundle to
-its exact GHCR package page under the `bijux` account, and attaches the same
-staged assets to the GitHub Release.
+This repository publishes two install surfaces for end users and one
+repository-owned maintainer package. Each release tag builds the staged
+runtime bundles, uploads both distributions to PyPI, publishes each release
+bundle to its exact GHCR package page under the `bijux` account, and attaches
+the same staged assets to the GitHub Release.
 
 ## Start Here
 
-- read the public docs home: [Documentation home](https://bijux.io/bijux-phylogenetics/)
-- inspect the public runtime guide: [Phylogenetics product guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
-- inspect the runtime architecture guide: [Runtime architecture](https://bijux.io/bijux-phylogenetics/public/phylogenetics/architecture/)
-- inspect the public surface selection guide: [Surface selection guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/surface-selection/)
-- inspect the artifact consumption guide: [Artifact consumption guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/artifact-consumption-guide/)
-- inspect the public validation-lane guide: [Validation lanes](https://bijux.io/bijux-phylogenetics/public/phylogenetics/quality/validation-lanes/)
-- inspect the claim-reading guide: [Claim reading guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/foundation/claim-reading-guide/)
-- inspect the native maximum-likelihood workflow guide: [Native maximum-likelihood workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-maximum-likelihood-workflows/)
-- inspect the native Bayesian workflow guide: [Native Bayesian workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-bayesian-workflows/)
-- inspect the native benchmark review guide: [Native benchmark review](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-benchmark-review/)
-- inspect the release review guide: [Release review workflow](https://bijux.io/bijux-phylogenetics/public/phylogenetics/quality/release-review-workflow/)
-- inspect the public evidence guide: [Evidence Book](https://bijux.io/bijux-phylogenetics/public/phylogenetics-evidence-book/)
-- inspect the internal maintainer guide: [Internal documentation](https://bijux.io/bijux-phylogenetics/internal/)
-- inspect the runtime package source: [`packages/bijux-phylogenetics`](packages/bijux-phylogenetics)
+- [Documentation home](https://bijux.io/bijux-phylogenetics/)
+- [Phylogenetics product guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
+- [Runtime architecture](https://bijux.io/bijux-phylogenetics/public/phylogenetics/architecture/)
+- [Surface selection guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/surface-selection/)
+- [Artifact consumption guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/artifact-consumption-guide/)
+- [Validation lanes](https://bijux.io/bijux-phylogenetics/public/phylogenetics/quality/validation-lanes/)
+- [Claim reading guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/foundation/claim-reading-guide/)
+- [Native maximum-likelihood workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-maximum-likelihood-workflows/)
+- [Native Bayesian workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-bayesian-workflows/)
+- [Native benchmark review](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-benchmark-review/)
+- [Release review workflow](https://bijux.io/bijux-phylogenetics/public/phylogenetics/quality/release-review-workflow/)
+- [Evidence Book](https://bijux.io/bijux-phylogenetics/public/phylogenetics-evidence-book/)
+- [Internal maintainer documentation](https://bijux.io/bijux-phylogenetics/internal/)
+- [Runtime package overview](packages/bijux-phylogenetics/README.md)
 
 ## What This Repository Produces
 
@@ -73,9 +74,9 @@ The `2` publishable packages in this repository are:
 | `bijux-phylogenetics` | Canonical runtime package for phylogenetic diagnostics, comparative workflows, and reporting surfaces | <a href="https://pypi.org/project/bijux-phylogenetics/"><img alt="PyPI" src="https://img.shields.io/badge/pypi-3775A9?logo=pypi&logoColor=white" height="18"></a> <a href="https://bijux.io/bijux-phylogenetics/public/phylogenetics/"><img alt="Docs" src="https://img.shields.io/badge/docs-2563EB?logo=materialformkdocs&logoColor=white" height="18"></a> <a href="https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fbijux-phylogenetics"><img alt="GHCR" src="https://img.shields.io/badge/ghcr-181717?logo=github&logoColor=white" height="18"></a> <a href="https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics"><img alt="Source" src="https://img.shields.io/badge/source-181717?logo=github&logoColor=white" height="18"></a> |
 | `phylogenetic` | Compatibility alias package that installs the canonical runtime with a shorter distribution and CLI name | <a href="https://pypi.org/project/phylogenetic/"><img alt="PyPI" src="https://img.shields.io/badge/pypi-3775A9?logo=pypi&logoColor=white" height="18"></a> <a href="https://bijux.io/bijux-phylogenetics/public/phylogenetics/"><img alt="Docs" src="https://img.shields.io/badge/docs-2563EB?logo=materialformkdocs&logoColor=white" height="18"></a> <a href="https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fphylogenetic"><img alt="GHCR" src="https://img.shields.io/badge/ghcr-181717?logo=github&logoColor=white" height="18"></a> <a href="https://github.com/bijux/bijux-phylogenetics/tree/main/packages/phylogenetic"><img alt="Source" src="https://img.shields.io/badge/source-181717?logo=github&logoColor=white" height="18"></a> |
 
-Repository-owned developer tooling also lives here in
-[`packages/bijux-phylogenetics-dev`](packages/bijux-phylogenetics-dev), but it
-is for maintaining the workspace rather than for end-user installation.
+Repository-owned developer tooling also lives here in the
+[maintainer package](packages/bijux-phylogenetics-dev/README.md), but it is
+for maintaining the workspace rather than for end-user installation.
 
 ## Current Scope
 
@@ -104,11 +105,11 @@ What exists today:
 Current evidence closure is narrower than raw runtime breadth. The governed
 status lives in the evidence-book:
 
-- analytical surface coverage: [`evidence-book/index/analytical-surface-coverage.md`](evidence-book/index/analytical-surface-coverage.md)
-- claim re-audit: [`evidence-book/index/claim-reaudit.md`](evidence-book/index/claim-reaudit.md)
-- closure criteria: [`evidence-book/index/closure-criteria.md`](evidence-book/index/closure-criteria.md)
-- maturity scorecard: [`evidence-book/index/evidence-maturity-scorecard.md`](evidence-book/index/evidence-maturity-scorecard.md)
-- completion gates: [`evidence-book/index/completion-gates.md`](evidence-book/index/completion-gates.md)
+- [Analytical surface coverage](evidence-book/index/analytical-surface-coverage.md)
+- [Claim re-audit](evidence-book/index/claim-reaudit.md)
+- [Closure criteria](evidence-book/index/closure-criteria.md)
+- [Maturity scorecard](evidence-book/index/evidence-maturity-scorecard.md)
+- [Completion gates](evidence-book/index/completion-gates.md)
 
 Important current limits:
 
@@ -168,16 +169,16 @@ The canonical project documentation lives in `docs/` and is built with MkDocs.
 
 Useful entry points:
 
-- docs home: [`docs/index.md`](docs/index.md)
-- public runtime guide: [`docs/public/phylogenetics/index.md`](docs/public/phylogenetics/index.md)
-- interface selection guide: [`docs/public/phylogenetics/interfaces/surface-selection.md`](docs/public/phylogenetics/interfaces/surface-selection.md)
-- artifact consumption guide: [`docs/public/phylogenetics/interfaces/artifact-consumption-guide.md`](docs/public/phylogenetics/interfaces/artifact-consumption-guide.md)
-- validation-lane guide: [`docs/public/phylogenetics/quality/validation-lanes.md`](docs/public/phylogenetics/quality/validation-lanes.md)
-- claim-reading guide: [`docs/public/phylogenetics/foundation/claim-reading-guide.md`](docs/public/phylogenetics/foundation/claim-reading-guide.md)
-- public evidence guide: [`docs/public/phylogenetics-evidence-book/index.md`](docs/public/phylogenetics-evidence-book/index.md)
-- internal maintainer guide: [`docs/internal/maintain/index.md`](docs/internal/maintain/index.md)
-- package source: [`packages/bijux-phylogenetics/src`](packages/bijux-phylogenetics/src)
-- package tests: [`packages/bijux-phylogenetics/tests`](packages/bijux-phylogenetics/tests)
+- [Documentation home](docs/index.md)
+- [Public phylogenetics guide](docs/public/phylogenetics/index.md)
+- [Surface selection guide](docs/public/phylogenetics/interfaces/surface-selection.md)
+- [Artifact consumption guide](docs/public/phylogenetics/interfaces/artifact-consumption-guide.md)
+- [Validation lanes](docs/public/phylogenetics/quality/validation-lanes.md)
+- [Claim reading guide](docs/public/phylogenetics/foundation/claim-reading-guide.md)
+- [Evidence Book guide](docs/public/phylogenetics-evidence-book/index.md)
+- [Internal maintainer guide](docs/internal/maintain/index.md)
+- [Runtime package source](packages/bijux-phylogenetics/src)
+- [Runtime package tests](packages/bijux-phylogenetics/tests)
 
 ## License
 

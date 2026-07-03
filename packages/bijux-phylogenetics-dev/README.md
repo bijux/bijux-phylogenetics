@@ -11,7 +11,7 @@
 <!-- bijux-phylogenetics-badges:generated:end -->
 
 Repository-owned developer tooling and automation helpers for
-bijux-phylogenetics.
+`bijux-phylogenetics`.
 
 This package owns repository checks for docs synchronization, badge rendering,
 license asset management, quality gates, and release support. It is intended
@@ -27,15 +27,18 @@ It also owns the maintainer-side guardrails that keep the published story
 aligned across READMEs, public docs, internal docs, quality reports, and
 package metadata.
 
+Choose this package when you are maintaining documentation, release readiness,
+or repository policy surfaces rather than consuming the public runtime.
+
 ## Read this next
 
-- maintainer handbook: [Maintainer handbook](https://bijux.io/bijux-phylogenetics/internal/maintain/)
-- documentation ownership: [Documentation ownership](https://bijux.io/bijux-phylogenetics/internal/maintain/documentation-ownership/)
-- native surface documentation: [Native surface documentation](https://bijux.io/bijux-phylogenetics/internal/maintain/native-surface-documentation/)
-- public trust surface maintenance: [Public trust surface maintenance](https://bijux.io/bijux-phylogenetics/internal/maintain/public-trust-surface-maintenance/)
-- public interface and artifact maintenance: [Public interface and artifact maintenance](https://bijux.io/bijux-phylogenetics/internal/maintain/public-interface-and-artifact-maintenance/)
-- trust lane and study guide maintenance: [Trust lane and study guide maintenance](https://bijux.io/bijux-phylogenetics/internal/maintain/trust-lane-and-study-guide-maintenance/)
-- release surface alignment: [Release surface alignment](https://bijux.io/bijux-phylogenetics/internal/maintain/release-surface-alignment/)
-- source directory: [Developer tooling source directory](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics-dev)
-- changelog: [Developer tooling changelog](https://github.com/bijux/bijux-phylogenetics/blob/main/packages/bijux-phylogenetics-dev/CHANGELOG.md)
-- security policy: [Security policy](https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md)
+- [Maintainer handbook](https://bijux.io/bijux-phylogenetics/internal/maintain/)
+- [Documentation ownership](https://bijux.io/bijux-phylogenetics/internal/maintain/documentation-ownership/)
+- [Native surface documentation](https://bijux.io/bijux-phylogenetics/internal/maintain/native-surface-documentation/)
+- [Public trust surface maintenance](https://bijux.io/bijux-phylogenetics/internal/maintain/public-trust-surface-maintenance/)
+- [Public interface and artifact maintenance](https://bijux.io/bijux-phylogenetics/internal/maintain/public-interface-and-artifact-maintenance/)
+- [Trust lane and study guide maintenance](https://bijux.io/bijux-phylogenetics/internal/maintain/trust-lane-and-study-guide-maintenance/)
+- [Release surface alignment](https://bijux.io/bijux-phylogenetics/internal/maintain/release-surface-alignment/)
+- [Maintainer source on GitHub](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics-dev)
+- [Developer tooling changelog](https://github.com/bijux/bijux-phylogenetics/blob/main/packages/bijux-phylogenetics-dev/CHANGELOG.md)
+- [Security policy](https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md)
