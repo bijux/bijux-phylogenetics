@@ -43,6 +43,9 @@ from .contracts import (
     NativeMaximumLikelihoodMemoryBenchmarkObservation,
     NativeMaximumLikelihoodMemoryBenchmarkReport,
     NativeMaximumLikelihoodMemoryTrendRow,
+    NativeMaximumLikelihoodSuiteObservation,
+    NativeMaximumLikelihoodSuiteReport,
+    NativeMaximumLikelihoodSuiteSummaryRow,
     NativeMaximumLikelihoodSpeedBenchmarkBundle,
     NativeMaximumLikelihoodSpeedBenchmarkObservation,
     NativeMaximumLikelihoodSpeedBenchmarkReport,
@@ -89,6 +92,12 @@ _SUPPORTED_NATIVE_MAXIMUM_LIKELIHOOD_SPEED_MODEL_NAMES = (
 _DEFAULT_NATIVE_MAXIMUM_LIKELIHOOD_SPEED_MODEL_NAMES = (
     "jc69",
     "k80",
+)
+_NATIVE_MAXIMUM_LIKELIHOOD_SUITE_STATUSES = (
+    "native-advantage",
+    "native-bug",
+    "expected-assumption-difference",
+    "unsupported-case",
 )
 _NATIVE_MAXIMUM_LIKELIHOOD_ACCURACY_SHORTFALL_TOLERANCE = 0.25
 _ELEVATED_MEMORY_RATIO_THRESHOLD = 1.25
@@ -425,6 +434,89 @@ def benchmark_maximum_likelihood_wrapper_comparison() -> (
             "the iqtree support lane compares one canonical unrooted split against rooted native bootstrap clades so equivalent internal edges match even when rooting conventions differ",
             "the fasttree lane remains an expected model-assumption difference because FastTree uses an approximate JC+CAT likelihood surface and the cached tiny-alignment support output does not expose a separate comparable split-support table",
             "the raxml lane remains explicitly unsupported until one governed small-reference corpus with runtime, memory, likelihood, topology, and support evidence is checked in",
+        ],
+    )
+
+
+def benchmark_native_maximum_likelihood_suite(
+    *,
+    replicates: int = 1,
+    size_classes: list[tuple[str, int, int]] | None = None,
+    scaling_model_names: list[str] | tuple[str, ...] | None = None,
+    scaling_search_methods: list[str] | tuple[str, ...] | None = None,
+    accuracy_model_names: list[str] | tuple[str, ...] | None = None,
+    accuracy_search_methods: list[str] | tuple[str, ...] | None = None,
+    start_tree_count: int = 1,
+    start_tree_seed: int = 17,
+    upper_branch_length_bound: float = 1.0,
+) -> NativeMaximumLikelihoodSuiteReport:
+    """Benchmark native ML scaling, wrapper parity, and truth recovery together."""
+    speed_report = benchmark_native_maximum_likelihood_speed(
+        replicates=replicates,
+        size_classes=size_classes,
+        model_names=scaling_model_names,
+        search_methods=scaling_search_methods,
+        start_tree_count=start_tree_count,
+        start_tree_seed=start_tree_seed,
+        upper_branch_length_bound=upper_branch_length_bound,
+    )
+    memory_report = benchmark_native_maximum_likelihood_memory(
+        replicates=replicates,
+        size_classes=size_classes,
+        model_names=scaling_model_names,
+        search_methods=scaling_search_methods,
+        start_tree_count=start_tree_count,
+        start_tree_seed=start_tree_seed,
+        upper_branch_length_bound=upper_branch_length_bound,
+    )
+    accuracy_report = benchmark_native_maximum_likelihood_accuracy(
+        model_names=accuracy_model_names,
+        search_methods=accuracy_search_methods,
+        start_tree_count=start_tree_count,
+        start_tree_seed=start_tree_seed,
+        upper_branch_length_bound=upper_branch_length_bound,
+    )
+    wrapper_report = benchmark_maximum_likelihood_wrapper_comparison()
+    observations = _build_native_maximum_likelihood_suite_observations(
+        wrapper_report,
+        accuracy_report,
+    )
+    summary_rows = _build_native_maximum_likelihood_suite_summary_rows(observations)
+    native_advantage_case_count = sum(
+        1 for row in observations if row.status == "native-advantage"
+    )
+    native_bug_case_count = sum(
+        1 for row in observations if row.status == "native-bug"
+    )
+    expected_assumption_difference_case_count = sum(
+        1
+        for row in observations
+        if row.status == "expected-assumption-difference"
+    )
+    unsupported_case_count = sum(
+        1 for row in observations if row.status == "unsupported-case"
+    )
+    return NativeMaximumLikelihoodSuiteReport(
+        speed_report=speed_report,
+        memory_report=memory_report,
+        accuracy_report=accuracy_report,
+        wrapper_report=wrapper_report,
+        observations=observations,
+        summary_rows=summary_rows,
+        native_advantage_case_count=native_advantage_case_count,
+        native_bug_case_count=native_bug_case_count,
+        expected_assumption_difference_case_count=(
+            expected_assumption_difference_case_count
+        ),
+        unsupported_case_count=unsupported_case_count,
+        all_supported_cases_clear=native_bug_case_count == 0,
+        limitations=[
+            "the suite uses native scaling reports as supporting evidence while the suite comparison rows stay anchored to wrapper and truth cases whose measurements are governed together",
+            "speed rows treat slower native execution against compiled or approximate wrapper tools as an expected assumption difference rather than an automatic correctness bug",
+            *speed_report.limitations,
+            *memory_report.limitations,
+            *accuracy_report.limitations,
+            *wrapper_report.limitations,
         ],
     )
 
@@ -1380,12 +1472,224 @@ def _compare_topology(
     return metrics.distance == 0, metrics.distance, metrics.normalized_distance
 
 
+def _build_native_maximum_likelihood_suite_observations(
+    wrapper_report: MaximumLikelihoodWrapperBenchmarkReport,
+    accuracy_report: NativeMaximumLikelihoodAccuracyBenchmarkReport,
+) -> list[NativeMaximumLikelihoodSuiteObservation]:
+    observations: list[NativeMaximumLikelihoodSuiteObservation] = []
+    for wrapper_row in wrapper_report.observations:
+        observations.extend(
+            _build_native_maximum_likelihood_suite_wrapper_rows(wrapper_row)
+        )
+    observations.extend(
+        _build_native_maximum_likelihood_suite_accuracy_rows(accuracy_report)
+    )
+    return observations
+
+
+def _build_native_maximum_likelihood_suite_wrapper_rows(
+    row: MaximumLikelihoodWrapperBenchmarkObservation,
+) -> list[NativeMaximumLikelihoodSuiteObservation]:
+    observations: list[NativeMaximumLikelihoodSuiteObservation] = []
+    if (
+        row.supported
+        and row.native_runtime_seconds is not None
+        and row.wrapper_runtime_seconds is not None
+    ):
+        speed_status = (
+            "native-advantage"
+            if row.native_runtime_seconds <= row.wrapper_runtime_seconds
+            else "expected-assumption-difference"
+        )
+        observations.append(
+            NativeMaximumLikelihoodSuiteObservation(
+                case_id=row.case_id,
+                dimension="speed",
+                status=speed_status,
+                native_surface=row.native_surface,
+                comparison_surface=row.wrapper_surface,
+                measurement_unit="seconds",
+                native_value=row.native_runtime_seconds,
+                comparison_value=row.wrapper_runtime_seconds,
+                delta_value=row.runtime_delta_seconds,
+                notes=list(row.notes),
+            )
+        )
+    if (
+        row.supported
+        and row.native_peak_memory_bytes is not None
+        and row.wrapper_peak_memory_bytes is not None
+    ):
+        memory_status = (
+            "native-advantage"
+            if row.native_peak_memory_bytes <= row.wrapper_peak_memory_bytes
+            else "expected-assumption-difference"
+        )
+        observations.append(
+            NativeMaximumLikelihoodSuiteObservation(
+                case_id=row.case_id,
+                dimension="memory",
+                status=memory_status,
+                native_surface=row.native_surface,
+                comparison_surface=row.wrapper_surface,
+                measurement_unit="bytes",
+                native_value=float(row.native_peak_memory_bytes),
+                comparison_value=float(row.wrapper_peak_memory_bytes),
+                delta_value=(
+                    None
+                    if row.peak_memory_delta_bytes is None
+                    else float(row.peak_memory_delta_bytes)
+                ),
+                notes=list(row.notes),
+            )
+        )
+    suite_status = _wrapper_status_to_suite_status(row.status)
+    if row.native_log_likelihood is not None and row.wrapper_log_likelihood is not None:
+        observations.append(
+            NativeMaximumLikelihoodSuiteObservation(
+                case_id=row.case_id,
+                dimension="likelihood",
+                status=suite_status,
+                native_surface=row.native_surface,
+                comparison_surface=row.wrapper_surface,
+                measurement_unit="log-likelihood",
+                native_value=row.native_log_likelihood,
+                comparison_value=row.wrapper_log_likelihood,
+                delta_value=row.log_likelihood_delta,
+                notes=list(row.notes),
+            )
+        )
+    elif not row.supported:
+        observations.append(
+            NativeMaximumLikelihoodSuiteObservation(
+                case_id=row.case_id,
+                dimension="likelihood",
+                status=suite_status,
+                native_surface=row.native_surface,
+                comparison_surface=row.wrapper_surface,
+                measurement_unit=None,
+                native_value=None,
+                comparison_value=None,
+                delta_value=None,
+                notes=list(row.notes),
+            )
+        )
+    if row.topology_equal is not None:
+        observations.append(
+            NativeMaximumLikelihoodSuiteObservation(
+                case_id=row.case_id,
+                dimension="topology",
+                status=suite_status,
+                native_surface=row.native_surface,
+                comparison_surface=row.wrapper_surface,
+                measurement_unit="robinson-foulds-distance",
+                native_value=(
+                    None
+                    if row.robinson_foulds_distance is None
+                    else float(row.robinson_foulds_distance)
+                ),
+                comparison_value=0.0,
+                delta_value=row.normalized_robinson_foulds,
+                notes=list(row.notes),
+            )
+        )
+    if row.support_comparisons:
+        observations.append(
+            NativeMaximumLikelihoodSuiteObservation(
+                case_id=row.case_id,
+                dimension="support",
+                status=suite_status,
+                native_surface=row.native_surface,
+                comparison_surface=row.wrapper_surface,
+                measurement_unit="support-percent-delta",
+                native_value=None,
+                comparison_value=None,
+                delta_value=_suite_max_support_percent_delta(row),
+                notes=list(row.notes),
+            )
+        )
+    return observations
+
+
+def _build_native_maximum_likelihood_suite_accuracy_rows(
+    report: NativeMaximumLikelihoodAccuracyBenchmarkReport,
+) -> list[NativeMaximumLikelihoodSuiteObservation]:
+    observations: list[NativeMaximumLikelihoodSuiteObservation] = []
+    for row in report.observations:
+        status = (
+            "native-advantage"
+            if row.topology_recovered
+            and row.likelihood_quality_status == "no-likelihood-shortfall"
+            and row.parameter_recovery_status
+            in {"parameter-recovered", "parameter-not-applicable"}
+            else "native-bug"
+        )
+        observations.append(
+            NativeMaximumLikelihoodSuiteObservation(
+                case_id=row.case_id,
+                dimension="accuracy",
+                status=status,
+                native_surface="benchmark_native_maximum_likelihood_accuracy",
+                comparison_surface="governed simulated truth",
+                measurement_unit="normalized-robinson-foulds",
+                native_value=row.normalized_robinson_foulds,
+                comparison_value=0.0,
+                delta_value=row.likelihood_shortfall,
+                notes=[
+                    f"parameter status: {row.parameter_recovery_status}",
+                    f"likelihood status: {row.likelihood_quality_status}",
+                ],
+            )
+        )
+    return observations
+
+
+def _wrapper_status_to_suite_status(status: str) -> str:
+    if status == "tolerance-match":
+        return "native-advantage"
+    if status == "expected-model-assumption-difference":
+        return "expected-assumption-difference"
+    if status == "unsupported-case":
+        return "unsupported-case"
+    return "native-bug"
+
+
+def _suite_max_support_percent_delta(
+    row: MaximumLikelihoodWrapperBenchmarkObservation,
+) -> float | None:
+    deltas = [
+        abs(comparison.support_percent_delta)
+        for comparison in row.support_comparisons
+        if comparison.support_percent_delta is not None
+    ]
+    if not deltas:
+        return None
+    return max(deltas)
+
+
 def _unrooted_topology_signature(tree_newick: str) -> tuple[str, ...]:
     splits = informative_unrooted_splits(loads_newick(tree_newick))
     return tuple(
         canonical_clade_id(signature)
         for signature in sorted(splits, key=split_sort_key)
     )
+
+
+def _build_native_maximum_likelihood_suite_summary_rows(
+    observations: list[NativeMaximumLikelihoodSuiteObservation],
+) -> list[NativeMaximumLikelihoodSuiteSummaryRow]:
+    rows: list[NativeMaximumLikelihoodSuiteSummaryRow] = []
+    for status in _NATIVE_MAXIMUM_LIKELIHOOD_SUITE_STATUSES:
+        selected = [row for row in observations if row.status == status]
+        rows.append(
+            NativeMaximumLikelihoodSuiteSummaryRow(
+                status=status,
+                observation_count=len(selected),
+                dimensions=sorted({row.dimension for row in selected}),
+                case_ids=sorted({row.case_id for row in selected}),
+            )
+        )
+    return rows
 
 
 def _build_summary_rows(

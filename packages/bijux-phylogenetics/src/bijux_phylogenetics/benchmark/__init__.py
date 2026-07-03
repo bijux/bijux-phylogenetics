@@ -133,6 +133,21 @@ from .likelihood_tree_inference import (
     benchmark_native_maximum_likelihood_accuracy as benchmark_native_maximum_likelihood_accuracy,
 )
 from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodSuiteBundle as NativeMaximumLikelihoodSuiteBundle,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodSuiteObservation as NativeMaximumLikelihoodSuiteObservation,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodSuiteReport as NativeMaximumLikelihoodSuiteReport,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodSuiteSummaryRow as NativeMaximumLikelihoodSuiteSummaryRow,
+)
+from .likelihood_tree_inference import (
+    benchmark_native_maximum_likelihood_suite as benchmark_native_maximum_likelihood_suite,
+)
+from .likelihood_tree_inference import (
     NativeMaximumLikelihoodMemoryBenchmarkBundle as NativeMaximumLikelihoodMemoryBenchmarkBundle,
 )
 from .likelihood_tree_inference import (
@@ -303,6 +318,10 @@ __all__ = [
     "NativeMaximumLikelihoodAccuracyBenchmarkBundle",
     "NativeMaximumLikelihoodAccuracyBenchmarkObservation",
     "NativeMaximumLikelihoodAccuracyBenchmarkReport",
+    "NativeMaximumLikelihoodSuiteBundle",
+    "NativeMaximumLikelihoodSuiteObservation",
+    "NativeMaximumLikelihoodSuiteReport",
+    "NativeMaximumLikelihoodSuiteSummaryRow",
     "NativeMaximumLikelihoodMemoryBenchmarkBundle",
     "NativeMaximumLikelihoodMemoryBenchmarkObservation",
     "NativeMaximumLikelihoodMemoryBenchmarkReport",
@@ -331,6 +350,7 @@ __all__ = [
     "benchmark_large_tree_scaling",
     "benchmark_large_tree_set_scaling",
     "benchmark_native_maximum_likelihood_accuracy",
+    "benchmark_native_maximum_likelihood_suite",
     "benchmark_native_maximum_likelihood_memory",
     "benchmark_native_maximum_likelihood_speed",
     "benchmark_maximum_likelihood_wrapper_comparison",

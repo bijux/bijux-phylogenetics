@@ -258,6 +258,60 @@ class MaximumLikelihoodWrapperBenchmarkReport:
 
 
 @dataclass(slots=True)
+class NativeMaximumLikelihoodSuiteObservation:
+    """One governed comparison row inside the native ML benchmark suite."""
+
+    case_id: str
+    dimension: str
+    status: str
+    native_surface: str
+    comparison_surface: str
+    measurement_unit: str | None
+    native_value: float | None
+    comparison_value: float | None
+    delta_value: float | None
+    notes: list[str]
+
+
+@dataclass(slots=True)
+class NativeMaximumLikelihoodSuiteSummaryRow:
+    """One status-level summary row across native ML benchmark suite observations."""
+
+    status: str
+    observation_count: int
+    dimensions: list[str]
+    case_ids: list[str]
+
+
+@dataclass(slots=True)
+class NativeMaximumLikelihoodSuiteReport:
+    """Unified native ML benchmark suite across scaling, wrapper, and truth evidence."""
+
+    speed_report: NativeMaximumLikelihoodSpeedBenchmarkReport
+    memory_report: NativeMaximumLikelihoodMemoryBenchmarkReport
+    accuracy_report: NativeMaximumLikelihoodAccuracyBenchmarkReport
+    wrapper_report: MaximumLikelihoodWrapperBenchmarkReport
+    observations: list[NativeMaximumLikelihoodSuiteObservation]
+    summary_rows: list[NativeMaximumLikelihoodSuiteSummaryRow]
+    native_advantage_case_count: int
+    native_bug_case_count: int
+    expected_assumption_difference_case_count: int
+    unsupported_case_count: int
+    all_supported_cases_clear: bool
+    limitations: list[str]
+
+
+@dataclass(slots=True)
+class NativeMaximumLikelihoodSuiteBundle:
+    """Written artifact bundle for one unified native ML benchmark suite run."""
+
+    output_root: Path
+    summary_path: Path
+    observation_table_path: Path
+    run_json_path: Path
+
+
+@dataclass(slots=True)
 class MaximumLikelihoodWrapperBenchmarkBundle:
     """Written artifact bundle for one native-versus-wrapper ML benchmark run."""
 

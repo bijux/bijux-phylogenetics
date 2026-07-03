@@ -20,6 +20,7 @@ from .artifact_outputs import (
 from .builder import benchmark_native_maximum_likelihood_accuracy
 from .builder import benchmark_native_maximum_likelihood_memory
 from .builder import benchmark_native_maximum_likelihood_speed
+from .builder import benchmark_native_maximum_likelihood_suite
 from .builder import benchmark_maximum_likelihood_wrapper_comparison
 from .builder import write_native_maximum_likelihood_accuracy_bundle
 from .builder import write_native_maximum_likelihood_memory_bundle
@@ -38,6 +39,10 @@ from .contracts import (
     NativeMaximumLikelihoodMemoryBenchmarkObservation,
     NativeMaximumLikelihoodMemoryBenchmarkReport,
     NativeMaximumLikelihoodMemoryTrendRow,
+    NativeMaximumLikelihoodSuiteBundle,
+    NativeMaximumLikelihoodSuiteObservation,
+    NativeMaximumLikelihoodSuiteReport,
+    NativeMaximumLikelihoodSuiteSummaryRow,
     NativeMaximumLikelihoodSpeedBenchmarkBundle,
     NativeMaximumLikelihoodSpeedBenchmarkObservation,
     NativeMaximumLikelihoodSpeedBenchmarkReport,
@@ -58,6 +63,11 @@ __all__ = [
     "NativeMaximumLikelihoodAccuracyBenchmarkObservation",
     "NativeMaximumLikelihoodAccuracyBenchmarkReport",
     "benchmark_native_maximum_likelihood_accuracy",
+    "NativeMaximumLikelihoodSuiteBundle",
+    "NativeMaximumLikelihoodSuiteObservation",
+    "NativeMaximumLikelihoodSuiteReport",
+    "NativeMaximumLikelihoodSuiteSummaryRow",
+    "benchmark_native_maximum_likelihood_suite",
     "write_native_maximum_likelihood_accuracy_bundle",
     "write_native_maximum_likelihood_accuracy_observation_table",
     "write_native_maximum_likelihood_accuracy_run_json",
