@@ -1,0 +1,28 @@
+{
+  "dataset_count": 3,
+  "datasets": [
+    {
+      "dataset_id": "dataset-001",
+      "kind": "external-read-only-source",
+      "label": "Lund PCM5 cichlid observation table",
+      "locator": "external:lund/pcm5-pglmm/data/cichlid.csv",
+      "schema_summary": "Observation-level cichlid parasite dataset used for Poisson, multinomial, and repeated-measure examples."
+    },
+    {
+      "dataset_id": "dataset-002",
+      "kind": "external-read-only-source",
+      "label": "Lund PCM5 cichlid phylogeny",
+      "locator": "external:lund/pcm5-pglmm/data/cichlidtree.nex",
+      "schema_summary": "Nexus phylogeny used to define phylogenetic random effects and ancestral-state ordering."
+    },
+    {
+      "dataset_id": "dataset-003",
+      "kind": "external-read-only-source",
+      "label": "Lund PCM5 derived fish workspace",
+      "locator": "external:lund/pcm5-pglmm/data/fishdata.RData",
+      "schema_summary": "Saved R workspace expected to provide the lecture's prepared fish tables and tree objects."
+    }
+  ],
+  "schema_version": 1,
+  "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+}

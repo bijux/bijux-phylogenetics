@@ -1,0 +1,35 @@
+{
+  "dataset_count": 4,
+  "datasets": [
+    {
+      "dataset_id": "dataset-001",
+      "kind": "external-read-only-source",
+      "label": "Lund PCM3 primate workspace RData",
+      "locator": "external:lund/pcm3-contcat/data/primate.RData",
+      "schema_summary": "Saved R workspace expected to provide `primate` and `primatetree` objects for the multivariable lecture."
+    },
+    {
+      "dataset_id": "dataset-002",
+      "kind": "external-read-only-source",
+      "label": "Lund PCM3 primate raw workbook",
+      "locator": "external:lund/pcm3-contcat/data/primate_raw.xlsx",
+      "schema_summary": "Original workbook used to derive the lecture workspace and group-size, dimorphism, and longevity columns."
+    },
+    {
+      "dataset_id": "dataset-003",
+      "kind": "external-read-only-source",
+      "label": "Lund PCM3 primate tree",
+      "locator": "external:lund/pcm3-contcat/data/primatetree.nex",
+      "schema_summary": "Primary Nexus tree used for the multivariable primate regressions."
+    },
+    {
+      "dataset_id": "dataset-004",
+      "kind": "study-shared-governed-derivative",
+      "label": "Governed primate reference derivatives reused from PCM1",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets",
+      "schema_summary": "Repository-owned normalized primate table and trimmed tree already reused across earlier primate evidence studies."
+    }
+  ],
+  "schema_version": 1,
+  "study_id": "primate-continuous-and-categorical-regression"
+}

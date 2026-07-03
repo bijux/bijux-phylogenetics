@@ -1,0 +1,28 @@
+{
+  "dataset_count": 3,
+  "datasets": [
+    {
+      "dataset_id": "dataset-001",
+      "kind": "external-read-only-source",
+      "label": "Lund PCM4 cichlid observation table",
+      "locator": "external:lund/pcm4-plmm/data/cichlid.csv",
+      "schema_summary": "Observation-level cichlid traits, parasite counts, habitat metrics, and species identifiers used to derive the species summary table."
+    },
+    {
+      "dataset_id": "dataset-002",
+      "kind": "external-read-only-source",
+      "label": "Lund PCM4 cichlid phylogeny",
+      "locator": "external:lund/pcm4-plmm/data/cichlidtree.nex",
+      "schema_summary": "Nexus tree used to define the phylogenetic covariance for the cichlid mixed-model lecture."
+    },
+    {
+      "dataset_id": "dataset-003",
+      "kind": "external-read-only-source",
+      "label": "Lund PCM4 derived fish workspace",
+      "locator": "external:lund/pcm4-plmm/data/fishdata.RData",
+      "schema_summary": "Saved R workspace expected to provide `fish`, `fishSum`, and `fishtree` after species-level summarization."
+    }
+  ],
+  "schema_version": 1,
+  "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+}

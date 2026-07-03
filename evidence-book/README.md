@@ -1,22 +1,39 @@
 # Evidence Book
 
-This directory holds checked-in Lund-derived evidence studies and curated
-evidence bundles for `bijux-phylogenetics`.
+This directory is the checked-in study atlas for `bijux-phylogenetics`.
+It records which comparative case studies are represented in the repository,
+which evidence slices have already been deployed, and where the remaining
+runtime boundaries still sit.
 
-These files are intentionally different from transient local outputs under
-`artifacts/`:
+Use it for study-grounded review. Use `artifacts/` for scratch outputs and
+local runs that should not become repository trust surfaces on their own.
 
-- `evidence-book/` contains reviewed, versioned evidence summaries that are
-  meant to stay in the repository
-- `artifacts/` contains scratch execution products, caches, and local build
-  outputs that should not define repository trust on their own
+## Read This Directory In Two Layers
 
-Current tracked studies:
+- Reader-facing study overviews live under
+  [`../docs/public/phylogenetics-evidence-book/`](../docs/public/phylogenetics-evidence-book/)
+- Checked-in study dossiers, datasets, and provenance live under
+  [`studies/`](./studies/)
+
+The public docs explain the analytical story. The `evidence-book/studies/`
+directories hold the durable repository record for each study family.
+
+## Study Atlas
+
+| Study | Lecture family | Repository state |
+| --- | --- | --- |
+| [`primate-longevity-signal`](./studies/primate-longevity-signal/) | PCM1 plots, signal, and ancestral reconstruction | Governed parity bundles deployed |
+| [`primate-pgls-and-signal`](./studies/primate-pgls-and-signal/) | PCM2 evolutionary modes, PGLS, and signal testing | Governed parity bundles deployed |
+| [`primate-continuous-and-categorical-regression`](./studies/primate-continuous-and-categorical-regression/) | PCM3 multivariable regression with categorical predictors and interactions | Study dossier deployed, runtime parity surface partially available |
+| [`cichlid-bayesian-linear-and-phylogenetic-mixed-models`](./studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/) | PCM4 Bayesian linear models and phylogenetic mixed models | Study dossier deployed, runtime parity boundary still open |
+| [`cichlid-phylogenetic-generalized-linear-mixed-models`](./studies/cichlid-phylogenetic-generalized-linear-mixed-models/) | PCM5 phylogenetic generalized linear mixed models | Study dossier deployed, runtime parity boundary still open |
+
+## Repository Reports
+
+These index pages remain the repository-wide review surfaces:
 
 - Teaching and migration landing page:
   [`index/teaching-and-migration.md`](./index/teaching-and-migration.md)
-- Reviewer-facing evidence overview:
-  [`../docs/public/phylogenetics-evidence-book/index.md`](../docs/public/phylogenetics-evidence-book/index.md)
 - Freshness tracking:
   [`index/freshness-report.md`](./index/freshness-report.md)
 - Integrity tracking:
@@ -34,11 +51,10 @@ Current tracked studies:
 - Completion gates:
   [`index/completion-gates.md`](./index/completion-gates.md)
 
-- [`primate-longevity-signal`](./studies/primate-longevity-signal/): PCM1 study
-  rooted in the Lund plots and signal lecture, with shared study datasets and
-  one repeatable evidence-bundle layout
-  Current bundle: [`evidence-001`](./studies/primate-longevity-signal/evidence-001/README.md)
-- [`primate-pgls-and-signal`](./studies/primate-pgls-and-signal/): governed parity
-  study for the Lund regression and phylogenetic-signal lecture sections, with
-  explicit coverage boundaries for the still-open EB and ancestral fragments
-  Current bundle: [`evidence-001`](./studies/primate-pgls-and-signal/evidence-001/README.md)
+## Reading Order
+
+Start with the study README that matches the lecture family you care about.
+Then follow its dataset registry, source provenance, and evidence map.
+
+When you need repository-wide status rather than one study story, move from
+the study dossier into the index reports above.

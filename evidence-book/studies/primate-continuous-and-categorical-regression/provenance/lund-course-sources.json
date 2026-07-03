@@ -1,0 +1,56 @@
+{
+  "intake_policy": "read-only-external-source",
+  "schema_version": 1,
+  "source_count": 5,
+  "sources": [
+    {
+      "concept_tags": [
+        "multivariable-regression",
+        "categorical-predictors",
+        "interaction-terms",
+        "phylogenetic-regression"
+      ],
+      "kind": "external-course-script",
+      "label": "Lund PCM3 continuous and categorical regression lecture script",
+      "locator": "external:lund/pcm3-contcat/script",
+      "path_hint": "PCM3_contcat/Lecture/R/Scripts/PCM3_contcat.R",
+      "read_only": true,
+      "source_id": "lund-pcm3-script"
+    },
+    {
+      "kind": "external-course-workspace",
+      "label": "Lund PCM3 primate workspace RData",
+      "locator": "external:lund/pcm3-contcat/data/primate.RData",
+      "provides": [
+        "primate",
+        "primatetree"
+      ],
+      "read_only": true,
+      "source_id": "lund-pcm3-primate-rdata"
+    },
+    {
+      "kind": "external-course-data",
+      "label": "Lund PCM3 primate raw workbook",
+      "locator": "external:lund/pcm3-contcat/data/primate_raw.xlsx",
+      "path_hint": "PCM3_contcat/Lecture/R/Data/primate_raw.xlsx",
+      "read_only": true,
+      "source_id": "lund-pcm3-primate-workbook"
+    },
+    {
+      "kind": "external-course-data",
+      "label": "Lund PCM3 primate tree",
+      "locator": "external:lund/pcm3-contcat/data/primatetree.nex",
+      "path_hint": "PCM3_contcat/Lecture/R/Data/primatetree.nex",
+      "read_only": true,
+      "source_id": "lund-pcm3-primate-tree"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "Repository comparative regression and PGLS surfaces relevant to PCM3",
+      "locator": "packages/bijux-phylogenetics/src/bijux_phylogenetics/comparative",
+      "read_only": false,
+      "source_id": "pcm3-runtime-surfaces"
+    }
+  ],
+  "study_id": "primate-continuous-and-categorical-regression"
+}

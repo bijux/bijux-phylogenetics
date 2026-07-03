@@ -1,0 +1,59 @@
+{
+  "intake_policy": "read-only-external-source",
+  "schema_version": 1,
+  "source_count": 5,
+  "sources": [
+    {
+      "concept_tags": [
+        "pglmm",
+        "phylogenetic-signal",
+        "ancestral-reconstruction",
+        "count-models",
+        "binomial-models"
+      ],
+      "kind": "external-course-script",
+      "label": "Lund PCM5 phylogenetic generalized linear mixed-model lecture script",
+      "locator": "external:lund/pcm5-pglmm/script",
+      "path_hint": "PCM5_PGLMM/Lecture/R/Scripts/PCM5_PGLMM.R",
+      "read_only": true,
+      "source_id": "lund-pcm5-script"
+    },
+    {
+      "kind": "external-course-script",
+      "label": "Lund PCM5 supplementary code for back-transform and mixed-model variations",
+      "locator": "external:lund/pcm5-pglmm/script-extra",
+      "path_hint": "PCM5_PGLMM/Lecture/R/Scripts/PCM5_extra_code.R",
+      "read_only": true,
+      "source_id": "lund-pcm5-extra-script"
+    },
+    {
+      "kind": "external-course-data",
+      "label": "Lund PCM5 cichlid observation table",
+      "locator": "external:lund/pcm5-pglmm/data/cichlid.csv",
+      "path_hint": "PCM5_PGLMM/Lecture/R/Data/cichlid.csv",
+      "read_only": true,
+      "source_id": "lund-pcm5-cichlid-table"
+    },
+    {
+      "kind": "external-course-data",
+      "label": "Lund PCM5 cichlid phylogeny",
+      "locator": "external:lund/pcm5-pglmm/data/cichlidtree.nex",
+      "path_hint": "PCM5_PGLMM/Lecture/R/Data/cichlidtree.nex",
+      "read_only": true,
+      "source_id": "lund-pcm5-cichlid-tree"
+    },
+    {
+      "kind": "external-course-workspace",
+      "label": "Lund PCM5 fishdata workspace",
+      "locator": "external:lund/pcm5-pglmm/data/fishdata.RData",
+      "provides": [
+        "fish",
+        "fishSum",
+        "fishtree"
+      ],
+      "read_only": true,
+      "source_id": "lund-pcm5-fishdata-rdata"
+    }
+  ],
+  "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+}
