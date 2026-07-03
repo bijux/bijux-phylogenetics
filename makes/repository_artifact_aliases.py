@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Materialize repository artifact aliases with repository-local root policy."""
+"""Materialize repository artifact aliases from the shared governed layout."""
 
 from __future__ import annotations
 
@@ -59,25 +59,6 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _materialize_root_aliases_preserving_local_venv(
-    *, module: ModuleType, repo_root: Path
-) -> None:
-    root_alias_layout = cast(dict[str, Path], module.ROOT_ALIAS_LAYOUT)
-    materialize_alias = cast(AliasMaterializer, module._materialize_alias)
-
-    for alias_name, target_rel in root_alias_layout.items():
-        link_path = repo_root / alias_name
-        target_path = repo_root / target_rel
-        if alias_name == ".venv" and link_path.exists() and not link_path.is_symlink():
-            if not link_path.is_dir():
-                raise RuntimeError(
-                    f"refusing to preserve non-directory root alias path '{link_path}'"
-                )
-            target_path.mkdir(parents=True, exist_ok=True)
-            continue
-        materialize_alias(link_path=link_path, target_path=target_path)
-
-
 def _materialize_root_and_package_aliases(
     *, module: ModuleType, repo_root: Path, packages_dir: Path
 ) -> None:
@@ -90,10 +71,8 @@ def _materialize_root_and_package_aliases(
         module._materialize_package_aliases,
     )
 
-    _materialize_root_aliases_preserving_local_venv(
-        module=module,
-        repo_root=repo_root,
-    )
+    materialize_root_aliases = cast(AliasMaterializer, module._materialize_root_aliases)
+    materialize_root_aliases(repo_root=repo_root)
     for package_dir in discover_package_dirs(packages_dir=packages_dir):
         materialize_package_aliases(repo_root=repo_root, package_dir=package_dir)
 

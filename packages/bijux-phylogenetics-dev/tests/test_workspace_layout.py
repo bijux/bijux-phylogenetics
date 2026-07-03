@@ -108,23 +108,21 @@ def test_setup_materializes_governed_artifact_aliases(tmp_path: Path) -> None:
             )
 
 
-def test_root_setup_preserves_existing_local_root_venv_directory(
-    tmp_path: Path,
-) -> None:
+def test_root_setup_refuses_non_symlink_root_alias_conflicts(tmp_path: Path) -> None:
     workspace = _workspace_metadata()
     repo_root = tmp_path / "repo"
     packages_dir = repo_root / "packages"
     packages_dir.mkdir(parents=True)
-    preserved_root_venv = repo_root / ".venv"
-    preserved_root_venv.mkdir()
-    (preserved_root_venv / "pyvenv.cfg").write_text("home = /tmp/python\n")
+    conflicting_root_venv = repo_root / ".venv"
+    conflicting_root_venv.mkdir()
+    (conflicting_root_venv / "pyvenv.cfg").write_text("home = /tmp/python\n")
 
     for package_name in sorted(cast(list[str], workspace["packages"])):
         package_root = packages_dir / package_name
         package_root.mkdir()
         (package_root / "pyproject.toml").write_text("[project]\nname='test'\n")
 
-    subprocess.run(
+    completed = subprocess.run(
         [
             sys.executable,
             str(ROOT_ARTIFACT_ALIAS_WRAPPER),
@@ -134,31 +132,19 @@ def test_root_setup_preserves_existing_local_root_venv_directory(
             "--packages-dir",
             str(packages_dir),
         ],
-        check=True,
+        check=False,
         capture_output=True,
         text=True,
     )
 
-    assert preserved_root_venv.exists()
-    assert preserved_root_venv.is_dir()
-    assert not preserved_root_venv.is_symlink()
-    assert (repo_root / "artifacts" / "root" / "check-venv").is_dir()
-
-    for link_name, expected_target in ROOT_ARTIFACT_LINKS.items():
-        if link_name == ".venv":
-            continue
-        _assert_symlink(
-            link_path=repo_root / link_name,
-            expected_target=expected_target,
-        )
-
-    for package_name in sorted(cast(list[str], workspace["packages"])):
-        package_root = packages_dir / package_name
-        for link_name in PACKAGE_ARTIFACT_LINKS:
-            _assert_symlink(
-                link_path=package_root / link_name,
-                expected_target=_expected_package_link_target(package_name, link_name),
-            )
+    assert completed.returncode == 2
+    assert "refusing to replace non-symlink path" in completed.stderr
+    assert conflicting_root_venv.exists()
+    assert conflicting_root_venv.is_dir()
+    assert not conflicting_root_venv.is_symlink()
+    assert not (repo_root / ".hypothesis").exists()
+    assert not (repo_root / ".benchmarks").exists()
+    assert not (repo_root / ".tox").exists()
 
 
 def test_artifact_alias_paths_are_ignored_by_git() -> None:
