@@ -20,8 +20,15 @@ touch directly.
 - native inference and benchmark contracts
 - emitted artifact and report contracts
 
+## Read This Section First When
+
+- you need to choose between CLI, workflow Python, native Python, evidence, or
+  the frozen API surface:
+  [surface selection guide](surface-selection.md)
+
 ## Read This Section Next
 
+- [surface selection guide](surface-selection.md)
 - [CLI surface](cli-surface.md)
 - [API surface](api-surface.md)
 - [Python surface](python-surface.md)
