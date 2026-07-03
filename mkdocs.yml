@@ -107,4 +107,5 @@ nav:
       - Maintainer:
           - Overview: internal/maintain/index.md
           - Documentation Ownership: internal/maintain/documentation-ownership.md
+          - Native Surface Documentation: internal/maintain/native-surface-documentation.md
           - Release Surface Alignment: internal/maintain/release-surface-alignment.md

@@ -21,6 +21,8 @@ same question.
   product surface, public interfaces, operations, and quality boundaries
 - the evidence-book docs describe governed scientific trust and study evidence,
   not the entire runtime product surface
+- flagship native surfaces should be visible across reference, workflow, and
+  quality pages rather than only one API inventory page
 
 ## Internal Surface Responsibilities
 

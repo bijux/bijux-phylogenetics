@@ -25,6 +25,9 @@ The main internal responsibilities covered here are:
 
 - how should public docs and package READMEs map to the runtime surface:
   [documentation ownership](documentation-ownership.md)
+- how do native flagship surfaces stay documented across reference, workflow,
+  and quality pages:
+  [native surface documentation](native-surface-documentation.md)
 - how do I check that metadata, docs, and release surfaces all say the same
   thing:
   [release surface alignment](release-surface-alignment.md)
