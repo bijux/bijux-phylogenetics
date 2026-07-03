@@ -44,6 +44,8 @@ phylogenetic --help
 
 - canonical runtime docs: [Runtime package docs](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
 - runtime architecture guide: [Runtime architecture](https://bijux.io/bijux-phylogenetics/public/phylogenetics/architecture/)
+- surface selection guide: [Surface selection guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/surface-selection/)
+- artifact consumption guide: [Artifact consumption guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/artifact-consumption-guide/)
 - native inference and benchmark contracts: [Native inference and benchmarks](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/native-inference-and-benchmarks/)
 - native maximum-likelihood workflow guide: [Native maximum-likelihood workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-maximum-likelihood-workflows/)
 - native Bayesian workflow guide: [Native Bayesian workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-bayesian-workflows/)

@@ -50,6 +50,8 @@ quality automation.
 
 - public runtime guide: [Phylogenetics product guide](public/phylogenetics/index.md)
 - runtime architecture guide: [Runtime architecture](public/phylogenetics/architecture/index.md)
+- surface selection guide: [Surface selection guide](public/phylogenetics/interfaces/surface-selection.md)
+- artifact consumption guide: [Artifact consumption guide](public/phylogenetics/interfaces/artifact-consumption-guide.md)
 - native maximum-likelihood workflows: [Native maximum-likelihood workflows](public/phylogenetics/operations/native-maximum-likelihood-workflows.md)
 - native Bayesian workflows: [Native Bayesian workflows](public/phylogenetics/operations/native-bayesian-workflows.md)
 - native benchmark review: [Native benchmark review](public/phylogenetics/operations/native-benchmark-review.md)

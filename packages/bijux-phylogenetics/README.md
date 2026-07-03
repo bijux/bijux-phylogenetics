@@ -126,6 +126,8 @@ closure are related, but they are not the same claim.
 
 Practical public guides for those surfaces live at:
 
+- [Surface selection guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/surface-selection/)
+- [Artifact consumption guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/artifact-consumption-guide/)
 - [Native maximum-likelihood workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-maximum-likelihood-workflows/)
 - [Native Bayesian workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-bayesian-workflows/)
 - [Native benchmark review](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-benchmark-review/)
@@ -196,6 +198,11 @@ wrapper-comparison review lanes.
 The canonical reviewer-facing TSV and JSON artifacts are schema-governed and
 tested so downstream scripts do not have to infer headers or top-level keys
 from incidental examples.
+
+Use the public
+[artifact consumption guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/artifact-consumption-guide/)
+when the main question is how to consume those outputs correctly across human
+review and automation surfaces.
 
 The governed stable families now include:
 
