@@ -28,6 +28,9 @@ The main internal responsibilities covered here are:
 - how do native flagship surfaces stay documented across reference, workflow,
   and quality pages:
   [native surface documentation](native-surface-documentation.md)
+- how do architecture, evidence, release, and package docs stay aligned as one
+  public trust story:
+  [public trust surface maintenance](public-trust-surface-maintenance.md)
 - how do I check that metadata, docs, and release surfaces all say the same
   thing:
   [release surface alignment](release-surface-alignment.md)

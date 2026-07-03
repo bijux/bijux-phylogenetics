@@ -110,4 +110,5 @@ nav:
           - Overview: internal/maintain/index.md
           - Documentation Ownership: internal/maintain/documentation-ownership.md
           - Native Surface Documentation: internal/maintain/native-surface-documentation.md
+          - Public Trust Surface Maintenance: internal/maintain/public-trust-surface-maintenance.md
           - Release Surface Alignment: internal/maintain/release-surface-alignment.md

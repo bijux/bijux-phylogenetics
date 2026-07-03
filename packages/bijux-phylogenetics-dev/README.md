@@ -32,6 +32,7 @@ package metadata.
 - maintainer handbook: [Maintainer handbook](https://bijux.io/bijux-phylogenetics/internal/maintain/)
 - documentation ownership: [Documentation ownership](https://bijux.io/bijux-phylogenetics/internal/maintain/documentation-ownership/)
 - native surface documentation: [Native surface documentation](https://bijux.io/bijux-phylogenetics/internal/maintain/native-surface-documentation/)
+- public trust surface maintenance: [Public trust surface maintenance](https://bijux.io/bijux-phylogenetics/internal/maintain/public-trust-surface-maintenance/)
 - release surface alignment: [Release surface alignment](https://bijux.io/bijux-phylogenetics/internal/maintain/release-surface-alignment/)
 - source directory: [Developer tooling source directory](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics-dev)
 - changelog: [Developer tooling changelog](https://github.com/bijux/bijux-phylogenetics/blob/main/packages/bijux-phylogenetics-dev/CHANGELOG.md)

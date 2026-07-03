@@ -16,4 +16,5 @@ operations, and other maintainer-only concerns.
 
 - [maintainer guide](maintain/index.md)
 - [documentation ownership](maintain/documentation-ownership.md)
+- [public trust surface maintenance](maintain/public-trust-surface-maintenance.md)
 - [release surface alignment](maintain/release-surface-alignment.md)
