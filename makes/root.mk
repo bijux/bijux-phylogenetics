@@ -45,13 +45,15 @@ DOCS_SERVE_PREPARE_TARGETS := bijux-docs-sync docs-render-serve-config
 	clean-root-artifacts root-check-env check-shared-bijux-py check-config-ssot \
 	list-evidence-studies build-evidence-book build-evidence-study build-evidence-unit validate-evidence-book \
 	sync-evidence-artifacts sync-evidence-unit-artifacts check-evidence-artifacts check-evidence-unit-artifacts sync-evidence-unit-inputs check-evidence-unit-inputs report-evidence-completeness check-evidence-completeness report-evidence-governance check-evidence-governance \
-	report-artifact-governance check-artifact-governance report-execution-surfaces check-execution-surfaces \
+	report-artifact-governance check-artifact-governance report-execution-surfaces check-execution-surfaces report-runtime-budgets check-runtime-budgets \
 	report-package-boundaries check-package-boundaries report-package-bundles check-package-bundles report-publish-readiness check-publish-readiness \
 	report-release-readiness check-release-readiness
 
 EVIDENCE_STUDY_ID ?=
 EVIDENCE_ID ?=
 EVIDENCE_IDS ?=
+RUNTIME_BUDGET_LOG ?=
+RUNTIME_BUDGET_MIN_SECONDS ?= 100
 
 check: sync-license-assets lock-check check-config-ssot check-evidence-governance check-execution-surfaces check-package-boundaries lint test quality security docs build sbom ## Run the full repository verification flow
 
@@ -155,6 +157,16 @@ check-evidence-unit-inputs: root-check-env ## Validate governed input manifests 
 report-evidence-completeness: root-check-env ## Audit evidence bundle completeness into repository artifacts
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_completeness report --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/evidence-completeness.json"
 .PHONY: report-evidence-completeness
+
+report-runtime-budgets: root-check-env ## Audit classifications for long-running pytest cases from one captured duration log
+	@test -n "$(RUNTIME_BUDGET_LOG)" || { echo "RUNTIME_BUDGET_LOG is required"; exit 2; }
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.runtime_budget_governance report --repo-root "$(CURDIR)" --log-path "$(RUNTIME_BUDGET_LOG)" --minimum-seconds "$(RUNTIME_BUDGET_MIN_SECONDS)" --json-out "$(ROOT_ARTIFACTS_DIR)/runtime-budget-report.json"
+.PHONY: report-runtime-budgets
+
+check-runtime-budgets: root-check-env ## Fail when any 100+ second pytest case lacks a governed runtime-budget classification
+	@test -n "$(RUNTIME_BUDGET_LOG)" || { echo "RUNTIME_BUDGET_LOG is required"; exit 2; }
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.runtime_budget_governance check --repo-root "$(CURDIR)" --log-path "$(RUNTIME_BUDGET_LOG)" --minimum-seconds "$(RUNTIME_BUDGET_MIN_SECONDS)" --json-out "$(ROOT_ARTIFACTS_DIR)/runtime-budget-report.json"
+.PHONY: check-runtime-budgets
 
 check-evidence-completeness: root-check-env ## Fail when any evidence bundle is structurally incomplete
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_completeness check --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/evidence-completeness.json"

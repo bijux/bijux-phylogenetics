@@ -35,6 +35,8 @@ REQUIRED_ROOT_TARGET_SNIPPETS = {
     "check-artifact-governance:",
     "report-execution-surfaces:",
     "check-execution-surfaces:",
+    "report-runtime-budgets:",
+    "check-runtime-budgets:",
     "report-package-boundaries:",
     "check-package-boundaries:",
     "report-package-bundles:",
