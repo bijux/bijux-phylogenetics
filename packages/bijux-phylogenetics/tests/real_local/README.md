@@ -49,11 +49,13 @@ exit code, runtime, output paths, and output hashes.
 Run the full real-local lane with:
 
 ```bash
-./.venv/bin/pytest tests/real_local -m real_local
+make root-check-env
+artifacts/root/check-venv/bin/pytest tests/real_local -m real_local
 ```
 
 Run only the external-engine subset with:
 
 ```bash
-./.venv/bin/pytest tests/real_local -m engine_real
+make root-check-env
+artifacts/root/check-venv/bin/pytest tests/real_local -m engine_real
 ```
