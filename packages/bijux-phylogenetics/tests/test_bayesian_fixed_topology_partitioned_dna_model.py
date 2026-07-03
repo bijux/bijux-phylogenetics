@@ -13,6 +13,7 @@ from bijux_phylogenetics.bayesian.fixed_topology_partitioned_dna import (
     build_fixed_topology_partitioned_dna_proposal_schedule,
 )
 from bijux_phylogenetics.bayesian.partition_model_priors import (
+    PARTITION_MODEL_PRIOR_TARGETS,
     build_partition_model_prior_bundle,
     build_partition_parameter_linkage_plan,
     build_partition_substitution_model_definition,
@@ -100,10 +101,16 @@ def test_build_fixed_topology_partitioned_dna_model_definition_tracks_targets_an
         "HKY85",
         "GTR",
     )
-    assert model_definition.active_parameter_targets == (
+    expected_active_targets = {
         "base-frequencies",
         "exchangeabilities",
         "kappa",
+    }
+    assert set(model_definition.active_parameter_targets) == expected_active_targets
+    assert model_definition.active_parameter_targets == tuple(
+        target_name
+        for target_name in PARTITION_MODEL_PRIOR_TARGETS
+        if target_name in expected_active_targets
     )
     assert model_definition.linkage_eligible_targets == ("base-frequencies",)
 
