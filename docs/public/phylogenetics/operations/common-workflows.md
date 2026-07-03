@@ -4,7 +4,7 @@ audience: public
 type: how-to
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-16
+last_reviewed: 2026-07-03
 ---
 
 # Common Workflows
@@ -17,6 +17,7 @@ Typical public workflows include:
 - trim and inspect an alignment before reporting
 - run one command from raw FASTA to a supported inference bundle
 - run one supported inference workflow from one YAML or JSON config file
+- review native maximum-likelihood benchmark evidence directly instead of treating it as a hidden maintainer surface
 - assemble aligned loci into a concatenated supermatrix
 - audit a concatenated multi-locus matrix before inference
 - run a comparative model and capture JSON plus report artifacts
@@ -85,6 +86,20 @@ Those Python functions return typed workflow result objects that delegate the
 underlying CLI-grade reports and add stable JSON plus TSV serialization where
 appropriate, so downstream code can inspect one stable runtime contract instead
 of parsing command output.
+
+When the goal is to review the current owned native maximum-likelihood
+position directly, use the governed benchmark family instead of trying to infer
+that answer from unrelated workflow tests. The main summary surface is
+`benchmark native-maximum-likelihood-suite`.
+
+```bash
+bijux-phylogenetics benchmark native-maximum-likelihood-suite --json
+```
+
+Use the narrower speed, memory, accuracy, or wrapper-comparison lanes when the
+review question is specific. The suite is the public release-facing summary
+because it keeps native advantage, native bug, expected assumption difference,
+and unsupported cases separate instead of collapsing them into one pass state.
 
 When the goal is to prove that the repository's core numerical methods still
 match established external tools on small governed fixtures, use `parity`.

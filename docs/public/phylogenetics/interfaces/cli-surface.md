@@ -4,7 +4,7 @@ audience: public
 type: reference
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-16
+last_reviewed: 2026-07-03
 ---
 
 # CLI Surface
@@ -30,6 +30,7 @@ stable JSON plus TSV export helpers.
 - `tree-set ...`
 - `topology ...`
 - `adapter ...`
+- `benchmark ...`
 - `bundle` and `report`
 
 The public rule is simple: commands should produce explicit, reviewable outputs
@@ -548,6 +549,27 @@ Use `--tier small` for the routine stress lane and `--tier heavy` for the
 optional `1,000+` sequence and `1,000+` tree pressure check. The surface is
 explicit about scope: it measures the repository's owned workflows, not a
 synthetic micro-benchmark disconnected from user-facing outputs.
+
+The CLI also exposes one native maximum-likelihood benchmark family through:
+
+- `benchmark native-maximum-likelihood-speed`
+- `benchmark native-maximum-likelihood-memory`
+- `benchmark native-maximum-likelihood-accuracy`
+- `benchmark native-maximum-likelihood-suite`
+- `benchmark maximum-likelihood-wrapper-comparison`
+
+Those commands exist so native performance, memory behavior, support evidence,
+topology recovery, likelihood recovery, and wrapper comparison can be reviewed
+as explicit product evidence instead of being inferred indirectly from parity
+or correctness tests alone.
+
+`benchmark native-maximum-likelihood-suite` is the main public summary lane.
+Its report keeps four governed outcome classes explicit:
+
+- `native-advantage`
+- `native-bug`
+- `expected-assumption-difference`
+- `unsupported-case`
 
 `report release-truth` is the governed pre-release summary surface. It
 consumes actual pytest JUnit XML reports for the full test lane and the

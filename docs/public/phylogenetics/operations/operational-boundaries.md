@@ -4,7 +4,7 @@ audience: public
 type: how-to
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-10
+last_reviewed: 2026-07-03
 ---
 
 # Operational Boundaries
@@ -23,6 +23,7 @@ scientific judgment.
 - comparative model interpretation
 - ancestral inference interpretation
 - external-engine results used in publication claims
+- native benchmark interpretation when one difference may reflect model assumptions rather than one generic success or failure
 
 That distinction keeps operational convenience from turning into false
 scientific certainty.

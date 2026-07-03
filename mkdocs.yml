@@ -88,6 +88,7 @@ nav:
           - Quality:
               - Overview: public/phylogenetics/quality/index.md
               - Test Strategy: public/phylogenetics/quality/test-strategy.md
+              - Native Benchmark Evidence: public/phylogenetics/quality/native-benchmark-evidence.md
               - Release and Publication Gates: public/phylogenetics/quality/release-and-publication-gates.md
               - Evidence Honesty and Limits: public/phylogenetics/quality/evidence-honesty-and-limits.md
       - Evidence Book:
