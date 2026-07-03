@@ -10,7 +10,6 @@ from bijux_phylogenetics.bayesian.branch_length_priors import (
     build_uniform_branch_length_prior,
 )
 from bijux_phylogenetics.bayesian.prior_sampling import (
-    PriorOnlySubstitutionParameterState,
     sample_prior_only_phylogenetic_state,
     simulate_prior_only_phylogenetic_states,
 )
@@ -28,10 +27,10 @@ from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
 from bijux_phylogenetics.bayesian.tree_topology_priors import (
     build_uniform_rooted_tree_topology_prior,
 )
+from bijux_phylogenetics.phylo.likelihood.codon_states import resolve_codon_state_space
 from bijux_phylogenetics.phylo.likelihood.dna_simplex_coordinates import (
     DNA_EXCHANGEABILITY_LABELS,
 )
-from bijux_phylogenetics.phylo.likelihood.codon_states import resolve_codon_state_space
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 
@@ -124,9 +123,8 @@ def test_prior_only_simulation_surfaces_fixed_parameter_samples() -> None:
     topology_prior = build_uniform_rooted_tree_topology_prior(["A", "B", "C", "D"])
     branch_length_prior = build_fixed_branch_length_prior(fixed_value=0.5)
     codon_component_names = resolve_codon_state_space().state_order
-    codon_fixed_values = {
-        component_name: weight
-        for component_name, weight in zip(
+    codon_fixed_values = dict(
+        zip(
             codon_component_names,
             (
                 5.0,
@@ -136,7 +134,7 @@ def test_prior_only_simulation_surfaces_fixed_parameter_samples() -> None:
             ),
             strict=True,
         )
-    }
+    )
     substitution_prior = build_substitution_parameter_prior_bundle(
         kappa_prior=build_fixed_positive_substitution_parameter_prior(fixed_value=2.0),
         exchangeability_prior=build_fixed_simplex_substitution_parameter_prior(
@@ -239,7 +237,9 @@ def test_prior_only_simulation_samples_uniform_branch_lengths_within_support() -
 
     assert sample.branch_length_prior_family == "uniform"
     assert sample.branch_rows
-    assert all(0.2 <= branch_row.branch_length <= 0.7 for branch_row in sample.branch_rows)
+    assert all(
+        0.2 <= branch_row.branch_length <= 0.7 for branch_row in sample.branch_rows
+    )
     assert all(
         math.isclose(
             branch_row.log_prior_contribution,

@@ -12,9 +12,7 @@ from bijux_phylogenetics.phylo.likelihood import (
 )
 
 
-def test_public_runtime_exports_finite_state_frequency_optimization_surface() -> (
-    None
-):
+def test_public_runtime_exports_finite_state_frequency_optimization_surface() -> None:
     assert (
         likelihood_api.FiniteStateFrequencyOptimizationReport
         is FiniteStateFrequencyOptimizationReport
@@ -40,4 +38,3 @@ def test_public_runtime_exports_finite_state_frequency_optimization_surface() ->
         likelihood_api.optimize_protein_equal_input_state_frequencies
         is optimize_protein_equal_input_state_frequencies
     )
-

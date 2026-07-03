@@ -100,14 +100,12 @@ def test_selected_nucleotide_invariant_mixture_from_alignment_matches_direct_sur
     tree_path = FIXTURES / "trees" / "jc69_likelihood_tree_2_taxa.nwk"
     alignment_path = FIXTURES / "alignments" / "jc69_likelihood_alignment_2_taxa.fasta"
 
-    from_alignment = (
-        evaluate_selected_nucleotide_tree_likelihood_with_invariant_mixture_from_alignment(
-            tree_path,
-            alignment_path,
-            model_name="jc69",
-            owner_name="selected nucleotide invariant mixture test",
-            invariant_proportion=0.35,
-        )
+    from_alignment = evaluate_selected_nucleotide_tree_likelihood_with_invariant_mixture_from_alignment(
+        tree_path,
+        alignment_path,
+        model_name="jc69",
+        owner_name="selected nucleotide invariant mixture test",
+        invariant_proportion=0.35,
     )
     direct = evaluate_selected_nucleotide_tree_likelihood_with_invariant_mixture(
         load_tree(tree_path),

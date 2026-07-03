@@ -12,8 +12,8 @@ from bijux_phylogenetics.phylo.alignment.partitions import (
     LocusSegment,
 )
 from bijux_phylogenetics.phylo.likelihood import (
-    evaluate_empirical_protein_tree_likelihood,
     EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+    evaluate_empirical_protein_tree_likelihood,
     evaluate_protein_poisson_tree_likelihood,
 )
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
@@ -81,8 +81,8 @@ def test_compiled_protein_poisson_site_rows_reconstruct_governed_report() -> Non
         records,
         ambiguity_policy="ambiguity-vector",
     )
-    compiled_rows, weighted_total = evaluate_compiled_finite_state_site_log_likelihood_rows(
-        analysis
+    compiled_rows, weighted_total = (
+        evaluate_compiled_finite_state_site_log_likelihood_rows(analysis)
     )
 
     assert len(compiled_rows) == report.site_count

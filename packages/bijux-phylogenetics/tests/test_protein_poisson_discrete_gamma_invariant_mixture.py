@@ -91,14 +91,12 @@ def test_protein_poisson_discrete_gamma_invariant_mixture_from_alignment_matches
         FIXTURES / "alignments" / "protein_poisson_likelihood_alignment_2_taxa.fasta"
     )
 
-    from_alignment = (
-        evaluate_protein_poisson_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
-            tree_path,
-            alignment_path,
-            alpha=0.8,
-            category_count=4,
-            invariant_proportion=0.35,
-        )
+    from_alignment = evaluate_protein_poisson_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
+        tree_path,
+        alignment_path,
+        alpha=0.8,
+        category_count=4,
+        invariant_proportion=0.35,
     )
     direct = evaluate_protein_poisson_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
         load_tree(tree_path),

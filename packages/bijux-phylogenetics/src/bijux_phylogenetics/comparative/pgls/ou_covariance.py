@@ -19,11 +19,6 @@ from bijux_phylogenetics.comparative.common import (
     tip_root_depths,
 )
 from bijux_phylogenetics.comparative.continuous.model_fitting import _alpha_grid
-from bijux_phylogenetics.comparative.search import (
-    BoundedSearchControls,
-    BoundedSearchDiagnostics,
-    fit_bounded_scalar_parameter,
-)
 from bijux_phylogenetics.comparative.pgls.design import inspect_pgls_inputs
 from bijux_phylogenetics.comparative.pgls.fitting import (
     _build_pgls_diagnostics,
@@ -35,6 +30,11 @@ from bijux_phylogenetics.comparative.pgls.models import (
     ComparativeFormulaSpecification,
     PGLSCoefficient,
     PGLSDiagnosticsReport,
+)
+from bijux_phylogenetics.comparative.search import (
+    BoundedSearchControls,
+    BoundedSearchDiagnostics,
+    fit_bounded_scalar_parameter,
 )
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
@@ -367,7 +367,9 @@ def _resolve_alpha_fit(
         controls=BoundedSearchControls(
             coarse_grid_point_count=81,
             fine_grid_point_count=81,
-            initial_parameter_value=alpha_profile_values[len(alpha_profile_values) // 2],
+            initial_parameter_value=alpha_profile_values[
+                len(alpha_profile_values) // 2
+            ],
             refinement_start_count=5,
         ),
         evaluate=lambda candidate_alpha: (

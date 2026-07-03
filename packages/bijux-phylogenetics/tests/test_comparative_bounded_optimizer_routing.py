@@ -2,20 +2,20 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import bijux_phylogenetics.comparative.continuous.model_fitting as continuous_model_fitting_module
-import bijux_phylogenetics.comparative.discrete_mk.transforms as discrete_transform_module
-import bijux_phylogenetics.comparative.evolutionary_modes.search as continuous_search_module
-import bijux_phylogenetics.comparative.pgls.fitting as pgls_fitting_module
-import bijux_phylogenetics.comparative.pgls.ou_covariance as pgls_ou_covariance_module
-import bijux_phylogenetics.comparative.signal.core as signal_module
 from bijux_phylogenetics.comparative import fit_continuous_evolutionary_mode
 from bijux_phylogenetics.comparative.continuous import fit_ornstein_uhlenbeck_model
+import bijux_phylogenetics.comparative.continuous.model_fitting as continuous_model_fitting_module
 from bijux_phylogenetics.comparative.discrete_mk import fit_discrete_mk_model
+import bijux_phylogenetics.comparative.discrete_mk.transforms as discrete_transform_module
+import bijux_phylogenetics.comparative.evolutionary_modes.search as continuous_search_module
 from bijux_phylogenetics.comparative.pgls import run_pgls
+import bijux_phylogenetics.comparative.pgls.fitting as pgls_fitting_module
+import bijux_phylogenetics.comparative.pgls.ou_covariance as pgls_ou_covariance_module
 from bijux_phylogenetics.comparative.pgls.ou_covariance import (
     summarize_ou_covariance_pgls,
 )
 from bijux_phylogenetics.comparative.signal import estimate_pagels_lambda
+import bijux_phylogenetics.comparative.signal.core as signal_module
 from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_geiger_continuous_fixture,
     get_shared_geiger_discrete_fixture,
@@ -105,9 +105,7 @@ def test_pagel_kappa_routes_through_shared_bounded_scalar_search(monkeypatch) ->
     )
 
     assert fit.optimizer_diagnostics is not None
-    assert observed_calls == [
-        ((0.0, 3.0), "kappa", "Pagel kappa comparative mode fit")
-    ]
+    assert observed_calls == [((0.0, 3.0), "kappa", "Pagel kappa comparative mode fit")]
 
 
 def test_pagel_delta_routes_through_shared_bounded_scalar_search(monkeypatch) -> None:
@@ -142,9 +140,7 @@ def test_pagel_delta_routes_through_shared_bounded_scalar_search(monkeypatch) ->
     )
 
     assert fit.optimizer_diagnostics is not None
-    assert observed_calls == [
-        ((0.0, 3.0), "delta", "Pagel delta comparative mode fit")
-    ]
+    assert observed_calls == [((0.0, 3.0), "delta", "Pagel delta comparative mode fit")]
 
 
 def test_discrete_kappa_transform_routes_through_shared_bounded_scalar_search(
@@ -182,9 +178,7 @@ def test_discrete_kappa_transform_routes_through_shared_bounded_scalar_search(
     )
 
     assert report.transform_fit is not None
-    assert observed_calls == [
-        ((0.0, 1.0), "kappa", "discrete Mk kappa transform fit")
-    ]
+    assert observed_calls == [((0.0, 1.0), "kappa", "discrete Mk kappa transform fit")]
 
 
 def test_discrete_delta_transform_routes_through_shared_bounded_scalar_search(
@@ -317,7 +311,9 @@ def test_pgls_pagel_lambda_routes_through_shared_bounded_scalar_fit(
         )
         return original_fit(**kwargs)
 
-    monkeypatch.setattr(pgls_fitting_module, "fit_bounded_scalar_parameter", observe_fit)
+    monkeypatch.setattr(
+        pgls_fitting_module, "fit_bounded_scalar_parameter", observe_fit
+    )
 
     report = run_pgls(
         fixture("example_tree.nwk"),

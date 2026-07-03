@@ -69,18 +69,16 @@ def test_bounded_scalar_optimizer_goal_coverage_matches_backlog_surface() -> Non
         trait="response",
         taxon_column="taxon",
     )
-    empirical_invariant_report = (
-        optimize_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment(
-            fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-            fixture(
-                "alignments",
-                "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
-            ),
-            rate_matrix=_compact_polar_rate_matrix(),
-            root_prior=_biased_root_prior(),
-            matrix_label="compact-polar",
-            initial_invariant_proportion=0.1,
-        )
+    empirical_invariant_report = optimize_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment(
+        fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+        fixture(
+            "alignments",
+            "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
+        ),
+        rate_matrix=_compact_polar_rate_matrix(),
+        root_prior=_biased_root_prior(),
+        matrix_label="compact-polar",
+        initial_invariant_proportion=0.1,
     )
     pgls_report = run_pgls(
         fixture_path("example_tree.nwk"),
@@ -105,7 +103,9 @@ def test_bounded_scalar_optimizer_goal_coverage_matches_backlog_surface() -> Non
         taxon_column=shared_fixture.taxon_column,
     )
 
-    first_branch_diagnostics = next(iter(jc69_branch_report.parameter_diagnostics.values()))
+    first_branch_diagnostics = next(
+        iter(jc69_branch_report.parameter_diagnostics.values())
+    )
     cases = [
         Goal31CoverageCase(
             case_name="branch length",

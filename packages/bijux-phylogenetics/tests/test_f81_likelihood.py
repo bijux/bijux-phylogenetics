@@ -40,8 +40,7 @@ def test_f81_fixed_tree_likelihood_matches_two_tip_analytical_fixture() -> None:
     assert report.state_count == 4
     assert report.observation_policy == "reject"
     assert (
-        report.normalization_policy
-        == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
+        report.normalization_policy == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
     )
     assert report.base_frequency_source == "provided"
     assert math.isclose(report.base_frequency_a, 0.4, rel_tol=0.0, abs_tol=1e-12)

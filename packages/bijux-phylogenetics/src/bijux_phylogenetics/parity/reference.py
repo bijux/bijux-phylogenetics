@@ -746,8 +746,7 @@ def _filter_reference_observations_by_method(
     ]
     if missing_methods:
         raise ValueError(
-            "unknown reference parity methods: "
-            + ", ".join(sorted(missing_methods))
+            "unknown reference parity methods: " + ", ".join(sorted(missing_methods))
         )
     selected_methods = set(methods)
     return [

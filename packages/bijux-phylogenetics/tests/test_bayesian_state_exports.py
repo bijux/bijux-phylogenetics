@@ -14,9 +14,9 @@ from bijux_phylogenetics.bayesian import (
     build_bayesian_model_parameter_state,
     build_bayesian_phylogenetic_state,
     build_bayesian_phylogenetic_state_from_prior_only_sample,
-    build_metropolis_hastings_random_state,
     build_bayesian_prior_component_state,
     build_bayesian_tree_state,
+    build_metropolis_hastings_random_state,
     deserialize_bayesian_phylogenetic_state,
     deserialize_bayesian_phylogenetic_state_json,
     serialize_bayesian_phylogenetic_state,
@@ -62,13 +62,13 @@ from bijux_phylogenetics.bayesian.state import (
     build_bayesian_phylogenetic_state_from_prior_only_sample as build_bayesian_phylogenetic_state_from_prior_only_sample_impl,
 )
 from bijux_phylogenetics.bayesian.state import (
-    build_metropolis_hastings_random_state as build_metropolis_hastings_random_state_impl,
-)
-from bijux_phylogenetics.bayesian.state import (
     build_bayesian_prior_component_state as build_bayesian_prior_component_state_impl,
 )
 from bijux_phylogenetics.bayesian.state import (
     build_bayesian_tree_state as build_bayesian_tree_state_impl,
+)
+from bijux_phylogenetics.bayesian.state import (
+    build_metropolis_hastings_random_state as build_metropolis_hastings_random_state_impl,
 )
 from bijux_phylogenetics.bayesian.state import (
     deserialize_bayesian_phylogenetic_state as deserialize_bayesian_phylogenetic_state_impl,

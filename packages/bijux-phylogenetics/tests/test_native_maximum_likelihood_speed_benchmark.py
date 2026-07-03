@@ -14,7 +14,6 @@ from bijux_phylogenetics.benchmark.likelihood_tree_inference import (
     write_native_maximum_likelihood_speed_trend_table,
 )
 
-
 pytestmark = pytest.mark.slow
 
 

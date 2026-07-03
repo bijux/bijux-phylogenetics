@@ -23,6 +23,7 @@ from bijux_phylogenetics.simulation import (
     simulate_discrete_traits,
     write_discrete_trait_table,
 )
+
 from .support.geiger_fitdiscrete_ard_reference import (
     GEIGER_FITDISCRETE_ARD_REFERENCE_PAYLOADS,
 )
@@ -288,7 +289,9 @@ def test_fit_discrete_mk_model_reports_ordered_model_baselines() -> None:
     assert ard_report.baseline_comparison.preferred_model_by_aic == "equal-rates"
 
 
-def test_compare_discrete_mk_model_ranking_accepts_explicit_irreversible_surface() -> None:
+def test_compare_discrete_mk_model_ranking_accepts_explicit_irreversible_surface() -> (
+    None
+):
     report = compare_discrete_mk_model_ranking(
         fixture("example_tree.nwk"),
         fixture("example_traits_binary.tsv"),

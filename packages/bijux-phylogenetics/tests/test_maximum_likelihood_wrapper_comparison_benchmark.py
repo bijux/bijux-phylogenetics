@@ -13,7 +13,6 @@ from bijux_phylogenetics.benchmark.likelihood_tree_inference import (
     write_maximum_likelihood_wrapper_comparison_summary_table,
 )
 
-
 pytestmark = pytest.mark.slow
 
 
@@ -85,9 +84,7 @@ def test_maximum_likelihood_wrapper_comparison_writers_emit_governed_outputs(
     assert payload["case_count"] == 4
     assert payload["native_bug_case_count"] == 0
     assert payload["summary_rows"][0]["status"] == "tolerance-match"
-    assert {
-        row["case_id"] for row in payload["observations"]
-    } == {
+    assert {row["case_id"] for row in payload["observations"]} == {
         "iqtree-jc69-maximum-likelihood",
         "iqtree-jc69-ultrafast-bootstrap-support",
         "fasttree-jc69-approximate-maximum-likelihood",

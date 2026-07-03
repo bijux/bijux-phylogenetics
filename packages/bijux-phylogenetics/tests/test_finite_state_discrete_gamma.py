@@ -127,9 +127,7 @@ def test_finite_state_discrete_gamma_alpha_changes_codon_likelihood() -> None:
     ] != [round(category.rate, 12) for category in high_alpha_report.category_rates]
 
 
-def test_finite_state_discrete_gamma_alpha_changes_protein_poisson_likelihood() -> (
-    None
-):
+def test_finite_state_discrete_gamma_alpha_changes_protein_poisson_likelihood() -> None:
     tree = load_tree(fixture("trees", "protein_poisson_likelihood_tree_2_taxa.nwk"))
     records = load_fasta_alignment(
         fixture("alignments", "protein_poisson_likelihood_alignment_2_taxa.fasta")
@@ -180,7 +178,9 @@ def test_finite_state_discrete_gamma_alpha_changes_discrete_mk_likelihood() -> N
     )
     compressed_patterns = compress_alignment_site_patterns_from_records(
         records,
-        source_path=fixture("metadata", "example_traits_discrete_mk_variable_only_four_taxa.tsv"),
+        source_path=fixture(
+            "metadata", "example_traits_discrete_mk_variable_only_four_taxa.tsv"
+        ),
         site_tokenizer=lambda sequence: (sequence,),
     )
 

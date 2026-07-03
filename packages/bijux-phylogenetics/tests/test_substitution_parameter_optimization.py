@@ -125,12 +125,15 @@ def test_nucleotide_substitution_parameter_recovery_benchmark_reports_governed_m
         rel_tol=0.0,
         abs_tol=1e-12,
     )
-    assert min(
-        f81_report.base_frequency_a,
-        f81_report.base_frequency_c,
-        f81_report.base_frequency_g,
-        f81_report.base_frequency_t,
-    ) > 0.0
+    assert (
+        min(
+            f81_report.base_frequency_a,
+            f81_report.base_frequency_c,
+            f81_report.base_frequency_g,
+            f81_report.base_frequency_t,
+        )
+        > 0.0
+    )
 
     hky85_report = optimize_nucleotide_substitution_parameters_from_alignment(
         fixture("trees", "hky85_kappa_optimization_tree_2_taxa.nwk"),
@@ -205,12 +208,15 @@ def test_nucleotide_substitution_parameter_recovery_benchmark_reports_governed_m
         rel_tol=0.0,
         abs_tol=1e-12,
     )
-    assert min(
-        gtr_report.base_frequency_a,
-        gtr_report.base_frequency_c,
-        gtr_report.base_frequency_g,
-        gtr_report.base_frequency_t,
-    ) > 0.0
+    assert (
+        min(
+            gtr_report.base_frequency_a,
+            gtr_report.base_frequency_c,
+            gtr_report.base_frequency_g,
+            gtr_report.base_frequency_t,
+        )
+        > 0.0
+    )
     assert gtr_report.optimized_log_likelihood > gtr_report.initial_log_likelihood
 
 

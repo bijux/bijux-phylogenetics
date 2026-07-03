@@ -8,12 +8,8 @@ import numpy
 
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
-EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY = (
-    "expected-substitution-rate-one"
-)
-CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY = (
-    "preserve-caller-rate-scale"
-)
+EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY = "expected-substitution-rate-one"
+CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY = "preserve-caller-rate-scale"
 
 
 @dataclass(frozen=True, slots=True)

@@ -48,9 +48,7 @@ def test_protein_poisson_invariant_mixture_matches_shared_surface_expectations()
     )
 
 
-def test_protein_poisson_invariant_mixture_from_alignment_matches_direct_call() -> (
-    None
-):
+def test_protein_poisson_invariant_mixture_from_alignment_matches_direct_call() -> None:
     tree_path = FIXTURES / "trees" / "protein_poisson_likelihood_tree_2_taxa.nwk"
     alignment_path = (
         FIXTURES / "alignments" / "protein_poisson_likelihood_alignment_2_taxa.fasta"

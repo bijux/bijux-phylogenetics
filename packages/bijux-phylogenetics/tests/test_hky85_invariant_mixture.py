@@ -58,9 +58,7 @@ def test_hky85_invariant_mixture_matches_owned_surface_expectations() -> None:
 
 def test_hky85_invariant_mixture_from_alignment_matches_direct_call() -> None:
     tree_path = FIXTURES / "trees" / "hky85_likelihood_tree_2_taxa.nwk"
-    alignment_path = (
-        FIXTURES / "alignments" / "hky85_likelihood_alignment_2_taxa.fasta"
-    )
+    alignment_path = FIXTURES / "alignments" / "hky85_likelihood_alignment_2_taxa.fasta"
 
     from_alignment = (
         evaluate_hky85_tree_likelihood_with_invariant_mixture_from_alignment(

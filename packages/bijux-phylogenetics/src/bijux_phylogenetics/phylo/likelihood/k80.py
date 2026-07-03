@@ -9,14 +9,14 @@ from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+)
 from bijux_phylogenetics.phylo.likelihood.dna import (
     DNA_STATE_ORDER,
     UNIFORM_DNA_ROOT_PRIOR,
     is_dna_transition,
     validate_positive_kappa,
-)
-from bijux_phylogenetics.phylo.likelihood.ctmc import (
-    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
 )
 from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
     augment_dna_rate_matrix_with_gap_state,
@@ -26,16 +26,16 @@ from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
     resolve_default_dna_root_prior_for_observation_policy,
     resolve_dna_observation_leaf_vector,
 )
+from bijux_phylogenetics.phylo.likelihood.finite_state import (
+    FiniteStateLikelihoodSurface,
+    compile_finite_state_likelihood_context,
+    evaluate_finite_state_tree_log_likelihood_from_patterns,
+)
 from bijux_phylogenetics.phylo.likelihood.models import (
     FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
     FiniteStateInvariantMixtureTreeLikelihoodReport,
     K80KappaOptimizationReport,
     K80TreeLikelihoodReport,
-)
-from bijux_phylogenetics.phylo.likelihood.finite_state import (
-    FiniteStateLikelihoodSurface,
-    compile_finite_state_likelihood_context,
-    evaluate_finite_state_tree_log_likelihood_from_patterns,
 )
 from bijux_phylogenetics.phylo.likelihood.parameter_bounds import (
     validate_parameter_within_bounds,
@@ -465,12 +465,16 @@ def _evaluate_k80_tree_likelihood_from_patterns(
             gap_state_frequency=gap_state_frequency,
             model_name="K80",
         )
+
         def transition_matrix_for_branch_length(branch_length: float) -> numpy.ndarray:
             return transition_probability_matrix(augmented_rate_matrix, branch_length)
+
         transition_rate_matrix = augmented_rate_matrix
     else:
+
         def transition_matrix_for_branch_length(branch_length: float) -> numpy.ndarray:
             return k80_transition_probability_matrix(branch_length, kappa=kappa)
+
         transition_rate_matrix = k80_rate_matrix(kappa)
     context = compile_finite_state_likelihood_context(
         tree,

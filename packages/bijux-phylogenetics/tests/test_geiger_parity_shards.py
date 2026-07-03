@@ -46,9 +46,7 @@ def test_run_geiger_parity_cases_supports_shard_selection(tmp_path: Path) -> Non
     assert {observation.case_id for observation in report.observations} == set(
         lambda_shard.case_ids
     )
-    assert {observation.model_name for observation in report.observations} == {
-        "lambda"
-    }
+    assert {observation.model_name for observation in report.observations} == {"lambda"}
     assert all(
         observation.function_name == "geiger::fitContinuous(model='lambda')"
         for observation in report.observations

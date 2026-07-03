@@ -43,7 +43,6 @@ from bijux_phylogenetics.phylo.likelihood.models import (
     SubstitutionModelSelectionRow,
 )
 from bijux_phylogenetics.phylo.likelihood.optimization_boundary_warnings import (
-    boundary_warning_messages,
     build_rate_heterogeneity_alpha_boundary_warnings,
 )
 from bijux_phylogenetics.phylo.likelihood.parameter_search import (

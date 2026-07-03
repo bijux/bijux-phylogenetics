@@ -13,11 +13,13 @@ from bijux_phylogenetics.phylo.likelihood import (
     evaluate_empirical_protein_tree_likelihood,
     evaluate_protein_poisson_tree_likelihood,
 )
+from bijux_phylogenetics.phylo.likelihood import (
+    protein_finite_state as protein_surface_module,
+)
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
     compile_finite_state_likelihood_context,
     evaluate_finite_state_tree_log_likelihood_from_patterns,
 )
-from bijux_phylogenetics.phylo.likelihood import protein_finite_state as protein_surface_module
 from bijux_phylogenetics.phylo.likelihood.protein_finite_state import (
     build_empirical_protein_finite_state_surface,
     build_protein_poisson_finite_state_surface,
@@ -97,7 +99,9 @@ def test_protein_poisson_surface_uses_native_transition_surface(
     surface = build_protein_poisson_finite_state_surface(records)
 
     def _boom(*_args: object, **_kwargs: object) -> numpy.ndarray:
-        raise AssertionError("protein Poisson surface should not call the generic CTMC engine")
+        raise AssertionError(
+            "protein Poisson surface should not call the generic CTMC engine"
+        )
 
     monkeypatch.setattr(protein_surface_module, "transition_probability_matrix", _boom)
     context = compile_finite_state_likelihood_context(tree, surface)

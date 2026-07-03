@@ -507,7 +507,8 @@ def _build_partitioned_dna_likelihood_context(
     partition_contexts = []
     total_pattern_count = 0
     for partition_name in (
-        partition_model.partition_name for partition_model in model_definition.partition_models
+        partition_model.partition_name
+        for partition_model in model_definition.partition_models
     ):
         partition_records = partition_records_by_name[partition_name]
         partition_alignment_length = _resolve_alignment_length(partition_records)
@@ -1568,8 +1569,7 @@ def _partition_context_linkage_key(
     if not active_group_items:
         return f"{partition_model.partition_name}:{partition_model.base_model_name}"
     group_text = ",".join(
-        f"{target_name}={group_name}"
-        for target_name, group_name in active_group_items
+        f"{target_name}={group_name}" for target_name, group_name in active_group_items
     )
     return f"{partition_model.base_model_name}:{group_text}"
 

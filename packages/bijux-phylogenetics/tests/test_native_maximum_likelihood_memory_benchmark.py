@@ -17,7 +17,6 @@ from bijux_phylogenetics.benchmark.likelihood_tree_inference.builder import (
     _classify_native_maximum_likelihood_memory_growth,
 )
 
-
 pytestmark = pytest.mark.slow
 
 
@@ -71,9 +70,7 @@ def test_benchmark_native_maximum_likelihood_memory_reports_lanes_and_growth() -
     assert all(row.baseline_size_class == "tiny" for row in report.trend_rows)
     assert all(row.comparison_size_class == "medium" for row in report.trend_rows)
     assert all(row.peak_memory_ratio > 0.0 for row in report.trend_rows)
-    assert {
-        row.memory_growth_status for row in report.trend_rows
-    } <= {
+    assert {row.memory_growth_status for row in report.trend_rows} <= {
         "stable-memory-growth",
         "elevated-memory-growth",
         "memory-blowup",

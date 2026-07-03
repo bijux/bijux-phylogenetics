@@ -7,9 +7,9 @@ from pathlib import Path
 import subprocess  # nosec B404
 import tempfile
 
+from ...live_access import require_live_parity_access
 from ..registry import _selected_cases, _write_case_file
 from ..shards import resolve_ape_parity_case_ids
-from ...live_access import require_live_parity_access
 from .comparison import (
     _apply_expected_status_contract,
     _determine_reference_mismatch_reason,

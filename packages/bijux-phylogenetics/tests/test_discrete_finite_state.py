@@ -5,7 +5,6 @@ from pathlib import Path
 
 import numpy
 
-from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.ancestral.discrete.likelihood.likelihood_math import (
     transition_probability_matrix,
     tree_log_likelihood,
@@ -14,6 +13,7 @@ from bijux_phylogenetics.ancestral.discrete.likelihood.rate_matrix import (
     rate_matrix_from_log_parameters,
 )
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.discrete_finite_state import (
     build_discrete_mk_finite_state_surface,
 )

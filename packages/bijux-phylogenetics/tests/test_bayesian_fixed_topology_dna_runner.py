@@ -116,7 +116,8 @@ def test_fixed_topology_dna_runner_samples_hky85_branch_lengths_and_model_parame
         for state in report.chain_report.sampled_states
     )
     assert all(
-        state.likelihood_context.partition_contexts[0].partition_name == "full-alignment"
+        state.likelihood_context.partition_contexts[0].partition_name
+        == "full-alignment"
         for state in report.chain_report.sampled_states
     )
 
@@ -168,7 +169,9 @@ def test_fixed_topology_dna_runner_supports_uniform_branch_length_prior() -> Non
     )
 
 
-def test_fixed_topology_dna_runner_rejects_initial_tree_outside_uniform_support() -> None:
+def test_fixed_topology_dna_runner_rejects_initial_tree_outside_uniform_support() -> (
+    None
+):
     model_definition = build_fixed_topology_dna_model_definition(
         substitution_model_name="HKY85",
         branch_length_prior=build_uniform_branch_length_prior(

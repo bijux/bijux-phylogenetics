@@ -230,9 +230,8 @@ def test_codon_frequency_substitution_prior_matches_analytical_density_fixture()
     component_names = resolve_codon_state_space().state_order
     prior_bundle = build_substitution_parameter_prior_bundle(
         codon_frequency_prior=build_dirichlet_codon_frequency_substitution_parameter_prior(
-            concentration_parameters={
-                component_name: concentration
-                for component_name, concentration in zip(
+            concentration_parameters=dict(
+                zip(
                     component_names,
                     (
                         2.0,
@@ -242,12 +241,11 @@ def test_codon_frequency_substitution_prior_matches_analytical_density_fixture()
                     ),
                     strict=True,
                 )
-            }
+            )
         )
     )
-    codon_frequencies = {
-        component_name: weight
-        for component_name, weight in zip(
+    codon_frequencies = dict(
+        zip(
             component_names,
             (
                 5.0,
@@ -257,7 +255,7 @@ def test_codon_frequency_substitution_prior_matches_analytical_density_fixture()
             ),
             strict=True,
         )
-    }
+    )
 
     report = evaluate_substitution_parameter_log_prior(
         prior_bundle=prior_bundle,
@@ -291,7 +289,8 @@ def test_codon_frequency_substitution_prior_matches_analytical_density_fixture()
 def test_codon_frequency_substitution_prior_requires_realized_values() -> None:
     prior_bundle = build_substitution_parameter_prior_bundle(
         codon_frequency_prior=build_dirichlet_codon_frequency_substitution_parameter_prior(
-            concentration_parameters=[1.0] * len(resolve_codon_state_space().state_order)
+            concentration_parameters=[1.0]
+            * len(resolve_codon_state_space().state_order)
         )
     )
 
@@ -321,9 +320,8 @@ def test_fixed_codon_frequency_substitution_prior_distinguishes_exact_and_mismat
     None
 ):
     component_names = resolve_codon_state_space().state_order
-    fixed_values = {
-        component_name: weight
-        for component_name, weight in zip(
+    fixed_values = dict(
+        zip(
             component_names,
             (
                 5.0,
@@ -333,7 +331,7 @@ def test_fixed_codon_frequency_substitution_prior_distinguishes_exact_and_mismat
             ),
             strict=True,
         )
-    }
+    )
     prior_bundle = build_substitution_parameter_prior_bundle(
         codon_frequency_prior=build_fixed_codon_frequency_substitution_parameter_prior(
             fixed_values=fixed_values

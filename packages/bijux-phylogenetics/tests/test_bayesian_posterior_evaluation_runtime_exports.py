@@ -47,10 +47,7 @@ def test_public_runtime_exports_bayesian_posterior_evaluation_surface() -> None:
         is BayesianPosteriorEvaluationReportImpl
     )
     assert bayesian_api.evaluate_bayesian_posterior is evaluate_bayesian_posterior
-    assert (
-        bayesian_api.evaluate_bayesian_posterior
-        is evaluate_bayesian_posterior_impl
-    )
+    assert bayesian_api.evaluate_bayesian_posterior is evaluate_bayesian_posterior_impl
     assert (
         bayesian_api.summarize_bayesian_posterior_decomposition
         is summarize_bayesian_posterior_decomposition

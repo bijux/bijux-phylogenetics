@@ -73,7 +73,9 @@ def resolve_geiger_parity_case_ids(
     case_order = [case.case_id for case in cases]
     case_index = set(case_order)
     if case_ids is not None:
-        missing_case_ids = [case_id for case_id in case_ids if case_id not in case_index]
+        missing_case_ids = [
+            case_id for case_id in case_ids if case_id not in case_index
+        ]
         if missing_case_ids:
             raise ValueError(
                 f"unknown geiger parity case ids: {', '.join(sorted(missing_case_ids))}"
@@ -81,8 +83,7 @@ def resolve_geiger_parity_case_ids(
     selected_case_ids = set(case_ids) if case_ids is not None else set(case_order)
     if shard_ids is not None:
         shard_map = {
-            shard.shard_id: set(shard.case_ids)
-            for shard in list_geiger_parity_shards()
+            shard.shard_id: set(shard.case_ids) for shard in list_geiger_parity_shards()
         }
         missing_shard_ids = [
             shard_id for shard_id in shard_ids if shard_id not in shard_map

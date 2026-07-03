@@ -93,9 +93,7 @@ def build_transition_matrix_evaluator(
         cache_matrices=cache_matrices,
         transition_matrix_by_branch_length={},
         matrix_exponential_backend=(
-            "eigendecomposition"
-            if eigendecomposition is not None
-            else "uniformization"
+            "eigendecomposition" if eigendecomposition is not None else "uniformization"
         ),
     )
 
@@ -158,9 +156,7 @@ def _resolve_rate_matrix_eigendecomposition(
         )
     except numpy.linalg.LinAlgError:
         return None
-    condition_number = float(
-        numpy.linalg.cond(eigendecomposition.eigenvectors)
-    )
+    condition_number = float(numpy.linalg.cond(eigendecomposition.eigenvectors))
     if not math.isfinite(condition_number):
         return None
     if condition_number > _EIGENVECTOR_CONDITION_NUMBER_MAX:

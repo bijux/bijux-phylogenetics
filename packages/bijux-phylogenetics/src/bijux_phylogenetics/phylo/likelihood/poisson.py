@@ -12,24 +12,24 @@ from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.ctmc import (
     EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
 )
-from bijux_phylogenetics.phylo.likelihood.models import (
-    FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
-    FiniteStateInvariantMixtureTreeLikelihoodReport,
-    ProteinPoissonTreeLikelihoodReport,
-)
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
     compile_finite_state_likelihood_context,
     evaluate_finite_state_site_log_likelihood_rows_from_patterns,
     evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture,
     evaluate_finite_state_tree_likelihood_with_invariant_mixture,
 )
+from bijux_phylogenetics.phylo.likelihood.models import (
+    FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
+    FiniteStateInvariantMixtureTreeLikelihoodReport,
+    ProteinPoissonTreeLikelihoodReport,
+)
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
     compress_alignment_site_patterns_from_records,
 )
 from bijux_phylogenetics.phylo.likelihood.protein import (
-    normalize_protein_likelihood_records,
     PROTEIN_STATE_ORDER,
+    normalize_protein_likelihood_records,
 )
 from bijux_phylogenetics.phylo.likelihood.sites import (
     validate_site_log_likelihood_reconstruction,
@@ -257,16 +257,18 @@ def evaluate_protein_poisson_tree_likelihood_with_discrete_gamma_and_invariant_m
         missing_policy=missing_policy,
         ambiguity_policy=ambiguity_policy,
     )
-    return evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-        tree,
-        compressed_patterns,
-        surface=surface,
-        alpha=alpha,
-        category_count=category_count,
-        invariant_proportion=invariant_proportion,
-        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
-        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
-        emit_boundary_warnings=emit_boundary_warnings,
+    return (
+        evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+            tree,
+            compressed_patterns,
+            surface=surface,
+            alpha=alpha,
+            category_count=category_count,
+            invariant_proportion=invariant_proportion,
+            lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+            upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+            emit_boundary_warnings=emit_boundary_warnings,
+        )
     )
 
 

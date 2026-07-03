@@ -20,9 +20,6 @@ from tests.support.fake_geiger_parity import fake_geiger_rscript
 from tests.support.geiger_fitcontinuous_brownian_reference import (
     GEIGER_FITCONTINUOUS_BROWNIAN_REFERENCE_PAYLOADS,
 )
-from tests.support.geiger_fitcontinuous_early_burst_reference import (
-    GEIGER_FITCONTINUOUS_EARLY_BURST_REFERENCE_PAYLOADS,
-)
 from tests.support.geiger_fitcontinuous_lambda_reference import (
     GEIGER_FITCONTINUOUS_LAMBDA_REFERENCE_PAYLOADS,
 )

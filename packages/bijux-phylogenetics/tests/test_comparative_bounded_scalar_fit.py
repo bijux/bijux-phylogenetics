@@ -39,6 +39,12 @@ def test_comparative_bounded_scalar_fit_reports_shared_optimizer_diagnostics() -
     assert fit.optimizer_diagnostics.failure_reason is None
     assert fit.lower_95_confidence_interval == 1.0
     assert fit.upper_95_confidence_interval == 2.0
-    assert [row.parameter_value for row in fit.profile_rows] == [0.0, 1.0, 1.5, 2.0, 4.0]
+    assert [row.parameter_value for row in fit.profile_rows] == [
+        0.0,
+        1.0,
+        1.5,
+        2.0,
+        4.0,
+    ]
     assert fit.profile_rows[2].within_95_confidence_interval is True
     assert fit.profile_rows[0].within_95_confidence_interval is False

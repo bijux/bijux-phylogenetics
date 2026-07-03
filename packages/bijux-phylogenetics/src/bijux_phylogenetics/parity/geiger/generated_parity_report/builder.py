@@ -3,11 +3,11 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from pathlib import Path
 
-from bijux_phylogenetics.parity.live_access import require_live_parity_access
 from bijux_phylogenetics.parity.geiger.runner import (
     GeigerParityReport,
     run_geiger_parity_cases,
 )
+from bijux_phylogenetics.parity.live_access import require_live_parity_access
 
 from .contracts import GeigerBenchmarkSummaryRow, GeneratedGeigerParityReport
 from .coverage_policy import (

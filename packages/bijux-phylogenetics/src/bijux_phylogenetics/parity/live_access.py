@@ -57,11 +57,7 @@ def require_live_parity_access(
         details["reference_source"] = reference_source
     if executable is not None:
         details["executable"] = str(executable)
-    reference_fragment = (
-        ""
-        if reference_source is None
-        else f" for {reference_source}"
-    )
+    reference_fragment = "" if reference_source is None else f" for {reference_source}"
     raise ExternalEngineAccessError(
         "live reference parity requires explicit opt-in"
         f"{reference_fragment}: set {RUN_LIVE_PARITY_ENV_VAR}=1 to continue",

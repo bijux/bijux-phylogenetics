@@ -313,16 +313,18 @@ def evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invaria
     compressed_patterns = compress_alignment_site_patterns_from_records(
         normalized_records
     )
-    return evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-        tree,
-        compressed_patterns,
-        surface=surface,
-        alpha=alpha,
-        category_count=category_count,
-        invariant_proportion=invariant_proportion,
-        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
-        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
-        emit_boundary_warnings=emit_boundary_warnings,
+    return (
+        evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+            tree,
+            compressed_patterns,
+            surface=surface,
+            alpha=alpha,
+            category_count=category_count,
+            invariant_proportion=invariant_proportion,
+            lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+            upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+            emit_boundary_warnings=emit_boundary_warnings,
+        )
     )
 
 

@@ -366,7 +366,7 @@ def run_adaptive_tuned_metropolis_hastings_sampler(
                 "iteration_count": validated_iteration_count,
                 "burnin_iteration_count": tuning_controller.burnin_iteration_count,
             },
-    )
+        )
     rng = random.Random(validated_seed)  # nosec B311
     initialized_state = _with_random_state(initial_state, _capture_rng_state(rng))
     current_state = initialized_state

@@ -8,3 +8,13 @@ from .contracts import (
     AlignmentFigurePackageResult,
     AlignmentHeatmapCell,
 )
+
+__all__ = [
+    "annotations",
+    "build_alignment_figure_package",
+    "AlignmentFigureAudit",
+    "AlignmentFigureCaptionDraft",
+    "AlignmentFigureLegendEntry",
+    "AlignmentFigurePackageResult",
+    "AlignmentHeatmapCell",
+]

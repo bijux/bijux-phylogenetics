@@ -26,13 +26,12 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
     compress_alignment_site_patterns_from_records,
 )
 from bijux_phylogenetics.phylo.likelihood.protein import (
-    PROTEIN_STATE_ORDER,
     normalize_protein_likelihood_records,
 )
+from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
 from bijux_phylogenetics.phylo.likelihood.state_frequency_optimization import (
     build_equal_input_rate_matrix,
 )
-from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -87,7 +86,9 @@ def test_protein_equal_input_state_frequency_optimization_rescores_optimized_sol
         missing_policy="treat-as-missing",
         ambiguity_policy="reject",
     )
-    compressed_patterns = compress_alignment_site_patterns_from_records(normalized_records)
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
     surface = build_protein_equal_input_finite_state_surface(
         normalized_records,
         stationary_frequencies=optimized_frequencies,

@@ -54,9 +54,7 @@ def test_cli_report_invariant_mixture_family_coverage_json_output_uses_contract(
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     families = payload["data"]["coverage"]["families"]
-    codon = next(
-        family for family in families if family["family_name"] == "codon-ctmc"
-    )
+    codon = next(family for family in families if family["family_name"] == "codon-ctmc")
 
     assert exit_code == 0
     assert payload["command"] == "report"

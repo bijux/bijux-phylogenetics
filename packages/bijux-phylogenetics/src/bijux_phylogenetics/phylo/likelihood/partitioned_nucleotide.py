@@ -8,6 +8,9 @@ import numpy
 
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.alignment.partitions import LocusPartition
+from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
+    normalize_dna_likelihood_records,
+)
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
     CompiledFiniteStateLikelihoodAnalysis,
     compile_partitioned_finite_state_likelihood_analysis,
@@ -17,9 +20,6 @@ from bijux_phylogenetics.phylo.likelihood.nucleotide_finite_state import (
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     compress_alignment_site_patterns_from_records,
-)
-from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
-    normalize_dna_likelihood_records,
 )
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
@@ -43,11 +43,7 @@ class PartitionedNucleotideModelAssignment:
     ) = None
     root_prior_policy: str | None = None
     root_prior: (
-        dict[str, float]
-        | numpy.ndarray
-        | list[float]
-        | tuple[float, ...]
-        | None
+        dict[str, float] | numpy.ndarray | list[float] | tuple[float, ...] | None
     ) = None
     fixed_root_state: str | None = None
 
@@ -92,8 +88,7 @@ def compile_partitioned_nucleotide_likelihood_analysis(
         partition_map=partition_map,
         partition_context_linkage_key_resolver=(
             lambda partition_name, _data_type, _surface: (
-                assignment_by_name[partition_name].context_linkage_key
-                or partition_name
+                assignment_by_name[partition_name].context_linkage_key or partition_name
             )
         ),
         site_weight_by_position=site_weight_by_position,

@@ -6,3 +6,11 @@ from .contracts import (
     PublicationPackageComparisonCheckRow,
     PublicationPackageComparisonResult,
 )
+
+__all__ = [
+    "annotations",
+    "write_publication_package_comparison_report",
+    "PublicationPackageComparisonArtifactRow",
+    "PublicationPackageComparisonCheckRow",
+    "PublicationPackageComparisonResult",
+]

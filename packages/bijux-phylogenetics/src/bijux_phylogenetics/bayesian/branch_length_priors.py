@@ -268,7 +268,10 @@ def evaluate_branch_length_log_prior(
             owner_name="branch-length prior evaluation",
             field_name="upper_bound",
         )
-        if validated_branch_length < lower_bound or validated_branch_length > upper_bound:
+        if (
+            validated_branch_length < lower_bound
+            or validated_branch_length > upper_bound
+        ):
             return -math.inf
         return -math.log(upper_bound - lower_bound)
     raise PhylogeneticsError(

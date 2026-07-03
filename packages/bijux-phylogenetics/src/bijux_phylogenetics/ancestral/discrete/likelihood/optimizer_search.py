@@ -114,8 +114,7 @@ def build_discrete_initial_candidates(
         )
     )
     candidates.extend(_perturbed_discrete_seed_candidates(equal_seed, limit=2))
-    candidates = _deduplicated_discrete_initial_candidates(candidates)
-    return candidates
+    return _deduplicated_discrete_initial_candidates(candidates)
 
 
 def _scale_from_log_parameters(log_parameters: numpy.ndarray) -> float:

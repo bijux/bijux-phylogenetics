@@ -34,9 +34,7 @@ def test_run_phytools_parity_cases_passes_representative_shards_against_fake_ref
     assert first.phytools_version == "2.5.2"
     assert first.r_version == "4.6.0"
     assert first.reference_summary is not None
-    assert {
-        observation.function_name for observation in report.observations
-    } == {
+    assert {observation.function_name for observation in report.observations} == {
         "phytools::densityMap",
         "phytools::make.simmap(model='ER')",
     }

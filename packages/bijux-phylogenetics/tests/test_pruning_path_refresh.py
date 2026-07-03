@@ -13,9 +13,7 @@ from bijux_phylogenetics.phylo.likelihood.pruning import (
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 
 
-def test_refresh_postorder_conditional_likelihoods_updates_only_affected_path() -> (
-    None
-):
+def test_refresh_postorder_conditional_likelihoods_updates_only_affected_path() -> None:
     tree = _balanced_four_tip_tree()
     states_by_taxon = {"A": "0", "B": "1", "C": "0", "D": "1"}
     transition_by_node_id = {
@@ -41,9 +39,15 @@ def test_refresh_postorder_conditional_likelihoods_updates_only_affected_path() 
     changed_leaf = left_internal.children[0]
     transition_by_node_id[changed_leaf.node_id] = _transition_matrix(0.35)
 
-    unaffected_conditional = original_pass.conditional_by_node_id[right_internal.node_id]
-    unaffected_scale = original_pass.subtree_log_scaling_by_node_id[right_internal.node_id]
-    previous_left_conditional = original_pass.conditional_by_node_id[left_internal.node_id]
+    unaffected_conditional = original_pass.conditional_by_node_id[
+        right_internal.node_id
+    ]
+    unaffected_scale = original_pass.subtree_log_scaling_by_node_id[
+        right_internal.node_id
+    ]
+    previous_left_conditional = original_pass.conditional_by_node_id[
+        left_internal.node_id
+    ]
     previous_root_conditional = original_pass.conditional_by_node_id[tree.root.node_id]
 
     refresh_postorder_conditional_likelihoods(
@@ -82,7 +86,10 @@ def test_refresh_postorder_conditional_likelihoods_updates_only_affected_path() 
         rel_tol=0.0,
         abs_tol=1e-12,
     )
-    assert original_pass.conditional_by_node_id[right_internal.node_id] is unaffected_conditional
+    assert (
+        original_pass.conditional_by_node_id[right_internal.node_id]
+        is unaffected_conditional
+    )
     assert (
         original_pass.subtree_log_scaling_by_node_id[right_internal.node_id]
         == unaffected_scale

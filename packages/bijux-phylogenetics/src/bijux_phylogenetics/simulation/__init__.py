@@ -112,55 +112,127 @@ __all__ = [
 
 if TYPE_CHECKING:
     from .alignment import (
-        simulate_dna_alignment,
-        simulate_protein_alignment,
-        write_simulated_alignment,
+        simulate_dna_alignment as simulate_dna_alignment,
+    )
+    from .alignment import (
+        simulate_protein_alignment as simulate_protein_alignment,
+    )
+    from .alignment import (
+        write_simulated_alignment as write_simulated_alignment,
     )
     from .continuous import (
-        simulate_brownian_trait_collection,
-        simulate_brownian_traits,
-        simulate_correlated_brownian_trait_collection,
-        simulate_correlated_brownian_traits,
-        simulate_early_burst_traits,
-        simulate_ou_traits,
-        simulate_speciational_trait_collection,
-        simulate_speciational_traits,
-        write_continuous_trait_collection_summary_table,
-        write_continuous_trait_collection_table,
-        write_continuous_trait_table,
-        write_correlated_continuous_trait_collection_summary_table,
-        write_correlated_continuous_trait_collection_table,
-        write_correlated_continuous_trait_table,
+        simulate_brownian_trait_collection as simulate_brownian_trait_collection,
+    )
+    from .continuous import (
+        simulate_brownian_traits as simulate_brownian_traits,
+    )
+    from .continuous import (
+        simulate_correlated_brownian_trait_collection as simulate_correlated_brownian_trait_collection,
+    )
+    from .continuous import (
+        simulate_correlated_brownian_traits as simulate_correlated_brownian_traits,
+    )
+    from .continuous import (
+        simulate_early_burst_traits as simulate_early_burst_traits,
+    )
+    from .continuous import (
+        simulate_ou_traits as simulate_ou_traits,
+    )
+    from .continuous import (
+        simulate_speciational_trait_collection as simulate_speciational_trait_collection,
+    )
+    from .continuous import (
+        simulate_speciational_traits as simulate_speciational_traits,
+    )
+    from .continuous import (
+        write_continuous_trait_collection_summary_table as write_continuous_trait_collection_summary_table,
+    )
+    from .continuous import (
+        write_continuous_trait_collection_table as write_continuous_trait_collection_table,
+    )
+    from .continuous import (
+        write_continuous_trait_table as write_continuous_trait_table,
+    )
+    from .continuous import (
+        write_correlated_continuous_trait_collection_summary_table as write_correlated_continuous_trait_collection_summary_table,
+    )
+    from .continuous import (
+        write_correlated_continuous_trait_collection_table as write_correlated_continuous_trait_collection_table,
+    )
+    from .continuous import (
+        write_correlated_continuous_trait_table as write_correlated_continuous_trait_table,
     )
     from .discrete import (
-        simulate_discrete_histories,
-        simulate_discrete_traits,
-        write_discrete_history_branch_truth_table,
-        write_discrete_history_event_table,
-        write_discrete_history_node_truth_table,
-        write_discrete_history_segment_table,
-        write_discrete_history_summary_table,
-        write_discrete_history_tip_truth_table,
-        write_discrete_trait_table,
+        simulate_discrete_histories as simulate_discrete_histories,
+    )
+    from .discrete import (
+        simulate_discrete_traits as simulate_discrete_traits,
+    )
+    from .discrete import (
+        write_discrete_history_branch_truth_table as write_discrete_history_branch_truth_table,
+    )
+    from .discrete import (
+        write_discrete_history_event_table as write_discrete_history_event_table,
+    )
+    from .discrete import (
+        write_discrete_history_node_truth_table as write_discrete_history_node_truth_table,
+    )
+    from .discrete import (
+        write_discrete_history_segment_table as write_discrete_history_segment_table,
+    )
+    from .discrete import (
+        write_discrete_history_summary_table as write_discrete_history_summary_table,
+    )
+    from .discrete import (
+        write_discrete_history_tip_truth_table as write_discrete_history_tip_truth_table,
+    )
+    from .discrete import (
+        write_discrete_trait_table as write_discrete_trait_table,
     )
     from .reference import (
-        validate_geiger_sim_char_reference_examples,
+        validate_geiger_sim_char_reference_examples as validate_geiger_sim_char_reference_examples,
     )
     from .trees import (
-        simulate_birth_death_trees,
-        simulate_coalescent_tree,
-        simulate_coalescent_trees,
-        simulate_multispecies_coalescent_gene_tree,
-        simulate_random_tree,
-        simulate_random_trees,
-        write_coalescent_skyline_table,
-        write_coalescent_waiting_time_table,
-        write_multispecies_coalescent_branch_table,
-        write_multispecies_coalescent_event_table,
-        write_simulated_tree,
-        write_tree_set,
-        write_tree_simulation_envelope_table,
-        write_tree_simulation_record_table,
+        simulate_birth_death_trees as simulate_birth_death_trees,
+    )
+    from .trees import (
+        simulate_coalescent_tree as simulate_coalescent_tree,
+    )
+    from .trees import (
+        simulate_coalescent_trees as simulate_coalescent_trees,
+    )
+    from .trees import (
+        simulate_multispecies_coalescent_gene_tree as simulate_multispecies_coalescent_gene_tree,
+    )
+    from .trees import (
+        simulate_random_tree as simulate_random_tree,
+    )
+    from .trees import (
+        simulate_random_trees as simulate_random_trees,
+    )
+    from .trees import (
+        write_coalescent_skyline_table as write_coalescent_skyline_table,
+    )
+    from .trees import (
+        write_coalescent_waiting_time_table as write_coalescent_waiting_time_table,
+    )
+    from .trees import (
+        write_multispecies_coalescent_branch_table as write_multispecies_coalescent_branch_table,
+    )
+    from .trees import (
+        write_multispecies_coalescent_event_table as write_multispecies_coalescent_event_table,
+    )
+    from .trees import (
+        write_simulated_tree as write_simulated_tree,
+    )
+    from .trees import (
+        write_tree_set as write_tree_set,
+    )
+    from .trees import (
+        write_tree_simulation_envelope_table as write_tree_simulation_envelope_table,
+    )
+    from .trees import (
+        write_tree_simulation_record_table as write_tree_simulation_record_table,
     )
 
 

@@ -53,9 +53,7 @@ def test_validate_discrete_ancestral_reference_examples_covers_policy_surfaces()
     root_prior = observations["root_prior_sensitivity_policy"]
     ordered_er = observations["ordered_transition_constraints_equal_rates"]
     ordered_sym = observations["ordered_transition_constraints_symmetric"]
-    ordered_ard = observations[
-        "ordered_transition_constraints_all_rates_different"
-    ]
+    ordered_ard = observations["ordered_transition_constraints_all_rates_different"]
     irreversible = observations["irreversible_loss_constraints"]
     ambiguous = observations["ambiguous_internal_states"]
 

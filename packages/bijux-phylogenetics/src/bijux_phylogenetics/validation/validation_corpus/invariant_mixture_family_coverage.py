@@ -62,9 +62,7 @@ class _InvariantFamilySpecification:
     models: tuple[_InvariantModelSpecification, ...]
 
 
-def build_invariant_mixture_family_coverage() -> (
-    InvariantMixtureFamilyCoverageReport
-):
+def build_invariant_mixture_family_coverage() -> InvariantMixtureFamilyCoverageReport:
     """Prove that eligible finite-state models keep invariant mass inside scoring."""
 
     families = [_evaluate_family_case(specification) for specification in _catalog()]
@@ -307,9 +305,7 @@ def _evaluate_model_case(
         invariant_proportion=_INVARIANT_PROPORTION,
     )
     first_site = invariant_report.site_likelihoods[0]
-    likelihood_delta = (
-        invariant_report.log_likelihood - fixed_rate_log_likelihood
-    )
+    likelihood_delta = invariant_report.log_likelihood - fixed_rate_log_likelihood
     likelihood_changed = not math.isclose(
         invariant_report.log_likelihood,
         fixed_rate_log_likelihood,

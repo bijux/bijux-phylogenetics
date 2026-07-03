@@ -10,8 +10,8 @@ from bijux_phylogenetics.phylo.likelihood.bootstrap_inference import (
 )
 from bijux_phylogenetics.phylo.likelihood.maximum_likelihood_result import (
     NucleotideMaximumLikelihoodResult,
-    build_nucleotide_maximum_likelihood_result,
     build_nucleotide_maximum_likelihood_benchmark_metadata,
+    build_nucleotide_maximum_likelihood_result,
     build_nucleotide_maximum_likelihood_support_reports,
     infer_nucleotide_maximum_likelihood_result_from_alignment,
     load_nucleotide_maximum_likelihood_result_json,
@@ -61,7 +61,10 @@ def test_maximum_likelihood_result_round_trips_inference_payload(
     assert reloaded_result.to_dict() == result.to_dict()
     assert reloaded_result.model_name == "JC69"
     assert reloaded_result.final_tree_newick == inference_report.best_final_tree_newick
-    assert reloaded_result.final_log_likelihood == inference_report.best_final_log_likelihood
+    assert (
+        reloaded_result.final_log_likelihood
+        == inference_report.best_final_log_likelihood
+    )
     assert reloaded_result.parameter_values == (
         inference_report.model_selection_report.rows[0].parameter_values
     )
@@ -160,7 +163,10 @@ def test_maximum_likelihood_result_builds_benchmark_metadata_summary() -> None:
     assert metadata.wrapper_correspondence_supported_case_count == 1
     assert metadata.wrapper_correspondence_blocking_case_count == 0
     assert metadata.wrapper_correspondence_all_supported_cases_clear is True
-    assert metadata.wrapper_correspondence_summary_rows == correspondence_report.summary_rows
+    assert (
+        metadata.wrapper_correspondence_summary_rows
+        == correspondence_report.summary_rows
+    )
 
 
 def test_infer_nucleotide_maximum_likelihood_result_from_alignment_can_attach_support() -> (

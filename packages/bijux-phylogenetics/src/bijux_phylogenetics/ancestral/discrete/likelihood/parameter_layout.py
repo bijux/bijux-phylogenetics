@@ -159,7 +159,9 @@ def broadcast_discrete_mk_log_parameters(
     """Project one lower-order Mk parameterization into a richer compatible layout."""
     if source_layout.model == target_layout.model:
         if source_layout.parameter_count != target_layout.parameter_count:
-            raise ValueError("identical-model discrete Mk layouts must have equal arity")
+            raise ValueError(
+                "identical-model discrete Mk layouts must have equal arity"
+            )
         return source_log_parameters
     if source_layout.state_order != target_layout.state_order:
         raise ValueError("cannot broadcast discrete Mk parameters across state orders")
@@ -169,7 +171,10 @@ def broadcast_discrete_mk_log_parameters(
         )
     if source_layout.model == "equal-rates":
         return (source_log_parameters[0],) * target_layout.parameter_count
-    if source_layout.model == "symmetric" and target_layout.model == "all-rates-different":
+    if (
+        source_layout.model == "symmetric"
+        and target_layout.model == "all-rates-different"
+    ):
         target_parameters = [0.0] * target_layout.parameter_count
         for arc in target_layout.arcs:
             left_index = min(arc.source_index, arc.target_index)

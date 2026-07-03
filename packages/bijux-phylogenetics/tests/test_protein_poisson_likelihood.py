@@ -50,7 +50,9 @@ def test_protein_poisson_fixed_tree_likelihood_matches_two_tip_analytical_fixtur
     assert report.missing_policy == "treat-as-missing"
     assert report.ambiguity_policy == "reject"
     assert report.root_prior_source == "stationary"
-    assert report.normalization_policy == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
+    assert (
+        report.normalization_policy == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
+    )
     assert len(report.site_log_likelihoods) == report.site_count
     assert [row.site_position for row in report.site_log_likelihoods] == [1, 2, 3, 4]
     assert all(row.pattern_weight == 1 for row in report.site_log_likelihoods)

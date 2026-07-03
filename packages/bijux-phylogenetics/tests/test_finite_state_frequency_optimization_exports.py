@@ -40,4 +40,3 @@ def test_public_likelihood_exports_finite_state_frequency_optimization_surface()
         likelihood_api.optimize_protein_equal_input_state_frequencies
         is optimize_protein_equal_input_state_frequencies
     )
-

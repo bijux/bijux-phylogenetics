@@ -13,16 +13,15 @@ from bijux_phylogenetics.benchmark.likelihood_tree_inference import (
     NativeMaximumLikelihoodAccuracyBenchmarkObservation,
     NativeMaximumLikelihoodAccuracyBenchmarkReport,
     NativeMaximumLikelihoodMemoryBenchmarkReport,
+    NativeMaximumLikelihoodSpeedBenchmarkReport,
     NativeMaximumLikelihoodSuiteObservation,
     NativeMaximumLikelihoodSuiteReport,
     NativeMaximumLikelihoodSuiteSummaryRow,
-    NativeMaximumLikelihoodSpeedBenchmarkReport,
     benchmark_native_maximum_likelihood_suite,
     write_native_maximum_likelihood_suite_observation_table,
     write_native_maximum_likelihood_suite_run_json,
     write_native_maximum_likelihood_suite_summary_table,
 )
-
 
 pytestmark = pytest.mark.slow
 
@@ -45,21 +44,22 @@ def test_benchmark_native_maximum_likelihood_suite_reports_all_required_dimensio
     assert report.wrapper_report.case_count == 4
     assert report.limitations
     assert report.all_supported_cases_clear is True
-    assert {
-        row.dimension for row in report.observations
-    } == {"speed", "memory", "likelihood", "topology", "support", "accuracy"}
+    assert {row.dimension for row in report.observations} == {
+        "speed",
+        "memory",
+        "likelihood",
+        "topology",
+        "support",
+        "accuracy",
+    }
 
     observations = {(row.case_id, row.dimension): row for row in report.observations}
     assert (
-        observations[
-            ("iqtree-jc69-maximum-likelihood", "likelihood")
-        ].status
+        observations[("iqtree-jc69-maximum-likelihood", "likelihood")].status
         == "native-advantage"
     )
     assert (
-        observations[
-            ("iqtree-jc69-ultrafast-bootstrap-support", "support")
-        ].status
+        observations[("iqtree-jc69-ultrafast-bootstrap-support", "support")].status
         == "native-advantage"
     )
     assert (
@@ -69,9 +69,7 @@ def test_benchmark_native_maximum_likelihood_suite_reports_all_required_dimensio
         == "expected-assumption-difference"
     )
     assert (
-        observations[
-            ("raxml-small-maximum-likelihood-reference", "likelihood")
-        ].status
+        observations[("raxml-small-maximum-likelihood-reference", "likelihood")].status
         == "unsupported-case"
     )
     assert (

@@ -36,7 +36,9 @@ def test_discrete_equal_input_state_frequency_optimization_keeps_simplex_valid()
         max_coordinate_passes=4,
     )
 
-    optimized_values = {row.state_label: row.optimized_value for row in report.state_rows}
+    optimized_values = {
+        row.state_label: row.optimized_value for row in report.state_rows
+    }
 
     assert report.model_name == "finite-state equal-input"
     assert report.state_count == 4

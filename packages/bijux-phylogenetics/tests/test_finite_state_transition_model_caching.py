@@ -6,10 +6,10 @@ import numpy
 
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
-    evaluate_finite_state_tree_log_likelihood_from_patterns,
     FiniteStateLikelihoodSurface,
     clear_shared_finite_state_transition_cache,
     compile_finite_state_likelihood_context,
+    evaluate_finite_state_tree_log_likelihood_from_patterns,
     shared_finite_state_transition_cache_entry_count,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (

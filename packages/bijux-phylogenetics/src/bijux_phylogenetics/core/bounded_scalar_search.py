@@ -261,9 +261,7 @@ def run_bounded_scalar_golden_section_maximization(
     if tolerance <= 0.0:
         raise ValueError("tolerance must be positive for bounded scalar search")
     if max_iterations < 1:
-        raise ValueError(
-            "max_iterations must be at least 1 for bounded scalar search"
-        )
+        raise ValueError("max_iterations must be at least 1 for bounded scalar search")
 
     phi = (math.sqrt(5.0) - 1.0) / 2.0
     original_lower_bound = lower_bound

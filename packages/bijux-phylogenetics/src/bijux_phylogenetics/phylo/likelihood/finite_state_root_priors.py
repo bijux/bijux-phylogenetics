@@ -54,9 +54,7 @@ def validate_finite_state_root_prior(
         if unexpected_states or missing_states:
             details: list[str] = []
             if unexpected_states:
-                details.append(
-                    "unexpected states: " + ", ".join(unexpected_states[:8])
-                )
+                details.append("unexpected states: " + ", ".join(unexpected_states[:8]))
             if missing_states:
                 details.append("missing states: " + ", ".join(missing_states[:8]))
             raise InvalidAlignmentError(

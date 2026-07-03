@@ -113,8 +113,7 @@ def test_ou_continuous_trait_runner_emits_sampled_parameter_summaries() -> None:
     warning_kinds = [warning.kind for warning in report.identifiability_warnings]
     assert "small_sample_size" in warning_kinds
     assert all(
-        state.likelihood_context.analysis_name
-        == "ornstein-uhlenbeck-continuous-trait"
+        state.likelihood_context.analysis_name == "ornstein-uhlenbeck-continuous-trait"
         for state in report.chain_report.sampled_states
     )
     assert all(

@@ -205,7 +205,9 @@ def test_shared_prior_protocol_supports_calibration_prior_definitions() -> None:
     )[0]
 
     assert supports_bayesian_prior_model_protocol(calibration_prior)
-    assert summarize_bayesian_prior_model(calibration_prior) == BayesianPriorModelSummary(
+    assert summarize_bayesian_prior_model(
+        calibration_prior
+    ) == BayesianPriorModelSummary(
         family="offset-exponential",
         parameter_values={
             "offset_age": 0.75,

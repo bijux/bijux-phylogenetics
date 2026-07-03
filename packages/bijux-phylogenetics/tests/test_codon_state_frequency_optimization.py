@@ -39,5 +39,7 @@ def test_codon_state_frequency_optimization_improves_fixed_tree_likelihood() -> 
     assert min(optimized_values) > 0.0
     assert max(optimized_values) > min(optimized_values)
     if not report.converged:
-        assert "codon CTMC stationary-frequency search did not converge" in report.warnings
+        assert (
+            "codon CTMC stationary-frequency search did not converge" in report.warnings
+        )
     assert report.parameter_diagnostics

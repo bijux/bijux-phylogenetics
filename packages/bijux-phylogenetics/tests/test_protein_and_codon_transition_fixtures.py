@@ -13,11 +13,11 @@ from bijux_phylogenetics.phylo.likelihood.poisson import (
     protein_poisson_rate_matrix,
     protein_poisson_transition_probability_matrix,
 )
+from bijux_phylogenetics.phylo.likelihood.protein import PROTEIN_STATE_ORDER
 from bijux_phylogenetics.phylo.likelihood.pruning import (
     build_transition_matrix_evaluator,
     transition_probability_matrix,
 )
-from bijux_phylogenetics.phylo.likelihood.protein import PROTEIN_STATE_ORDER
 
 
 @pytest.mark.parametrize(

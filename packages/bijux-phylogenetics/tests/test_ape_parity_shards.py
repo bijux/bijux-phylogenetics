@@ -17,9 +17,7 @@ def test_list_ape_parity_shards_groups_cases_by_owned_function_surface() -> None
     shards = list_ape_parity_shards()
 
     mrca_shard = next(
-        shard
-        for shard in shards
-        if "get-mrca-balanced-two-tip" in shard.case_ids
+        shard for shard in shards if "get-mrca-balanced-two-tip" in shard.case_ids
     )
 
     assert mrca_shard.shard_id == "find_tree_mrca"
@@ -46,6 +44,6 @@ def test_run_ape_parity_cases_supports_shard_selection(tmp_path: Path) -> None:
     assert {observation.case_id for observation in report.observations} == set(
         mrca_shard.case_ids
     )
-    assert {observation.python_function_name for observation in report.observations} == {
-        "find_tree_mrca"
-    }
+    assert {
+        observation.python_function_name for observation in report.observations
+    } == {"find_tree_mrca"}

@@ -225,9 +225,7 @@ def test_run_bayesian_inference_runs_native_fixed_topology_chain() -> None:
 
     assert isinstance(report, FixedTopologyDnaRunReport)
     assert report.chain_report.accepted_count >= 1
-    assert all(
-        row.substitution_model_name == "HKY85" for row in report.posterior_rows
-    )
+    assert all(row.substitution_model_name == "HKY85" for row in report.posterior_rows)
 
 
 def test_run_bayesian_inference_runs_native_joint_topology_chain() -> None:

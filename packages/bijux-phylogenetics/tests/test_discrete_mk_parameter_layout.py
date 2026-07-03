@@ -48,9 +48,15 @@ def test_symmetric_layout_groups_reverse_arcs_into_shared_slots() -> None:
     )
 
     assert layout.parameter_count == 3
-    assert layout.parameter_index_for_pair(0, 1) == layout.parameter_index_for_pair(1, 0)
-    assert layout.parameter_index_for_pair(0, 2) == layout.parameter_index_for_pair(2, 0)
-    assert layout.parameter_index_for_pair(1, 2) == layout.parameter_index_for_pair(2, 1)
+    assert layout.parameter_index_for_pair(0, 1) == layout.parameter_index_for_pair(
+        1, 0
+    )
+    assert layout.parameter_index_for_pair(0, 2) == layout.parameter_index_for_pair(
+        2, 0
+    )
+    assert layout.parameter_index_for_pair(1, 2) == layout.parameter_index_for_pair(
+        2, 1
+    )
 
 
 def test_ard_layout_keeps_each_allowed_direction_in_its_own_slot() -> None:
@@ -62,9 +68,15 @@ def test_ard_layout_keeps_each_allowed_direction_in_its_own_slot() -> None:
     )
 
     assert layout.parameter_count == 6
-    assert layout.parameter_index_for_pair(0, 1) != layout.parameter_index_for_pair(1, 0)
-    assert layout.parameter_index_for_pair(0, 2) != layout.parameter_index_for_pair(2, 0)
-    assert layout.parameter_index_for_pair(1, 2) != layout.parameter_index_for_pair(2, 1)
+    assert layout.parameter_index_for_pair(0, 1) != layout.parameter_index_for_pair(
+        1, 0
+    )
+    assert layout.parameter_index_for_pair(0, 2) != layout.parameter_index_for_pair(
+        2, 0
+    )
+    assert layout.parameter_index_for_pair(1, 2) != layout.parameter_index_for_pair(
+        2, 1
+    )
 
 
 def test_irreversible_model_name_aliases_resolve_to_native_surface() -> None:
@@ -193,7 +205,9 @@ def test_rate_matrix_rendering_keeps_ard_directions_distinct() -> None:
     assert rate_matrix[1, 2] != rate_matrix[2, 1]
 
 
-def test_rate_matrix_rendering_keeps_irreversible_reverse_arcs_structurally_zero() -> None:
+def test_rate_matrix_rendering_keeps_irreversible_reverse_arcs_structurally_zero() -> (
+    None
+):
     rate_matrix = rate_matrix_from_log_parameters(
         [0.1],
         state_order=["present", "absent"],

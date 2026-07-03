@@ -87,15 +87,17 @@ def test_discrete_mk_discrete_gamma_invariant_mixture_matches_shared_surface(
 ) -> None:
     tree = load_tree(FIXTURE_TREE)
 
-    report = evaluate_discrete_mk_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-        tree,
-        records,
-        state_order=state_order,
-        rate_matrix=rate_matrix,
-        model_name=model_name,
-        alpha=0.8,
-        category_count=4,
-        invariant_proportion=0.35,
+    report = (
+        evaluate_discrete_mk_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+            tree,
+            records,
+            state_order=state_order,
+            rate_matrix=rate_matrix,
+            model_name=model_name,
+            alpha=0.8,
+            category_count=4,
+            invariant_proportion=0.35,
+        )
     )
     surface = build_discrete_mk_finite_state_surface(
         state_order=state_order,
@@ -142,9 +144,7 @@ def test_discrete_mk_discrete_gamma_invariant_mixture_matches_shared_surface(
     )
 
 
-def test_discrete_mk_discrete_gamma_invariant_mixture_emits_boundary_warnings() -> (
-    None
-):
+def test_discrete_mk_discrete_gamma_invariant_mixture_emits_boundary_warnings() -> None:
     tree = load_tree(FIXTURE_TREE)
     records = [
         AlignmentRecord(identifier="A", sequence="north"),
@@ -165,18 +165,20 @@ def test_discrete_mk_discrete_gamma_invariant_mixture_emits_boundary_warnings() 
         },
     )
 
-    report = evaluate_discrete_mk_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-        tree,
-        records,
-        state_order=("north", "south", "west"),
-        rate_matrix=rate_matrix,
-        model_name="unordered discrete Mk",
-        alpha=0.8,
-        category_count=4,
-        invariant_proportion=0.35,
-        lower_invariant_proportion_bound=0.35,
-        upper_invariant_proportion_bound=0.5,
-        emit_boundary_warnings=True,
+    report = (
+        evaluate_discrete_mk_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+            tree,
+            records,
+            state_order=("north", "south", "west"),
+            rate_matrix=rate_matrix,
+            model_name="unordered discrete Mk",
+            alpha=0.8,
+            category_count=4,
+            invariant_proportion=0.35,
+            lower_invariant_proportion_bound=0.35,
+            upper_invariant_proportion_bound=0.5,
+            emit_boundary_warnings=True,
+        )
     )
 
     assert report.hit_lower_invariant_proportion_boundary is True

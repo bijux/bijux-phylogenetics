@@ -128,7 +128,9 @@ def test_compiled_branch_update_noop_preserves_cached_site_evaluation() -> None:
         ),
     )
     compressed_patterns = _compressed_patterns()
-    evaluate_finite_state_tree_log_likelihood_from_patterns(context, compressed_patterns)
+    evaluate_finite_state_tree_log_likelihood_from_patterns(
+        context, compressed_patterns
+    )
     cached_site_evaluation = next(iter(context.site_evaluation_by_key.values()))
     changed_leaf_node_id = next(
         node.node_id for node in tree.iter_leaves() if node.name == "A"

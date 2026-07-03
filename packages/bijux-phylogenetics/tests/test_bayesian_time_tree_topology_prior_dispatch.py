@@ -102,14 +102,10 @@ def test_time_tree_topology_prior_support_guard_accepts_supported_models() -> No
         )
     )
     assert supports_time_tree_topology_prior_model(
-        build_constant_population_coalescent_tree_prior(
-            effective_population_size=3.0
-        )
+        build_constant_population_coalescent_tree_prior(effective_population_size=3.0)
     )
     assert supports_time_tree_topology_prior_model(
-        build_skyline_coalescent_tree_prior(
-            [SkylineCoalescentEpoch(0.0, None, 3.0)]
-        )
+        build_skyline_coalescent_tree_prior([SkylineCoalescentEpoch(0.0, None, 3.0)])
     )
     assert not supports_time_tree_topology_prior_model(object())
 

@@ -60,17 +60,15 @@ def test_selected_nucleotide_discrete_gamma_invariant_mixture_matches_shared_sur
         AlignmentRecord(identifier="B", sequence="AAAA"),
     ]
 
-    report = (
-        evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-            tree,
-            records,
-            model_name=model_name,
-            owner_name="selected nucleotide gamma-invariant test",
-            alpha=0.8,
-            category_count=4,
-            invariant_proportion=0.35,
-            **kwargs,
-        )
+    report = evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+        tree,
+        records,
+        model_name=model_name,
+        owner_name="selected nucleotide gamma-invariant test",
+        alpha=0.8,
+        category_count=4,
+        invariant_proportion=0.35,
+        **kwargs,
     )
     surface = build_selected_nucleotide_finite_state_surface(
         records,
@@ -113,19 +111,17 @@ def test_selected_nucleotide_discrete_gamma_invariant_mixture_emits_boundary_war
         AlignmentRecord(identifier="B", sequence="AAAA"),
     ]
 
-    report = (
-        evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-            tree,
-            records,
-            model_name="jc69",
-            owner_name="selected nucleotide gamma-invariant test",
-            alpha=0.8,
-            category_count=4,
-            invariant_proportion=0.35,
-            lower_invariant_proportion_bound=0.35,
-            upper_invariant_proportion_bound=0.5,
-            emit_boundary_warnings=True,
-        )
+    report = evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+        tree,
+        records,
+        model_name="jc69",
+        owner_name="selected nucleotide gamma-invariant test",
+        alpha=0.8,
+        category_count=4,
+        invariant_proportion=0.35,
+        lower_invariant_proportion_bound=0.35,
+        upper_invariant_proportion_bound=0.5,
+        emit_boundary_warnings=True,
     )
 
     assert report.hit_lower_invariant_proportion_boundary is True
@@ -141,27 +137,23 @@ def test_selected_nucleotide_discrete_gamma_invariant_mixture_from_alignment_mat
     tree_path = FIXTURES / "trees" / "jc69_likelihood_tree_2_taxa.nwk"
     alignment_path = FIXTURES / "alignments" / "jc69_likelihood_alignment_2_taxa.fasta"
 
-    from_alignment = (
-        evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
-            tree_path,
-            alignment_path,
-            model_name="jc69",
-            owner_name="selected nucleotide gamma-invariant test",
-            alpha=0.8,
-            category_count=4,
-            invariant_proportion=0.35,
-        )
+    from_alignment = evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
+        tree_path,
+        alignment_path,
+        model_name="jc69",
+        owner_name="selected nucleotide gamma-invariant test",
+        alpha=0.8,
+        category_count=4,
+        invariant_proportion=0.35,
     )
-    direct = (
-        evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-            load_tree(tree_path),
-            load_fasta_alignment(alignment_path),
-            model_name="jc69",
-            owner_name="selected nucleotide gamma-invariant test",
-            alpha=0.8,
-            category_count=4,
-            invariant_proportion=0.35,
-        )
+    direct = evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+        load_tree(tree_path),
+        load_fasta_alignment(alignment_path),
+        model_name="jc69",
+        owner_name="selected nucleotide gamma-invariant test",
+        alpha=0.8,
+        category_count=4,
+        invariant_proportion=0.35,
     )
 
     assert from_alignment.log_likelihood == direct.log_likelihood

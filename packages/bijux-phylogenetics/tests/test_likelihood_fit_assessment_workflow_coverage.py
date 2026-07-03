@@ -28,7 +28,8 @@ def fixture(group: str, name: str) -> Path:
         (
             lambda: optimize_empirical_protein_branch_lengths_from_alignment(
                 fixture(
-                    "trees", "empirical_protein_branch_optimization_start_tree_2_taxa.nwk"
+                    "trees",
+                    "empirical_protein_branch_optimization_start_tree_2_taxa.nwk",
                 ),
                 fixture(
                     "alignments", "empirical_protein_likelihood_alignment_2_taxa.fasta"
@@ -42,46 +43,53 @@ def fixture(group: str, name: str) -> Path:
             "failed",
         ),
         (
-            lambda: optimize_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment(
-                fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-                fixture(
-                    "alignments",
-                    "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
-                ),
-                rate_matrix=_compact_polar_rate_matrix(),
-                root_prior=_biased_root_prior(),
-                matrix_label="compact-polar",
-                initial_invariant_proportion=0.1,
+            lambda: (
+                optimize_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment(
+                    fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+                    fixture(
+                        "alignments",
+                        "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
+                    ),
+                    rate_matrix=_compact_polar_rate_matrix(),
+                    root_prior=_biased_root_prior(),
+                    matrix_label="compact-polar",
+                    initial_invariant_proportion=0.1,
+                )
             ),
             "stable",
         ),
         (
-            lambda: optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
-                fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-                fixture(
-                    "alignments",
-                    "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
-                ),
-                rate_matrix=_compact_polar_rate_matrix(),
-                root_prior=_biased_root_prior(),
-                alpha=0.8,
-                category_count=4,
-                matrix_label="compact-polar",
-                initial_invariant_proportion=0.31,
-                lower_invariant_proportion_bound=0.3,
-                upper_invariant_proportion_bound=0.5,
+            lambda: (
+                optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
+                    fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+                    fixture(
+                        "alignments",
+                        "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
+                    ),
+                    rate_matrix=_compact_polar_rate_matrix(),
+                    root_prior=_biased_root_prior(),
+                    alpha=0.8,
+                    category_count=4,
+                    matrix_label="compact-polar",
+                    initial_invariant_proportion=0.31,
+                    lower_invariant_proportion_bound=0.3,
+                    upper_invariant_proportion_bound=0.5,
+                )
             ),
             "boundary",
         ),
         (
-            lambda: joint_optimization.optimize_fixed_topology_nucleotide_branches_and_model_from_alignment(
-                fixture("trees", "jc69_branch_optimization_start_tree_2_taxa.nwk"),
-                fixture(
-                    "alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta"
-                ),
-                model_name="gtr",
-                max_joint_passes=4,
-                max_model_coordinate_passes=12,
+            lambda: (
+                joint_optimization.optimize_fixed_topology_nucleotide_branches_and_model_from_alignment(
+                    fixture("trees", "jc69_branch_optimization_start_tree_2_taxa.nwk"),
+                    fixture(
+                        "alignments",
+                        "gtr_exchangeability_optimization_alignment_2_taxa.fasta",
+                    ),
+                    model_name="gtr",
+                    max_joint_passes=4,
+                    max_model_coordinate_passes=12,
+                )
             ),
             None,
         ),

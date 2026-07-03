@@ -84,7 +84,9 @@ def test_summarize_irreversible_discrete_reconstruction_prefers_constraint_on_si
 
     assert summary.constrained_parameter_count == 1
     assert summary.unconstrained_parameter_count == 2
-    constrained_fit = next(row for row in report.fit_rows if row.constraint_mode == "constrained")
+    constrained_fit = next(
+        row for row in report.fit_rows if row.constraint_mode == "constrained"
+    )
     unconstrained_fit = next(
         row for row in report.fit_rows if row.constraint_mode == "unconstrained"
     )

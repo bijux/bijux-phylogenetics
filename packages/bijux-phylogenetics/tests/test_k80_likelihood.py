@@ -39,8 +39,7 @@ def test_k80_fixed_tree_likelihood_matches_two_tip_analytical_fixture() -> None:
     assert report.state_count == 4
     assert report.observation_policy == "reject"
     assert (
-        report.normalization_policy
-        == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
+        report.normalization_policy == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
     )
     assert report.kappa == 4.0
     assert report.parameter_count == 1

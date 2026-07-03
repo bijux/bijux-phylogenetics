@@ -18,14 +18,14 @@ from bijux_phylogenetics.comparative.common import (
     build_ou_covariance_matrix,
     load_comparative_dataset,
 )
+from bijux_phylogenetics.comparative.model_selection import (
+    ComparativeModelComparisonReport,
+    ComparativeModelComparisonRow,
+)
 from bijux_phylogenetics.comparative.search import (
     BoundedSearchControls,
     BoundedSearchDiagnostics,
     fit_bounded_scalar_parameter,
-)
-from bijux_phylogenetics.comparative.model_selection import (
-    ComparativeModelComparisonReport,
-    ComparativeModelComparisonRow,
 )
 
 _Z_95 = 1.959963984540054

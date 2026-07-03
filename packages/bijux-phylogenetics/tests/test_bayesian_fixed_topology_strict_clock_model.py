@@ -81,7 +81,9 @@ def test_fixed_topology_strict_clock_model_definition_requires_supported_time_tr
     ):
         build_fixed_topology_strict_clock_model_definition(
             time_tree_prior=object(),
-            global_clock_rate_prior=build_exponential_clock_model_scalar_prior(rate=2.0),
+            global_clock_rate_prior=build_exponential_clock_model_scalar_prior(
+                rate=2.0
+            ),
         )
 
 

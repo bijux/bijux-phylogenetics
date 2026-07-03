@@ -30,7 +30,28 @@ from .task_execution import _run_workflow_tasks
 from .topology_review import _build_preprocessing_comparison_rows
 from .variant_execution import _run_variant_workflow
 
-__all__ = ["run_rabies_method_sensitivity_panel_workflow"]
+__all__ = [
+    "annotations",
+    "Path",
+    "EngineActiveRunRecord",
+    "acquire_active_engine_run",
+    "clear_active_engine_run",
+    "utc_now_text",
+    "EngineWorkflowError",
+    "_resolve_selected_variant_dataset",
+    "load_rabies_method_sensitivity_panel_dataset",
+    "RabiesMethodSensitivityPanelWorkflowReport",
+    "_aggregate_clades",
+    "_build_conclusion_rows",
+    "_format_float",
+    "_workflow_execution_record_path",
+    "_write_task_log",
+    "_write_workflow_execution_record",
+    "_run_workflow_tasks",
+    "_build_preprocessing_comparison_rows",
+    "_run_variant_workflow",
+    "run_rabies_method_sensitivity_panel_workflow",
+]
 
 
 def run_rabies_method_sensitivity_panel_workflow(

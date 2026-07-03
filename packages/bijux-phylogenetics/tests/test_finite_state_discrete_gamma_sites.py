@@ -64,13 +64,15 @@ def test_finite_state_discrete_gamma_invariant_report_writes_site_likelihood_tab
         owner_name="finite-state shared gamma-invariant proof",
     )
     compressed_patterns = compress_alignment_site_patterns_from_records(records)
-    report = evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-        tree,
-        compressed_patterns,
-        surface=surface,
-        alpha=0.8,
-        category_count=4,
-        invariant_proportion=0.35,
+    report = (
+        evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+            tree,
+            compressed_patterns,
+            surface=surface,
+            alpha=0.8,
+            category_count=4,
+            invariant_proportion=0.35,
+        )
     )
 
     output_path = tmp_path / "jc69-gamma-invariant-site-likelihoods.tsv"

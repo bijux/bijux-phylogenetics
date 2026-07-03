@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import math
 
+from bijux_phylogenetics.comparative.search import BoundedSearchControls
 import bijux_phylogenetics.comparative.search.bounded as comparative_bounded_module
 import bijux_phylogenetics.comparative.search.bounded_scalar_fit as comparative_fit_module
 import bijux_phylogenetics.phylo.likelihood.parameter_search as phylo_parameter_search_module
-from bijux_phylogenetics.comparative.search import BoundedSearchControls
 
 
 def test_phylo_bounded_likelihood_search_delegates_to_shared_golden_section_owner(

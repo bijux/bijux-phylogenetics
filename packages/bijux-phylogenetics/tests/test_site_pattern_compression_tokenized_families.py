@@ -55,9 +55,7 @@ def test_shared_tokenized_compressor_preserves_multicharacter_mk_states() -> Non
         ("north", "south", "north")
     ]
     assert [pattern.weight for pattern in compressed_patterns.patterns] == [1]
-    assert [pattern.site_positions for pattern in compressed_patterns.patterns] == [
-        [1]
-    ]
+    assert [pattern.site_positions for pattern in compressed_patterns.patterns] == [[1]]
 
 
 def _codon_tokens(sequence: str) -> tuple[str, ...]:

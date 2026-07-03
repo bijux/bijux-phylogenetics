@@ -84,7 +84,9 @@ class _GammaInvariantFamilySpecification:
     models: tuple[_GammaInvariantModelSpecification, ...]
 
 
-def build_gamma_invariant_family_coverage() -> GammaInvariantMixtureFamilyCoverageReport:
+def build_gamma_invariant_family_coverage() -> (
+    GammaInvariantMixtureFamilyCoverageReport
+):
     """Prove that eligible model families keep gamma and invariant components active together."""
 
     families = [_evaluate_family_case(specification) for specification in _catalog()]
@@ -115,11 +117,39 @@ def _catalog() -> tuple[_GammaInvariantFamilySpecification, ...]:
                 "covers the owned nucleotide model catalogue through the selected-nucleotide likelihood surface",
             ],
             models=(
-                _GammaInvariantModelSpecification("JC69", ["uses a constant DNA pattern so both gamma and invariant mass stay identifiable"], _build_jc69_case),
-                _GammaInvariantModelSpecification("K80", ["keeps transition bias active while proving combined +G+I handling"], _build_k80_case),
-                _GammaInvariantModelSpecification("F81", ["uses unequal base frequencies while testing combined rate heterogeneity"], _build_f81_case),
-                _GammaInvariantModelSpecification("HKY85", ["covers simultaneous kappa, unequal frequencies, and +G+I"], _build_hky85_case),
-                _GammaInvariantModelSpecification("GTR", ["covers the most general native nucleotide surface under combined +G+I"], _build_gtr_case),
+                _GammaInvariantModelSpecification(
+                    "JC69",
+                    [
+                        "uses a constant DNA pattern so both gamma and invariant mass stay identifiable"
+                    ],
+                    _build_jc69_case,
+                ),
+                _GammaInvariantModelSpecification(
+                    "K80",
+                    [
+                        "keeps transition bias active while proving combined +G+I handling"
+                    ],
+                    _build_k80_case,
+                ),
+                _GammaInvariantModelSpecification(
+                    "F81",
+                    [
+                        "uses unequal base frequencies while testing combined rate heterogeneity"
+                    ],
+                    _build_f81_case,
+                ),
+                _GammaInvariantModelSpecification(
+                    "HKY85",
+                    ["covers simultaneous kappa, unequal frequencies, and +G+I"],
+                    _build_hky85_case,
+                ),
+                _GammaInvariantModelSpecification(
+                    "GTR",
+                    [
+                        "covers the most general native nucleotide surface under combined +G+I"
+                    ],
+                    _build_gtr_case,
+                ),
             ),
         ),
         _GammaInvariantFamilySpecification(
@@ -128,7 +158,13 @@ def _catalog() -> tuple[_GammaInvariantFamilySpecification, ...]:
                 "checks the native protein Poisson likelihood surface separately from empirical matrix models",
             ],
             models=(
-                _GammaInvariantModelSpecification("protein Poisson", ["uses one constant amino-acid pattern so both mixture components stay measurable"], _build_protein_poisson_case),
+                _GammaInvariantModelSpecification(
+                    "protein Poisson",
+                    [
+                        "uses one constant amino-acid pattern so both mixture components stay measurable"
+                    ],
+                    _build_protein_poisson_case,
+                ),
             ),
         ),
         _GammaInvariantFamilySpecification(
@@ -137,9 +173,21 @@ def _catalog() -> tuple[_GammaInvariantFamilySpecification, ...]:
                 "covers the named empirical matrix catalogue through the empirical protein +G+I wrapper",
             ],
             models=(
-                _GammaInvariantModelSpecification("JTT", ["covers the JTT empirical matrix under combined +G+I"], _build_protein_empirical_jtt_case),
-                _GammaInvariantModelSpecification("WAG", ["covers the WAG empirical matrix under combined +G+I"], _build_protein_empirical_wag_case),
-                _GammaInvariantModelSpecification("LG", ["covers the LG empirical matrix under combined +G+I"], _build_protein_empirical_lg_case),
+                _GammaInvariantModelSpecification(
+                    "JTT",
+                    ["covers the JTT empirical matrix under combined +G+I"],
+                    _build_protein_empirical_jtt_case,
+                ),
+                _GammaInvariantModelSpecification(
+                    "WAG",
+                    ["covers the WAG empirical matrix under combined +G+I"],
+                    _build_protein_empirical_wag_case,
+                ),
+                _GammaInvariantModelSpecification(
+                    "LG",
+                    ["covers the LG empirical matrix under combined +G+I"],
+                    _build_protein_empirical_lg_case,
+                ),
             ),
         ),
         _GammaInvariantFamilySpecification(
@@ -148,7 +196,13 @@ def _catalog() -> tuple[_GammaInvariantFamilySpecification, ...]:
                 "covers the native 61-state codon surface with combined rate heterogeneity and invariant mass",
             ],
             models=(
-                _GammaInvariantModelSpecification("codon CTMC", ["uses a constant coding pattern so codon-state handling remains inside the combined likelihood"], _build_codon_case),
+                _GammaInvariantModelSpecification(
+                    "codon CTMC",
+                    [
+                        "uses a constant coding pattern so codon-state handling remains inside the combined likelihood"
+                    ],
+                    _build_codon_case,
+                ),
             ),
         ),
         _GammaInvariantFamilySpecification(
@@ -157,9 +211,21 @@ def _catalog() -> tuple[_GammaInvariantFamilySpecification, ...]:
                 "proves combined +G+I coverage for unordered ER, SYM, and ARD discrete Mk surfaces",
             ],
             models=(
-                _GammaInvariantModelSpecification("equal-rates", ["covers unordered ER under combined +G+I"], _build_discrete_unordered_equal_rates_case),
-                _GammaInvariantModelSpecification("symmetric", ["covers unordered SYM under combined +G+I"], _build_discrete_unordered_symmetric_case),
-                _GammaInvariantModelSpecification("all-rates-different", ["covers unordered ARD under combined +G+I"], _build_discrete_unordered_ard_case),
+                _GammaInvariantModelSpecification(
+                    "equal-rates",
+                    ["covers unordered ER under combined +G+I"],
+                    _build_discrete_unordered_equal_rates_case,
+                ),
+                _GammaInvariantModelSpecification(
+                    "symmetric",
+                    ["covers unordered SYM under combined +G+I"],
+                    _build_discrete_unordered_symmetric_case,
+                ),
+                _GammaInvariantModelSpecification(
+                    "all-rates-different",
+                    ["covers unordered ARD under combined +G+I"],
+                    _build_discrete_unordered_ard_case,
+                ),
             ),
         ),
         _GammaInvariantFamilySpecification(
@@ -168,9 +234,21 @@ def _catalog() -> tuple[_GammaInvariantFamilySpecification, ...]:
                 "proves combined +G+I coverage for ordered ER, SYM, and ARD discrete Mk surfaces",
             ],
             models=(
-                _GammaInvariantModelSpecification("equal-rates", ["covers ordered ER with adjacent transitions only"], _build_discrete_ordered_equal_rates_case),
-                _GammaInvariantModelSpecification("symmetric", ["covers ordered SYM with adjacent-state symmetry"], _build_discrete_ordered_symmetric_case),
-                _GammaInvariantModelSpecification("all-rates-different", ["covers ordered ARD with per-direction adjacent rates"], _build_discrete_ordered_ard_case),
+                _GammaInvariantModelSpecification(
+                    "equal-rates",
+                    ["covers ordered ER with adjacent transitions only"],
+                    _build_discrete_ordered_equal_rates_case,
+                ),
+                _GammaInvariantModelSpecification(
+                    "symmetric",
+                    ["covers ordered SYM with adjacent-state symmetry"],
+                    _build_discrete_ordered_symmetric_case,
+                ),
+                _GammaInvariantModelSpecification(
+                    "all-rates-different",
+                    ["covers ordered ARD with per-direction adjacent rates"],
+                    _build_discrete_ordered_ard_case,
+                ),
             ),
         ),
         _GammaInvariantFamilySpecification(
@@ -179,7 +257,13 @@ def _catalog() -> tuple[_GammaInvariantFamilySpecification, ...]:
                 "covers the one-way irreversible discrete surface under combined +G+I",
             ],
             models=(
-                _GammaInvariantModelSpecification("irreversible", ["uses one one-way loss surface so reverse transitions remain structurally blocked"], _build_discrete_irreversible_case),
+                _GammaInvariantModelSpecification(
+                    "irreversible",
+                    [
+                        "uses one one-way loss surface so reverse transitions remain structurally blocked"
+                    ],
+                    _build_discrete_irreversible_case,
+                ),
             ),
         ),
     )
@@ -213,7 +297,9 @@ def _evaluate_model_case(
 ) -> GammaInvariantMixtureModelCoverageCase:
     case = specification.case_builder()
     first_site = case.combined_report.site_likelihoods[0]
-    likelihood_delta = case.combined_report.log_likelihood - case.gamma_report.log_likelihood
+    likelihood_delta = (
+        case.combined_report.log_likelihood - case.gamma_report.log_likelihood
+    )
     likelihood_changed = not math.isclose(
         case.combined_report.log_likelihood,
         case.gamma_report.log_likelihood,
@@ -361,22 +447,20 @@ def _build_selected_nucleotide_case(
         alpha=_ALPHA,
         category_count=_CATEGORY_COUNT,
     )
-    combined_report = (
-        evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-            tree,
-            records,
-            model_name=model_name,
-            owner_name="gamma invariant family coverage",
-            alpha=_ALPHA,
-            category_count=_CATEGORY_COUNT,
-            invariant_proportion=_INVARIANT_PROPORTION,
-            lower_invariant_proportion_bound=_INVARIANT_PROPORTION,
-            upper_invariant_proportion_bound=_UPPER_INVARIANT_PROPORTION_BOUND,
-            emit_boundary_warnings=True,
-            kappa=kappa,
-            base_frequencies=base_frequencies,
-            exchangeabilities=exchangeabilities,
-        )
+    combined_report = evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+        tree,
+        records,
+        model_name=model_name,
+        owner_name="gamma invariant family coverage",
+        alpha=_ALPHA,
+        category_count=_CATEGORY_COUNT,
+        invariant_proportion=_INVARIANT_PROPORTION,
+        lower_invariant_proportion_bound=_INVARIANT_PROPORTION,
+        upper_invariant_proportion_bound=_UPPER_INVARIANT_PROPORTION_BOUND,
+        emit_boundary_warnings=True,
+        kappa=kappa,
+        base_frequencies=base_frequencies,
+        exchangeabilities=exchangeabilities,
     )
     return _GammaInvariantModelCase(
         tree=tree,
@@ -399,17 +483,15 @@ def _build_protein_poisson_case() -> _GammaInvariantModelCase:
         alpha=_ALPHA,
         category_count=_CATEGORY_COUNT,
     )
-    combined_report = (
-        evaluate_protein_poisson_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-            tree,
-            records,
-            alpha=_ALPHA,
-            category_count=_CATEGORY_COUNT,
-            invariant_proportion=_INVARIANT_PROPORTION,
-            lower_invariant_proportion_bound=_INVARIANT_PROPORTION,
-            upper_invariant_proportion_bound=_UPPER_INVARIANT_PROPORTION_BOUND,
-            emit_boundary_warnings=True,
-        )
+    combined_report = evaluate_protein_poisson_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+        tree,
+        records,
+        alpha=_ALPHA,
+        category_count=_CATEGORY_COUNT,
+        invariant_proportion=_INVARIANT_PROPORTION,
+        lower_invariant_proportion_bound=_INVARIANT_PROPORTION,
+        upper_invariant_proportion_bound=_UPPER_INVARIANT_PROPORTION_BOUND,
+        emit_boundary_warnings=True,
     )
     return _GammaInvariantModelCase(
         tree=tree,
@@ -435,7 +517,9 @@ def _build_protein_empirical_lg_case() -> _GammaInvariantModelCase:
 def _build_named_empirical_protein_case(model_name: str) -> _GammaInvariantModelCase:
     tree = _shared_tree()
     records = _protein_records()
-    surface = build_named_empirical_protein_finite_state_surface(records, model_name=model_name)
+    surface = build_named_empirical_protein_finite_state_surface(
+        records, model_name=model_name
+    )
     compressed_patterns = compress_alignment_site_patterns_from_records(records)
     gamma_report = evaluate_finite_state_tree_likelihood_with_discrete_gamma(
         tree,

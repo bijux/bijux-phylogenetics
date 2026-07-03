@@ -16,18 +16,6 @@ from bijux_phylogenetics.phylo.alignment.partitions import (
     slice_partition_sequence,
     validate_locus_partitions,
 )
-from bijux_phylogenetics.phylo.likelihood.models import SiteLogLikelihoodRow
-from bijux_phylogenetics.phylo.likelihood.models import (
-    CompiledFiniteStatePartitionLogLikelihoodRow,
-    CompiledFiniteStateSiteLogLikelihoodRow,
-    DiscreteGammaRateCategory,
-    DiscreteGammaInvariantMixtureSiteLikelihood,
-    DiscreteGammaSiteLikelihood,
-    FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
-    FiniteStateInvariantMixtureTreeLikelihoodReport,
-    FiniteStateDiscreteGammaTreeLikelihoodReport,
-    InvariantMixtureSiteLikelihood,
-)
 from bijux_phylogenetics.phylo.likelihood.gamma import (
     build_discrete_gamma_rate_categories,
 )
@@ -36,6 +24,18 @@ from bijux_phylogenetics.phylo.likelihood.invariant import (
     validate_invariant_proportion,
 )
 from bijux_phylogenetics.phylo.likelihood.logspace import log_weighted_sum_exp
+from bijux_phylogenetics.phylo.likelihood.models import (
+    CompiledFiniteStatePartitionLogLikelihoodRow,
+    CompiledFiniteStateSiteLogLikelihoodRow,
+    DiscreteGammaInvariantMixtureSiteLikelihood,
+    DiscreteGammaRateCategory,
+    DiscreteGammaSiteLikelihood,
+    FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
+    FiniteStateDiscreteGammaTreeLikelihoodReport,
+    FiniteStateInvariantMixtureTreeLikelihoodReport,
+    InvariantMixtureSiteLikelihood,
+    SiteLogLikelihoodRow,
+)
 from bijux_phylogenetics.phylo.likelihood.optimization_boundary_warnings import (
     build_invariant_proportion_boundary_warnings,
 )
@@ -338,8 +338,7 @@ def compile_finite_state_likelihood_analysis(
         source_path=source_path,
         alignment_length=alignment_length,
         pattern_count=sum(
-            partition_context.pattern_count
-            for partition_context in partition_contexts
+            partition_context.pattern_count for partition_context in partition_contexts
         ),
         partition_count=len(partition_contexts),
         site_weight_total=sum(
@@ -525,9 +524,11 @@ def evaluate_finite_state_site_log_likelihood(
         pruning_pass,
         root_prior=context.surface.root_prior,
     )
-    context.site_evaluation_by_key[site_evaluation_key] = CachedFiniteStateSiteEvaluation(
-        pruning_pass=pruning_pass,
-        log_likelihood=log_likelihood,
+    context.site_evaluation_by_key[site_evaluation_key] = (
+        CachedFiniteStateSiteEvaluation(
+            pruning_pass=pruning_pass,
+            log_likelihood=log_likelihood,
+        )
     )
     return log_likelihood
 
@@ -964,7 +965,9 @@ def evaluate_compiled_finite_state_likelihood_analysis(
     """Evaluate one reusable compiled finite-state analysis without reparsing inputs."""
     total = 0.0
     for partition_context in analysis.partition_contexts:
-        partition_likelihood_context = analysis.contexts[partition_context.context_index]
+        partition_likelihood_context = analysis.contexts[
+            partition_context.context_index
+        ]
         for term in partition_context.compiled_pattern_terms:
             if term.effective_weight == 0.0:
                 continue
@@ -983,7 +986,9 @@ def evaluate_compiled_finite_state_site_log_likelihood_rows(
     rows: list[CompiledFiniteStateSiteLogLikelihoodRow] = []
     weighted_total = 0.0
     for partition_context in analysis.partition_contexts:
-        partition_likelihood_context = analysis.contexts[partition_context.context_index]
+        partition_likelihood_context = analysis.contexts[
+            partition_context.context_index
+        ]
         for term in partition_context.compiled_pattern_terms:
             log_likelihood = evaluate_finite_state_site_log_likelihood(
                 partition_likelihood_context,
@@ -1008,7 +1013,9 @@ def evaluate_compiled_finite_state_site_log_likelihood_rows(
                     strict=True,
                 )
             )
-    rows.sort(key=lambda row: (row.source_site_position, row.partition_name, row.pattern_id))
+    rows.sort(
+        key=lambda row: (row.source_site_position, row.partition_name, row.pattern_id)
+    )
     return rows, weighted_total
 
 
@@ -1019,7 +1026,9 @@ def evaluate_compiled_finite_state_partition_log_likelihood_rows(
     rows: list[CompiledFiniteStatePartitionLogLikelihoodRow] = []
     total_log_likelihood = 0.0
     for partition_context in analysis.partition_contexts:
-        partition_likelihood_context = analysis.contexts[partition_context.context_index]
+        partition_likelihood_context = analysis.contexts[
+            partition_context.context_index
+        ]
         partition_log_likelihood = 0.0
         partition_site_weight_total = 0.0
         for term in partition_context.compiled_pattern_terms:
@@ -1068,9 +1077,7 @@ def validate_compiled_finite_state_site_log_likelihood_reconstruction(
         raise ValueError(
             f"{owner_name} emitted duplicate or missing source-site positions"
         )
-    unique_pattern_count = len(
-        {(row.partition_name, row.pattern_id) for row in rows}
-    )
+    unique_pattern_count = len({(row.partition_name, row.pattern_id) for row in rows})
     if unique_pattern_count != expected_pattern_count:
         raise ValueError(
             f"{owner_name} emitted {unique_pattern_count} partition-pattern rows for {expected_pattern_count} declared patterns"
@@ -1117,9 +1124,7 @@ def validate_compiled_finite_state_partition_likelihood_reconstruction(
         )
     unique_partition_names = {row.partition_name for row in rows}
     if len(unique_partition_names) != expected_partition_count:
-        raise ValueError(
-            f"{owner_name} emitted duplicate or missing partition names"
-        )
+        raise ValueError(f"{owner_name} emitted duplicate or missing partition names")
     reconstructed_total = math.fsum(row.log_likelihood for row in rows)
     if not math.isclose(
         reconstructed_total,
@@ -1238,9 +1243,11 @@ def update_compiled_finite_state_context_topology(
                 transition_cache_key=transition_cache_key,
             )
         if context.transition_model_state is not None:
-            transition_cache_key_by_node_id[child.node_id] = FiniteStateTransitionCacheKey(
-                model_state=context.transition_model_state,
-                branch_length=branch_length,
+            transition_cache_key_by_node_id[child.node_id] = (
+                FiniteStateTransitionCacheKey(
+                    model_state=context.transition_model_state,
+                    branch_length=branch_length,
+                )
             )
     context.tree = moved_tree
     context.node_by_id = _node_index(moved_tree)
@@ -1251,7 +1258,10 @@ def update_compiled_finite_state_context_topology(
     }
     context.transition_matrix_by_node_id = transition_matrix_by_node_id
     context.transition_cache_key_by_node_id = transition_cache_key_by_node_id
-    for site_evaluation_key, cached_site_evaluation in context.site_evaluation_by_key.items():
+    for (
+        site_evaluation_key,
+        cached_site_evaluation,
+    ) in context.site_evaluation_by_key.items():
         updated_pruning_pass = _updated_topology_pruning_pass(
             old_tree=old_tree,
             old_pruning_pass=cached_site_evaluation.pruning_pass,
@@ -1391,7 +1401,9 @@ def _transition_model_state(
             (key, float(value))
             for key, value in sorted(surface.parameter_values.items())
         ),
-        transition_rate_matrix_digest=_float_array_digest(surface.transition_rate_matrix),
+        transition_rate_matrix_digest=_float_array_digest(
+            surface.transition_rate_matrix
+        ),
     )
 
 
@@ -1752,9 +1764,7 @@ def _compile_pattern_term(
 
 def _validated_alignment_length(records: list[AlignmentRecord]) -> int:
     if not records:
-        raise ValueError(
-            "compiled finite-state likelihood analysis requires records"
-        )
+        raise ValueError("compiled finite-state likelihood analysis requires records")
     alignment_lengths = {len(record.sequence) for record in records}
     if len(alignment_lengths) != 1:
         raise ValueError(
@@ -1769,9 +1779,7 @@ def _validated_compiled_alignment_length(
     records: list[AlignmentRecord],
 ) -> int:
     if not records:
-        raise ValueError(
-            "compiled finite-state likelihood analysis requires records"
-        )
+        raise ValueError("compiled finite-state likelihood analysis requires records")
     if alignment_length < 1:
         raise ValueError(
             "compiled finite-state likelihood analysis requires a positive alignment length"
@@ -1784,7 +1792,7 @@ def _validated_site_weight_by_position(
     *,
     alignment_length: int,
 ) -> dict[int, float]:
-    validated = {position: 1.0 for position in range(1, alignment_length + 1)}
+    validated = dict.fromkeys(range(1, alignment_length + 1), 1.0)
     if site_weight_by_position is None:
         return validated
     for position, raw_weight in site_weight_by_position.items():

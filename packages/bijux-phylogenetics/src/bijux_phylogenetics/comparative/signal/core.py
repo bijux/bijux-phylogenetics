@@ -27,7 +27,6 @@ from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
 from bijux_phylogenetics.phylo.topology.node_identity import ape_node_id_for_node
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
 
-
 _PAGEL_LAMBDA_PROFILE_STEP = 0.01
 
 

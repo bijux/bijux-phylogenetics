@@ -56,7 +56,9 @@ def resolve_ape_parity_case_ids(
     case_order = [case.case_id for case in cases]
     case_index = set(case_order)
     if case_ids is not None:
-        missing_case_ids = [case_id for case_id in case_ids if case_id not in case_index]
+        missing_case_ids = [
+            case_id for case_id in case_ids if case_id not in case_index
+        ]
         if missing_case_ids:
             raise ValueError(
                 f"unknown ape parity case ids: {', '.join(sorted(missing_case_ids))}"

@@ -39,15 +39,15 @@ from bijux_phylogenetics.bayesian.state import (
     build_bayesian_model_parameter_state,
     build_bayesian_prior_component_state,
 )
-from bijux_phylogenetics.bayesian.tree_topology_priors import (
-    evaluate_time_tree_topology_log_prior,
-    require_time_tree_topology_prior_model,
-)
 from bijux_phylogenetics.bayesian.time_tree_priors import (
     BirthDeathTreePriorModel,
     ConstantPopulationCoalescentPriorModel,
     SkylineCoalescentPriorModel,
     YuleTreePriorModel,
+)
+from bijux_phylogenetics.bayesian.tree_topology_priors import (
+    evaluate_time_tree_topology_log_prior,
+    require_time_tree_topology_prior_model,
 )
 from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
     APE_ULTRAMETRIC_TOLERANCE,

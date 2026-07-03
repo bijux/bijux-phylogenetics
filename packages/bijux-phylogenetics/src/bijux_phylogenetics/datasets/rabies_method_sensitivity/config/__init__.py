@@ -5,6 +5,8 @@ from .panel_dataset import load_rabies_method_sensitivity_panel_dataset
 from .selection import _resolve_selected_variant_dataset
 
 __all__ = [
+    "annotations",
     "export_rabies_method_sensitivity_panel_dataset",
     "load_rabies_method_sensitivity_panel_dataset",
+    "_resolve_selected_variant_dataset",
 ]

@@ -26,10 +26,7 @@ def test_public_runtime_exports_bayesian_prior_protocol_surface() -> None:
     assert bayesian_api.BayesianPriorModelProtocol is BayesianPriorModelProtocolImpl
     assert bayesian_api.BayesianPriorModelSummary is BayesianPriorModelSummary
     assert bayesian_api.BayesianPriorModelSummary is BayesianPriorModelSummaryImpl
-    assert (
-        bayesian_api.summarize_bayesian_prior_model
-        is summarize_bayesian_prior_model
-    )
+    assert bayesian_api.summarize_bayesian_prior_model is summarize_bayesian_prior_model
     assert (
         bayesian_api.summarize_bayesian_prior_model
         is summarize_bayesian_prior_model_impl

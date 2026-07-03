@@ -325,7 +325,9 @@ def test_substitution_model_selection_prefers_hky85_on_joint_bias_fixture() -> N
 def test_substitution_model_selection_prefers_gtr_on_exchangeability_fixture() -> None:
     report = compare_nucleotide_substitution_models_from_alignment(
         fixture("trees", "gtr_exchangeability_optimization_tree_2_taxa.nwk"),
-        fixture("alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta"),
+        fixture(
+            "alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta"
+        ),
         candidate_models=("JC69", "K80", "F81", "HKY85", "GTR"),
     )
     rows = {row.model_name: row for row in report.rows}

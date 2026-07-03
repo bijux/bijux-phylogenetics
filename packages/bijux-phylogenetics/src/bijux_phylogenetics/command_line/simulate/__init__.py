@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-from pathlib import Path
+from pathlib import Path as Path
 from typing import Any
 
 from bijux_phylogenetics.command_line.arguments import (
-    _add_manifest_argument,
+    _add_manifest_argument as _add_manifest_argument,
 )
-from bijux_phylogenetics.command_line.output import _print_result
+from bijux_phylogenetics.command_line.output import _print_result as _print_result
 from bijux_phylogenetics.command_line.registry import get_command_spec
-from bijux_phylogenetics.command_line.routing import _finalize_outputs
+from bijux_phylogenetics.command_line.routing import (
+    _finalize_outputs as _finalize_outputs,
+)
 
 from .alignments import (
     add_simulate_alignment_commands,

@@ -106,16 +106,14 @@ def test_gtr_discrete_gamma_invariant_mixture_from_alignment_matches_direct_call
     tree_path = FIXTURES / "trees" / "gtr_likelihood_tree_2_taxa.nwk"
     alignment_path = FIXTURES / "alignments" / "gtr_likelihood_alignment_2_taxa.fasta"
 
-    from_alignment = (
-        evaluate_gtr_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
-            tree_path,
-            alignment_path,
-            alpha=0.8,
-            category_count=4,
-            invariant_proportion=0.35,
-            exchangeabilities=EXCHANGEABILITIES,
-            base_frequencies=BASE_FREQUENCIES,
-        )
+    from_alignment = evaluate_gtr_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
+        tree_path,
+        alignment_path,
+        alpha=0.8,
+        category_count=4,
+        invariant_proportion=0.35,
+        exchangeabilities=EXCHANGEABILITIES,
+        base_frequencies=BASE_FREQUENCIES,
     )
     direct = evaluate_gtr_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
         load_tree(tree_path),

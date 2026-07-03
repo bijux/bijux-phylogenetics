@@ -20,7 +20,9 @@ from bijux_phylogenetics.phylo.likelihood import (
     evaluate_k80_tree_likelihood,
 )
 from bijux_phylogenetics.phylo.likelihood.f81 import f81_rate_matrix
-from bijux_phylogenetics.phylo.likelihood.finite_state import FiniteStateLikelihoodSurface
+from bijux_phylogenetics.phylo.likelihood.finite_state import (
+    FiniteStateLikelihoodSurface,
+)
 from bijux_phylogenetics.phylo.likelihood.gtr import gtr_rate_matrix
 from bijux_phylogenetics.phylo.likelihood.hky85 import hky85_rate_matrix
 from bijux_phylogenetics.phylo.likelihood.jc69 import jc69_rate_matrix
@@ -47,7 +49,14 @@ def fixture(group: str, name: str) -> Path:
 
 
 @pytest.mark.parametrize(
-    ("model_name", "tree_fixture", "alignment_fixture", "kwargs", "report_evaluator", "rate_matrix"),
+    (
+        "model_name",
+        "tree_fixture",
+        "alignment_fixture",
+        "kwargs",
+        "report_evaluator",
+        "rate_matrix",
+    ),
     [
         (
             "jc69",
@@ -116,8 +125,12 @@ def test_nucleotide_ctmc_families_declare_expected_rate_one_and_preserve_scale_c
     )
     report = report_evaluator(tree, records, **kwargs)
 
-    assert surface.normalization_policy == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
-    assert report.normalization_policy == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
+    assert (
+        surface.normalization_policy == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
+    )
+    assert (
+        report.normalization_policy == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
+    )
     assert math.isclose(
         compute_ctmc_expected_substitution_rate(
             rate_matrix,

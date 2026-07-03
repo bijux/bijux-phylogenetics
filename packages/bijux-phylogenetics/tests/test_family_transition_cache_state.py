@@ -97,7 +97,10 @@ def test_empirical_protein_surface_distinguishes_rate_matrix_state_in_shared_cac
     assert first_context.transition_model_state is not None
     assert second_context.transition_model_state is not None
     assert first_context.transition_model_state != second_context.transition_model_state
-    assert shared_finite_state_transition_cache_entry_count() > cache_entry_count_after_first
+    assert (
+        shared_finite_state_transition_cache_entry_count()
+        > cache_entry_count_after_first
+    )
 
 
 def test_codon_and_protein_surfaces_keep_shared_transition_model_state_separate() -> (
@@ -126,7 +129,9 @@ def test_codon_and_protein_surfaces_keep_shared_transition_model_state_separate(
 
     assert protein_context.transition_model_state is not None
     assert codon_context.transition_model_state is not None
-    assert protein_context.transition_model_state != codon_context.transition_model_state
+    assert (
+        protein_context.transition_model_state != codon_context.transition_model_state
+    )
     assert protein_context.transition_cache_key_by_node_id
     assert codon_context.transition_cache_key_by_node_id
 

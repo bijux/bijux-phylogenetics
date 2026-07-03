@@ -9,11 +9,11 @@ from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
-from bijux_phylogenetics.phylo.likelihood.fixed_topology_branch_lengths import (
-    optimize_fixed_topology_nucleotide_branch_lengths,
-)
 from bijux_phylogenetics.phylo.likelihood.fit_assessment import (
     build_likelihood_fit_assessment,
+)
+from bijux_phylogenetics.phylo.likelihood.fixed_topology_branch_lengths import (
+    optimize_fixed_topology_nucleotide_branch_lengths,
 )
 from bijux_phylogenetics.phylo.likelihood.gtr import (
     evaluate_gtr_tree_likelihood,
@@ -523,11 +523,9 @@ def optimize_fixed_topology_nucleotide_branches_and_model(
         kappa=current_kappa,
         exchangeabilities=current_exchangeabilities,
     )
-    final_root_prior_source, final_root_prior_values = (
-        _resolve_joint_state_root_prior(
-            model_name=normalized_model_name,
-            base_frequencies=current_base_frequencies,
-        )
+    final_root_prior_source, final_root_prior_values = _resolve_joint_state_root_prior(
+        model_name=normalized_model_name,
+        base_frequencies=current_base_frequencies,
     )
     return FixedTopologyNucleotideJointOptimizationReport(
         model_name=latest_model_report.model_name,

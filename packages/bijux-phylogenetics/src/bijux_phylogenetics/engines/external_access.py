@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
 import os
 from pathlib import Path
-from typing import Iterator
 
 from bijux_phylogenetics.runtime.errors import (
     ExternalEngineAccessError,

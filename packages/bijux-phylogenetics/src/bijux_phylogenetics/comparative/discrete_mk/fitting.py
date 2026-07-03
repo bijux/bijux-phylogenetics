@@ -292,8 +292,7 @@ def fit_discrete_mk_model_from_dataset(
             log_likelihood = float("-inf")
         else:
             log_likelihood = (
-                uncorrected_log_likelihood
-                - ascertainment_conditioning_log_probability
+                uncorrected_log_likelihood - ascertainment_conditioning_log_probability
             )
         invariant_pattern_log_probability = _invariant_pattern_log_probability(
             fit_tree,

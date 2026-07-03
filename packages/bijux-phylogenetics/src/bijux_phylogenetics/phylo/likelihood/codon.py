@@ -25,9 +25,9 @@ from bijux_phylogenetics.phylo.likelihood.ctmc import (
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
     FiniteStateLikelihoodSurface,
     compile_finite_state_likelihood_context,
-    evaluate_finite_state_tree_log_likelihood_from_patterns,
     evaluate_finite_state_site_log_likelihood_rows_from_patterns,
     evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture,
+    evaluate_finite_state_tree_log_likelihood_from_patterns,
 )
 from bijux_phylogenetics.phylo.likelihood.finite_state_root_priors import (
     ResolvedFiniteStateRootPrior,
@@ -35,8 +35,8 @@ from bijux_phylogenetics.phylo.likelihood.finite_state_root_priors import (
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
     CodonCtmcTreeLikelihoodReport,
-    FiniteStateFrequencyOptimizationReport,
     FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
+    FiniteStateFrequencyOptimizationReport,
     FiniteStateInvariantMixtureTreeLikelihoodReport,
     SiteLogLikelihoodRow,
 )
@@ -49,11 +49,11 @@ from bijux_phylogenetics.phylo.likelihood.pruning import (
     log_likelihood_from_root_prior,
     postorder_conditional_likelihoods,
 )
-from bijux_phylogenetics.phylo.likelihood.state_frequency_optimization import (
-    optimize_finite_state_stationary_frequencies,
-)
 from bijux_phylogenetics.phylo.likelihood.sites import (
     validate_site_log_likelihood_reconstruction,
+)
+from bijux_phylogenetics.phylo.likelihood.state_frequency_optimization import (
+    optimize_finite_state_stationary_frequencies,
 )
 from bijux_phylogenetics.phylo.likelihood.validation import (
     validate_explicit_branch_lengths,
@@ -296,9 +296,7 @@ def evaluate_codon_ctmc_tree_likelihood_with_invariant_mixture(
         genetic_code=genetic_code,
         observation_policy=observation_policy,
     )
-    compressed_patterns = compress_codon_site_patterns_from_records(
-        normalized_records
-    )
+    compressed_patterns = compress_codon_site_patterns_from_records(normalized_records)
     surface = build_codon_finite_state_surface(
         normalized_records,
         codon_frequencies=codon_frequencies,
@@ -385,9 +383,7 @@ def evaluate_codon_ctmc_tree_likelihood_with_discrete_gamma_and_invariant_mixtur
         genetic_code=genetic_code,
         observation_policy=observation_policy,
     )
-    compressed_patterns = compress_codon_site_patterns_from_records(
-        normalized_records
-    )
+    compressed_patterns = compress_codon_site_patterns_from_records(normalized_records)
     surface = build_codon_finite_state_surface(
         normalized_records,
         codon_frequencies=codon_frequencies,
@@ -397,16 +393,18 @@ def evaluate_codon_ctmc_tree_likelihood_with_discrete_gamma_and_invariant_mixtur
         genetic_code=genetic_code,
         observation_policy=observation_policy,
     )
-    return evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-        tree,
-        compressed_patterns,
-        surface=surface,
-        alpha=alpha,
-        category_count=category_count,
-        invariant_proportion=invariant_proportion,
-        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
-        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
-        emit_boundary_warnings=emit_boundary_warnings,
+    return (
+        evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+            tree,
+            compressed_patterns,
+            surface=surface,
+            alpha=alpha,
+            category_count=category_count,
+            invariant_proportion=invariant_proportion,
+            lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+            upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+            emit_boundary_warnings=emit_boundary_warnings,
+        )
     )
 
 
@@ -436,21 +434,23 @@ def evaluate_codon_ctmc_tree_likelihood_with_discrete_gamma_and_invariant_mixtur
     observation_policy: str = "reject",
 ) -> FiniteStateDiscreteGammaInvariantTreeLikelihoodReport:
     """Evaluate one codon CTMC +G+I likelihood from tree and alignment paths."""
-    return evaluate_codon_ctmc_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-        load_tree(tree_path),
-        load_fasta_alignment(alignment_path),
-        alpha=alpha,
-        invariant_proportion=invariant_proportion,
-        category_count=category_count,
-        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
-        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
-        emit_boundary_warnings=emit_boundary_warnings,
-        codon_frequencies=codon_frequencies,
-        root_prior_policy=root_prior_policy,
-        root_prior=root_prior,
-        fixed_root_state=fixed_root_state,
-        genetic_code=genetic_code,
-        observation_policy=observation_policy,
+    return (
+        evaluate_codon_ctmc_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+            load_tree(tree_path),
+            load_fasta_alignment(alignment_path),
+            alpha=alpha,
+            invariant_proportion=invariant_proportion,
+            category_count=category_count,
+            lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+            upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+            emit_boundary_warnings=emit_boundary_warnings,
+            codon_frequencies=codon_frequencies,
+            root_prior_policy=root_prior_policy,
+            root_prior=root_prior,
+            fixed_root_state=fixed_root_state,
+            genetic_code=genetic_code,
+            observation_policy=observation_policy,
+        )
     )
 
 
@@ -604,9 +604,7 @@ def _estimate_codon_state_frequencies(
     if total_count <= 0.0:
         uniform_mass = 1.0 / len(state_space.state_order)
         return dict.fromkeys(state_space.state_order, uniform_mass)
-    return {
-        codon: count / total_count for codon, count in codon_counts.items()
-    }
+    return {codon: count / total_count for codon, count in codon_counts.items()}
 
 
 def _evaluate_codon_frequency_candidate(

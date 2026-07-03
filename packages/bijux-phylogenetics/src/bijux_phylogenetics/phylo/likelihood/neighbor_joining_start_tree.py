@@ -38,9 +38,11 @@ def build_likelihood_neighbor_joining_tree(
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,
     )
-    unrooted_tree, _distance_tree_report = build_distance_tree_from_genetic_distance_matrix(
-        distance_report,
-        method="neighbor-joining",
+    unrooted_tree, _distance_tree_report = (
+        build_distance_tree_from_genetic_distance_matrix(
+            distance_report,
+            method="neighbor-joining",
+        )
     )
     rooted_tree = _root_neighbor_joining_start_tree(unrooted_tree)
     report = NucleotideLikelihoodNeighborJoiningStartTreeReport(

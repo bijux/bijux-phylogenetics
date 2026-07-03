@@ -9,11 +9,11 @@ from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
-from bijux_phylogenetics.phylo.likelihood.dna import (
-    UNIFORM_DNA_ROOT_PRIOR,
-)
 from bijux_phylogenetics.phylo.likelihood.ctmc import (
     EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+)
+from bijux_phylogenetics.phylo.likelihood.dna import (
+    UNIFORM_DNA_ROOT_PRIOR,
 )
 from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
     augment_dna_rate_matrix_with_gap_state,
@@ -23,17 +23,17 @@ from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
     resolve_default_dna_root_prior_for_observation_policy,
     resolve_dna_observation_leaf_vector,
 )
+from bijux_phylogenetics.phylo.likelihood.finite_state import (
+    FiniteStateLikelihoodSurface,
+    compile_finite_state_likelihood_context,
+    evaluate_finite_state_tree_log_likelihood_from_patterns,
+)
 from bijux_phylogenetics.phylo.likelihood.models import (
     FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
     FiniteStateInvariantMixtureTreeLikelihoodReport,
     Jc69BranchLengthOptimizationReport,
     Jc69BranchLengthOptimizationStep,
     Jc69TreeLikelihoodReport,
-)
-from bijux_phylogenetics.phylo.likelihood.finite_state import (
-    FiniteStateLikelihoodSurface,
-    compile_finite_state_likelihood_context,
-    evaluate_finite_state_tree_log_likelihood_from_patterns,
 )
 from bijux_phylogenetics.phylo.likelihood.parameter_bounds import (
     validate_increasing_parameter_bounds,

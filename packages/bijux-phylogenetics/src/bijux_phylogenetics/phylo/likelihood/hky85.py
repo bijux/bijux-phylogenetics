@@ -8,15 +8,15 @@ from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+)
 from bijux_phylogenetics.phylo.likelihood.dna import (
     DNA_STATE_ORDER,
     is_dna_transition,
     normalize_dna_rate_matrix,
     validate_dna_base_frequencies,
     validate_positive_kappa,
-)
-from bijux_phylogenetics.phylo.likelihood.ctmc import (
-    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
 )
 from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
     augment_dna_rate_matrix_with_gap_state,
@@ -27,16 +27,16 @@ from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
     resolve_default_dna_root_prior_for_observation_policy,
     resolve_dna_observation_leaf_vector,
 )
+from bijux_phylogenetics.phylo.likelihood.finite_state import (
+    FiniteStateLikelihoodSurface,
+    compile_finite_state_likelihood_context,
+    evaluate_finite_state_tree_log_likelihood_from_patterns,
+)
 from bijux_phylogenetics.phylo.likelihood.models import (
     FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
     FiniteStateInvariantMixtureTreeLikelihoodReport,
     Hky85KappaOptimizationReport,
     Hky85TreeLikelihoodReport,
-)
-from bijux_phylogenetics.phylo.likelihood.finite_state import (
-    FiniteStateLikelihoodSurface,
-    compile_finite_state_likelihood_context,
-    evaluate_finite_state_tree_log_likelihood_from_patterns,
 )
 from bijux_phylogenetics.phylo.likelihood.parameter_bounds import (
     validate_parameter_within_bounds,
@@ -512,16 +512,20 @@ def _evaluate_hky85_tree_likelihood_from_patterns(
             gap_state_frequency=gap_state_frequency,
             model_name="HKY85",
         )
+
         def transition_matrix_for_branch_length(branch_length: float) -> numpy.ndarray:
             return transition_probability_matrix(augmented_rate_matrix, branch_length)
+
         transition_rate_matrix = augmented_rate_matrix
     else:
+
         def transition_matrix_for_branch_length(branch_length: float) -> numpy.ndarray:
             return hky85_transition_probability_matrix(
                 branch_length,
                 base_frequencies=validated_frequencies,
                 kappa=validated_kappa,
             )
+
         transition_rate_matrix = hky85_rate_matrix(
             validated_frequencies,
             kappa=validated_kappa,

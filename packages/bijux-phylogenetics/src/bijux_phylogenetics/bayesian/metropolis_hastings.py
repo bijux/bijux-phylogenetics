@@ -27,7 +27,6 @@ from bijux_phylogenetics.bayesian.state import (
     BayesianPriorComponentState,
     MetropolisHastingsRandomState,
     build_bayesian_model_parameter_state,
-    build_bayesian_phylogenetic_state,
     build_metropolis_hastings_random_state,
     deserialize_bayesian_phylogenetic_state,
     serialize_bayesian_phylogenetic_state,
@@ -231,6 +230,8 @@ def build_metropolis_hastings_proposal(
             proposed_model_parameters=proposed_model_parameters,
         )
     )
+
+
 def build_metropolis_hastings_checkpoint(
     *,
     iteration_count: int,
@@ -326,7 +327,10 @@ def build_metropolis_hastings_checkpoint(
             "metropolis-hastings checkpoint requires one MetropolisHastingsRandomState",
             code="metropolis_hastings_checkpoint_random_state_type_invalid",
         )
-    if current_state.random_state is not None and current_state.random_state != random_state:
+    if (
+        current_state.random_state is not None
+        and current_state.random_state != random_state
+    ):
         raise PhylogeneticsError(
             "metropolis-hastings checkpoint requires current_state.random_state to match checkpoint random_state",
             code="metropolis_hastings_checkpoint_random_state_mismatch",

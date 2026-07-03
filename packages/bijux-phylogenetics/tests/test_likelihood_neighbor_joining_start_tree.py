@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import bijux_phylogenetics.phylo.likelihood as likelihood_api
 from bijux_phylogenetics.io.newick import dumps_newick
+import bijux_phylogenetics.phylo.likelihood as likelihood_api
 from bijux_phylogenetics.phylo.likelihood import (
     NucleotideLikelihoodNeighborJoiningStartTreeReport,
     build_likelihood_neighbor_joining_tree,

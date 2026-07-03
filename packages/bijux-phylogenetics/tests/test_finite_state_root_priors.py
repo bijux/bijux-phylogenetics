@@ -20,7 +20,9 @@ _RECORDS = [
 ]
 
 
-def test_validate_finite_state_root_prior_normalizes_mapping_in_declared_order() -> None:
+def test_validate_finite_state_root_prior_normalizes_mapping_in_declared_order() -> (
+    None
+):
     root_prior = validate_finite_state_root_prior(
         {"B": 2.0, "A": 3.0, "C": 5.0},
         state_labels=_STATE_ORDER,
@@ -126,7 +128,9 @@ def test_resolve_finite_state_root_prior_rejects_missing_policy_inputs() -> None
             sequence_tokenizer=tuple,
         )
 
-    with pytest.raises(InvalidAlignmentError, match="exactly the declared finite-state order"):
+    with pytest.raises(
+        InvalidAlignmentError, match="exactly the declared finite-state order"
+    ):
         validate_finite_state_root_prior(
             {"A": 1.0, "B": 1.0},
             state_labels=_STATE_ORDER,

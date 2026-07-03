@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
-from typing import TypeVar
+from typing import Protocol
 
 import numpy
 
@@ -23,7 +23,15 @@ from bijux_phylogenetics.phylo.likelihood.simplex_search import (
     run_simplex_likelihood_search,
 )
 
-_PayloadT = TypeVar("_PayloadT")
+
+class _FrequencyOptimizationPayload(Protocol):
+    taxa: Sequence[str]
+    site_count: int
+    pattern_count: int
+    tree_newick: str
+    state_count: int
+
+
 _BOUNDARY_TOLERANCE = 1e-9
 
 
@@ -73,7 +81,7 @@ def optimize_finite_state_stationary_frequencies(
     model_name: str,
     state_labels: Sequence[str],
     initial_values_by_name: Mapping[str, float],
-    evaluate: Callable[[dict[str, float]], tuple[_PayloadT, float]],
+    evaluate: Callable[[dict[str, float]], tuple[_FrequencyOptimizationPayload, float]],
     minimum_state_frequency: float = 1e-6,
     improvement_tolerance: float = 1e-9,
     max_coordinate_passes: int = 12,
@@ -111,25 +119,22 @@ def optimize_finite_state_stationary_frequencies(
         state_rows,
         minimum_state_frequency=minimum_state_frequency,
     )
-    warnings.extend(
-        warning.message
-        for warning in boundary_warning_rows
-    )
+    warnings.extend(warning.message for warning in boundary_warning_rows)
     optimized_payload = search_result.payload
     fit_assessment = build_likelihood_fit_assessment(
-        site_count=int(getattr(optimized_payload, "site_count")),
-        pattern_count=int(getattr(optimized_payload, "pattern_count")),
+        site_count=int(optimized_payload.site_count),
+        pattern_count=int(optimized_payload.pattern_count),
         optimized_parameter_count=max(len(state_labels) - 1, 0),
         converged=search_result.converged,
         boundary_warnings=boundary_warning_rows,
     )
     return FiniteStateFrequencyOptimizationReport(
         model_name=model_name,
-        taxa=list(getattr(optimized_payload, "taxa")),
-        site_count=int(getattr(optimized_payload, "site_count")),
-        pattern_count=int(getattr(optimized_payload, "pattern_count")),
-        tree_newick=str(getattr(optimized_payload, "tree_newick")),
-        state_count=int(getattr(optimized_payload, "state_count")),
+        taxa=list(optimized_payload.taxa),
+        site_count=int(optimized_payload.site_count),
+        pattern_count=int(optimized_payload.pattern_count),
+        tree_newick=str(optimized_payload.tree_newick),
+        state_count=int(optimized_payload.state_count),
         state_frequency_source="optimized",
         initial_log_likelihood=float(initial_log_likelihood),
         optimized_log_likelihood=float(search_result.objective_value),

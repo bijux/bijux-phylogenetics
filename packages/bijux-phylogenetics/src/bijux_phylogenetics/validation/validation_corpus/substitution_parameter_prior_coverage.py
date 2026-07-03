@@ -77,9 +77,7 @@ def _build_kappa_coverage_entry() -> SubstitutionParameterPriorCoverageEntry:
     )
 
 
-def _build_exchangeability_coverage_entry() -> (
-    SubstitutionParameterPriorCoverageEntry
-):
+def _build_exchangeability_coverage_entry() -> SubstitutionParameterPriorCoverageEntry:
     return _build_bundle_target_coverage_entry(
         target_name="exchangeabilities",
         prior_bundle=build_substitution_parameter_prior_bundle(
@@ -357,10 +355,7 @@ def _build_codon_frequency_weights(
     leading_weights: tuple[float, float, float],
     trailing_weight: float,
 ) -> dict[str, float]:
-    weights = {
-        component_name: trailing_weight
-        for component_name in component_names
-    }
+    weights = dict.fromkeys(component_names, trailing_weight)
     for component_name, weight in zip(
         component_names[: len(leading_weights)],
         leading_weights,

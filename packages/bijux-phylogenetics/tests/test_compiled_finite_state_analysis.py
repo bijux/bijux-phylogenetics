@@ -94,7 +94,9 @@ def test_compiled_analysis_keeps_partition_weights_and_missing_data_policy() -> 
     assert right_terms[(4,)] == ((0.0,), 0.0)
 
 
-def test_compiled_analysis_expands_weighted_source_site_rows_in_original_order() -> None:
+def test_compiled_analysis_expands_weighted_source_site_rows_in_original_order() -> (
+    None
+):
     tree = load_tree(fixture("felsenstein_two_tip_tree.nwk"))
     records = [
         AlignmentRecord(identifier="A", sequence="0101"),
@@ -123,8 +125,8 @@ def test_compiled_analysis_expands_weighted_source_site_rows_in_original_order()
         site_weight_by_position={2: 3.0, 4: 0.0},
     )
 
-    rows, total_log_likelihood = evaluate_compiled_finite_state_site_log_likelihood_rows(
-        analysis
+    rows, total_log_likelihood = (
+        evaluate_compiled_finite_state_site_log_likelihood_rows(analysis)
     )
 
     assert [row.source_site_position for row in rows] == [1, 2, 3, 4]
@@ -180,8 +182,8 @@ def test_compiled_analysis_summarizes_partition_likelihood_rows() -> None:
         site_weight_by_position={2: 3.0, 4: 0.0},
     )
 
-    rows, total_log_likelihood = evaluate_compiled_finite_state_partition_log_likelihood_rows(
-        analysis
+    rows, total_log_likelihood = (
+        evaluate_compiled_finite_state_partition_log_likelihood_rows(analysis)
     )
 
     assert [row.partition_name for row in rows] == ["left-half", "right-half"]
@@ -385,9 +387,7 @@ def test_compiled_analysis_reuses_cached_transition_and_pattern_state() -> None:
     )
 
     first_log_likelihood = evaluate_compiled_finite_state_likelihood_analysis(analysis)
-    second_log_likelihood = evaluate_compiled_finite_state_likelihood_analysis(
-        analysis
-    )
+    second_log_likelihood = evaluate_compiled_finite_state_likelihood_analysis(analysis)
 
     assert transition_evaluation_count == 2
     assert math.isclose(

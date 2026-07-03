@@ -37,7 +37,9 @@ def test_run_bounded_parameter_maximization_reports_shared_optimizer_audit_surfa
     assert result.payload == result.parameter_value
     assert result.diagnostics.lower_bound == 0.0
     assert result.diagnostics.upper_bound == 4.0
-    assert result.diagnostics.starting_parameter_policy == "user-provided-first-evaluation"
+    assert (
+        result.diagnostics.starting_parameter_policy == "user-provided-first-evaluation"
+    )
     assert result.diagnostics.starting_parameter_value == 3.0
     assert result.converged is True
     assert result.diagnostics.failure_reason is None
@@ -64,7 +66,9 @@ def test_run_bounded_parameter_golden_section_maximization_reports_failure_reaso
     assert result.diagnostics.failure_reason == "max-iterations-exhausted"
 
 
-def test_run_bounded_coordinate_optimization_reports_all_parameter_diagnostics() -> None:
+def test_run_bounded_coordinate_optimization_reports_all_parameter_diagnostics() -> (
+    None
+):
     result = run_bounded_coordinate_optimization(
         initial_values={"kappa": 1.0, "alpha": 0.8},
         bounds_by_name={"kappa": (0.1, 5.0), "alpha": (0.1, 4.0)},
@@ -84,7 +88,9 @@ def test_run_bounded_coordinate_optimization_reports_all_parameter_diagnostics()
     assert set(result.parameter_diagnostics) == {"kappa", "alpha"}
 
 
-def test_run_bounded_coordinate_optimization_rejects_mismatched_parameter_names() -> None:
+def test_run_bounded_coordinate_optimization_rejects_mismatched_parameter_names() -> (
+    None
+):
     with pytest.raises(
         ValueError,
         match="identical parameter names in starts and bounds",
@@ -123,12 +129,20 @@ def test_fit_profiled_bounded_parameter_reports_supported_interval() -> None:
     )
     assert fit.lower_confidence_interval == 1.0
     assert fit.upper_confidence_interval == 2.0
-    assert [row.parameter_value for row in fit.profile_rows] == [0.0, 1.0, 1.5, 2.0, 4.0]
+    assert [row.parameter_value for row in fit.profile_rows] == [
+        0.0,
+        1.0,
+        1.5,
+        2.0,
+        4.0,
+    ]
     assert fit.profile_rows[2].within_confidence_interval is True
     assert fit.profile_rows[0].within_confidence_interval is False
 
 
-def test_run_bounded_parameter_maximization_preserves_exact_interval_endpoints() -> None:
+def test_run_bounded_parameter_maximization_preserves_exact_interval_endpoints() -> (
+    None
+):
     visited: list[float] = []
 
     result = run_bounded_parameter_maximization(

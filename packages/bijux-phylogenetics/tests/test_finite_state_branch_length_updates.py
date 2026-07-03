@@ -39,21 +39,27 @@ def test_compiled_branch_update_refreshes_only_affected_cached_path() -> None:
     analysis, _evaluation_counter = _compiled_four_tip_analysis()
     evaluate_compiled_finite_state_likelihood_analysis(analysis)
 
-    cached_site_evaluation = next(iter(analysis.context.site_evaluation_by_key.values()))
+    cached_site_evaluation = next(
+        iter(analysis.context.site_evaluation_by_key.values())
+    )
     root = analysis.context.tree.root
     left_internal = root.children[0]
     right_internal = root.children[1]
     changed_leaf = left_internal.children[0]
 
-    previous_right_conditional = cached_site_evaluation.pruning_pass.conditional_by_node_id[
-        right_internal.node_id
-    ]
-    previous_left_conditional = cached_site_evaluation.pruning_pass.conditional_by_node_id[
-        left_internal.node_id
-    ]
-    previous_root_conditional = cached_site_evaluation.pruning_pass.conditional_by_node_id[
-        root.node_id
-    ]
+    previous_right_conditional = (
+        cached_site_evaluation.pruning_pass.conditional_by_node_id[
+            right_internal.node_id
+        ]
+    )
+    previous_left_conditional = (
+        cached_site_evaluation.pruning_pass.conditional_by_node_id[
+            left_internal.node_id
+        ]
+    )
+    previous_root_conditional = (
+        cached_site_evaluation.pruning_pass.conditional_by_node_id[root.node_id]
+    )
 
     update_compiled_finite_state_analysis_branch_length(
         analysis,
@@ -62,11 +68,15 @@ def test_compiled_branch_update_refreshes_only_affected_cached_path() -> None:
     )
 
     assert (
-        cached_site_evaluation.pruning_pass.conditional_by_node_id[right_internal.node_id]
+        cached_site_evaluation.pruning_pass.conditional_by_node_id[
+            right_internal.node_id
+        ]
         is previous_right_conditional
     )
     assert (
-        cached_site_evaluation.pruning_pass.conditional_by_node_id[left_internal.node_id]
+        cached_site_evaluation.pruning_pass.conditional_by_node_id[
+            left_internal.node_id
+        ]
         is not previous_left_conditional
     )
     assert (

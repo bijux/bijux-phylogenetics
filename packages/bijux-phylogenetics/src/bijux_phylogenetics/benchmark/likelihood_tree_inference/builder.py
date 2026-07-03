@@ -30,6 +30,31 @@ from bijux_phylogenetics.phylo.topology.clades import (
     split_sort_key,
 )
 
+from .accuracy_fixtures import (
+    build_native_maximum_likelihood_accuracy_truth_tree,
+    governed_native_maximum_likelihood_accuracy_cases,
+    simulate_native_maximum_likelihood_accuracy_alignment,
+)
+from .artifact_outputs import (
+    write_maximum_likelihood_wrapper_comparison_observation_table,
+    write_maximum_likelihood_wrapper_comparison_run_json,
+    write_maximum_likelihood_wrapper_comparison_summary_table,
+    write_native_maximum_likelihood_accuracy_observation_table,
+    write_native_maximum_likelihood_accuracy_run_json,
+    write_native_maximum_likelihood_accuracy_summary_table,
+    write_native_maximum_likelihood_accuracy_wrapper_table,
+    write_native_maximum_likelihood_memory_observation_table,
+    write_native_maximum_likelihood_memory_run_json,
+    write_native_maximum_likelihood_memory_summary_table,
+    write_native_maximum_likelihood_memory_trend_table,
+    write_native_maximum_likelihood_speed_observation_table,
+    write_native_maximum_likelihood_speed_run_json,
+    write_native_maximum_likelihood_speed_summary_table,
+    write_native_maximum_likelihood_speed_trend_table,
+    write_native_maximum_likelihood_suite_observation_table,
+    write_native_maximum_likelihood_suite_run_json,
+    write_native_maximum_likelihood_suite_summary_table,
+)
 from .contracts import (
     MaximumLikelihoodWrapperBenchmarkBundle,
     MaximumLikelihoodWrapperBenchmarkObservation,
@@ -43,41 +68,16 @@ from .contracts import (
     NativeMaximumLikelihoodMemoryBenchmarkObservation,
     NativeMaximumLikelihoodMemoryBenchmarkReport,
     NativeMaximumLikelihoodMemoryTrendRow,
-    NativeMaximumLikelihoodSuiteBundle,
-    NativeMaximumLikelihoodSuiteObservation,
-    NativeMaximumLikelihoodSuiteReport,
-    NativeMaximumLikelihoodSuiteSummaryRow,
     NativeMaximumLikelihoodSpeedBenchmarkBundle,
     NativeMaximumLikelihoodSpeedBenchmarkObservation,
     NativeMaximumLikelihoodSpeedBenchmarkReport,
     NativeMaximumLikelihoodSpeedTrendRow,
-)
-from .accuracy_fixtures import (
-    build_native_maximum_likelihood_accuracy_truth_tree,
-    governed_native_maximum_likelihood_accuracy_cases,
-    simulate_native_maximum_likelihood_accuracy_alignment,
+    NativeMaximumLikelihoodSuiteBundle,
+    NativeMaximumLikelihoodSuiteObservation,
+    NativeMaximumLikelihoodSuiteReport,
+    NativeMaximumLikelihoodSuiteSummaryRow,
 )
 from .wrapper_references import MAXIMUM_LIKELIHOOD_WRAPPER_REFERENCE_PAYLOADS
-from .artifact_outputs import (
-    write_maximum_likelihood_wrapper_comparison_observation_table,
-    write_maximum_likelihood_wrapper_comparison_run_json,
-    write_maximum_likelihood_wrapper_comparison_summary_table,
-    write_native_maximum_likelihood_accuracy_observation_table,
-    write_native_maximum_likelihood_accuracy_run_json,
-    write_native_maximum_likelihood_accuracy_summary_table,
-    write_native_maximum_likelihood_accuracy_wrapper_table,
-    write_native_maximum_likelihood_memory_observation_table,
-    write_native_maximum_likelihood_memory_run_json,
-    write_native_maximum_likelihood_memory_summary_table,
-    write_native_maximum_likelihood_memory_trend_table,
-    write_native_maximum_likelihood_suite_observation_table,
-    write_native_maximum_likelihood_suite_run_json,
-    write_native_maximum_likelihood_suite_summary_table,
-    write_native_maximum_likelihood_speed_observation_table,
-    write_native_maximum_likelihood_speed_run_json,
-    write_native_maximum_likelihood_speed_summary_table,
-    write_native_maximum_likelihood_speed_trend_table,
-)
 
 _MAXIMUM_LIKELIHOOD_WRAPPER_BENCHMARK_STATUSES = (
     "tolerance-match",
@@ -200,10 +200,14 @@ def benchmark_native_maximum_likelihood_accuracy(
         1 for row in observations if row.topology_recovered
     )
     parameter_recovery_case_count = sum(
-        1 for row in observations if row.parameter_recovery_status == "parameter-recovered"
+        1
+        for row in observations
+        if row.parameter_recovery_status == "parameter-recovered"
     )
     parameter_not_applicable_case_count = sum(
-        1 for row in observations if row.parameter_recovery_status == "parameter-not-applicable"
+        1
+        for row in observations
+        if row.parameter_recovery_status == "parameter-not-applicable"
     )
     likelihood_quality_case_count = sum(
         1
@@ -266,10 +270,7 @@ def benchmark_native_maximum_likelihood_speed(
     )
     resolved_search_methods = [
         validate_nucleotide_likelihood_tree_inference_search_method(search_method)
-        for search_method in (
-            search_methods
-            or ("nni", "spr", "tbr")
-        )
+        for search_method in (search_methods or ("nni", "spr", "tbr"))
     ]
 
     measured_lanes = _measure_native_maximum_likelihood_benchmark_lanes(
@@ -334,10 +335,7 @@ def benchmark_native_maximum_likelihood_memory(
     )
     resolved_search_methods = [
         validate_nucleotide_likelihood_tree_inference_search_method(search_method)
-        for search_method in (
-            search_methods
-            or ("nni", "spr", "tbr")
-        )
+        for search_method in (search_methods or ("nni", "spr", "tbr"))
     ]
 
     measured_lanes = _measure_native_maximum_likelihood_benchmark_lanes(
@@ -362,14 +360,10 @@ def benchmark_native_maximum_likelihood_memory(
         search_methods=resolved_search_methods,
     )
     stable_memory_case_count = sum(
-        1
-        for row in trend_rows
-        if row.memory_growth_status == "stable-memory-growth"
+        1 for row in trend_rows if row.memory_growth_status == "stable-memory-growth"
     )
     elevated_memory_case_count = sum(
-        1
-        for row in trend_rows
-        if row.memory_growth_status == "elevated-memory-growth"
+        1 for row in trend_rows if row.memory_growth_status == "elevated-memory-growth"
     )
     memory_blowup_case_count = sum(
         1 for row in trend_rows if row.memory_growth_status == "memory-blowup"
@@ -489,13 +483,9 @@ def benchmark_native_maximum_likelihood_suite(
     native_advantage_case_count = sum(
         1 for row in observations if row.status == "native-advantage"
     )
-    native_bug_case_count = sum(
-        1 for row in observations if row.status == "native-bug"
-    )
+    native_bug_case_count = sum(1 for row in observations if row.status == "native-bug")
     expected_assumption_difference_case_count = sum(
-        1
-        for row in observations
-        if row.status == "expected-assumption-difference"
+        1 for row in observations if row.status == "expected-assumption-difference"
     )
     unsupported_case_count = sum(
         1 for row in observations if row.status == "unsupported-case"
@@ -610,9 +600,11 @@ def write_native_maximum_likelihood_accuracy_bundle(
         output_root / "observations.tsv",
         report,
     )
-    wrapper_observation_table_path = write_native_maximum_likelihood_accuracy_wrapper_table(
-        output_root / "wrapper_observations.tsv",
-        report,
+    wrapper_observation_table_path = (
+        write_native_maximum_likelihood_accuracy_wrapper_table(
+            output_root / "wrapper_observations.tsv",
+            report,
+        )
     )
     run_json_path = write_native_maximum_likelihood_accuracy_run_json(
         output_root / "run.json",
@@ -881,7 +873,8 @@ def _build_native_maximum_likelihood_accuracy_observation(
         likelihood_shortfall=round(
             max(
                 0.0,
-                true_topology_log_likelihood - inference_report.best_final_log_likelihood,
+                true_topology_log_likelihood
+                - inference_report.best_final_log_likelihood,
             ),
             15,
         ),
@@ -889,7 +882,8 @@ def _build_native_maximum_likelihood_accuracy_observation(
             "no-likelihood-shortfall"
             if max(
                 0.0,
-                true_topology_log_likelihood - inference_report.best_final_log_likelihood,
+                true_topology_log_likelihood
+                - inference_report.best_final_log_likelihood,
             )
             <= _NATIVE_MAXIMUM_LIKELIHOOD_ACCURACY_SHORTFALL_TOLERANCE
             else "likelihood-shortfall"
@@ -1181,8 +1175,7 @@ def _build_native_maximum_likelihood_memory_trend_rows(
                     (model_name, search_method, comparison_size_class)
                 ]
                 peak_memory_ratio = round(
-                    comparison.peak_memory_bytes
-                    / max(baseline.peak_memory_bytes, 1),
+                    comparison.peak_memory_bytes / max(baseline.peak_memory_bytes, 1),
                     15,
                 )
                 peak_memory_delta_bytes = (
@@ -1257,9 +1250,16 @@ def _validate_native_maximum_likelihood_benchmark_model_names(
         raise ValueError("model_names must contain at least one fixed model")
     validated_model_names: list[str] = []
     for model_name in model_names:
-        normalized_model_name = validate_selected_nucleotide_likelihood_model(model_name)
-        if normalized_model_name not in _SUPPORTED_NATIVE_MAXIMUM_LIKELIHOOD_SPEED_MODEL_NAMES:
-            supported = ", ".join(_SUPPORTED_NATIVE_MAXIMUM_LIKELIHOOD_SPEED_MODEL_NAMES)
+        normalized_model_name = validate_selected_nucleotide_likelihood_model(
+            model_name
+        )
+        if (
+            normalized_model_name
+            not in _SUPPORTED_NATIVE_MAXIMUM_LIKELIHOOD_SPEED_MODEL_NAMES
+        ):
+            supported = ", ".join(
+                _SUPPORTED_NATIVE_MAXIMUM_LIKELIHOOD_SPEED_MODEL_NAMES
+            )
             raise ValueError(
                 "native ML speed benchmark supports fixed models "
                 f"{supported}; got {model_name!r}"
@@ -1767,7 +1767,7 @@ def _build_summary_rows(
 
 def _alignment_path() -> Path:
     return Path(__file__).resolve().parents[6] / str(
-        MAXIMUM_LIKELIHOOD_WRAPPER_REFERENCE_PAYLOADS[
-            "iqtree-jc69-maximum-likelihood"
-        ]["alignment_path"]
+        MAXIMUM_LIKELIHOOD_WRAPPER_REFERENCE_PAYLOADS["iqtree-jc69-maximum-likelihood"][
+            "alignment_path"
+        ]
     )

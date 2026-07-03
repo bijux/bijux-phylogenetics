@@ -50,8 +50,7 @@ def test_build_generated_geiger_parity_report_requires_live_opt_in_for_refresh(
 
     assert error.value.code == "external_engine_access_forbidden"
     assert (
-        error.value.details["surface"]
-        == "geiger generated parity report live refresh"
+        error.value.details["surface"] == "geiger generated parity report live refresh"
     )
 
 

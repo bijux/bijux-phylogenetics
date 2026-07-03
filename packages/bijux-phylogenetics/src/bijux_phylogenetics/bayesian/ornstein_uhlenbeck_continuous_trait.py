@@ -5,6 +5,9 @@ from dataclasses import dataclass
 import math
 from statistics import mean
 
+from bijux_phylogenetics.bayesian.brownian_continuous_trait import (
+    _build_continuous_trait_likelihood_context,
+)
 from bijux_phylogenetics.bayesian.continuous_trait_location_priors import (
     ContinuousTraitLocationPriorModel,
     evaluate_continuous_trait_location_log_prior,
@@ -12,9 +15,6 @@ from bijux_phylogenetics.bayesian.continuous_trait_location_priors import (
 from bijux_phylogenetics.bayesian.continuous_trait_model_priors import (
     ContinuousTraitScalarPriorModel,
     evaluate_continuous_trait_scalar_log_prior,
-)
-from bijux_phylogenetics.bayesian.brownian_continuous_trait import (
-    _build_continuous_trait_likelihood_context,
 )
 from bijux_phylogenetics.bayesian.metropolis_hastings import (
     MetropolisHastingsRunReport,

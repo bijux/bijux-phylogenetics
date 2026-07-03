@@ -108,9 +108,7 @@ def summarize_irreversible_discrete_reconstruction(
         raise ValueError(
             "irreversible discrete ancestral reconstruction requires a discrete likelihood model"
         )
-    unconstrained_model = (
-        "all-rates-different" if model == "irreversible" else model
-    )
+    unconstrained_model = "all-rates-different" if model == "irreversible" else model
     constrained_report = reconstruct_discrete_ancestral_states(
         tree_path,
         traits_path,
@@ -127,9 +125,7 @@ def summarize_irreversible_discrete_reconstruction(
         model=unconstrained_model,
     )
     warnings = list(
-        dict.fromkeys(
-            [*constrained_report.warnings, *unconstrained_report.warnings]
-        )
+        dict.fromkeys([*constrained_report.warnings, *unconstrained_report.warnings])
     )
     node_rows = _build_node_rows(constrained_report, unconstrained_report)
     transition_rows = _build_transition_rows(constrained_report, unconstrained_report)

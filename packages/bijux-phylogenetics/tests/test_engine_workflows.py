@@ -12,9 +12,9 @@ from bijux_phylogenetics.engines import (
     build_model_selection_limitations_report,
     bundle_inference_workflow_evidence,
     compare_fast_and_ml_trees,
-    native_maximum_likelihood_only_mode,
     list_mafft_alignment_modes,
     list_trimal_trimming_modes,
+    native_maximum_likelihood_only_mode,
     render_inference_sensitivity_report,
     render_inference_workflow_report,
     render_model_selection_limitations_report,
@@ -1237,22 +1237,24 @@ def test_run_maximum_likelihood_tree_inference_native_only_mode_blocks_iqtree(
 ) -> None:
     sentinel_path = tmp_path / "iqtree-invoked.txt"
 
-    with native_maximum_likelihood_only_mode():
-        with pytest.raises(
+    with (
+        native_maximum_likelihood_only_mode(),
+        pytest.raises(
             EngineWorkflowError,
             match="native maximum-likelihood only mode forbids external engine access",
-        ) as error:
-            run_maximum_likelihood_tree_inference(
-                fixture("alignments/example_alignment.fasta"),
-                out_dir=tmp_path / "maximum-likelihood",
-                model="GTR+G",
-                executable=_sentinel_engine(
-                    tmp_path / "iqtree-sentinel",
-                    sentinel_path,
-                    "IQ-TREE multicore version 2.9.9",
-                ),
-                sequence_type="dna",
-            )
+        ) as error,
+    ):
+        run_maximum_likelihood_tree_inference(
+            fixture("alignments/example_alignment.fasta"),
+            out_dir=tmp_path / "maximum-likelihood",
+            model="GTR+G",
+            executable=_sentinel_engine(
+                tmp_path / "iqtree-sentinel",
+                sentinel_path,
+                "IQ-TREE multicore version 2.9.9",
+            ),
+            sequence_type="dna",
+        )
 
     assert error.value.code == "external_engine_access_forbidden"
     assert (
@@ -1267,21 +1269,23 @@ def test_run_fast_tree_inference_native_only_mode_blocks_fasttree(
 ) -> None:
     sentinel_path = tmp_path / "fasttree-invoked.txt"
 
-    with native_maximum_likelihood_only_mode():
-        with pytest.raises(
+    with (
+        native_maximum_likelihood_only_mode(),
+        pytest.raises(
             EngineWorkflowError,
             match="native maximum-likelihood only mode forbids external engine access",
-        ) as error:
-            run_fast_tree_inference(
-                fixture("alignments/example_alignment.fasta"),
-                tmp_path / "fasttree.nwk",
-                executable=_sentinel_engine(
-                    tmp_path / "fasttree-sentinel",
-                    sentinel_path,
-                    "FastTree Version 2.2.0",
-                ),
-                sequence_type="dna",
-            )
+        ) as error,
+    ):
+        run_fast_tree_inference(
+            fixture("alignments/example_alignment.fasta"),
+            tmp_path / "fasttree.nwk",
+            executable=_sentinel_engine(
+                tmp_path / "fasttree-sentinel",
+                sentinel_path,
+                "FastTree Version 2.2.0",
+            ),
+            sequence_type="dna",
+        )
 
     assert error.value.code == "external_engine_access_forbidden"
     assert (

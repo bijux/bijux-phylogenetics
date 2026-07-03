@@ -7,13 +7,13 @@ from pathlib import Path
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import loads_newick
 import bijux_phylogenetics.phylo.likelihood as likelihood_api
-import bijux_phylogenetics.phylo.likelihood.candidate_tree_site_likelihood_matrix as candidate_matrix_runtime
 from bijux_phylogenetics.phylo.likelihood import (
     evaluate_jc69_tree_likelihood,
     evaluate_nucleotide_candidate_tree_site_likelihood_matrix_from_alignment,
     resolve_candidate_tree_records,
     write_candidate_tree_site_likelihood_matrix_artifacts,
 )
+import bijux_phylogenetics.phylo.likelihood.candidate_tree_site_likelihood_matrix as candidate_matrix_runtime
 from bijux_phylogenetics.phylo.topology import rooted_topology_fingerprint
 from bijux_phylogenetics.runtime.errors import TreeParseError
 

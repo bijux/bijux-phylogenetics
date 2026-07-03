@@ -7,11 +7,11 @@ from pathlib import Path
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 
 from .contracts import (
-    NativeMaximumLikelihoodAccuracyBenchmarkReport,
     MaximumLikelihoodWrapperBenchmarkReport,
+    NativeMaximumLikelihoodAccuracyBenchmarkReport,
     NativeMaximumLikelihoodMemoryBenchmarkReport,
-    NativeMaximumLikelihoodSuiteReport,
     NativeMaximumLikelihoodSpeedBenchmarkReport,
+    NativeMaximumLikelihoodSuiteReport,
 )
 
 

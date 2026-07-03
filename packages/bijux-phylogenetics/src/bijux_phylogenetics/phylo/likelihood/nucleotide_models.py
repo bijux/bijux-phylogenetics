@@ -6,14 +6,14 @@ from dataclasses import dataclass
 import numpy
 
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+)
 from bijux_phylogenetics.phylo.likelihood.dna import (
     UNIFORM_DNA_ROOT_PRIOR,
     normalize_dna_exchangeabilities_by_anchor,
     validate_dna_base_frequencies,
     validate_positive_kappa,
-)
-from bijux_phylogenetics.phylo.likelihood.ctmc import (
-    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
 )
 from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
     augment_dna_rate_matrix_with_gap_state,

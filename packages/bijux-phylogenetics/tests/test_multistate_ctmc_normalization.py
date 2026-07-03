@@ -35,11 +35,12 @@ from bijux_phylogenetics.phylo.likelihood.codon_finite_state import (
 from bijux_phylogenetics.phylo.likelihood.discrete_finite_state import (
     build_discrete_mk_finite_state_surface,
 )
-from bijux_phylogenetics.phylo.likelihood.finite_state import FiniteStateLikelihoodSurface
+from bijux_phylogenetics.phylo.likelihood.finite_state import (
+    FiniteStateLikelihoodSurface,
+)
 from bijux_phylogenetics.phylo.likelihood.poisson import (
     protein_poisson_rate_matrix,
 )
-from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
 from bijux_phylogenetics.phylo.likelihood.protein import (
     PROTEIN_STATE_ORDER,
     UNIFORM_PROTEIN_ROOT_PRIOR,
@@ -48,6 +49,7 @@ from bijux_phylogenetics.phylo.likelihood.protein_finite_state import (
     build_empirical_protein_finite_state_surface,
     build_protein_poisson_finite_state_surface,
 )
+from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -68,8 +70,12 @@ def test_protein_poisson_declares_expected_rate_one_and_preserves_scale_compensa
     report = evaluate_protein_poisson_tree_likelihood(tree, records)
     rate_matrix = protein_poisson_rate_matrix()
 
-    assert surface.normalization_policy == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
-    assert report.normalization_policy == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
+    assert (
+        surface.normalization_policy == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
+    )
+    assert (
+        report.normalization_policy == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
+    )
     assert math.isclose(
         compute_ctmc_expected_substitution_rate(
             rate_matrix,
@@ -120,8 +126,12 @@ def test_empirical_protein_declares_caller_scale_and_preserves_scale_compensated
         matrix_label="compact-polar",
     )
 
-    assert surface.normalization_policy == CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY
-    assert report.normalization_policy == CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY
+    assert (
+        surface.normalization_policy == CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY
+    )
+    assert (
+        report.normalization_policy == CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY
+    )
     assert math.isclose(
         report.log_likelihood,
         evaluate_finite_state_tree_log_likelihood(
@@ -151,12 +161,14 @@ def test_empirical_protein_rate_heterogeneity_reports_preserve_caller_scale_poli
         "matrix_label": "compact-polar",
     }
 
-    gamma_report = evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment(
-        tree_path,
-        alignment_path,
-        alpha=0.8,
-        category_count=4,
-        **kwargs,
+    gamma_report = (
+        evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignment(
+            tree_path,
+            alignment_path,
+            alpha=0.8,
+            category_count=4,
+            **kwargs,
+        )
     )
     invariant_report = evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment(
         tree_path,
@@ -173,7 +185,10 @@ def test_empirical_protein_rate_heterogeneity_reports_preserve_caller_scale_poli
         **kwargs,
     )
 
-    assert gamma_report.normalization_policy == CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY
+    assert (
+        gamma_report.normalization_policy
+        == CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY
+    )
     assert (
         invariant_report.normalization_policy
         == CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY
@@ -196,8 +211,12 @@ def test_codon_ctmc_declares_expected_rate_one_and_preserves_scale_compensated_l
     report = evaluate_codon_ctmc_tree_likelihood(tree, records)
     state_space, rate_matrix, frequencies, _ = build_equal_rate_codon_ctmc_rate_matrix()
 
-    assert surface.normalization_policy == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
-    assert report.normalization_policy == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
+    assert (
+        surface.normalization_policy == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
+    )
+    assert (
+        report.normalization_policy == EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY
+    )
     assert math.isclose(
         compute_ctmc_expected_substitution_rate(
             rate_matrix,
@@ -294,14 +313,18 @@ def test_discrete_mk_surfaces_declare_caller_scale_and_preserve_scale_compensate
     states = tuple(states_by_taxon[taxon] for taxon in ["A", "B"])
     context = _compile_context(tree, surface)
 
-    assert surface.normalization_policy == CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY
+    assert (
+        surface.normalization_policy == CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY
+    )
     assert math.isclose(
         evaluate_finite_state_site_log_likelihood(
             context,
             states,
             taxon_order=["A", "B"],
         ),
-        evaluate_finite_state_site_log_likelihood(_compile_context(tree, scaled_surface), states, taxon_order=["A", "B"]),
+        evaluate_finite_state_site_log_likelihood(
+            _compile_context(tree, scaled_surface), states, taxon_order=["A", "B"]
+        ),
         rel_tol=0.0,
         abs_tol=1e-12,
     )

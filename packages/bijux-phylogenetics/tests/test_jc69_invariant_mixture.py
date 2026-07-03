@@ -54,10 +54,12 @@ def test_jc69_invariant_mixture_from_alignment_matches_direct_call() -> None:
     tree_path = FIXTURES / "trees" / "jc69_likelihood_tree_2_taxa.nwk"
     alignment_path = FIXTURES / "alignments" / "jc69_likelihood_alignment_2_taxa.fasta"
 
-    from_alignment = evaluate_jc69_tree_likelihood_with_invariant_mixture_from_alignment(
-        tree_path,
-        alignment_path,
-        invariant_proportion=0.35,
+    from_alignment = (
+        evaluate_jc69_tree_likelihood_with_invariant_mixture_from_alignment(
+            tree_path,
+            alignment_path,
+            invariant_proportion=0.35,
+        )
     )
     direct = evaluate_jc69_tree_likelihood_with_invariant_mixture(
         load_tree(tree_path),

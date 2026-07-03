@@ -116,10 +116,9 @@ def test_fixed_topology_relaxed_clock_runner_emits_branch_rate_and_node_age_summ
     assert first_prior_components["clock:mean-clock-rate"].parameter_values == {
         "rate": 3.0
     }
-    assert (
-        first_prior_components["clock:log-standard-deviation"].parameter_values
-        == {"rate": 4.0}
-    )
+    assert first_prior_components["clock:log-standard-deviation"].parameter_values == {
+        "rate": 4.0
+    }
 
 
 def test_fixed_topology_relaxed_clock_runner_rejects_unrooted_substitution_tree() -> (

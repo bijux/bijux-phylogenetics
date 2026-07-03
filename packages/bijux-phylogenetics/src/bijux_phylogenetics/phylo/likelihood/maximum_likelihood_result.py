@@ -17,11 +17,8 @@ from bijux_phylogenetics.phylo.likelihood.models import (
     LikelihoodWrapperCorrespondenceSummaryRow,
     NucleotideLikelihoodBootstrapTreeInferenceReport,
     NucleotideLikelihoodMultiStartRunSummary,
-    NucleotideLikelihoodNniSearchReport,
     NucleotideLikelihoodNniTraceRow,
-    NucleotideLikelihoodSprSearchReport,
     NucleotideLikelihoodSprTraceRow,
-    NucleotideLikelihoodTbrSearchReport,
     NucleotideLikelihoodTbrTraceRow,
     NucleotideLikelihoodTreeInferenceReport,
     NucleotideShLikeBranchSupportReport,
@@ -84,7 +81,9 @@ class NucleotideMaximumLikelihoodResult:
         """Serialize the result into one JSON-ready payload."""
         payload = _serialize_value(self)
         if not isinstance(payload, dict):
-            raise TypeError("maximum-likelihood result payload must serialize as a dict")
+            raise TypeError(
+                "maximum-likelihood result payload must serialize as a dict"
+            )
         payload["result_type"] = self.__class__.__name__
         return payload
 
@@ -184,9 +183,7 @@ def build_nucleotide_maximum_likelihood_benchmark_metadata(
         wrapper_correspondence_all_supported_cases_clear=(
             correspondence_report.all_supported_cases_clear
         ),
-        wrapper_correspondence_summary_rows=list(
-            correspondence_report.summary_rows
-        ),
+        wrapper_correspondence_summary_rows=list(correspondence_report.summary_rows),
     )
 
 
@@ -361,7 +358,10 @@ def _validate_bootstrap_report(
     inference_report: NucleotideLikelihoodTreeInferenceReport,
     bootstrap_report: NucleotideLikelihoodBootstrapTreeInferenceReport,
 ) -> None:
-    if bootstrap_report.reference_tree_newick != inference_report.best_final_tree_newick:
+    if (
+        bootstrap_report.reference_tree_newick
+        != inference_report.best_final_tree_newick
+    ):
         raise ValueError(
             "bootstrap support report tree does not match the inference result tree"
         )
@@ -382,7 +382,10 @@ def _validate_sh_like_report(
         raise ValueError(
             "SH-like support report tree does not match the inference result tree"
         )
-    if sh_like_report.model_name.upper() != inference_report.selected_model_name.upper():
+    if (
+        sh_like_report.model_name.upper()
+        != inference_report.selected_model_name.upper()
+    ):
         raise ValueError(
             "SH-like support report model does not match the inference result model"
         )

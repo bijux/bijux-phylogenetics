@@ -28,10 +28,10 @@ from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
     build_exponential_positive_substitution_parameter_prior,
     build_substitution_parameter_prior_bundle,
 )
-from bijux_phylogenetics.phylo.likelihood.codon_states import resolve_codon_state_space
 from bijux_phylogenetics.bayesian.tree_topology_priors import (
     build_uniform_rooted_tree_topology_prior,
 )
+from bijux_phylogenetics.phylo.likelihood.codon_states import resolve_codon_state_space
 from bijux_phylogenetics.phylo.likelihood.dna_simplex_coordinates import (
     DNA_EXCHANGEABILITY_LABELS,
 )

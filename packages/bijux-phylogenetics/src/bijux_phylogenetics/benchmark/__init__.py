@@ -60,51 +60,6 @@ from .contracts import (
 from .contracts import (
     _StressTierConfig as _StressTierConfig,
 )
-from .macroevolution import (
-    RealDatasetMacroevolutionAlignmentReviewRow as RealDatasetMacroevolutionAlignmentReviewRow,
-)
-from .macroevolution import (
-    RealDatasetMacroevolutionBenchmarkBundle as RealDatasetMacroevolutionBenchmarkBundle,
-)
-from .macroevolution import (
-    RealDatasetMacroevolutionBenchmarkDemoResult as RealDatasetMacroevolutionBenchmarkDemoResult,
-)
-from .macroevolution import (
-    RealDatasetMacroevolutionBenchmarkReport as RealDatasetMacroevolutionBenchmarkReport,
-)
-from .macroevolution import (
-    RealDatasetMacroevolutionModelRow as RealDatasetMacroevolutionModelRow,
-)
-from .macroevolution import (
-    RealDatasetMacroevolutionParityRow as RealDatasetMacroevolutionParityRow,
-)
-from .macroevolution import (
-    RealDatasetMacroevolutionSummaryRow as RealDatasetMacroevolutionSummaryRow,
-)
-from .macroevolution import (
-    benchmark_real_dataset_macroevolution as benchmark_real_dataset_macroevolution,
-)
-from .macroevolution import (
-    run_real_dataset_macroevolution_benchmark_demo as run_real_dataset_macroevolution_benchmark_demo,
-)
-from .macroevolution import (
-    write_geiger_real_dataset_reference_payload_table as write_geiger_real_dataset_reference_payload_table,
-)
-from .macroevolution import (
-    write_real_dataset_macroevolution_alignment_review_table as write_real_dataset_macroevolution_alignment_review_table,
-)
-from .macroevolution import (
-    write_real_dataset_macroevolution_bundle as write_real_dataset_macroevolution_bundle,
-)
-from .macroevolution import (
-    write_real_dataset_macroevolution_model_table as write_real_dataset_macroevolution_model_table,
-)
-from .macroevolution import (
-    write_real_dataset_macroevolution_parity_table as write_real_dataset_macroevolution_parity_table,
-)
-from .macroevolution import (
-    write_real_dataset_macroevolution_summary_table as write_real_dataset_macroevolution_summary_table,
-)
 from .likelihood_tree_inference import (
     MaximumLikelihoodWrapperBenchmarkBundle as MaximumLikelihoodWrapperBenchmarkBundle,
 )
@@ -130,24 +85,6 @@ from .likelihood_tree_inference import (
     NativeMaximumLikelihoodAccuracyBenchmarkReport as NativeMaximumLikelihoodAccuracyBenchmarkReport,
 )
 from .likelihood_tree_inference import (
-    benchmark_native_maximum_likelihood_accuracy as benchmark_native_maximum_likelihood_accuracy,
-)
-from .likelihood_tree_inference import (
-    NativeMaximumLikelihoodSuiteBundle as NativeMaximumLikelihoodSuiteBundle,
-)
-from .likelihood_tree_inference import (
-    NativeMaximumLikelihoodSuiteObservation as NativeMaximumLikelihoodSuiteObservation,
-)
-from .likelihood_tree_inference import (
-    NativeMaximumLikelihoodSuiteReport as NativeMaximumLikelihoodSuiteReport,
-)
-from .likelihood_tree_inference import (
-    NativeMaximumLikelihoodSuiteSummaryRow as NativeMaximumLikelihoodSuiteSummaryRow,
-)
-from .likelihood_tree_inference import (
-    benchmark_native_maximum_likelihood_suite as benchmark_native_maximum_likelihood_suite,
-)
-from .likelihood_tree_inference import (
     NativeMaximumLikelihoodMemoryBenchmarkBundle as NativeMaximumLikelihoodMemoryBenchmarkBundle,
 )
 from .likelihood_tree_inference import (
@@ -158,9 +95,6 @@ from .likelihood_tree_inference import (
 )
 from .likelihood_tree_inference import (
     NativeMaximumLikelihoodMemoryTrendRow as NativeMaximumLikelihoodMemoryTrendRow,
-)
-from .likelihood_tree_inference import (
-    benchmark_native_maximum_likelihood_memory as benchmark_native_maximum_likelihood_memory,
 )
 from .likelihood_tree_inference import (
     NativeMaximumLikelihoodSpeedBenchmarkBundle as NativeMaximumLikelihoodSpeedBenchmarkBundle,
@@ -175,10 +109,43 @@ from .likelihood_tree_inference import (
     NativeMaximumLikelihoodSpeedTrendRow as NativeMaximumLikelihoodSpeedTrendRow,
 )
 from .likelihood_tree_inference import (
-    benchmark_native_maximum_likelihood_speed as benchmark_native_maximum_likelihood_speed,
+    NativeMaximumLikelihoodSuiteBundle as NativeMaximumLikelihoodSuiteBundle,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodSuiteObservation as NativeMaximumLikelihoodSuiteObservation,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodSuiteReport as NativeMaximumLikelihoodSuiteReport,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodSuiteSummaryRow as NativeMaximumLikelihoodSuiteSummaryRow,
 )
 from .likelihood_tree_inference import (
     benchmark_maximum_likelihood_wrapper_comparison as benchmark_maximum_likelihood_wrapper_comparison,
+)
+from .likelihood_tree_inference import (
+    benchmark_native_maximum_likelihood_accuracy as benchmark_native_maximum_likelihood_accuracy,
+)
+from .likelihood_tree_inference import (
+    benchmark_native_maximum_likelihood_memory as benchmark_native_maximum_likelihood_memory,
+)
+from .likelihood_tree_inference import (
+    benchmark_native_maximum_likelihood_speed as benchmark_native_maximum_likelihood_speed,
+)
+from .likelihood_tree_inference import (
+    benchmark_native_maximum_likelihood_suite as benchmark_native_maximum_likelihood_suite,
+)
+from .likelihood_tree_inference import (
+    write_maximum_likelihood_wrapper_comparison_bundle as write_maximum_likelihood_wrapper_comparison_bundle,
+)
+from .likelihood_tree_inference import (
+    write_maximum_likelihood_wrapper_comparison_observation_table as write_maximum_likelihood_wrapper_comparison_observation_table,
+)
+from .likelihood_tree_inference import (
+    write_maximum_likelihood_wrapper_comparison_run_json as write_maximum_likelihood_wrapper_comparison_run_json,
+)
+from .likelihood_tree_inference import (
+    write_maximum_likelihood_wrapper_comparison_summary_table as write_maximum_likelihood_wrapper_comparison_summary_table,
 )
 from .likelihood_tree_inference import (
     write_native_maximum_likelihood_accuracy_bundle as write_native_maximum_likelihood_accuracy_bundle,
@@ -237,17 +204,50 @@ from .likelihood_tree_inference import (
 from .likelihood_tree_inference import (
     write_native_maximum_likelihood_suite_summary_table as write_native_maximum_likelihood_suite_summary_table,
 )
-from .likelihood_tree_inference import (
-    write_maximum_likelihood_wrapper_comparison_bundle as write_maximum_likelihood_wrapper_comparison_bundle,
+from .macroevolution import (
+    RealDatasetMacroevolutionAlignmentReviewRow as RealDatasetMacroevolutionAlignmentReviewRow,
 )
-from .likelihood_tree_inference import (
-    write_maximum_likelihood_wrapper_comparison_observation_table as write_maximum_likelihood_wrapper_comparison_observation_table,
+from .macroevolution import (
+    RealDatasetMacroevolutionBenchmarkBundle as RealDatasetMacroevolutionBenchmarkBundle,
 )
-from .likelihood_tree_inference import (
-    write_maximum_likelihood_wrapper_comparison_run_json as write_maximum_likelihood_wrapper_comparison_run_json,
+from .macroevolution import (
+    RealDatasetMacroevolutionBenchmarkDemoResult as RealDatasetMacroevolutionBenchmarkDemoResult,
 )
-from .likelihood_tree_inference import (
-    write_maximum_likelihood_wrapper_comparison_summary_table as write_maximum_likelihood_wrapper_comparison_summary_table,
+from .macroevolution import (
+    RealDatasetMacroevolutionBenchmarkReport as RealDatasetMacroevolutionBenchmarkReport,
+)
+from .macroevolution import (
+    RealDatasetMacroevolutionModelRow as RealDatasetMacroevolutionModelRow,
+)
+from .macroevolution import (
+    RealDatasetMacroevolutionParityRow as RealDatasetMacroevolutionParityRow,
+)
+from .macroevolution import (
+    RealDatasetMacroevolutionSummaryRow as RealDatasetMacroevolutionSummaryRow,
+)
+from .macroevolution import (
+    benchmark_real_dataset_macroevolution as benchmark_real_dataset_macroevolution,
+)
+from .macroevolution import (
+    run_real_dataset_macroevolution_benchmark_demo as run_real_dataset_macroevolution_benchmark_demo,
+)
+from .macroevolution import (
+    write_geiger_real_dataset_reference_payload_table as write_geiger_real_dataset_reference_payload_table,
+)
+from .macroevolution import (
+    write_real_dataset_macroevolution_alignment_review_table as write_real_dataset_macroevolution_alignment_review_table,
+)
+from .macroevolution import (
+    write_real_dataset_macroevolution_bundle as write_real_dataset_macroevolution_bundle,
+)
+from .macroevolution import (
+    write_real_dataset_macroevolution_model_table as write_real_dataset_macroevolution_model_table,
+)
+from .macroevolution import (
+    write_real_dataset_macroevolution_parity_table as write_real_dataset_macroevolution_parity_table,
+)
+from .macroevolution import (
+    write_real_dataset_macroevolution_summary_table as write_real_dataset_macroevolution_summary_table,
 )
 from .model_fitting import (
     LargeTreeModelFittingBenchmarkBundle as LargeTreeModelFittingBenchmarkBundle,

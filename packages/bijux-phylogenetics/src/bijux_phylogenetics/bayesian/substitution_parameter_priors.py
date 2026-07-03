@@ -864,14 +864,7 @@ def _resolve_normalized_simplex_mapping(
         raw_values=raw_values,
         owner_name=owner_name,
     )
-    return {
-        component_name: normalized_value
-        for component_name, normalized_value in zip(
-            component_names,
-            normalized_values,
-            strict=True,
-        )
-    }
+    return dict(zip(component_names, normalized_values, strict=True))
 
 
 def _resolve_named_component_values(

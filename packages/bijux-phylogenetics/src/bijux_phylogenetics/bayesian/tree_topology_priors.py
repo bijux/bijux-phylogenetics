@@ -11,6 +11,7 @@ from bijux_phylogenetics.runtime.errors import (
     UnrootedTreeError,
 )
 from bijux_phylogenetics.trees.tree_sets.topology import _rooted_topology_id
+
 from .time_tree_priors import (
     BirthDeathTreePriorEvaluationReport,
     BirthDeathTreePriorModel,
@@ -176,7 +177,9 @@ def _log_rooted_labeled_bifurcating_topology_count(taxon_count: int) -> float:
     )
 
 
-def supports_time_tree_topology_prior_model(value: object) -> TypeGuard[
+def supports_time_tree_topology_prior_model(
+    value: object,
+) -> TypeGuard[
     YuleTreePriorModel
     | BirthDeathTreePriorModel
     | ConstantPopulationCoalescentPriorModel

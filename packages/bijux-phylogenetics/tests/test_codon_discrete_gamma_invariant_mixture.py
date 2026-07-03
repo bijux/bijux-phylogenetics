@@ -23,12 +23,14 @@ def test_codon_discrete_gamma_invariant_mixture_matches_shared_surface() -> None
         AlignmentRecord(identifier="B", sequence="AAAAAA"),
     ]
 
-    report = evaluate_codon_ctmc_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-        tree,
-        records,
-        alpha=0.8,
-        category_count=4,
-        invariant_proportion=0.35,
+    report = (
+        evaluate_codon_ctmc_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+            tree,
+            records,
+            alpha=0.8,
+            category_count=4,
+            invariant_proportion=0.35,
+        )
     )
     surface = build_codon_finite_state_surface(records)
     shared_report = (
@@ -64,15 +66,17 @@ def test_codon_discrete_gamma_invariant_mixture_emits_boundary_warnings() -> Non
         AlignmentRecord(identifier="B", sequence="AAAAAA"),
     ]
 
-    report = evaluate_codon_ctmc_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-        tree,
-        records,
-        alpha=0.8,
-        category_count=4,
-        invariant_proportion=0.35,
-        lower_invariant_proportion_bound=0.35,
-        upper_invariant_proportion_bound=0.5,
-        emit_boundary_warnings=True,
+    report = (
+        evaluate_codon_ctmc_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+            tree,
+            records,
+            alpha=0.8,
+            category_count=4,
+            invariant_proportion=0.35,
+            lower_invariant_proportion_bound=0.35,
+            upper_invariant_proportion_bound=0.5,
+            emit_boundary_warnings=True,
+        )
     )
 
     assert report.hit_lower_invariant_proportion_boundary is True
@@ -88,21 +92,21 @@ def test_codon_discrete_gamma_invariant_mixture_from_alignment_matches_direct_ca
     tree_path = FIXTURES / "trees" / "codon_likelihood_tree_2_taxa.nwk"
     alignment_path = FIXTURES / "alignments" / "codon_likelihood_alignment_2_taxa.fasta"
 
-    from_alignment = (
-        evaluate_codon_ctmc_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
-            tree_path,
-            alignment_path,
+    from_alignment = evaluate_codon_ctmc_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
+        tree_path,
+        alignment_path,
+        alpha=0.8,
+        category_count=4,
+        invariant_proportion=0.35,
+    )
+    direct = (
+        evaluate_codon_ctmc_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+            load_tree(tree_path),
+            load_fasta_alignment(alignment_path),
             alpha=0.8,
             category_count=4,
             invariant_proportion=0.35,
         )
-    )
-    direct = evaluate_codon_ctmc_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-        load_tree(tree_path),
-        load_fasta_alignment(alignment_path),
-        alpha=0.8,
-        category_count=4,
-        invariant_proportion=0.35,
     )
 
     assert from_alignment.log_likelihood == direct.log_likelihood

@@ -117,17 +117,15 @@ def test_owned_nucleotide_discrete_gamma_invariant_wrappers_match_selected_surfa
         invariant_proportion=0.35,
         **wrapper_kwargs,
     )
-    selected_report = (
-        evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-            tree,
-            records,
-            model_name=model_name,
-            owner_name=owner_name,
-            alpha=0.8,
-            category_count=4,
-            invariant_proportion=0.35,
-            **wrapper_kwargs,
-        )
+    selected_report = evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+        tree,
+        records,
+        model_name=model_name,
+        owner_name=owner_name,
+        alpha=0.8,
+        category_count=4,
+        invariant_proportion=0.35,
+        **wrapper_kwargs,
     )
 
     assert owned_report.log_likelihood == selected_report.log_likelihood
@@ -148,17 +146,15 @@ def test_owned_nucleotide_discrete_gamma_invariant_wrappers_match_selected_surfa
         invariant_proportion=0.35,
         **wrapper_kwargs,
     )
-    selected_from_alignment_report = (
-        evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
-            tree_path,
-            alignment_path,
-            model_name=model_name,
-            owner_name=owner_name,
-            alpha=0.8,
-            category_count=4,
-            invariant_proportion=0.35,
-            **wrapper_kwargs,
-        )
+    selected_from_alignment_report = evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
+        tree_path,
+        alignment_path,
+        model_name=model_name,
+        owner_name=owner_name,
+        alpha=0.8,
+        category_count=4,
+        invariant_proportion=0.35,
+        **wrapper_kwargs,
     )
 
     assert owned_from_alignment_report.log_likelihood == (

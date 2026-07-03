@@ -28,7 +28,12 @@ def _clean_subprocess_environment() -> dict[str, str]:
 def _build_python() -> str:
     candidates = (
         PACKAGE_ROOT / ".venv" / "bin" / "python",
-        PACKAGE_ROOT.parents[1] / "artifacts" / "root" / "check-venv" / "bin" / "python",
+        PACKAGE_ROOT.parents[1]
+        / "artifacts"
+        / "root"
+        / "check-venv"
+        / "bin"
+        / "python",
         PACKAGE_ROOT.parents[1] / ".venv" / "bin" / "python",
     )
     for candidate in candidates:

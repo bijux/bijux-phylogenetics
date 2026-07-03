@@ -29,12 +29,12 @@ from bijux_phylogenetics.phylo.likelihood.finite_state import (
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     compress_alignment_site_patterns_from_records,
 )
-from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
 from bijux_phylogenetics.phylo.likelihood.protein import (
     PROTEIN_STATE_ORDER,
     normalize_protein_likelihood_records,
     protein_leaf_likelihood_vector,
 )
+from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
 from bijux_phylogenetics.phylo.likelihood.simplex_search import (
     run_simplex_likelihood_search,
 )
@@ -136,7 +136,7 @@ def test_simplex_search_keeps_generic_state_frequency_candidates_valid() -> None
         site_tokenizer=lambda sequence: (sequence,),
     )
     state_order = ("0", "1", "2", "3")
-    initial_values = {state: 0.25 for state in state_order}
+    initial_values = dict.fromkeys(state_order, 0.25)
     candidate_vectors: list[dict[str, float]] = []
     search_result = run_simplex_likelihood_search(
         initial_values_by_name=initial_values,

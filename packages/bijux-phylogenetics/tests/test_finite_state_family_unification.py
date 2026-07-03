@@ -242,7 +242,9 @@ def _discrete_irreversible_case():
     return tree, compressed_patterns, surface, expected
 
 
-def _single_site_patterns(states_by_taxon: dict[str, str]) -> CompressedAlignmentSitePatterns:
+def _single_site_patterns(
+    states_by_taxon: dict[str, str],
+) -> CompressedAlignmentSitePatterns:
     return CompressedAlignmentSitePatterns(
         source_path=None,
         taxon_order=["A", "B"],

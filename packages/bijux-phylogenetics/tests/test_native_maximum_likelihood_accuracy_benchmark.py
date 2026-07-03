@@ -19,7 +19,6 @@ from bijux_phylogenetics.benchmark.likelihood_tree_inference.contracts import (
     MaximumLikelihoodWrapperBenchmarkObservation,
 )
 
-
 pytestmark = pytest.mark.slow
 
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from functools import lru_cache
+from functools import cache
 from pathlib import Path
 
 import numpy
@@ -83,7 +83,7 @@ def empirical_protein_rate_matrix(model_name: str) -> numpy.ndarray:
     )
 
 
-@lru_cache(maxsize=None)
+@cache
 def _load_empirical_protein_model_payload(model_name: str) -> dict[str, numpy.ndarray]:
     numeric_values = _parse_paml_numeric_values(
         _RESOURCE_ROOT / _EMPIRICAL_MODEL_RESOURCE_BY_NAME[model_name]

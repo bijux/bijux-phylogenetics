@@ -95,7 +95,9 @@ def _assert_topology_refresh_matches_recompilation(
         cached_site_evaluation.pruning_pass.conditional_by_node_id,
         reusable_clade_id,
     )
-    reusable_transition_before = _transition_for_clade(cached_context, reusable_clade_id)
+    reusable_transition_before = _transition_for_clade(
+        cached_context, reusable_clade_id
+    )
 
     update_compiled_finite_state_context_topology(
         cached_context,

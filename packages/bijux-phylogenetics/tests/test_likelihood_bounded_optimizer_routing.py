@@ -6,17 +6,17 @@ import numpy
 
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.likelihood.dna import (
+    normalize_unambiguous_dna_records,
+)
 import bijux_phylogenetics.phylo.likelihood.empirical as empirical_module
 import bijux_phylogenetics.phylo.likelihood.hky85 as hky85_module
 import bijux_phylogenetics.phylo.likelihood.jc69 as jc69_module
 import bijux_phylogenetics.phylo.likelihood.k80 as k80_module
-import bijux_phylogenetics.phylo.likelihood.substitution_model_selection as substitution_model_selection_module
-from bijux_phylogenetics.phylo.likelihood.dna import (
-    normalize_unambiguous_dna_records,
-)
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     compress_alignment_site_patterns_from_records,
 )
+import bijux_phylogenetics.phylo.likelihood.substitution_model_selection as substitution_model_selection_module
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -131,18 +131,16 @@ def test_empirical_invariant_mixture_routes_through_shared_likelihood_search(
         observe_search,
     )
 
-    report = (
-        empirical_module.optimize_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment(
-            fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-            fixture(
-                "alignments",
-                "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
-            ),
-            rate_matrix=_compact_polar_rate_matrix(),
-            root_prior=_biased_root_prior(),
-            matrix_label="compact-polar",
-            initial_invariant_proportion=0.1,
-        )
+    report = empirical_module.optimize_empirical_protein_tree_likelihood_with_invariant_mixture_from_alignment(
+        fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+        fixture(
+            "alignments",
+            "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
+        ),
+        rate_matrix=_compact_polar_rate_matrix(),
+        root_prior=_biased_root_prior(),
+        matrix_label="compact-polar",
+        initial_invariant_proportion=0.1,
     )
 
     assert report.converged is True
@@ -177,20 +175,18 @@ def test_empirical_gamma_invariant_mixture_routes_through_shared_likelihood_sear
         observe_search,
     )
 
-    report = (
-        empirical_module.optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
-            fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
-            fixture(
-                "alignments",
-                "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
-            ),
-            rate_matrix=_compact_polar_rate_matrix(),
-            root_prior=_biased_root_prior(),
-            alpha=0.8,
-            category_count=4,
-            matrix_label="compact-polar",
-            initial_invariant_proportion=0.1,
-        )
+    report = empirical_module.optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
+        fixture("trees", "empirical_protein_likelihood_tree_2_taxa.nwk"),
+        fixture(
+            "alignments",
+            "empirical_protein_invariant_mixture_alignment_2_taxa.fasta",
+        ),
+        rate_matrix=_compact_polar_rate_matrix(),
+        root_prior=_biased_root_prior(),
+        alpha=0.8,
+        category_count=4,
+        matrix_label="compact-polar",
+        initial_invariant_proportion=0.1,
     )
 
     assert report.converged is True

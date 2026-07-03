@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-import bijux_phylogenetics.phylo.topology as topology_api
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick
+import bijux_phylogenetics.phylo.topology as topology_api
 from bijux_phylogenetics.phylo.topology import (
     root_unrooted_tree_deterministically,
 )

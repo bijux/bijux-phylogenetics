@@ -16,5 +16,8 @@ from bijux_phylogenetics.phylo.likelihood.models import (
 def test_public_likelihood_exports_fit_assessment_surface() -> None:
     assert likelihood_api.LikelihoodFitAssessment is LikelihoodFitAssessment
     assert LikelihoodFitAssessment is LikelihoodFitAssessmentImpl
-    assert likelihood_api.build_likelihood_fit_assessment is build_likelihood_fit_assessment
+    assert (
+        likelihood_api.build_likelihood_fit_assessment
+        is build_likelihood_fit_assessment
+    )
     assert build_likelihood_fit_assessment is build_likelihood_fit_assessment_impl

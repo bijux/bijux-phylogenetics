@@ -705,7 +705,9 @@ def _deserialize_bayesian_likelihood_partition_state(
         pattern_count=_require_optional_integer(payload, key="pattern_count"),
         data_type=_optional_string(payload.get("data_type")),
         model_name=_optional_string(payload.get("model_name")),
-        categorical_metadata=_require_string_mapping(payload, key="categorical_metadata"),
+        categorical_metadata=_require_string_mapping(
+            payload, key="categorical_metadata"
+        ),
         scalar_metadata=_require_float_mapping(payload, key="scalar_metadata"),
         vector_metadata=_require_nested_float_mapping(payload, key="vector_metadata"),
     )
@@ -721,7 +723,9 @@ def _deserialize_bayesian_likelihood_context_state(
         observation_count=_require_optional_integer(payload, key="observation_count"),
         pattern_count=_require_optional_integer(payload, key="pattern_count"),
         missing_data_policy=_optional_string(payload.get("missing_data_policy")),
-        categorical_metadata=_require_string_mapping(payload, key="categorical_metadata"),
+        categorical_metadata=_require_string_mapping(
+            payload, key="categorical_metadata"
+        ),
         scalar_metadata=_require_float_mapping(payload, key="scalar_metadata"),
         vector_metadata=_require_nested_float_mapping(payload, key="vector_metadata"),
         partition_contexts=[

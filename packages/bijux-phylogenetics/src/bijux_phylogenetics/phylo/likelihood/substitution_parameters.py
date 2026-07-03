@@ -882,11 +882,13 @@ def _optimize_estimated_hky85_kappa_and_base_frequencies(
             initial_values_by_name=current_base_frequencies,
             expected_component_names=DNA_STATE_ORDER,
             owner_name="HKY85 substitution optimization",
-            evaluate=lambda candidate: _evaluate_hky85_frequency_candidate(
-                tree,
-                records,
-                candidate,
-                current_kappa=current_kappa,
+            evaluate=lambda candidate, resolved_kappa=current_kappa: (
+                _evaluate_hky85_frequency_candidate(
+                    tree,
+                    records,
+                    candidate,
+                    current_kappa=resolved_kappa,
+                )
             ),
             minimum_component_value=_DEFAULT_MINIMUM_BASE_FREQUENCY,
             improvement_tolerance=improvement_tolerance,
@@ -988,11 +990,13 @@ def _optimize_estimated_gtr_exchangeabilities_and_base_frequencies(
             initial_values_by_name=current_base_frequencies,
             expected_component_names=DNA_STATE_ORDER,
             owner_name="GTR substitution optimization",
-            evaluate=lambda candidate: _evaluate_gtr_frequency_candidate(
-                tree,
-                records,
-                candidate,
-                current_exchangeabilities=current_exchangeabilities,
+            evaluate=lambda candidate, resolved_exchangeabilities=current_exchangeabilities: (
+                _evaluate_gtr_frequency_candidate(
+                    tree,
+                    records,
+                    candidate,
+                    current_exchangeabilities=resolved_exchangeabilities,
+                )
             ),
             minimum_component_value=_DEFAULT_MINIMUM_BASE_FREQUENCY,
             improvement_tolerance=improvement_tolerance,

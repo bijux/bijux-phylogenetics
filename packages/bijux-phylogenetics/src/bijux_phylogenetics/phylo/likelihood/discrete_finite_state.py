@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from collections.abc import Mapping
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy
@@ -9,28 +9,28 @@ import numpy
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.alignment.partitions import LocusPartition
-from bijux_phylogenetics.phylo.likelihood.discrete_observation_policies import (
-    resolve_discrete_observation_leaf_vector,
-)
 from bijux_phylogenetics.phylo.likelihood.ctmc import (
     CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
     solve_ctmc_stationary_distribution,
 )
-from bijux_phylogenetics.phylo.likelihood.finite_state_root_priors import (
-    resolve_finite_state_root_prior,
+from bijux_phylogenetics.phylo.likelihood.discrete_observation_policies import (
+    resolve_discrete_observation_leaf_vector,
 )
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
     CompiledFiniteStateLikelihoodAnalysis,
     FiniteStateLikelihoodSurface,
     compile_finite_state_likelihood_analysis,
     compile_finite_state_likelihood_context,
-    evaluate_finite_state_tree_log_likelihood_from_patterns,
     evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture,
     evaluate_finite_state_tree_likelihood_with_invariant_mixture,
+    evaluate_finite_state_tree_log_likelihood_from_patterns,
+)
+from bijux_phylogenetics.phylo.likelihood.finite_state_root_priors import (
+    resolve_finite_state_root_prior,
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
-    FiniteStateFrequencyOptimizationReport,
     FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
+    FiniteStateFrequencyOptimizationReport,
     FiniteStateInvariantMixtureTreeLikelihoodReport,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
@@ -87,9 +87,7 @@ def build_discrete_mk_finite_state_surface(
         ),
         sequence_tokenizer=_discrete_site_tokenizer,
     )
-    state_index = {
-        state: index for index, state in enumerate(validated_state_order)
-    }
+    state_index = {state: index for index, state in enumerate(validated_state_order)}
     return FiniteStateLikelihoodSurface(
         model_name=model_name,
         state_labels=validated_state_order,
@@ -228,16 +226,18 @@ def evaluate_discrete_mk_tree_likelihood_with_discrete_gamma_and_invariant_mixtu
         model_name=model_name,
     )
     compressed_patterns = _compile_discrete_patterns(records, source_path=None)
-    return evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-        tree,
-        compressed_patterns,
-        surface=surface,
-        alpha=alpha,
-        category_count=category_count,
-        invariant_proportion=invariant_proportion,
-        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
-        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
-        emit_boundary_warnings=emit_boundary_warnings,
+    return (
+        evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+            tree,
+            compressed_patterns,
+            surface=surface,
+            alpha=alpha,
+            category_count=category_count,
+            invariant_proportion=invariant_proportion,
+            lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+            upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+            emit_boundary_warnings=emit_boundary_warnings,
+        )
     )
 
 
@@ -319,9 +319,7 @@ def _estimate_discrete_state_frequencies(
     if total_count <= 0.0:
         uniform_mass = 1.0 / len(state_order)
         return dict.fromkeys(state_order, uniform_mass)
-    return {
-        state: count / total_count for state, count in state_counts.items()
-    }
+    return {state: count / total_count for state, count in state_counts.items()}
 
 
 def _evaluate_discrete_equal_input_frequency_candidate(

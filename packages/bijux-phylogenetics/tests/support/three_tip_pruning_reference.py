@@ -55,9 +55,9 @@ def build_three_tip_pruning_reference(
     internal_scale = float(internal_raw.sum())
     internal_normalized = internal_raw / internal_scale
     internal_log_scale = math.log(internal_scale)
-    root_internal_contribution = transition_matrix_by_node_id[internal_child.node_id] @ (
-        internal_normalized
-    )
+    root_internal_contribution = transition_matrix_by_node_id[
+        internal_child.node_id
+    ] @ (internal_normalized)
     root_raw = root_leaf_contribution * root_internal_contribution
     root_scale = float(root_raw.sum())
     root_normalized = root_raw / root_scale
@@ -111,4 +111,6 @@ def _transitioned_leaf_vector(
         raise ValueError("tree node is missing a stable node_id")
     if child.name is None:
         raise ValueError("three-tip pruning reference requires named tips")
-    return transition_matrix_by_node_id[child.node_id] @ leaf_vector_by_taxon[child.name]
+    return (
+        transition_matrix_by_node_id[child.node_id] @ leaf_vector_by_taxon[child.name]
+    )

@@ -9,6 +9,9 @@ from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+)
 from bijux_phylogenetics.phylo.likelihood.dna import (
     DNA_EXCHANGEABILITY_ORDER,
     DNA_STATE_ORDER,
@@ -16,9 +19,6 @@ from bijux_phylogenetics.phylo.likelihood.dna import (
     normalize_dna_rate_matrix,
     validate_dna_base_frequencies,
     validate_dna_exchangeabilities,
-)
-from bijux_phylogenetics.phylo.likelihood.ctmc import (
-    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
 )
 from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
     augment_dna_rate_matrix_with_gap_state,
@@ -32,16 +32,16 @@ from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
 from bijux_phylogenetics.phylo.likelihood.dna_simplex_coordinates import (
     resolve_anchor_normalized_dna_exchangeabilities_from_unconstrained,
 )
+from bijux_phylogenetics.phylo.likelihood.finite_state import (
+    FiniteStateLikelihoodSurface,
+    compile_finite_state_likelihood_context,
+    evaluate_finite_state_tree_log_likelihood_from_patterns,
+)
 from bijux_phylogenetics.phylo.likelihood.models import (
     FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
     FiniteStateInvariantMixtureTreeLikelihoodReport,
     GtrExchangeabilityOptimizationReport,
     GtrTreeLikelihoodReport,
-)
-from bijux_phylogenetics.phylo.likelihood.finite_state import (
-    FiniteStateLikelihoodSurface,
-    compile_finite_state_likelihood_context,
-    evaluate_finite_state_tree_log_likelihood_from_patterns,
 )
 from bijux_phylogenetics.phylo.likelihood.parameter_bounds import (
     validate_parameter_within_bounds,
@@ -688,16 +688,20 @@ def _evaluate_gtr_tree_likelihood_from_patterns(
             gap_state_frequency=gap_state_frequency,
             model_name="GTR",
         )
+
         def transition_matrix_for_branch_length(branch_length: float) -> numpy.ndarray:
             return transition_probability_matrix(augmented_rate_matrix, branch_length)
+
         transition_rate_matrix = augmented_rate_matrix
     else:
+
         def transition_matrix_for_branch_length(branch_length: float) -> numpy.ndarray:
             return gtr_transition_probability_matrix(
                 branch_length,
                 exchangeabilities=normalized_exchangeabilities,
                 base_frequencies=validated_frequencies,
             )
+
         transition_rate_matrix = gtr_rate_matrix(
             exchangeabilities=normalized_exchangeabilities,
             base_frequencies=validated_frequencies,

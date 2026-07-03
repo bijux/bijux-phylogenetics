@@ -14,11 +14,21 @@ from bijux_phylogenetics.phylo.likelihood.ctmc import (
     EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
     solve_ctmc_stationary_distribution,
 )
-from bijux_phylogenetics.phylo.likelihood.gamma import (
-    build_discrete_gamma_rate_categories,
+from bijux_phylogenetics.phylo.likelihood.finite_state import (
+    FiniteStateLikelihoodSurface,
+    compile_finite_state_discrete_gamma_contexts,
+    compile_finite_state_likelihood_context,
+    evaluate_finite_state_site_log_likelihood_rows_from_patterns,
+    evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture,
+    evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns,
+    evaluate_finite_state_tree_likelihood_with_invariant_mixture,
+    evaluate_finite_state_tree_likelihood_with_invariant_mixture_from_patterns,
 )
 from bijux_phylogenetics.phylo.likelihood.fit_assessment import (
     build_likelihood_fit_assessment,
+)
+from bijux_phylogenetics.phylo.likelihood.gamma import (
+    build_discrete_gamma_rate_categories,
 )
 from bijux_phylogenetics.phylo.likelihood.invariant import (
     invariant_component_site_likelihood,
@@ -51,16 +61,6 @@ from bijux_phylogenetics.phylo.likelihood.optimization_boundary_warnings import 
 from bijux_phylogenetics.phylo.likelihood.parameter_search import (
     run_bounded_coordinate_likelihood_search,
     run_bounded_likelihood_search,
-)
-from bijux_phylogenetics.phylo.likelihood.finite_state import (
-    FiniteStateLikelihoodSurface,
-    compile_finite_state_discrete_gamma_contexts,
-    compile_finite_state_likelihood_context,
-    evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture,
-    evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns,
-    evaluate_finite_state_tree_likelihood_with_invariant_mixture,
-    evaluate_finite_state_tree_likelihood_with_invariant_mixture_from_patterns,
-    evaluate_finite_state_site_log_likelihood_rows_from_patterns,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,

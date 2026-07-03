@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from collections.abc import Mapping
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy
@@ -9,6 +9,10 @@ import numpy
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.alignment.partitions import LocusPartition
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+)
 from bijux_phylogenetics.phylo.likelihood.finite_state import (
     CompiledFiniteStateLikelihoodAnalysis,
     FiniteStateLikelihoodSurface,
@@ -19,16 +23,12 @@ from bijux_phylogenetics.phylo.likelihood.finite_state import (
 from bijux_phylogenetics.phylo.likelihood.models import (
     FiniteStateFrequencyOptimizationReport,
 )
-from bijux_phylogenetics.phylo.likelihood.ctmc import (
-    CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
-    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+from bijux_phylogenetics.phylo.likelihood.patterns import (
+    compress_alignment_site_patterns_from_records,
 )
 from bijux_phylogenetics.phylo.likelihood.poisson import (
     protein_poisson_rate_matrix,
     protein_poisson_transition_probability_matrix,
-)
-from bijux_phylogenetics.phylo.likelihood.patterns import (
-    compress_alignment_site_patterns_from_records,
 )
 from bijux_phylogenetics.phylo.likelihood.protein import (
     PROTEIN_STATE_ORDER,
@@ -512,9 +512,7 @@ def _estimate_protein_state_frequencies(
     if total_count <= 0.0:
         uniform_mass = 1.0 / len(PROTEIN_STATE_ORDER)
         return dict.fromkeys(PROTEIN_STATE_ORDER, uniform_mass)
-    return {
-        state: count / total_count for state, count in amino_acid_counts.items()
-    }
+    return {state: count / total_count for state, count in amino_acid_counts.items()}
 
 
 def _evaluate_protein_equal_input_frequency_candidate(

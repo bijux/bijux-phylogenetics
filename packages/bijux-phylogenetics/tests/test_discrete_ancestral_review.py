@@ -223,9 +223,7 @@ def test_reconstruct_discrete_ancestral_states_uses_canonical_ard_plateau_choice
     root = next(
         estimate for estimate in report.estimates if estimate.node == "A|B|C|D|E|F"
     )
-    ef_clade = next(
-        estimate for estimate in report.estimates if estimate.node == "E|F"
-    )
+    ef_clade = next(estimate for estimate in report.estimates if estimate.node == "E|F")
     transition_pairs = {
         (row.source_state, row.target_state): row.rate
         for row in report.transition_rate_rows

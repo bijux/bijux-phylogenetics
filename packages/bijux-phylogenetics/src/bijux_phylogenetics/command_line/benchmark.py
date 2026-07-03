@@ -74,9 +74,9 @@ def _add_native_maximum_likelihood_benchmark_arguments(parser: Any) -> None:
     _add_manifest_argument(parser)
 
 
-def _resolve_native_maximum_likelihood_benchmark_size_classes(args: Any) -> (
-    list[tuple[str, int, int]] | None
-):
+def _resolve_native_maximum_likelihood_benchmark_size_classes(
+    args: Any,
+) -> list[tuple[str, int, int]] | None:
     classes = None
     custom_size_fields = (
         args.size_class_labels,

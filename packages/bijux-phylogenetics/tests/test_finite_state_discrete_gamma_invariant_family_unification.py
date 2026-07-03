@@ -65,13 +65,15 @@ def test_gamma_invariant_mixture_changes_likelihood_for_every_eligible_finite_st
         alpha=0.8,
         category_count=4,
     )
-    combined_report = evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-        tree,
-        compressed_patterns,
-        surface=surface,
-        alpha=0.8,
-        category_count=4,
-        invariant_proportion=0.35,
+    combined_report = (
+        evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+            tree,
+            compressed_patterns,
+            surface=surface,
+            alpha=0.8,
+            category_count=4,
+            invariant_proportion=0.35,
+        )
     )
 
     assert not math.isclose(

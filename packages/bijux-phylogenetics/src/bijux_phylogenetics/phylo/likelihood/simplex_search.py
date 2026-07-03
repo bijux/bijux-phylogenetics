@@ -111,10 +111,9 @@ def run_simplex_likelihood_search(
                 strict=True,
             )
         ),
-        bounds_by_name={
-            coordinate_name: (coordinate_lower_bound, coordinate_upper_bound)
-            for coordinate_name in coordinate_component_names
-        },
+        bounds_by_name=dict.fromkeys(
+            coordinate_component_names, (coordinate_lower_bound, coordinate_upper_bound)
+        ),
         evaluate=lambda coordinate_values: _evaluate_simplex_coordinates(
             coordinate_values,
             component_names=initial_parameterization.component_names,
@@ -180,12 +179,9 @@ def _resolve_initial_simplex_parameterization(
     if numpy.all(initial_probabilities >= validated_minimum_component_value):
         resolved_probabilities = initial_probabilities
     else:
-        residual_mass = 1.0 - (
-            len(component_names) * validated_minimum_component_value
-        )
-        resolved_probabilities = (
-            validated_minimum_component_value
-            + (residual_mass * initial_probabilities)
+        residual_mass = 1.0 - (len(component_names) * validated_minimum_component_value)
+        resolved_probabilities = validated_minimum_component_value + (
+            residual_mass * initial_probabilities
         )
     return parameterize_named_simplex(
         dict(zip(component_names, resolved_probabilities.tolist(), strict=True)),

@@ -26,7 +26,9 @@ def fixture(name: str) -> Path:
     return FIXTURES / "trees" / name
 
 
-def test_finite_state_gamma_invariant_mixture_reports_components_and_boundary_hits() -> None:
+def test_finite_state_gamma_invariant_mixture_reports_components_and_boundary_hits() -> (
+    None
+):
     tree = load_tree(fixture("felsenstein_two_tip_tree.nwk"))
     compressed_patterns = CompressedAlignmentSitePatterns(
         source_path=None,
@@ -69,16 +71,18 @@ def test_finite_state_gamma_invariant_mixture_reports_components_and_boundary_hi
         alpha=0.8,
         category_count=4,
     )
-    combined_report = evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
-        tree,
-        compressed_patterns,
-        surface=surface,
-        alpha=0.8,
-        category_count=4,
-        invariant_proportion=0.35,
-        lower_invariant_proportion_bound=0.35,
-        upper_invariant_proportion_bound=0.9,
-        emit_boundary_warnings=True,
+    combined_report = (
+        evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+            tree,
+            compressed_patterns,
+            surface=surface,
+            alpha=0.8,
+            category_count=4,
+            invariant_proportion=0.35,
+            lower_invariant_proportion_bound=0.35,
+            upper_invariant_proportion_bound=0.9,
+            emit_boundary_warnings=True,
+        )
     )
 
     assert combined_report.alpha == 0.8

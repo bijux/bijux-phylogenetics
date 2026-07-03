@@ -8,10 +8,10 @@ from bijux_phylogenetics.benchmark import (
     MaximumLikelihoodWrapperBenchmarkReport,
     NativeMaximumLikelihoodAccuracyBenchmarkReport,
     NativeMaximumLikelihoodMemoryBenchmarkReport,
+    NativeMaximumLikelihoodSpeedBenchmarkReport,
     NativeMaximumLikelihoodSuiteObservation,
     NativeMaximumLikelihoodSuiteReport,
     NativeMaximumLikelihoodSuiteSummaryRow,
-    NativeMaximumLikelihoodSpeedBenchmarkReport,
 )
 import bijux_phylogenetics.command_line as command_line_api
 from bijux_phylogenetics.command_line import main

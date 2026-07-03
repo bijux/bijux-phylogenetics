@@ -8,6 +8,8 @@ import pytest
 
 from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
+from bijux_phylogenetics.phylo.likelihood import codon as codon_module
+from bijux_phylogenetics.phylo.likelihood import empirical as empirical_module
 from bijux_phylogenetics.phylo.likelihood import (
     evaluate_codon_ctmc_tree_likelihood,
     evaluate_empirical_protein_tree_likelihood,
@@ -18,8 +20,6 @@ from bijux_phylogenetics.phylo.likelihood import (
     evaluate_k80_tree_likelihood,
     evaluate_protein_poisson_tree_likelihood,
 )
-from bijux_phylogenetics.phylo.likelihood import codon as codon_module
-from bijux_phylogenetics.phylo.likelihood import empirical as empirical_module
 from bijux_phylogenetics.phylo.likelihood import f81 as f81_module
 from bijux_phylogenetics.phylo.likelihood import gtr as gtr_module
 from bijux_phylogenetics.phylo.likelihood import hky85 as hky85_module
@@ -134,7 +134,7 @@ def test_public_sequence_likelihood_reports_route_through_shared_tree_helper(
             evaluate_protein_poisson_tree_likelihood,
             "protein_poisson_likelihood_tree_2_taxa.nwk",
             "protein_poisson_likelihood_alignment_2_taxa.fasta",
-            lambda: {},
+            dict,
         ),
         (
             empirical_module,

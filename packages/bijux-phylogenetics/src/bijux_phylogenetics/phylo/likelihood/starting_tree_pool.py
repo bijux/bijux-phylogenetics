@@ -184,7 +184,8 @@ def _prepare_distinct_starting_trees(
         ),
     ]
     deterministic_hashes = {
-        rooted_topology_fingerprint(prepared_tree.tree) for prepared_tree in prepared_trees
+        rooted_topology_fingerprint(prepared_tree.tree)
+        for prepared_tree in prepared_trees
     }
     neighbor_joining_topology_hash = rooted_topology_fingerprint(neighbor_joining_tree)
     if neighbor_joining_topology_hash not in deterministic_hashes:

@@ -44,11 +44,7 @@ def test_alpha_boundary_warning_builder_distinguishes_flat_upper_surface() -> No
 
     assert [warning.warning_kind for warning in lower] == ["alpha-boundary"]
     assert [warning.boundary_side for warning in lower] == ["lower"]
-    assert [warning.message for warning in lower] == [
-        "alpha hit lower search boundary"
-    ]
+    assert [warning.message for warning in lower] == ["alpha hit lower search boundary"]
     assert [warning.warning_kind for warning in upper] == ["flat-alpha"]
     assert [warning.boundary_side for warning in upper] == ["upper"]
-    assert [warning.message for warning in upper] == [
-        "alpha hit upper search boundary"
-    ]
+    assert [warning.message for warning in upper] == ["alpha hit upper search boundary"]

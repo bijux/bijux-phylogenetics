@@ -265,10 +265,7 @@ def test_build_scientific_validation_report_separates_claim_statuses() -> None:
     unvalidated_claim = next(
         claim for claim in report.claims if claim.status == "unvalidated"
     )
-    assert (
-        "goal-252 remains outside this iteration"
-        not in unvalidated_claim.evidence
-    )
+    assert "goal-252 remains outside this iteration" not in unvalidated_claim.evidence
     assert any(
         evidence.startswith("goal-252 shared continuous fixture catalog")
         for evidence in unvalidated_claim.evidence
@@ -309,9 +306,7 @@ def test_build_invariant_mixture_family_coverage_proves_supported_families() -> 
     assert nucleotide.covered_model_names == nucleotide.supported_model_names
     assert nucleotide.passed_model_count == 5
 
-    gtr = next(
-        case for case in nucleotide.model_cases if case.model_name == "GTR"
-    )
+    gtr = next(case for case in nucleotide.model_cases if case.model_name == "GTR")
     assert gtr.surface_model_name == "GTR"
     assert gtr.invariant_proportion == 0.35
     assert gtr.likelihood_changed is True
@@ -353,9 +348,7 @@ def test_build_gamma_invariant_family_coverage_proves_supported_families() -> No
     assert wag.category_likelihood_count == 4
     assert wag.invariant_component_active is True
     assert wag.variable_component_active is True
-    assert wag.boundary_warnings == [
-        "invariant proportion hit lower search boundary"
-    ]
+    assert wag.boundary_warnings == ["invariant proportion hit lower search boundary"]
     assert wag.passed is True
 
 
@@ -383,9 +376,7 @@ def test_build_shared_continuous_fixture_catalog_tracks_live_consumed_fixtures()
     assert all(fixture.live_case_count > 0 for fixture in report.fixtures)
 
 
-def test_build_shared_discrete_fixture_catalog_tracks_live_consumed_fixtures() -> (
-    None
-):
+def test_build_shared_discrete_fixture_catalog_tracks_live_consumed_fixtures() -> None:
     report = build_shared_discrete_fixture_catalog()
 
     assert report.goal_id == 253

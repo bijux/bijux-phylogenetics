@@ -6,18 +6,19 @@ from pathlib import Path
 import subprocess  # nosec B404
 import tempfile
 
+from ...live_access import require_live_parity_access
 from ..boundary_warning_registry import build_geiger_boundary_warning_rows
 from ..likelihood_policy import build_geiger_likelihood_policy_rows
 from ..model_confidence import build_geiger_model_confidence_rows
 from ..optimizer_triage import build_geiger_optimizer_triage_rows
 from ..parameterization_registry import build_geiger_parameterization_registry_rows
-from ...live_access import require_live_parity_access
 from ..registry import (
     GeigerParityCase,
 )
 from ..registry import (
     list_geiger_parity_cases as list_geiger_parity_cases,
 )
+from ..shards import resolve_geiger_parity_case_ids
 from .comparison import (
     load_json as _load_json,
 )
@@ -85,7 +86,6 @@ from .runtime import (
 from .runtime import (
     write_case_file as _write_case_file,
 )
-from ..shards import resolve_geiger_parity_case_ids
 
 
 def _build_bijux_case_payload(

@@ -46,6 +46,6 @@ def test_run_phytools_parity_cases_supports_shard_selection(tmp_path: Path) -> N
     assert {observation.case_id for observation in report.observations} == set(
         simmap_shard.case_ids
     )
-    assert {
-        observation.function_name for observation in report.observations
-    } == {"phytools::make.simmap(model='ER')"}
+    assert {observation.function_name for observation in report.observations} == {
+        "phytools::make.simmap(model='ER')"
+    }

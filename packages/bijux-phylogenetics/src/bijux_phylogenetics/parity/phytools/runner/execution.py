@@ -6,9 +6,9 @@ from pathlib import Path
 import subprocess  # nosec B404
 import tempfile
 
+from ...live_access import require_live_parity_access
 from ..registry import _selected_cases, _write_case_file
 from ..shards import resolve_phytools_parity_case_ids
-from ...live_access import require_live_parity_access
 from .comparison import (
     load_json as _load_json,
 )

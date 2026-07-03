@@ -86,9 +86,7 @@ def test_nucleotide_nested_likelihood_ratio_report_governed_jc69_to_k80_case() -
     assert report.warnings == []
 
 
-def test_nucleotide_nested_likelihood_ratio_report_governed_jc69_to_f81_case() -> (
-    None
-):
+def test_nucleotide_nested_likelihood_ratio_report_governed_jc69_to_f81_case() -> None:
     report = evaluate_nucleotide_nested_likelihood_ratio_test_from_alignment(
         fixture("trees", "f81_aic_bias_tree_2_taxa.nwk"),
         fixture("alignments", "f81_aic_bias_alignment_2_taxa.fasta"),
@@ -146,9 +144,7 @@ def test_nucleotide_nested_likelihood_ratio_supports_f81_to_hky85_pair() -> None
     assert report.alternative_fit.log_likelihood > report.null_fit.log_likelihood
 
 
-def test_nucleotide_nested_likelihood_ratio_report_governed_k80_to_hky85_case() -> (
-    None
-):
+def test_nucleotide_nested_likelihood_ratio_report_governed_k80_to_hky85_case() -> None:
     report = evaluate_nucleotide_nested_likelihood_ratio_test_from_alignment(
         fixture("trees", "hky85_kappa_optimization_tree_2_taxa.nwk"),
         fixture("alignments", "hky85_kappa_optimization_alignment_2_taxa.fasta"),
@@ -171,8 +167,9 @@ def test_nucleotide_nested_likelihood_ratio_report_governed_k80_to_hky85_case() 
         abs_tol=1e-6,
     )
     assert report.alternative_fit.parameter_values["base_frequency_a"] > 0.45
-    assert report.alternative_fit.parameter_values["kappa"] > (
-        report.null_fit.parameter_values["kappa"]
+    assert (
+        report.alternative_fit.parameter_values["kappa"]
+        > (report.null_fit.parameter_values["kappa"])
     )
     assert report.likelihood_ratio_statistic > 0.0
     assert math.isclose(
@@ -193,7 +190,9 @@ def test_nucleotide_nested_likelihood_ratio_report_governed_k80_to_hky85_case() 
 def test_nucleotide_nested_likelihood_ratio_supports_hky85_to_gtr_pair() -> None:
     report = evaluate_nucleotide_nested_likelihood_ratio_test_from_alignment(
         fixture("trees", "gtr_exchangeability_optimization_tree_2_taxa.nwk"),
-        fixture("alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta"),
+        fixture(
+            "alignments", "gtr_exchangeability_optimization_alignment_2_taxa.fasta"
+        ),
         null_model_name="hky85",
         alternative_model_name="gtr",
     )
@@ -207,8 +206,9 @@ def test_nucleotide_nested_likelihood_ratio_supports_hky85_to_gtr_pair() -> None
     assert report.null_fit.parameter_count == 4
     assert report.alternative_fit.parameter_count == 8
     assert report.null_fit.parameter_values["kappa"] > 3.5
-    assert report.alternative_fit.parameter_values["AG"] > (
-        report.alternative_fit.parameter_values["GT"]
+    assert (
+        report.alternative_fit.parameter_values["AG"]
+        > (report.alternative_fit.parameter_values["GT"])
     )
     assert report.alternative_fit.parameter_values["GT"] > 5.0
     assert report.alternative_fit.parameter_values["CT"] > 2.0

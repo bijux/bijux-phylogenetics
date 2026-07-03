@@ -97,9 +97,7 @@ def test_jc69_observation_policies_change_likelihood_on_ambiguity_fixture() -> N
     )
 
 
-def test_k80_observation_policies_preserve_one_parameter_likelihood_contract() -> (
-    None
-):
+def test_k80_observation_policies_preserve_one_parameter_likelihood_contract() -> None:
     tree = load_tree(
         fixture("trees", "jc69_joint_ancestral_difference_tree_3_taxa.nwk")
     )

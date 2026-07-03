@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from bijux_phylogenetics.parity import list_ape_parity_cases
 
 

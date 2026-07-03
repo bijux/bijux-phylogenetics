@@ -72,7 +72,9 @@ def test_load_dna_bin_alignment_from_records_matches_path_loading() -> None:
     records = load_fasta_alignment(fixture("example_alignment_lowercase.fasta"))
 
     direct_alignment = load_dna_bin_alignment_from_records(records)
-    path_alignment = load_dna_bin_alignment(fixture("example_alignment_lowercase.fasta"))
+    path_alignment = load_dna_bin_alignment(
+        fixture("example_alignment_lowercase.fasta")
+    )
 
     assert direct_alignment.path == Path("<in-memory-alignment>")
     assert direct_alignment.source_alphabet == path_alignment.source_alphabet

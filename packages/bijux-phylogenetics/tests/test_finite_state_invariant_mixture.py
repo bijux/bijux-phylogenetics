@@ -8,6 +8,7 @@ import numpy
 from bijux_phylogenetics.ancestral.discrete.likelihood.rate_matrix import (
     rate_matrix_from_log_parameters,
 )
+from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.likelihood import (
     AlignmentSitePattern,
@@ -20,11 +21,10 @@ from bijux_phylogenetics.phylo.likelihood import (
 from bijux_phylogenetics.phylo.likelihood.discrete_finite_state import (
     build_discrete_mk_finite_state_surface,
 )
+from bijux_phylogenetics.phylo.likelihood.poisson import protein_poisson_rate_matrix
 from bijux_phylogenetics.phylo.likelihood.protein_finite_state import (
     build_empirical_protein_finite_state_surface,
 )
-from bijux_phylogenetics.phylo.likelihood.poisson import protein_poisson_rate_matrix
-from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -33,7 +33,9 @@ def fixture(name: str) -> Path:
     return FIXTURES / "trees" / name
 
 
-def test_finite_state_invariant_mixture_keeps_invariant_mass_inside_likelihood() -> None:
+def test_finite_state_invariant_mixture_keeps_invariant_mass_inside_likelihood() -> (
+    None
+):
     tree = load_tree(fixture("felsenstein_two_tip_tree.nwk"))
     state_order = ["north", "south", "west"]
     compressed_patterns = CompressedAlignmentSitePatterns(
@@ -109,10 +111,14 @@ def test_finite_state_invariant_mixture_keeps_invariant_mass_inside_likelihood()
     )
 
 
-def test_empirical_protein_invariant_wrapper_matches_shared_finite_state_engine() -> None:
+def test_empirical_protein_invariant_wrapper_matches_shared_finite_state_engine() -> (
+    None
+):
     tree = load_tree(fixture("empirical_protein_likelihood_tree_2_taxa.nwk"))
     records = load_fasta_alignment(
-        FIXTURES / "alignments" / "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"
+        FIXTURES
+        / "alignments"
+        / "empirical_protein_invariant_mixture_alignment_2_taxa.fasta"
     )
     rate_matrix = protein_poisson_rate_matrix()
     root_prior = numpy.full(20, 1.0 / 20.0, dtype=float)
@@ -143,7 +149,9 @@ def test_empirical_protein_invariant_wrapper_matches_shared_finite_state_engine(
         rel_tol=0.0,
         abs_tol=1e-12,
     )
-    assert len(wrapper_report.site_likelihoods) == len(finite_state_report.site_likelihoods)
+    assert len(wrapper_report.site_likelihoods) == len(
+        finite_state_report.site_likelihoods
+    )
     assert math.isclose(
         wrapper_report.site_likelihoods[0].invariant_component_likelihood,
         finite_state_report.site_likelihoods[0].invariant_component_likelihood,

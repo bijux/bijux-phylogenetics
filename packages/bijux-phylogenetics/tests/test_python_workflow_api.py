@@ -6,13 +6,13 @@ from pathlib import Path
 import pytest
 
 from bijux_phylogenetics.api import (
+    NATIVE_MAXIMUM_LIKELIHOOD_ONLY_ENV_VAR,
     AlignmentWorkflowResult,
     AncestralReconstructionWorkflowResult,
     ComparativeModelWorkflowResult,
     ConfiguredPhyloWorkflowResult,
     FastaValidationResult,
     InferenceWorkflowResult,
-    NATIVE_MAXIMUM_LIKELIHOOD_ONLY_ENV_VAR,
     ReportWorkflowResult,
     SequenceToTreeWorkflowResult,
     SupportWorkflowResult,

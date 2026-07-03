@@ -48,11 +48,8 @@ def build_transition_rate_rows(
         state_ordering=state_ordering,
         allowed_transition_pairs=allowed_transition_pairs,
     )
-    allowed_pairs = {
-        (arc.source_index, arc.target_index) for arc in layout.arcs
-    }
+    allowed_pairs = {(arc.source_index, arc.target_index) for arc in layout.arcs}
     rows: list[DiscreteTransitionRateRow] = []
-    state_count = len(state_order)
     for left_index, source_state in enumerate(state_order):
         for right_index, target_state in enumerate(state_order):
             if left_index == right_index:
