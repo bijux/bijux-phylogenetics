@@ -27,6 +27,10 @@ contracts, and public API continue to live in `bijux-phylogenetics`; this
 package exists so installations can use the shorter distribution name without
 forking the implementation surface.
 
+That includes the same documented native likelihood, native inference,
+benchmark, workflow, and reporting surfaces that the canonical package
+publishes.
+
 ## Install
 
 `phylogenetic` supports Python 3.11 and newer.
@@ -39,6 +43,7 @@ phylogenetic --help
 ## Read this next
 
 - canonical runtime docs: [Runtime package docs](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
+- native inference and benchmark contracts: [Native inference and benchmarks](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/native-inference-and-benchmarks/)
 - canonical runtime source: [Runtime source directory](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics)
 - changelog: [Alias package changelog](https://github.com/bijux/bijux-phylogenetics/blob/main/packages/phylogenetic/CHANGELOG.md)
 - security policy: [Security policy](https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md)

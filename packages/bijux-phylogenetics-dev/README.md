@@ -23,9 +23,15 @@ builds the runtime wheel and sdist, installs each into a clean virtual
 environment, copies packaged example inputs through the installed runtime API,
 and verifies packaged example and dataset resources through the public CLI.
 
+It also owns the maintainer-side guardrails that keep the published story
+aligned across READMEs, public docs, internal docs, quality reports, and
+package metadata.
+
 ## Read this next
 
 - maintainer handbook: [Maintainer handbook](https://bijux.io/bijux-phylogenetics/internal/maintain/)
+- documentation ownership: [Documentation ownership](https://bijux.io/bijux-phylogenetics/internal/maintain/documentation-ownership/)
+- release surface alignment: [Release surface alignment](https://bijux.io/bijux-phylogenetics/internal/maintain/release-surface-alignment/)
 - source directory: [Developer tooling source directory](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics-dev)
 - changelog: [Developer tooling changelog](https://github.com/bijux/bijux-phylogenetics/blob/main/packages/bijux-phylogenetics-dev/CHANGELOG.md)
 - security policy: [Security policy](https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md)

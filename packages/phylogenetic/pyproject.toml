@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "phylogenetic"
-description = "Compatibility alias package for bijux-phylogenetics."
+description = "Compatibility alias package for the canonical native phylogenetics runtime."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
@@ -15,7 +15,7 @@ authors = [
 keywords = ["bioinformatics", "comparative-biology", "evolution", "phylogenetics"]
 dynamic = ["version"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",

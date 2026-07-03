@@ -19,14 +19,14 @@
 [![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
 <!-- bijux-phylogenetics-badges:generated:end -->
 
-Runtime package for the bijux-phylogenetics repository.
+Canonical runtime package for the bijux-phylogenetics repository.
 
 This package provides the Python API and CLI for tree validation, inspection,
 comparison, metadata linkage, comparative trait analysis, ancestral-state
 reconstruction, discrete-state evolution analysis, external engine
-orchestration, Bayesian posterior summarization, diversification and
-macroevolution analysis, evidence bundle creation, explicit parsimony scoring,
-and HTML report generation.
+orchestration, native likelihood and inference, Bayesian posterior
+summarization, diversification and macroevolution analysis, evidence bundle
+creation, explicit parsimony scoring, and HTML report generation.
 
 ## Install
 
@@ -108,6 +108,22 @@ delegates the underlying CLI-grade report fields directly and adds stable
 `write_json(...)` serialization plus `write_tsv(...)` where a tabular summary
 is meaningful.
 
+## Native Inference And Benchmark Surfaces
+
+The canonical runtime now also owns serious native inference and benchmark
+contracts in addition to the higher-level workflow wrappers.
+
+Public native surfaces include:
+
+- `bijux_phylogenetics.phylo.likelihood.infer_nucleotide_maximum_likelihood_result(...)`
+- `bijux_phylogenetics.phylo.likelihood.NucleotideMaximumLikelihoodResult`
+- `bijux_phylogenetics.bayesian.run_bayesian_inference(...)`
+- `bijux_phylogenetics.benchmark.benchmark_native_maximum_likelihood_suite(...)`
+
+Those surfaces are intentionally more explicit than the older workflow-only
+story: native runtime ownership, wrapper-backed orchestration, and evidence
+closure are related, but they are not the same claim.
+
 ## Native Tree Model
 
 The owned in-memory tree surface now lives on `bijux_phylogenetics.PhyloTree`
@@ -159,6 +175,12 @@ JSON CLI payloads expose `method_tier`, `method_inference_mode`,
 `method_validation_basis`, and `method_approximation` when applicable. Python
 workflow result objects expose the same information through `result.report.method_tier`
 or the underlying report object directly.
+
+The method-tier contract and the native benchmark contracts are meant to work
+together. Workflow JSON explains what kind of inference surface produced one
+result, while the native benchmark family explains how the owned native
+maximum-likelihood surface behaves across speed, memory, accuracy, and
+wrapper-comparison review lanes.
 
 ## Stable Artifact Schemas
 

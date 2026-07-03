@@ -1,7 +1,7 @@
 INHERIT: mkdocs.shared.yml
 
 site_name: Bijux Phylogenetics
-site_description: Reproducible phylogenetic analysis, comparative workflows, and evidence-first reporting documentation.
+site_description: Native phylogenetic runtime, comparative workflows, benchmark evidence, and evidence-linked reporting documentation.
 site_url: !ENV [SITE_URL, https://bijux.io/bijux-phylogenetics/]
 site_author: Bijan Mousavi <bijan@bijux.io>
 repo_name: bijux/bijux-phylogenetics
