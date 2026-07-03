@@ -4,7 +4,7 @@ audience: public
 type: study-guide
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-04
 ---
 
 # PCM3 Model Design And Phylogenetic Regression
@@ -43,11 +43,13 @@ Nearby runtime surfaces already exist for:
 - comparative model-selection ledgers
 - residual review after phylogenetic regression
 
-Those surfaces make PCM3 more than a documentation-only study, even though the
-lecture-specific governed parity bundles are still to be checked in.
+Those surfaces now sit beside governed review bundles for each PCM3 evidence
+slice. That means the study is no longer dossier-only. It is still not a
+closed parity suite, because the lecture-specific coefficient and diagnostic
+ledgers remain open.
 
 ## Boundary To Keep In Mind
 
 This page documents the lecture family and the available runtime shape. It does
-not yet claim one finished PCM3 parity suite equivalent to the PCM1 and PCM2
-governed bundles.
+not claim one finished PCM3 parity suite equivalent to the PCM1 and PCM2
+bundle-backed parity programs.

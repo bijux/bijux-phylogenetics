@@ -1,6 +1,7 @@
 # PCM4 Runtime Reference Mapping
 
-No governed repository adapter currently reproduces the core `MCMCglmm`
+Governed review bundles are now checked in for each PCM4 evidence slice, but
+no governed repository adapter currently reproduces the core `MCMCglmm`
 posterior workflow used in PCM4.
 
 What the repository can already support nearby:
@@ -16,6 +17,6 @@ What remains outside the current repository-owned surface:
 - chain convergence diagnostics equivalent to the lecture's `MCMCglmm` review
 - phylogenetic random-effect posterior ledgers
 
-This dossier exists so the evidence-book tells the truth cleanly: PCM4 is now
-documented and source-cataloged, but native or governed parity for its
-Bayesian mixed-model core is not yet present.
+This dossier exists so the evidence-book tells the truth cleanly: PCM4 now has
+source-backed study records and governed review bundles, but native or governed
+parity for its Bayesian mixed-model core is not yet present.

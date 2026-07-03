@@ -4,16 +4,17 @@ This study captures PCM4, the Lund lecture that moves from non-phylogenetic
 Gaussian regression into Bayesian linear mixed models and then into a
 phylogenetic random-effect formulation on cichlid parasite data.
 
-The repository now carries a complete study dossier for this lecture family:
-dataset registry, source provenance, evidence decomposition, and explicit
-runtime boundaries. What it does not claim is full governed parity with the
-`MCMCglmm` posterior workflow.
+The repository now carries a complete study dossier for this lecture family
+with governed evidence bundles for each lecture slice: dataset registry,
+source provenance, evidence decomposition, explicit runtime boundaries, and
+bundle-local review artifacts are all checked in. What it does not claim is
+full governed parity with the `MCMCglmm` posterior workflow.
 
 ## Study Metadata
 
 - study id: `cichlid-bayesian-linear-and-phylogenetic-mixed-models`
 - lecture family: `PCM4_PLMM`
-- deployment state: `study_dossier_deployed`
+- deployment state: `governed_review_bundles_deployed_with_external_posterior_boundary`
 - current runtime posture:
   `bayesian_mixed_model_parity_open_with_pgls_comparator_surface_only`
 - evidence rule: separate data-tree alignment, Gaussian baseline fits,
@@ -40,13 +41,13 @@ workflow whose main scientific claim still lives in an external engine.
 
 | Evidence ID | Focus | Current repository state |
 | --- | --- | --- |
-| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-001` | Cichlid data-tree alignment and species-level summarization | Dossier defined |
-| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-002` | Non-phylogenetic Gaussian baseline fit | Dossier defined |
-| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-003` | Bayesian Gaussian regression chain diagnostics and posterior summaries | Dossier defined |
-| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-004` | Tree inverse construction and phylogenetic random-effect setup | Dossier defined |
-| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-005` | Bayesian phylogenetic mixed-model fixed-effect posteriors | Dossier defined |
-| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-006` | Phylogenetic variance-component posteriors | Dossier defined |
-| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-007` | Comparison back to Brownian PGLS | Dossier defined |
+| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-001` | Cichlid data-tree alignment and species-level summarization | Governed review bundle deployed |
+| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-002` | Non-phylogenetic Gaussian baseline fit | Governed review bundle deployed |
+| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-003` | Bayesian Gaussian regression chain diagnostics and posterior summaries | Governed review bundle deployed |
+| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-004` | Tree inverse construction and phylogenetic random-effect setup | Governed review bundle deployed |
+| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-005` | Bayesian phylogenetic mixed-model fixed-effect posteriors | Governed review bundle deployed |
+| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-006` | Phylogenetic variance-component posteriors | Governed review bundle deployed |
+| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-007` | Comparison back to Brownian PGLS | Governed review bundle deployed |
 
 ## Ideal Comparative Checks
 
@@ -75,3 +76,4 @@ workflow whose main scientific claim still lives in an external engine.
 - [datasets](./datasets/)
 - [provenance](./provenance/)
 - [runtime reference mapping](./reference/README.md)
+- governed evidence bundles: `evidence-001` to `evidence-007`

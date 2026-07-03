@@ -4,7 +4,7 @@ audience: public
 type: study-guide
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-04
 ---
 
 # PCM4 Mixed-Model Evidence Boundary
@@ -18,6 +18,7 @@ posterior summaries, convergence checks, and phylogenetic variance estimates.
 - the cichlid dataset and tree provenance
 - the species-level summarization step used by the lecture
 - the decomposition of the lecture into smaller evidence slices
+- governed review bundles for each checked-in evidence ID
 - the Brownian PGLS comparator named at the end of the lecture
 
 ## What Is Not Yet A Repository-Owned Parity Claim
@@ -35,4 +36,5 @@ Saying this directly helps readers separate two very different questions:
 - Has the repository already reproduced the lecture's Bayesian posterior
   outputs under governed evidence?
 
-For PCM4 today, the answer is yes to the first question and no to the second.
+For PCM4 today, the answer is yes to the first question and still no to the
+second.

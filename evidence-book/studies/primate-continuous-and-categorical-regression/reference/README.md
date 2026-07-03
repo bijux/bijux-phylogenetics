@@ -1,8 +1,9 @@
 # PCM3 Runtime Reference Mapping
 
 The repository already exposes several runtime surfaces that line up with the
-PCM3 lecture family, even though a lecture-specific governed parity bundle has
-not yet been checked in.
+PCM3 lecture family, and the evidence book now checks in governed review
+bundles for each PCM3 evidence slice. What remains open is the lecture-specific
+parity verdict for those slices.
 
 Relevant owned surfaces include:
 
@@ -25,5 +26,5 @@ Existing tests that demonstrate nearby runtime support include:
 - `packages/bijux-phylogenetics/tests/test_comparative_cli.py`
 
 The missing piece is not a total lack of runtime support. The missing piece is
-the governed lecture-parity packaging that turns those owned surfaces into one
-PCM3 evidence program with checked-in study outputs.
+the lecture-specific coefficient, diagnostic, and hypothesis-test parity that
+would turn the deployed review bundles into a closed PCM3 parity program.

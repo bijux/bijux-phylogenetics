@@ -4,16 +4,17 @@ This study captures PCM5, the Lund lecture on phylogenetic generalized linear
 mixed models for count data, binomial response data, repeated measures, and
 posterior-based phylogenetic signal calculations.
 
-The repository now carries a complete study dossier for this lecture family.
-That means the lecture sources, datasets, evidence decomposition, and runtime
-boundaries are all explicit. It does not mean the repository already owns a
-governed `MCMCglmm`-equivalent PGLMM surface.
+The repository now carries a complete study dossier for this lecture family
+with governed evidence bundles for each lecture slice. That means the lecture
+sources, datasets, evidence decomposition, runtime boundaries, and bundle-local
+review artifacts are all explicit. It does not mean the repository already
+owns a governed `MCMCglmm`-equivalent PGLMM surface.
 
 ## Study Metadata
 
 - study id: `cichlid-phylogenetic-generalized-linear-mixed-models`
 - lecture family: `PCM5_PGLMM`
-- deployment state: `study_dossier_deployed`
+- deployment state: `governed_review_bundles_deployed_with_external_posterior_boundary`
 - current runtime posture:
   `generalized_phylogenetic_mixed_model_parity_open_with_partial_binary_regression_support`
 - evidence rule: isolate phylogenetic signal, ancestral-state extraction,
@@ -39,15 +40,15 @@ uncertainty, and repeated measures in one workflow.
 
 | Evidence ID | Focus | Current repository state |
 | --- | --- | --- |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-001` | Fish workspace reload and repeated-measure data contract | Dossier defined |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-002` | Posterior-derived phylogenetic signal for the Gaussian mixed model | Dossier defined |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-003` | Ancestral-state posterior extraction and export rules | Dossier defined |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-004` | Tree-linked ancestral plotting contract | Dossier defined |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-005` | Poisson phylogenetic count model for parasite abundance | Dossier defined |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-006` | Multinomial infection model and logit-scale summaries | Dossier defined |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-007` | Probability-scale back-transformation for intercepts and slopes | Dossier defined |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-008` | Repeated-measure random effects for `species + treetip` | Dossier defined |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-009` | Variance partition between phylogeny, species, and residual components | Dossier defined |
+| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-001` | Fish workspace reload and repeated-measure data contract | Governed review bundle deployed |
+| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-002` | Posterior-derived phylogenetic signal for the Gaussian mixed model | Governed review bundle deployed |
+| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-003` | Ancestral-state posterior extraction and export rules | Governed review bundle deployed |
+| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-004` | Tree-linked ancestral plotting contract | Governed review bundle deployed |
+| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-005` | Poisson phylogenetic count model for parasite abundance | Governed review bundle deployed |
+| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-006` | Multinomial infection model and logit-scale summaries | Governed review bundle deployed |
+| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-007` | Probability-scale back-transformation for intercepts and slopes | Governed review bundle deployed |
+| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-008` | Repeated-measure random effects for `species + treetip` | Governed review bundle deployed |
+| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-009` | Variance partition between phylogeny, species, and residual components | Governed review bundle deployed |
 
 ## Ideal Comparative Checks
 
@@ -77,3 +78,4 @@ uncertainty, and repeated measures in one workflow.
 - [datasets](./datasets/)
 - [provenance](./provenance/)
 - [runtime reference mapping](./reference/README.md)
+- governed evidence bundles: `evidence-001` to `evidence-009`

@@ -2,8 +2,8 @@
 
 This directory is the checked-in study record for `bijux-phylogenetics`.
 It shows which comparative case studies are represented in the repository,
-which bundle-level checks already exist, and where important analytical limits
-still remain.
+which governed bundle-level checks already exist, and where important
+analytical limits still remain.
 
 Use this directory for durable review. Use `artifacts/` for local scratch runs
 and temporary outputs that should not become part of the checked-in record.
@@ -25,15 +25,20 @@ flowchart LR
 The public guides explain the scientific story. The `studies/` directories hold
 the durable repository record that backs those guides.
 
+All five PCM study families now carry governed evidence IDs in the repository.
+What still differs sharply from study to study is the verdict depth: PCM1 and
+PCM2 include direct parity bundles, while PCM3 to PCM5 mainly use governed
+review bundles that keep open lecture boundaries explicit.
+
 ## Study Catalog
 
 | Study | Lecture family | Current checked-in state |
 | --- | --- | --- |
 | [`primate-longevity-signal`](./studies/primate-longevity-signal/) | PCM1 plots, signal, and ancestral reconstruction | Bundle-backed parity record available |
 | [`primate-pgls-and-signal`](./studies/primate-pgls-and-signal/) | PCM2 evolutionary modes, PGLS, and signal testing | Bundle-backed parity record available |
-| [`primate-continuous-and-categorical-regression`](./studies/primate-continuous-and-categorical-regression/) | PCM3 multivariable regression with categorical predictors and interactions | Source record and provenance available; bundle packaging still open |
-| [`cichlid-bayesian-linear-and-phylogenetic-mixed-models`](./studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/) | PCM4 Bayesian linear models and phylogenetic mixed models | Source record available; posterior workflow still external |
-| [`cichlid-phylogenetic-generalized-linear-mixed-models`](./studies/cichlid-phylogenetic-generalized-linear-mixed-models/) | PCM5 phylogenetic generalized linear mixed models | Source record available; posterior workflow still external |
+| [`primate-continuous-and-categorical-regression`](./studies/primate-continuous-and-categorical-regression/) | PCM3 multivariable regression with categorical predictors and interactions | Governed evidence bundles deployed; lecture-specific parity verdicts remain open |
+| [`cichlid-bayesian-linear-and-phylogenetic-mixed-models`](./studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/) | PCM4 Bayesian linear models and phylogenetic mixed models | Governed evidence bundles deployed; posterior workflow still external |
+| [`cichlid-phylogenetic-generalized-linear-mixed-models`](./studies/cichlid-phylogenetic-generalized-linear-mixed-models/) | PCM5 phylogenetic generalized linear mixed models | Governed evidence bundles deployed; posterior workflow still external |
 
 ## Repository-Wide Reports
 
