@@ -25,6 +25,9 @@ questions each study is meant to answer.
 - repository-wide review reports:
   [`evidence-book/index/`](https://github.com/bijux/bijux-phylogenetics/tree/main/evidence-book/index)
 
+Treat those checked-in reports as the current source of truth when you need
+live repository status rather than the stable narrative on this page.
+
 ## Study Atlas
 
 | Study | Main question | Current repository state |

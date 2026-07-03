@@ -37,6 +37,14 @@ The full study dossier lives in the repository under
 That dossier includes the shared datasets, source provenance, and the smaller
 evidence slices that support this public guide.
 
+## What PCM1 Does Not Prove
+
+- it does not close every comparative method in the repository
+- it does not turn one primate teaching family into one general claim about all
+  datasets
+- it does not replace the broader evidence-book freshness, integrity, or
+  coverage reports
+
 ## Current Repository State
 
 - The PCM1 study family is fully deployed as governed evidence.

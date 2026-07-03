@@ -31,6 +31,13 @@ The full study dossier lives in the repository under
 That dossier carries the governed evidence bundles and the one explicit open
 boundary that still remains visible.
 
+## What PCM2 Does Not Prove
+
+- it does not close every comparative model in the repository
+- it does not erase remaining open boundaries named inside the study
+- it does not substitute for release review or broader evidence-book coverage
+  reports
+
 ## Current Repository State
 
 - The PCM2 study family is deployed as governed parity bundles.
