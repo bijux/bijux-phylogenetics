@@ -96,6 +96,7 @@ nav:
               - Evidence Honesty and Limits: public/phylogenetics/quality/evidence-honesty-and-limits.md
       - Evidence Book:
           - Overview: public/phylogenetics-evidence-book/index.md
+          - Reading Guide: public/phylogenetics-evidence-book/reading-guide.md
           - PCM1: public/phylogenetics-evidence-book/pcm1-primate-longevity-signal/index.md
           - PCM1 Data and Tree Preparation: public/phylogenetics-evidence-book/pcm1-primate-longevity-signal/data-and-tree-preparation.md
           - PCM1 Signal and Ancestral Results: public/phylogenetics-evidence-book/pcm1-primate-longevity-signal/signal-and-ancestral-results.md

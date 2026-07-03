@@ -4,60 +4,67 @@ audience: public
 type: evidence-navigation
 status: active
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-05-10
+last_reviewed: 2026-07-03
 ---
 
 # Evidence Book
 
-The evidence-book is the repository trust surface for governed parity,
-teaching, migration, and explicit coverage boundaries.
+The evidence-book is the repository trust surface for governed parity, study
+evidence, freshness review, and explicit coverage boundaries.
 
-- studies: `2`
-- evidence bundles: `19`
-- teaching studies: `0`
-- migration studies: `0`
-- freshness statuses: `current=9, stale=10`
-- coverage gaps: `4` debt entries
-- foundational numerical trust: `bounded`
-- reviewer readiness: `bounded`
-- maturity tier: `reviewable_but_incomplete`
+It should be read as a bounded review system around the runtime, not as a
+replacement for the runtime handbook.
 
-## Review Surfaces
+## Start Here
 
-- repository evidence root: [`evidence-book/README.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/README.md)
-- teaching and migration index: [`evidence-book/index/teaching-and-migration.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/teaching-and-migration.md)
-- parity dashboard: [`evidence-book/index/parity-dashboard.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/parity-dashboard.md)
-- freshness report: [`evidence-book/index/freshness-report.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/freshness-report.md)
-- integrity report: [`evidence-book/index/integrity-report.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/integrity-report.md)
-- coverage gaps: [`evidence-book/index/coverage-gaps.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/coverage-gaps.md)
-- claim re-audit: [`evidence-book/index/claim-reaudit.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/claim-reaudit.md)
-- analytical surface coverage: [`evidence-book/index/analytical-surface-coverage.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/analytical-surface-coverage.md)
-- closure criteria: [`evidence-book/index/closure-criteria.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/closure-criteria.md)
-- maturity scorecard: [`evidence-book/index/evidence-maturity-scorecard.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/evidence-maturity-scorecard.md)
-- completion gates: [`evidence-book/index/completion-gates.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/completion-gates.md)
+- [evidence book reading guide](reading-guide.md)
+- repository evidence root:
+  [`evidence-book/README.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/README.md)
+- claim re-audit:
+  [`evidence-book/index/claim-reaudit.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/claim-reaudit.md)
+- analytical surface coverage:
+  [`evidence-book/index/analytical-surface-coverage.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/analytical-surface-coverage.md)
+- completion gates:
+  [`evidence-book/index/completion-gates.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/completion-gates.md)
+
+## Live Status Reports
+
+The evidence-book has volatile status surfaces that change as studies are
+re-audited. Treat those checked-in reports as the current source of truth
+rather than relying on hard-coded summary counts in this page.
+
+- freshness report:
+  [`evidence-book/index/freshness-report.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/freshness-report.md)
+- integrity report:
+  [`evidence-book/index/integrity-report.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/integrity-report.md)
+- coverage gaps:
+  [`evidence-book/index/coverage-gaps.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/coverage-gaps.md)
+- maturity scorecard:
+  [`evidence-book/index/evidence-maturity-scorecard.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/evidence-maturity-scorecard.md)
+- closure criteria:
+  [`evidence-book/index/closure-criteria.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/closure-criteria.md)
 
 ## Studies
 
-### Primate Longevity Signal
+The public study guides currently documented here are:
 
-- study id: `primate-longevity-signal`
-- categories: `teaching-study, migration-study`
-- bundles: `9`
-- study root: [GitHub](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-longevity-signal/README.md)
+- [PCM1: primate longevity signal](pcm1-primate-longevity-signal/index.md)
+- [PCM2: primate PGLS and signal](pcm2-primate-pgls-and-signal/index.md)
 
-### Primate PGLS And Signal
+Those pages explain the analytical story of the studies. The repository-root
+`evidence-book/` directory and linked index reports carry the broader governed
+freshness, integrity, and gap surfaces.
 
-- study id: `primate-pgls-and-signal`
-- categories: `teaching-study, migration-study`
-- bundles: `10`
-- study root: [GitHub](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/README.md)
+## Practical Boundary
 
-## Integrity
+Use the evidence-book when the question is:
 
-- tracked bundles: `19`
-- action required: `0`
+- which runtime claims are reviewed or still open
+- where freshness or coverage debt remains
+- what one study demonstrates and what it does not demonstrate
 
-## Coverage
+Use the main phylogenetics handbook when the question is:
 
-- family gaps: `0`
-- debt gaps: `4`
+- how to install or run the package
+- which API or CLI surfaces are public
+- how native and wrapper-backed runtime families are organized
