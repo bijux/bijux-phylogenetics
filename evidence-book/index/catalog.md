@@ -1,7 +1,7 @@
 # Evidence Catalog
 
 This catalog is generated from `index/evidence-index.json` and lists every
-governed evidence bundle in the repository evidence-book.
+governed parity or parity-tracked bundle in the repository evidence-book.
 
 - studies: `5`
 - evidence bundles: `43`

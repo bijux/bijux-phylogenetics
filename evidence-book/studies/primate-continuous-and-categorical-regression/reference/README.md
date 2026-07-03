@@ -27,4 +27,5 @@ Existing tests that demonstrate nearby runtime support include:
 
 The missing piece is not a total lack of runtime support. The missing piece is
 the lecture-specific coefficient, diagnostic, and hypothesis-test parity that
-would turn the deployed review bundles into a closed PCM3 parity program.
+would turn the deployed governed parity bundles into a closed PCM3 parity
+program.
