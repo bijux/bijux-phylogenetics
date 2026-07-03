@@ -34,6 +34,9 @@ The main internal responsibilities covered here are:
 - how do interface, output, and metadata guides stay aligned as one public
   contract story:
   [public interface and artifact maintenance](public-interface-and-artifact-maintenance.md)
+- how do validation-lane guides, claim-reading guides, and PCM study guides
+  stay aligned as one trust story:
+  [trust lane and study guide maintenance](trust-lane-and-study-guide-maintenance.md)
 - how do I check that metadata, docs, and release surfaces all say the same
   thing:
   [release surface alignment](release-surface-alignment.md)

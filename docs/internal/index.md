@@ -18,4 +18,5 @@ operations, and other maintainer-only concerns.
 - [documentation ownership](maintain/documentation-ownership.md)
 - [public trust surface maintenance](maintain/public-trust-surface-maintenance.md)
 - [public interface and artifact maintenance](maintain/public-interface-and-artifact-maintenance.md)
+- [trust lane and study guide maintenance](maintain/trust-lane-and-study-guide-maintenance.md)
 - [release surface alignment](maintain/release-surface-alignment.md)

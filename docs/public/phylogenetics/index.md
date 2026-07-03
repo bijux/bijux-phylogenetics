@@ -68,6 +68,8 @@ surface, the highest-signal pages are:
 - [package map](architecture/package-map.md)
 - [surface selection guide](interfaces/surface-selection.md)
 - [artifact consumption guide](interfaces/artifact-consumption-guide.md)
+- [validation lanes](quality/validation-lanes.md)
+- [claim reading guide](foundation/claim-reading-guide.md)
 - [release review workflow](quality/release-review-workflow.md)
 - [evidence-book overview](../phylogenetics-evidence-book/index.md)
 

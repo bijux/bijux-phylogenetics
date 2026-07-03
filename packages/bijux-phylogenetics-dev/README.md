@@ -34,6 +34,7 @@ package metadata.
 - native surface documentation: [Native surface documentation](https://bijux.io/bijux-phylogenetics/internal/maintain/native-surface-documentation/)
 - public trust surface maintenance: [Public trust surface maintenance](https://bijux.io/bijux-phylogenetics/internal/maintain/public-trust-surface-maintenance/)
 - public interface and artifact maintenance: [Public interface and artifact maintenance](https://bijux.io/bijux-phylogenetics/internal/maintain/public-interface-and-artifact-maintenance/)
+- trust lane and study guide maintenance: [Trust lane and study guide maintenance](https://bijux.io/bijux-phylogenetics/internal/maintain/trust-lane-and-study-guide-maintenance/)
 - release surface alignment: [Release surface alignment](https://bijux.io/bijux-phylogenetics/internal/maintain/release-surface-alignment/)
 - source directory: [Developer tooling source directory](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics-dev)
 - changelog: [Developer tooling changelog](https://github.com/bijux/bijux-phylogenetics/blob/main/packages/bijux-phylogenetics-dev/CHANGELOG.md)
