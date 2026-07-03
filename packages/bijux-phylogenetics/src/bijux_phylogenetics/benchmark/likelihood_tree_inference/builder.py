@@ -43,6 +43,7 @@ from .contracts import (
     NativeMaximumLikelihoodMemoryBenchmarkObservation,
     NativeMaximumLikelihoodMemoryBenchmarkReport,
     NativeMaximumLikelihoodMemoryTrendRow,
+    NativeMaximumLikelihoodSuiteBundle,
     NativeMaximumLikelihoodSuiteObservation,
     NativeMaximumLikelihoodSuiteReport,
     NativeMaximumLikelihoodSuiteSummaryRow,
@@ -69,6 +70,9 @@ from .artifact_outputs import (
     write_native_maximum_likelihood_memory_run_json,
     write_native_maximum_likelihood_memory_summary_table,
     write_native_maximum_likelihood_memory_trend_table,
+    write_native_maximum_likelihood_suite_observation_table,
+    write_native_maximum_likelihood_suite_run_json,
+    write_native_maximum_likelihood_suite_summary_table,
     write_native_maximum_likelihood_speed_observation_table,
     write_native_maximum_likelihood_speed_run_json,
     write_native_maximum_likelihood_speed_summary_table,
@@ -703,6 +707,58 @@ def write_maximum_likelihood_wrapper_comparison_bundle(
         report,
     )
     return MaximumLikelihoodWrapperBenchmarkBundle(
+        output_root=output_root,
+        summary_path=summary_path,
+        observation_table_path=observation_table_path,
+        run_json_path=run_json_path,
+    )
+
+
+def write_native_maximum_likelihood_suite_bundle(
+    output_root: Path,
+    *,
+    replicates: int = 1,
+    size_classes: list[tuple[str, int, int]] | None = None,
+    scaling_model_names: list[str] | tuple[str, ...] | None = None,
+    scaling_search_methods: list[str] | tuple[str, ...] | None = None,
+    accuracy_model_names: list[str] | tuple[str, ...] | None = None,
+    accuracy_search_methods: list[str] | tuple[str, ...] | None = None,
+    start_tree_count: int = 1,
+    start_tree_seed: int = 17,
+    upper_branch_length_bound: float = 1.0,
+) -> NativeMaximumLikelihoodSuiteBundle:
+    """Write one governed artifact bundle for the unified native ML suite."""
+    if output_root.exists():
+        for path in sorted(output_root.rglob("*"), reverse=True):
+            if path.is_file():
+                path.unlink()
+            elif path.is_dir():
+                path.rmdir()
+    output_root.mkdir(parents=True, exist_ok=True)
+    report = benchmark_native_maximum_likelihood_suite(
+        replicates=replicates,
+        size_classes=size_classes,
+        scaling_model_names=scaling_model_names,
+        scaling_search_methods=scaling_search_methods,
+        accuracy_model_names=accuracy_model_names,
+        accuracy_search_methods=accuracy_search_methods,
+        start_tree_count=start_tree_count,
+        start_tree_seed=start_tree_seed,
+        upper_branch_length_bound=upper_branch_length_bound,
+    )
+    summary_path = write_native_maximum_likelihood_suite_summary_table(
+        output_root / "summary.tsv",
+        report,
+    )
+    observation_table_path = write_native_maximum_likelihood_suite_observation_table(
+        output_root / "observations.tsv",
+        report,
+    )
+    run_json_path = write_native_maximum_likelihood_suite_run_json(
+        output_root / "run.json",
+        report,
+    )
+    return NativeMaximumLikelihoodSuiteBundle(
         output_root=output_root,
         summary_path=summary_path,
         observation_table_path=observation_table_path,

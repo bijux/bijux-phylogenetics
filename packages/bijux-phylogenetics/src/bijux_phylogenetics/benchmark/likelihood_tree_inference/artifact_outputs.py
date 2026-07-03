@@ -10,6 +10,7 @@ from .contracts import (
     NativeMaximumLikelihoodAccuracyBenchmarkReport,
     MaximumLikelihoodWrapperBenchmarkReport,
     NativeMaximumLikelihoodMemoryBenchmarkReport,
+    NativeMaximumLikelihoodSuiteReport,
     NativeMaximumLikelihoodSpeedBenchmarkReport,
 )
 
@@ -452,6 +453,90 @@ def write_native_maximum_likelihood_speed_run_json(
     report: NativeMaximumLikelihoodSpeedBenchmarkReport,
 ) -> Path:
     """Write the machine-readable native ML speed benchmark payload."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(asdict(report), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def write_native_maximum_likelihood_suite_summary_table(
+    path: Path,
+    report: NativeMaximumLikelihoodSuiteReport,
+) -> Path:
+    """Write the stable summary counts for one unified native ML benchmark suite."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "observation_count",
+            "summary_row_count",
+            "native_advantage_case_count",
+            "native_bug_case_count",
+            "expected_assumption_difference_case_count",
+            "unsupported_case_count",
+            "all_supported_cases_clear",
+            "limitations",
+        ],
+        rows=[
+            {
+                "observation_count": len(report.observations),
+                "summary_row_count": len(report.summary_rows),
+                "native_advantage_case_count": report.native_advantage_case_count,
+                "native_bug_case_count": report.native_bug_case_count,
+                "expected_assumption_difference_case_count": (
+                    report.expected_assumption_difference_case_count
+                ),
+                "unsupported_case_count": report.unsupported_case_count,
+                "all_supported_cases_clear": report.all_supported_cases_clear,
+                "limitations": " | ".join(report.limitations),
+            }
+        ],
+    )
+
+
+def write_native_maximum_likelihood_suite_observation_table(
+    path: Path,
+    report: NativeMaximumLikelihoodSuiteReport,
+) -> Path:
+    """Write one stable observation row per unified native ML benchmark case."""
+    return write_taxon_rows(
+        path,
+        columns=[
+            "case_id",
+            "dimension",
+            "status",
+            "native_surface",
+            "comparison_surface",
+            "measurement_unit",
+            "native_value",
+            "comparison_value",
+            "delta_value",
+            "notes",
+        ],
+        rows=[
+            {
+                "case_id": row.case_id,
+                "dimension": row.dimension,
+                "status": row.status,
+                "native_surface": row.native_surface,
+                "comparison_surface": row.comparison_surface,
+                "measurement_unit": row.measurement_unit or "",
+                "native_value": _format_optional_float(row.native_value),
+                "comparison_value": _format_optional_float(row.comparison_value),
+                "delta_value": _format_optional_float(row.delta_value),
+                "notes": " | ".join(row.notes),
+            }
+            for row in report.observations
+        ],
+    )
+
+
+def write_native_maximum_likelihood_suite_run_json(
+    path: Path,
+    report: NativeMaximumLikelihoodSuiteReport,
+) -> Path:
+    """Write the machine-readable native ML benchmark suite payload."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps(asdict(report), indent=2, sort_keys=True) + "\n",
