@@ -108,6 +108,50 @@ def test_public_operations_pages_publish_native_flagship_workflows() -> None:
     assert "benchmark native-maximum-likelihood-suite --json" in native_benchmark_review
 
 
+def test_public_interface_guides_explain_surface_selection_and_artifact_use() -> None:
+    interfaces_index = _read(
+        REPO_ROOT / "docs" / "public" / "phylogenetics" / "interfaces" / "index.md"
+    )
+    surface_selection = _read(
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics"
+        / "interfaces"
+        / "surface-selection.md"
+    )
+    artifact_contracts = _read(
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics"
+        / "interfaces"
+        / "artifact-contracts.md"
+    )
+    artifact_consumption = _read(
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics"
+        / "interfaces"
+        / "artifact-consumption-guide.md"
+    )
+
+    assert "surface selection guide" in interfaces_index
+    assert "artifact consumption guide" in interfaces_index
+    assert "I want one governed end-user workflow or report artifact" in (
+        surface_selection
+    )
+    assert "I want to judge trust, parity, freshness, or evidence closure" in (
+        surface_selection
+    )
+    assert "Stable Families Worth Depending On" in artifact_contracts
+    assert "artifact consumption guide" in artifact_contracts
+    assert "do not scrape terminal text when the workflow already emits JSON or TSV" in (
+        artifact_consumption
+    )
+
+
 def test_public_architecture_pages_describe_package_roles_and_runtime_families() -> (
     None
 ):
@@ -228,6 +272,15 @@ def test_runtime_and_alias_metadata_publish_beta_native_runtime_story() -> None:
     assert runtime_project["urls"]["Benchmarks"].endswith(
         "/operations/native-benchmark-review/"
     )
+    assert runtime_project["urls"]["Interface Guide"].endswith(
+        "/interfaces/surface-selection/"
+    )
+    assert runtime_project["urls"]["Artifact Guide"].endswith(
+        "/interfaces/artifact-consumption-guide/"
+    )
+    assert runtime_project["urls"]["Release Guide"].endswith(
+        "/quality/release-review-workflow/"
+    )
     assert "maximum-likelihood" in alias_project["keywords"]
     assert "bayesian-inference" in alias_project["keywords"]
     assert alias_project["urls"]["Native Workflows"].endswith("/operations/")
@@ -236,6 +289,15 @@ def test_runtime_and_alias_metadata_publish_beta_native_runtime_story() -> None:
     )
     assert alias_project["urls"]["Benchmarks"].endswith(
         "/operations/native-benchmark-review/"
+    )
+    assert alias_project["urls"]["Interface Guide"].endswith(
+        "/interfaces/surface-selection/"
+    )
+    assert alias_project["urls"]["Artifact Guide"].endswith(
+        "/interfaces/artifact-consumption-guide/"
+    )
+    assert alias_project["urls"]["Release Guide"].endswith(
+        "/quality/release-review-workflow/"
     )
 
 
@@ -247,7 +309,12 @@ def test_package_readmes_link_package_roles_to_native_runtime_and_docs() -> None
     dev_readme = _read(
         REPO_ROOT / "packages" / "bijux-phylogenetics-dev" / "README.md"
     )
+    root_readme = _read(REPO_ROOT / "README.md")
 
+    assert "Surface selection guide" in root_readme
+    assert "Artifact consumption guide" in root_readme
+    assert "Surface selection guide" in runtime_readme
+    assert "Artifact consumption guide" in runtime_readme
     assert "Native Inference And Benchmark Surfaces" in runtime_readme
     assert "Native maximum-likelihood workflows" in runtime_readme
     assert "Native Bayesian workflows" in runtime_readme
@@ -256,6 +323,8 @@ def test_package_readmes_link_package_roles_to_native_runtime_and_docs() -> None
     assert "Release review workflow" in runtime_readme
     assert "Evidence-book guide" in runtime_readme
     assert "benchmark, workflow, and reporting surfaces" in alias_readme
+    assert "Surface selection guide" in alias_readme
+    assert "Artifact consumption guide" in alias_readme
     assert "Native maximum-likelihood workflows" in alias_readme
     assert "Native Bayesian workflows" in alias_readme
     assert "Native benchmark review" in alias_readme
@@ -316,3 +385,24 @@ def test_internal_docs_name_public_trust_surface_maintenance_rule() -> None:
     assert "The common failure is not one missing page. It is partial alignment" in (
         trust_surface_maintenance
     )
+
+
+def test_internal_docs_name_public_interface_and_artifact_maintenance_rule() -> (
+    None
+):
+    internal_index = _read(REPO_ROOT / "docs" / "internal" / "index.md")
+    maintainer_index = _read(
+        REPO_ROOT / "docs" / "internal" / "maintain" / "index.md"
+    )
+    interface_maintenance = _read(
+        REPO_ROOT
+        / "docs"
+        / "internal"
+        / "maintain"
+        / "public-interface-and-artifact-maintenance.md"
+    )
+
+    assert "public interface and artifact maintenance" in internal_index
+    assert "public interface and artifact maintenance" in maintainer_index
+    assert "surface-selection guidance" in interface_maintenance
+    assert "The usual failure is partial interface drift" in interface_maintenance
