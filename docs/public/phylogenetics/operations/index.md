@@ -17,4 +17,5 @@ without drifting into maintainer-only surfaces.
 - [installation and setup](installation-and-setup.md)
 - [common workflows](common-workflows.md)
 - [native maximum-likelihood workflows](native-maximum-likelihood-workflows.md)
+- [native Bayesian workflows](native-bayesian-workflows.md)
 - [operational boundaries](operational-boundaries.md)

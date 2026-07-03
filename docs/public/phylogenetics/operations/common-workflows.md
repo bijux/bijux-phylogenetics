@@ -18,6 +18,7 @@ Typical public workflows include:
 - run one command from raw FASTA to a supported inference bundle
 - run one supported inference workflow from one YAML or JSON config file
 - run one owned nucleotide tree search through the native maximum-likelihood result contract
+- run one owned Bayesian posterior chain through the native fixed-topology or joint-topology DNA dispatcher
 - review native maximum-likelihood benchmark evidence directly instead of treating it as a hidden maintainer surface
 - assemble aligned loci into a concatenated supermatrix
 - audit a concatenated multi-locus matrix before inference
@@ -36,6 +37,13 @@ one broader wrapper-backed workflow, use the practical guide in
 That page covers the stable Python-first result surface, optional support
 evidence, and attached benchmark metadata without flattening them into one
 generic workflow story.
+
+When the goal is one owned posterior run rather than one wrapper-backed engine
+execution lane, use
+[native Bayesian workflows](native-bayesian-workflows.md). That guide covers
+the stable dispatcher, the supported fixed-topology and joint-topology DNA
+families, and the explicit model-definition and proposal-schedule inputs they
+require.
 
 Serious workflow JSON outputs now also publish one explicit method tier:
 
