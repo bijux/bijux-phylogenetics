@@ -327,6 +327,39 @@
   "schema_version": 1,
   "studies": [
     {
+      "bundle_count": 0,
+      "evidence": [],
+      "owner_package": "bijux-phylogenetics",
+      "study_categories": [
+        "scientific-validation"
+      ],
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+      "study_title": "Cichlid Bayesian Linear And Phylogenetic Mixed Models",
+      "summary": "This study captures PCM4, the Lund lecture that moves from non-phylogenetic Gaussian regression into Bayesian linear mixed models and then into a phylogenetic random-effect formulation on cichlid parasite data."
+    },
+    {
+      "bundle_count": 0,
+      "evidence": [],
+      "owner_package": "bijux-phylogenetics",
+      "study_categories": [
+        "scientific-validation"
+      ],
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models",
+      "summary": "This study captures PCM5, the Lund lecture on phylogenetic generalized linear mixed models for count data, binomial response data, repeated measures, and posterior-based phylogenetic signal calculations."
+    },
+    {
+      "bundle_count": 0,
+      "evidence": [],
+      "owner_package": "bijux-phylogenetics",
+      "study_categories": [
+        "scientific-validation"
+      ],
+      "study_id": "primate-continuous-and-categorical-regression",
+      "study_title": "Primate Continuous And Categorical Regression",
+      "summary": "This study captures PCM3, the Lund lecture on multivariable comparative regression with continuous predictors, categorical predictors, interactions, and phylogenetically corrected regression."
+    },
+    {
       "bundle_count": 9,
       "evidence": [
         {
@@ -489,7 +522,7 @@
       ],
       "study_id": "primate-longevity-signal",
       "study_title": "Primate Longevity Signal",
-      "summary": "This study holds reviewer-facing parity evidence for the Lund `PCM1_plots_signal` teaching workflow and the corresponding `bijux-phylogenetics` reproductions."
+      "summary": "This study turns the Lund `PCM1_plots_signal` lecture into a governed set of small evidence slices covering primate data intake, tree preparation, phylogenetic signal, and ancestral reconstruction."
     },
     {
       "bundle_count": 10,
@@ -671,10 +704,10 @@
       ],
       "study_id": "primate-pgls-and-signal",
       "study_title": "Primate PGLS And Signal",
-      "summary": "This study turns the regression, transformed-tree, evolutionary-mode fit, likelihood-ratio, and ancestral sections of the Lund primate comparative lecture into governed Evidence IDs backed by checked-in R reference outputs and canonical `bijux-phylogenetics` reproductions."
+      "summary": "This study turns the regression, transformed-tree, evolutionary-mode fit, likelihood-ratio, and ancestral sections of the Lund primate comparative lecture into governed evidence slices backed by checked-in R reference outputs and repository reproductions."
     }
   ],
-  "study_count": 2,
+  "study_count": 5,
   "verdict_counts": {
     "matched": 11,
     "matched_with_tolerance": 7,
