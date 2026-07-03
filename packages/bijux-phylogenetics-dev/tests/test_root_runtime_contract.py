@@ -501,6 +501,15 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "test_large_alignment_inference.py": {
+            "test_run_large_alignment_inference_streams_many_sequences_and_reports_resources",
+            "test_run_large_alignment_inference_honors_timeout_seconds",
+            "test_run_large_alignment_inference_can_clean_incomplete_outputs",
+        },
+        REPO_ROOT
+        / "packages"
+        / "bijux-phylogenetics"
+        / "tests"
         / "test_large_dataset_stress.py": {
             "test_benchmark_large_dataset_stress_suite_small_tier_reports_all_workloads",
             "test_cli_benchmark_stress_suite_reports_tier_and_observation_count",

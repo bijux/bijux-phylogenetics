@@ -176,6 +176,7 @@ def test_run_large_alignment_inference_resume_reuses_verified_outputs(
     assert second.workflow == "large-alignment-inference"
 
 
+@pytest.mark.slow
 def test_run_large_alignment_inference_honors_timeout_seconds(
     tmp_path: Path,
 ) -> None:
@@ -195,6 +196,7 @@ def test_run_large_alignment_inference_honors_timeout_seconds(
         )
 
 
+@pytest.mark.slow
 def test_run_large_alignment_inference_can_clean_incomplete_outputs(
     tmp_path: Path,
 ) -> None:
