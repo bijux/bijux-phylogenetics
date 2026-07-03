@@ -294,7 +294,9 @@ def _function_has_slow_marker(module: ast.Module, function_name: str) -> bool:
     for node in module.body:
         if not isinstance(node, ast.FunctionDef) or node.name != function_name:
             continue
-        return any(_is_pytest_slow_marker(decorator) for decorator in node.decorator_list)
+        return any(
+            _is_pytest_slow_marker(decorator) for decorator in node.decorator_list
+        )
     return False
 
 
@@ -311,7 +313,9 @@ def _is_slow_marked(repo_root: Path, nodeid: str) -> bool:
 
 def _matching_policy(nodeid: str) -> RuntimeBudgetPolicy | None:
     matching = [
-        policy for policy in _RUNTIME_BUDGET_POLICIES if nodeid.startswith(policy.nodeid_prefix)
+        policy
+        for policy in _RUNTIME_BUDGET_POLICIES
+        if nodeid.startswith(policy.nodeid_prefix)
     ]
     if not matching:
         return None
@@ -355,9 +359,7 @@ def build_runtime_budget_report(
     )
     issues: list[RuntimeBudgetIssue] = []
     observed_rows: list[dict[str, object]] = []
-    counts_by_classification = {
-        classification: 0 for classification in _CLASSIFICATION_CHOICES
-    }
+    counts_by_classification = dict.fromkeys(_CLASSIFICATION_CHOICES, 0)
 
     for observation in observations:
         policy = _matching_policy(observation.nodeid)
@@ -449,7 +451,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("command", choices=("report", "check"))
     parser.add_argument("--repo-root", default=".")
     parser.add_argument("--log-path", required=True)
-    parser.add_argument("--minimum-seconds", type=float, default=DEFAULT_MINIMUM_SECONDS)
+    parser.add_argument(
+        "--minimum-seconds", type=float, default=DEFAULT_MINIMUM_SECONDS
+    )
     parser.add_argument("--json-out", default=str(DEFAULT_JSON_OUT))
     return parser.parse_args()
 

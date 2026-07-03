@@ -371,7 +371,7 @@ def test_runtime_package_make_exposes_frozen_full_suite_surface() -> None:
         "test-all-frozen: ## Compare the full-suite output against TEST_ALL_FROZEN_REF"
         in runtime_make
     )
-    assert 'TEST_ALL_FROZEN_REF is required' in runtime_make
+    assert "TEST_ALL_FROZEN_REF is required" in runtime_make
     assert (
         '"$(FROZEN_TEST_REPORT_PYTHON)" -m bijux_phylogenetics_dev.quality.frozen_test_report check'
         in runtime_make
@@ -399,9 +399,7 @@ def test_runtime_package_make_test_all_targets_full_test_tree_without_marker_ski
     assert "-n 8 --dist worksteal" in dry_run
 
 
-def test_runtime_package_make_test_all_plus_run_time_targets_full_test_tree() -> (
-    None
-):
+def test_runtime_package_make_test_all_plus_run_time_targets_full_test_tree() -> None:
     dry_run = _runtime_package_make_dry_run("test-all-plus-run-time")
 
     assert "Running full test suite on tests" in dry_run
@@ -417,8 +415,7 @@ def test_runtime_package_make_test_all_frozen_uses_repository_owned_comparison_t
     dry_run = _runtime_package_make_dry_run("test-all-frozen")
 
     assert (
-        'test -n "" || { echo "TEST_ALL_FROZEN_REF is required"; exit 2; }'
-        in dry_run
+        'test -n "" || { echo "TEST_ALL_FROZEN_REF is required"; exit 2; }' in dry_run
     )
     assert (
         'make -C "/Users/bijan/bijux/bijux-phylogenetics" root-check-env >/dev/null'

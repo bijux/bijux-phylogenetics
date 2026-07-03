@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import tomllib
-
+from typing import cast
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -29,22 +29,18 @@ def test_root_readme_describes_native_inference_without_old_false_boundary() -> 
 
 def test_public_runtime_foundation_names_native_runtime_scope_honestly() -> None:
     foundation_index = _read(
-        REPO_ROOT
-        / "docs"
-        / "public"
-        / "phylogenetics"
-        / "foundation"
-        / "index.md"
+        REPO_ROOT / "docs" / "public" / "phylogenetics" / "foundation" / "index.md"
     )
 
     assert "native likelihood and inference" in foundation_index
     assert "supported native Bayesian inference surfaces" in foundation_index
-    assert "it does not claim to be a native maximum-likelihood or Bayesian inference" not in foundation_index
+    assert (
+        "it does not claim to be a native maximum-likelihood or Bayesian inference"
+        not in foundation_index
+    )
 
 
-def test_public_native_inference_page_names_benchmark_and_bayesian_contracts() -> (
-    None
-):
+def test_public_native_inference_page_names_benchmark_and_bayesian_contracts() -> None:
     native_surface_page = _read(
         REPO_ROOT
         / "docs"
@@ -103,7 +99,10 @@ def test_public_operations_pages_publish_native_flagship_workflows() -> None:
     assert "native maximum-likelihood workflows" in common_workflows
     assert "native Bayesian workflows" in common_workflows
     assert "native benchmark review" in common_workflows
-    assert "infer_nucleotide_maximum_likelihood_result_from_alignment" in native_ml_workflows
+    assert (
+        "infer_nucleotide_maximum_likelihood_result_from_alignment"
+        in native_ml_workflows
+    )
     assert "run_bayesian_inference" in native_bayesian_workflows
     assert "benchmark native-maximum-likelihood-suite --json" in native_benchmark_review
 
@@ -147,8 +146,9 @@ def test_public_interface_guides_explain_surface_selection_and_artifact_use() ->
     )
     assert "Stable Families Worth Depending On" in artifact_contracts
     assert "artifact consumption guide" in artifact_contracts
-    assert "do not scrape terminal text when the workflow already emits JSON or TSV" in (
-        artifact_consumption
+    assert (
+        "do not scrape terminal text when the workflow already emits JSON or TSV"
+        in (artifact_consumption)
     )
 
 
@@ -156,12 +156,7 @@ def test_public_architecture_pages_describe_package_roles_and_runtime_families()
     None
 ):
     architecture_index = _read(
-        REPO_ROOT
-        / "docs"
-        / "public"
-        / "phylogenetics"
-        / "architecture"
-        / "index.md"
+        REPO_ROOT / "docs" / "public" / "phylogenetics" / "architecture" / "index.md"
     )
     package_map = _read(
         REPO_ROOT
@@ -191,7 +186,10 @@ def test_public_architecture_pages_describe_package_roles_and_runtime_families()
     assert "which package should I install or depend on" in architecture_index
     assert "`bijux-phylogenetics` is the public center of gravity" in package_map
     assert "`phylogenetic` is the shorter compatibility install surface" in package_map
-    assert "`bijux-phylogenetics-dev` is repository-owned maintainer tooling" in package_map
+    assert (
+        "`bijux-phylogenetics-dev` is repository-owned maintainer tooling"
+        in package_map
+    )
     assert "likelihood and inference" in runtime_system_map
     assert "native maximum-likelihood and native Bayesian DNA workflows" in (
         runtime_system_map
@@ -255,12 +253,7 @@ def test_public_quality_and_foundation_guides_explain_trust_boundaries() -> None
         / "validation-lanes.md"
     )
     test_strategy = _read(
-        REPO_ROOT
-        / "docs"
-        / "public"
-        / "phylogenetics"
-        / "quality"
-        / "test-strategy.md"
+        REPO_ROOT / "docs" / "public" / "phylogenetics" / "quality" / "test-strategy.md"
     )
     foundation_index = _read(
         REPO_ROOT / "docs" / "public" / "phylogenetics" / "foundation" / "index.md"
@@ -285,8 +278,9 @@ def test_public_quality_and_foundation_guides_explain_trust_boundaries() -> None
     assert "validation lanes" in quality_index
     assert "runtime behavior lanes" in validation_lanes
     assert "scientific-validation lanes" in validation_lanes
-    assert "a runtime unit or integration test does not prove broader scientific closure" in (
-        validation_lanes
+    assert (
+        "a runtime unit or integration test does not prove broader scientific closure"
+        in (validation_lanes)
     )
     assert "validation lanes" in test_strategy
     assert "claim reading guide" in foundation_index
@@ -367,8 +361,14 @@ def test_runtime_and_alias_metadata_publish_beta_native_runtime_story() -> None:
         REPO_ROOT / "packages" / "phylogenetic" / "pyproject.toml"
     )
 
-    runtime_project = runtime_pyproject["project"]
-    alias_project = alias_pyproject["project"]
+    runtime_project = cast(dict[str, object], runtime_pyproject["project"])
+    alias_project = cast(dict[str, object], alias_pyproject["project"])
+    runtime_urls = cast(dict[str, str], runtime_project["urls"])
+    alias_urls = cast(dict[str, str], alias_project["urls"])
+    runtime_classifiers = cast(list[str], runtime_project["classifiers"])
+    alias_classifiers = cast(list[str], alias_project["classifiers"])
+    runtime_keywords = cast(list[str], runtime_project["keywords"])
+    alias_keywords = cast(list[str], alias_project["keywords"])
 
     assert (
         runtime_project["description"]
@@ -378,54 +378,36 @@ def test_runtime_and_alias_metadata_publish_beta_native_runtime_story() -> None:
         alias_project["description"]
         == "Compatibility alias package for the canonical native phylogenetics runtime."
     )
-    assert "Development Status :: 4 - Beta" in runtime_project["classifiers"]
-    assert "Development Status :: 4 - Beta" in alias_project["classifiers"]
-    assert "maximum-likelihood" in runtime_project["keywords"]
-    assert "bayesian-inference" in runtime_project["keywords"]
-    assert runtime_project["urls"]["Native Workflows"].endswith("/operations/")
-    assert runtime_project["urls"]["Evidence Book"].endswith(
+    assert "Development Status :: 4 - Beta" in runtime_classifiers
+    assert "Development Status :: 4 - Beta" in alias_classifiers
+    assert "maximum-likelihood" in runtime_keywords
+    assert "bayesian-inference" in runtime_keywords
+    assert runtime_urls["Native Workflows"].endswith("/operations/")
+    assert runtime_urls["Evidence Book"].endswith(
         "/public/phylogenetics-evidence-book/"
     )
-    assert runtime_project["urls"]["Benchmarks"].endswith(
-        "/operations/native-benchmark-review/"
-    )
-    assert runtime_project["urls"]["Interface Guide"].endswith(
-        "/interfaces/surface-selection/"
-    )
-    assert runtime_project["urls"]["Artifact Guide"].endswith(
+    assert runtime_urls["Benchmarks"].endswith("/operations/native-benchmark-review/")
+    assert runtime_urls["Interface Guide"].endswith("/interfaces/surface-selection/")
+    assert runtime_urls["Artifact Guide"].endswith(
         "/interfaces/artifact-consumption-guide/"
     )
-    assert runtime_project["urls"]["Release Guide"].endswith(
-        "/quality/release-review-workflow/"
-    )
-    assert "maximum-likelihood" in alias_project["keywords"]
-    assert "bayesian-inference" in alias_project["keywords"]
-    assert alias_project["urls"]["Native Workflows"].endswith("/operations/")
-    assert alias_project["urls"]["Evidence Book"].endswith(
-        "/public/phylogenetics-evidence-book/"
-    )
-    assert alias_project["urls"]["Benchmarks"].endswith(
-        "/operations/native-benchmark-review/"
-    )
-    assert alias_project["urls"]["Interface Guide"].endswith(
-        "/interfaces/surface-selection/"
-    )
-    assert alias_project["urls"]["Artifact Guide"].endswith(
+    assert runtime_urls["Release Guide"].endswith("/quality/release-review-workflow/")
+    assert "maximum-likelihood" in alias_keywords
+    assert "bayesian-inference" in alias_keywords
+    assert alias_urls["Native Workflows"].endswith("/operations/")
+    assert alias_urls["Evidence Book"].endswith("/public/phylogenetics-evidence-book/")
+    assert alias_urls["Benchmarks"].endswith("/operations/native-benchmark-review/")
+    assert alias_urls["Interface Guide"].endswith("/interfaces/surface-selection/")
+    assert alias_urls["Artifact Guide"].endswith(
         "/interfaces/artifact-consumption-guide/"
     )
-    assert alias_project["urls"]["Release Guide"].endswith(
-        "/quality/release-review-workflow/"
-    )
+    assert alias_urls["Release Guide"].endswith("/quality/release-review-workflow/")
 
 
 def test_package_readmes_link_package_roles_to_native_runtime_and_docs() -> None:
-    runtime_readme = _read(
-        REPO_ROOT / "packages" / "bijux-phylogenetics" / "README.md"
-    )
+    runtime_readme = _read(REPO_ROOT / "packages" / "bijux-phylogenetics" / "README.md")
     alias_readme = _read(REPO_ROOT / "packages" / "phylogenetic" / "README.md")
-    dev_readme = _read(
-        REPO_ROOT / "packages" / "bijux-phylogenetics-dev" / "README.md"
-    )
+    dev_readme = _read(REPO_ROOT / "packages" / "bijux-phylogenetics-dev" / "README.md")
     root_readme = _read(REPO_ROOT / "README.md")
 
     assert "Surface selection guide" in root_readme
@@ -457,22 +439,12 @@ def test_package_readmes_link_package_roles_to_native_runtime_and_docs() -> None
 
 
 def test_internal_docs_name_native_surface_documentation_rule() -> None:
-    maintainer_index = _read(
-        REPO_ROOT / "docs" / "internal" / "maintain" / "index.md"
-    )
+    maintainer_index = _read(REPO_ROOT / "docs" / "internal" / "maintain" / "index.md")
     ownership = _read(
-        REPO_ROOT
-        / "docs"
-        / "internal"
-        / "maintain"
-        / "documentation-ownership.md"
+        REPO_ROOT / "docs" / "internal" / "maintain" / "documentation-ownership.md"
     )
     native_surface_documentation = _read(
-        REPO_ROOT
-        / "docs"
-        / "internal"
-        / "maintain"
-        / "native-surface-documentation.md"
+        REPO_ROOT / "docs" / "internal" / "maintain" / "native-surface-documentation.md"
     )
 
     assert "native surface documentation" in maintainer_index
@@ -487,9 +459,7 @@ def test_internal_docs_name_native_surface_documentation_rule() -> None:
 
 def test_internal_docs_name_public_trust_surface_maintenance_rule() -> None:
     internal_index = _read(REPO_ROOT / "docs" / "internal" / "index.md")
-    maintainer_index = _read(
-        REPO_ROOT / "docs" / "internal" / "maintain" / "index.md"
-    )
+    maintainer_index = _read(REPO_ROOT / "docs" / "internal" / "maintain" / "index.md")
     trust_surface_maintenance = _read(
         REPO_ROOT
         / "docs"
@@ -506,13 +476,9 @@ def test_internal_docs_name_public_trust_surface_maintenance_rule() -> None:
     )
 
 
-def test_internal_docs_name_public_interface_and_artifact_maintenance_rule() -> (
-    None
-):
+def test_internal_docs_name_public_interface_and_artifact_maintenance_rule() -> None:
     internal_index = _read(REPO_ROOT / "docs" / "internal" / "index.md")
-    maintainer_index = _read(
-        REPO_ROOT / "docs" / "internal" / "maintain" / "index.md"
-    )
+    maintainer_index = _read(REPO_ROOT / "docs" / "internal" / "maintain" / "index.md")
     interface_maintenance = _read(
         REPO_ROOT
         / "docs"
@@ -529,9 +495,7 @@ def test_internal_docs_name_public_interface_and_artifact_maintenance_rule() -> 
 
 def test_internal_docs_name_artifact_hygiene_rule() -> None:
     internal_index = _read(REPO_ROOT / "docs" / "internal" / "index.md")
-    maintainer_index = _read(
-        REPO_ROOT / "docs" / "internal" / "maintain" / "index.md"
-    )
+    maintainer_index = _read(REPO_ROOT / "docs" / "internal" / "maintain" / "index.md")
     artifact_hygiene = _read(
         REPO_ROOT / "docs" / "internal" / "maintain" / "artifact-hygiene.md"
     )
@@ -539,16 +503,15 @@ def test_internal_docs_name_artifact_hygiene_rule() -> None:
     assert "artifact hygiene" in internal_index
     assert "artifact hygiene" in maintainer_index
     assert "canonical artifact-owned paths" in artifact_hygiene
-    assert "The root `.venv`, `.tox`, `.hypothesis`, and `.benchmarks` paths should be" in (
-        artifact_hygiene
+    assert (
+        "The root `.venv`, `.tox`, `.hypothesis`, and `.benchmarks` paths should be"
+        in (artifact_hygiene)
     )
 
 
 def test_internal_docs_name_trust_lane_and_study_guide_maintenance_rule() -> None:
     internal_index = _read(REPO_ROOT / "docs" / "internal" / "index.md")
-    maintainer_index = _read(
-        REPO_ROOT / "docs" / "internal" / "maintain" / "index.md"
-    )
+    maintainer_index = _read(REPO_ROOT / "docs" / "internal" / "maintain" / "index.md")
     trust_lane_maintenance = _read(
         REPO_ROOT
         / "docs"

@@ -6,8 +6,8 @@ import stat
 import subprocess
 
 from bijux_phylogenetics_dev.quality.frozen_test_report import (
-    build_output_manifest,
     build_frozen_test_report,
+    build_output_manifest,
     build_scientific_drift_records,
     diff_output_manifests,
     diff_test_records,
@@ -42,16 +42,13 @@ def _synthetic_repo(tmp_path: Path) -> tuple[Path, str]:
     _write(repo_root / "science.txt", "frozen\n")
     _run([_git(), "add", "."], cwd=repo_root)
     _run([_git(), "commit", "-m", "seed frozen fixture"], cwd=repo_root)
-    frozen_ref = (
-        subprocess.run(
-            [_git(), "rev-parse", "HEAD"],
-            cwd=repo_root,
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-        .stdout.strip()
-    )
+    frozen_ref = subprocess.run(
+        [_git(), "rev-parse", "HEAD"],
+        cwd=repo_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
     _write(repo_root / "science.txt", "current\n")
     _run([_git(), "add", "science.txt"], cwd=repo_root)
     _run([_git(), "commit", "-m", "change scientific output"], cwd=repo_root)
@@ -195,9 +192,7 @@ def test_diff_helpers_detect_changed_tests_outputs_and_scientific_drift(
         build_output_manifest(current_outputs),
         build_output_manifest(frozen_outputs),
     )
-    drift_records = build_scientific_drift_records(
-        test_differences, output_differences
-    )
+    drift_records = build_scientific_drift_records(test_differences, output_differences)
 
     assert [difference.nodeid for difference in test_differences] == [
         "tests/test_beta.py::test_changed"

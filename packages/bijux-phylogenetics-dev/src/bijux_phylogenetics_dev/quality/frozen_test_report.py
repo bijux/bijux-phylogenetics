@@ -28,11 +28,14 @@ class XmlElement(Protocol):
 
     text: str | None
 
-    def find(self, path: str) -> XmlElement | None: ...
+    def find(self, path: str) -> XmlElement | None:
+        """Return the first matching descendant element, if one exists."""
 
-    def get(self, key: str, default: str | None = None) -> str | None: ...
+    def get(self, key: str, default: str | None = None) -> str | None:
+        """Return one attribute value, or the provided default when absent."""
 
-    def iterfind(self, path: str) -> Iterable[XmlElement]: ...
+    def iterfind(self, path: str) -> Iterable[XmlElement]:
+        """Iterate over every descendant element that matches the path."""
 
 
 _EXCLUDED_OUTPUT_SEGMENTS = frozenset(
@@ -187,9 +190,7 @@ def is_governed_output_file(relative_path: Path) -> bool:
     """Return whether a file should participate in frozen output comparison."""
     if any(segment in _EXCLUDED_OUTPUT_SEGMENTS for segment in relative_path.parts):
         return False
-    if relative_path.name in _EXCLUDED_OUTPUT_FILENAMES:
-        return False
-    return True
+    return relative_path.name not in _EXCLUDED_OUTPUT_FILENAMES
 
 
 def _sha256(path: Path) -> str:

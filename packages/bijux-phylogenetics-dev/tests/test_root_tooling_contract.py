@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
+import subprocess
 import tomllib
 from typing import Any
 
@@ -126,8 +126,8 @@ def test_root_make_routes_test_all_across_repository_packages() -> None:
 def test_root_make_dispatches_test_all_to_requested_package_surface() -> None:
     dry_run = _root_make_dry_run("test-all", package="bijux-phylogenetics")
 
-    assert "resolved_package=\"bijux-phylogenetics\"" in dry_run
-    assert "echo \"==> $package: test-all\"" in dry_run
+    assert 'resolved_package="bijux-phylogenetics"' in dry_run
+    assert 'echo "==> $package: test-all"' in dry_run
     assert (
         "bijux-phylogenetics=/Users/bijan/bijux/bijux-phylogenetics/makes/packages/bijux-phylogenetics.mk"
         in dry_run
@@ -188,8 +188,8 @@ def test_root_make_dispatches_test_all_frozen_to_requested_package_surface() -> 
         extra_args=("TEST_ALL_FROZEN_REF=HEAD",),
     )
 
-    assert "resolved_package=\"bijux-phylogenetics\"" in dry_run
-    assert "echo \"==> $package: test-all-frozen\"" in dry_run
+    assert 'resolved_package="bijux-phylogenetics"' in dry_run
+    assert 'echo "==> $package: test-all-frozen"' in dry_run
     assert 'make -C "packages/$package" -f "$profile_path"' in dry_run
     assert " test-all-frozen; then failures=" in dry_run
 
