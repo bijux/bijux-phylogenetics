@@ -47,4 +47,7 @@ package_dir = "packages/bijux-phylogenetics-dev"
 module_root = "bijux_phylogenetics_dev"
 allowed_repo_import_roots = ["bijux_phylogenetics_dev", "bijux_phylogenetics"]
 owned_module_prefixes = ["bijux_phylogenetics_dev"]
-required_install_dependencies = ["PyYAML>=6.0,<7.0"]
+required_install_dependencies = [
+  "defusedxml>=0.7.1,<1.0",
+  "PyYAML>=6.0,<7.0",
+]

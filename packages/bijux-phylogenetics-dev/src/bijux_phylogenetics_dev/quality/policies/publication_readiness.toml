@@ -118,7 +118,10 @@ forbidden_archive_prefixes = [
 [tool.bijux_phylogenetics.publication_readiness.package_policy."bijux-phylogenetics-dev"]
 package_dir = "packages/bijux-phylogenetics-dev"
 wheel_module_root = "bijux_phylogenetics_dev"
-allowed_dependencies = ["PyYAML>=6.0,<7.0"]
+allowed_dependencies = [
+    "defusedxml>=0.7.1,<1.0",
+    "PyYAML>=6.0,<7.0",
+]
 required_sdist_entries = [
     "README.md",
     "CHANGELOG.md",
