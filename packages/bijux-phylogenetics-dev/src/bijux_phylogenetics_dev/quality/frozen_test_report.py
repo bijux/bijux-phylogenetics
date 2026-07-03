@@ -108,6 +108,7 @@ class SuiteRunRecord:
     stderr_log: str
     test_count: int
     output_count: int
+    full_suite_worker_count: int | None
 
 
 def _normalized_nodeid(testcase: ElementTree.Element) -> str:
@@ -392,6 +393,7 @@ def _package_make_command(
     artifacts_root: Path,
     make_executable: str,
     target: str = "test-all",
+    full_suite_worker_count: int | None = None,
 ) -> list[str]:
     package_root = repo_root / "packages" / package
     profile_path = os.path.relpath(
@@ -399,7 +401,7 @@ def _package_make_command(
         start=package_root,
     )
     venv_root = artifacts_root / "venv"
-    return [
+    command = [
         make_executable,
         "-C",
         str(package_root),
@@ -418,6 +420,9 @@ def _package_make_command(
         f"PYTHON={venv_root / 'bin' / 'python'}",
         f"ACT={venv_root / 'bin'}",
     ]
+    if full_suite_worker_count is not None:
+        command.append(f"FULL_SUITE_PYTEST_WORKERS={full_suite_worker_count}")
+    return command
 
 
 def _run_full_suite(
@@ -426,6 +431,7 @@ def _run_full_suite(
     package: str,
     artifacts_root: Path,
     make_executable: str,
+    full_suite_worker_count: int | None,
 ) -> tuple[SuiteRunRecord, dict[str, SuiteTestRecord], dict[str, OutputFileRecord]]:
     shutil.rmtree(artifacts_root, ignore_errors=True)
     artifacts_root.mkdir(parents=True, exist_ok=True)
@@ -434,6 +440,7 @@ def _run_full_suite(
         package=package,
         artifacts_root=artifacts_root,
         make_executable=make_executable,
+        full_suite_worker_count=full_suite_worker_count,
     )
     completed = run_text(
         command,
@@ -460,6 +467,7 @@ def _run_full_suite(
             stderr_log=stderr_log.as_posix(),
             test_count=len(test_records),
             output_count=len(output_manifest),
+            full_suite_worker_count=full_suite_worker_count,
         ),
         test_records,
         output_manifest,
@@ -472,6 +480,7 @@ def build_frozen_test_report(
     package: str,
     frozen_ref: str,
     artifacts_root: Path,
+    full_suite_worker_count: int | None = None,
     git_executable: str | None = None,
     make_executable: str | None = None,
 ) -> JsonObject:
@@ -495,12 +504,14 @@ def build_frozen_test_report(
         package=package,
         artifacts_root=artifacts_root / "current",
         make_executable=make_bin,
+        full_suite_worker_count=full_suite_worker_count,
     )
     frozen_run, frozen_tests, frozen_outputs = _run_full_suite(
         frozen_worktree,
         package=package,
         artifacts_root=artifacts_root / "frozen",
         make_executable=make_bin,
+        full_suite_worker_count=full_suite_worker_count,
     )
     changed_tests = diff_test_records(current_tests, frozen_tests)
     changed_outputs = diff_output_manifests(current_outputs, frozen_outputs)
@@ -534,6 +545,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--frozen-ref", required=True)
     parser.add_argument("--artifacts-root")
     parser.add_argument("--json-out")
+    parser.add_argument("--full-suite-workers", type=int)
     return parser.parse_args()
 
 
@@ -551,6 +563,7 @@ def main() -> int:
         package=args.package,
         frozen_ref=args.frozen_ref,
         artifacts_root=artifacts_root,
+        full_suite_worker_count=args.full_suite_workers,
     )
     json_out = (
         Path(args.json_out).resolve()

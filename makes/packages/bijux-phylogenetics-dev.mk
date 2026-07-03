@@ -42,7 +42,7 @@ test-all-plus-run-time: test
 test-all-frozen: ## Compare the full-suite output against TEST_ALL_FROZEN_REF
 	@test -n "$(TEST_ALL_FROZEN_REF)" || { echo "TEST_ALL_FROZEN_REF is required"; exit 2; }
 	@$(MAKE) -C "$(MONOREPO_ROOT)" root-check-env >/dev/null
-	@"$(FROZEN_TEST_REPORT_PYTHON)" -m bijux_phylogenetics_dev.quality.frozen_test_report check --repo-root "$(MONOREPO_ROOT)" --package "$(PROJECT_SLUG)" --frozen-ref "$(TEST_ALL_FROZEN_REF)" --artifacts-root "$(PROJECT_ARTIFACTS_DIR)/test-frozen" --json-out "$(PROJECT_ARTIFACTS_DIR)/test-frozen/report.json"
+	@"$(FROZEN_TEST_REPORT_PYTHON)" -m bijux_phylogenetics_dev.quality.frozen_test_report check --repo-root "$(MONOREPO_ROOT)" --package "$(PROJECT_SLUG)" --frozen-ref "$(TEST_ALL_FROZEN_REF)" --artifacts-root "$(PROJECT_ARTIFACTS_DIR)/test-frozen" --json-out "$(PROJECT_ARTIFACTS_DIR)/test-frozen/report.json" --full-suite-workers "$(FULL_SUITE_PYTEST_WORKERS)"
 .PHONY: test-all-frozen
 
 include $(abspath $(dir $(firstword $(MAKEFILE_LIST))))/../bijux-py/package.mk
