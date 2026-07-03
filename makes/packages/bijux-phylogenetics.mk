@@ -31,6 +31,7 @@ LINT_PRE_TARGETS := sync-license-assets-package
 QUALITY_PRE_TARGETS := sync-license-assets-package
 SECURITY_EXTRA_TARGETS := sync-license-assets-package
 QUALITY_POST_TARGETS := quality-compileall
+FULL_SUITE_TEST_PRE_TARGETS := sync-license-assets-package ensure-live-r-test-runtime
 BUILD_PACKAGE_NAME := bijux-phylogenetics
 BUILD_PRE_TARGETS := sync-license-assets-package
 BUILD_TEMP_CLEAN_PATHS := build dist *.egg-info
@@ -49,8 +50,13 @@ sync-license-assets-package:
 	@"$(VENV_PYTHON)" -m bijux_phylogenetics_dev.release.license_assets sync
 .PHONY: sync-license-assets-package
 
+ensure-live-r-test-runtime:
+	@"$(VENV_PYTHON)" -m bijux_phylogenetics_dev.quality.live_r_runtime --repo-root "$(MONOREPO_ROOT)" --json-out "$(PROJECT_ARTIFACTS_DIR)/test/live-r-runtime.json"
+.PHONY: ensure-live-r-test-runtime
+
 test-all: TEST_LABEL = full test suite
 test-all: TEST_PATHS = $(TEST_FULL_PATHS)
+test-all: TEST_PRE_TARGETS = $(FULL_SUITE_TEST_PRE_TARGETS)
 test-all: TEST_MAIN_ARGS =
 test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION)
 test-all: test
@@ -58,6 +64,7 @@ test-all: test
 
 test-all-plus-run-time: TEST_LABEL = full test suite
 test-all-plus-run-time: TEST_PATHS = $(TEST_FULL_PATHS)
+test-all-plus-run-time: TEST_PRE_TARGETS = $(FULL_SUITE_TEST_PRE_TARGETS)
 test-all-plus-run-time: TEST_MAIN_ARGS =
 test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION) --durations=0 --durations-min=0
 test-all-plus-run-time: test

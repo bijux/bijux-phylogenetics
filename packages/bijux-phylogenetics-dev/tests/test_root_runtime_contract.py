@@ -331,7 +331,13 @@ def test_runtime_package_make_exposes_unfiltered_test_all_surface() -> None:
     )
     assert "FULL_SUITE_PYTEST_WORKERS ?= 8" in runtime_make
     assert "FULL_SUITE_PYTEST_DISTRIBUTION ?= worksteal" in runtime_make
+    assert (
+        "FULL_SUITE_TEST_PRE_TARGETS := sync-license-assets-package ensure-live-r-test-runtime"
+        in runtime_make
+    )
+    assert "ensure-live-r-test-runtime:" in runtime_make
     assert "test-all: TEST_MAIN_ARGS =" in runtime_make
+    assert "test-all: TEST_PRE_TARGETS = $(FULL_SUITE_TEST_PRE_TARGETS)" in runtime_make
     assert (
         "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION)"
         in runtime_make
@@ -350,7 +356,15 @@ def test_runtime_package_make_exposes_unfiltered_test_all_plus_run_time_surface(
         'TEST_MAIN_ARGS = -m "not slow and not real_local and not evaluation"'
         in runtime_make
     )
+    assert (
+        "FULL_SUITE_TEST_PRE_TARGETS := sync-license-assets-package ensure-live-r-test-runtime"
+        in runtime_make
+    )
     assert "test-all-plus-run-time: TEST_MAIN_ARGS =" in runtime_make
+    assert (
+        "test-all-plus-run-time: TEST_PRE_TARGETS = $(FULL_SUITE_TEST_PRE_TARGETS)"
+        in runtime_make
+    )
     assert (
         "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION) --durations=0 --durations-min=0"
         in runtime_make
@@ -396,6 +410,7 @@ def test_runtime_package_make_test_all_targets_full_test_tree_without_marker_ski
     assert '"packages/bijux-phylogenetics/tests"' in dry_run
     assert '"packages/bijux-phylogenetics/tests/smoke"' not in dry_run
     assert '-m "not slow and not real_local and not evaluation"' not in dry_run
+    assert "ensure-live-r-test-runtime" in dry_run
     assert "-n 8 --dist worksteal" in dry_run
 
 
@@ -405,6 +420,7 @@ def test_runtime_package_make_test_all_plus_run_time_targets_full_test_tree() ->
     assert "Running full test suite on tests" in dry_run
     assert '"packages/bijux-phylogenetics/tests"' in dry_run
     assert '"packages/bijux-phylogenetics/tests/smoke"' not in dry_run
+    assert "ensure-live-r-test-runtime" in dry_run
     assert "-n 8 --dist worksteal" in dry_run
     assert "--durations=0 --durations-min=0" in dry_run
 
