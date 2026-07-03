@@ -84,6 +84,7 @@ nav:
               - Overview: public/phylogenetics/operations/index.md
               - Installation and Setup: public/phylogenetics/operations/installation-and-setup.md
               - Common Workflows: public/phylogenetics/operations/common-workflows.md
+              - Native Maximum-Likelihood Workflows: public/phylogenetics/operations/native-maximum-likelihood-workflows.md
               - Operational Boundaries: public/phylogenetics/operations/operational-boundaries.md
           - Quality:
               - Overview: public/phylogenetics/quality/index.md

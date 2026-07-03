@@ -17,6 +17,7 @@ Typical public workflows include:
 - trim and inspect an alignment before reporting
 - run one command from raw FASTA to a supported inference bundle
 - run one supported inference workflow from one YAML or JSON config file
+- run one owned nucleotide tree search through the native maximum-likelihood result contract
 - review native maximum-likelihood benchmark evidence directly instead of treating it as a hidden maintainer surface
 - assemble aligned loci into a concatenated supermatrix
 - audit a concatenated multi-locus matrix before inference
@@ -28,6 +29,13 @@ Typical public workflows include:
 
 The public workflow contract is that important outputs should be inspectable
 after the command finishes.
+
+When the goal is one owned native nucleotide tree-inference result rather than
+one broader wrapper-backed workflow, use the practical guide in
+[native maximum-likelihood workflows](native-maximum-likelihood-workflows.md).
+That page covers the stable Python-first result surface, optional support
+evidence, and attached benchmark metadata without flattening them into one
+generic workflow story.
 
 Serious workflow JSON outputs now also publish one explicit method tier:
 
