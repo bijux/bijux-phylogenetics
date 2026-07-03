@@ -59,6 +59,16 @@ straight to the practical guides:
 - [native Bayesian workflows](operations/native-bayesian-workflows.md)
 - [native benchmark review](operations/native-benchmark-review.md)
 
+## Release-Critical Reading
+
+When the question is whether the repository reads like a serious publishable
+surface, the highest-signal pages are:
+
+- [runtime architecture](architecture/index.md)
+- [package map](architecture/package-map.md)
+- [release review workflow](quality/release-review-workflow.md)
+- [evidence-book overview](../phylogenetics-evidence-book/index.md)
+
 ## Public Versus Internal
 
 The public handbook explains the product and runtime surface. Internal

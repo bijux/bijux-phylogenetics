@@ -43,10 +43,13 @@ phylogenetic --help
 ## Read this next
 
 - canonical runtime docs: [Runtime package docs](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
+- runtime architecture guide: [Runtime architecture](https://bijux.io/bijux-phylogenetics/public/phylogenetics/architecture/)
 - native inference and benchmark contracts: [Native inference and benchmarks](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/native-inference-and-benchmarks/)
 - native maximum-likelihood workflow guide: [Native maximum-likelihood workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-maximum-likelihood-workflows/)
 - native Bayesian workflow guide: [Native Bayesian workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-bayesian-workflows/)
 - native benchmark review guide: [Native benchmark review](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-benchmark-review/)
+- release review workflow: [Release review workflow](https://bijux.io/bijux-phylogenetics/public/phylogenetics/quality/release-review-workflow/)
+- evidence-book guide: [Evidence-book guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics-evidence-book/)
 - canonical runtime source: [Runtime source directory](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics)
 - changelog: [Alias package changelog](https://github.com/bijux/bijux-phylogenetics/blob/main/packages/phylogenetic/CHANGELOG.md)
 - security policy: [Security policy](https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md)

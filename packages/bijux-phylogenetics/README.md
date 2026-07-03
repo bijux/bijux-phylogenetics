@@ -129,6 +129,9 @@ Practical public guides for those surfaces live at:
 - [Native maximum-likelihood workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-maximum-likelihood-workflows/)
 - [Native Bayesian workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-bayesian-workflows/)
 - [Native benchmark review](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-benchmark-review/)
+- [Runtime architecture](https://bijux.io/bijux-phylogenetics/public/phylogenetics/architecture/)
+- [Release review workflow](https://bijux.io/bijux-phylogenetics/public/phylogenetics/quality/release-review-workflow/)
+- [Evidence-book guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics-evidence-book/)
 
 ## Native Tree Model
 

@@ -42,9 +42,11 @@ staged assets to the GitHub Release.
 
 - read the public docs home: [Documentation home](https://bijux.io/bijux-phylogenetics/)
 - inspect the public runtime guide: [Phylogenetics product guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
+- inspect the runtime architecture guide: [Runtime architecture](https://bijux.io/bijux-phylogenetics/public/phylogenetics/architecture/)
 - inspect the native maximum-likelihood workflow guide: [Native maximum-likelihood workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-maximum-likelihood-workflows/)
 - inspect the native Bayesian workflow guide: [Native Bayesian workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-bayesian-workflows/)
 - inspect the native benchmark review guide: [Native benchmark review](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-benchmark-review/)
+- inspect the release review guide: [Release review workflow](https://bijux.io/bijux-phylogenetics/public/phylogenetics/quality/release-review-workflow/)
 - inspect the public evidence guide: [Evidence Book](https://bijux.io/bijux-phylogenetics/public/phylogenetics-evidence-book/)
 - inspect the internal maintainer guide: [Internal documentation](https://bijux.io/bijux-phylogenetics/internal/)
 - inspect the runtime package source: [`packages/bijux-phylogenetics`](packages/bijux-phylogenetics)
