@@ -4,7 +4,7 @@
       "blocking_factors": [
         "2 analytical surfaces are still uncovered by governed evidence families.",
         "12 unresolved scalar mismatch rows remain visible in the mismatch archive.",
-        "4 coverage-gap debt entries remain reviewer-visible."
+        "28 coverage-gap debt entries remain reviewer-visible."
       ],
       "criterion_id": "foundational-numerical-trust",
       "current_status": "bounded",
@@ -87,8 +87,8 @@
     }
   ],
   "criteria_count": 5,
-  "freshness_current_count": 9,
-  "integrity_tracked_count": 19,
+  "freshness_current_count": 33,
+  "integrity_tracked_count": 43,
   "schema_version": 1,
   "surface_status_snapshot": {
     "alignment-diagnostics": "uncovered",

@@ -1,0 +1,21 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm3-martins-covariance-phylogenetic-regression",
+      "claim_title": "Primate Martins covariance regression bundle",
+      "evidence_ids": [
+        "evidence-007"
+      ],
+      "source_fragments": [
+        "martins-covariance-fit",
+        "categorical-phylogenetic-regression"
+      ],
+      "summary": "Governed study slice for the PCM3 phylogenetic regression that uses categorical predictors with Martins covariance.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-007",
+  "schema_version": 1,
+  "study_id": "primate-continuous-and-categorical-regression"
+}

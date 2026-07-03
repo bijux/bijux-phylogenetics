@@ -217,9 +217,10 @@ def render_docs_evidence_overview(
         "phylogenetics runtime.",
         "",
         "The five study families come from course material that the repository has",
-        "turned into checked-in, reviewable evidence. Some parts already have",
-        "bundle-level parity records. Others are documented carefully, but still",
-        "stop at an external-tool or research-workflow limit.",
+        "turned into checked-in, reviewable evidence. All five now have governed",
+        "bundle IDs. Some bundles carry direct parity records, while others stay",
+        "explicitly open because the scientific workflow still depends on an",
+        "external engine or an unclosed lecture-specific boundary.",
         "",
         "```mermaid",
         "flowchart LR",
@@ -264,9 +265,9 @@ def render_docs_evidence_overview(
         if "teaching-study" in study["study_categories"]:
             state = "Bundle-backed comparative evidence available"
         elif study_id == "primate-continuous-and-categorical-regression":
-            state = "Study guide and source dossier available; bundle packaging still open"
+            state = "Governed evidence bundles deployed; lecture-specific parity verdicts remain open"
         elif study_id.startswith("cichlid-"):
-            state = "Study guide and source dossier available; posterior workflow still external"
+            state = "Governed evidence bundles deployed; posterior workflow still external"
         lines.append(
             f"| [{study['study_title']}](./{study_page}/index.md) | {study_question_by_id[study_id]} | {state} |"
         )

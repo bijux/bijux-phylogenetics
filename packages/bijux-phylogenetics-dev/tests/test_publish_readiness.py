@@ -609,8 +609,8 @@ def test_build_publish_readiness_report_exposes_repository_blockers() -> None:
     assert report["summary"]["overall_status"] == "ready"
     assert report["summary"]["blocker_count"] == 0
     assert report["summary"]["study_count"] == 5
-    assert report["summary"]["evidence_manifest_count"] == 19
-    assert report["summary"]["evidence_input_manifest_count"] == 19
+    assert report["summary"]["evidence_manifest_count"] == 43
+    assert report["summary"]["evidence_input_manifest_count"] == 43
     assert report["config_ssot"]["issue_count"] == 0
     assert report["evidence_inventory"]["governed_junk_issue_count"] == 0
     assert report["evidence_inventory"]["repo_dataset_checksum_count"] >= 4

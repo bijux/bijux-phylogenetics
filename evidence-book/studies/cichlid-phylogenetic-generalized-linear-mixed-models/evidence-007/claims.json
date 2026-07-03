@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm5-probability-scale-back-transforms",
+      "claim_title": "Cichlid probability-scale transform bundle",
+      "evidence_ids": [
+        "evidence-007"
+      ],
+      "source_fragments": [
+        "probability-scale-back-transforms"
+      ],
+      "summary": "Governed study slice for the PCM5 probability-scale back-transformation of intercepts and slopes.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-007",
+  "schema_version": 1,
+  "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+}

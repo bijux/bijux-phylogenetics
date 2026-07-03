@@ -5,8 +5,8 @@ hard closure for foundational trust, visualization competition, performance comp
 migration usefulness, or reviewer readiness.
 
 - criteria: `5`
-- current freshness-tracked bundles: `9`
-- integrity-tracked bundles: `19`
+- current freshness-tracked bundles: `33`
+- integrity-tracked bundles: `43`
 
 ## foundational-numerical-trust
 
@@ -20,7 +20,7 @@ Pass when:
 Blocking factors:
 - 2 analytical surfaces are still uncovered by governed evidence families.
 - 12 unresolved scalar mismatch rows remain visible in the mismatch archive.
-- 4 coverage-gap debt entries remain reviewer-visible.
+- 28 coverage-gap debt entries remain reviewer-visible.
 
 Supporting evidence:
 - `analytical-surface-coverage.json`

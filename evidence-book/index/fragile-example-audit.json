@@ -1,6 +1,306 @@
 {
   "examples": [
     {
+      "debt_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models-evidence-001-pcm4-cichlid-alignment-and-species-summarization",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for PCM4 cichlid data-tree alignment and species-level summarization before model fitting.",
+      "evidence": [
+        "claim_id=pcm4-cichlid-alignment-and-species-summarization",
+        "source_fragment=cichlid-data-tree-alignment",
+        "source_fragment=species-level-summarization"
+      ],
+      "evidence_id": "evidence-001",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-001",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+    },
+    {
+      "debt_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models-evidence-002-pcm4-gaussian-baseline-regression",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for the PCM4 non-phylogenetic Gaussian baseline regression used before mixed-model sampling.",
+      "evidence": [
+        "claim_id=pcm4-gaussian-baseline-regression",
+        "source_fragment=gaussian-baseline-fit"
+      ],
+      "evidence_id": "evidence-002",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-002",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+    },
+    {
+      "debt_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models-evidence-003-pcm4-gaussian-posterior-diagnostics",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for the PCM4 Bayesian Gaussian regression chain diagnostics and posterior summaries.",
+      "evidence": [
+        "claim_id=pcm4-gaussian-posterior-diagnostics",
+        "source_fragment=gaussian-chain-diagnostics",
+        "source_fragment=gaussian-posterior-summaries"
+      ],
+      "evidence_id": "evidence-003",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-003",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+    },
+    {
+      "debt_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models-evidence-004-pcm4-tree-inverse-and-random-effect-setup",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for the PCM4 tree inverse construction and phylogenetic random-effect setup.",
+      "evidence": [
+        "claim_id=pcm4-tree-inverse-and-random-effect-setup",
+        "source_fragment=tree-inverse-construction",
+        "source_fragment=phylogenetic-random-effect-setup"
+      ],
+      "evidence_id": "evidence-004",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-004",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+    },
+    {
+      "debt_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models-evidence-005-pcm4-phylogenetic-fixed-effect-posteriors",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for the PCM4 Bayesian phylogenetic mixed-model fixed-effect posterior summaries.",
+      "evidence": [
+        "claim_id=pcm4-phylogenetic-fixed-effect-posteriors",
+        "source_fragment=fixed-effect-posteriors"
+      ],
+      "evidence_id": "evidence-005",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-005",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+    },
+    {
+      "debt_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models-evidence-006-pcm4-phylogenetic-variance-component-posteriors",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for the PCM4 phylogenetic variance-component posterior summaries.",
+      "evidence": [
+        "claim_id=pcm4-phylogenetic-variance-component-posteriors",
+        "source_fragment=variance-component-posteriors"
+      ],
+      "evidence_id": "evidence-006",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-006",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+    },
+    {
+      "debt_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models-evidence-007-pcm4-brownian-pgls-comparator",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for the PCM4 comparison back to a Brownian PGLS baseline after the mixed-model workflow.",
+      "evidence": [
+        "claim_id=pcm4-brownian-pgls-comparator",
+        "source_fragment=brownian-pgls-comparison"
+      ],
+      "evidence_id": "evidence-007",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-007",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+    },
+    {
+      "debt_id": "cichlid-phylogenetic-generalized-linear-mixed-models-evidence-001-pcm5-repeated-measure-workspace-contract",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for the PCM5 fish workspace reload and repeated-measure data contract.",
+      "evidence": [
+        "claim_id=pcm5-repeated-measure-workspace-contract",
+        "source_fragment=fish-workspace-reload",
+        "source_fragment=repeated-measure-data-contract"
+      ],
+      "evidence_id": "evidence-001",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-001",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+    },
+    {
+      "debt_id": "cichlid-phylogenetic-generalized-linear-mixed-models-evidence-002-pcm5-posterior-phylogenetic-signal",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for the PCM5 posterior-derived phylogenetic signal calculation on the Gaussian mixed model.",
+      "evidence": [
+        "claim_id=pcm5-posterior-phylogenetic-signal",
+        "source_fragment=posterior-phylogenetic-signal"
+      ],
+      "evidence_id": "evidence-002",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-002",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+    },
+    {
+      "debt_id": "cichlid-phylogenetic-generalized-linear-mixed-models-evidence-003-pcm5-ancestral-posterior-export",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for the PCM5 ancestral-state posterior extraction and export rules.",
+      "evidence": [
+        "claim_id=pcm5-ancestral-posterior-export",
+        "source_fragment=ancestral-posterior-extraction",
+        "source_fragment=ancestral-export-rules"
+      ],
+      "evidence_id": "evidence-003",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-003",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+    },
+    {
+      "debt_id": "cichlid-phylogenetic-generalized-linear-mixed-models-evidence-004-pcm5-tree-linked-ancestral-plotting-contract",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for the PCM5 tree-linked ancestral plotting contract.",
+      "evidence": [
+        "claim_id=pcm5-tree-linked-ancestral-plotting-contract",
+        "source_fragment=tree-linked-ancestral-plotting"
+      ],
+      "evidence_id": "evidence-004",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-004",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+    },
+    {
+      "debt_id": "cichlid-phylogenetic-generalized-linear-mixed-models-evidence-005-pcm5-poisson-phylogenetic-count-model",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for the PCM5 Poisson phylogenetic count model of parasite abundance.",
+      "evidence": [
+        "claim_id=pcm5-poisson-phylogenetic-count-model",
+        "source_fragment=poisson-count-model"
+      ],
+      "evidence_id": "evidence-005",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-005",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+    },
+    {
+      "debt_id": "cichlid-phylogenetic-generalized-linear-mixed-models-evidence-006-pcm5-multinomial-infection-logit-summaries",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for the PCM5 multinomial infection model and its logit-scale summaries.",
+      "evidence": [
+        "claim_id=pcm5-multinomial-infection-logit-summaries",
+        "source_fragment=multinomial-infection-model",
+        "source_fragment=logit-scale-summaries"
+      ],
+      "evidence_id": "evidence-006",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-006",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+    },
+    {
+      "debt_id": "cichlid-phylogenetic-generalized-linear-mixed-models-evidence-007-pcm5-probability-scale-back-transforms",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for the PCM5 probability-scale back-transformation of intercepts and slopes.",
+      "evidence": [
+        "claim_id=pcm5-probability-scale-back-transforms",
+        "source_fragment=probability-scale-back-transforms"
+      ],
+      "evidence_id": "evidence-007",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-007",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+    },
+    {
+      "debt_id": "cichlid-phylogenetic-generalized-linear-mixed-models-evidence-008-pcm5-repeated-measure-random-effects",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for the PCM5 repeated-measure random effects that combine species and treetip structure.",
+      "evidence": [
+        "claim_id=pcm5-repeated-measure-random-effects",
+        "source_fragment=species-plus-treetip-random-effects"
+      ],
+      "evidence_id": "evidence-008",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-008",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+    },
+    {
+      "debt_id": "cichlid-phylogenetic-generalized-linear-mixed-models-evidence-009-pcm5-variance-partition-review",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for the PCM5 variance partition between phylogeny, species, and residual components.",
+      "evidence": [
+        "claim_id=pcm5-variance-partition-review",
+        "source_fragment=variance-partition-review"
+      ],
+      "evidence_id": "evidence-009",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-009",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+    },
+    {
+      "debt_id": "primate-continuous-and-categorical-regression-evidence-001-pcm3-source-intake-and-workspace-alignment",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for PCM3 source intake, workspace reconstruction, and shared primate dataset alignment.",
+      "evidence": [
+        "claim_id=pcm3-source-intake-and-workspace-alignment",
+        "source_fragment=workspace-reload-contract",
+        "source_fragment=shared-dataset-alignment"
+      ],
+      "evidence_id": "evidence-001",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-001",
+      "study_id": "primate-continuous-and-categorical-regression"
+    },
+    {
+      "debt_id": "primate-continuous-and-categorical-regression-evidence-002-pcm3-baseline-gls-with-categorical-predictor",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for the PCM3 baseline GLS fit with one continuous predictor and one categorical predictor.",
+      "evidence": [
+        "claim_id=pcm3-baseline-gls-with-categorical-predictor",
+        "source_fragment=baseline-gls-fit",
+        "source_fragment=categorical-encoding-contract"
+      ],
+      "evidence_id": "evidence-002",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-002",
+      "study_id": "primate-continuous-and-categorical-regression"
+    },
+    {
+      "debt_id": "primate-continuous-and-categorical-regression-evidence-003-pcm3-transformed-response-and-model-tests",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for the PCM3 log-response repair, residual review, and marginal-versus-sequential testing logic.",
+      "evidence": [
+        "claim_id=pcm3-transformed-response-and-model-tests",
+        "source_fragment=log-response-repair",
+        "source_fragment=marginal-versus-sequential-tests"
+      ],
+      "evidence_id": "evidence-003",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-003",
+      "study_id": "primate-continuous-and-categorical-regression"
+    },
+    {
+      "debt_id": "primate-continuous-and-categorical-regression-evidence-004-pcm3-intercept-free-group-parameterization",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for the PCM3 intercept-free parameterization used to report group-specific estimates.",
+      "evidence": [
+        "claim_id=pcm3-intercept-free-group-parameterization",
+        "source_fragment=intercept-free-parameterization"
+      ],
+      "evidence_id": "evidence-004",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-004",
+      "study_id": "primate-continuous-and-categorical-regression"
+    },
+    {
+      "debt_id": "primate-continuous-and-categorical-regression-evidence-005-pcm3-interaction-coefficient-interpretation",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for PCM3 continuous-by-categorical interaction coefficients and their interpretation.",
+      "evidence": [
+        "claim_id=pcm3-interaction-coefficient-interpretation",
+        "source_fragment=continuous-by-categorical-interaction"
+      ],
+      "evidence_id": "evidence-005",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-005",
+      "study_id": "primate-continuous-and-categorical-regression"
+    },
+    {
+      "debt_id": "primate-continuous-and-categorical-regression-evidence-006-pcm3-scaling-and-intercept-semantics",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for PCM3 predictor scaling and the intercept-semantics changes that follow standardization.",
+      "evidence": [
+        "claim_id=pcm3-scaling-and-intercept-semantics",
+        "source_fragment=predictor-scaling",
+        "source_fragment=standardized-intercept-semantics"
+      ],
+      "evidence_id": "evidence-006",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-006",
+      "study_id": "primate-continuous-and-categorical-regression"
+    },
+    {
+      "debt_id": "primate-continuous-and-categorical-regression-evidence-007-pcm3-martins-covariance-phylogenetic-regression",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for the PCM3 phylogenetic regression that uses categorical predictors with Martins covariance.",
+      "evidence": [
+        "claim_id=pcm3-martins-covariance-phylogenetic-regression",
+        "source_fragment=martins-covariance-fit",
+        "source_fragment=categorical-phylogenetic-regression"
+      ],
+      "evidence_id": "evidence-007",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-007",
+      "study_id": "primate-continuous-and-categorical-regression"
+    },
+    {
+      "debt_id": "primate-continuous-and-categorical-regression-evidence-008-pcm3-post-correction-diagnostics-and-tests",
+      "debt_kind": "coverage_gap",
+      "detail": "Governed study slice for PCM3 post-correction diagnostics and hypothesis testing after the phylogenetic regression fit.",
+      "evidence": [
+        "claim_id=pcm3-post-correction-diagnostics-and-tests",
+        "source_fragment=post-correction-diagnostics",
+        "source_fragment=post-correction-hypothesis-tests"
+      ],
+      "evidence_id": "evidence-008",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-008",
+      "study_id": "primate-continuous-and-categorical-regression"
+    },
+    {
       "debt_id": "primate-longevity-signal-evidence-001-pcm1-artifact-provenance-tracking",
       "debt_kind": "coverage_gap",
       "detail": "Processed files and saved workspaces are indexed as provenance outputs rather than overstated as analytical matches.",
@@ -59,9 +359,9 @@
       "study_id": "primate-pgls-and-signal"
     }
   ],
-  "fragile_example_count": 4,
+  "fragile_example_count": 28,
   "fragility_kind_counts": {
-    "coverage_gap": 4
+    "coverage_gap": 28
   },
   "schema_version": 1
 }

@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm3-interaction-coefficient-interpretation",
+      "claim_title": "Primate interaction coefficient interpretation bundle",
+      "evidence_ids": [
+        "evidence-005"
+      ],
+      "source_fragments": [
+        "continuous-by-categorical-interaction"
+      ],
+      "summary": "Governed study slice for PCM3 continuous-by-categorical interaction coefficients and their interpretation.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-005",
+  "schema_version": 1,
+  "study_id": "primate-continuous-and-categorical-regression"
+}

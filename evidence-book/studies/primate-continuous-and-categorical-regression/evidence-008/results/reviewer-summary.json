@@ -1,0 +1,40 @@
+{
+  "bundle_verdict_status": "not_comparable",
+  "bundle_verdict_summary": "This bundle is checked in and reviewable, but lecture-specific PCM3 parity for this slice is not yet claimed by the repository.",
+  "claim_count": 1,
+  "claim_tags": [
+    "scientific-validation",
+    "primate",
+    "diagnostics",
+    "hypothesis-testing"
+  ],
+  "claim_titles": [
+    "Primate post-correction diagnostics bundle"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-008",
+  "evidence_title": "Primate post-correction diagnostics bundle",
+  "limitations": [
+    "This bundle keeps the diagnostic and testing boundary explicit without claiming a finished lecture-parity package for those outputs."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "reviewer_summary_lines": [
+    "Governed study slice for PCM3 post-correction diagnostics and hypothesis testing after the phylogenetic regression fit.",
+    "Comparison mode: direct_parity. Bundle verdict: not_comparable.",
+    "Claims stay explicit and reviewer-readable through governed claim rows, portable source locators, and tracked limitations."
+  ],
+  "schema_version": 1,
+  "source_fragment_ids": [
+    "post-correction-diagnostics",
+    "post-correction-hypothesis-tests"
+  ],
+  "source_locators": [
+    "evidence-book/studies/primate-continuous-and-categorical-regression/provenance/lund-course-sources.json",
+    "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/registry.json",
+    "evidence-book/studies/primate-continuous-and-categorical-regression/reference/README.md",
+    "packages/bijux-phylogenetics/tests/test_pgls_interaction_coefficients.py",
+    "packages/bijux-phylogenetics/tests/test_regression_model_selection.py"
+  ],
+  "study_id": "primate-continuous-and-categorical-regression",
+  "study_title": "Primate Continuous And Categorical Regression"
+}

@@ -1,0 +1,21 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm4-cichlid-alignment-and-species-summarization",
+      "claim_title": "Cichlid alignment and species summarization bundle",
+      "evidence_ids": [
+        "evidence-001"
+      ],
+      "source_fragments": [
+        "cichlid-data-tree-alignment",
+        "species-level-summarization"
+      ],
+      "summary": "Governed study slice for PCM4 cichlid data-tree alignment and species-level summarization before model fitting.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-001",
+  "schema_version": 1,
+  "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+}

@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm3-intercept-free-group-parameterization",
+      "claim_title": "Primate intercept-free contrast bundle",
+      "evidence_ids": [
+        "evidence-004"
+      ],
+      "source_fragments": [
+        "intercept-free-parameterization"
+      ],
+      "summary": "Governed study slice for the PCM3 intercept-free parameterization used to report group-specific estimates.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-004",
+  "schema_version": 1,
+  "study_id": "primate-continuous-and-categorical-regression"
+}

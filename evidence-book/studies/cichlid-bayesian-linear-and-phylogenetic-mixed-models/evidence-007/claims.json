@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm4-brownian-pgls-comparator",
+      "claim_title": "Cichlid Brownian comparator bundle",
+      "evidence_ids": [
+        "evidence-007"
+      ],
+      "source_fragments": [
+        "brownian-pgls-comparison"
+      ],
+      "summary": "Governed study slice for the PCM4 comparison back to a Brownian PGLS baseline after the mixed-model workflow.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-007",
+  "schema_version": 1,
+  "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+}

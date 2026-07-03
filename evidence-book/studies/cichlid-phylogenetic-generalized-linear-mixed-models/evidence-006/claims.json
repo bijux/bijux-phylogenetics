@@ -1,0 +1,21 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm5-multinomial-infection-logit-summaries",
+      "claim_title": "Cichlid multinomial infection summary bundle",
+      "evidence_ids": [
+        "evidence-006"
+      ],
+      "source_fragments": [
+        "multinomial-infection-model",
+        "logit-scale-summaries"
+      ],
+      "summary": "Governed study slice for the PCM5 multinomial infection model and its logit-scale summaries.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-006",
+  "schema_version": 1,
+  "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+}

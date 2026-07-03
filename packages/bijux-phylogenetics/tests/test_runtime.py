@@ -12206,9 +12206,11 @@ def test_cli_evidence_book_studies_json_output(capsys, monkeypatch) -> None:
 
     assert exit_code == 0
     assert payload["status"] == "ok"
-    assert payload["metrics"]["study_count"] == 2
-    assert payload["metrics"]["partial_rerun_capable_count"] == 2
-    assert payload["data"]["studies"][0]["study_id"] == "primate-longevity-signal"
+    assert payload["metrics"]["study_count"] == 5
+    assert payload["metrics"]["partial_rerun_capable_count"] == 5
+    assert payload["data"]["studies"][0]["study_id"] == (
+        "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+    )
 
 
 @pytest.mark.slow
@@ -12222,7 +12224,7 @@ def test_cli_evidence_book_validate_json_output(capsys, monkeypatch) -> None:
     assert exit_code == 0
     assert payload["status"] == "ok"
     assert payload["data"]["valid"] is True
-    assert payload["metrics"]["bundle_count"] == 19
+    assert payload["metrics"]["bundle_count"] == 43
     assert payload["metrics"]["coverage_gap_count"] >= 1
     assert payload["metrics"]["downgraded_claim_count"] >= 1
     assert payload["metrics"]["foundational_numerical_trust_status"] == "bounded"
@@ -12240,9 +12242,9 @@ def test_cli_evidence_book_build_json_output(capsys, monkeypatch) -> None:
 
     assert exit_code == 0
     assert payload["status"] == "ok"
-    assert payload["metrics"]["reviewer_summary_count"] == 19
+    assert payload["metrics"]["reviewer_summary_count"] == 43
     assert payload["metrics"]["updated_path_count"] >= 1
-    assert payload["metrics"]["bundle_count"] == 19
+    assert payload["metrics"]["bundle_count"] == 43
     assert payload["metrics"]["reviewer_readiness_status"] == "bounded"
 
 

@@ -49,7 +49,7 @@
   },
   "foundational_numerical_trust_status": "bounded",
   "freshness_status_counts": {
-    "current": 9,
+    "current": 33,
     "stale": 10
   },
   "integrity_action_required_count": 0,

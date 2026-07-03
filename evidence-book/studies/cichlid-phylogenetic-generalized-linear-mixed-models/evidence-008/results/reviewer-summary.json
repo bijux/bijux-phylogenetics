@@ -1,0 +1,38 @@
+{
+  "bundle_verdict_status": "not_comparable",
+  "bundle_verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM5 generalized posterior workflow.",
+  "claim_count": 1,
+  "claim_tags": [
+    "scientific-validation",
+    "cichlid",
+    "repeated-measures",
+    "random-effects"
+  ],
+  "claim_titles": [
+    "Cichlid repeated-measure random effects bundle"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-008",
+  "evidence_title": "Cichlid repeated-measure random effects bundle",
+  "limitations": [
+    "This bundle keeps the repeated-measure random-effect question explicit without claiming repository-owned parity for the lecture\u2019s mixed-model sampler."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "reviewer_summary_lines": [
+    "Governed study slice for the PCM5 repeated-measure random effects that combine species and treetip structure.",
+    "Comparison mode: direct_parity. Bundle verdict: not_comparable.",
+    "Claims stay explicit and reviewer-readable through governed claim rows, portable source locators, and tracked limitations."
+  ],
+  "schema_version": 1,
+  "source_fragment_ids": [
+    "species-plus-treetip-random-effects"
+  ],
+  "source_locators": [
+    "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/provenance/lund-course-sources.json",
+    "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/registry.json",
+    "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/reference/README.md",
+    "packages/bijux-phylogenetics/tests/test_phylogenetic_logistic.py"
+  ],
+  "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+  "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models"
+}

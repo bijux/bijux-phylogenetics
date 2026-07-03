@@ -8,6 +8,10 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 STUDIES_ROOT = REPO_ROOT / "evidence-book" / "studies"
 
 
+def _evidence_entries(count: int) -> set[str]:
+    return {f"evidence-{index:03d}" for index in range(1, count + 1)}
+
+
 def test_repository_evidence_book_passes_validation() -> None:
     report = validate_evidence_book(REPO_ROOT)
 
@@ -72,7 +76,7 @@ def test_repository_evidence_book_study_roots_are_minimal() -> None:
         "datasets",
         "provenance",
         "reference",
-    }
+    } | _evidence_entries(8)
     assert {
         path.name
         for path in (
@@ -83,7 +87,7 @@ def test_repository_evidence_book_study_roots_are_minimal() -> None:
         "datasets",
         "provenance",
         "reference",
-    }
+    } | _evidence_entries(7)
     assert {
         path.name
         for path in (
@@ -95,4 +99,4 @@ def test_repository_evidence_book_study_roots_are_minimal() -> None:
         "datasets",
         "provenance",
         "reference",
-    }
+    } | _evidence_entries(9)

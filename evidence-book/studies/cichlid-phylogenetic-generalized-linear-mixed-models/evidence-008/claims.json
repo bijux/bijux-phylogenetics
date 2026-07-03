@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm5-repeated-measure-random-effects",
+      "claim_title": "Cichlid repeated-measure random effects bundle",
+      "evidence_ids": [
+        "evidence-008"
+      ],
+      "source_fragments": [
+        "species-plus-treetip-random-effects"
+      ],
+      "summary": "Governed study slice for the PCM5 repeated-measure random effects that combine species and treetip structure.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-008",
+  "schema_version": 1,
+  "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+}

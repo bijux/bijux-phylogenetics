@@ -1,0 +1,40 @@
+{
+  "bundle_verdict_status": "not_comparable",
+  "bundle_verdict_summary": "This bundle is checked in and reviewable, but lecture-specific PCM3 parity for this slice is not yet claimed by the repository.",
+  "claim_count": 1,
+  "claim_tags": [
+    "scientific-validation",
+    "primate",
+    "scaling",
+    "intercept-semantics"
+  ],
+  "claim_titles": [
+    "Primate scaling and intercept semantics bundle"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-006",
+  "evidence_title": "Primate scaling and intercept semantics bundle",
+  "limitations": [
+    "This bundle keeps the standardization story explicit without yet claiming checked-in parity for the lecture\u2019s scaled outputs."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "reviewer_summary_lines": [
+    "Governed study slice for PCM3 predictor scaling and the intercept-semantics changes that follow standardization.",
+    "Comparison mode: direct_parity. Bundle verdict: not_comparable.",
+    "Claims stay explicit and reviewer-readable through governed claim rows, portable source locators, and tracked limitations."
+  ],
+  "schema_version": 1,
+  "source_fragment_ids": [
+    "predictor-scaling",
+    "standardized-intercept-semantics"
+  ],
+  "source_locators": [
+    "evidence-book/studies/primate-continuous-and-categorical-regression/provenance/lund-course-sources.json",
+    "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/registry.json",
+    "evidence-book/studies/primate-continuous-and-categorical-regression/reference/README.md",
+    "packages/bijux-phylogenetics/tests/test_pgls_interaction_coefficients.py",
+    "packages/bijux-phylogenetics/tests/test_regression_model_selection.py"
+  ],
+  "study_id": "primate-continuous-and-categorical-regression",
+  "study_title": "Primate Continuous And Categorical Regression"
+}

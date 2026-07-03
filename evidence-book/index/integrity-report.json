@@ -1,7 +1,223 @@
 {
   "action_required_count": 0,
-  "bundle_count": 19,
+  "bundle_count": 43,
   "entries": [
+    {
+      "bundle_digest": "2a8889ea7c9e409a130f8e3bcbc22de56a66a7b9cee347602ea29eef6d7e69c9",
+      "evidence_id": "evidence-001",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "9b8388714919e632c2f5673b225836bf28033d51fff8a1f62c32a2464048b6f7",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-001",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+    },
+    {
+      "bundle_digest": "e0f65b9bc187c09e7bec67cd931376fba9fa87fe1c140bed3e7b10c879e6fb25",
+      "evidence_id": "evidence-002",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "72b6054396575bbd5e592691f0f1c9bd8ba7f906f5d572325fc0ecf201b1f64b",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-002",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+    },
+    {
+      "bundle_digest": "9441984707b4cc25426083422cf454848d65d38945b5afbcb58bbbfd0fb0e6d1",
+      "evidence_id": "evidence-003",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "cabdeac4afb2dce45fb365e176e28e96e11324db2a656763feebe32f8cc107e4",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-003",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+    },
+    {
+      "bundle_digest": "ea25e42cb30fb4b681fc3f689419c9d3d871b5d60c2006d0f7f74e7be8b2e550",
+      "evidence_id": "evidence-004",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "d95ebb6e60f375309526a0a85480eec3791b70a8c6c31a2bb18090cb14466b28",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-004",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+    },
+    {
+      "bundle_digest": "585a92caf2b23ced9bcc16cef4de50dad4e6123533d97aec4d7b99dd4a057165",
+      "evidence_id": "evidence-005",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "d9c42d4c27833d4bc165ff333ec4abae4793f7020f924c4556a80026815018dc",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-005",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+    },
+    {
+      "bundle_digest": "4167427be1b447af2dc4e60d2c099543444460e971b0660a59d3b769264d62c6",
+      "evidence_id": "evidence-006",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "3cd7564ef72cb11790337399ca1ca738c539da3e8c6f11f967ebd5d6eee219e8",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-006",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+    },
+    {
+      "bundle_digest": "0c901095ca5888822710729b18d10109164ec21204ed873c069cb94b9f9a686c",
+      "evidence_id": "evidence-007",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "ea44f7a4c25b0e951910bb9df589c99cadecbbccba768c6d761fae02910a1113",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-007",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+    },
+    {
+      "bundle_digest": "1981af7d41a40a3018ea34f8bc70664bbbc218ff6057a88558d24996b62d5903",
+      "evidence_id": "evidence-001",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "0959295ca122c497dc7a3cfde336062697747040cc97f09ef09439985773f1c9",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-001",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+    },
+    {
+      "bundle_digest": "2848085653346f1ecef7df361e12e39a4190117b65915edb59ea7dc3701c1536",
+      "evidence_id": "evidence-002",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "83a926342110ae0031275a2e2cedd181d1744019650728ae364ab3620c1219ed",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-002",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+    },
+    {
+      "bundle_digest": "37f3c9354d229eae4f78c4a4022c2d7a788233eae09620b66d21703d3153c910",
+      "evidence_id": "evidence-003",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "b9b3d374e5332d594e962e0d981546961eb950af59fbec4d65ef5504d05f2910",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-003",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+    },
+    {
+      "bundle_digest": "9702cde7462d8c26ca01a587ce1dc3ff8a18ebe072e950096b4296c7b84a5ce9",
+      "evidence_id": "evidence-004",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "6b62d9d2a2f436db7145f5a0f0aabc17fb681ef27dedab6d52aeb70d09e301fa",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-004",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+    },
+    {
+      "bundle_digest": "653c598689506d1258ef61c2f9087922cf17322873e566f3e8ae77e8ee50b269",
+      "evidence_id": "evidence-005",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "0e5f07258a90be1a3e767f4993440edd15fbbddb5da6739939be25a12055a2f1",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-005",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+    },
+    {
+      "bundle_digest": "6c127f827f673a7a50cf680e52e63962c0aca71ed9899267737b57b1fd9454eb",
+      "evidence_id": "evidence-006",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "73d0ff63a321dcb3028dc925a4dba30486ef2d4cdd5d5152240fe6a28f740394",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-006",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+    },
+    {
+      "bundle_digest": "87f0bae758fbb63586ec745ddea287d33ab7c93a557d07c6c41c1e76e32dfd7a",
+      "evidence_id": "evidence-007",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "6c620951c6b48a49c5b9240104f3a14a21a565f3127cb758b51df3d75dd0b727",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-007",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+    },
+    {
+      "bundle_digest": "3854f34e8fb32a94e7b9b8c9fc8dea73178542dce6dafddbb80b40375e5b7a7c",
+      "evidence_id": "evidence-008",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "014a96d8db171e9eaac1f9ac436ccbfdbc1e2546d001e0f8a40252e197caa7ff",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-008",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+    },
+    {
+      "bundle_digest": "7ddab13b9291d12c7b2bd88040d000c1fc9eb49bd88b6439be8cc37551d87224",
+      "evidence_id": "evidence-009",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "d1aa88f71a59de9cbc3680b79f9cfb6548cd4953b49f903294da64f621e24092",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-009",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+    },
+    {
+      "bundle_digest": "dc3dab22258206483f7255d7cb88863f05508e3f6a5440df79d642c3d8f5fb2e",
+      "evidence_id": "evidence-001",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "ef89128f5bf2246fef4df3dae5746af0bfd9af084ba022a7aa572b9fabba1210",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-001",
+      "study_id": "primate-continuous-and-categorical-regression"
+    },
+    {
+      "bundle_digest": "a63324a9dacd1742b1b3f10ea2a4b5c88cb5e658a08a889944e8d7b3cf8a6db2",
+      "evidence_id": "evidence-002",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "e5a2f377e6d6a5f618f58c13b4eec428a4090ecad27909112dd1ea4fde5e5cbe",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-002",
+      "study_id": "primate-continuous-and-categorical-regression"
+    },
+    {
+      "bundle_digest": "9729eded42498c341916c0a63af6c9402b756b7958764522dafcdfa440d03501",
+      "evidence_id": "evidence-003",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "a1aed3d4ed433e040beac424bbd5f3ee7eadf2026b25423cf707454a48ffc637",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-003",
+      "study_id": "primate-continuous-and-categorical-regression"
+    },
+    {
+      "bundle_digest": "4df0908f3fe231c8e047335e70254e28bdce9c423757017c183c1465150fde10",
+      "evidence_id": "evidence-004",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "05a6133b07667e129483032940c4999ce0c416e8be0b562d2cecd5869a7ea0dd",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-004",
+      "study_id": "primate-continuous-and-categorical-regression"
+    },
+    {
+      "bundle_digest": "e20ce7058b26eeb4f1ff45b40a48ce08fd93ead61a9aecc2e99dc1fd40c0b4d6",
+      "evidence_id": "evidence-005",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "ca5a4e75868c7cf502998fac0b3f7b8e922fa5f40cf7e14b029c97e8abbd9a8c",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-005",
+      "study_id": "primate-continuous-and-categorical-regression"
+    },
+    {
+      "bundle_digest": "4a30b24086d80fffa7543824f42a3914804ec8eb0b65c509312a7e38c3b4fea6",
+      "evidence_id": "evidence-006",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "e50bee173ca98cd012ad8fbef5c3692aa759aae6c0667a4f87c736ba0a3eaa23",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-006",
+      "study_id": "primate-continuous-and-categorical-regression"
+    },
+    {
+      "bundle_digest": "e223729d353bb84599e7de8a55ab75f1194d95e117b783a292c0697eac113f31",
+      "evidence_id": "evidence-007",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "af6b477ab2a95c09b51426acdc3503a8280c287e4133cd33bc0ba75b697e5dea",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-007",
+      "study_id": "primate-continuous-and-categorical-regression"
+    },
+    {
+      "bundle_digest": "155f58a6747a75ae13e9f9f0c4f33a00779906a362f322a228a75107f81d63cd",
+      "evidence_id": "evidence-008",
+      "file_count": 13,
+      "integrity_status": "tracked",
+      "manifest_digest": "d24d68bc3114a77ccf348c28ddb70f50d40a9b05093c83971128cfaa36ef431d",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-008",
+      "study_id": "primate-continuous-and-categorical-regression"
+    },
     {
       "bundle_digest": "32a54233829c8cb17716d5976980d24152375872147b6467e44abd7c57f61c4b",
       "evidence_id": "evidence-001",
@@ -175,7 +391,7 @@
     }
   ],
   "integrity_status_counts": {
-    "tracked": 19
+    "tracked": 43
   },
   "schema_version": 1
 }

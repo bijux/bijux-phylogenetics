@@ -1,0 +1,38 @@
+{
+  "bundle_verdict_status": "not_comparable",
+  "bundle_verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM5 generalized posterior workflow.",
+  "claim_count": 1,
+  "claim_tags": [
+    "scientific-validation",
+    "cichlid",
+    "variance-partition",
+    "posterior-variance"
+  ],
+  "claim_titles": [
+    "Cichlid variance partition review bundle"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-009",
+  "evidence_title": "Cichlid variance partition review bundle",
+  "limitations": [
+    "The repository does not yet claim parity for the lecture variance-partition posteriors, so this bundle stays a governed review slice."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "reviewer_summary_lines": [
+    "Governed study slice for the PCM5 variance partition between phylogeny, species, and residual components.",
+    "Comparison mode: direct_parity. Bundle verdict: not_comparable.",
+    "Claims stay explicit and reviewer-readable through governed claim rows, portable source locators, and tracked limitations."
+  ],
+  "schema_version": 1,
+  "source_fragment_ids": [
+    "variance-partition-review"
+  ],
+  "source_locators": [
+    "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/provenance/lund-course-sources.json",
+    "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/registry.json",
+    "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/reference/README.md",
+    "packages/bijux-phylogenetics/tests/test_phylogenetic_logistic.py"
+  ],
+  "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+  "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models"
+}
