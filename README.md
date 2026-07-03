@@ -23,8 +23,9 @@
 <!-- bijux-phylogenetics-badges:generated:end -->
 
 `bijux-phylogenetics` is a contract-first Python repository for reproducible
-phylogenetic validation, alignment diagnostics, comparative analysis, and
-reviewable reporting around trees, alignments, and trait tables.
+phylogenetic analysis, native likelihood and inference building blocks,
+comparative workflows, and reviewable reporting around trees, alignments, and
+trait tables.
 
 The repository follows the same managed workspace pattern as
 `bijux-canon`, `bijux-proteomics`, and `bijux-pollenomics`: shared standards
@@ -69,19 +70,27 @@ is for maintaining the workspace rather than for end-user installation.
 
 ## Current Scope
 
-The current repository scope is deliberate. `bijux-phylogenetics` is meant to
-govern evidence, diagnostics, and reproducible workflow surfaces around
-phylogenetic work. It is not trying to replace full inference engines.
+The current repository scope is deliberate. `bijux-phylogenetics` owns three
+surfaces at once:
+
+- native phylogenetic runtime components such as tree models, finite-state likelihood kernels, native maximum-likelihood search, native Bayesian sampling surfaces, and benchmark contracts
+- governed workflow and adapter surfaces for external tools where native ownership is not yet the right boundary
+- evidence-linked reporting, parity, and publication-oriented artifact packaging
+
+That does not mean every scientific surface is equally mature. The repository
+is strongest where it can show one explicit owned contract, one bounded public
+surface, and one governed evidence trail.
 
 What exists today:
 
-- tree validation, inspection, comparison, rooting, and rendering workflows
-- alignment diagnostics, filtering, trimming, and translation workflows
-- partition parsing, validation, summary tables, and partitioned adapter entrypoints for multi-locus inference
-- comparative trait analysis, ancestral-state workflows, and distance-based analysis
-- explicit supported-versus-excluded distance-tree method policy, including a governed `bionj` exclusion for this round
-- governed adapter surfaces for external tools such as alignment and inference engines
-- package handbooks and release automation
+- tree validation, inspection, comparison, rooting, rendering, and tree-set review
+- alignment diagnostics, filtering, trimming, translation, and partition-aware input handling
+- native finite-state likelihood foundations across nucleotide, protein, codon, and discrete Mk model families
+- native maximum-likelihood tree inference results, support summaries, wrapper-comparison evidence, and governed benchmark suites
+- native Bayesian public inference entry points for fixed-topology and joint-topology DNA workflows, with owned priors, proposal schedules, checkpoints, multiple-chain diagnostics, and posterior summaries across the supported model families
+- comparative trait analysis, ancestral-state workflows, discrete-state evolution analysis, and simulation surfaces
+- governed adapter surfaces for external tools such as MAFFT, trimAl, IQ-TREE2, FastTree, MrBayes, and BEAST
+- package handbooks, release automation, and evidence-book governance
 
 Current evidence closure is narrower than raw runtime breadth. The governed
 status lives in the evidence-book:
@@ -92,11 +101,12 @@ status lives in the evidence-book:
 - maturity scorecard: [`evidence-book/index/evidence-maturity-scorecard.md`](evidence-book/index/evidence-maturity-scorecard.md)
 - completion gates: [`evidence-book/index/completion-gates.md`](evidence-book/index/completion-gates.md)
 
-What does not exist today:
+Important current limits:
 
-- a native maximum-likelihood or Bayesian inference engine implemented inside this repository
-- a broad checked-in benchmark corpus that replaces external method validation; targeted comparative trust studies may live under `evidence-book/`
-- a claim that one passing workflow is sufficient scientific evidence on its own
+- native maximum-likelihood and Bayesian ownership exist, but they are not yet a claim that every inference workflow in the repository is native-first or equally mature
+- external-engine workflows remain part of the serious public product surface, especially for full FASTA-to-tree orchestration and broader time-tree ecosystems
+- benchmark and parity evidence support trust decisions, but they do not replace wider scientific model criticism or dataset-specific review
+- one passing workflow or one passing benchmark lane is not sufficient evidence on its own
 
 ## Common Commands
 

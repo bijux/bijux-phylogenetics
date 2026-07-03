@@ -4,15 +4,16 @@ audience: public
 type: index
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-10
+last_reviewed: 2026-07-03
 ---
 
 # Bijux Phylogenetics Product Guide
 
 `bijux-phylogenetics` is the public product guide for the repository runtime.
-It explains what the phylogenetics surface does today, where the product
-boundary stops, how the runtime is organized, and which interfaces are meant to
-be stable enough for serious reuse.
+It explains what the phylogenetics surface does today, where native ownership
+exists today, where the product still depends on explicit external-engine
+surfaces, how the runtime is organized, and which interfaces are meant to be
+stable enough for serious reuse.
 
 This guide is for readers who want the product answer first, not the source
 tree answer first. It should let someone understand the repository without
@@ -30,9 +31,10 @@ digging through package names, maintainer scripts, or evidence internals.
 ## What This Guide Covers
 
 - what the runtime publishes and what it refuses to claim
+- where native maximum-likelihood and Bayesian ownership already exist, and where wrapper orchestration is still the intended surface
 - how the public runtime boundary differs from the evidence-book boundary
-- which packages, commands, and artifacts are public-facing
-- how to install, inspect, and rerun common workflows responsibly
+- which packages, commands, Python imports, and artifacts are public-facing
+- how to install, inspect, benchmark, and rerun common workflows responsibly
 - which quality and publication gates protect the runtime surface
 
 ## Read By Question

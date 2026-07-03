@@ -4,7 +4,7 @@ audience: public
 type: overview
 status: active
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-04-29
+last_reviewed: 2026-07-03
 ---
 
 # Bijux Phylogenetics
@@ -33,8 +33,8 @@ last_reviewed: 2026-04-29
 
 `bijux-phylogenetics` is a reproducible phylogenetics workbench for tree
 inspection, validation, comparison, alignment trimming, coding-sequence
-translation, explicit rooting transforms, deterministic SVG tree rendering,
-publication figure packaging, evidence capture, and publishable HTML reports.
+translation, native likelihood and inference work, publication figure
+packaging, evidence capture, and publishable HTML reports.
 
 The repository keeps the same managed Python workspace shape as the other
 Bijux scientific repos: shared standards under `.bijux/`, repository-owned
@@ -42,7 +42,9 @@ Bijux scientific repos: shared standards under `.bijux/`, repository-owned
 alias package, and one maintainer package.
 
 The public distributions are `bijux-phylogenetics` for the canonical runtime
-surface and `phylogenetic` for the shorter compatibility alias.
+surface and `phylogenetic` for the shorter compatibility alias. The same
+repository also carries a maintainer package for documentation, release, and
+quality automation.
 
 ## Read this next
 
@@ -51,22 +53,21 @@ surface and `phylogenetic` for the shorter compatibility alias.
 - internal maintainer guide: [Internal documentation](internal/index.md)
 
 
-## Notable Workflows
+## Notable Runtime Surfaces
 
-- trim all-gap or all-missing alignment sites and remove high-missingness sequences
-- inspect coding alignments for stop codons and frameshift-like sequence lengths
-- translate nucleotide coding alignments into amino-acid alignments
-- export pairwise sequence identity matrices for downstream review
-- root trees on explicit outgroups or reroot trees by midpoint
-- diagnose internal child counts, singleton nodes, missing branch-length locations, and suspicious support-label scales
-- render cladogram, phylogram, and circular tree figures with support labels and branch-length scale bars
-- annotate trees with categorical tip traits, continuous tip traits, metadata strips, and aligned trait heatmaps
-- package review-ready tree figures with SVG output, caption drafts, manifests, and tip-annotation tables
+- tree, split, and tree-set review on one owned `PhyloTree` runtime
+- native finite-state likelihood evaluation across nucleotide, protein, codon, and discrete Mk families
+- native maximum-likelihood inference result objects, support evidence, and wrapper-comparison benchmark reports
+- native Bayesian entry points for supported DNA fixed-topology and topology-sampling workflows
+- comparative and ancestral analysis surfaces that link directly to governed artifacts and reviewer-facing reports
+- external-engine workflow orchestration where the repository intentionally treats wrappers as product surfaces rather than pretending they are native implementations
 
 ## Evidence Closure
 
 The runtime surface is broader than the currently closed evidence surface.
-The governed evidence-book records that difference explicitly:
+The governed evidence-book records that difference explicitly, and the public
+handbook now distinguishes native ownership, wrapper orchestration, and
+evidence closure rather than flattening them into one claim:
 
 - start from the public evidence guide: [Evidence Book](public/phylogenetics-evidence-book/index.md)
 - review analytical surface coverage and closure status from the linked evidence-book index outputs there
