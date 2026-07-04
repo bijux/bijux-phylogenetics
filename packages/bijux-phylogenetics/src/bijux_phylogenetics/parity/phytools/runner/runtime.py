@@ -8,9 +8,13 @@ import shutil
 # Parity helpers invoke repository-owned reference commands under governed paths.
 import subprocess  # nosec B404
 
+from bijux_phylogenetics.runtime.repository_layout import (
+    repository_root as locate_repository_root,
+)
+
 
 def repository_root() -> Path:
-    return Path(__file__).resolve().parents[7]
+    return locate_repository_root(start=Path(__file__))
 
 
 def phytools_runner_path() -> Path:

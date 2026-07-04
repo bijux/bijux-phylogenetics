@@ -13,10 +13,13 @@ from bijux_phylogenetics.parity.geiger.registry import (
     GeigerParityCase,
     list_geiger_parity_cases,
 )
+from bijux_phylogenetics.runtime.repository_layout import (
+    repository_root as locate_repository_root,
+)
 
 
 def repository_root() -> Path:
-    return Path(__file__).resolve().parents[7]
+    return locate_repository_root(start=Path(__file__))
 
 
 def geiger_runner_path() -> Path:

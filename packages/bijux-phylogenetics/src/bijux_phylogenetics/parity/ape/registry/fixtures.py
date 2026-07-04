@@ -11,14 +11,15 @@ from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_tree_set_fixture,
     get_shared_tree_simulation_fixture,
 )
+from bijux_phylogenetics.datasets.shared_fixtures._paths import governed_fixture_root
 
 
 def package_root() -> Path:
-    return Path(__file__).resolve().parents[5]
+    return governed_fixture_root().parents[1]
 
 
 def default_fixtures_root() -> Path:
-    return package_root() / "tests" / "fixtures"
+    return governed_fixture_root()
 
 
 @dataclass(frozen=True, slots=True)

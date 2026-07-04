@@ -7,6 +7,7 @@ from bijux_phylogenetics.datasets.shared_fixtures import (
     SharedPhytoolsComparativeFixture,
     get_shared_phytools_comparative_fixture,
 )
+from bijux_phylogenetics.datasets.shared_fixtures._paths import governed_fixture_root
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,15 +37,10 @@ class PhytoolsRegistryFixtureCatalog:
     ard_binary_discrete_missing_fixture: SharedPhytoolsComparativeFixture
     ard_multistate_discrete_missing_fixture: SharedPhytoolsComparativeFixture
 
-
-def _package_root() -> Path:
-    return Path(__file__).resolve().parents[5]
-
-
 def build_phytools_registry_fixture_catalog() -> PhytoolsRegistryFixtureCatalog:
     """Resolve the shared fixtures consumed by the governed `phytools` parity cases."""
 
-    tests_root = _package_root() / "tests" / "fixtures" / "trees"
+    tests_root = governed_fixture_root() / "trees"
     return PhytoolsRegistryFixtureCatalog(
         simulation_tree_fixture=tests_root / "example_tree.nwk",
         simulation_six_taxa_tree_fixture=tests_root / "example_tree_six_taxa.nwk",
