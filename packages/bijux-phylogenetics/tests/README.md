@@ -29,6 +29,7 @@ single flat namespace.
 - `parity/ape`, `parity/geiger`, and `parity/phytools` own toolkit-specific parity cases; the `parity/` root is reserved for cross-tool access policy.
 - `comparative/biogeography` owns geographic state, host-association, and phylogeography workflows so comparative regression and trait-evolution tests do not remain mixed with geography-specific surfaces.
 - `comparative/macroevolution` owns diversification, disparity, ecological-niche, and multispecies-coalescent review surfaces so those study-style analyses are separated from generic comparative reporting.
+- `comparative/publication` owns comparative report bundles, figure packages, methods-summary exports, and trait-tree publication surfaces so public-output contracts are separated from analytical model checks.
 - `comparative/regression` owns PGLS, phylogenetic regression, residual, and signal-review surfaces so comparative statistics are separated from trait-evolution and geography-specific workflows.
 - `comparative/trait_evolution` owns trait-dynamics models, mode-recovery checks, and simulation surfaces so comparative regression and reporting tests do not remain mixed with evolution-specific workflows.
 - `bayesian/sampling`, `bayesian/priors`, `bayesian/proposals`, `bayesian/models`, `bayesian/posterior`, and `bayesian/engines` separate sampling mechanics, prior families, proposal kernels, native model definitions, posterior analysis, and wrapper-facing execution surfaces.
