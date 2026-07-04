@@ -28,7 +28,9 @@ single flat namespace.
 
 - `parity/ape`, `parity/geiger`, and `parity/phytools` own toolkit-specific parity cases; the `parity/` root is reserved for cross-tool access policy.
 - `comparative/biogeography` owns geographic state, host-association, and phylogeography workflows so comparative regression and trait-evolution tests do not remain mixed with geography-specific surfaces.
+- `comparative/foundations` owns dataset readiness, shared comparative math, and model-matrix construction surfaces so low-level preparation and encoding behavior is separated from regression, optimization, and publication review.
 - `comparative/macroevolution` owns diversification, disparity, ecological-niche, and multispecies-coalescent review surfaces so those study-style analyses are separated from generic comparative reporting.
+- `comparative/optimization` owns shared bounded-search routing and scalar-fit diagnostics so comparative optimizers are separated from domain analyses that consume them.
 - `comparative/publication` owns comparative report bundles, figure packages, methods-summary exports, and trait-tree publication surfaces so public-output contracts are separated from analytical model checks.
 - `comparative/regression` owns PGLS, phylogenetic regression, clade-stability, residual, and signal-review surfaces so comparative statistics are separated from trait-evolution and geography-specific workflows.
 - `comparative/trait_evolution` owns trait-dynamics models, mode-recovery checks, and simulation surfaces so comparative regression and reporting tests do not remain mixed with evolution-specific workflows.
