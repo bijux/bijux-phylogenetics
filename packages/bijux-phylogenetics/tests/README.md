@@ -27,6 +27,7 @@ single flat namespace.
 ## Nested Boundaries
 
 - `parity/ape`, `parity/geiger`, and `parity/phytools` own toolkit-specific parity cases; the `parity/` root is reserved for cross-tool access policy.
+- `comparative/biogeography` owns geographic state, host-association, and phylogeography workflows so comparative regression and trait-evolution tests do not remain mixed with geography-specific surfaces.
 - `bayesian/sampling`, `bayesian/priors`, `bayesian/proposals`, `bayesian/models`, `bayesian/posterior`, and `bayesian/engines` separate sampling mechanics, prior families, proposal kernels, native model definitions, posterior analysis, and wrapper-facing execution surfaces.
 - `publication/integrity` owns release-surface equivalence and schema checks, `publication/packages` owns publication-bundle validation, and `publication/supplementary` owns table-generation surfaces.
 - `likelihood/search` owns topology-search heuristics, convergence, replay, and multi-start orchestration, `likelihood/starting_trees` owns starting-tree construction and validation surfaces, and `likelihood/inference` owns end-to-end inference and bootstrap workflows.
