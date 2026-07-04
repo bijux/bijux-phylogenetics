@@ -4,12 +4,14 @@ audience: maintainer
 type: handbook
 status: active
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-04
 ---
 
 # Public Trust Surface Maintenance
 
-This repository now has multiple public trust surfaces that must move together:
+This repository has several public trust surfaces that must move together.
+
+## Surfaces To Review Together
 
 - runtime architecture pages
 - native workflow guides
@@ -17,32 +19,21 @@ This repository now has multiple public trust surfaces that must move together:
 - evidence-book navigation guides
 - package metadata and package READMEs
 
-If those surfaces drift, the repository starts looking broader or cleaner than
-its governed evidence actually supports.
+## Why This Matters
 
-## Surfaces To Review Together
-
-When one major public capability changes, review all of these together:
-
-- `README.md`
-- package `README.md` files
-- `docs/phylogenetics/architecture/`
-- `docs/phylogenetics/operations/`
-- `docs/phylogenetics/quality/`
-- `docs/phylogenetics-evidence-book/`
-- package `pyproject.toml` metadata
+If those surfaces drift, the repository can start looking broader, cleaner, or
+more mature than its governed evidence actually supports.
 
 ## Questions To Ask
 
-- does the architecture section still describe the real package and runtime
-  ownership split
-- do workflow guides still match the supported native and wrapper-backed
-  surfaces
-- does the release review guide still point to the real governed report and
-  gate surfaces
-- does the evidence-book overview avoid stale or contradictory summary claims
-- do package metadata and package README links still reinforce the same public
-  story
+- Does the architecture section still describe the real package and runtime
+  ownership split?
+- Do workflow guides still match the supported native and wrapper-backed
+  surfaces?
+- Does the release review guide still point to the real governed report and
+  gate surfaces?
+- Does the evidence-book overview avoid stale or contradictory summary claims?
+- Do package metadata and package README links reinforce the same public story?
 
 ## Common Failure Pattern
 
@@ -53,5 +44,5 @@ The common failure is not one missing page. It is partial alignment:
 - evidence pages still summarize old status
 - release pages still describe the previous review flow
 
-That is the point where the repository starts looking polished in fragments
-instead of coherent as one release surface.
+That is when the repository starts looking polished in fragments instead of
+coherent as one release surface.

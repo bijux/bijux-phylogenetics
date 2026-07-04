@@ -4,25 +4,14 @@ audience: maintainer
 type: handbook
 status: active
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-04
 ---
 
 # Public Interface And Artifact Maintenance
 
-The repository now documents several distinct public interface layers:
-
-- surface-selection guidance
-- CLI and Python reference pages
-- native inference reference pages
-- artifact contract and artifact consumption guides
-- package metadata links to those guides
-
-Those layers should change together when one public workflow, native contract,
-or output family changes materially.
+The repository documents several public interface layers. Those layers include surface-selection guidance, CLI and Python reference pages, native inference reference pages, artifact guides, and metadata links. They should change together when a workflow, native contract, or output family changes materially.
 
 ## Review Surfaces Together
-
-When one public interface changes, review:
 
 - `docs/phylogenetics/interfaces/index.md`
 - `docs/phylogenetics/interfaces/surface-selection.md`
@@ -34,19 +23,18 @@ When one public interface changes, review:
 
 ## Questions To Ask
 
-- can one reader still choose the right public surface without reading the full
-  handbook
-- do the reference pages still point to the right practical guides
-- do artifact docs still name the stable output families honestly
-- do package metadata links still reinforce the same public interface story
-- has one new output family become stable enough that it now belongs in the
-  public artifact-contract surface
+- Can a reader still choose the right public surface quickly?
+- Do the reference pages still point to the right practical guides?
+- Do artifact docs still name stable output families honestly?
+- Do package metadata links reinforce the same public interface story?
+- Has a new output family become stable enough that it now belongs in the
+  public artifact-contract surface?
 
-## Failure Pattern
+## Common Drift Pattern
 
 The usual failure is partial interface drift:
 
-- one new runtime workflow exists
+- a new workflow exists
 - the workflow guide gets updated
 - interface selection still points readers elsewhere
 - artifact docs never mention the new stable outputs
