@@ -81,8 +81,7 @@ def test_release_pypi_matrix_relies_on_trusted_publish_defaults() -> None:
     matrix = json.loads(_release_var("BIJUX_PYPI_PACKAGE_MATRIX_JSON"))
 
     assert all(
-        isinstance(entry, dict) and "publish_auth" not in entry
-        for entry in matrix
+        isinstance(entry, dict) and "publish_auth" not in entry for entry in matrix
     )
 
 

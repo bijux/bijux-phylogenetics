@@ -103,8 +103,12 @@ def test_package_readmes_are_single_source_and_pypi_safe() -> None:
         Path("packages/phylogenetic/README.md"),
     ):
         text = path.read_text(encoding="utf-8")
-        assert GENERATED_BLOCK_RE.search(text), f"{path} is missing the managed badge block"
-        assert "```mermaid" not in text, f"{path} must stay Mermaid-free for single-source PyPI publishing"
+        assert GENERATED_BLOCK_RE.search(text), (
+            f"{path} is missing the managed badge block"
+        )
+        assert "```mermaid" not in text, (
+            f"{path} must stay Mermaid-free for single-source PyPI publishing"
+        )
         assert not path.with_name("README.pypi.md").exists(), (
             f"{path} should be the single package README source"
         )
