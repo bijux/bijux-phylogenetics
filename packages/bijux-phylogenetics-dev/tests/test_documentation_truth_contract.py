@@ -202,13 +202,6 @@ def test_public_evidence_and_release_guides_avoid_fragile_summary_claims() -> No
     evidence_index = _read(
         REPO_ROOT / "docs" / "public" / "phylogenetics-evidence-book" / "index.md"
     )
-    evidence_reading_guide = _read(
-        REPO_ROOT
-        / "docs"
-        / "public"
-        / "phylogenetics-evidence-book"
-        / "reading-guide.md"
-    )
     release_review_workflow = _read(
         REPO_ROOT
         / "docs"
@@ -226,13 +219,20 @@ def test_public_evidence_and_release_guides_avoid_fragile_summary_claims() -> No
         / "release-and-publication-gates.md"
     )
 
-    assert "evidence book reading guide" in evidence_index
     assert "Treat those checked-in reports as the current source of truth" in (
         evidence_index
     )
     assert "teaching studies: `0`" not in evidence_index
     assert "migration studies: `0`" not in evidence_index
-    assert "Core Reading Order" in evidence_reading_guide
+    assert "Core Reading Order" in evidence_index
+    assert "Start with PCM1" in evidence_index
+    assert not (
+        REPO_ROOT
+        / "docs"
+        / "public"
+        / "phylogenetics-evidence-book"
+        / "reading-guide.md"
+    ).exists()
     assert "make report-publish-readiness" in release_review_workflow
     assert "make check-release-readiness" in release_review_workflow
     assert "bijux-phylogenetics report release-truth" in release_review_workflow
