@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "phylogenetic"
 description = "Compatibility alias package for the canonical native phylogenetics runtime."
-readme = "README.md"
+readme = "README.pypi.md"
 requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
 license-files = []
@@ -79,6 +79,7 @@ raw-options = { git_describe_command = "git describe --dirty --tags --long --mat
 
 [tool.hatch.build]
 include = [
+    "README.pypi.md",
     "README.md",
     "CHANGELOG.md",
     "src/phylogenetic/**",
@@ -87,6 +88,7 @@ include = [
 [tool.hatch.build.targets.sdist]
 exclude = ["LICENSE", "NOTICE", "tests"]
 include = [
+    "README.pypi.md",
     "README.md",
     "CHANGELOG.md",
     "src/phylogenetic/**",

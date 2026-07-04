@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "bijux-phylogenetics"
 description = "Native phylogenetic runtime, comparative workflows, and evidence-linked reporting."
-readme = "README.md"
+readme = "README.pypi.md"
 requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
 license-files = []
@@ -91,6 +91,7 @@ raw-options = { git_describe_command = "git describe --dirty --tags --long --mat
 
 [tool.hatch.build]
 include = [
+    "README.pypi.md",
     "README.md",
     "CHANGELOG.md",
     "src/bijux_phylogenetics/**",
@@ -99,6 +100,7 @@ include = [
 [tool.hatch.build.targets.sdist]
 exclude = ["LICENSE", "NOTICE", "tests"]
 include = [
+    "README.pypi.md",
     "README.md",
     "CHANGELOG.md",
     "src/bijux_phylogenetics/**",
