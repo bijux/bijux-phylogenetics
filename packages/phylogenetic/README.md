@@ -26,12 +26,11 @@ shorter `phylogenetic` package and CLI names. It is not a reduced runtime and
 it is not a fork. It points at the same benchmark, workflow, and reporting
 surfaces that the canonical package publishes.
 
-```mermaid
-flowchart LR
-    A[phylogenetic] --> B[Shorter install name]
-    A --> C[Shorter CLI name]
-    A --> D[Same canonical runtime behavior]
-```
+## Alias Structure At A Glance
+
+- shorter install name
+- shorter CLI name
+- same canonical runtime behavior
 
 ## Install
 
@@ -68,6 +67,58 @@ keeping the same public runtime contract.
 Choose the canonical `bijux-phylogenetics` package instead when you want the
 most explicit package name for notebooks, papers, release notes, or downstream
 documentation.
+
+## Shorter Python Workflow Surface
+
+The alias keeps the same workflow API surface under the shorter
+`phylogenetic.api` import path.
+
+```python
+from pathlib import Path
+
+from phylogenetic.api import (
+    render_report_workflow,
+    run_comparative_model_workflow,
+    run_sequence_to_tree_workflow,
+)
+
+workflow = run_sequence_to_tree_workflow(
+    Path("dataset/sequences.fasta"),
+    out_dir=Path("artifacts/sequence-to-tree"),
+    sequence_type="dna",
+)
+
+comparative = run_comparative_model_workflow(
+    Path("dataset/tree.nwk"),
+    Path("dataset/traits.tsv"),
+    response="response",
+    predictors=["predictor_one"],
+    lambda_value=1.0,
+)
+
+report = render_report_workflow(
+    tree_path=workflow.output_paths["tree"],
+    alignment_path=workflow.output_paths["trimmed_alignment"],
+    traits_path=Path("dataset/traits.tsv"),
+    metadata_path=Path("dataset/metadata.tsv"),
+    out_path=Path("artifacts/sequence-to-tree/report.html"),
+)
+
+workflow.write_json(Path("artifacts/sequence-to-tree/workflow.json"))
+workflow.write_tsv(Path("artifacts/sequence-to-tree/workflow.tsv"))
+comparative.write_tsv(Path("artifacts/comparative-model.tsv"))
+```
+
+Use the alias when you want the shorter import and command surface:
+
+- `from phylogenetic.api import ...`
+- `phylogenetic --help`
+
+Use the canonical runtime name when you want the most explicit package name in
+public artifacts, papers, release notes, or downstream documentation:
+
+- `from bijux_phylogenetics.api import ...`
+- `bijux-phylogenetics --help`
 
 ## Read This Next
 

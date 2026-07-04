@@ -31,16 +31,16 @@ generation.
 Choose this package when you want the full runtime contract rather than the
 shorter compatibility alias.
 
-```mermaid
-flowchart TD
-    A[Runtime package] --> B[CLI workflows]
-    A --> C[Workflow Python API]
-    A --> D[Native runtime contracts]
-    D --> E[Likelihood]
-    D --> F[Maximum-likelihood inference]
-    D --> G[Bayesian inference]
-    D --> H[Benchmark contracts]
-```
+## Package Structure At A Glance
+
+- runtime package
+- CLI workflows
+- workflow Python API
+- native runtime contracts
+- likelihood foundations
+- maximum-likelihood inference
+- Bayesian inference
+- benchmark contracts
 
 ## Install
 
@@ -107,14 +107,13 @@ in separate projects:
 
 ## Public Runtime Families
 
-```mermaid
-flowchart LR
-    A[bijux-phylogenetics] --> B[CLI workflows]
-    A --> C[Workflow Python]
-    A --> D[Native runtime]
-    A --> E[Comparative analysis]
-    A --> F[Reports and artifacts]
-```
+The public runtime families are:
+
+- CLI workflows
+- workflow Python APIs
+- native runtime modules
+- comparative analysis
+- reports and artifacts
 
 ## Python Workflow Surface
 

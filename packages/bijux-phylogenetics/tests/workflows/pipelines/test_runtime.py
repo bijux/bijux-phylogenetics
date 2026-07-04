@@ -12609,3 +12609,60 @@ def test_public_package_exports_python_workflow_api_surface() -> None:
     assert workflow_api.run_tree_inference_workflow is run_tree_inference_workflow
     assert workflow_api.run_trimming_workflow is run_trimming_workflow
     assert workflow_api.render_report_workflow is render_report_workflow
+
+
+def test_alias_package_exports_python_workflow_api_surface() -> None:
+    import phylogenetic.api as workflow_api
+    from phylogenetic.api import (
+        AlignmentWorkflowResult,
+        AncestralReconstructionWorkflowResult,
+        ComparativeModelWorkflowResult,
+        ConfiguredPhyloWorkflowResult,
+        FastaValidationResult,
+        InferenceWorkflowResult,
+        ReportWorkflowResult,
+        SequenceToTreeWorkflowResult,
+        SupportWorkflowResult,
+        TreeComparisonWorkflowResult,
+        TrimmingWorkflowResult,
+        render_report_workflow,
+        run_alignment_workflow,
+        run_ancestral_reconstruction_workflow,
+        run_comparative_model_workflow,
+        run_configured_phylo_workflow,
+        run_fasta_validation_workflow,
+        run_sequence_to_tree_workflow,
+        run_support_workflow,
+        run_tree_comparison_workflow,
+        run_tree_inference_workflow,
+        run_trimming_workflow,
+    )
+
+    assert workflow_api.AlignmentWorkflowResult is AlignmentWorkflowResult
+    assert (
+        workflow_api.AncestralReconstructionWorkflowResult
+        is AncestralReconstructionWorkflowResult
+    )
+    assert workflow_api.ComparativeModelWorkflowResult is ComparativeModelWorkflowResult
+    assert workflow_api.ConfiguredPhyloWorkflowResult is ConfiguredPhyloWorkflowResult
+    assert workflow_api.FastaValidationResult is FastaValidationResult
+    assert workflow_api.InferenceWorkflowResult is InferenceWorkflowResult
+    assert workflow_api.ReportWorkflowResult is ReportWorkflowResult
+    assert workflow_api.SequenceToTreeWorkflowResult is SequenceToTreeWorkflowResult
+    assert workflow_api.SupportWorkflowResult is SupportWorkflowResult
+    assert workflow_api.TreeComparisonWorkflowResult is TreeComparisonWorkflowResult
+    assert workflow_api.TrimmingWorkflowResult is TrimmingWorkflowResult
+    assert workflow_api.run_alignment_workflow is run_alignment_workflow
+    assert (
+        workflow_api.run_ancestral_reconstruction_workflow
+        is run_ancestral_reconstruction_workflow
+    )
+    assert workflow_api.run_comparative_model_workflow is run_comparative_model_workflow
+    assert workflow_api.run_configured_phylo_workflow is run_configured_phylo_workflow
+    assert workflow_api.run_fasta_validation_workflow is run_fasta_validation_workflow
+    assert workflow_api.run_sequence_to_tree_workflow is run_sequence_to_tree_workflow
+    assert workflow_api.run_support_workflow is run_support_workflow
+    assert workflow_api.run_tree_comparison_workflow is run_tree_comparison_workflow
+    assert workflow_api.run_tree_inference_workflow is run_tree_inference_workflow
+    assert workflow_api.run_trimming_workflow is run_trimming_workflow
+    assert workflow_api.render_report_workflow is render_report_workflow

@@ -77,6 +77,14 @@ def test_release_matrices_include_canonical_and_alias_packages() -> None:
         assert slugs == EXPECTED_RELEASE_PACKAGES
 
 
+def test_release_pypi_matrix_relies_on_trusted_publish_defaults() -> None:
+    matrix = json.loads(_release_var("BIJUX_PYPI_PACKAGE_MATRIX_JSON"))
+
+    assert all(
+        isinstance(entry, dict) and "publish_auth" not in entry for entry in matrix
+    )
+
+
 def test_verify_workflow_checks_canonical_alias_and_dev_packages() -> None:
     workflow = _workflow(WORKFLOWS_DIR / "verify.yml")
     jobs = _as_dict(workflow.get("jobs"))

@@ -8,6 +8,23 @@ release notes belong to each distribution under `packages/`.
 Use this changelog for workspace changes that affect multiple packages or
 change contributor and maintainer workflows across the repository.
 
+## 0.1.2 - 2026-07-05
+
+### Changed
+
+- Restored managed badge blocks to the single package `README.md` surfaces so
+  the published package pages keep their quick trust and navigation cues
+  without splitting package documentation into repository and PyPI variants.
+- Raised the next release line to `0.1.2` across repository and package
+  fallback-version metadata so local builds, tagged releases, and publish
+  checks point at one coherent post-`0.1.1` target.
+- Advanced the alias-package dependency floor and the repository-owned
+  publish-readiness policies to `bijux-phylogenetics>=0.1.2,<1.0` so release
+  governance matches the next canonical runtime publication line.
+- Added maintainer-side badge and workflow guards that keep package readmes
+  synchronized, Mermaid-free, and trusted-publisher-ready ahead of the
+  `0.1.2` release.
+
 ## 0.1.1 - 2026-07-05
 
 ### Changed

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.2 - 2026-07-05
+
+### Changed
+
+- Restored the managed badge block on the single package README surface so the
+  package page keeps release, docs, and distribution links without splitting
+  package documentation into separate repository and PyPI variants.
+- Removed Mermaid-only package README sections so the same README renders
+  cleanly on PyPI while remaining the single package documentation source.
+
 ## 0.1.1 - 2026-07-05
 
 ### Changed
