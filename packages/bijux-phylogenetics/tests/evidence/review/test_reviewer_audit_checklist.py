@@ -12,7 +12,7 @@ from bijux_phylogenetics.reports import (
 )
 from bijux_phylogenetics.reports.publication.tree import build_tree_report_package
 
-FIXTURES = Path(__file__).parent / "fixtures"
+FIXTURES = Path(__file__).resolve().parents[2] / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
 
 
@@ -28,7 +28,7 @@ def fixture(name: str) -> Path:
 
 
 def tree_fixture(name: str) -> Path:
-    return Path(__file__).parent / "fixtures" / "trees" / name
+    return FIXTURES / "trees" / name
 
 
 def test_build_reviewer_audit_checklist_supports_tree_package_manifests(

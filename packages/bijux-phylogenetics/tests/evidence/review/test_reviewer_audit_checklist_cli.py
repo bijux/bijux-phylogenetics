@@ -8,7 +8,7 @@ from bijux_phylogenetics.reports.publication.tree import build_tree_report_packa
 
 
 def tree_fixture(name: str) -> Path:
-    return Path(__file__).parent / "fixtures" / "trees" / name
+    return Path(__file__).resolve().parents[2] / "fixtures" / "trees" / name
 
 
 def test_cli_report_reviewer_audit_checklist_writes_tsv(tmp_path: Path, capsys) -> None:
