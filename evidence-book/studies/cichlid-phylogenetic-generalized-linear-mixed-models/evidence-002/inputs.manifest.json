@@ -46,7 +46,7 @@
       "label": "source-1",
       "locator": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/provenance/lund-course-sources.json",
       "read_only": true,
-      "sha256": "61cd2e1dd10222bc5401440336104ad58ef34d4bcd6c1fb68213ffa67c59ba14"
+      "sha256": "f3807ea98dfe784a553b34d53d9302d26a7329fb690f11b06d486aeae7740b79"
     },
     {
       "input_id": "source-input-002",
@@ -54,7 +54,7 @@
       "label": "source-2",
       "locator": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/registry.json",
       "read_only": true,
-      "sha256": "bf41d5a346acf7c3c5d95b732a7e0adb47f07aa80ea27807c2d7e42013567a5e"
+      "sha256": "9368ca7cd7acd4b57ecf949c096d155a14781f132e90fafc5fa04963d07c8f37"
     },
     {
       "input_id": "source-input-003",
@@ -62,15 +62,14 @@
       "label": "source-3",
       "locator": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/reference/README.md",
       "read_only": true,
-      "sha256": "83b7afe39d2d6b3563f282400a7b44f4f02b3191ab501fa1f1106267d3e2977a"
+      "sha256": "65904276fe22df4ed6456b424d78b88ead8ee22279f71b5c3fccd0dd1970dab7"
     },
     {
       "input_id": "source-input-004",
       "kind": "repository-reference",
       "label": "source-4",
       "locator": "packages/bijux-phylogenetics/tests/test_phylogenetic_logistic.py",
-      "read_only": true,
-      "sha256": "03652a3681426f137fde980961c59046f858377ef76f38f37f1f6f8d21ea399b"
+      "read_only": true
     }
   ],
   "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"

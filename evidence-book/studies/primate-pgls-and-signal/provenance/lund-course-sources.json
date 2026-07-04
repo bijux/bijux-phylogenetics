@@ -14,7 +14,7 @@
       "label": "Lund PCM2 modes and PGLS lecture script",
       "locator": "evidence-book/studies/primate-pgls-and-signal/reference/lund_pcm2_modes_pgls_source.R",
       "path_hint": "PCM2_modes_pgls/Lecture/R/Scripts/PCM2_modes_pgls.R",
-      "read_only": false,
+      "read_only": true,
       "source_id": "lund-pcm2-script"
     },
     {
@@ -25,7 +25,7 @@
         "primate",
         "primatetree"
       ],
-      "read_only": false,
+      "read_only": true,
       "source_id": "lund-primate-rdata"
     },
     {
@@ -33,7 +33,7 @@
       "label": "Checked-in PCM2 primate raw workbook",
       "locator": "evidence-book/studies/primate-pgls-and-signal/datasets/primate_raw.xlsx",
       "path_hint": "PCM2_modes_pgls/Lecture/R/Data/primate_raw.xlsx",
-      "read_only": false,
+      "read_only": true,
       "source_id": "lund-pcm2-primate-workbook"
     },
     {
@@ -41,7 +41,7 @@
       "label": "Checked-in PCM2 primate tree",
       "locator": "evidence-book/studies/primate-pgls-and-signal/datasets/primatetree.nex",
       "path_hint": "PCM2_modes_pgls/Lecture/R/Data/primatetree.nex",
-      "read_only": false,
+      "read_only": true,
       "source_id": "lund-pcm2-primate-tree"
     },
     {

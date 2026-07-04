@@ -14,7 +14,7 @@
       "label": "Lund PCM3 continuous and categorical regression lecture script",
       "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/reference/lund_pcm3_contcat_source.R",
       "path_hint": "PCM3_contcat/Lecture/R/Scripts/PCM3_contcat.R",
-      "read_only": false,
+      "read_only": true,
       "source_id": "lund-pcm3-script"
     },
     {
@@ -25,7 +25,7 @@
         "primate",
         "primatetree"
       ],
-      "read_only": false,
+      "read_only": true,
       "source_id": "lund-pcm3-primate-rdata"
     },
     {
@@ -33,7 +33,7 @@
       "label": "Checked-in PCM3 primate raw workbook",
       "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/primate_raw.xlsx",
       "path_hint": "PCM3_contcat/Lecture/R/Data/primate_raw.xlsx",
-      "read_only": false,
+      "read_only": true,
       "source_id": "lund-pcm3-primate-workbook"
     },
     {
@@ -41,7 +41,7 @@
       "label": "Checked-in PCM3 primate tree",
       "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/primatetree.nex",
       "path_hint": "PCM3_contcat/Lecture/R/Data/primatetree.nex",
-      "read_only": false,
+      "read_only": true,
       "source_id": "lund-pcm3-primate-tree"
     },
     {

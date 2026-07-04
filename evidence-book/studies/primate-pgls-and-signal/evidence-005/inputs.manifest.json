@@ -24,7 +24,7 @@
       "label": "results/residual-diagnostics-parity.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-005/results/residual-diagnostics-parity.json",
       "read_only": false,
-      "sha256": "253e9850df0e740d5a23566845a0006e9d492a9626a9ae3452850c0fc60e8b60"
+      "sha256": "fc68017c8936b49291139e92ef314edb706dc9a71b09c31091a6ac41233efa2c"
     },
     {
       "input_id": "local-input-004",
@@ -32,7 +32,7 @@
       "label": "results/reviewer-summary.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-005/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "7511dba6df47b506c4f3566111d2536bfa49d15979a3622132c194f17d2467b2"
+      "sha256": "a39ccac762d8662a0bb0e3284f3f01eb97bc919b0dece357457e26415061f3a2"
     },
     {
       "input_id": "local-input-005",
@@ -54,7 +54,7 @@
       "label": "Lund source descriptors",
       "locator": "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
       "read_only": true,
-      "sha256": "73b4d1935c206db3ca294e1d8b4c5881870977f65f15efd21f73cd7d9aaae829"
+      "sha256": "32a82446e10198f4b0e8c7b53e668c1e2a0014375f59f2c838a6dc3172b968d2"
     },
     {
       "input_id": "source-input-002",

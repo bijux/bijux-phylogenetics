@@ -128,7 +128,7 @@
       "label": "results/reviewer-summary.json",
       "locator": "evidence-book/studies/primate-longevity-signal/evidence-001/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "d6d07e1aa35f90cb35fe2438806a16bc7e1d32708ed293030a94eb86ea261002"
+      "sha256": "e887d786dcb9c0eb6e30d5259d0f2763ec6a4e5c81178757f232fed0c92a8324"
     },
     {
       "input_id": "local-input-017",
@@ -244,10 +244,11 @@
       "kind": "external-course-material",
       "label": "lund pcm1 plots signal script",
       "locator": "evidence-book/studies/primate-longevity-signal/reference/lund_pcm1_plots_signal_source.R",
-      "read_only": true
+      "read_only": true,
+      "sha256": "a4ac26a8fe4d93a66d265114ce0eb01466be99991e924e2d29998f7e1f4d3587"
     },
     {
-      "entry_count": 3,
+      "entry_count": 4,
       "input_id": "source-input-002",
       "kind": "repository-reference",
       "label": "checked-in primate signal reference scripts",

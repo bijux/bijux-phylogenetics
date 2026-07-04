@@ -24,7 +24,7 @@
       "label": "results/pagel-lambda-regression-parity.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-003/results/pagel-lambda-regression-parity.json",
       "read_only": false,
-      "sha256": "b1ee622b044eef75f09d80fe1d8b63d151a20e6ce054b2acf5bb91aa7505cc3d"
+      "sha256": "5787666fe24cc923cb63cc14e9ea6bb260b357113114e3d9a110af19f456962c"
     },
     {
       "input_id": "local-input-004",
@@ -32,7 +32,7 @@
       "label": "results/reviewer-summary.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-003/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "ac4113ebc73d905183fcd51292ef2ac2c70f27c1f9dd2244898f49a130e8b9e1"
+      "sha256": "e66af50b798fdcf51ba6ab3c791831fbdfa8de4f76bffcc00bc0d8ec811ef615"
     },
     {
       "input_id": "local-input-005",
@@ -54,7 +54,7 @@
       "label": "Lund source descriptors",
       "locator": "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
       "read_only": true,
-      "sha256": "73b4d1935c206db3ca294e1d8b4c5881870977f65f15efd21f73cd7d9aaae829"
+      "sha256": "32a82446e10198f4b0e8c7b53e668c1e2a0014375f59f2c838a6dc3172b968d2"
     },
     {
       "input_id": "source-input-002",

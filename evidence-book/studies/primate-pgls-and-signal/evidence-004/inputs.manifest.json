@@ -24,7 +24,7 @@
       "label": "results/phylogenetic-signal-parity.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-004/results/phylogenetic-signal-parity.json",
       "read_only": false,
-      "sha256": "dbd5c219ba24c3a132fe66248f9004bfafcfb4d435486a7490d164a749e732eb"
+      "sha256": "95dd7651af20addb3c642197c040749984ae20c27719869ce83ed616c8541c74"
     },
     {
       "input_id": "local-input-004",
@@ -32,7 +32,7 @@
       "label": "results/reviewer-summary.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-004/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "116b3a04adbb5c1a386d45dcca0da6cad1734b85fe19f007974831e719893387"
+      "sha256": "76acb8357f9d0b0d48e8d039ab05ff231c1bd2fbe94870aadeba0c510395a11d"
     },
     {
       "input_id": "local-input-005",
@@ -54,7 +54,7 @@
       "label": "Lund source descriptors",
       "locator": "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
       "read_only": true,
-      "sha256": "73b4d1935c206db3ca294e1d8b4c5881870977f65f15efd21f73cd7d9aaae829"
+      "sha256": "32a82446e10198f4b0e8c7b53e668c1e2a0014375f59f2c838a6dc3172b968d2"
     },
     {
       "input_id": "source-input-002",

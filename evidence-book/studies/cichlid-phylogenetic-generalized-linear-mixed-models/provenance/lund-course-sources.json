@@ -15,7 +15,7 @@
       "label": "Lund PCM5 phylogenetic generalized linear mixed-model lecture script",
       "locator": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/reference/PCM5_PGLMM.R",
       "path_hint": "PCM5_PGLMM/Lecture/R/Scripts/PCM5_PGLMM.R",
-      "read_only": false,
+      "read_only": true,
       "source_id": "lund-pcm5-script"
     },
     {
@@ -23,7 +23,7 @@
       "label": "Lund PCM5 supplementary code for back-transform and mixed-model variations",
       "locator": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/reference/PCM5_extra_code.R",
       "path_hint": "PCM5_PGLMM/Lecture/R/Scripts/PCM5_extra_code.R",
-      "read_only": false,
+      "read_only": true,
       "source_id": "lund-pcm5-extra-script"
     },
     {
@@ -31,7 +31,7 @@
       "label": "Checked-in PCM5 cichlid observation table",
       "locator": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/cichlid.csv",
       "path_hint": "PCM5_PGLMM/Lecture/R/Data/cichlid.csv",
-      "read_only": false,
+      "read_only": true,
       "source_id": "lund-pcm5-cichlid-table"
     },
     {
@@ -39,7 +39,7 @@
       "label": "Checked-in PCM5 cichlid phylogeny",
       "locator": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/cichlidtree.nex",
       "path_hint": "PCM5_PGLMM/Lecture/R/Data/cichlidtree.nex",
-      "read_only": false,
+      "read_only": true,
       "source_id": "lund-pcm5-cichlid-tree"
     },
     {
@@ -51,7 +51,7 @@
         "fishSum",
         "fishtree"
       ],
-      "read_only": false,
+      "read_only": true,
       "source_id": "lund-pcm5-fishdata-rdata"
     }
   ],

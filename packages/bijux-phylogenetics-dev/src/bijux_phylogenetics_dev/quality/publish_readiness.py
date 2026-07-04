@@ -84,6 +84,11 @@ def _is_repo_relative_locator(locator: str) -> bool:
     return not locator.startswith("external:")
 
 
+def _repo_locator_path(repo_root: Path, locator: str) -> Path:
+    path_text, _, _fragment = locator.partition("#")
+    return repo_root / path_text
+
+
 def _source_intake_policy_matches(intake_policy: str, sources: list[object]) -> bool:
     locators = [
         str(locator)
@@ -504,7 +509,7 @@ def build_evidence_reproducibility_inventory(
             entry = _as_dict(dataset_payload)
             locator = entry.get("locator")
             if isinstance(locator, str) and _is_repo_relative_locator(locator):
-                target = repo_root / locator
+                target = _repo_locator_path(repo_root, locator)
                 if target.exists() and target.is_file():
                     entry["sha256"] = _sha256(target)
                     repo_dataset_checksum_count += 1

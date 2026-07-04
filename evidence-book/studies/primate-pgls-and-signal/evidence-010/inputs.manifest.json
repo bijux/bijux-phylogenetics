@@ -32,7 +32,7 @@
       "label": "results/reviewer-summary.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-010/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "fdf9fe75ba7db35fcba0c57f61e28ff975e923bce9cc78b044ad976d4de6c227"
+      "sha256": "075203be4e3cc43bd30da0361120f87ba3b674f15bfb4aad464bdcc60975f1c9"
     },
     {
       "input_id": "local-input-005",
@@ -54,7 +54,7 @@
       "label": "Lund source descriptors",
       "locator": "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
       "read_only": true,
-      "sha256": "73b4d1935c206db3ca294e1d8b4c5881870977f65f15efd21f73cd7d9aaae829"
+      "sha256": "32a82446e10198f4b0e8c7b53e668c1e2a0014375f59f2c838a6dc3172b968d2"
     },
     {
       "input_id": "source-input-002",

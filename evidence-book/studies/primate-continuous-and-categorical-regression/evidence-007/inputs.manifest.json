@@ -46,7 +46,7 @@
       "label": "source-1",
       "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/provenance/lund-course-sources.json",
       "read_only": true,
-      "sha256": "c667353dca9e12b50c6b8aa15ba4410a211daa0e2601d128ce61094c64d9b57f"
+      "sha256": "e840082c1b622f4980b681becede685755664fba24418c7dfbd630b8970d0686"
     },
     {
       "input_id": "source-input-002",
@@ -54,7 +54,7 @@
       "label": "source-2",
       "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/registry.json",
       "read_only": true,
-      "sha256": "5b98ab20f6e741728b7e38a1f3ea50b03f8d97ee72a08be85fbe77022b12afa5"
+      "sha256": "21a5dc51c16a8577039cc29702df93f3a47345d0a70450e9b97f48b8432a1e90"
     },
     {
       "input_id": "source-input-003",
@@ -62,23 +62,21 @@
       "label": "source-3",
       "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/reference/README.md",
       "read_only": true,
-      "sha256": "53249c3fb528decada974dc2b3558697c569bd82587187373aa6378a1e41c2a2"
+      "sha256": "10a041fad3871bf29fe048cc540b1b2bb8dd9080f1cb033aef03efc4e5cb8ec7"
     },
     {
       "input_id": "source-input-004",
       "kind": "repository-reference",
       "label": "source-4",
       "locator": "packages/bijux-phylogenetics/tests/test_pgls_interaction_coefficients.py",
-      "read_only": true,
-      "sha256": "30f53e02273af20234c128ccd4f153c8d8dd8ec64f83f695e0f75fe6e108ee2d"
+      "read_only": true
     },
     {
       "input_id": "source-input-005",
       "kind": "repository-reference",
       "label": "source-5",
       "locator": "packages/bijux-phylogenetics/tests/test_regression_model_selection.py",
-      "read_only": true,
-      "sha256": "88234878ffd341b19ebae6869f8b382d44c02aed44fbf5cdbbe93cc02313cd3a"
+      "read_only": true
     }
   ],
   "study_id": "primate-continuous-and-categorical-regression"

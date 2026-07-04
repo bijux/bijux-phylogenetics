@@ -32,7 +32,7 @@
       "label": "results/reviewer-summary.json",
       "locator": "evidence-book/studies/primate-longevity-signal/evidence-005/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "5eba0ff418393483252e407f459c1d0db01f74b29193fcdbbfa7c240a968fb8e"
+      "sha256": "1bc2465aa5b23e0316e4e12a84ebe6dffd218733bcf919a27edf7f387fd8a1ca"
     },
     {
       "input_id": "local-input-005",
@@ -40,7 +40,7 @@
       "label": "results/reviewer-summary.md",
       "locator": "evidence-book/studies/primate-longevity-signal/evidence-005/results/reviewer-summary.md",
       "read_only": false,
-      "sha256": "471de1d1f1823dcceec3718a15dd6e56bd4fa3f2605404176933f450ae0095dc"
+      "sha256": "6f5ba381748af84071ae7f703946fab2825893f8050f903d9d8d4d89b2e89a7f"
     }
   ],
   "local_input_count": 0,
