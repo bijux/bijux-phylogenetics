@@ -32,9 +32,15 @@ SECURITY_PYTHON_ENV := PYTHONPYCACHEPREFIX="$(abspath $(SECURITY_PYCACHE_PREFIX)
 
 include $(abspath $(dir $(lastword $(MAKEFILE_LIST))))/util.mk
 
-.PHONY: security security-bandit security-audit security-deps security-clean
+.PHONY: security security-bandit security-audit security-deps security-clean security-tooling
 
 security: security-bandit security-audit security-deps
+
+security-tooling:
+	@if ! "$(VENV_PYTHON)" -c "import pip_audit" >/dev/null 2>&1; then \
+	  echo "→ Installing pip-audit into $(VENV)"; \
+	  $(UV) pip install --python "$(VENV_PYTHON)" --upgrade pip-audit >/dev/null; \
+	fi
 
 security-bandit:
 	@mkdir -p "$(SECURITY_REPORT_DIR)"
@@ -50,7 +56,7 @@ security-bandit:
 	  if [ $$RC -ne 0 ] && [ "$(SECURITY_STRICT)" = "1" ]; then exit $$RC; fi; \
 	fi
 
-security-audit:
+security-audit: security-tooling
 	@mkdir -p "$(SECURITY_REPORT_DIR)"
 	@echo "→ Pip-audit (dependency vulnerability scan)"
 	@if [ "$(SECURITY_AUDIT_PREPARE_MODE)" = "pyproject" ]; then \
@@ -86,6 +92,7 @@ security-clean:
 
 ##@ Security
 security:        ## Run Bandit, pip-audit, and any package-specific dependency checks
+security-tooling: ## Ensure security audit tooling is installed in the active environment
 security-bandit: ## Run Bandit (screen + JSON artifact)
 security-audit:  ## Run pip-audit once, gate results, and write reports
 security-deps:   ## Run package-specific security helper targets when configured
