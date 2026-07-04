@@ -5,9 +5,7 @@ import tomllib
 from typing import cast
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-MAINTAINER_HANDBOOK_ROOT = (
-    REPO_ROOT / "docs" / "03-bijux-phylogenetics-maintain"
-)
+MAINTAINER_HANDBOOK_ROOT = REPO_ROOT / "docs" / "03-bijux-phylogenetics-maintain"
 
 
 def _read(path: Path) -> str:
@@ -46,7 +44,8 @@ def test_public_runtime_foundation_names_native_runtime_scope_honestly() -> None
 def test_public_native_inference_page_names_benchmark_and_bayesian_contracts() -> None:
     native_surface_page = _read(
         REPO_ROOT
-        / "docs" / "01-bijux-phylogenetics"
+        / "docs"
+        / "01-bijux-phylogenetics"
         / "interfaces"
         / "native-inference-and-benchmarks.md"
     )
@@ -63,25 +62,29 @@ def test_public_operations_pages_publish_native_flagship_workflows() -> None:
     )
     common_workflows = _read(
         REPO_ROOT
-        / "docs" / "01-bijux-phylogenetics"
+        / "docs"
+        / "01-bijux-phylogenetics"
         / "operations"
         / "common-workflows.md"
     )
     native_ml_workflows = _read(
         REPO_ROOT
-        / "docs" / "01-bijux-phylogenetics"
+        / "docs"
+        / "01-bijux-phylogenetics"
         / "operations"
         / "native-maximum-likelihood-workflows.md"
     )
     native_bayesian_workflows = _read(
         REPO_ROOT
-        / "docs" / "01-bijux-phylogenetics"
+        / "docs"
+        / "01-bijux-phylogenetics"
         / "operations"
         / "native-bayesian-workflows.md"
     )
     native_benchmark_review = _read(
         REPO_ROOT
-        / "docs" / "01-bijux-phylogenetics"
+        / "docs"
+        / "01-bijux-phylogenetics"
         / "operations"
         / "native-benchmark-review.md"
     )
@@ -106,19 +109,22 @@ def test_public_interface_guides_explain_surface_selection_and_artifact_use() ->
     )
     surface_selection = _read(
         REPO_ROOT
-        / "docs" / "01-bijux-phylogenetics"
+        / "docs"
+        / "01-bijux-phylogenetics"
         / "interfaces"
         / "surface-selection.md"
     )
     artifact_contracts = _read(
         REPO_ROOT
-        / "docs" / "01-bijux-phylogenetics"
+        / "docs"
+        / "01-bijux-phylogenetics"
         / "interfaces"
         / "artifact-contracts.md"
     )
     artifact_consumption = _read(
         REPO_ROOT
-        / "docs" / "01-bijux-phylogenetics"
+        / "docs"
+        / "01-bijux-phylogenetics"
         / "interfaces"
         / "artifact-consumption-guide.md"
     )
@@ -147,19 +153,22 @@ def test_public_architecture_pages_describe_package_roles_and_runtime_families()
     )
     package_map = _read(
         REPO_ROOT
-        / "docs" / "01-bijux-phylogenetics"
+        / "docs"
+        / "01-bijux-phylogenetics"
         / "architecture"
         / "package-map.md"
     )
     runtime_system_map = _read(
         REPO_ROOT
-        / "docs" / "01-bijux-phylogenetics"
+        / "docs"
+        / "01-bijux-phylogenetics"
         / "architecture"
         / "runtime-system-map.md"
     )
     evidence_boundary = _read(
         REPO_ROOT
-        / "docs" / "01-bijux-phylogenetics"
+        / "docs"
+        / "01-bijux-phylogenetics"
         / "architecture"
         / "evidence-consumer-boundary.md"
     )
@@ -185,13 +194,15 @@ def test_public_evidence_and_release_guides_avoid_fragile_summary_claims() -> No
     )
     release_review_workflow = _read(
         REPO_ROOT
-        / "docs" / "01-bijux-phylogenetics"
+        / "docs"
+        / "01-bijux-phylogenetics"
         / "quality"
         / "release-review-workflow.md"
     )
     release_gates = _read(
         REPO_ROOT
-        / "docs" / "01-bijux-phylogenetics"
+        / "docs"
+        / "01-bijux-phylogenetics"
         / "quality"
         / "release-and-publication-gates.md"
     )
@@ -204,9 +215,7 @@ def test_public_evidence_and_release_guides_avoid_fragile_summary_claims() -> No
     assert "Core Reading Order" in evidence_index
     assert "Start with PCM1" in evidence_index
     assert not (
-        REPO_ROOT
-        / "docs" / "02-bijux-phylogenetics-evidence-book"
-        / "reading-guide.md"
+        REPO_ROOT / "docs" / "02-bijux-phylogenetics-evidence-book" / "reading-guide.md"
     ).exists()
     assert "make report-publish-readiness" in release_review_workflow
     assert "make check-release-readiness" in release_review_workflow
@@ -221,7 +230,8 @@ def test_public_quality_and_foundation_guides_explain_trust_boundaries() -> None
     )
     validation_lanes = _read(
         REPO_ROOT
-        / "docs" / "01-bijux-phylogenetics"
+        / "docs"
+        / "01-bijux-phylogenetics"
         / "quality"
         / "validation-lanes.md"
     )
@@ -233,13 +243,15 @@ def test_public_quality_and_foundation_guides_explain_trust_boundaries() -> None
     )
     claim_reading_guide = _read(
         REPO_ROOT
-        / "docs" / "01-bijux-phylogenetics"
+        / "docs"
+        / "01-bijux-phylogenetics"
         / "foundation"
         / "claim-reading-guide.md"
     )
     evidence_boundary = _read(
         REPO_ROOT
-        / "docs" / "01-bijux-phylogenetics"
+        / "docs"
+        / "01-bijux-phylogenetics"
         / "foundation"
         / "evidence-boundary.md"
     )
@@ -264,37 +276,43 @@ def test_public_quality_and_foundation_guides_explain_trust_boundaries() -> None
 def test_public_pcm_study_guides_name_scope_order_and_boundaries() -> None:
     pcm1_index = _read(
         REPO_ROOT
-        / "docs" / "02-bijux-phylogenetics-evidence-book"
+        / "docs"
+        / "02-bijux-phylogenetics-evidence-book"
         / "pcm1-primate-longevity-signal"
         / "index.md"
     )
     pcm1_preparation = _read(
         REPO_ROOT
-        / "docs" / "02-bijux-phylogenetics-evidence-book"
+        / "docs"
+        / "02-bijux-phylogenetics-evidence-book"
         / "pcm1-primate-longevity-signal"
         / "data-and-tree-preparation.md"
     )
     pcm1_results = _read(
         REPO_ROOT
-        / "docs" / "02-bijux-phylogenetics-evidence-book"
+        / "docs"
+        / "02-bijux-phylogenetics-evidence-book"
         / "pcm1-primate-longevity-signal"
         / "signal-and-ancestral-results.md"
     )
     pcm2_index = _read(
         REPO_ROOT
-        / "docs" / "02-bijux-phylogenetics-evidence-book"
+        / "docs"
+        / "02-bijux-phylogenetics-evidence-book"
         / "pcm2-primate-pgls-and-signal"
         / "index.md"
     )
     pcm2_models = _read(
         REPO_ROOT
-        / "docs" / "02-bijux-phylogenetics-evidence-book"
+        / "docs"
+        / "02-bijux-phylogenetics-evidence-book"
         / "pcm2-primate-pgls-and-signal"
         / "model-comparisons-and-pgls.md"
     )
     pcm2_boundaries = _read(
         REPO_ROOT
-        / "docs" / "02-bijux-phylogenetics-evidence-book"
+        / "docs"
+        / "02-bijux-phylogenetics-evidence-book"
         / "pcm2-primate-pgls-and-signal"
         / "signal-diagnostics-and-open-boundaries.md"
     )
@@ -400,9 +418,7 @@ def test_package_readmes_link_package_roles_to_native_runtime_and_docs() -> None
 def test_maintainer_docs_name_native_surface_documentation_rule() -> None:
     maintainer_index = _read(MAINTAINER_HANDBOOK_ROOT / "index.md")
     ownership = _read(
-        MAINTAINER_HANDBOOK_ROOT
-        / "documentation-system"
-        / "documentation-ownership.md"
+        MAINTAINER_HANDBOOK_ROOT / "documentation-system" / "documentation-ownership.md"
     )
     native_surface_documentation = _read(
         MAINTAINER_HANDBOOK_ROOT

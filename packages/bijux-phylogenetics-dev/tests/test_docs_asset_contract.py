@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any, cast
 
 import yaml
 
@@ -11,7 +12,12 @@ class MkDocsLoader(yaml.SafeLoader):
     """SafeLoader that tolerates MkDocs python/name tags."""
 
 
-def _construct_unknown(loader: MkDocsLoader, tag_suffix: str, node: yaml.Node):
+def _construct_unknown(
+    loader: MkDocsLoader,
+    tag_suffix: str,
+    node: yaml.Node,
+) -> object | None:
+    del tag_suffix
     if isinstance(node, yaml.ScalarNode):
         return loader.construct_scalar(node)
     if isinstance(node, yaml.SequenceNode):
@@ -21,11 +27,12 @@ def _construct_unknown(loader: MkDocsLoader, tag_suffix: str, node: yaml.Node):
     return None
 
 
-MkDocsLoader.add_multi_constructor("", _construct_unknown)
+cast(Any, MkDocsLoader).add_multi_constructor("", _construct_unknown)
 
 
 def _load_yaml(path: Path) -> dict[str, object]:
-    return yaml.load(path.read_text(encoding="utf-8"), Loader=MkDocsLoader) or {}
+    payload = yaml.load(path.read_text(encoding="utf-8"), Loader=MkDocsLoader) or {}
+    return cast(dict[str, object], payload)
 
 
 def test_mkdocs_extra_javascript_assets_exist() -> None:

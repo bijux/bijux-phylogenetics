@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Callable, Sequence
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 import sys
 from types import ModuleType
-from typing import Callable, Sequence, cast
-
+from typing import cast
 
 AliasMaterializer = Callable[..., None]
 PackageDirectoryDiscoverer = Callable[..., list[Path]]
@@ -26,11 +26,7 @@ def _repository_root() -> Path:
 
 def _shared_script_path() -> Path:
     return (
-        _repository_root()
-        / "makes"
-        / "bijux-py"
-        / "repository"
-        / "artifact_aliases.py"
+        _repository_root() / "makes" / "bijux-py" / "repository" / "artifact_aliases.py"
     )
 
 
@@ -90,6 +86,7 @@ def _materialize_root_and_package_aliases(
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Materialize governed artifact aliases for the repository or one package."""
     args = _parse_args(argv)
     module = _load_shared_alias_module()
     repo_root = args.repo_root.resolve()
