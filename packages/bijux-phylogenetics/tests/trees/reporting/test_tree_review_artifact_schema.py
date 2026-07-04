@@ -17,7 +17,7 @@ from bijux_phylogenetics.io.artifact_schema import (
     validate_host_switch_branch_table_schema,
 )
 from bijux_phylogenetics.trees import extract_tree_clades, write_clade_table
-from ..support.paths import PACKAGE_ROOT
+from ...support.paths import PACKAGE_ROOT
 
 DATASET_CONFIG = (
     PACKAGE_ROOT
