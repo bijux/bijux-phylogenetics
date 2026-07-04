@@ -16,6 +16,11 @@ from .common import (
     read_engine_version,
     resolve_engine_executable,
 )
+from .external_access import (
+    NATIVE_MAXIMUM_LIKELIHOOD_ONLY_ENV_VAR,
+    is_native_maximum_likelihood_only_mode_enabled,
+    native_maximum_likelihood_only_mode,
+)
 from .inference import (
     FastaToTreeModelRow,
     FastaToTreeStageFingerprint,
@@ -145,6 +150,7 @@ __all__ = [
     "ExternalEnginePreflightStatus",
     "EngineRunReport",
     "EngineVersionInfo",
+    "NATIVE_MAXIMUM_LIKELIHOOD_ONLY_ENV_VAR",
     "FastaToTreeModelRow",
     "FastaToTreeStageFingerprint",
     "FastaToTreeSupportRow",
@@ -216,6 +222,7 @@ __all__ = [
     "execute_engine_command",
     "bundle_inference_workflow_evidence",
     "export_workflow_result_bundle",
+    "is_native_maximum_likelihood_only_mode_enabled",
     "inspect_external_engine_preflight",
     "inspect_external_engine_surface",
     "list_mafft_alignment_modes",
@@ -226,6 +233,7 @@ __all__ = [
     "render_inference_sensitivity_report",
     "render_inference_workflow_report",
     "render_model_selection_limitations_report",
+    "native_maximum_likelihood_only_mode",
     "require_external_engine_surface",
     "require_preflight_workflow",
     "rewrite_inference_comparison_report_html",

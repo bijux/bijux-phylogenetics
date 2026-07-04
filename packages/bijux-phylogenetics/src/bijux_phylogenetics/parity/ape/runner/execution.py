@@ -7,7 +7,9 @@ from pathlib import Path
 import subprocess  # nosec B404
 import tempfile
 
+from ...live_access import require_live_parity_access
 from ..registry import _selected_cases, _write_case_file
+from ..shards import resolve_ape_parity_case_ids
 from .comparison import (
     _apply_expected_status_contract,
     _determine_reference_mismatch_reason,
@@ -60,12 +62,26 @@ def _write_reference_process_streams(
 def run_ape_parity_cases(
     *,
     case_ids: list[str] | None = None,
+    shard_ids: list[str] | None = None,
     rscript_executable: str = "Rscript",
     failure_root: Path | None = None,
     fixtures_root: Path | None = None,
 ) -> ApeParityReport:
     """Run governed live `ape` parity cases through the checked-in R runner."""
-    selected = _selected_cases(case_ids=case_ids, fixtures_root=fixtures_root)
+    require_live_parity_access(
+        surface="ape live parity runner",
+        reference_source="ape-live",
+        executable=rscript_executable,
+    )
+    selected_case_ids = resolve_ape_parity_case_ids(
+        case_ids=case_ids,
+        shard_ids=shard_ids,
+        fixtures_root=fixtures_root,
+    )
+    selected = _selected_cases(
+        case_ids=selected_case_ids,
+        fixtures_root=fixtures_root,
+    )
     observations: list[ApeParityObservation] = []
     active_failure_root = _failure_root() if failure_root is None else failure_root
     bijux_version = _bijux_version()

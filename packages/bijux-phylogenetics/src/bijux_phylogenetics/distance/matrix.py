@@ -19,6 +19,9 @@ from .genetic_distance_matrix import (
     compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment as compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment,
 )
 from .genetic_distance_matrix import (
+    compute_pairwise_genetic_distance_matrix_from_records as compute_pairwise_genetic_distance_matrix_from_records,
+)
+from .genetic_distance_matrix import (
     write_genetic_distance_component_table as write_genetic_distance_component_table,
 )
 from .genetic_distance_matrix import (

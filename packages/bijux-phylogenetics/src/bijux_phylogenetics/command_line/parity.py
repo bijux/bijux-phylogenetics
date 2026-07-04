@@ -28,7 +28,10 @@ from bijux_phylogenetics.parity import (
     write_reference_parity_observation_table,
     write_reference_parity_summary_table,
 )
+from bijux_phylogenetics.parity.live_access import require_live_parity_access
 from bijux_phylogenetics.runtime.results import build_command_result
+
+_LIVE_REFERENCE_SOURCES = frozenset({"ape-live", "phytools-live", "geiger-live"})
 
 
 def add_parity_command(subparsers: Any) -> None:
@@ -39,7 +42,10 @@ def add_parity_command(subparsers: Any) -> None:
         "--reference-source",
         choices=("checked-fixture", "ape-live", "phytools-live", "geiger-live"),
         default="checked-fixture",
-        help="Choose the checked fixture parity suite or one of the live external execution harnesses.",
+        help=(
+            "Choose the checked fixture parity suite or one of the live external "
+            "execution harnesses. Live sources require RUN_LIVE_PARITY=1."
+        ),
     )
     parity.add_argument(
         "--extended",
@@ -47,10 +53,22 @@ def add_parity_command(subparsers: Any) -> None:
         help="Include the optional larger posterior tree-set parity fixtures.",
     )
     parity.add_argument(
+        "--reference-method",
+        action="append",
+        dest="reference_methods",
+        help="Restrict the checked-fixture parity suite to one or more governed method shards.",
+    )
+    parity.add_argument(
         "--ape-case",
         action="append",
         dest="ape_cases",
         help="Restrict the live ape parity harness to one or more governed case ids.",
+    )
+    parity.add_argument(
+        "--ape-shard",
+        action="append",
+        dest="ape_shards",
+        help="Restrict the live ape parity harness to one or more governed function shards.",
     )
     parity.add_argument(
         "--ape-rscript-executable",
@@ -69,6 +87,12 @@ def add_parity_command(subparsers: Any) -> None:
         help="Restrict the live phytools parity harness to one or more governed case ids.",
     )
     parity.add_argument(
+        "--phytools-shard",
+        action="append",
+        dest="phytools_shards",
+        help="Restrict the live phytools parity harness to one or more governed function shards.",
+    )
+    parity.add_argument(
         "--phytools-rscript-executable",
         default="Rscript",
         help="Executable used to launch the live phytools parity runner.",
@@ -83,6 +107,12 @@ def add_parity_command(subparsers: Any) -> None:
         action="append",
         dest="geiger_cases",
         help="Restrict the live geiger parity harness to one or more governed case ids.",
+    )
+    parity.add_argument(
+        "--geiger-shard",
+        action="append",
+        dest="geiger_shards",
+        help="Restrict the live geiger parity harness to one or more governed model shards.",
     )
     parity.add_argument(
         "--geiger-rscript-executable",
@@ -115,18 +145,41 @@ def _command_line_api() -> Any:
     return command_line_api
 
 
+def _require_live_reference_source_access(args: Any) -> None:
+    if args.reference_source == "ape-live":
+        require_live_parity_access(
+            surface="parity command live reference dispatch",
+            reference_source="ape-live",
+            executable=args.ape_rscript_executable,
+        )
+        return
+    if args.reference_source == "phytools-live":
+        require_live_parity_access(
+            surface="parity command live reference dispatch",
+            reference_source="phytools-live",
+            executable=args.phytools_rscript_executable,
+        )
+        return
+    if args.reference_source == "geiger-live":
+        require_live_parity_access(
+            surface="parity command live reference dispatch",
+            reference_source="geiger-live",
+            executable=args.geiger_rscript_executable,
+        )
+
+
 def run_parity_command(args: Any) -> int:
     command_line_api = _command_line_api()
-    if (
-        args.reference_source in {"ape-live", "phytools-live", "geiger-live"}
-        and args.extended
-    ):
+    if args.reference_source in _LIVE_REFERENCE_SOURCES and args.extended:
         raise ValueError(
             "--extended is only supported for the checked fixture parity suite"
         )
+    if args.reference_source in _LIVE_REFERENCE_SOURCES:
+        _require_live_reference_source_access(args)
     if args.reference_source == "ape-live":
         report = run_ape_parity_cases(
             case_ids=args.ape_cases,
+            shard_ids=args.ape_shards,
             rscript_executable=args.ape_rscript_executable,
             failure_root=args.ape_failure_root,
         )
@@ -176,6 +229,7 @@ def run_parity_command(args: Any) -> int:
     if args.reference_source == "phytools-live":
         report = run_phytools_parity_cases(
             case_ids=args.phytools_cases,
+            shard_ids=args.phytools_shards,
             rscript_executable=args.phytools_rscript_executable,
             failure_root=args.phytools_failure_root,
         )
@@ -225,6 +279,7 @@ def run_parity_command(args: Any) -> int:
     if args.reference_source == "geiger-live":
         report = run_geiger_parity_cases(
             case_ids=args.geiger_cases,
+            shard_ids=args.geiger_shards,
             rscript_executable=args.geiger_rscript_executable,
             failure_root=args.geiger_failure_root,
         )
@@ -343,7 +398,10 @@ def run_parity_command(args: Any) -> int:
         )
         return 0
 
-    report = validate_reference_parity_examples(include_extended=args.extended)
+    report = validate_reference_parity_examples(
+        include_extended=args.extended,
+        methods=args.reference_methods,
+    )
     output_paths: list[Path | str] = []
     summary_path = None
     observation_path = None

@@ -1,29 +1,29 @@
 {
   "bijux_estimated_lambda": {
-    "aic": 896.138296324527,
+    "aic": 896.138296324579,
     "coefficients": {
-      "intercept": 249.95843497104,
-      "social_group_size": 1.66214823566609
+      "intercept": 249.95843742385,
+      "social_group_size": 1.66214743691498
     },
     "diagnostics": {
-      "abs_residual_fitted_correlation": 0.109972191549302,
-      "max_abs_z_residual": 2.98631530647783,
+      "abs_residual_fitted_correlation": 0.109972233803126,
+      "max_abs_z_residual": 2.98631521745234,
       "outlier_count_abs_z_ge_2": 4,
-      "qq_correlation": 0.977685033649863,
-      "residual_mean": 42.6665002202872,
-      "residual_sd": 112.113772315026,
-      "residual_variance": 12569.4979427056
+      "qq_correlation": 0.97768503639436,
+      "residual_mean": 42.6665096550236,
+      "residual_sd": 112.113776531182,
+      "residual_variance": 12569.4988880838
     },
-    "lambda_value": 0.76865646856019,
-    "log_likelihood": -444.069148162264,
+    "lambda_value": 0.768657155570374,
+    "log_likelihood": -444.06914816229,
     "p_values": {
-      "intercept": 3.44325093304398e-06,
-      "social_group_size": 0.0168886064118261
+      "intercept": 3.443316538565e-06,
+      "social_group_size": 0.0168886611245798
     },
-    "r_squared": 0.0630379860114777,
+    "r_squared": 0.0630378715214208,
     "standard_errors": {
-      "intercept": 49.7282721257287,
-      "social_group_size": 0.67975150416116
+      "intercept": 49.7283213357441,
+      "social_group_size": 0.679751529615506
     }
   },
   "bijux_fixed_reference_lambda": {

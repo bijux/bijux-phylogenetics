@@ -1,0 +1,42 @@
+{
+  "dataset_count": 5,
+  "datasets": [
+    {
+      "dataset_id": "dataset-001",
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM4 cichlid observation table",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/cichlid.csv",
+      "schema_summary": "Observation-level cichlid traits, parasite counts, habitat metrics, and species identifiers used to derive the species summary table."
+    },
+    {
+      "dataset_id": "dataset-002",
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM4 cichlid phylogeny",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/cichlidtree.nex",
+      "schema_summary": "Nexus tree used to define the phylogenetic covariance for the cichlid mixed-model lecture."
+    },
+    {
+      "dataset_id": "dataset-003",
+      "kind": "repository-owned-workspace-object",
+      "label": "Checked-in PCM4 fish workspace object `fish`",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/fishdata.RData#fish",
+      "schema_summary": "Reloaded lecture workspace table representing the observation-level cichlid records after course-side import and repair."
+    },
+    {
+      "dataset_id": "dataset-004",
+      "kind": "repository-owned-workspace-object",
+      "label": "Checked-in PCM4 fish workspace object `fishSum`",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/fishdata.RData#fishSum",
+      "schema_summary": "Reloaded species-level summary table used to fit the Gaussian baseline and mixed-model variants in PCM4."
+    },
+    {
+      "dataset_id": "dataset-005",
+      "kind": "repository-owned-workspace-object",
+      "label": "Checked-in PCM4 fish workspace object `fishtree`",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/fishdata.RData#fishtree",
+      "schema_summary": "Reloaded lecture workspace tree object aligned to the species-level cichlid summary table for the PCM4 phylogenetic covariance setup."
+    }
+  ],
+  "schema_version": 1,
+  "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+}

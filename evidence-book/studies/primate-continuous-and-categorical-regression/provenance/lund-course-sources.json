@@ -1,0 +1,63 @@
+{
+  "intake_policy": "repository-owned-source",
+  "schema_version": 1,
+  "source_count": 6,
+  "sources": [
+    {
+      "concept_tags": [
+        "multivariable-regression",
+        "categorical-predictors",
+        "interaction-terms",
+        "phylogenetic-regression"
+      ],
+      "kind": "repository-owned-source-copy",
+      "label": "Lund PCM3 continuous and categorical regression lecture script",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/reference/lund_pcm3_contcat_source.R",
+      "path_hint": "PCM3_contcat/Lecture/R/Scripts/PCM3_contcat.R",
+      "read_only": true,
+      "source_id": "lund-pcm3-script"
+    },
+    {
+      "kind": "repository-owned-workspace",
+      "label": "Checked-in PCM3 primate workspace",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/primate.RData",
+      "provides": [
+        "primate",
+        "primatetree"
+      ],
+      "read_only": true,
+      "source_id": "lund-pcm3-primate-rdata"
+    },
+    {
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM3 primate raw workbook",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/primate_raw.xlsx",
+      "path_hint": "PCM3_contcat/Lecture/R/Data/primate_raw.xlsx",
+      "read_only": true,
+      "source_id": "lund-pcm3-primate-workbook"
+    },
+    {
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM3 primate tree",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/primatetree.nex",
+      "path_hint": "PCM3_contcat/Lecture/R/Data/primatetree.nex",
+      "read_only": true,
+      "source_id": "lund-pcm3-primate-tree"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "PCM3-local governed primate derivatives",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets",
+      "read_only": false,
+      "source_id": "governed-pcm3-reference-artifacts"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "Repository comparative regression and PGLS surfaces relevant to PCM3",
+      "locator": "packages/bijux-phylogenetics/src/bijux_phylogenetics/comparative",
+      "read_only": false,
+      "source_id": "pcm3-runtime-surfaces"
+    }
+  ],
+  "study_id": "primate-continuous-and-categorical-regression"
+}

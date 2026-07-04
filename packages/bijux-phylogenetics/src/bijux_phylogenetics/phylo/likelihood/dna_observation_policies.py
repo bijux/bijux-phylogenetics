@@ -18,6 +18,10 @@ from bijux_phylogenetics.phylo.likelihood.nucleotide_root_priors import (
     ResolvedNucleotideRootPrior,
     resolve_nucleotide_root_prior,
 )
+from bijux_phylogenetics.phylo.likelihood.observation_vectors import (
+    build_all_states_observation_vector,
+    build_state_selection_vector,
+)
 from bijux_phylogenetics.runtime.errors import (
     AlignmentTaxonMismatchError,
     InvalidAlignmentError,
@@ -134,38 +138,42 @@ def resolve_dna_observation_leaf_vector(
     )
     state_order = dna_observation_state_order(observation_policy=validated_policy)
     symbol = states_by_taxon[node_name].upper()
-    vector = numpy.zeros(len(state_order), dtype=float)
     if symbol in DNA_STATE_INDEX:
-        vector[DNA_STATE_INDEX[symbol]] = 1.0
-        return vector
+        return build_state_selection_vector(
+            state_count=len(state_order),
+            selected_indices=(DNA_STATE_INDEX[symbol],),
+        )
     if symbol in _DNA_AMBIGUITY_STATES_BY_SYMBOL:
         if validated_policy == "reject":
             raise InvalidAlignmentError(
                 f"{model_name} likelihood observation policy 'reject' does not allow ambiguity code '{symbol}'"
             )
         if validated_policy == "treat-as-missing":
-            vector[:] = 1.0
-            return vector
-        for state in _DNA_AMBIGUITY_STATES_BY_SYMBOL[symbol]:
-            vector[DNA_STATE_INDEX[state]] = 1.0
-        return vector
+            return build_all_states_observation_vector(state_count=len(state_order))
+        return build_state_selection_vector(
+            state_count=len(state_order),
+            selected_indices=(
+                DNA_STATE_INDEX[state]
+                for state in _DNA_AMBIGUITY_STATES_BY_SYMBOL[symbol]
+            ),
+        )
     if symbol == _FIFTH_STATE_GAP_SYMBOL:
         if validated_policy == "reject":
             raise InvalidAlignmentError(
                 f"{model_name} likelihood observation policy 'reject' does not allow gap state '-'"
             )
         if validated_policy == "fifth-state":
-            vector[-1] = 1.0
-            return vector
-        vector[:] = 1.0
-        return vector
+            return build_state_selection_vector(
+                state_count=len(state_order),
+                selected_indices=(len(state_order) - 1,),
+            )
+        return build_all_states_observation_vector(state_count=len(state_order))
     if symbol in _EXPLICIT_MISSING_SYMBOLS:
         if validated_policy == "reject":
             raise InvalidAlignmentError(
                 f"{model_name} likelihood observation policy 'reject' does not allow missing-data state '{symbol}'"
             )
-        vector[:] = 1.0
-        return vector
+        return build_all_states_observation_vector(state_count=len(state_order))
     raise InvalidAlignmentError(
         f"{model_name} likelihood does not recognize DNA observation state '{symbol}'"
     )

@@ -1,0 +1,51 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from bijux_phylogenetics.command_line import main
+
+FIXTURES = Path(__file__).parent / "fixtures"
+
+
+def fixture(group: str, name: str) -> Path:
+    return FIXTURES / group / name
+
+
+def test_comparative_discrete_mk_cli_reports_lewis_ascertainment_metrics(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    pattern_path = tmp_path / "discrete-mk-patterns.tsv"
+    exit_code = main(
+        [
+            "comparative",
+            "discrete-mk",
+            str(fixture("trees", "example_tree.nwk")),
+            str(
+                fixture(
+                    "metadata", "example_traits_discrete_mk_variable_only_four_taxa.tsv"
+                )
+            ),
+            "--trait",
+            "state",
+            "--taxon-column",
+            "taxon",
+            "--ascertainment",
+            "lewis-variable-only",
+            "--patterns-out",
+            str(pattern_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["metrics"]["ascertainment_policy"] == "lewis-variable-only"
+    assert payload["metrics"]["uncorrected_log_likelihood"] is not None
+    assert payload["metrics"]["ascertainment_log_likelihood_delta"] is not None
+    assert payload["metrics"]["ascertainment_conditioning_log_probability"] is not None
+    assert payload["metrics"]["invariant_pattern_log_probability"] is not None
+    assert pattern_path.read_text(encoding="utf-8").startswith(
+        "pattern_id\tpattern_weight\ttip_states\traw_log_likelihood\tascertainment_conditioning_log_probability\tlog_likelihood"
+    )

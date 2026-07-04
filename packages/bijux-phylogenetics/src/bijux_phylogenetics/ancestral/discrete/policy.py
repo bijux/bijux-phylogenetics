@@ -21,6 +21,8 @@ def resolve_discrete_model_name(model: str) -> str:
         "sym": "symmetric",
         "all-rates-different": "all-rates-different",
         "ard": "all-rates-different",
+        "irreversible": "irreversible",
+        "irrev": "irreversible",
     }
     resolved = aliases.get(model)
     if resolved is None:
@@ -47,6 +49,11 @@ def rerooting_method_compatibility(
         comparable = False
         notes.append(
             "phytools::rerootingMethod is invalid for non-symmetric Q matrices such as all-rates-different models in phytools 2.5.2"
+        )
+    elif model == "irreversible":
+        comparable = False
+        notes.append(
+            "phytools::rerootingMethod is invalid for non-symmetric Q matrices such as irreversible discrete Mk models in phytools 2.5.2"
         )
     elif model == "symmetric":
         reference_model = "SYM"
@@ -80,8 +87,10 @@ def resolve_state_order(
 ) -> list[str]:
     if state_ordering == "unordered":
         return list(observed_states)
-    if ordered_states is None:
-        return list(observed_states)
+    if not ordered_states:
+        raise ValueError(
+            "ordered discrete likelihood surfaces require explicit ordered_states"
+        )
     missing_states = sorted(set(observed_states) - set(ordered_states))
     if missing_states:
         raise ValueError(
@@ -214,6 +223,20 @@ def resolve_allowed_transition_pairs(
         if asymmetric_pairs:
             raise ValueError(
                 "symmetric discrete ancestral reconstruction requires bidirectional allowed transitions"
+            )
+    if model == "irreversible":
+        if allowed_transition_pairs is None:
+            raise ValueError(
+                "irreversible discrete ancestral reconstruction requires explicit allowed_transition_pairs so reverse transitions are structurally excluded"
+            )
+        reciprocal_pairs = [
+            (left_index, right_index)
+            for left_index, right_index in sorted(pairs)
+            if (right_index, left_index) in pairs
+        ]
+        if reciprocal_pairs:
+            raise ValueError(
+                "irreversible discrete ancestral reconstruction forbids reciprocal allowed transitions; use all-rates-different for reversible directed fits"
             )
     filtered_pairs = {
         (left_index, right_index)

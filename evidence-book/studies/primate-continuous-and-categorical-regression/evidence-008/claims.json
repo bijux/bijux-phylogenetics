@@ -1,0 +1,21 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm3-post-correction-diagnostics-and-tests",
+      "claim_title": "Primate post-correction diagnostics bundle",
+      "evidence_ids": [
+        "evidence-008"
+      ],
+      "source_fragments": [
+        "post-correction-diagnostics",
+        "post-correction-hypothesis-tests"
+      ],
+      "summary": "Governed study slice for PCM3 post-correction diagnostics and hypothesis testing after the phylogenetic regression fit.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-008",
+  "schema_version": 1,
+  "study_id": "primate-continuous-and-categorical-regression"
+}

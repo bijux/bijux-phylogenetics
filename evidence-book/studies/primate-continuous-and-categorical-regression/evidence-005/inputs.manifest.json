@@ -1,0 +1,83 @@
+{
+  "evidence_id": "evidence-005",
+  "governed_local_artifact_count": 4,
+  "governed_local_artifacts": [
+    {
+      "input_id": "local-input-001",
+      "kind": "governed-result-surface",
+      "label": "results/README.md",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/evidence-005/results/README.md",
+      "read_only": false,
+      "sha256": "24c572e8c33dafbd474be57fa3d31dd57f0a79191f9a864c40867d54653421e9"
+    },
+    {
+      "input_id": "local-input-002",
+      "kind": "governed-result-surface",
+      "label": "results/manifest.json",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/evidence-005/results/manifest.json",
+      "read_only": false,
+      "sha256": "e5ba25ef745a83bd650b6d56c5ada480dea475f9cab24e9d0863f541d395fca4"
+    },
+    {
+      "input_id": "local-input-003",
+      "kind": "governed-result-surface",
+      "label": "results/reviewer-summary.json",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/evidence-005/results/reviewer-summary.json",
+      "read_only": false,
+      "sha256": "b77103308170d6b8bd5b9ae1701c7a5b41c5a67652af7bb0747c5262af8f0849"
+    },
+    {
+      "input_id": "local-input-004",
+      "kind": "governed-result-surface",
+      "label": "results/reviewer-summary.md",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/evidence-005/results/reviewer-summary.md",
+      "read_only": false,
+      "sha256": "3f181809d7a17f9228691098e6f6cc63ed707956901691bac75037a3f3cfdbbb"
+    }
+  ],
+  "local_input_count": 0,
+  "local_inputs": [],
+  "schema_version": 2,
+  "source_input_count": 5,
+  "source_inputs": [
+    {
+      "input_id": "source-input-001",
+      "kind": "repository-reference",
+      "label": "source-1",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/provenance/lund-course-sources.json",
+      "read_only": true,
+      "sha256": "e840082c1b622f4980b681becede685755664fba24418c7dfbd630b8970d0686"
+    },
+    {
+      "input_id": "source-input-002",
+      "kind": "repository-reference",
+      "label": "source-2",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/registry.json",
+      "read_only": true,
+      "sha256": "21a5dc51c16a8577039cc29702df93f3a47345d0a70450e9b97f48b8432a1e90"
+    },
+    {
+      "input_id": "source-input-003",
+      "kind": "repository-reference",
+      "label": "source-3",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/reference/README.md",
+      "read_only": true,
+      "sha256": "10a041fad3871bf29fe048cc540b1b2bb8dd9080f1cb033aef03efc4e5cb8ec7"
+    },
+    {
+      "input_id": "source-input-004",
+      "kind": "repository-reference",
+      "label": "source-4",
+      "locator": "packages/bijux-phylogenetics/tests/test_pgls_interaction_coefficients.py",
+      "read_only": true
+    },
+    {
+      "input_id": "source-input-005",
+      "kind": "repository-reference",
+      "label": "source-5",
+      "locator": "packages/bijux-phylogenetics/tests/test_regression_model_selection.py",
+      "read_only": true
+    }
+  ],
+  "study_id": "primate-continuous-and-categorical-regression"
+}

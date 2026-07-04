@@ -38,6 +38,34 @@ class TransformedModeSearchResult:
     profile: list[tuple[float, float]]
 
 
+def _mode_parameter_name(mode: str) -> str:
+    if mode == "ornstein-uhlenbeck":
+        return "alpha"
+    if mode == "early-burst":
+        return "rate_change"
+    if mode == "pagel-lambda":
+        return "lambda"
+    if mode == "pagel-kappa":
+        return "kappa"
+    if mode == "pagel-delta":
+        return "delta"
+    raise ComparativeMethodError(f"unsupported bounded comparative mode: {mode}")
+
+
+def _mode_search_owner_name(mode: str) -> str:
+    if mode == "ornstein-uhlenbeck":
+        return "OU comparative mode fit"
+    if mode == "early-burst":
+        return "early-burst comparative mode fit"
+    if mode == "pagel-lambda":
+        return "Pagel lambda comparative mode fit"
+    if mode == "pagel-kappa":
+        return "Pagel kappa comparative mode fit"
+    if mode == "pagel-delta":
+        return "Pagel delta comparative mode fit"
+    raise ComparativeMethodError(f"unsupported bounded comparative mode: {mode}")
+
+
 def reject_nonparameterized_search_controls(
     mode: str,
     search_controls: ContinuousModeSearchControls | None,
@@ -96,6 +124,8 @@ def best_transformed_mode_fit(
             mode=mode,
             parameter_value=parameter_value,
         ),
+        parameter_name=_mode_parameter_name(mode),
+        owner_name=_mode_search_owner_name(mode),
         optimizer_name="governed-multi-start-grid-search",
         parameter_search_strategy="bounded-coarse-grid-with-multi-start-golden-section-refinement",
     )
@@ -127,6 +157,7 @@ def best_transformed_mode_fit(
         converged=search_result.diagnostics.converged,
         hit_lower_boundary=search_result.diagnostics.hit_lower_boundary,
         hit_upper_boundary=search_result.diagnostics.hit_upper_boundary,
+        failure_reason=search_result.diagnostics.failure_reason,
     )
     return TransformedModeSearchResult(
         parameter_value=search_result.parameter_value,
@@ -165,6 +196,8 @@ def best_pagel_lambda_fit(
             mode="pagel-lambda",
             parameter_value=parameter_value,
         ),
+        parameter_name="lambda",
+        owner_name="Pagel lambda comparative mode fit",
         optimizer_name="governed-multi-start-grid-search",
         parameter_search_strategy="bounded-coarse-grid-with-multi-start-golden-section-refinement",
     )
@@ -196,6 +229,7 @@ def best_pagel_lambda_fit(
         converged=search_result.diagnostics.converged,
         hit_lower_boundary=search_result.diagnostics.hit_lower_boundary,
         hit_upper_boundary=search_result.diagnostics.hit_upper_boundary,
+        failure_reason=search_result.diagnostics.failure_reason,
     )
     return TransformedModeSearchResult(
         parameter_value=search_result.parameter_value,

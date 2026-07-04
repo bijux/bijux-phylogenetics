@@ -59,6 +59,10 @@ LARGE_ALIGNMENT_SCALING_CLASSES: tuple[tuple[str, int, int], ...] = (
     ("sequences-512-sites-1024", 512, 1024),
     ("sequences-1024-sites-2048", 1024, 2048),
 )
+NATIVE_MAXIMUM_LIKELIHOOD_SPEED_SIZE_CLASSES: tuple[tuple[str, int, int], ...] = (
+    ("tiny", 4, 12),
+    ("medium", 4, 16),
+)
 LARGE_TREE_SET_SCALING_CLASSES: tuple[tuple[str, int, int], ...] = (
     ("trees-128-taxa-48", 128, 48),
     ("trees-256-taxa-64", 256, 64),
@@ -263,6 +267,23 @@ def write_large_alignment(
         for index in range(sequence_count):
             sequence = "".join(
                 alphabet[(index + offset) % len(alphabet)]
+                for offset in range(sequence_length)
+            )
+            handle.write(f">taxon_{index + 1:04d}\n{sequence}\n")
+    return path
+
+
+def write_large_nucleotide_alignment(
+    path: Path,
+    *,
+    sequence_count: int,
+    sequence_length: int,
+) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as handle:
+        for index in range(sequence_count):
+            sequence = "".join(
+                "ACGT"[(index * 3 + offset + (offset // 2)) % 4]
                 for offset in range(sequence_length)
             )
             handle.write(f">taxon_{index + 1:04d}\n{sequence}\n")

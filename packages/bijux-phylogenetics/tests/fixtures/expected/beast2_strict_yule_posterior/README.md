@@ -1,7 +1,12 @@
 # BEAST Posterior Reference Bundle
 
-This bundle records exact reference outputs derived from the checked-in
-`beast2_strict_yule_posterior.xml`, `.log`, and `.trees` fixtures.
+This bundle records the governed reference summaries derived from the checked
+BEAST XML, posterior log, and posterior tree-set fixtures.
 
-The `consensus-10pct` and `mcc-10pct` trees correspond to summaries after
-discarding the first 10% of posterior samples as burn-in.
+It is the reviewer-facing evidence surface for BEAST posterior summarization
+when tests need stable checked outputs rather than a live engine run.
+
+- `consensus-10pct*` files capture the consensus summary after discarding the
+  first 10% of posterior samples as burn-in.
+- `mcc-10pct*` files capture the maximum-clade-credibility summary under the
+  same burn-in policy.

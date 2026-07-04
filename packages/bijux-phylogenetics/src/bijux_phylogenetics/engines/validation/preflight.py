@@ -10,6 +10,7 @@ from bijux_phylogenetics.runtime.errors import (
 )
 
 from ..common import EngineVersionInfo, read_engine_version, resolve_engine_executable
+from ..external_access import require_external_engine_access
 
 VersionTuple = tuple[int, ...]
 
@@ -351,6 +352,9 @@ def inspect_external_engine_surface(
     executables: dict[str, str | Path | None] | None = None,
 ) -> tuple[list[ExternalEnginePreflightStatus], WorkflowPreflightStatus]:
     """Inspect one concrete external-engine workflow surface without scanning every engine."""
+    require_external_engine_access(
+        surface=f"external engine surface inspection ({workflow_id})",
+    )
     configured = {} if executables is None else dict(executables)
     statuses: list[ExternalEnginePreflightStatus] = []
     by_engine_id: dict[str, ExternalEnginePreflightStatus] = {}
@@ -377,6 +381,9 @@ def inspect_external_engine_preflight(
     selected_workflow: str | None = None,
 ) -> ExternalEnginePreflightReport:
     """Inspect external engine availability and workflow readiness."""
+    require_external_engine_access(
+        surface="external engine preflight inspection",
+    )
     configured = {} if executables is None else dict(executables)
     statuses: list[ExternalEnginePreflightStatus] = []
     by_engine_id: dict[str, ExternalEnginePreflightStatus] = {}

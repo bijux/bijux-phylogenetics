@@ -170,7 +170,10 @@ def render_evidence_regeneration_contract(payload: dict[str, object]) -> str:
         lines.append(f"## {study['study_title']}")
         lines.append("")
         lines.append(f"- study id: `{study['study_id']}`")
-        lines.append(f"- build script: `{study['build_script_path']}`")
+        if study["build_script_path"] is None:
+            lines.append("- build surface: registry-managed study writer")
+        else:
+            lines.append(f"- build script: `{study['build_script_path']}`")
         if study["rerun_command"] is not None:
             lines.append(f"- rerun command: `{study['rerun_command']}`")
         lines.append(f"- bundle ids: `{', '.join(study['bundle_ids'])}`")
@@ -278,7 +281,7 @@ def render_evidence_catalog(index_payload: dict[str, object]) -> str:
         "# Evidence Catalog",
         "",
         "This catalog is generated from `index/evidence-index.json` and lists every",
-        "governed evidence bundle in the repository evidence-book.",
+        "governed parity or parity-tracked bundle in the repository evidence-book.",
         "",
         f"- studies: `{index_payload['study_count']}`",
         f"- evidence bundles: `{index_payload['evidence_count']}`",

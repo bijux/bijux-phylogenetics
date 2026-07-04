@@ -9,6 +9,10 @@ from typing import Protocol
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 
 from .models import (
+    CodonCtmcTreeLikelihoodReport,
+    FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
+    FiniteStateDiscreteGammaTreeLikelihoodReport,
+    FiniteStateInvariantMixtureTreeLikelihoodReport,
     FixedTopologySiteLogLikelihoodReport,
     LocalClockLikelihoodReport,
     ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport,
@@ -26,7 +30,11 @@ from .patterns import (
 )
 
 SequenceSiteLogLikelihoodReport = (
-    FixedTopologySiteLogLikelihoodReport
+    CodonCtmcTreeLikelihoodReport
+    | FiniteStateDiscreteGammaInvariantTreeLikelihoodReport
+    | FiniteStateDiscreteGammaTreeLikelihoodReport
+    | FiniteStateInvariantMixtureTreeLikelihoodReport
+    | FixedTopologySiteLogLikelihoodReport
     | LocalClockLikelihoodReport
     | ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport
     | ProteinEmpiricalDiscreteGammaTreeLikelihoodReport
@@ -226,6 +234,39 @@ def _iter_sequence_site_log_likelihood_rows(
             )
             for row in report.site_likelihoods
         ]
+    if isinstance(report, FiniteStateDiscreteGammaTreeLikelihoodReport):
+        return [
+            SiteLogLikelihoodRow(
+                pattern_id=row.pattern_id,
+                pattern_weight=row.pattern_weight,
+                site_position=row.site_position,
+                site_states=row.site_states,
+                log_likelihood=row.log_likelihood,
+            )
+            for row in report.site_likelihoods
+        ]
+    if isinstance(report, FiniteStateDiscreteGammaInvariantTreeLikelihoodReport):
+        return [
+            SiteLogLikelihoodRow(
+                pattern_id=row.pattern_id,
+                pattern_weight=row.pattern_weight,
+                site_position=row.site_position,
+                site_states=row.site_states,
+                log_likelihood=row.log_likelihood,
+            )
+            for row in report.site_likelihoods
+        ]
+    if isinstance(report, FiniteStateInvariantMixtureTreeLikelihoodReport):
+        return [
+            SiteLogLikelihoodRow(
+                pattern_id=row.pattern_id,
+                pattern_weight=row.pattern_weight,
+                site_position=row.site_position,
+                site_states=row.site_states,
+                log_likelihood=row.log_likelihood,
+            )
+            for row in report.site_likelihoods
+        ]
     if isinstance(report, ProteinEmpiricalInvariantMixtureTreeLikelihoodReport):
         return [
             SiteLogLikelihoodRow(
@@ -256,10 +297,18 @@ def _iter_sequence_site_log_likelihood_rows(
 def _site_log_likelihood_report_model_name(
     report: SequenceSiteLogLikelihoodReport,
 ) -> str:
+    if isinstance(report, FiniteStateDiscreteGammaInvariantTreeLikelihoodReport):
+        return f"{report.model_name} +G+I"
+    if isinstance(report, FiniteStateDiscreteGammaTreeLikelihoodReport):
+        return f"{report.model_name} +G"
+    if isinstance(report, FiniteStateInvariantMixtureTreeLikelihoodReport):
+        return f"{report.model_name} +I"
     if hasattr(report, "model_name"):
         return report.model_name
     if isinstance(report, ProteinPoissonTreeLikelihoodReport):
         return "protein Poisson"
+    if isinstance(report, CodonCtmcTreeLikelihoodReport):
+        return "codon CTMC"
     if isinstance(report, ProteinEmpiricalMatrixTreeLikelihoodReport):
         return "empirical protein matrix"
     if isinstance(report, ProteinEmpiricalDiscreteGammaTreeLikelihoodReport):

@@ -267,15 +267,16 @@ def fit_discrete_mk_model_from_dataset(
         delta_bounds=delta_bounds,
         early_burst_bounds=early_burst_bounds,
     )
-    log_likelihood = _tree_log_likelihood(
+    uncorrected_log_likelihood = _tree_log_likelihood(
         fit_tree,
         dataset.states_by_taxon,
         state_order=state_order,
         rate_matrix=rate_matrix,
         root_prior=root_prior,
         root_prior_mode="observed",
-        ascertainment_policy=resolved_ascertainment_policy,
+        ascertainment_policy="none",
     )
+    log_likelihood = uncorrected_log_likelihood
     ascertainment_conditioning_log_probability: float | None = None
     invariant_pattern_log_probability: float | None = None
     if resolved_ascertainment_policy == "lewis-variable-only":
@@ -287,6 +288,12 @@ def fit_discrete_mk_model_from_dataset(
             root_prior=root_prior,
             root_prior_mode="observed",
         )
+        if ascertainment_conditioning_log_probability == float("-inf"):
+            log_likelihood = float("-inf")
+        else:
+            log_likelihood = (
+                uncorrected_log_likelihood - ascertainment_conditioning_log_probability
+            )
         invariant_pattern_log_probability = _invariant_pattern_log_probability(
             fit_tree,
             taxa=list(dataset.taxa),
@@ -295,6 +302,13 @@ def fit_discrete_mk_model_from_dataset(
             root_prior=root_prior,
             root_prior_mode="observed",
         )
+    ascertainment_log_likelihood_delta = (
+        log_likelihood - uncorrected_log_likelihood
+        if math.isfinite(log_likelihood)
+        else float("-inf")
+        if math.isfinite(uncorrected_log_likelihood)
+        else float("nan")
+    )
     parameter_count = discrete_parameter_count(
         state_count=len(state_order),
         model=resolved_model,
@@ -322,11 +336,7 @@ def fit_discrete_mk_model_from_dataset(
     )
     baseline_comparison: DiscreteModelBaselineComparison | None = None
     transform_baseline_comparison: DiscreteMkTransformBaselineComparison | None = None
-    if (
-        resolved_model != "equal-rates"
-        and allowed_transition_pairs is None
-        and state_ordering == "unordered"
-    ):
+    if resolved_model != "equal-rates":
         baseline_fit = fit_discrete_mk_model_from_dataset(
             dataset,
             model="equal-rates",
@@ -334,7 +344,7 @@ def fit_discrete_mk_model_from_dataset(
             transform=resolved_transform,
             state_ordering=state_ordering,
             ordered_states=state_order,
-            allowed_transition_pairs=None,
+            allowed_transition_pairs=allowed_transition_pairs,
             lambda_bounds=lambda_bounds,
             kappa_bounds=kappa_bounds,
             delta_bounds=delta_bounds,
@@ -415,6 +425,15 @@ def fit_discrete_mk_model_from_dataset(
             "the untransformed branch-length baseline remains preferred by AIC over the requested discrete Mk transform"
         )
     input_audit = build_discrete_mk_input_audit(dataset, warnings=warnings)
+    transition_rate_rows = _normalize_transition_rate_rows(
+        _build_transition_rate_rows(
+            state_order=state_order,
+            state_ordering=state_ordering,
+            rate_matrix=rate_matrix,
+            allowed_transition_pairs=resolved_allowed_transition_pairs,
+        ),
+        state_ordering=state_ordering,
+    )
     return DiscreteMkFitReport(
         tree_path=dataset.tree_path,
         traits_path=dataset.traits_path,
@@ -424,9 +443,12 @@ def fit_discrete_mk_model_from_dataset(
         ascertainment_policy=resolved_ascertainment_policy,
         state_ordering=state_ordering,
         state_order=state_order,
+        ordered_states=(state_order if state_ordering == "ordered" else []),
         taxon_count=len(dataset.taxa),
         input_audit=input_audit,
         log_likelihood=log_likelihood,
+        uncorrected_log_likelihood=uncorrected_log_likelihood,
+        ascertainment_log_likelihood_delta=ascertainment_log_likelihood_delta,
         ascertainment_conditioning_log_probability=(
             ascertainment_conditioning_log_probability
         ),
@@ -439,19 +461,15 @@ def fit_discrete_mk_model_from_dataset(
         ),
         likelihood_comparison_policy=DISCRETE_MK_LIKELIHOOD_COMPARISON_POLICY,
         pattern_likelihood_rows=pattern_likelihood_rows,
-        transition_rate_rows=_normalize_transition_rate_rows(
-            _build_transition_rate_rows(
-                state_order=state_order,
-                state_ordering=state_ordering,
-                rate_matrix=rate_matrix,
-                allowed_transition_pairs=resolved_allowed_transition_pairs,
-            ),
-            state_ordering=state_ordering,
-        ),
+        transition_rate_rows=transition_rate_rows,
         allowed_transition_pairs=[
             (state_order[left_index], state_order[right_index])
             for left_index, right_index in sorted(resolved_allowed_transition_pairs)
         ],
+        allowed_transition_count=len(resolved_allowed_transition_pairs),
+        restricted_transition_count=sum(
+            not row.transition_allowed for row in transition_rate_rows
+        ),
         optimizer_diagnostics=optimizer_diagnostics,
         overparameterized=overparameterized,
         transform_fit=transform_fit,

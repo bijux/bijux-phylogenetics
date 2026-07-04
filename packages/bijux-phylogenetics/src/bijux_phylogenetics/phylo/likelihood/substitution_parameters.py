@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 import math
 from pathlib import Path
 
@@ -9,15 +10,21 @@ from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.dna import (
+    DNA_STATE_ORDER,
     normalize_dna_exchangeabilities_by_anchor,
 )
 from bijux_phylogenetics.phylo.likelihood.f81 import (
     evaluate_f81_tree_likelihood,
 )
+from bijux_phylogenetics.phylo.likelihood.fit_assessment import (
+    build_likelihood_fit_assessment,
+)
 from bijux_phylogenetics.phylo.likelihood.gtr import (
+    evaluate_gtr_tree_likelihood,
     optimize_gtr_exchangeabilities,
 )
 from bijux_phylogenetics.phylo.likelihood.hky85 import (
+    evaluate_hky85_tree_likelihood,
     optimize_hky85_kappa,
 )
 from bijux_phylogenetics.phylo.likelihood.jc69 import (
@@ -27,6 +34,9 @@ from bijux_phylogenetics.phylo.likelihood.k80 import (
     optimize_k80_kappa,
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
+    F81TreeLikelihoodReport,
+    GtrTreeLikelihoodReport,
+    Hky85TreeLikelihoodReport,
     NucleotideSubstitutionParameterOptimizationReport,
     SubstitutionParameterOptimizationRow,
 )
@@ -39,6 +49,9 @@ from bijux_phylogenetics.phylo.likelihood.parameter_bounds import (
     validate_parameter_within_bounds,
     validate_positive_parameter_bounds,
 )
+from bijux_phylogenetics.phylo.likelihood.simplex_search import (
+    run_simplex_likelihood_search,
+)
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 
 _NUCLEOTIDE_SUBSTITUTION_OPTIMIZATION_MODELS = frozenset(
@@ -46,6 +59,7 @@ _NUCLEOTIDE_SUBSTITUTION_OPTIMIZATION_MODELS = frozenset(
 )
 _DEFAULT_KAPPA_BOUNDS = (0.05, 20.0)
 _DEFAULT_EXCHANGEABILITY_BOUNDS = (0.05, 20.0)
+_DEFAULT_MINIMUM_BASE_FREQUENCY = 1e-6
 _BOUNDARY_TOLERANCE = 1e-9
 
 
@@ -120,6 +134,8 @@ def optimize_nucleotide_substitution_parameters(
             initial_exchangeabilities=initial_exchangeabilities,
             lower_exchangeability_bound=lower_exchangeability_bound,
             upper_exchangeability_bound=upper_exchangeability_bound,
+            max_coordinate_passes=max_coordinate_passes,
+            improvement_tolerance=improvement_tolerance,
         )
     if normalized_model_name == "hky85":
         return _optimize_hky85_substitution_parameters(
@@ -132,6 +148,8 @@ def optimize_nucleotide_substitution_parameters(
             initial_exchangeabilities=initial_exchangeabilities,
             lower_exchangeability_bound=lower_exchangeability_bound,
             upper_exchangeability_bound=upper_exchangeability_bound,
+            max_coordinate_passes=max_coordinate_passes,
+            improvement_tolerance=improvement_tolerance,
         )
     return _optimize_gtr_substitution_parameters(
         tree,
@@ -245,6 +263,13 @@ def _optimize_jc69_substitution_parameters(
     evaluation_report = evaluate_jc69_tree_likelihood(tree, records)
     log_likelihood = evaluation_report.log_likelihood
     aic = -2.0 * log_likelihood
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=evaluation_report.site_count,
+        pattern_count=evaluation_report.pattern_count,
+        optimized_parameter_count=0,
+        converged=True,
+        boundary_warnings=[],
+    )
     return NucleotideSubstitutionParameterOptimizationReport(
         model_name="JC69",
         taxa=evaluation_report.taxa,
@@ -266,6 +291,7 @@ def _optimize_jc69_substitution_parameters(
         function_evaluation_count=1,
         optimization_pass_count=0,
         converged=True,
+        fit_assessment=fit_assessment,
         boundary_warnings=[],
         warnings=[
             "JC69 has no free substitution parameters; skipping parameter search"
@@ -329,7 +355,7 @@ def _optimize_k80_substitution_parameters(
     )
     parameter_row, warnings = _parameter_row_with_boundary_warnings(
         parameter_name="kappa",
-        initial_value=optimization_report.initial_kappa,
+        initial_value=validated_initial_kappa,
         optimized_value=optimization_report.optimized_kappa,
         lower_bound=optimization_report.lower_kappa_bound,
         upper_bound=optimization_report.upper_kappa_bound,
@@ -337,6 +363,13 @@ def _optimize_k80_substitution_parameters(
     if not optimization_report.converged:
         warnings.append("K80 substitution-parameter search did not converge")
     boundary_warnings = build_substitution_parameter_boundary_warnings([parameter_row])
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=optimization_report.site_count,
+        pattern_count=optimization_report.pattern_count,
+        optimized_parameter_count=1,
+        converged=optimization_report.converged,
+        boundary_warnings=boundary_warnings,
+    )
     return NucleotideSubstitutionParameterOptimizationReport(
         model_name="K80",
         taxa=optimization_report.taxa,
@@ -353,11 +386,12 @@ def _optimize_k80_substitution_parameters(
         parameter_rows=[parameter_row],
         initial_log_likelihood=optimization_report.initial_log_likelihood,
         optimized_log_likelihood=optimization_report.optimized_log_likelihood,
-        initial_aic=(-2.0 * optimization_report.initial_log_likelihood) + 2.0,
-        optimized_aic=(-2.0 * optimization_report.optimized_log_likelihood) + 2.0,
+        initial_aic=optimization_report.initial_aic,
+        optimized_aic=optimization_report.optimized_aic,
         function_evaluation_count=optimization_report.function_evaluation_count,
         optimization_pass_count=1,
         converged=optimization_report.converged,
+        fit_assessment=fit_assessment,
         boundary_warnings=boundary_warnings,
         warnings=warnings,
     )
@@ -381,6 +415,8 @@ def _optimize_f81_substitution_parameters(
     ),
     lower_exchangeability_bound: float | None,
     upper_exchangeability_bound: float | None,
+    max_coordinate_passes: int,
+    improvement_tolerance: float,
 ) -> NucleotideSubstitutionParameterOptimizationReport:
     _reject_irrelevant_parameter(
         "F81 substitution optimization",
@@ -413,18 +449,75 @@ def _optimize_f81_substitution_parameters(
         upper_exchangeability_bound,
     )
 
-    evaluation_report = evaluate_f81_tree_likelihood(
-        tree,
-        records,
-        base_frequencies=base_frequencies,
-    )
-    log_likelihood = evaluation_report.log_likelihood
+    if base_frequencies is not None:
+        evaluation_report = evaluate_f81_tree_likelihood(
+            tree,
+            records,
+            base_frequencies=base_frequencies,
+        )
+        initial_log_likelihood = evaluation_report.log_likelihood
+        optimized_log_likelihood = evaluation_report.log_likelihood
+        initial_aic = evaluation_report.aic
+        optimized_aic = evaluation_report.aic
+        optimization_pass_count = 0
+        function_evaluation_count = 1
+        converged = True
+        warnings: list[str] = []
+    else:
+        initial_report = evaluate_f81_tree_likelihood(tree, records)
+        search_result = run_simplex_likelihood_search(
+            initial_values_by_name={
+                "A": initial_report.base_frequency_a,
+                "C": initial_report.base_frequency_c,
+                "G": initial_report.base_frequency_g,
+                "T": initial_report.base_frequency_t,
+            },
+            expected_component_names=DNA_STATE_ORDER,
+            owner_name="F81 substitution optimization",
+            evaluate=lambda candidate: _evaluate_f81_frequency_candidate(
+                tree,
+                records,
+                candidate,
+            ),
+            minimum_component_value=_DEFAULT_MINIMUM_BASE_FREQUENCY,
+            improvement_tolerance=improvement_tolerance,
+            max_coordinate_passes=max_coordinate_passes,
+        )
+        evaluation_report = replace(
+            search_result.payload,
+            base_frequency_source="estimated",
+        )
+        initial_log_likelihood = initial_report.log_likelihood
+        optimized_log_likelihood = evaluation_report.log_likelihood
+        initial_aic = initial_report.aic
+        optimized_aic = evaluation_report.aic
+        optimization_pass_count = search_result.optimization_pass_count
+        function_evaluation_count = search_result.function_evaluation_count
+        converged = search_result.converged
+        warnings = []
+        if not search_result.converged:
+            warnings.append("F81 frequency search did not converge")
     boundary_warnings = build_base_frequency_boundary_warnings(
         base_frequency_source=evaluation_report.base_frequency_source,
         base_frequency_a=evaluation_report.base_frequency_a,
         base_frequency_c=evaluation_report.base_frequency_c,
         base_frequency_g=evaluation_report.base_frequency_g,
         base_frequency_t=evaluation_report.base_frequency_t,
+        lower_frequency_bound=(
+            _DEFAULT_MINIMUM_BASE_FREQUENCY if base_frequencies is None else 0.0
+        ),
+    )
+    warnings.extend(
+        warning
+        for warning in boundary_warning_messages(boundary_warnings)
+        if warning not in warnings
+    )
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=evaluation_report.site_count,
+        pattern_count=evaluation_report.pattern_count,
+        optimized_parameter_count=evaluation_report.parameter_count,
+        converged=converged,
+        boundary_warnings=boundary_warnings,
     )
     return NucleotideSubstitutionParameterOptimizationReport(
         model_name="F81",
@@ -440,15 +533,16 @@ def _optimize_f81_substitution_parameters(
         base_frequency_t=evaluation_report.base_frequency_t,
         fixed_parameter_values={},
         parameter_rows=[],
-        initial_log_likelihood=log_likelihood,
-        optimized_log_likelihood=log_likelihood,
-        initial_aic=evaluation_report.aic,
-        optimized_aic=evaluation_report.aic,
-        function_evaluation_count=1,
-        optimization_pass_count=0,
-        converged=True,
+        initial_log_likelihood=initial_log_likelihood,
+        optimized_log_likelihood=optimized_log_likelihood,
+        initial_aic=initial_aic,
+        optimized_aic=optimized_aic,
+        function_evaluation_count=function_evaluation_count,
+        optimization_pass_count=optimization_pass_count,
+        converged=converged,
+        fit_assessment=fit_assessment,
         boundary_warnings=boundary_warnings,
-        warnings=boundary_warning_messages(boundary_warnings),
+        warnings=warnings,
     )
 
 
@@ -470,6 +564,8 @@ def _optimize_hky85_substitution_parameters(
     ),
     lower_exchangeability_bound: float | None,
     upper_exchangeability_bound: float | None,
+    max_coordinate_passes: int,
+    improvement_tolerance: float,
 ) -> NucleotideSubstitutionParameterOptimizationReport:
     _reject_irrelevant_parameter(
         "HKY85 substitution optimization",
@@ -494,22 +590,41 @@ def _optimize_hky85_substitution_parameters(
             upper_kappa_bound=upper_kappa_bound,
         )
     )
-    optimization_report = optimize_hky85_kappa(
-        tree,
-        records,
-        base_frequencies=base_frequencies,
-        initial_kappa=validated_initial_kappa,
-        lower_kappa_bound=validated_lower_bound,
-        upper_kappa_bound=validated_upper_bound,
-    )
+    if base_frequencies is not None:
+        optimization_report = optimize_hky85_kappa(
+            tree,
+            records,
+            base_frequencies=base_frequencies,
+            initial_kappa=validated_initial_kappa,
+            lower_kappa_bound=validated_lower_bound,
+            upper_kappa_bound=validated_upper_bound,
+        )
+        optimization_pass_count = 1
+        function_evaluation_count = optimization_report.function_evaluation_count
+        converged = optimization_report.converged
+    else:
+        (
+            optimization_report,
+            function_evaluation_count,
+            optimization_pass_count,
+            converged,
+        ) = _optimize_estimated_hky85_kappa_and_base_frequencies(
+            tree,
+            records,
+            initial_kappa=validated_initial_kappa,
+            lower_kappa_bound=validated_lower_bound,
+            upper_kappa_bound=validated_upper_bound,
+            max_joint_passes=max_coordinate_passes,
+            improvement_tolerance=improvement_tolerance,
+        )
     parameter_row, warnings = _parameter_row_with_boundary_warnings(
         parameter_name="kappa",
-        initial_value=optimization_report.initial_kappa,
+        initial_value=validated_initial_kappa,
         optimized_value=optimization_report.optimized_kappa,
         lower_bound=optimization_report.lower_kappa_bound,
         upper_bound=optimization_report.upper_kappa_bound,
     )
-    if not optimization_report.converged:
+    if not converged:
         warnings.append("HKY85 substitution-parameter search did not converge")
     boundary_warnings = build_substitution_parameter_boundary_warnings([parameter_row])
     boundary_warnings.extend(
@@ -519,12 +634,22 @@ def _optimize_hky85_substitution_parameters(
             base_frequency_c=optimization_report.base_frequency_c,
             base_frequency_g=optimization_report.base_frequency_g,
             base_frequency_t=optimization_report.base_frequency_t,
+            lower_frequency_bound=(
+                _DEFAULT_MINIMUM_BASE_FREQUENCY if base_frequencies is None else 0.0
+            ),
         )
     )
     warnings.extend(
         warning
         for warning in boundary_warning_messages(boundary_warnings)
         if warning not in warnings
+    )
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=optimization_report.site_count,
+        pattern_count=optimization_report.pattern_count,
+        optimized_parameter_count=optimization_report.parameter_count,
+        converged=converged,
+        boundary_warnings=boundary_warnings,
     )
     return NucleotideSubstitutionParameterOptimizationReport(
         model_name="HKY85",
@@ -544,9 +669,10 @@ def _optimize_hky85_substitution_parameters(
         optimized_log_likelihood=optimization_report.optimized_log_likelihood,
         initial_aic=optimization_report.initial_aic,
         optimized_aic=optimization_report.optimized_aic,
-        function_evaluation_count=optimization_report.function_evaluation_count,
-        optimization_pass_count=1,
-        converged=optimization_report.converged,
+        function_evaluation_count=function_evaluation_count,
+        optimization_pass_count=optimization_pass_count,
+        converged=converged,
+        fit_assessment=fit_assessment,
         boundary_warnings=boundary_warnings,
         warnings=warnings,
     )
@@ -604,16 +730,35 @@ def _optimize_gtr_substitution_parameters(
                 model_name="GTR substitution optimization",
             )
         )
-    optimization_report = optimize_gtr_exchangeabilities(
-        tree,
-        records,
-        base_frequencies=base_frequencies,
-        initial_exchangeabilities=initial_exchangeabilities,
-        lower_exchangeability_bound=validated_lower_bound,
-        upper_exchangeability_bound=validated_upper_bound,
-        max_coordinate_passes=max_coordinate_passes,
-        improvement_tolerance=improvement_tolerance,
-    )
+    if base_frequencies is not None:
+        optimization_report = optimize_gtr_exchangeabilities(
+            tree,
+            records,
+            base_frequencies=base_frequencies,
+            initial_exchangeabilities=initial_exchangeabilities,
+            lower_exchangeability_bound=validated_lower_bound,
+            upper_exchangeability_bound=validated_upper_bound,
+            max_coordinate_passes=max_coordinate_passes,
+            improvement_tolerance=improvement_tolerance,
+        )
+        optimization_pass_count = optimization_report.optimization_pass_count
+        function_evaluation_count = optimization_report.function_evaluation_count
+        converged = optimization_report.converged
+    else:
+        (
+            optimization_report,
+            function_evaluation_count,
+            optimization_pass_count,
+            converged,
+        ) = _optimize_estimated_gtr_exchangeabilities_and_base_frequencies(
+            tree,
+            records,
+            initial_exchangeabilities=normalized_initial_exchangeabilities,
+            lower_exchangeability_bound=validated_lower_bound,
+            upper_exchangeability_bound=validated_upper_bound,
+            max_joint_passes=max_coordinate_passes,
+            improvement_tolerance=improvement_tolerance,
+        )
     parameter_rows: list[SubstitutionParameterOptimizationRow] = []
     warnings: list[str] = []
     optimized_values = {
@@ -645,12 +790,22 @@ def _optimize_gtr_substitution_parameters(
             base_frequency_c=optimization_report.base_frequency_c,
             base_frequency_g=optimization_report.base_frequency_g,
             base_frequency_t=optimization_report.base_frequency_t,
+            lower_frequency_bound=(
+                _DEFAULT_MINIMUM_BASE_FREQUENCY if base_frequencies is None else 0.0
+            ),
         )
     )
     warnings.extend(
         warning
         for warning in boundary_warning_messages(boundary_warnings)
         if warning not in warnings
+    )
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=optimization_report.site_count,
+        pattern_count=optimization_report.pattern_count,
+        optimized_parameter_count=optimization_report.parameter_count,
+        converged=converged,
+        boundary_warnings=boundary_warnings,
     )
     return NucleotideSubstitutionParameterOptimizationReport(
         model_name="GTR",
@@ -670,12 +825,267 @@ def _optimize_gtr_substitution_parameters(
         optimized_log_likelihood=optimization_report.optimized_log_likelihood,
         initial_aic=optimization_report.initial_aic,
         optimized_aic=optimization_report.optimized_aic,
-        function_evaluation_count=optimization_report.function_evaluation_count,
-        optimization_pass_count=optimization_report.optimization_pass_count,
-        converged=optimization_report.converged,
+        function_evaluation_count=function_evaluation_count,
+        optimization_pass_count=optimization_pass_count,
+        converged=converged,
+        fit_assessment=fit_assessment,
         boundary_warnings=boundary_warnings,
         warnings=warnings,
     )
+
+
+def _evaluate_f81_frequency_candidate(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    candidate_base_frequencies: dict[str, float],
+) -> tuple[F81TreeLikelihoodReport, float]:
+    report = evaluate_f81_tree_likelihood(
+        tree,
+        records,
+        base_frequencies=candidate_base_frequencies,
+    )
+    return report, report.log_likelihood
+
+
+def _optimize_estimated_hky85_kappa_and_base_frequencies(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    initial_kappa: float,
+    lower_kappa_bound: float,
+    upper_kappa_bound: float,
+    max_joint_passes: int,
+    improvement_tolerance: float,
+):
+    current_optimization_report = optimize_hky85_kappa(
+        tree,
+        records,
+        initial_kappa=initial_kappa,
+        lower_kappa_bound=lower_kappa_bound,
+        upper_kappa_bound=upper_kappa_bound,
+    )
+    current_base_frequencies = _resolved_report_base_frequencies(
+        current_optimization_report
+    )
+    current_kappa = current_optimization_report.optimized_kappa
+    current_objective = current_optimization_report.optimized_log_likelihood
+    total_function_evaluation_count = (
+        current_optimization_report.function_evaluation_count
+    )
+    scalar_searches_converged = current_optimization_report.converged
+    executed_joint_pass_count = 0
+    schedule_converged = False
+
+    for joint_pass_index in range(1, max_joint_passes + 1):
+        executed_joint_pass_count = joint_pass_index
+        frequency_search = run_simplex_likelihood_search(
+            initial_values_by_name=current_base_frequencies,
+            expected_component_names=DNA_STATE_ORDER,
+            owner_name="HKY85 substitution optimization",
+            evaluate=lambda candidate, resolved_kappa=current_kappa: (
+                _evaluate_hky85_frequency_candidate(
+                    tree,
+                    records,
+                    candidate,
+                    current_kappa=resolved_kappa,
+                )
+            ),
+            minimum_component_value=_DEFAULT_MINIMUM_BASE_FREQUENCY,
+            improvement_tolerance=improvement_tolerance,
+            max_coordinate_passes=1,
+        )
+        total_function_evaluation_count += frequency_search.function_evaluation_count
+        current_base_frequencies = _resolved_report_base_frequencies(
+            frequency_search.payload
+        )
+
+        kappa_report = optimize_hky85_kappa(
+            tree,
+            records,
+            base_frequencies=current_base_frequencies,
+            initial_kappa=current_kappa,
+            lower_kappa_bound=lower_kappa_bound,
+            upper_kappa_bound=upper_kappa_bound,
+        )
+        total_function_evaluation_count += kappa_report.function_evaluation_count
+        scalar_searches_converged = scalar_searches_converged and kappa_report.converged
+        if frequency_search.payload.log_likelihood <= (
+            current_objective + improvement_tolerance
+        ) and kappa_report.optimized_log_likelihood <= (
+            current_objective + improvement_tolerance
+        ):
+            schedule_converged = True
+            break
+        current_kappa = kappa_report.optimized_kappa
+        current_objective = kappa_report.optimized_log_likelihood
+        current_optimization_report = replace(
+            kappa_report,
+            base_frequency_source="estimated",
+            base_frequency_a=current_base_frequencies["A"],
+            base_frequency_c=current_base_frequencies["C"],
+            base_frequency_g=current_base_frequencies["G"],
+            base_frequency_t=current_base_frequencies["T"],
+        )
+
+    return (
+        current_optimization_report,
+        total_function_evaluation_count,
+        max(1, executed_joint_pass_count),
+        schedule_converged and scalar_searches_converged,
+    )
+
+
+def _evaluate_hky85_frequency_candidate(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    candidate_base_frequencies: dict[str, float],
+    *,
+    current_kappa: float,
+) -> tuple[Hky85TreeLikelihoodReport, float]:
+    report = evaluate_hky85_tree_likelihood(
+        tree,
+        records,
+        base_frequencies=candidate_base_frequencies,
+        kappa=current_kappa,
+    )
+    return report, report.log_likelihood
+
+
+def _optimize_estimated_gtr_exchangeabilities_and_base_frequencies(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    initial_exchangeabilities: numpy.ndarray,
+    lower_exchangeability_bound: float,
+    upper_exchangeability_bound: float,
+    max_joint_passes: int,
+    improvement_tolerance: float,
+):
+    initial_optimization_report = optimize_gtr_exchangeabilities(
+        tree,
+        records,
+        initial_exchangeabilities=initial_exchangeabilities,
+        lower_exchangeability_bound=lower_exchangeability_bound,
+        upper_exchangeability_bound=upper_exchangeability_bound,
+        max_coordinate_passes=max_joint_passes,
+        improvement_tolerance=improvement_tolerance,
+    )
+    current_optimization_report = initial_optimization_report
+    current_base_frequencies = _resolved_report_base_frequencies(
+        current_optimization_report
+    )
+    current_exchangeabilities = _resolved_report_exchangeabilities(
+        current_optimization_report
+    )
+    current_objective = current_optimization_report.optimized_log_likelihood
+    total_function_evaluation_count = (
+        current_optimization_report.function_evaluation_count
+    )
+    executed_joint_pass_count = 0
+    schedule_converged = False
+
+    for joint_pass_index in range(1, max_joint_passes + 1):
+        executed_joint_pass_count = joint_pass_index
+        frequency_search = run_simplex_likelihood_search(
+            initial_values_by_name=current_base_frequencies,
+            expected_component_names=DNA_STATE_ORDER,
+            owner_name="GTR substitution optimization",
+            evaluate=lambda candidate, resolved_exchangeabilities=current_exchangeabilities: (
+                _evaluate_gtr_frequency_candidate(
+                    tree,
+                    records,
+                    candidate,
+                    current_exchangeabilities=resolved_exchangeabilities,
+                )
+            ),
+            minimum_component_value=_DEFAULT_MINIMUM_BASE_FREQUENCY,
+            improvement_tolerance=improvement_tolerance,
+            max_coordinate_passes=1,
+        )
+        total_function_evaluation_count += frequency_search.function_evaluation_count
+        current_base_frequencies = _resolved_report_base_frequencies(
+            frequency_search.payload
+        )
+
+        exchangeability_report = optimize_gtr_exchangeabilities(
+            tree,
+            records,
+            base_frequencies=current_base_frequencies,
+            initial_exchangeabilities=current_exchangeabilities,
+            lower_exchangeability_bound=lower_exchangeability_bound,
+            upper_exchangeability_bound=upper_exchangeability_bound,
+            max_coordinate_passes=1,
+            improvement_tolerance=improvement_tolerance,
+        )
+        total_function_evaluation_count += (
+            exchangeability_report.function_evaluation_count
+        )
+        current_exchangeabilities = _resolved_report_exchangeabilities(
+            exchangeability_report
+        )
+        current_optimization_report = replace(
+            exchangeability_report,
+            base_frequency_source="estimated",
+            base_frequency_a=current_base_frequencies["A"],
+            base_frequency_c=current_base_frequencies["C"],
+            base_frequency_g=current_base_frequencies["G"],
+            base_frequency_t=current_base_frequencies["T"],
+        )
+        if frequency_search.payload.log_likelihood <= (
+            current_objective + improvement_tolerance
+        ) and current_optimization_report.optimized_log_likelihood <= (
+            current_objective + improvement_tolerance
+        ):
+            schedule_converged = True
+            break
+        current_objective = current_optimization_report.optimized_log_likelihood
+
+    return (
+        replace(
+            current_optimization_report,
+            initial_log_likelihood=initial_optimization_report.initial_log_likelihood,
+            initial_aic=initial_optimization_report.initial_aic,
+        ),
+        total_function_evaluation_count,
+        max(1, executed_joint_pass_count),
+        initial_optimization_report.converged and schedule_converged,
+    )
+
+
+def _evaluate_gtr_frequency_candidate(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    candidate_base_frequencies: dict[str, float],
+    *,
+    current_exchangeabilities: dict[str, float],
+) -> tuple[GtrTreeLikelihoodReport, float]:
+    report = evaluate_gtr_tree_likelihood(
+        tree,
+        records,
+        exchangeabilities=current_exchangeabilities,
+        base_frequencies=candidate_base_frequencies,
+    )
+    return report, report.log_likelihood
+
+
+def _resolved_report_base_frequencies(report) -> dict[str, float]:
+    return {
+        "A": float(report.base_frequency_a),
+        "C": float(report.base_frequency_c),
+        "G": float(report.base_frequency_g),
+        "T": float(report.base_frequency_t),
+    }
+
+
+def _resolved_report_exchangeabilities(report) -> dict[str, float]:
+    return {
+        "AC": float(report.exchangeability_ac),
+        "AG": float(report.exchangeability_ag),
+        "AT": float(report.exchangeability_at),
+        "CG": float(report.exchangeability_cg),
+        "CT": float(report.exchangeability_ct),
+        "GT": float(report.exchangeability_gt),
+    }
 
 
 def _parameter_row_with_boundary_warnings(

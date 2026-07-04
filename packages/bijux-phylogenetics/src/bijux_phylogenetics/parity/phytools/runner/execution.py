@@ -6,7 +6,9 @@ from pathlib import Path
 import subprocess  # nosec B404
 import tempfile
 
+from ...live_access import require_live_parity_access
 from ..registry import _selected_cases, _write_case_file
+from ..shards import resolve_phytools_parity_case_ids
 from .comparison import (
     load_json as _load_json,
 )
@@ -71,11 +73,21 @@ def _write_reference_process_streams(
 def run_phytools_parity_cases(
     *,
     case_ids: list[str] | None = None,
+    shard_ids: list[str] | None = None,
     rscript_executable: str = "Rscript",
     failure_root: Path | None = None,
 ) -> PhytoolsParityReport:
     """Run governed live `phytools` parity cases through the checked-in R runner."""
-    selected = _selected_cases(case_ids)
+    require_live_parity_access(
+        surface="phytools live parity runner",
+        reference_source="phytools-live",
+        executable=rscript_executable,
+    )
+    selected_case_ids = resolve_phytools_parity_case_ids(
+        case_ids=case_ids,
+        shard_ids=shard_ids,
+    )
+    selected = _selected_cases(selected_case_ids)
     observations: list[PhytoolsParityObservation] = []
     active_failure_root = _failure_root() if failure_root is None else failure_root
     bijux_version = _bijux_version()

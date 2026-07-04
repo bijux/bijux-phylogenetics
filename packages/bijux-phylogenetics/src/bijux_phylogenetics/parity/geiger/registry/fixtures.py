@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from bijux_phylogenetics.datasets.shared_fixtures._paths import governed_fixture_root
 from bijux_phylogenetics.datasets.shared_fixtures.geiger_continuous import (
     SharedGeigerContinuousFixture,
     get_shared_geiger_continuous_fixture,
@@ -62,15 +63,10 @@ class GeigerRegistryFixtureCatalog:
     discrete_ard_missing_fixture: SharedGeigerDiscreteFixture
 
 
-def _package_root() -> Path:
-    return Path(__file__).resolve().parents[5]
-
-
 def build_geiger_registry_fixture_catalog() -> GeigerRegistryFixtureCatalog:
     """Resolve the shared fixtures consumed by the governed `geiger` parity cases."""
 
-    package_root = _package_root()
-    tests_root = package_root / "tests" / "fixtures"
+    tests_root = governed_fixture_root()
     return GeigerRegistryFixtureCatalog(
         tests_root=tests_root,
         brownian_fixture=get_shared_geiger_continuous_fixture(

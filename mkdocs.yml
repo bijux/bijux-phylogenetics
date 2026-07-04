@@ -1,7 +1,7 @@
 INHERIT: mkdocs.shared.yml
 
 site_name: Bijux Phylogenetics
-site_description: Reproducible phylogenetic analysis, comparative workflows, and evidence-first reporting documentation.
+site_description: Native phylogenetic runtime, comparative workflows, benchmark evidence, and evidence-linked reporting documentation.
 site_url: !ENV [SITE_URL, https://bijux.io/bijux-phylogenetics/]
 site_author: Bijan Mousavi <bijan@bijux.io>
 repo_name: bijux/bijux-phylogenetics
@@ -36,12 +36,6 @@ extra:
       - key: bijux-core
         label: Core
         url: https://bijux.io/bijux-core/
-      - key: bijux-canon
-        label: Canon
-        url: https://bijux.io/bijux-canon/
-      - key: bijux-atlas
-        label: Atlas
-        url: https://bijux.io/bijux-atlas/
       - key: bijux-proteomics
         label: Proteomics
         url: https://bijux.io/bijux-proteomics/
@@ -51,6 +45,15 @@ extra:
       - key: bijux-phylogenetics
         label: Phylogenetics
         url: https://bijux.io/bijux-phylogenetics/
+      - key: bijux-canon
+        label: Canon
+        url: https://bijux.io/bijux-canon/
+      - key: bijux-atlas
+        label: Atlas
+        url: https://bijux.io/bijux-atlas/
+      - key: bijux-masterclass
+        label: Masterclass
+        url: https://bijux.io/bijux-masterclass/
 
 not_in_nav: |
   assets/**
@@ -60,43 +63,75 @@ not_in_nav: |
 
 nav:
   - Home: index.md
-  - Public:
-      - Phylogenetics:
-          - Overview: public/phylogenetics/index.md
-          - Foundation:
-              - Overview: public/phylogenetics/foundation/index.md
-              - Repository Scope and Limits: public/phylogenetics/foundation/repository-scope-and-limits.md
-              - Product Surface and Ownership: public/phylogenetics/foundation/product-surface-and-ownership.md
-              - Runtime and Evidence Boundary: public/phylogenetics/foundation/evidence-boundary.md
-          - Architecture:
-              - Overview: public/phylogenetics/architecture/index.md
-              - Runtime System Map: public/phylogenetics/architecture/runtime-system-map.md
-              - Package Map: public/phylogenetics/architecture/package-map.md
-              - Evidence Consumer Boundary: public/phylogenetics/architecture/evidence-consumer-boundary.md
-          - Interfaces:
-              - Overview: public/phylogenetics/interfaces/index.md
-              - API Surface: public/phylogenetics/interfaces/api-surface.md
-              - CLI Surface: public/phylogenetics/interfaces/cli-surface.md
-              - Python Surface: public/phylogenetics/interfaces/python-surface.md
-              - Artifact Contracts: public/phylogenetics/interfaces/artifact-contracts.md
-          - Operations:
-              - Overview: public/phylogenetics/operations/index.md
-              - Installation and Setup: public/phylogenetics/operations/installation-and-setup.md
-              - Common Workflows: public/phylogenetics/operations/common-workflows.md
-              - Operational Boundaries: public/phylogenetics/operations/operational-boundaries.md
-          - Quality:
-              - Overview: public/phylogenetics/quality/index.md
-              - Test Strategy: public/phylogenetics/quality/test-strategy.md
-              - Release and Publication Gates: public/phylogenetics/quality/release-and-publication-gates.md
-              - Evidence Honesty and Limits: public/phylogenetics/quality/evidence-honesty-and-limits.md
-      - Evidence Book:
-          - Overview: public/phylogenetics-evidence-book/index.md
-          - PCM1: public/phylogenetics-evidence-book/pcm1-primate-longevity-signal/index.md
-          - PCM1 Data and Tree Preparation: public/phylogenetics-evidence-book/pcm1-primate-longevity-signal/data-and-tree-preparation.md
-          - PCM1 Signal and Ancestral Results: public/phylogenetics-evidence-book/pcm1-primate-longevity-signal/signal-and-ancestral-results.md
-          - PCM2: public/phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/index.md
-          - PCM2 Model Comparisons and PGLS: public/phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/model-comparisons-and-pgls.md
-          - PCM2 Signal Diagnostics and Open Boundaries: public/phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/signal-diagnostics-and-open-boundaries.md
-  - Internal:
-      - Overview: internal/index.md
-      - Maintainer: internal/maintain/index.md
+  - Phylogenetics:
+      - Overview: 01-bijux-phylogenetics/index.md
+      - Foundation:
+          - Overview: 01-bijux-phylogenetics/foundation/index.md
+          - Claim Reading Guide: 01-bijux-phylogenetics/foundation/claim-reading-guide.md
+          - Repository Scope and Limits: 01-bijux-phylogenetics/foundation/repository-scope-and-limits.md
+          - Product Surface and Ownership: 01-bijux-phylogenetics/foundation/product-surface-and-ownership.md
+          - Runtime and Evidence Boundary: 01-bijux-phylogenetics/foundation/evidence-boundary.md
+      - Architecture:
+          - Overview: 01-bijux-phylogenetics/architecture/index.md
+          - Runtime System Map: 01-bijux-phylogenetics/architecture/runtime-system-map.md
+          - Package Map: 01-bijux-phylogenetics/architecture/package-map.md
+          - Evidence Consumer Boundary: 01-bijux-phylogenetics/architecture/evidence-consumer-boundary.md
+      - Interfaces:
+          - Overview: 01-bijux-phylogenetics/interfaces/index.md
+          - Surface Selection Guide: 01-bijux-phylogenetics/interfaces/surface-selection.md
+          - API Surface: 01-bijux-phylogenetics/interfaces/api-surface.md
+          - CLI Surface: 01-bijux-phylogenetics/interfaces/cli-surface.md
+          - Python Surface: 01-bijux-phylogenetics/interfaces/python-surface.md
+          - Native Inference and Benchmarks: 01-bijux-phylogenetics/interfaces/native-inference-and-benchmarks.md
+          - Artifact Consumption Guide: 01-bijux-phylogenetics/interfaces/artifact-consumption-guide.md
+          - Artifact Contracts: 01-bijux-phylogenetics/interfaces/artifact-contracts.md
+      - Operations:
+          - Overview: 01-bijux-phylogenetics/operations/index.md
+          - Installation and Setup: 01-bijux-phylogenetics/operations/installation-and-setup.md
+          - Common Workflows: 01-bijux-phylogenetics/operations/common-workflows.md
+          - Native Maximum-Likelihood Workflows: 01-bijux-phylogenetics/operations/native-maximum-likelihood-workflows.md
+          - Native Bayesian Workflows: 01-bijux-phylogenetics/operations/native-bayesian-workflows.md
+          - Native Benchmark Review: 01-bijux-phylogenetics/operations/native-benchmark-review.md
+          - Operational Boundaries: 01-bijux-phylogenetics/operations/operational-boundaries.md
+      - Quality:
+          - Overview: 01-bijux-phylogenetics/quality/index.md
+          - Test Strategy: 01-bijux-phylogenetics/quality/test-strategy.md
+          - Validation Lanes: 01-bijux-phylogenetics/quality/validation-lanes.md
+          - Native Benchmark Evidence: 01-bijux-phylogenetics/quality/native-benchmark-evidence.md
+          - Release Review Workflow: 01-bijux-phylogenetics/quality/release-review-workflow.md
+          - Release and Publication Gates: 01-bijux-phylogenetics/quality/release-and-publication-gates.md
+          - Evidence Honesty and Limits: 01-bijux-phylogenetics/quality/evidence-honesty-and-limits.md
+  - Evidence Book:
+      - Overview: 02-bijux-phylogenetics-evidence-book/index.md
+      - PCM1:
+          - Overview: 02-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/index.md
+          - Data and Tree Preparation: 02-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/data-and-tree-preparation.md
+          - Signal and Ancestral Results: 02-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/signal-and-ancestral-results.md
+      - PCM2:
+          - Overview: 02-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/index.md
+          - Model Comparisons and PGLS: 02-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/model-comparisons-and-pgls.md
+          - Signal Diagnostics and Open Boundaries: 02-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/signal-diagnostics-and-open-boundaries.md
+      - PCM3:
+          - Overview: 02-bijux-phylogenetics-evidence-book/pcm3-primate-continuous-and-categorical-regression/index.md
+          - Model Design and Phylogenetic Regression: 02-bijux-phylogenetics-evidence-book/pcm3-primate-continuous-and-categorical-regression/model-design-and-phylogenetic-regression.md
+      - PCM4:
+          - Overview: 02-bijux-phylogenetics-evidence-book/pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md
+          - Mixed-Model Evidence Boundary: 02-bijux-phylogenetics-evidence-book/pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/mixed-model-evidence-boundary.md
+      - PCM5:
+          - Overview: 02-bijux-phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md
+          - Generalized Mixed-Model Evidence Boundary: 02-bijux-phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/generalized-mixed-model-evidence-boundary.md
+  - Maintainer:
+      - Maintainer Handbook: 03-bijux-phylogenetics-maintain/index.md
+      - Documentation System:
+          - Documentation System: 03-bijux-phylogenetics-maintain/documentation-system/index.md
+          - Documentation Ownership: 03-bijux-phylogenetics-maintain/documentation-system/documentation-ownership.md
+          - Native Surface Documentation: 03-bijux-phylogenetics-maintain/documentation-system/native-surface-documentation.md
+      - Trust Surfaces:
+          - Trust Surfaces: 03-bijux-phylogenetics-maintain/trust-surfaces/index.md
+          - Public Trust Surface Maintenance: 03-bijux-phylogenetics-maintain/trust-surfaces/public-trust-surface-maintenance.md
+          - Public Interface And Artifact Maintenance: 03-bijux-phylogenetics-maintain/trust-surfaces/public-interface-and-artifact-maintenance.md
+          - Trust Lane And Study Guide Maintenance: 03-bijux-phylogenetics-maintain/trust-surfaces/trust-lane-and-study-guide-maintenance.md
+      - Repository Operations:
+          - Repository Operations: 03-bijux-phylogenetics-maintain/repository-operations/index.md
+          - Artifact Hygiene: 03-bijux-phylogenetics-maintain/repository-operations/artifact-hygiene.md
+          - Release Surface Alignment: 03-bijux-phylogenetics-maintain/repository-operations/release-surface-alignment.md

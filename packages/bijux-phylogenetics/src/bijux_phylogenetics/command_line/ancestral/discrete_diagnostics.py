@@ -113,8 +113,14 @@ def add_discrete_diagnostic_ancestral_commands(ancestral_subparsers: Any) -> Non
     ancestral_irreversible_discrete.add_argument("--taxon-column")
     ancestral_irreversible_discrete.add_argument(
         "--model",
-        choices=("equal-rates", "symmetric", "all-rates-different", "meristic"),
-        default="all-rates-different",
+        choices=(
+            "equal-rates",
+            "symmetric",
+            "all-rates-different",
+            "irreversible",
+            "meristic",
+        ),
+        default="irreversible",
     )
     ancestral_irreversible_discrete.add_argument(
         "--allowed-transitions",

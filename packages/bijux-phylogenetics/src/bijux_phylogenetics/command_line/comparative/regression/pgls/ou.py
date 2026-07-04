@@ -93,6 +93,21 @@ def run_ou_pgls_command(args: Any) -> int | None:
                 "alpha": report.alpha,
                 "alpha_estimation_mode": report.alpha_estimation_mode,
                 "alpha_profile_point_count": len(report.alpha_profile_rows),
+                "alpha_optimizer_name": (
+                    None
+                    if report.alpha_optimizer_diagnostics is None
+                    else report.alpha_optimizer_diagnostics.optimizer_name
+                ),
+                "alpha_optimizer_converged": (
+                    None
+                    if report.alpha_optimizer_diagnostics is None
+                    else report.alpha_optimizer_diagnostics.converged
+                ),
+                "alpha_optimizer_function_evaluation_count": (
+                    None
+                    if report.alpha_optimizer_diagnostics is None
+                    else report.alpha_optimizer_diagnostics.function_evaluation_count
+                ),
                 "alpha_lower_95_confidence_interval": (
                     report.lower_95_confidence_interval
                 ),

@@ -27,6 +27,15 @@ from bijux_phylogenetics.io.biopython import tree_from_biophylo
 from bijux_phylogenetics.io.newick import dumps_newick, write_newick
 from bijux_phylogenetics.io.trees import detect_tree_format
 from bijux_phylogenetics.phylo.topology.clades import informative_unrooted_splits
+from bijux_phylogenetics.runtime.repository_layout import (
+    governed_fixture_root as locate_governed_fixture_root,
+)
+from bijux_phylogenetics.runtime.repository_layout import (
+    package_root as locate_package_root,
+)
+from bijux_phylogenetics.runtime.repository_layout import (
+    repository_root as locate_repository_root,
+)
 from bijux_phylogenetics.trees import (
     compute_clade_frequency_table,
     compute_consensus_tree,
@@ -86,15 +95,15 @@ class ReferenceParityReport:
 
 
 def _fixtures_root() -> Path:
-    return _package_root() / "tests" / "fixtures"
+    return locate_governed_fixture_root(start=Path(__file__))
 
 
 def _package_root() -> Path:
-    return Path(__file__).resolve().parents[3]
+    return locate_package_root(start=Path(__file__))
 
 
 def _repository_root() -> Path:
-    return Path(__file__).resolve().parents[5]
+    return locate_repository_root(start=Path(__file__))
 
 
 def _expected_root() -> Path:
@@ -733,9 +742,33 @@ def _build_summary_rows(
     return rows
 
 
+def _filter_reference_observations_by_method(
+    observations: list[ReferenceParityObservation],
+    *,
+    methods: list[str] | None,
+) -> list[ReferenceParityObservation]:
+    if methods is None:
+        return observations
+    available_methods = {observation.method for observation in observations}
+    missing_methods = [
+        method_name for method_name in methods if method_name not in available_methods
+    ]
+    if missing_methods:
+        raise ValueError(
+            "unknown reference parity methods: " + ", ".join(sorted(missing_methods))
+        )
+    selected_methods = set(methods)
+    return [
+        observation
+        for observation in observations
+        if observation.method in selected_methods
+    ]
+
+
 def validate_reference_parity_examples(
     *,
     include_extended: bool = False,
+    methods: list[str] | None = None,
 ) -> ReferenceParityReport:
     """Validate core numerical methods against checked-in external reference outputs."""
     observations, comparative_tools = _build_comparative_observations()
@@ -776,6 +809,10 @@ def validate_reference_parity_examples(
         limitations.append(
             "The extended suite adds governed primate comparative parity checks and a larger posterior tree-set parity check for optional validation lanes."
         )
+    observations = _filter_reference_observations_by_method(
+        observations,
+        methods=methods,
+    )
     summary_rows = _build_summary_rows(observations)
     case_count = len(observations)
     passed_case_count = sum(1 for observation in observations if observation.passed)

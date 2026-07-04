@@ -12,17 +12,36 @@ UV_SYNC := UV_PROJECT_ENVIRONMENT="$(ROOT_CHECK_VENV)" $(UV) sync --frozen --gro
 CLI := $(ROOT_CHECK_VENV)/bin/bijux-phylogenetics
 DEV_RUN = PYTHONPATH="$(ROOT_DEV_PYTHONPATH)$${PYTHONPATH:+:$$PYTHONPATH}" "$(ROOT_CHECK_PYTHON)"
 DOCS_RENDER_SERVE_CONFIG := 0
-ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time
+ROOT_ARTIFACT_ALIAS_SCRIPT := $(ROOT_MAKEFILE_DIR)/repository_artifact_aliases.py
+ROOT_DISPOSABLE_ALIAS_PATHS := \
+	"$(CURDIR)/.venv" \
+	"$(CURDIR)/.tox" \
+	"$(CURDIR)/.hypothesis" \
+	"$(CURDIR)/.benchmarks"
+ROOT_CLEAN_ROOT_ARTIFACTS_COMMAND := @for path in $(ROOT_DISPOSABLE_ALIAS_PATHS); do \
+	if [ -L "$$path" ]; then \
+		rm -f "$$path"; \
+	elif [ -d "$$path" ]; then \
+		rm -rf "$$path"; \
+	elif [ -e "$$path" ]; then \
+		rm -f "$$path"; \
+	fi; \
+done; \
+rm -rf $(ROOT_FORBIDDEN_ARTIFACTS) || true
+ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time test-all-frozen
 ROOT_TARGET_GROUPS_test-all ?= check
 ROOT_TARGET_GROUPS_test-all-plus-run-time ?= check
+ROOT_TARGET_GROUPS_test-all-frozen ?= check
 ROOT_TARGET_SHARED_ENV_test-all ?= 1
 ROOT_TARGET_SHARED_ENV_test-all-plus-run-time ?= 1
+ROOT_TARGET_SHARED_ENV_test-all-frozen ?= 0
 
 include $(ROOT_MAKEFILE_DIR)/bijux-py/repository/root.mk
 
 include $(ROOT_MAKEFILE_DIR)/bijux-py/root/package-dispatch.mk
 ROOT_TARGET_PACKAGES_test-all := $(CHECK_PACKAGES)
 ROOT_TARGET_PACKAGES_test-all-plus-run-time := $(CHECK_PACKAGES)
+ROOT_TARGET_PACKAGES_test-all-frozen := $(CHECK_PACKAGES)
 include $(ROOT_MAKEFILE_DIR)/bijux-py/root/docs.mk
 include $(ROOT_MAKEFILE_DIR)/bijux-docs.mk
 include $(ROOT_MAKEFILE_DIR)/bijux-std.mk
@@ -41,18 +60,21 @@ DOCS_SERVE_PREPARE_TARGETS := bijux-docs-sync docs-render-serve-config
 	clean-root-artifacts root-check-env check-shared-bijux-py check-config-ssot \
 	list-evidence-studies build-evidence-book build-evidence-study build-evidence-unit validate-evidence-book \
 	sync-evidence-artifacts sync-evidence-unit-artifacts check-evidence-artifacts check-evidence-unit-artifacts sync-evidence-unit-inputs check-evidence-unit-inputs report-evidence-completeness check-evidence-completeness report-evidence-governance check-evidence-governance \
-	report-artifact-governance check-artifact-governance report-execution-surfaces check-execution-surfaces \
+	report-artifact-governance check-artifact-governance report-execution-surfaces check-execution-surfaces report-runtime-budgets check-runtime-budgets \
 	report-package-boundaries check-package-boundaries report-package-bundles check-package-bundles report-publish-readiness check-publish-readiness \
 	report-release-readiness check-release-readiness
 
 EVIDENCE_STUDY_ID ?=
 EVIDENCE_ID ?=
 EVIDENCE_IDS ?=
+RUNTIME_BUDGET_LOG ?=
+RUNTIME_BUDGET_MIN_SECONDS ?= 100
 
 check: sync-license-assets lock-check check-config-ssot check-evidence-governance check-execution-surfaces check-package-boundaries lint test quality security docs build sbom ## Run the full repository verification flow
 
 test-all: ## Run every repository test surface, including slow, evaluation, and real-local tests
 test-all-plus-run-time: ## Run every repository test surface and report per-test durations
+test-all-frozen: ## Compare every repository test surface against TEST_ALL_FROZEN_REF
 
 install-external-engine-runtime: ## Install the local external engine lane dependencies on macOS with Homebrew
 	@command -v brew >/dev/null || { echo "Homebrew is required for install-external-engine-runtime"; exit 2; }
@@ -150,6 +172,16 @@ check-evidence-unit-inputs: root-check-env ## Validate governed input manifests 
 report-evidence-completeness: root-check-env ## Audit evidence bundle completeness into repository artifacts
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_completeness report --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/evidence-completeness.json"
 .PHONY: report-evidence-completeness
+
+report-runtime-budgets: root-check-env ## Audit classifications for long-running pytest cases from one captured duration log
+	@test -n "$(RUNTIME_BUDGET_LOG)" || { echo "RUNTIME_BUDGET_LOG is required"; exit 2; }
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.runtime_budget_governance report --repo-root "$(CURDIR)" --log-path "$(RUNTIME_BUDGET_LOG)" --minimum-seconds "$(RUNTIME_BUDGET_MIN_SECONDS)" --json-out "$(ROOT_ARTIFACTS_DIR)/runtime-budget-report.json"
+.PHONY: report-runtime-budgets
+
+check-runtime-budgets: root-check-env ## Fail when any 100+ second pytest case lacks a governed runtime-budget classification
+	@test -n "$(RUNTIME_BUDGET_LOG)" || { echo "RUNTIME_BUDGET_LOG is required"; exit 2; }
+	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.runtime_budget_governance check --repo-root "$(CURDIR)" --log-path "$(RUNTIME_BUDGET_LOG)" --minimum-seconds "$(RUNTIME_BUDGET_MIN_SECONDS)" --json-out "$(ROOT_ARTIFACTS_DIR)/runtime-budget-report.json"
+.PHONY: check-runtime-budgets
 
 check-evidence-completeness: root-check-env ## Fail when any evidence bundle is structurally incomplete
 	@$(DEV_RUN) -m bijux_phylogenetics_dev.quality.evidence_completeness check --repo-root "$(CURDIR)" --json-out "$(ROOT_ARTIFACTS_DIR)/evidence-completeness.json"

@@ -134,6 +134,9 @@ from .matrix import (
     load_dna_bin_alignment as load_dna_bin_alignment,
 )
 from .matrix import (
+    load_dna_bin_alignment_from_records as load_dna_bin_alignment_from_records,
+)
+from .matrix import (
     write_alignment_base_frequency_table as write_alignment_base_frequency_table,
 )
 from .matrix import (

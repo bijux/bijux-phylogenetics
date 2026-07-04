@@ -193,6 +193,21 @@ def run_estimated_lambda_pgls_command(
                 "lambda_value": report.lambda_value,
                 "lambda_estimation_mode": report.lambda_fit.mode,
                 "lambda_profile_point_count": len(report.lambda_fit.profile_rows),
+                "lambda_optimizer_name": (
+                    None
+                    if report.lambda_fit.optimizer_diagnostics is None
+                    else report.lambda_fit.optimizer_diagnostics.optimizer_name
+                ),
+                "lambda_optimizer_converged": (
+                    None
+                    if report.lambda_fit.optimizer_diagnostics is None
+                    else report.lambda_fit.optimizer_diagnostics.converged
+                ),
+                "lambda_optimizer_function_evaluation_count": (
+                    None
+                    if report.lambda_fit.optimizer_diagnostics is None
+                    else report.lambda_fit.optimizer_diagnostics.function_evaluation_count
+                ),
                 "lambda_lower_95_confidence_interval": (
                     report.lambda_fit.lower_95_confidence_interval
                 ),

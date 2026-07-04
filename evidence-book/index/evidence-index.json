@@ -2,6 +2,414 @@
   "evidence": [
     {
       "claim_tags": [
+        "scientific-validation",
+        "cichlid",
+        "tree-alignment",
+        "species-summarization"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-001",
+      "evidence_title": "Cichlid alignment and species summarization bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-001",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+      "study_title": "Cichlid Bayesian Linear And Phylogenetic Mixed Models",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM4 posterior workflow."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "cichlid",
+        "gaussian-model",
+        "baseline-regression"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-002",
+      "evidence_title": "Cichlid Gaussian baseline regression bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-002",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+      "study_title": "Cichlid Bayesian Linear And Phylogenetic Mixed Models",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM4 posterior workflow."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "cichlid",
+        "posterior-diagnostics",
+        "gaussian-posterior"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-003",
+      "evidence_title": "Cichlid Gaussian posterior diagnostics bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-003",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+      "study_title": "Cichlid Bayesian Linear And Phylogenetic Mixed Models",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM4 posterior workflow."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "cichlid",
+        "phylogenetic-inverse",
+        "random-effects"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-004",
+      "evidence_title": "Cichlid phylogenetic inverse setup bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-004",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+      "study_title": "Cichlid Bayesian Linear And Phylogenetic Mixed Models",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM4 posterior workflow."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "cichlid",
+        "phylogenetic-mixed-model",
+        "fixed-effects"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-005",
+      "evidence_title": "Cichlid phylogenetic fixed-effect posterior bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-005",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+      "study_title": "Cichlid Bayesian Linear And Phylogenetic Mixed Models",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM4 posterior workflow."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "cichlid",
+        "variance-components",
+        "phylogenetic-posterior"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-006",
+      "evidence_title": "Cichlid variance-component posterior bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-006",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+      "study_title": "Cichlid Bayesian Linear And Phylogenetic Mixed Models",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM4 posterior workflow."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "cichlid",
+        "brownian-pgls",
+        "comparator"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-007",
+      "evidence_title": "Cichlid Brownian comparator bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-007",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+      "study_title": "Cichlid Bayesian Linear And Phylogenetic Mixed Models",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM4 posterior workflow."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "cichlid",
+        "workflow",
+        "repeated-measures"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-001",
+      "evidence_title": "Cichlid repeated-measure workspace contract bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-001",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM5 generalized posterior workflow."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "cichlid",
+        "phylogenetic-signal",
+        "posterior"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-002",
+      "evidence_title": "Cichlid posterior phylogenetic signal bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-002",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM5 generalized posterior workflow."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "cichlid",
+        "ancestral-states",
+        "posterior-export"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-003",
+      "evidence_title": "Cichlid ancestral posterior export bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-003",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM5 generalized posterior workflow."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "cichlid",
+        "ancestral-plotting",
+        "tree-linked-reporting"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-004",
+      "evidence_title": "Cichlid ancestral plotting contract bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-004",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM5 generalized posterior workflow."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "cichlid",
+        "poisson-model",
+        "parasite-abundance"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-005",
+      "evidence_title": "Cichlid Poisson count model bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-005",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM5 generalized posterior workflow."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "cichlid",
+        "multinomial-model",
+        "logit-scale"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-006",
+      "evidence_title": "Cichlid multinomial infection summary bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-006",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM5 generalized posterior workflow."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "cichlid",
+        "probability-scale",
+        "back-transform"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-007",
+      "evidence_title": "Cichlid probability-scale transform bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-007",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM5 generalized posterior workflow."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "cichlid",
+        "repeated-measures",
+        "random-effects"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-008",
+      "evidence_title": "Cichlid repeated-measure random effects bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-008",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM5 generalized posterior workflow."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "cichlid",
+        "variance-partition",
+        "posterior-variance"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-009",
+      "evidence_title": "Cichlid variance partition review bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-009",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM5 generalized posterior workflow."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "primate",
+        "workflow",
+        "dataset-alignment"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-001",
+      "evidence_title": "Primate source intake and workspace alignment bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-001",
+      "study_id": "primate-continuous-and-categorical-regression",
+      "study_title": "Primate Continuous And Categorical Regression",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but lecture-specific PCM3 parity for this slice is not yet claimed by the repository."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "primate",
+        "baseline-regression",
+        "categorical-predictor"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-002",
+      "evidence_title": "Primate baseline regression structure bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-002",
+      "study_id": "primate-continuous-and-categorical-regression",
+      "study_title": "Primate Continuous And Categorical Regression",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but lecture-specific PCM3 parity for this slice is not yet claimed by the repository."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "primate",
+        "response-transformation",
+        "model-tests"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-003",
+      "evidence_title": "Primate transformed response and model test bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-003",
+      "study_id": "primate-continuous-and-categorical-regression",
+      "study_title": "Primate Continuous And Categorical Regression",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but lecture-specific PCM3 parity for this slice is not yet claimed by the repository."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "primate",
+        "contrasts",
+        "parameterization"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-004",
+      "evidence_title": "Primate intercept-free contrast bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-004",
+      "study_id": "primate-continuous-and-categorical-regression",
+      "study_title": "Primate Continuous And Categorical Regression",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but lecture-specific PCM3 parity for this slice is not yet claimed by the repository."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "primate",
+        "interaction-terms",
+        "coefficient-interpretation"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-005",
+      "evidence_title": "Primate interaction coefficient interpretation bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-005",
+      "study_id": "primate-continuous-and-categorical-regression",
+      "study_title": "Primate Continuous And Categorical Regression",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but lecture-specific PCM3 parity for this slice is not yet claimed by the repository."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "primate",
+        "scaling",
+        "intercept-semantics"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-006",
+      "evidence_title": "Primate scaling and intercept semantics bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-006",
+      "study_id": "primate-continuous-and-categorical-regression",
+      "study_title": "Primate Continuous And Categorical Regression",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but lecture-specific PCM3 parity for this slice is not yet claimed by the repository."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "primate",
+        "phylogenetic-regression",
+        "martins-covariance"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-007",
+      "evidence_title": "Primate Martins covariance regression bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-007",
+      "study_id": "primate-continuous-and-categorical-regression",
+      "study_title": "Primate Continuous And Categorical Regression",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but lecture-specific PCM3 parity for this slice is not yet claimed by the repository."
+    },
+    {
+      "claim_tags": [
+        "scientific-validation",
+        "primate",
+        "diagnostics",
+        "hypothesis-testing"
+      ],
+      "comparison_mode": "direct_parity",
+      "evidence_id": "evidence-008",
+      "evidence_title": "Primate post-correction diagnostics bundle",
+      "owner_package": "bijux-phylogenetics",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-008",
+      "study_id": "primate-continuous-and-categorical-regression",
+      "study_title": "Primate Continuous And Categorical Regression",
+      "verdict_status": "not_comparable",
+      "verdict_summary": "This bundle is checked in and reviewable, but lecture-specific PCM3 parity for this slice is not yet claimed by the repository."
+    },
+    {
+      "claim_tags": [
         "comparative-signal",
         "teaching",
         "parity"
@@ -322,10 +730,454 @@
       "verdict_summary": "The lecture corBlomberg likelihood sweep is kept visible as a bounded trust surface instead of being silently implied by the new parity bundles."
     }
   ],
-  "evidence_count": 19,
+  "evidence_count": 43,
   "root": "evidence-book",
   "schema_version": 1,
   "studies": [
+    {
+      "bundle_count": 7,
+      "evidence": [
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "cichlid",
+            "tree-alignment",
+            "species-summarization"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-001",
+          "evidence_title": "Cichlid alignment and species summarization bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-001",
+          "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+          "study_title": "Cichlid Bayesian Linear And Phylogenetic Mixed Models",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM4 posterior workflow."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "cichlid",
+            "gaussian-model",
+            "baseline-regression"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-002",
+          "evidence_title": "Cichlid Gaussian baseline regression bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-002",
+          "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+          "study_title": "Cichlid Bayesian Linear And Phylogenetic Mixed Models",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM4 posterior workflow."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "cichlid",
+            "posterior-diagnostics",
+            "gaussian-posterior"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-003",
+          "evidence_title": "Cichlid Gaussian posterior diagnostics bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-003",
+          "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+          "study_title": "Cichlid Bayesian Linear And Phylogenetic Mixed Models",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM4 posterior workflow."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "cichlid",
+            "phylogenetic-inverse",
+            "random-effects"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-004",
+          "evidence_title": "Cichlid phylogenetic inverse setup bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-004",
+          "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+          "study_title": "Cichlid Bayesian Linear And Phylogenetic Mixed Models",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM4 posterior workflow."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "cichlid",
+            "phylogenetic-mixed-model",
+            "fixed-effects"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-005",
+          "evidence_title": "Cichlid phylogenetic fixed-effect posterior bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-005",
+          "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+          "study_title": "Cichlid Bayesian Linear And Phylogenetic Mixed Models",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM4 posterior workflow."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "cichlid",
+            "variance-components",
+            "phylogenetic-posterior"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-006",
+          "evidence_title": "Cichlid variance-component posterior bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-006",
+          "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+          "study_title": "Cichlid Bayesian Linear And Phylogenetic Mixed Models",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM4 posterior workflow."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "cichlid",
+            "brownian-pgls",
+            "comparator"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-007",
+          "evidence_title": "Cichlid Brownian comparator bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-007",
+          "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+          "study_title": "Cichlid Bayesian Linear And Phylogenetic Mixed Models",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM4 posterior workflow."
+        }
+      ],
+      "owner_package": "bijux-phylogenetics",
+      "study_categories": [
+        "scientific-validation"
+      ],
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+      "study_title": "Cichlid Bayesian Linear And Phylogenetic Mixed Models",
+      "summary": "This study captures PCM4, the Lund lecture that moves from non-phylogenetic Gaussian regression into Bayesian linear mixed models and then into a phylogenetic random-effect formulation on cichlid parasite data."
+    },
+    {
+      "bundle_count": 9,
+      "evidence": [
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "cichlid",
+            "workflow",
+            "repeated-measures"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-001",
+          "evidence_title": "Cichlid repeated-measure workspace contract bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-001",
+          "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+          "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM5 generalized posterior workflow."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "cichlid",
+            "phylogenetic-signal",
+            "posterior"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-002",
+          "evidence_title": "Cichlid posterior phylogenetic signal bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-002",
+          "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+          "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM5 generalized posterior workflow."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "cichlid",
+            "ancestral-states",
+            "posterior-export"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-003",
+          "evidence_title": "Cichlid ancestral posterior export bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-003",
+          "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+          "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM5 generalized posterior workflow."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "cichlid",
+            "ancestral-plotting",
+            "tree-linked-reporting"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-004",
+          "evidence_title": "Cichlid ancestral plotting contract bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-004",
+          "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+          "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM5 generalized posterior workflow."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "cichlid",
+            "poisson-model",
+            "parasite-abundance"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-005",
+          "evidence_title": "Cichlid Poisson count model bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-005",
+          "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+          "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM5 generalized posterior workflow."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "cichlid",
+            "multinomial-model",
+            "logit-scale"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-006",
+          "evidence_title": "Cichlid multinomial infection summary bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-006",
+          "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+          "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM5 generalized posterior workflow."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "cichlid",
+            "probability-scale",
+            "back-transform"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-007",
+          "evidence_title": "Cichlid probability-scale transform bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-007",
+          "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+          "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM5 generalized posterior workflow."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "cichlid",
+            "repeated-measures",
+            "random-effects"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-008",
+          "evidence_title": "Cichlid repeated-measure random effects bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-008",
+          "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+          "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM5 generalized posterior workflow."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "cichlid",
+            "variance-partition",
+            "posterior-variance"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-009",
+          "evidence_title": "Cichlid variance partition review bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-009",
+          "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+          "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM5 generalized posterior workflow."
+        }
+      ],
+      "owner_package": "bijux-phylogenetics",
+      "study_categories": [
+        "scientific-validation"
+      ],
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "study_title": "Cichlid Phylogenetic Generalized Linear Mixed Models",
+      "summary": "This study captures PCM5, the Lund lecture on phylogenetic generalized linear mixed models for count data, binomial response data, repeated measures, and posterior-based phylogenetic signal calculations."
+    },
+    {
+      "bundle_count": 8,
+      "evidence": [
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "primate",
+            "workflow",
+            "dataset-alignment"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-001",
+          "evidence_title": "Primate source intake and workspace alignment bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-001",
+          "study_id": "primate-continuous-and-categorical-regression",
+          "study_title": "Primate Continuous And Categorical Regression",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but lecture-specific PCM3 parity for this slice is not yet claimed by the repository."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "primate",
+            "baseline-regression",
+            "categorical-predictor"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-002",
+          "evidence_title": "Primate baseline regression structure bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-002",
+          "study_id": "primate-continuous-and-categorical-regression",
+          "study_title": "Primate Continuous And Categorical Regression",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but lecture-specific PCM3 parity for this slice is not yet claimed by the repository."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "primate",
+            "response-transformation",
+            "model-tests"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-003",
+          "evidence_title": "Primate transformed response and model test bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-003",
+          "study_id": "primate-continuous-and-categorical-regression",
+          "study_title": "Primate Continuous And Categorical Regression",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but lecture-specific PCM3 parity for this slice is not yet claimed by the repository."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "primate",
+            "contrasts",
+            "parameterization"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-004",
+          "evidence_title": "Primate intercept-free contrast bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-004",
+          "study_id": "primate-continuous-and-categorical-regression",
+          "study_title": "Primate Continuous And Categorical Regression",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but lecture-specific PCM3 parity for this slice is not yet claimed by the repository."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "primate",
+            "interaction-terms",
+            "coefficient-interpretation"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-005",
+          "evidence_title": "Primate interaction coefficient interpretation bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-005",
+          "study_id": "primate-continuous-and-categorical-regression",
+          "study_title": "Primate Continuous And Categorical Regression",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but lecture-specific PCM3 parity for this slice is not yet claimed by the repository."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "primate",
+            "scaling",
+            "intercept-semantics"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-006",
+          "evidence_title": "Primate scaling and intercept semantics bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-006",
+          "study_id": "primate-continuous-and-categorical-regression",
+          "study_title": "Primate Continuous And Categorical Regression",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but lecture-specific PCM3 parity for this slice is not yet claimed by the repository."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "primate",
+            "phylogenetic-regression",
+            "martins-covariance"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-007",
+          "evidence_title": "Primate Martins covariance regression bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-007",
+          "study_id": "primate-continuous-and-categorical-regression",
+          "study_title": "Primate Continuous And Categorical Regression",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but lecture-specific PCM3 parity for this slice is not yet claimed by the repository."
+        },
+        {
+          "claim_tags": [
+            "scientific-validation",
+            "primate",
+            "diagnostics",
+            "hypothesis-testing"
+          ],
+          "comparison_mode": "direct_parity",
+          "evidence_id": "evidence-008",
+          "evidence_title": "Primate post-correction diagnostics bundle",
+          "owner_package": "bijux-phylogenetics",
+          "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-008",
+          "study_id": "primate-continuous-and-categorical-regression",
+          "study_title": "Primate Continuous And Categorical Regression",
+          "verdict_status": "not_comparable",
+          "verdict_summary": "This bundle is checked in and reviewable, but lecture-specific PCM3 parity for this slice is not yet claimed by the repository."
+        }
+      ],
+      "owner_package": "bijux-phylogenetics",
+      "study_categories": [
+        "scientific-validation"
+      ],
+      "study_id": "primate-continuous-and-categorical-regression",
+      "study_title": "Primate Continuous And Categorical Regression",
+      "summary": "This study captures PCM3, the Lund lecture on multivariable comparative regression with continuous predictors, categorical predictors, interactions, and phylogenetically corrected regression."
+    },
     {
       "bundle_count": 9,
       "evidence": [
@@ -489,7 +1341,7 @@
       ],
       "study_id": "primate-longevity-signal",
       "study_title": "Primate Longevity Signal",
-      "summary": "This study holds reviewer-facing parity evidence for the Lund `PCM1_plots_signal` teaching workflow and the corresponding `bijux-phylogenetics` reproductions."
+      "summary": "This study turns the Lund `PCM1_plots_signal` lecture into a governed set of small evidence slices covering primate data intake, tree preparation, phylogenetic signal, and ancestral reconstruction."
     },
     {
       "bundle_count": 10,
@@ -671,13 +1523,13 @@
       ],
       "study_id": "primate-pgls-and-signal",
       "study_title": "Primate PGLS And Signal",
-      "summary": "This study turns the regression, transformed-tree, evolutionary-mode fit, likelihood-ratio, and ancestral sections of the Lund primate comparative lecture into governed Evidence IDs backed by checked-in R reference outputs and canonical `bijux-phylogenetics` reproductions."
+      "summary": "This study turns the regression, transformed-tree, evolutionary-mode fit, likelihood-ratio, and ancestral sections of the Lund primate comparative lecture into governed evidence slices backed by checked-in R reference outputs and repository reproductions."
     }
   ],
-  "study_count": 2,
+  "study_count": 5,
   "verdict_counts": {
     "matched": 11,
     "matched_with_tolerance": 7,
-    "not_comparable": 1
+    "not_comparable": 25
   }
 }

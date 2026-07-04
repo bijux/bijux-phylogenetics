@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm5-tree-linked-ancestral-plotting-contract",
+      "claim_title": "Cichlid ancestral plotting contract bundle",
+      "evidence_ids": [
+        "evidence-004"
+      ],
+      "source_fragments": [
+        "tree-linked-ancestral-plotting"
+      ],
+      "summary": "Governed study slice for the PCM5 tree-linked ancestral plotting contract.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-004",
+  "schema_version": 1,
+  "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+}

@@ -15,6 +15,183 @@ def _command_line_api() -> Any:
     return command_line_api
 
 
+def _add_native_maximum_likelihood_benchmark_arguments(parser: Any) -> None:
+    parser.add_argument(
+        "--replicates",
+        type=int,
+        default=1,
+    )
+    parser.add_argument(
+        "--model",
+        action="append",
+        dest="model_names",
+        help="Add one fixed native nucleotide model to benchmark. Repeat to benchmark multiple models.",
+    )
+    parser.add_argument(
+        "--search-method",
+        action="append",
+        dest="search_methods",
+        help="Add one native topology-search method to benchmark. Repeat to benchmark multiple search lanes.",
+    )
+    parser.add_argument(
+        "--size-class",
+        action="append",
+        dest="size_class_labels",
+        help="Add one size-class label. Repeat alongside --taxon-count and --site-count to override the governed tiny and medium lanes.",
+    )
+    parser.add_argument(
+        "--taxon-count",
+        action="append",
+        dest="taxon_counts",
+        type=int,
+        help="Add one taxon count. Repeat alongside --size-class and --site-count.",
+    )
+    parser.add_argument(
+        "--site-count",
+        action="append",
+        dest="site_counts",
+        type=int,
+        help="Add one aligned-site count. Repeat alongside --size-class and --taxon-count.",
+    )
+    parser.add_argument(
+        "--start-tree-count",
+        type=int,
+        default=1,
+    )
+    parser.add_argument(
+        "--start-tree-seed",
+        type=int,
+        default=17,
+    )
+    parser.add_argument(
+        "--upper-branch-length-bound",
+        type=float,
+        default=1.0,
+    )
+    parser.add_argument(
+        "--json", action="store_true", help="Emit the benchmark report as JSON."
+    )
+    _add_manifest_argument(parser)
+
+
+def _resolve_native_maximum_likelihood_benchmark_size_classes(
+    args: Any,
+) -> list[tuple[str, int, int]] | None:
+    classes = None
+    custom_size_fields = (
+        args.size_class_labels,
+        args.taxon_counts,
+        args.site_counts,
+    )
+    if any(field is not None for field in custom_size_fields):
+        size_class_labels = args.size_class_labels or []
+        taxon_counts = args.taxon_counts or []
+        site_counts = args.site_counts or []
+        if not (len(size_class_labels) == len(taxon_counts) == len(site_counts)):
+            raise ValueError(
+                f"{args.benchmark_command} requires the same number of --size-class, --taxon-count, and --site-count values"
+            )
+        classes = [
+            (size_class_label, taxon_count, site_count)
+            for size_class_label, taxon_count, site_count in zip(
+                size_class_labels,
+                taxon_counts,
+                site_counts,
+                strict=True,
+            )
+        ]
+    return classes
+
+
+def _add_native_maximum_likelihood_accuracy_benchmark_arguments(parser: Any) -> None:
+    parser.add_argument(
+        "--model",
+        action="append",
+        dest="model_names",
+        help="Add one governed native nucleotide model to benchmark. Repeat to benchmark multiple truth cases.",
+    )
+    parser.add_argument(
+        "--search-method",
+        action="append",
+        dest="search_methods",
+        help="Add one native topology-search method to benchmark. Repeat to benchmark multiple search lanes.",
+    )
+    parser.add_argument(
+        "--start-tree-count",
+        type=int,
+        default=1,
+    )
+    parser.add_argument(
+        "--start-tree-seed",
+        type=int,
+        default=17,
+    )
+    parser.add_argument(
+        "--upper-branch-length-bound",
+        type=float,
+        default=1.0,
+    )
+    parser.add_argument(
+        "--json", action="store_true", help="Emit the benchmark report as JSON."
+    )
+    _add_manifest_argument(parser)
+
+
+def _add_native_maximum_likelihood_suite_benchmark_arguments(parser: Any) -> None:
+    parser.add_argument("--replicates", type=int, default=1)
+    parser.add_argument(
+        "--size-class",
+        action="append",
+        dest="size_class_labels",
+        help="Add one native scaling size-class label. Repeat alongside --taxon-count and --site-count.",
+    )
+    parser.add_argument(
+        "--taxon-count",
+        action="append",
+        dest="taxon_counts",
+        type=int,
+        help="Add one taxon count for the native scaling lanes. Repeat alongside --size-class and --site-count.",
+    )
+    parser.add_argument(
+        "--site-count",
+        action="append",
+        dest="site_counts",
+        type=int,
+        help="Add one aligned-site count for the native scaling lanes. Repeat alongside --size-class and --taxon-count.",
+    )
+    parser.add_argument(
+        "--scaling-model",
+        action="append",
+        dest="scaling_model_names",
+        help="Add one fixed native model for the speed and memory lanes. Repeat to benchmark multiple scaling lanes.",
+    )
+    parser.add_argument(
+        "--scaling-search-method",
+        action="append",
+        dest="scaling_search_methods",
+        help="Add one native search method for the speed and memory lanes. Repeat to benchmark multiple scaling lanes.",
+    )
+    parser.add_argument(
+        "--accuracy-model",
+        action="append",
+        dest="accuracy_model_names",
+        help="Add one governed native model for the truth-recovery lanes. Repeat to benchmark multiple truth lanes.",
+    )
+    parser.add_argument(
+        "--accuracy-search-method",
+        action="append",
+        dest="accuracy_search_methods",
+        help="Add one native search method for the truth-recovery lanes. Repeat to benchmark multiple truth lanes.",
+    )
+    parser.add_argument("--start-tree-count", type=int, default=1)
+    parser.add_argument("--start-tree-seed", type=int, default=17)
+    parser.add_argument("--upper-branch-length-bound", type=float, default=1.0)
+    parser.add_argument(
+        "--json", action="store_true", help="Emit the benchmark report as JSON."
+    )
+    _add_manifest_argument(parser)
+
+
 def add_benchmark_commands(subparsers: Any) -> None:
     benchmark = subparsers.add_parser(
         get_command_spec("benchmark").name, help=get_command_spec("benchmark").summary
@@ -200,6 +377,47 @@ def add_benchmark_commands(subparsers: Any) -> None:
     )
     _add_manifest_argument(benchmark_large_tree_model)
 
+    benchmark_native_maximum_likelihood_speed = benchmark_subparsers.add_parser(
+        "native-maximum-likelihood-speed",
+        help="Benchmark native maximum-likelihood runtime across governed model, search, and tiny-versus-medium size lanes.",
+    )
+    _add_native_maximum_likelihood_benchmark_arguments(
+        benchmark_native_maximum_likelihood_speed
+    )
+
+    benchmark_native_maximum_likelihood_memory = benchmark_subparsers.add_parser(
+        "native-maximum-likelihood-memory",
+        help="Benchmark native maximum-likelihood peak memory across governed model, search, and tiny-versus-medium size lanes.",
+    )
+    _add_native_maximum_likelihood_benchmark_arguments(
+        benchmark_native_maximum_likelihood_memory
+    )
+
+    benchmark_native_maximum_likelihood_accuracy = benchmark_subparsers.add_parser(
+        "native-maximum-likelihood-accuracy",
+        help="Benchmark native maximum-likelihood topology, parameter, and likelihood recovery across governed simulated truth lanes.",
+    )
+    _add_native_maximum_likelihood_accuracy_benchmark_arguments(
+        benchmark_native_maximum_likelihood_accuracy
+    )
+
+    benchmark_native_maximum_likelihood_suite = benchmark_subparsers.add_parser(
+        "native-maximum-likelihood-suite",
+        help="Benchmark native maximum-likelihood scaling, wrapper parity, support, and truth recovery in one governed report.",
+    )
+    _add_native_maximum_likelihood_suite_benchmark_arguments(
+        benchmark_native_maximum_likelihood_suite
+    )
+
+    benchmark_maximum_likelihood_wrapper = benchmark_subparsers.add_parser(
+        "maximum-likelihood-wrapper-comparison",
+        help="Benchmark native maximum-likelihood tree inference against cached IQ-TREE, FastTree, and explicit RAxML support lanes.",
+    )
+    benchmark_maximum_likelihood_wrapper.add_argument(
+        "--json", action="store_true", help="Emit the benchmark report as JSON."
+    )
+    _add_manifest_argument(benchmark_maximum_likelihood_wrapper)
+
     benchmark_real_dataset = benchmark_subparsers.add_parser(
         "real-dataset-macroevolution",
         help="Benchmark continuous and discrete macroevolution model fitting on the published Central European seashore flora dataset against stored local geiger references.",
@@ -322,6 +540,51 @@ def run_benchmark_command(args: Any) -> int:
         report = command_line_api.benchmark_large_dataset_stress_suite(tier=args.tier)
     elif args.benchmark_command == "large-tree-model-fitting":
         report = command_line_api.benchmark_large_tree_model_fitting(tier=args.tier)
+    elif args.benchmark_command == "native-maximum-likelihood-speed":
+        classes = _resolve_native_maximum_likelihood_benchmark_size_classes(args)
+        report = command_line_api.benchmark_native_maximum_likelihood_speed(
+            replicates=args.replicates,
+            size_classes=classes,
+            model_names=args.model_names,
+            search_methods=args.search_methods,
+            start_tree_count=args.start_tree_count,
+            start_tree_seed=args.start_tree_seed,
+            upper_branch_length_bound=args.upper_branch_length_bound,
+        )
+    elif args.benchmark_command == "native-maximum-likelihood-memory":
+        classes = _resolve_native_maximum_likelihood_benchmark_size_classes(args)
+        report = command_line_api.benchmark_native_maximum_likelihood_memory(
+            replicates=args.replicates,
+            size_classes=classes,
+            model_names=args.model_names,
+            search_methods=args.search_methods,
+            start_tree_count=args.start_tree_count,
+            start_tree_seed=args.start_tree_seed,
+            upper_branch_length_bound=args.upper_branch_length_bound,
+        )
+    elif args.benchmark_command == "native-maximum-likelihood-accuracy":
+        report = command_line_api.benchmark_native_maximum_likelihood_accuracy(
+            model_names=args.model_names,
+            search_methods=args.search_methods,
+            start_tree_count=args.start_tree_count,
+            start_tree_seed=args.start_tree_seed,
+            upper_branch_length_bound=args.upper_branch_length_bound,
+        )
+    elif args.benchmark_command == "native-maximum-likelihood-suite":
+        classes = _resolve_native_maximum_likelihood_benchmark_size_classes(args)
+        report = command_line_api.benchmark_native_maximum_likelihood_suite(
+            replicates=args.replicates,
+            size_classes=classes,
+            scaling_model_names=args.scaling_model_names,
+            scaling_search_methods=args.scaling_search_methods,
+            accuracy_model_names=args.accuracy_model_names,
+            accuracy_search_methods=args.accuracy_search_methods,
+            start_tree_count=args.start_tree_count,
+            start_tree_seed=args.start_tree_seed,
+            upper_branch_length_bound=args.upper_branch_length_bound,
+        )
+    elif args.benchmark_command == "maximum-likelihood-wrapper-comparison":
+        report = command_line_api.benchmark_maximum_likelihood_wrapper_comparison()
     elif args.benchmark_command == "real-dataset-macroevolution":
         report = command_line_api.benchmark_real_dataset_macroevolution()
     else:
@@ -335,12 +598,19 @@ def run_benchmark_command(args: Any) -> int:
         metrics = {
             "entry_count": len(report.entries),
         }
-    elif hasattr(report, "summary_rows"):
+    elif hasattr(report, "summary_rows") and hasattr(report, "model_rows"):
         metrics = {
             "summary_row_count": len(report.summary_rows),
             "model_row_count": len(report.model_rows),
             "alignment_review_row_count": len(report.alignment_review_rows),
             "parity_row_count": len(report.parity_rows),
+        }
+    elif hasattr(report, "summary_rows"):
+        metrics = {
+            "summary_row_count": len(report.summary_rows),
+            "observation_count": (
+                len(report.observations) if hasattr(report, "observations") else 0
+            ),
         }
     else:
         metrics = {
@@ -356,6 +626,28 @@ def run_benchmark_command(args: Any) -> int:
         metrics["tier"] = report.tier
     if hasattr(report, "case_count"):
         metrics["case_count"] = report.case_count
+    if hasattr(report, "trend_rows"):
+        metrics["trend_row_count"] = len(report.trend_rows)
+    if hasattr(report, "memory_blowup_case_count"):
+        metrics["memory_blowup_case_count"] = report.memory_blowup_case_count
+    if hasattr(report, "native_advantage_case_count"):
+        metrics["native_advantage_case_count"] = report.native_advantage_case_count
+    if hasattr(report, "native_bug_case_count"):
+        metrics["native_bug_case_count"] = report.native_bug_case_count
+    if hasattr(report, "expected_assumption_difference_case_count"):
+        metrics["expected_assumption_difference_case_count"] = (
+            report.expected_assumption_difference_case_count
+        )
+    if hasattr(report, "unsupported_case_count"):
+        metrics["unsupported_case_count"] = report.unsupported_case_count
+    if hasattr(report, "topology_recovery_case_count"):
+        metrics["topology_recovery_case_count"] = report.topology_recovery_case_count
+    if hasattr(report, "parameter_recovery_case_count"):
+        metrics["parameter_recovery_case_count"] = report.parameter_recovery_case_count
+    if hasattr(report, "likelihood_quality_case_count"):
+        metrics["likelihood_quality_case_count"] = report.likelihood_quality_case_count
+    if hasattr(report, "wrapper_clear_case_count"):
+        metrics["wrapper_clear_case_count"] = report.wrapper_clear_case_count
     if hasattr(report, "geiger_match_case_count"):
         metrics["geiger_match_case_count"] = report.geiger_match_case_count
     if hasattr(report, "threshold_pass_case_count"):
@@ -375,6 +667,12 @@ def run_benchmark_command(args: Any) -> int:
         if hasattr(report, "alignment_lengths"):
             metrics["max_alignment_length"] = max(report.alignment_lengths)
             metrics["max_sequence_count"] = max(report.sequence_counts)
+    if hasattr(report, "size_class_labels"):
+        metrics["size_class_count"] = len(report.size_class_labels)
+    if hasattr(report, "model_names"):
+        metrics["model_count"] = len(report.model_names)
+    if hasattr(report, "search_methods"):
+        metrics["search_method_count"] = len(report.search_methods)
     if hasattr(report, "entries"):
         metrics["workflow_count"] = len(report.entries)
         taxon_limits = [

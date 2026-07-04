@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm5-poisson-phylogenetic-count-model",
+      "claim_title": "Cichlid Poisson count model bundle",
+      "evidence_ids": [
+        "evidence-005"
+      ],
+      "source_fragments": [
+        "poisson-count-model"
+      ],
+      "summary": "Governed study slice for the PCM5 Poisson phylogenetic count model of parasite abundance.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-005",
+  "schema_version": 1,
+  "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+}

@@ -24,3 +24,25 @@ from .method_reports import (
     write_comparative_methods_summary_text,
 )
 from .snapshot import build_comparative_model_snapshot
+
+__all__ = [
+    "annotations",
+    "compare_comparative_results_across_pruning",
+    "compare_comparative_results_across_trees",
+    "ComparativeAuditRow",
+    "ComparativeCoefficientDeltaRow",
+    "ComparativeInfluenceReport",
+    "ComparativeMethodReport",
+    "ComparativeMethodsSummaryTextResult",
+    "ComparativeModelSnapshot",
+    "ComparativePredictorInfluenceRow",
+    "ComparativePruningComparisonReport",
+    "ComparativeTaxonInfluenceRow",
+    "ComparativeTreeComparisonReport",
+    "build_trait_influence_report",
+    "build_comparative_method_report",
+    "build_comparative_methods_summary_text",
+    "write_comparative_method_report",
+    "write_comparative_methods_summary_text",
+    "build_comparative_model_snapshot",
+]

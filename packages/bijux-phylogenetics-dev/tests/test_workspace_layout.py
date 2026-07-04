@@ -17,6 +17,7 @@ ARTIFACT_ALIAS_SCRIPT = (
     / "repository"
     / "artifact_aliases.py"
 )
+ROOT_ARTIFACT_ALIAS_WRAPPER = REPO_ROOT / "makes" / "repository_artifact_aliases.py"
 PACKAGE_ARTIFACT_LINKS = {
     "artifacts": "",
     ".venv": "venv",
@@ -105,6 +106,55 @@ def test_setup_materializes_governed_artifact_aliases(tmp_path: Path) -> None:
                 link_path=package_root / link_name,
                 expected_target=_expected_package_link_target(package_name, link_name),
             )
+
+
+def test_root_setup_reconciles_disposable_root_alias_conflicts(tmp_path: Path) -> None:
+    workspace = _workspace_metadata()
+    repo_root = tmp_path / "repo"
+    packages_dir = repo_root / "packages"
+    packages_dir.mkdir(parents=True)
+    conflicting_root_venv = repo_root / ".venv"
+    conflicting_root_venv.mkdir()
+    (conflicting_root_venv / "pyvenv.cfg").write_text("home = /tmp/python\n")
+
+    for package_name in sorted(cast(list[str], workspace["packages"])):
+        package_root = packages_dir / package_name
+        package_root.mkdir()
+        (package_root / "pyproject.toml").write_text("[project]\nname='test'\n")
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT_ARTIFACT_ALIAS_WRAPPER),
+            "root",
+            "--repo-root",
+            str(repo_root),
+            "--packages-dir",
+            str(packages_dir),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0
+    assert completed.stderr == ""
+    _assert_symlink(
+        link_path=conflicting_root_venv,
+        expected_target=ROOT_ARTIFACT_LINKS[".venv"],
+    )
+    _assert_symlink(
+        link_path=repo_root / ".hypothesis",
+        expected_target=ROOT_ARTIFACT_LINKS[".hypothesis"],
+    )
+    _assert_symlink(
+        link_path=repo_root / ".benchmarks",
+        expected_target=ROOT_ARTIFACT_LINKS[".benchmarks"],
+    )
+    _assert_symlink(
+        link_path=repo_root / ".tox",
+        expected_target=ROOT_ARTIFACT_LINKS[".tox"],
+    )
 
 
 def test_artifact_alias_paths_are_ignored_by_git() -> None:

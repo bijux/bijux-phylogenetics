@@ -3,11 +3,15 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from bijux_phylogenetics.command_line.arguments import _add_manifest_argument
+from bijux_phylogenetics.command_line.arguments import (
+    _add_manifest_argument,
+    _split_csv_values,
+)
 from bijux_phylogenetics.command_line.output import _print_result
 from bijux_phylogenetics.command_line.routing import _finalize_outputs
 from bijux_phylogenetics.comparative.discrete_mk import (
     fit_discrete_mk_model,
+    write_discrete_mk_pattern_likelihood_table,
     write_discrete_mk_rate_table,
     write_discrete_mk_summary_table,
 )
@@ -43,6 +47,16 @@ def add_discrete_model_comparative_evolution_commands(
         help="Apply one governed branch-length transform before fitting the discrete Mk surface.",
     )
     comparative_discrete_mk.add_argument(
+        "--state-ordering",
+        default="unordered",
+        choices=("unordered", "ordered"),
+        help="Choose whether the discrete Mk surface uses unrestricted or adjacent ordered transitions.",
+    )
+    comparative_discrete_mk.add_argument(
+        "--ordered-states",
+        help="Comma-delimited explicit ordered state vocabulary required when --state-ordering is ordered.",
+    )
+    comparative_discrete_mk.add_argument(
         "--summary-out",
         type=Path,
         help="Write one discrete Mk fit summary ledger as TSV or CSV.",
@@ -51,6 +65,11 @@ def add_discrete_model_comparative_evolution_commands(
         "--rates-out",
         type=Path,
         help="Write one fitted directed rate-matrix ledger as TSV or CSV.",
+    )
+    comparative_discrete_mk.add_argument(
+        "--patterns-out",
+        type=Path,
+        help="Write one observed discrete Mk pattern-likelihood ledger as TSV or CSV.",
     )
     comparative_discrete_mk.add_argument(
         "--json", action="store_true", help="Emit the discrete Mk report as JSON."
@@ -74,12 +93,18 @@ def run_discrete_model_comparative_evolution_command(
         model=args.model,
         ascertainment_policy=args.ascertainment,
         transform=args.transform,
+        state_ordering=args.state_ordering,
+        ordered_states=_split_csv_values(args.ordered_states) or None,
     )
     outputs: list[Path | str] = []
     if args.summary_out:
         outputs.append(write_discrete_mk_summary_table(args.summary_out, report))
     if args.rates_out:
         outputs.append(write_discrete_mk_rate_table(args.rates_out, report))
+    if args.patterns_out:
+        outputs.append(
+            write_discrete_mk_pattern_likelihood_table(args.patterns_out, report)
+        )
     outputs = _finalize_outputs(
         args,
         command="comparative",
@@ -107,6 +132,10 @@ def run_discrete_model_comparative_evolution_command(
                     report.input_audit.pruned_missing_value_taxa
                 ),
                 "log_likelihood": report.log_likelihood,
+                "uncorrected_log_likelihood": report.uncorrected_log_likelihood,
+                "ascertainment_log_likelihood_delta": (
+                    report.ascertainment_log_likelihood_delta
+                ),
                 "ascertainment_conditioning_log_probability": (
                     report.ascertainment_conditioning_log_probability
                 ),
@@ -150,6 +179,9 @@ def run_discrete_model_comparative_evolution_command(
                     if report.transform_fit is None
                     else len(report.transform_fit.warnings)
                 ),
+                "ordered_state_count": len(report.ordered_states),
+                "allowed_transition_count": report.allowed_transition_count,
+                "restricted_transition_count": report.restricted_transition_count,
                 "overparameterized": report.overparameterized,
                 "transition_rate_count": len(report.transition_rate_rows),
                 "baseline_model": (

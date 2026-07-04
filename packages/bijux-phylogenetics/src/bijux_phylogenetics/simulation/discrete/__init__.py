@@ -21,17 +21,31 @@ __all__ = sorted(_PUBLIC_NAME_TO_MODULE)
 
 if TYPE_CHECKING:
     from .histories import (
-        simulate_discrete_histories,
-        write_discrete_history_branch_truth_table,
-        write_discrete_history_event_table,
-        write_discrete_history_node_truth_table,
-        write_discrete_history_segment_table,
-        write_discrete_history_summary_table,
-        write_discrete_history_tip_truth_table,
+        simulate_discrete_histories as simulate_discrete_histories,
+    )
+    from .histories import (
+        write_discrete_history_branch_truth_table as write_discrete_history_branch_truth_table,
+    )
+    from .histories import (
+        write_discrete_history_event_table as write_discrete_history_event_table,
+    )
+    from .histories import (
+        write_discrete_history_node_truth_table as write_discrete_history_node_truth_table,
+    )
+    from .histories import (
+        write_discrete_history_segment_table as write_discrete_history_segment_table,
+    )
+    from .histories import (
+        write_discrete_history_summary_table as write_discrete_history_summary_table,
+    )
+    from .histories import (
+        write_discrete_history_tip_truth_table as write_discrete_history_tip_truth_table,
     )
     from .traits import (
-        simulate_discrete_traits,
-        write_discrete_trait_table,
+        simulate_discrete_traits as simulate_discrete_traits,
+    )
+    from .traits import (
+        write_discrete_trait_table as write_discrete_trait_table,
     )
 
 

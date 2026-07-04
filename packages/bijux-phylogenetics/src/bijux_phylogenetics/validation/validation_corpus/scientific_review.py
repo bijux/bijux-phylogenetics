@@ -182,7 +182,7 @@ def build_scientific_validation_report(
             status="unvalidated",
             claim="cross-environment reproducibility is not yet claimed, and external R ecosystem comparisons remain narrower than the broader validation roadmap",
             evidence=[
-                "goal-252 remains outside this iteration",
+                "goal-252 shared continuous fixture catalog now records the governed live geiger continuous fixtures and covered models",
                 "evidence-book/studies/primate-longevity-signal/evidence-001 demonstrates one checked-in R comparison bundle",
             ],
         ),

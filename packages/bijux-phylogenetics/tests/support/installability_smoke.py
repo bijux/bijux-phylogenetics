@@ -26,9 +26,19 @@ def _clean_subprocess_environment() -> dict[str, str]:
 
 
 def _build_python() -> str:
-    candidate = PACKAGE_ROOT / ".venv" / "bin" / "python"
-    if candidate.exists():
-        return str(candidate)
+    candidates = (
+        PACKAGE_ROOT / ".venv" / "bin" / "python",
+        PACKAGE_ROOT.parents[1]
+        / "artifacts"
+        / "root"
+        / "check-venv"
+        / "bin"
+        / "python",
+        PACKAGE_ROOT.parents[1] / ".venv" / "bin" / "python",
+    )
+    for candidate in candidates:
+        if candidate.exists():
+            return str(candidate)
     return sys.executable
 
 

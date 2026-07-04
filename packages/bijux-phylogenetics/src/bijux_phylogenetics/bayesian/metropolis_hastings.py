@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 import json
 import math
 import random
@@ -17,12 +17,17 @@ from bijux_phylogenetics.bayesian.partition_model_state import (
     resolve_partition_parameter_states_from_model_parameters,
     strip_partition_model_parameter_state,
 )
+from bijux_phylogenetics.bayesian.posterior_evaluation import (
+    evaluate_bayesian_posterior,
+)
 from bijux_phylogenetics.bayesian.state import (
+    BayesianLikelihoodContextState,
     BayesianModelParameterState,
     BayesianPhylogeneticState,
     BayesianPriorComponentState,
+    MetropolisHastingsRandomState,
     build_bayesian_model_parameter_state,
-    build_bayesian_phylogenetic_state,
+    build_metropolis_hastings_random_state,
     deserialize_bayesian_phylogenetic_state,
     serialize_bayesian_phylogenetic_state,
 )
@@ -123,15 +128,6 @@ class MetropolisHastingsRunReport:
     final_state: BayesianPhylogeneticState
     sampled_states: list[BayesianPhylogeneticState]
     step_rows: list[MetropolisHastingsStepRow]
-
-
-@dataclass(frozen=True, slots=True)
-class MetropolisHastingsRandomState:
-    """One serialized Python random-generator state for exact chain resumption."""
-
-    version: int
-    internal_state: list[int]
-    gaussian_spare: float | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -236,40 +232,6 @@ def build_metropolis_hastings_proposal(
     )
 
 
-def build_metropolis_hastings_random_state(
-    *,
-    version: int,
-    internal_state: Sequence[int],
-    gaussian_spare: float | None,
-) -> MetropolisHastingsRandomState:
-    """Build one validated serialized random-generator state."""
-    validated_version = _validate_integer_field(
-        value=version,
-        field_name="version",
-        owner_name="metropolis-hastings random state",
-    )
-    validated_internal_state = _validate_integer_sequence(
-        values=internal_state,
-        field_name="internal_state",
-        owner_name="metropolis-hastings random state",
-        minimum_length=1,
-    )
-    validated_gaussian_spare = (
-        _validate_finite_float(
-            value=gaussian_spare,
-            field_name="gaussian_spare",
-            owner_name="metropolis-hastings random state",
-        )
-        if gaussian_spare is not None
-        else None
-    )
-    return MetropolisHastingsRandomState(
-        version=validated_version,
-        internal_state=validated_internal_state,
-        gaussian_spare=validated_gaussian_spare,
-    )
-
-
 def build_metropolis_hastings_checkpoint(
     *,
     iteration_count: int,
@@ -364,6 +326,14 @@ def build_metropolis_hastings_checkpoint(
         raise PhylogeneticsError(
             "metropolis-hastings checkpoint requires one MetropolisHastingsRandomState",
             code="metropolis_hastings_checkpoint_random_state_type_invalid",
+        )
+    if (
+        current_state.random_state is not None
+        and current_state.random_state != random_state
+    ):
+        raise PhylogeneticsError(
+            "metropolis-hastings checkpoint requires current_state.random_state to match checkpoint random_state",
+            code="metropolis_hastings_checkpoint_random_state_mismatch",
         )
     if validated_completed_iteration_count == 0 and current_state != initial_state:
         raise PhylogeneticsError(
@@ -2199,34 +2169,20 @@ def score_bayesian_phylogenetic_state(
     *,
     tree,
     model_parameters: BayesianModelParameterState,
+    likelihood_context: BayesianLikelihoodContextState | None = None,
     update_prior_components: BayesianPriorUpdate,
     update_log_likelihood: BayesianLikelihoodUpdate,
+    random_state: MetropolisHastingsRandomState | None = None,
 ) -> BayesianPhylogeneticState:
     """Score one Bayesian state from owned tree and model-parameter surfaces."""
-    provisional_state = build_bayesian_phylogenetic_state(
+    return evaluate_bayesian_posterior(
         tree=tree,
         model_parameters=model_parameters,
-        prior_components=[
-            BayesianPriorComponentState(
-                component_name="provisional",
-                family=None,
-                log_prior=0.0,
-            )
-        ],
-        log_likelihood=0.0,
-    )
-    updated_prior_components = update_prior_components(provisional_state)
-    if not updated_prior_components:
-        raise PhylogeneticsError(
-            "metropolis-hastings state scoring requires at least one prior component",
-            code="metropolis_hastings_prior_components_empty",
-        )
-    return build_bayesian_phylogenetic_state(
-        tree=provisional_state.tree.to_tree(),
-        model_parameters=provisional_state.model_parameters,
-        prior_components=updated_prior_components,
-        log_likelihood=update_log_likelihood(provisional_state),
-    )
+        likelihood_context=likelihood_context,
+        update_prior_components=update_prior_components,
+        update_log_likelihood=update_log_likelihood,
+        random_state=random_state,
+    ).state
 
 
 def run_metropolis_hastings_sampler(
@@ -2287,9 +2243,13 @@ def run_checkpointed_metropolis_hastings_sampler(
         owner_name="checkpointed metropolis-hastings sampler",
     )
     rng = random.Random(validated_seed)  # nosec B311
+    initialized_state = _with_random_state(
+        initial_state,
+        _capture_rng_state(rng),
+    )
     return _run_metropolis_hastings_execution(
-        initial_state=initial_state,
-        current_state=initial_state,
+        initial_state=initialized_state,
+        current_state=initialized_state,
         propose_state=propose_state,
         update_prior_components=update_prior_components,
         update_log_likelihood=update_log_likelihood,
@@ -2299,7 +2259,7 @@ def run_checkpointed_metropolis_hastings_sampler(
         resumed=False,
         completed_iteration_count=0,
         accepted_count=0,
-        sampled_states=[initial_state],
+        sampled_states=[initialized_state],
         step_rows=[],
         rng=rng,
         checkpoint_iteration_indexes=validated_checkpoint_iteration_indexes,
@@ -2342,9 +2302,13 @@ def resume_metropolis_hastings_sampler(
     )
     rng = random.Random()  # nosec B311
     rng.setstate(_restore_rng_state_tuple(validated_checkpoint.random_state))
+    resumed_current_state = _with_random_state(
+        validated_checkpoint.current_state,
+        validated_checkpoint.random_state,
+    )
     return _run_metropolis_hastings_execution(
         initial_state=validated_checkpoint.initial_state,
-        current_state=validated_checkpoint.current_state,
+        current_state=resumed_current_state,
         propose_state=propose_state,
         update_prior_components=update_prior_components,
         update_log_likelihood=update_log_likelihood,
@@ -2399,6 +2363,7 @@ def _run_metropolis_hastings_execution(
             proposed_state = score_bayesian_phylogenetic_state(
                 tree=proposal.proposed_tree,
                 model_parameters=proposal.proposed_model_parameters,
+                likelihood_context=current_state.likelihood_context,
                 update_prior_components=update_prior_components,
                 update_log_likelihood=update_log_likelihood,
             )
@@ -2414,6 +2379,7 @@ def _run_metropolis_hastings_execution(
             if accepted:
                 current_state = proposed_state
                 accepted_count += 1
+        current_state = _with_random_state(current_state, _capture_rng_state(rng))
         if iteration_index % sample_every == 0:
             sampled_states.append(current_state)
         step_rows.append(
@@ -2448,7 +2414,7 @@ def _run_metropolis_hastings_execution(
                     current_state=current_state,
                     sampled_states=sampled_states,
                     step_rows=step_rows,
-                    random_state=_capture_rng_state(rng),
+                    random_state=_require_state_random_state(current_state),
                 )
             )
 
@@ -2498,6 +2464,24 @@ def _capture_rng_state(rng: random.Random) -> MetropolisHastingsRandomState:
         internal_state=internal_state,
         gaussian_spare=gaussian_spare,
     )
+
+
+def _with_random_state(
+    state: BayesianPhylogeneticState,
+    random_state: MetropolisHastingsRandomState,
+) -> BayesianPhylogeneticState:
+    return replace(state, random_state=random_state)
+
+
+def _require_state_random_state(
+    state: BayesianPhylogeneticState,
+) -> MetropolisHastingsRandomState:
+    if state.random_state is None:
+        raise PhylogeneticsError(
+            "metropolis-hastings sampler requires Bayesian states to carry one random_state before checkpoint serialization",
+            code="metropolis_hastings_state_random_state_missing",
+        )
+    return state.random_state
 
 
 def _restore_rng_state_tuple(

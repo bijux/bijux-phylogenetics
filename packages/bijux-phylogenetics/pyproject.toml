@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bijux-phylogenetics"
-description = "Reproducible tree validation, comparison, evidence bundles, and HTML reporting."
+description = "Native phylogenetic runtime, comparative workflows, and evidence-linked reporting."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
@@ -12,10 +12,17 @@ license-files = []
 authors = [
     { name = "Bijan Mousavi", email = "bijan@bijux.io" },
 ]
-keywords = ["bioinformatics", "comparative-biology", "evolution", "phylogenetics"]
+keywords = [
+    "bayesian-inference",
+    "bioinformatics",
+    "comparative-biology",
+    "evolution",
+    "maximum-likelihood",
+    "phylogenetics",
+]
 dynamic = ["version"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
@@ -30,7 +37,13 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://bijux.io/bijux-phylogenetics/public/phylogenetics/"
+Documentation = "https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/"
+"Native Workflows" = "https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/"
+"Evidence Book" = "https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-evidence-book/"
+Benchmarks = "https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/native-benchmark-review/"
+"Interface Guide" = "https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/surface-selection/"
+"Artifact Guide" = "https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/artifact-consumption-guide/"
+"Release Guide" = "https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/quality/release-review-workflow/"
 Repository = "https://github.com/bijux/bijux-phylogenetics"
 Issues = "https://github.com/bijux/bijux-phylogenetics/issues"
 Changelog = "https://github.com/bijux/bijux-phylogenetics/blob/main/packages/bijux-phylogenetics/CHANGELOG.md"
@@ -39,6 +52,7 @@ Security = "https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md"
 [project.optional-dependencies]
 dev = [
     "pytest>=9.0.3,<10.0",
+    "pytest-xdist>=3.8.0,<4.0",
     "pytest-asyncio>=1.0.0,<2.0",
     "pytest-cov>=6.2.1,<8.0",
     "pytest-timeout>=2.4.0,<3.0",

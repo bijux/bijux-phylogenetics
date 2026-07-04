@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from bijux_phylogenetics.comparative.search import BoundedSearchDiagnostics
+
 
 @dataclass(slots=True)
 class PGLSPredictorClassification:
@@ -134,6 +136,9 @@ class PGLSLambdaProfileRow:
     within_95_confidence_interval: bool
 
 
+PGLSLambdaOptimizerDiagnostics = BoundedSearchDiagnostics
+
+
 @dataclass(slots=True)
 class PGLSLambdaFitReport:
     """Pagel lambda fit surface for one PGLS model."""
@@ -145,6 +150,7 @@ class PGLSLambdaFitReport:
     brownian_log_likelihood: float
     lower_95_confidence_interval: float | None
     upper_95_confidence_interval: float | None
+    optimizer_diagnostics: PGLSLambdaOptimizerDiagnostics | None
     profile_rows: list[PGLSLambdaProfileRow]
 
 

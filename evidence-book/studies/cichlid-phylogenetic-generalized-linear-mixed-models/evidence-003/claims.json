@@ -1,0 +1,21 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm5-ancestral-posterior-export",
+      "claim_title": "Cichlid ancestral posterior export bundle",
+      "evidence_ids": [
+        "evidence-003"
+      ],
+      "source_fragments": [
+        "ancestral-posterior-extraction",
+        "ancestral-export-rules"
+      ],
+      "summary": "Governed study slice for the PCM5 ancestral-state posterior extraction and export rules.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-003",
+  "schema_version": 1,
+  "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+}

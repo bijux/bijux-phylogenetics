@@ -4,15 +4,17 @@ import math
 
 import numpy
 
-from bijux_phylogenetics.phylo.likelihood.discrete_observation_policies import (
-    resolve_discrete_observation_leaf_vector,
+from bijux_phylogenetics.phylo.likelihood.discrete_finite_state import (
+    build_discrete_mk_finite_state_surface,
+)
+from bijux_phylogenetics.phylo.likelihood.finite_state import (
+    CachedFiniteStateSiteEvaluation,
+    CompiledFiniteStateLikelihoodContext,
+    FiniteStateSiteEvaluationKey,
+    compile_finite_state_likelihood_context,
+    evaluate_finite_state_site_log_likelihood,
 )
 from bijux_phylogenetics.phylo.likelihood.logspace import logsumexp
-from bijux_phylogenetics.phylo.likelihood.pruning import (
-    build_transition_matrix_evaluator,
-    log_likelihood_from_root_prior,
-    postorder_conditional_likelihoods,
-)
 from bijux_phylogenetics.phylo.likelihood.pruning import (
     transition_probability_matrix as finite_state_transition_probability_matrix,
 )
@@ -99,14 +101,21 @@ def invariant_pattern_log_probability(
     root_prior: numpy.ndarray | None,
     root_prior_mode: str = "given",
 ) -> float:
+    context = _compile_discrete_mk_context(
+        tree,
+        state_order=state_order,
+        rate_matrix=rate_matrix,
+        root_prior=root_prior,
+        observation_policy="reject",
+    )
     return logsumexp(
         [
-            _tree_log_likelihood_without_ascertainment(
+            _site_log_likelihood_from_evaluation(
                 tree,
-                dict.fromkeys(taxa, state),
-                state_order=state_order,
-                rate_matrix=rate_matrix,
-                root_prior=root_prior,
+                _evaluate_discrete_site_pattern(
+                    context,
+                    states_by_taxon=dict.fromkeys(taxa, state),
+                ),
                 root_prior_mode=root_prior_mode,
             )
             for state in state_order
@@ -124,38 +133,21 @@ def _tree_log_likelihood_without_ascertainment(
     root_prior_mode: str = "given",
     observation_policy: str = "reject",
 ) -> float:
-    transition_evaluator = build_transition_matrix_evaluator(rate_matrix)
-    pruning_pass = postorder_conditional_likelihoods(
+    context = _compile_discrete_mk_context(
         tree,
-        state_count=len(state_order),
-        leaf_likelihood=lambda node: _leaf_likelihood_vector(
-            states_by_taxon,
-            state_order=state_order,
-            node_name=node.name,
-            observation_policy=observation_policy,
-        ),
-        transition_matrix_for_child=lambda child: (
-            transition_evaluator.transition_probability_matrix(branch_length(child))
-        ),
-    )
-    root_partial = pruning_pass.conditional_for_node(tree.root)
-    if root_prior_mode == "observed":
-        observed_root_total = float(root_partial.sum())
-        if observed_root_total <= 0.0:
-            return float("-inf")
-        root_scale = float((root_partial @ root_partial) / observed_root_total)
-        if root_scale <= 0.0:
-            return float("-inf")
-        subtree_log_scale = pruning_pass.subtree_log_scaling_for_node(tree.root)
-        if math.isinf(subtree_log_scale) and subtree_log_scale < 0.0:
-            return float("-inf")
-        return subtree_log_scale + math.log(root_scale)
-    if root_prior is None:
-        raise ValueError("root_prior is required unless root_prior_mode is 'observed'")
-    return log_likelihood_from_root_prior(
-        tree,
-        pruning_pass,
+        state_order=state_order,
+        rate_matrix=rate_matrix,
         root_prior=root_prior,
+        observation_policy=observation_policy,
+    )
+    evaluation = _evaluate_discrete_site_pattern(
+        context,
+        states_by_taxon=states_by_taxon,
+    )
+    return _site_log_likelihood_from_evaluation(
+        tree,
+        evaluation,
+        root_prior_mode=root_prior_mode,
     )
 
 
@@ -165,19 +157,68 @@ def branch_length(node) -> float:
     return max(float(node.branch_length), 0.0)
 
 
-def _leaf_likelihood_vector(
-    states_by_taxon: dict[str, str],
+def _compile_discrete_mk_context(
+    tree,
     *,
     state_order: list[str],
-    node_name: str | None,
+    rate_matrix: numpy.ndarray,
+    root_prior: numpy.ndarray | None,
     observation_policy: str,
-) -> numpy.ndarray:
-    if node_name is None:
-        raise ValueError("leaf nodes in a discrete likelihood tree must be named")
-    return resolve_discrete_observation_leaf_vector(
-        states_by_taxon[node_name],
-        model_name="discrete Mk",
-        node_name=node_name,
+) -> CompiledFiniteStateLikelihoodContext:
+    surface = build_discrete_mk_finite_state_surface(
         state_order=state_order,
+        rate_matrix=rate_matrix,
+        root_prior_policy=("provided" if root_prior is not None else "equal"),
+        root_prior=root_prior,
         observation_policy=observation_policy,
+        model_name="discrete Mk",
     )
+    return compile_finite_state_likelihood_context(tree, surface)
+
+
+def _evaluate_discrete_site_pattern(
+    context: CompiledFiniteStateLikelihoodContext,
+    *,
+    states_by_taxon: dict[str, str],
+) -> CachedFiniteStateSiteEvaluation:
+    taxon_order = tuple(sorted(states_by_taxon))
+    states = tuple(states_by_taxon[taxon] for taxon in taxon_order)
+    evaluate_finite_state_site_log_likelihood(
+        context,
+        states,
+        taxon_order=list(taxon_order),
+    )
+    evaluation = context.site_evaluation_by_key.get(
+        FiniteStateSiteEvaluationKey(
+            taxon_order=taxon_order,
+            states=states,
+        )
+    )
+    if evaluation is None:
+        raise RuntimeError(
+            "finite-state site evaluation cache did not retain the requested discrete Mk pattern"
+        )
+    return evaluation
+
+
+def _site_log_likelihood_from_evaluation(
+    tree,
+    evaluation: CachedFiniteStateSiteEvaluation,
+    *,
+    root_prior_mode: str,
+) -> float:
+    if root_prior_mode == "observed":
+        root_partial = evaluation.pruning_pass.conditional_for_node(tree.root)
+        observed_root_total = float(root_partial.sum())
+        if observed_root_total <= 0.0:
+            return float("-inf")
+        root_scale = float((root_partial @ root_partial) / observed_root_total)
+        if root_scale <= 0.0:
+            return float("-inf")
+        subtree_log_scale = evaluation.pruning_pass.subtree_log_scaling_for_node(
+            tree.root
+        )
+        if math.isinf(subtree_log_scale) and subtree_log_scale < 0.0:
+            return float("-inf")
+        return subtree_log_scale + math.log(root_scale)
+    return evaluation.log_likelihood

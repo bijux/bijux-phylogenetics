@@ -96,13 +96,19 @@ def summarize_irreversible_discrete_reconstruction(
     trait: str,
     allowed_transition_pairs: list[tuple[str, str]],
     taxon_column: str | None = None,
-    model: str = "all-rates-different",
+    model: str = "irreversible",
 ) -> IrreversibleDiscreteReport:
     """Compare constrained and unconstrained discrete ancestral likelihood fits."""
-    if model not in {"equal-rates", "symmetric", "all-rates-different"}:
+    if model not in {
+        "equal-rates",
+        "symmetric",
+        "all-rates-different",
+        "irreversible",
+    }:
         raise ValueError(
             "irreversible discrete ancestral reconstruction requires a discrete likelihood model"
         )
+    unconstrained_model = "all-rates-different" if model == "irreversible" else model
     constrained_report = reconstruct_discrete_ancestral_states(
         tree_path,
         traits_path,
@@ -116,9 +122,11 @@ def summarize_irreversible_discrete_reconstruction(
         traits_path,
         trait=trait,
         taxon_column=taxon_column,
-        model=model,
+        model=unconstrained_model,
     )
-    warnings = list(constrained_report.warnings)
+    warnings = list(
+        dict.fromkeys([*constrained_report.warnings, *unconstrained_report.warnings])
+    )
     node_rows = _build_node_rows(constrained_report, unconstrained_report)
     transition_rows = _build_transition_rows(constrained_report, unconstrained_report)
     if any(row.differs for row in node_rows):

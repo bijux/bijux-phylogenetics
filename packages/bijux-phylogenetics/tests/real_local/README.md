@@ -1,12 +1,14 @@
 # Real-Local Validation
 
 The `real_local/` suite is the governed installed-environment validation lane.
+It exists to answer a different question than fixture-backed engine-contract
+tests: does Bijux still work against real installed tools and built
+distributions on an actual workstation?
 
-It is intentionally separate from the fast `engine_contract` tests that use
-fixture executables and parser-only contract coverage.
+Use this lane when you need evidence from live executables and installed
+artifacts rather than from parser-only coverage or fixture runners.
 
-Use this lane when you need evidence that Bijux still works with installed
-artifacts and installed external engines, not only with fake runners:
+## Covered Lanes
 
 - `test_installability_smoke.py` builds wheel and sdist artifacts, installs
   each into a clean virtual environment, runs `bijux-phylogenetics --help`,
@@ -42,18 +44,24 @@ artifacts and installed external engines, not only with fake runners:
   output rejection, missing-executable handling, clean restart, and verified
   resume behavior.
 
+## Recorded Evidence
+
 Each matrix case records the reviewer-facing engine name, validation name,
 validation mode, executable path when one was used, version text, command,
 exit code, runtime, output paths, and output hashes.
 
+## How To Run
+
 Run the full real-local lane with:
 
 ```bash
-./.venv/bin/pytest tests/real_local -m real_local
+make root-check-env
+artifacts/root/check-venv/bin/pytest tests/real_local -m real_local
 ```
 
 Run only the external-engine subset with:
 
 ```bash
-./.venv/bin/pytest tests/real_local -m engine_real
+make root-check-env
+artifacts/root/check-venv/bin/pytest tests/real_local -m engine_real
 ```

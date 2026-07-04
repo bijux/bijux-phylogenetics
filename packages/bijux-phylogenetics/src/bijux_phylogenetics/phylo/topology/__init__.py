@@ -91,6 +91,7 @@ _EXPORTS = {
     "_normalize_outgroup_rooting_to_ape": "rooting",
     "_root_tree_by_outgroup_node": "rooting",
     "reroot_tree_by_midpoint": "rooting",
+    "root_unrooted_tree_deterministically": "rooting",
     "root_tree_on_outgroup": "rooting",
     "tree_from_biophylo": "rooting",
     "tree_to_biophylo": "rooting",

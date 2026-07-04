@@ -10,4 +10,6 @@ def test_root_readme_documents_local_artifact_contract() -> None:
 
     assert "transient local outputs belong under `artifacts/`" in readme
     assert "`artifacts/root/check-venv/`" in readme
+    assert "root `.venv`, `.tox`, `.hypothesis`, and `.benchmarks`" in readme
+    assert "`make clean-root-artifacts`" in readme
     assert "`artifacts/root/docs/site/`" in readme

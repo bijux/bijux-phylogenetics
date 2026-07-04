@@ -15,11 +15,11 @@
     "governed_code_paths": [
       "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pgls_and_signal"
     ],
-    "last_generated_on": "2026-05-27",
+    "last_generated_on": "2026-07-04",
     "source_basis_locators": [
       "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
-      "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
-      "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+      "evidence-book/studies/primate-pgls-and-signal/datasets/reference_primate.csv",
+      "evidence-book/studies/primate-pgls-and-signal/datasets/reference_trimmed_primatetree.nwk",
       "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
       "evidence-book/studies/primate-pgls-and-signal/evidence-008/likelihood-ratio-parity.json"
     ]
@@ -54,12 +54,12 @@
     {
       "kind": "repository-reference",
       "label": "governed primate reference table",
-      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv"
+      "locator": "evidence-book/studies/primate-pgls-and-signal/datasets/reference_primate.csv"
     },
     {
       "kind": "repository-reference",
       "label": "governed primate trimmed tree",
-      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk"
+      "locator": "evidence-book/studies/primate-pgls-and-signal/datasets/reference_trimmed_primatetree.nwk"
     },
     {
       "kind": "repository-reference",

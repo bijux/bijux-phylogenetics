@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm4-phylogenetic-variance-component-posteriors",
+      "claim_title": "Cichlid variance-component posterior bundle",
+      "evidence_ids": [
+        "evidence-006"
+      ],
+      "source_fragments": [
+        "variance-component-posteriors"
+      ],
+      "summary": "Governed study slice for the PCM4 phylogenetic variance-component posterior summaries.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-006",
+  "schema_version": 1,
+  "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+}

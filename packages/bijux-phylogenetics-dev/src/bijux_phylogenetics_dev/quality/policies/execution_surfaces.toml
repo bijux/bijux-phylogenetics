@@ -6,6 +6,8 @@ required_root_make_targets = [
   "report-evidence-completeness:",
   "check-execution-surfaces:",
   "report-execution-surfaces:",
+  "check-runtime-budgets:",
+  "report-runtime-budgets:",
 ]
 required_tox_envs = [
   "repository-contracts",

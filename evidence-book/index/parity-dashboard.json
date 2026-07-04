@@ -7,8 +7,8 @@
   "parity_expectation_counts": {},
   "scalar_row_count": 87,
   "scalar_verdict_counts": {
-    "matched": 25,
-    "matched_with_tolerance": 50,
+    "matched": 24,
+    "matched_with_tolerance": 51,
     "mismatch_unexplained": 12
   },
   "schema_version": 1,
@@ -41,8 +41,8 @@
       "relative_path": "studies/primate-pgls-and-signal/evidence-001",
       "scalar_row_count": 56,
       "scalar_verdict_counts": {
-        "matched": 9,
-        "matched_with_tolerance": 35,
+        "matched": 8,
+        "matched_with_tolerance": 36,
         "mismatch_unexplained": 12
       },
       "study_id": "primate-pgls-and-signal",

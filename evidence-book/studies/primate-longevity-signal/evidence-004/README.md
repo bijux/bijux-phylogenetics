@@ -19,4 +19,4 @@ Reference script locators:
 
 Limitations:
 
-- The raw workbook remains external, so the bundle records the governed missing-value contract at the processed artifact boundary.
+- The bundle records the governed missing-value contract at the processed artifact boundary even though the original workbook copy is also checked in.

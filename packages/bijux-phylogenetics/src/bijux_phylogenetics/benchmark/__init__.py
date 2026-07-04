@@ -60,6 +60,150 @@ from .contracts import (
 from .contracts import (
     _StressTierConfig as _StressTierConfig,
 )
+from .likelihood_tree_inference import (
+    MaximumLikelihoodWrapperBenchmarkBundle as MaximumLikelihoodWrapperBenchmarkBundle,
+)
+from .likelihood_tree_inference import (
+    MaximumLikelihoodWrapperBenchmarkObservation as MaximumLikelihoodWrapperBenchmarkObservation,
+)
+from .likelihood_tree_inference import (
+    MaximumLikelihoodWrapperBenchmarkReport as MaximumLikelihoodWrapperBenchmarkReport,
+)
+from .likelihood_tree_inference import (
+    MaximumLikelihoodWrapperBenchmarkSummaryRow as MaximumLikelihoodWrapperBenchmarkSummaryRow,
+)
+from .likelihood_tree_inference import (
+    MaximumLikelihoodWrapperSupportComparison as MaximumLikelihoodWrapperSupportComparison,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodAccuracyBenchmarkBundle as NativeMaximumLikelihoodAccuracyBenchmarkBundle,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodAccuracyBenchmarkObservation as NativeMaximumLikelihoodAccuracyBenchmarkObservation,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodAccuracyBenchmarkReport as NativeMaximumLikelihoodAccuracyBenchmarkReport,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodMemoryBenchmarkBundle as NativeMaximumLikelihoodMemoryBenchmarkBundle,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodMemoryBenchmarkObservation as NativeMaximumLikelihoodMemoryBenchmarkObservation,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodMemoryBenchmarkReport as NativeMaximumLikelihoodMemoryBenchmarkReport,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodMemoryTrendRow as NativeMaximumLikelihoodMemoryTrendRow,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodSpeedBenchmarkBundle as NativeMaximumLikelihoodSpeedBenchmarkBundle,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodSpeedBenchmarkObservation as NativeMaximumLikelihoodSpeedBenchmarkObservation,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodSpeedBenchmarkReport as NativeMaximumLikelihoodSpeedBenchmarkReport,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodSpeedTrendRow as NativeMaximumLikelihoodSpeedTrendRow,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodSuiteBundle as NativeMaximumLikelihoodSuiteBundle,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodSuiteObservation as NativeMaximumLikelihoodSuiteObservation,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodSuiteReport as NativeMaximumLikelihoodSuiteReport,
+)
+from .likelihood_tree_inference import (
+    NativeMaximumLikelihoodSuiteSummaryRow as NativeMaximumLikelihoodSuiteSummaryRow,
+)
+from .likelihood_tree_inference import (
+    benchmark_maximum_likelihood_wrapper_comparison as benchmark_maximum_likelihood_wrapper_comparison,
+)
+from .likelihood_tree_inference import (
+    benchmark_native_maximum_likelihood_accuracy as benchmark_native_maximum_likelihood_accuracy,
+)
+from .likelihood_tree_inference import (
+    benchmark_native_maximum_likelihood_memory as benchmark_native_maximum_likelihood_memory,
+)
+from .likelihood_tree_inference import (
+    benchmark_native_maximum_likelihood_speed as benchmark_native_maximum_likelihood_speed,
+)
+from .likelihood_tree_inference import (
+    benchmark_native_maximum_likelihood_suite as benchmark_native_maximum_likelihood_suite,
+)
+from .likelihood_tree_inference import (
+    write_maximum_likelihood_wrapper_comparison_bundle as write_maximum_likelihood_wrapper_comparison_bundle,
+)
+from .likelihood_tree_inference import (
+    write_maximum_likelihood_wrapper_comparison_observation_table as write_maximum_likelihood_wrapper_comparison_observation_table,
+)
+from .likelihood_tree_inference import (
+    write_maximum_likelihood_wrapper_comparison_run_json as write_maximum_likelihood_wrapper_comparison_run_json,
+)
+from .likelihood_tree_inference import (
+    write_maximum_likelihood_wrapper_comparison_summary_table as write_maximum_likelihood_wrapper_comparison_summary_table,
+)
+from .likelihood_tree_inference import (
+    write_native_maximum_likelihood_accuracy_bundle as write_native_maximum_likelihood_accuracy_bundle,
+)
+from .likelihood_tree_inference import (
+    write_native_maximum_likelihood_accuracy_observation_table as write_native_maximum_likelihood_accuracy_observation_table,
+)
+from .likelihood_tree_inference import (
+    write_native_maximum_likelihood_accuracy_run_json as write_native_maximum_likelihood_accuracy_run_json,
+)
+from .likelihood_tree_inference import (
+    write_native_maximum_likelihood_accuracy_summary_table as write_native_maximum_likelihood_accuracy_summary_table,
+)
+from .likelihood_tree_inference import (
+    write_native_maximum_likelihood_accuracy_wrapper_table as write_native_maximum_likelihood_accuracy_wrapper_table,
+)
+from .likelihood_tree_inference import (
+    write_native_maximum_likelihood_memory_bundle as write_native_maximum_likelihood_memory_bundle,
+)
+from .likelihood_tree_inference import (
+    write_native_maximum_likelihood_memory_observation_table as write_native_maximum_likelihood_memory_observation_table,
+)
+from .likelihood_tree_inference import (
+    write_native_maximum_likelihood_memory_run_json as write_native_maximum_likelihood_memory_run_json,
+)
+from .likelihood_tree_inference import (
+    write_native_maximum_likelihood_memory_summary_table as write_native_maximum_likelihood_memory_summary_table,
+)
+from .likelihood_tree_inference import (
+    write_native_maximum_likelihood_memory_trend_table as write_native_maximum_likelihood_memory_trend_table,
+)
+from .likelihood_tree_inference import (
+    write_native_maximum_likelihood_speed_bundle as write_native_maximum_likelihood_speed_bundle,
+)
+from .likelihood_tree_inference import (
+    write_native_maximum_likelihood_speed_observation_table as write_native_maximum_likelihood_speed_observation_table,
+)
+from .likelihood_tree_inference import (
+    write_native_maximum_likelihood_speed_run_json as write_native_maximum_likelihood_speed_run_json,
+)
+from .likelihood_tree_inference import (
+    write_native_maximum_likelihood_speed_summary_table as write_native_maximum_likelihood_speed_summary_table,
+)
+from .likelihood_tree_inference import (
+    write_native_maximum_likelihood_speed_trend_table as write_native_maximum_likelihood_speed_trend_table,
+)
+from .likelihood_tree_inference import (
+    write_native_maximum_likelihood_suite_bundle as write_native_maximum_likelihood_suite_bundle,
+)
+from .likelihood_tree_inference import (
+    write_native_maximum_likelihood_suite_observation_table as write_native_maximum_likelihood_suite_observation_table,
+)
+from .likelihood_tree_inference import (
+    write_native_maximum_likelihood_suite_run_json as write_native_maximum_likelihood_suite_run_json,
+)
+from .likelihood_tree_inference import (
+    write_native_maximum_likelihood_suite_summary_table as write_native_maximum_likelihood_suite_summary_table,
+)
 from .macroevolution import (
     RealDatasetMacroevolutionAlignmentReviewRow as RealDatasetMacroevolutionAlignmentReviewRow,
 )
@@ -178,6 +322,26 @@ __all__ = [
     "LargeTreeSetScalingBenchmarkReport",
     "LargeTreeSetScalingObservation",
     "LargeTreeSetScalingWorkflowBenchmark",
+    "MaximumLikelihoodWrapperBenchmarkBundle",
+    "MaximumLikelihoodWrapperBenchmarkObservation",
+    "MaximumLikelihoodWrapperBenchmarkReport",
+    "MaximumLikelihoodWrapperBenchmarkSummaryRow",
+    "MaximumLikelihoodWrapperSupportComparison",
+    "NativeMaximumLikelihoodAccuracyBenchmarkBundle",
+    "NativeMaximumLikelihoodAccuracyBenchmarkObservation",
+    "NativeMaximumLikelihoodAccuracyBenchmarkReport",
+    "NativeMaximumLikelihoodSuiteBundle",
+    "NativeMaximumLikelihoodSuiteObservation",
+    "NativeMaximumLikelihoodSuiteReport",
+    "NativeMaximumLikelihoodSuiteSummaryRow",
+    "NativeMaximumLikelihoodMemoryBenchmarkBundle",
+    "NativeMaximumLikelihoodMemoryBenchmarkObservation",
+    "NativeMaximumLikelihoodMemoryBenchmarkReport",
+    "NativeMaximumLikelihoodMemoryTrendRow",
+    "NativeMaximumLikelihoodSpeedBenchmarkBundle",
+    "NativeMaximumLikelihoodSpeedBenchmarkObservation",
+    "NativeMaximumLikelihoodSpeedBenchmarkReport",
+    "NativeMaximumLikelihoodSpeedTrendRow",
     "RealDatasetMacroevolutionAlignmentReviewRow",
     "RealDatasetMacroevolutionBenchmarkBundle",
     "RealDatasetMacroevolutionBenchmarkDemoResult",
@@ -197,6 +361,11 @@ __all__ = [
     "benchmark_large_tree_model_fitting",
     "benchmark_large_tree_scaling",
     "benchmark_large_tree_set_scaling",
+    "benchmark_native_maximum_likelihood_accuracy",
+    "benchmark_native_maximum_likelihood_suite",
+    "benchmark_native_maximum_likelihood_memory",
+    "benchmark_native_maximum_likelihood_speed",
+    "benchmark_maximum_likelihood_wrapper_comparison",
     "benchmark_real_dataset_macroevolution",
     "benchmark_tree_comparison",
     "benchmark_tree_set_consensus",
@@ -207,6 +376,29 @@ __all__ = [
     "write_large_tree_model_fitting_bundle",
     "write_large_tree_model_fitting_observation_table",
     "write_large_tree_model_fitting_summary_table",
+    "write_native_maximum_likelihood_accuracy_bundle",
+    "write_native_maximum_likelihood_accuracy_observation_table",
+    "write_native_maximum_likelihood_accuracy_run_json",
+    "write_native_maximum_likelihood_accuracy_summary_table",
+    "write_native_maximum_likelihood_accuracy_wrapper_table",
+    "write_native_maximum_likelihood_memory_bundle",
+    "write_native_maximum_likelihood_memory_observation_table",
+    "write_native_maximum_likelihood_memory_run_json",
+    "write_native_maximum_likelihood_memory_summary_table",
+    "write_native_maximum_likelihood_memory_trend_table",
+    "write_native_maximum_likelihood_speed_bundle",
+    "write_native_maximum_likelihood_speed_observation_table",
+    "write_native_maximum_likelihood_speed_run_json",
+    "write_native_maximum_likelihood_speed_summary_table",
+    "write_native_maximum_likelihood_speed_trend_table",
+    "write_native_maximum_likelihood_suite_bundle",
+    "write_native_maximum_likelihood_suite_observation_table",
+    "write_native_maximum_likelihood_suite_run_json",
+    "write_native_maximum_likelihood_suite_summary_table",
+    "write_maximum_likelihood_wrapper_comparison_bundle",
+    "write_maximum_likelihood_wrapper_comparison_observation_table",
+    "write_maximum_likelihood_wrapper_comparison_run_json",
+    "write_maximum_likelihood_wrapper_comparison_summary_table",
     "write_real_dataset_macroevolution_alignment_review_table",
     "write_real_dataset_macroevolution_bundle",
     "write_real_dataset_macroevolution_model_table",

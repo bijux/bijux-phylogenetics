@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+from bijux_phylogenetics.core.bounded_scalar_search import (
+    BoundedScalarSearchDiagnostics,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -29,7 +33,10 @@ class Jc69TreeLikelihoodReport:
     tree_newick: str
     state_count: int
     observation_policy: str
+    normalization_policy: str
+    parameter_count: int
     log_likelihood: float
+    aic: float
 
 
 @dataclass(slots=True)
@@ -50,6 +57,9 @@ class Jc69BranchLengthOptimizationReport:
     lower_branch_length_bound: float
     upper_branch_length_bound: float
     steps: list[Jc69BranchLengthOptimizationStep]
+    parameter_diagnostics: dict[str, BoundedScalarSearchDiagnostics] = field(
+        default_factory=dict
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -86,6 +96,7 @@ class StrictClockLikelihoodReport:
     converged: bool
     lower_clock_rate_bound: float
     upper_clock_rate_bound: float
+    optimizer_diagnostics: BoundedScalarSearchDiagnostics
     branch_rows: list[StrictClockBranchRow]
     site_log_likelihoods: list[SiteLogLikelihoodRow]
     branch_likelihood_diagnostics: list[BranchLikelihoodDiagnosticRow]
@@ -162,8 +173,11 @@ class K80TreeLikelihoodReport:
     tree_newick: str
     state_count: int
     observation_policy: str
+    normalization_policy: str
     kappa: float
+    parameter_count: int
     log_likelihood: float
+    aic: float
 
 
 @dataclass(slots=True)
@@ -176,12 +190,16 @@ class K80KappaOptimizationReport:
     tree_newick: str
     initial_kappa: float
     optimized_kappa: float
+    parameter_count: int
     initial_log_likelihood: float
     optimized_log_likelihood: float
+    initial_aic: float
+    optimized_aic: float
     function_evaluation_count: int
     converged: bool
     lower_kappa_bound: float
     upper_kappa_bound: float
+    optimizer_diagnostics: BoundedScalarSearchDiagnostics
 
 
 @dataclass(slots=True)
@@ -195,6 +213,7 @@ class F81TreeLikelihoodReport:
     tree_newick: str
     state_count: int
     observation_policy: str
+    normalization_policy: str
     base_frequency_source: str
     base_frequency_a: float
     base_frequency_c: float
@@ -216,6 +235,7 @@ class Hky85TreeLikelihoodReport:
     tree_newick: str
     state_count: int
     observation_policy: str
+    normalization_policy: str
     base_frequency_source: str
     base_frequency_a: float
     base_frequency_c: float
@@ -251,6 +271,7 @@ class Hky85KappaOptimizationReport:
     converged: bool
     lower_kappa_bound: float
     upper_kappa_bound: float
+    optimizer_diagnostics: BoundedScalarSearchDiagnostics
 
 
 @dataclass(slots=True)
@@ -264,6 +285,7 @@ class GtrTreeLikelihoodReport:
     tree_newick: str
     state_count: int
     observation_policy: str
+    normalization_policy: str
     base_frequency_source: str
     base_frequency_a: float
     base_frequency_c: float
@@ -342,6 +364,18 @@ class LikelihoodOptimizationBoundaryWarning:
 
 
 @dataclass(slots=True)
+class LikelihoodFitAssessment:
+    """Trustworthiness classification for one fitted likelihood optimization result."""
+
+    classification: str
+    summary: str
+    optimized_parameter_count: int
+    boundary_warning_count: int
+    warning_kinds: list[str]
+    stable_conclusion_supported: bool
+
+
+@dataclass(slots=True)
 class NucleotideSubstitutionParameterOptimizationReport:
     """Fixed-topology nucleotide substitution-parameter optimization summary."""
 
@@ -365,8 +399,50 @@ class NucleotideSubstitutionParameterOptimizationReport:
     function_evaluation_count: int
     optimization_pass_count: int
     converged: bool
+    fit_assessment: LikelihoodFitAssessment
     boundary_warnings: list[LikelihoodOptimizationBoundaryWarning]
     warnings: list[str]
+    parameter_diagnostics: dict[str, BoundedScalarSearchDiagnostics] = field(
+        default_factory=dict
+    )
+
+
+@dataclass(slots=True)
+class StateFrequencyOptimizationRow:
+    """One optimized stationary-frequency component under one simplex search."""
+
+    state_label: str
+    initial_value: float
+    optimized_value: float
+    hit_lower_bound: bool
+
+
+@dataclass(slots=True)
+class FiniteStateFrequencyOptimizationReport:
+    """Fixed-topology finite-state stationary-frequency optimization summary."""
+
+    model_name: str
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    tree_newick: str
+    state_count: int
+    state_frequency_source: str
+    initial_log_likelihood: float
+    optimized_log_likelihood: float
+    function_evaluation_count: int
+    optimization_pass_count: int
+    converged: bool
+    fit_assessment: LikelihoodFitAssessment
+    minimum_state_frequency: float
+    state_rows: list[StateFrequencyOptimizationRow]
+    warnings: list[str]
+    boundary_warning_rows: list[LikelihoodOptimizationBoundaryWarning] = field(
+        default_factory=list
+    )
+    parameter_diagnostics: dict[str, BoundedScalarSearchDiagnostics] = field(
+        default_factory=dict
+    )
 
 
 @dataclass(slots=True)
@@ -423,6 +499,9 @@ class SubstitutionModelSelectionRow:
     selected_by_bic: bool
     parameter_values: dict[str, float]
     warnings: list[str]
+    boundary_warning_rows: list[LikelihoodOptimizationBoundaryWarning] = field(
+        default_factory=list
+    )
 
 
 @dataclass(slots=True)
@@ -1190,6 +1269,25 @@ class NucleotideLikelihoodSearchTraceReplayReport:
 
 
 @dataclass(slots=True)
+class NucleotideLikelihoodNeighborJoiningStartTreeReport:
+    """Alignment-derived native NJ starting tree summary for rooted likelihood search."""
+
+    algorithm: str
+    distance_method: str
+    distance_model: str
+    gap_handling: str
+    ambiguity_policy: str
+    alignment_path: str | None
+    taxon_count: int
+    site_count: int
+    pair_count: int
+    distance_warnings: list[str]
+    rooting_policy: str
+    unrooted_tree_newick: str
+    rooted_tree_newick: str
+
+
+@dataclass(slots=True)
 class NucleotideLikelihoodStartingTreeSummary:
     """One scored starting tree inside a native likelihood start-tree pool."""
 
@@ -1332,6 +1430,36 @@ class SiteLogLikelihoodRow:
     pattern_weight: int
     site_position: int
     site_states: tuple[str, ...]
+    log_likelihood: float
+
+
+@dataclass(slots=True)
+class CompiledFiniteStateSiteLogLikelihoodRow:
+    """One weighted source-site row reconstructed from one compiled finite-state analysis."""
+
+    partition_name: str
+    partition_data_type: str | None
+    pattern_id: str
+    pattern_site_count: int
+    source_site_position: int
+    site_states: tuple[str, ...]
+    site_weight: float
+    log_likelihood: float
+
+
+@dataclass(slots=True)
+class CompiledFiniteStatePartitionLogLikelihoodRow:
+    """One partition-level likelihood contribution from one compiled analysis."""
+
+    partition_name: str
+    partition_data_type: str | None
+    model_name: str
+    context_index: int
+    context_linkage_key: str
+    site_count: int
+    pattern_count: int
+    site_weight_total: float
+    parameter_values: dict[str, float]
     log_likelihood: float
 
 
@@ -1526,6 +1654,8 @@ class ProteinPoissonTreeLikelihoodReport:
     gap_policy: str
     missing_policy: str
     ambiguity_policy: str
+    root_prior_source: str
+    normalization_policy: str
     log_likelihood: float
     site_log_likelihoods: list[SiteLogLikelihoodRow]
     branch_likelihood_diagnostics: list[BranchLikelihoodDiagnosticRow] | None = None
@@ -1539,13 +1669,17 @@ class CodonCtmcTreeLikelihoodReport:
     site_count: int
     pattern_count: int
     compression_used: bool
+    expansion_policy: str
     tree_newick: str
     state_count: int
     genetic_code_id: int
     genetic_code_name: str
     codon_frequency_source: str
+    root_prior_source: str
     observation_policy: str
+    normalization_policy: str
     log_likelihood: float
+    site_log_likelihoods: list[SiteLogLikelihoodRow]
 
 
 @dataclass(slots=True)
@@ -1563,6 +1697,7 @@ class ProteinEmpiricalMatrixTreeLikelihoodReport:
     gap_policy: str
     missing_policy: str
     ambiguity_policy: str
+    normalization_policy: str
     log_likelihood: float
     site_log_likelihoods: list[SiteLogLikelihoodRow]
     branch_likelihood_diagnostics: list[BranchLikelihoodDiagnosticRow] | None = None
@@ -1601,6 +1736,7 @@ class FixedTopologyNucleotideBranchLengthOptimizationReport:
     optimization_pass_count: int
     function_evaluation_count: int
     converged: bool
+    fit_assessment: LikelihoodFitAssessment
     lower_branch_length_bound: float
     upper_branch_length_bound: float
     branches: list[BranchLengthOptimizationRow]
@@ -1631,6 +1767,7 @@ class FixedTopologyNucleotideSingleBranchOptimizationReport:
     optimized_log_likelihood: float
     function_evaluation_count: int
     converged: bool
+    fit_assessment: LikelihoodFitAssessment
     lower_branch_length_bound: float
     upper_branch_length_bound: float
 
@@ -1682,6 +1819,7 @@ class FixedTopologyNucleotideJointOptimizationReport:
     joint_optimization_pass_count: int
     converged: bool
     convergence_reason: str
+    fit_assessment: LikelihoodFitAssessment
     lower_branch_length_bound: float
     upper_branch_length_bound: float
     update_rows: list[JointNucleotideOptimizationUpdateRow]
@@ -1715,6 +1853,7 @@ class FixedTopologyNucleotideJointOptimizationRestartReport:
     attempt_count: int
     selected_attempt_index: int
     selected_solution_reason: str
+    fit_assessment: LikelihoodFitAssessment
     selected_report: FixedTopologyNucleotideJointOptimizationReport
     attempt_rows: list[JointNucleotideOptimizationRestartAttemptRow]
 
@@ -1763,9 +1902,13 @@ class ProteinEmpiricalBranchLengthOptimizationReport:
     optimization_pass_count: int
     function_evaluation_count: int
     converged: bool
+    fit_assessment: LikelihoodFitAssessment
     lower_branch_length_bound: float
     upper_branch_length_bound: float
     branches: list[BranchLengthOptimizationRow]
+    parameter_diagnostics: dict[str, BoundedScalarSearchDiagnostics] = field(
+        default_factory=dict
+    )
 
 
 @dataclass(slots=True)
@@ -1791,6 +1934,27 @@ class DiscreteGammaSiteLikelihood:
 
 
 @dataclass(slots=True)
+class FiniteStateDiscreteGammaTreeLikelihoodReport:
+    """Finite-state likelihood report with shared discrete-gamma rate heterogeneity."""
+
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    compression_used: bool
+    tree_newick: str
+    model_name: str
+    state_count: int
+    root_prior_source: str
+    observation_policy: str
+    normalization_policy: str | None
+    alpha: float
+    category_count: int
+    category_rates: list[DiscreteGammaRateCategory]
+    site_likelihoods: list[DiscreteGammaSiteLikelihood]
+    log_likelihood: float
+
+
+@dataclass(slots=True)
 class ProteinEmpiricalDiscreteGammaTreeLikelihoodReport:
     """Empirical protein likelihood report with discrete-gamma rate heterogeneity."""
 
@@ -1804,6 +1968,7 @@ class ProteinEmpiricalDiscreteGammaTreeLikelihoodReport:
     root_prior_source: str
     gap_policy: str
     missing_policy: str
+    normalization_policy: str
     alpha: float
     category_count: int
     category_rates: list[DiscreteGammaRateCategory]
@@ -1827,6 +1992,33 @@ class InvariantMixtureSiteLikelihood:
 
 
 @dataclass(slots=True)
+class FiniteStateInvariantMixtureTreeLikelihoodReport:
+    """Finite-state likelihood report with one active invariant-site mixture."""
+
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    compression_used: bool
+    tree_newick: str
+    model_name: str
+    state_count: int
+    root_prior_source: str
+    observation_policy: str
+    normalization_policy: str | None
+    invariant_proportion: float
+    site_likelihoods: list[InvariantMixtureSiteLikelihood]
+    log_likelihood: float
+    lower_invariant_proportion_bound: float | None = None
+    upper_invariant_proportion_bound: float | None = None
+    hit_lower_invariant_proportion_boundary: bool = False
+    hit_upper_invariant_proportion_boundary: bool = False
+    boundary_warnings: list[str] = field(default_factory=list)
+    boundary_warning_rows: list[LikelihoodOptimizationBoundaryWarning] = field(
+        default_factory=list
+    )
+
+
+@dataclass(slots=True)
 class ProteinEmpiricalInvariantMixtureTreeLikelihoodReport:
     """Empirical protein likelihood report with one fitted invariant-site mixture."""
 
@@ -1840,15 +2032,24 @@ class ProteinEmpiricalInvariantMixtureTreeLikelihoodReport:
     root_prior_source: str
     gap_policy: str
     missing_policy: str
+    normalization_policy: str
     initial_invariant_proportion: float
     invariant_proportion: float
     initial_log_likelihood: float
     log_likelihood: float
     function_evaluation_count: int
     converged: bool
+    fit_assessment: LikelihoodFitAssessment
     lower_invariant_proportion_bound: float
     upper_invariant_proportion_bound: float
     site_likelihoods: list[InvariantMixtureSiteLikelihood]
+    hit_lower_invariant_proportion_boundary: bool = False
+    hit_upper_invariant_proportion_boundary: bool = False
+    boundary_warnings: list[str] = field(default_factory=list)
+    boundary_warning_rows: list[LikelihoodOptimizationBoundaryWarning] = field(
+        default_factory=list
+    )
+    optimizer_diagnostics: BoundedScalarSearchDiagnostics | None = None
     branch_likelihood_diagnostics: list[BranchLikelihoodDiagnosticRow] | None = None
 
 
@@ -1868,6 +2069,36 @@ class DiscreteGammaInvariantMixtureSiteLikelihood:
 
 
 @dataclass(slots=True)
+class FiniteStateDiscreteGammaInvariantTreeLikelihoodReport:
+    """Finite-state likelihood report with active gamma and invariant mixture."""
+
+    taxa: list[str]
+    site_count: int
+    pattern_count: int
+    compression_used: bool
+    tree_newick: str
+    model_name: str
+    state_count: int
+    root_prior_source: str
+    observation_policy: str
+    normalization_policy: str | None
+    alpha: float
+    category_count: int
+    category_rates: list[DiscreteGammaRateCategory]
+    invariant_proportion: float
+    lower_invariant_proportion_bound: float
+    upper_invariant_proportion_bound: float
+    hit_lower_invariant_proportion_boundary: bool
+    hit_upper_invariant_proportion_boundary: bool
+    boundary_warnings: list[str]
+    site_likelihoods: list[DiscreteGammaInvariantMixtureSiteLikelihood]
+    log_likelihood: float
+    boundary_warning_rows: list[LikelihoodOptimizationBoundaryWarning] = field(
+        default_factory=list
+    )
+
+
+@dataclass(slots=True)
 class ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport:
     """Empirical protein likelihood report with active gamma and invariant mixture."""
 
@@ -1881,6 +2112,7 @@ class ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport:
     root_prior_source: str
     gap_policy: str
     missing_policy: str
+    normalization_policy: str
     alpha: float
     category_count: int
     category_rates: list[DiscreteGammaRateCategory]
@@ -1890,12 +2122,17 @@ class ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport:
     log_likelihood: float
     function_evaluation_count: int
     converged: bool
+    fit_assessment: LikelihoodFitAssessment
     lower_invariant_proportion_bound: float
     upper_invariant_proportion_bound: float
     hit_lower_invariant_proportion_boundary: bool
     hit_upper_invariant_proportion_boundary: bool
     boundary_warnings: list[str]
     site_likelihoods: list[DiscreteGammaInvariantMixtureSiteLikelihood]
+    boundary_warning_rows: list[LikelihoodOptimizationBoundaryWarning] = field(
+        default_factory=list
+    )
+    optimizer_diagnostics: BoundedScalarSearchDiagnostics | None = None
     branch_likelihood_diagnostics: list[BranchLikelihoodDiagnosticRow] | None = None
 
 

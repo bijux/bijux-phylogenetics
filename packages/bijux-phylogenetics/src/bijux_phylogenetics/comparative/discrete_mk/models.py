@@ -115,6 +115,8 @@ class DiscreteMkTransformFit:
     transformed_tree_maximum_tip_depth: float
     profile_rows: list[DiscreteMkTransformProfileRow]
     warnings: list[DiscreteMkTransformWarning]
+    converged: bool = True
+    failure_reason: str | None = None
 
 
 @dataclass(slots=True)
@@ -154,9 +156,12 @@ class DiscreteMkFitReport:
     ascertainment_policy: str
     state_ordering: str
     state_order: list[str]
+    ordered_states: list[str]
     taxon_count: int
     input_audit: DiscreteMkInputAudit
     log_likelihood: float
+    uncorrected_log_likelihood: float
+    ascertainment_log_likelihood_delta: float
     ascertainment_conditioning_log_probability: float | None
     invariant_pattern_log_probability: float | None
     parameter_count: int
@@ -167,6 +172,8 @@ class DiscreteMkFitReport:
     pattern_likelihood_rows: list[DiscreteMkPatternLikelihoodRow]
     transition_rate_rows: list[DiscreteTransitionRateRow]
     allowed_transition_pairs: list[tuple[str, str]]
+    allowed_transition_count: int
+    restricted_transition_count: int
     optimizer_diagnostics: DiscreteOptimizerDiagnostics
     overparameterized: bool
     transform_fit: DiscreteMkTransformFit | None

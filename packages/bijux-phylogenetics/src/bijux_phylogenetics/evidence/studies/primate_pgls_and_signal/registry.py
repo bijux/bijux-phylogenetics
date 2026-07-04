@@ -62,13 +62,13 @@ def build_primate_pgls_signal_external_sources() -> dict[str, object]:
     return {
         "schema_version": 1,
         "study_id": STUDY_ID,
-        "intake_policy": "read-only-external-source",
-        "source_count": 3,
+        "intake_policy": "repository-owned-source",
+        "source_count": 5,
         "sources": [
             {
-                "source_id": "lund-pcm2-script",
-                "kind": "external-course-script",
-                "label": "Lund PCM2 modes and PGLS lecture script",
+                "source_id": "pcm2-checked-in-lecture-script",
+                "kind": "repository-owned-source-copy",
+                "label": "Checked-in PCM2 modes and PGLS lecture script",
                 "locator": PCM2_SOURCE_LOCATOR,
                 "path_hint": "PCM2_modes_pgls/Lecture/R/Scripts/PCM2_modes_pgls.R",
                 "concept_tags": [
@@ -79,17 +79,29 @@ def build_primate_pgls_signal_external_sources() -> dict[str, object]:
                 ],
             },
             {
-                "source_id": "lund-primate-rdata",
-                "kind": "external-course-workspace",
-                "label": "Lund primate workspace RData",
-                "locator": "external:lund/pcm2-modes-pgls/data/primate.RData",
+                "source_id": "pcm2-checked-in-primate-workspace",
+                "kind": "repository-owned-workspace",
+                "label": "Checked-in PCM2 primate workspace",
+                "locator": "evidence-book/studies/primate-pgls-and-signal/datasets/primate.RData",
                 "provides": ["primate", "primatetree"],
             },
             {
-                "source_id": "governed-primate-reference-artifacts",
+                "source_id": "pcm2-checked-in-primate-workbook",
+                "kind": "repository-owned-source-copy",
+                "label": "Checked-in PCM2 primate workbook",
+                "locator": "evidence-book/studies/primate-pgls-and-signal/datasets/primate_raw.xlsx",
+            },
+            {
+                "source_id": "pcm2-checked-in-primate-tree",
+                "kind": "repository-owned-source-copy",
+                "label": "Checked-in PCM2 primate tree",
+                "locator": "evidence-book/studies/primate-pgls-and-signal/datasets/primatetree.nex",
+            },
+            {
+                "source_id": "pcm2-governed-primate-reference-artifacts",
                 "kind": "repository-reference",
-                "label": "Governed primate CSV and trimmed tree from the earlier evidence study",
-                "locator": "evidence-book/studies/primate-longevity-signal/evidence-001",
+                "label": "PCM2-local governed primate CSV and trimmed tree",
+                "locator": "evidence-book/studies/primate-pgls-and-signal/datasets",
                 "provides": [
                     "reference_primate.csv",
                     "reference_trimmed_primatetree.nwk",
@@ -443,7 +455,7 @@ def render_primate_pgls_signal_study_manifest(repo_root: Path) -> dict[str, obje
             ],
             "untouched_source_locators": [
                 PCM2_SOURCE_LOCATOR,
-                "external:lund/pcm2-modes-pgls/data/primate.RData",
+                "evidence-book/studies/primate-pgls-and-signal/datasets/primate.RData",
             ],
         },
     }

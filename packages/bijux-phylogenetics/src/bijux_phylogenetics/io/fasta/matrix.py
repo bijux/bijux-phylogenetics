@@ -40,6 +40,7 @@ _APE_DNA_STATE_ORDER = (
     "?",
 )
 _APE_DNA_STATE_SET = set(_APE_DNA_STATE_ORDER)
+_IN_MEMORY_DNABIN_ALIGNMENT_PATH = Path("<in-memory-alignment>")
 _APE_SEGREGATING_STATE_SETS: dict[str, frozenset[str]] = {
     "A": frozenset({"A"}),
     "C": frozenset({"C"}),
@@ -203,7 +204,29 @@ def load_dna_bin_alignment(
     normalize_uracil: bool = False,
 ) -> DnaBinAlignment:
     """Load one equal-length nucleotide FASTA input as a DNAbin-compatible matrix."""
-    records = load_fasta_alignment(path)
+    return load_dna_bin_alignment_from_records(
+        load_fasta_alignment(path),
+        path=path,
+        normalize_uracil=normalize_uracil,
+    )
+
+
+def load_dna_bin_alignment_from_records(
+    records: list[AlignmentRecord],
+    *,
+    path: Path | None = None,
+    normalize_uracil: bool = False,
+) -> DnaBinAlignment:
+    """Build one DNAbin-compatible nucleotide matrix from already-loaded alignment records."""
+    if not records:
+        raise InvalidAlignmentError(
+            "dnabin-compatible loading requires at least one alignment record"
+        )
+    lengths = {len(record.sequence) for record in records}
+    if len(lengths) != 1:
+        raise InvalidAlignmentError(
+            "dnabin-compatible loading requires equal-length alignment records"
+        )
     source_alphabet = infer_alignment_alphabet(records)
     if source_alphabet == "unknown":
         source_alphabet = "dna"
@@ -256,7 +279,7 @@ def load_dna_bin_alignment(
         )
 
     return DnaBinAlignment(
-        path=path,
+        path=path or _IN_MEMORY_DNABIN_ALIGNMENT_PATH,
         source_alphabet=source_alphabet,
         sequence_count=len(dnabin_records),
         alignment_length=0 if not dnabin_records else len(dnabin_records[0].sequence),

@@ -31,6 +31,11 @@ from bijux_phylogenetics.comparative.pgls.models import (
     PGLSCoefficient,
     PGLSDiagnosticsReport,
 )
+from bijux_phylogenetics.comparative.search import (
+    BoundedSearchControls,
+    BoundedSearchDiagnostics,
+    fit_bounded_scalar_parameter,
+)
 from bijux_phylogenetics.datasets.study_inputs import write_taxon_rows
 from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
     summarize_ultrametric_tip_depths,
@@ -102,6 +107,7 @@ class OUCovariancePGLSReport:
     positive_definite_before_stabilization: bool
     alpha: float
     alpha_estimation_mode: str
+    alpha_optimizer_diagnostics: BoundedSearchDiagnostics | None
     lower_95_confidence_interval: float | None
     upper_95_confidence_interval: float | None
     alpha_profile_rows: list[OUPGLSAlphaProfileRow]
@@ -149,7 +155,13 @@ def summarize_ou_covariance_pgls(
             for row in input_report.model_matrix.rows
         ]
         response_values = [row.response_value for row in input_report.model_matrix.rows]
-        resolved_alpha, alpha_mode, profile_rows, interval_bounds = _resolve_alpha_fit(
+        (
+            resolved_alpha,
+            alpha_mode,
+            alpha_optimizer_diagnostics,
+            profile_rows,
+            interval_bounds,
+        ) = _resolve_alpha_fit(
             dataset=dataset,
             taxa=taxa,
             design_matrix=design_matrix,
@@ -201,6 +213,7 @@ def summarize_ou_covariance_pgls(
             positive_definite_before_stabilization=True,
             alpha=resolved_alpha,
             alpha_estimation_mode=alpha_mode,
+            alpha_optimizer_diagnostics=alpha_optimizer_diagnostics,
             lower_95_confidence_interval=interval_bounds[0],
             upper_95_confidence_interval=interval_bounds[1],
             alpha_profile_rows=profile_rows,
@@ -315,7 +328,13 @@ def _resolve_alpha_fit(
     design_matrix: list[list[float]],
     response_values: list[float],
     alpha: float | str,
-) -> tuple[float, str, list[OUPGLSAlphaProfileRow], tuple[float | None, float | None]]:
+) -> tuple[
+    float,
+    str,
+    BoundedSearchDiagnostics | None,
+    list[OUPGLSAlphaProfileRow],
+    tuple[float | None, float | None],
+]:
     if alpha != "estimate":
         fixed_alpha = float(alpha)
         if fixed_alpha <= 0.0:
@@ -330,6 +349,7 @@ def _resolve_alpha_fit(
         return (
             fixed_alpha,
             "fixed",
+            None,
             [
                 OUPGLSAlphaProfileRow(
                     alpha=fixed_alpha,
@@ -340,35 +360,54 @@ def _resolve_alpha_fit(
             ],
             (None, None),
         )
-    profile: list[tuple[float, float]] = []
-    for candidate in _alpha_grid(dataset):
-        log_likelihood = _ou_gls_log_likelihood(
-            dataset=dataset,
-            taxa=taxa,
-            design_matrix=design_matrix,
-            response_values=response_values,
-            alpha=candidate,
-        )
-        profile.append((candidate, log_likelihood))
-    best_alpha, best_log_likelihood = max(profile, key=lambda item: item[1])
-    supported = [
-        candidate
-        for candidate, log_likelihood in profile
-        if log_likelihood >= best_log_likelihood - 1.92
-    ]
+    alpha_profile_values = _alpha_grid(dataset)
+    fit = fit_bounded_scalar_parameter(
+        lower_bound=alpha_profile_values[0],
+        upper_bound=alpha_profile_values[-1],
+        controls=BoundedSearchControls(
+            coarse_grid_point_count=81,
+            fine_grid_point_count=81,
+            initial_parameter_value=alpha_profile_values[
+                len(alpha_profile_values) // 2
+            ],
+            refinement_start_count=5,
+        ),
+        evaluate=lambda candidate_alpha: (
+            candidate_alpha,
+            _ou_gls_log_likelihood(
+                dataset=dataset,
+                taxa=taxa,
+                design_matrix=design_matrix,
+                response_values=response_values,
+                alpha=candidate_alpha,
+            ),
+        ),
+        profile_parameter_values=alpha_profile_values,
+        confidence_interval_drop=1.92,
+        parameter_name="alpha",
+        owner_name="OU covariance PGLS alpha fit",
+        optimizer_name="two-stage-grid-search",
+        parameter_search_strategy=(
+            "bounded-coarse-grid-with-multi-start-golden-section-refinement"
+        ),
+    )
     return (
-        best_alpha,
+        fit.parameter_value,
         "estimated",
+        fit.optimizer_diagnostics,
         [
             OUPGLSAlphaProfileRow(
-                alpha=candidate,
-                log_likelihood=log_likelihood,
-                delta_log_likelihood=best_log_likelihood - log_likelihood,
-                within_95_confidence_interval=candidate in supported,
+                alpha=row.parameter_value,
+                log_likelihood=row.objective_value,
+                delta_log_likelihood=row.delta_objective_value,
+                within_95_confidence_interval=row.within_95_confidence_interval,
             )
-            for candidate, log_likelihood in profile
+            for row in fit.profile_rows
         ],
-        (min(supported), max(supported)),
+        (
+            fit.lower_95_confidence_interval,
+            fit.upper_95_confidence_interval,
+        ),
     )
 
 

@@ -16,6 +16,7 @@ from .branch_length_priors import (
     build_fixed_branch_length_prior,
     build_gamma_branch_length_prior,
     build_lognormal_branch_length_prior,
+    build_uniform_branch_length_prior,
 )
 from .fixed_topology_dna import (
     FixedTopologyDnaModelDefinition,
@@ -629,6 +630,11 @@ def _deserialize_branch_length_prior(payload: Mapping[str, object]):
         return build_fixed_branch_length_prior(
             fixed_value=_require_float(payload, key="fixed_value"),
             fixed_tolerance=_require_float(payload, key="fixed_tolerance"),
+        )
+    if family == "uniform":
+        return build_uniform_branch_length_prior(
+            lower_bound=_require_float(payload, key="lower_bound"),
+            upper_bound=_require_float(payload, key="upper_bound"),
         )
     raise PhylogeneticsError(
         "fixed-topology DNA run manifest replay requires one supported branch-length prior family",

@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm5-variance-partition-review",
+      "claim_title": "Cichlid variance partition review bundle",
+      "evidence_ids": [
+        "evidence-009"
+      ],
+      "source_fragments": [
+        "variance-partition-review"
+      ],
+      "summary": "Governed study slice for the PCM5 variance partition between phylogeny, species, and residual components.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-009",
+  "schema_version": 1,
+  "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+}

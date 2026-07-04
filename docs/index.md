@@ -4,7 +4,7 @@ audience: public
 type: overview
 status: active
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-04-29
+last_reviewed: 2026-07-04
 ---
 
 # Bijux Phylogenetics
@@ -27,46 +27,90 @@ last_reviewed: 2026-04-29
 [![bijux-phylogenetics](https://img.shields.io/badge/bijux--phylogenetics-ghcr-181717?logo=github)](https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fbijux-phylogenetics)
 [![phylogenetic](https://img.shields.io/badge/phylogenetic-ghcr-181717?logo=github)](https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fphylogenetic)
 
-[![bijux-phylogenetics docs](https://img.shields.io/badge/docs-bijux--phylogenetics-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
-[![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
+[![bijux-phylogenetics docs](https://img.shields.io/badge/docs-bijux--phylogenetics-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
+[![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
 <!-- bijux-phylogenetics-badges:generated:end -->
 
-`bijux-phylogenetics` is a reproducible phylogenetics workbench for tree
-inspection, validation, comparison, alignment trimming, coding-sequence
-translation, explicit rooting transforms, deterministic SVG tree rendering,
-publication figure packaging, evidence capture, and publishable HTML reports.
+`bijux-phylogenetics` is a large phylogenetics runtime and evidence-bearing
+repository. The checked-in tree already covers owned tree semantics, alignment
+processing, native likelihood and inference, comparative analysis, ancestral
+reconstruction, explicit parsimony, report generation, benchmark review, and
+governed study evidence.
 
-The repository keeps the same managed Python workspace shape as the other
-Bijux scientific repos: shared standards under `.bijux/`, repository-owned
-`makes/` and `configs/`, one canonical runtime package, one compatibility
-alias package, and one maintainer package.
+This site exists to make that depth visible without overstating what has been
+scientifically closed.
 
-The public distributions are `bijux-phylogenetics` for the canonical runtime
-surface and `phylogenetic` for the shorter compatibility alias.
+```mermaid
+flowchart TD
+    A[Canonical runtime] --> B[Product handbook]
+    A --> C[CLI, Python, and native contracts]
+    C --> D[Governed artifacts and reports]
+    D --> E[Evidence book]
+    F[Maintainer package] --> G[Maintainer handbook]
+    B --> H[Users and downstream developers]
+    E --> I[Scientific reviewers]
+    G --> J[Release and trust stewardship]
+```
 
-## Read this next
+## What Readers Should Understand Immediately
 
-- public runtime guide: [Phylogenetics product guide](public/phylogenetics/index.md)
-- public evidence guide: [Evidence-book guide](public/phylogenetics-evidence-book/index.md)
-- internal maintainer guide: [Internal documentation](internal/index.md)
+| Surface | What it is for |
+| --- | --- |
+| [Product handbook](01-bijux-phylogenetics/index.md) | runtime ownership, interfaces, workflows, outputs, and quality reading |
+| [Evidence book](02-bijux-phylogenetics-evidence-book/index.md) | governed comparative-study dossiers, bundle IDs, provenance, and bounded study claims |
+| [Maintainer handbook](03-bijux-phylogenetics-maintain/index.md) | documentation truth, release alignment, artifact hygiene, and public trust stewardship |
 
+## What The Checked-In Runtime Already Covers
 
-## Notable Workflows
+| Capability family | Publicly visible depth |
+| --- | --- |
+| Trees | `PhyloTree`, rootedness, support normalization, topology comparison, clades, MRCA review, tree sets, and rendering |
+| Alignments | FASTA validation, trimming, translation, coding checks, partition-aware handling, and packaged example inputs |
+| Native inference | finite-state likelihood, native maximum-likelihood result objects, supported native Bayesian DNA workflows, and benchmark surfaces |
+| Comparative biology | PGLS, signal, regression interpretation, discrete evolution, diversification, and model-selection reading |
+| Ancestral and parsimony analysis | continuous and discrete reconstruction, uncertainty-ledger outputs, and explicit parsimony families |
+| Datasets and reporting | packaged datasets, study inputs, benchmark corpora, HTML and TSV outputs, manifests, and evidence-linked bundles |
 
-- trim all-gap or all-missing alignment sites and remove high-missingness sequences
-- inspect coding alignments for stop codons and frameshift-like sequence lengths
-- translate nucleotide coding alignments into amino-acid alignments
-- export pairwise sequence identity matrices for downstream review
-- root trees on explicit outgroups or reroot trees by midpoint
-- diagnose internal child counts, singleton nodes, missing branch-length locations, and suspicious support-label scales
-- render cladogram, phylogram, and circular tree figures with support labels and branch-length scale bars
-- annotate trees with categorical tip traits, continuous tip traits, metadata strips, and aligned trait heatmaps
-- package review-ready tree figures with SVG output, caption drafts, manifests, and tip-annotation tables
+## Start By Goal
 
-## Evidence Closure
+- I want to understand what the runtime owns and which interface I should use.
+  Start with the [Phylogenetics product handbook](01-bijux-phylogenetics/index.md).
+- I want to understand what the governed comparative-study record actually
+  proves.
+  Start with the [Evidence book](02-bijux-phylogenetics-evidence-book/index.md).
+- I want to understand how the repository keeps documentation and release
+  language honest.
+  Start with the [Maintainer handbook](03-bijux-phylogenetics-maintain/index.md).
 
-The runtime surface is broader than the currently closed evidence surface.
-The governed evidence-book records that difference explicitly:
+## Reader Routes
 
-- start from the public evidence guide: [Evidence Book](public/phylogenetics-evidence-book/index.md)
-- review analytical surface coverage and closure status from the linked evidence-book index outputs there
+```mermaid
+flowchart LR
+    A[What can I run?] --> B[Product handbook]
+    C[What has been checked?] --> D[Evidence book]
+    E[Why should I trust the release story?] --> F[Maintainer handbook]
+```
+
+- Read the product handbook when the question is about runtime behavior,
+  package roles, interfaces, workflows, outputs, or validation lanes.
+- Read the evidence book when the question is about provenance, bundle IDs,
+  study dossiers, or bounded parity claims.
+- Read the maintainer handbook when the question is about narrative
+  alignment, artifact hygiene, metadata truth, or release readiness.
+
+## Flagship Starting Points
+
+- [Surface selection guide](01-bijux-phylogenetics/interfaces/surface-selection.md)
+- [Native maximum-likelihood workflows](01-bijux-phylogenetics/operations/native-maximum-likelihood-workflows.md)
+- [Native Bayesian workflows](01-bijux-phylogenetics/operations/native-bayesian-workflows.md)
+- [Validation lanes](01-bijux-phylogenetics/quality/validation-lanes.md)
+- [Evidence book overview](02-bijux-phylogenetics-evidence-book/index.md)
+- [Maintainer handbook overview](03-bijux-phylogenetics-maintain/index.md)
+
+## Important Boundary
+
+The code surface is broader than the currently closed evidence surface, and
+the evidence surface is narrower than the full runtime surface. These docs
+keep that distinction explicit on purpose. A feature can be documented and
+usable without claiming that every surrounding scientific interpretation has
+already been closed by governed study evidence.

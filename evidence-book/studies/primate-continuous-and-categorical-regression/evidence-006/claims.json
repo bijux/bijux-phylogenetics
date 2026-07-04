@@ -1,0 +1,21 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm3-scaling-and-intercept-semantics",
+      "claim_title": "Primate scaling and intercept semantics bundle",
+      "evidence_ids": [
+        "evidence-006"
+      ],
+      "source_fragments": [
+        "predictor-scaling",
+        "standardized-intercept-semantics"
+      ],
+      "summary": "Governed study slice for PCM3 predictor scaling and the intercept-semantics changes that follow standardization.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-006",
+  "schema_version": 1,
+  "study_id": "primate-continuous-and-categorical-regression"
+}

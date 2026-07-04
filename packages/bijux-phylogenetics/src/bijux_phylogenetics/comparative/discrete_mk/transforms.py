@@ -157,6 +157,7 @@ def validate_early_burst_bounds(bounds: tuple[float, float]) -> None:
 def comparison_models(models: tuple[str, ...] | None) -> tuple[str, ...]:
     if models is None:
         return DISCRETE_MK_MODEL_COMPARISON_ORDER
+    supported_models = set(DISCRETE_MK_MODEL_COMPARISON_ORDER) | {"irreversible"}
     deduplicated: list[str] = []
     unknown: list[str] = []
     for model in models:
@@ -165,7 +166,7 @@ def comparison_models(models: tuple[str, ...] | None) -> tuple[str, ...]:
         except ValueError:
             unknown.append(model)
             continue
-        if resolved_model not in DISCRETE_MK_MODEL_COMPARISON_ORDER:
+        if resolved_model not in supported_models:
             unknown.append(model)
             continue
         if resolved_model not in deduplicated:
@@ -300,6 +301,7 @@ def fit_discrete_mk_parameterized_transform_surface(
     list[DiscreteMkTransformWarning],
 ]:
     lower, upper = bounds
+    parameter_name = discrete_transform_parameter_name(transform)
     search_result = run_bounded_maximization(
         lower_bound=lower,
         upper_bound=upper,
@@ -320,6 +322,8 @@ def fit_discrete_mk_parameterized_transform_surface(
                 parameter_value=parameter_value,
             )
         ),
+        parameter_name=parameter_name,
+        owner_name=f"discrete Mk {transform} transform fit",
         optimizer_name="governed-two-stage-grid-search",
         parameter_search_strategy="bounded-two-stage-grid-search",
     )
@@ -342,7 +346,7 @@ def fit_discrete_mk_parameterized_transform_surface(
     )
     transform_fit = DiscreteMkTransformFit(
         transform_name=transform,
-        parameter_name=discrete_transform_parameter_name(transform),
+        parameter_name=parameter_name,
         parameter_value=best_parameter_value,
         lower_bound=lower,
         upper_bound=upper,
@@ -366,6 +370,8 @@ def fit_discrete_mk_parameterized_transform_surface(
             for row in search_result.profile_rows
         ],
         warnings=transform_warning_rows,
+        converged=search_result.diagnostics.converged,
+        failure_reason=search_result.diagnostics.failure_reason,
     )
     return (
         transformed_tree,

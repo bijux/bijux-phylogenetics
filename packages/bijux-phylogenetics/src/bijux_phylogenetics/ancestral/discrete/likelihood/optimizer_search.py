@@ -2,12 +2,17 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
-import random
 
 import numpy
 
+from bijux_phylogenetics.runtime.errors import PhylogeneticsError
+
 from ..policy import uniform_root_prior
 from .likelihood_math import tree_log_likelihood
+from .parameter_layout import (
+    broadcast_discrete_mk_log_parameters,
+    build_discrete_mk_parameter_layout,
+)
 from .rate_matrix import rate_matrix_from_log_parameters
 
 DISCRETE_LOG_PARAMETER_LOWER_BOUND = -10.0
@@ -16,36 +21,311 @@ DISCRETE_PLATEAU_REGULARIZATION_TOLERANCE = 1e-10
 
 
 def build_discrete_initial_candidates(
+    tree,
+    states_by_taxon: dict[str, str],
     *,
+    state_order: list[str],
     parameter_count: int,
     model: str,
+    state_ordering: str,
+    allowed_transition_pairs: set[tuple[int, int]],
+    root_prior_mode: str,
+    ascertainment_policy: str,
 ) -> list[tuple[float, numpy.ndarray]]:
     uniform_scales = (0.1, 1.0, 3.0)
-    candidates = [
-        (
-            scale,
-            numpy.full(parameter_count, math.log(scale), dtype=float),
-        )
-        for scale in uniform_scales
-    ]
-    if model != "all-rates-different" or parameter_count <= 2:
+    candidates = _deduplicated_discrete_initial_candidates(
+        [
+            (
+                scale,
+                numpy.full(parameter_count, math.log(scale), dtype=float),
+            )
+            for scale in uniform_scales
+        ]
+    )
+    if parameter_count <= 1:
         return candidates
-    exploratory_rng = random.Random(17)  # nosec B311
-    for _ in range(32):
-        log_parameters = numpy.array(
-            [
-                exploratory_rng.uniform(
-                    DISCRETE_LOG_PARAMETER_LOWER_BOUND + 1.0,
-                    DISCRETE_LOG_PARAMETER_UPPER_BOUND - 1.0,
-                )
-                for _ in range(parameter_count)
-            ],
-            dtype=float,
+    equal_layout = build_discrete_mk_parameter_layout(
+        state_order=state_order,
+        model="equal-rates",
+        state_ordering=state_ordering,
+        allowed_transition_pairs=allowed_transition_pairs,
+    )
+    target_layout = build_discrete_mk_parameter_layout(
+        state_order=state_order,
+        model=model,
+        state_ordering=state_ordering,
+        allowed_transition_pairs=allowed_transition_pairs,
+    )
+    equal_run = optimize_single_log_parameter(
+        tree,
+        states_by_taxon,
+        state_order=state_order,
+        model="equal-rates",
+        state_ordering=state_ordering,
+        allowed_transition_pairs=allowed_transition_pairs,
+        root_prior_mode=root_prior_mode,
+        ascertainment_policy=ascertainment_policy,
+    )
+    equal_seed = numpy.array(
+        broadcast_discrete_mk_log_parameters(
+            equal_layout,
+            target_layout,
+            tuple(float(value) for value in equal_run.log_parameters),
+        ),
+        dtype=float,
+    )
+    candidates.append(
+        (
+            _scale_from_log_parameters(equal_seed),
+            equal_seed,
+        )
+    )
+    if model == "symmetric":
+        candidates.extend(_perturbed_discrete_seed_candidates(equal_seed, limit=4))
+        return _deduplicated_discrete_initial_candidates(candidates)
+    symmetric_seed = _fit_symmetric_warm_start(
+        tree,
+        states_by_taxon,
+        state_order=state_order,
+        state_ordering=state_ordering,
+        allowed_transition_pairs=allowed_transition_pairs,
+        root_prior_mode=root_prior_mode,
+        ascertainment_policy=ascertainment_policy,
+        equal_seed=equal_seed,
+        target_layout=target_layout,
+    )
+    if symmetric_seed is not None:
+        candidates.append(
+            (
+                _scale_from_log_parameters(symmetric_seed),
+                symmetric_seed,
+            )
+        )
+        candidates.extend(_perturbed_discrete_seed_candidates(symmetric_seed, limit=2))
+    candidates.append(
+        (
+            _scale_from_log_parameters(equal_seed),
+            _state_count_directional_seed(
+                equal_seed,
+                state_order=state_order,
+                states_by_taxon=states_by_taxon,
+                layout=target_layout,
+            ),
+        )
+    )
+    candidates.extend(_perturbed_discrete_seed_candidates(equal_seed, limit=2))
+    return _deduplicated_discrete_initial_candidates(candidates)
+
+
+def _scale_from_log_parameters(log_parameters: numpy.ndarray) -> float:
+    return float(math.exp(float(numpy.mean(log_parameters))))
+
+
+def _deduplicated_discrete_initial_candidates(
+    candidates: list[tuple[float, numpy.ndarray]],
+) -> list[tuple[float, numpy.ndarray]]:
+    unique_candidates: list[tuple[float, numpy.ndarray]] = []
+    seen: set[tuple[float, ...]] = set()
+    for scale, log_parameters in candidates:
+        clipped = numpy.clip(
+            log_parameters,
+            DISCRETE_LOG_PARAMETER_LOWER_BOUND,
+            DISCRETE_LOG_PARAMETER_UPPER_BOUND,
+        )
+        key = tuple(round(float(value), 12) for value in clipped.tolist())
+        if key in seen:
+            continue
+        seen.add(key)
+        unique_candidates.append((scale, clipped))
+    return unique_candidates
+
+
+def _perturbed_discrete_seed_candidates(
+    log_parameters: numpy.ndarray,
+    *,
+    limit: int | None = None,
+) -> list[tuple[float, numpy.ndarray]]:
+    if log_parameters.size <= 1:
+        return []
+    position_span = numpy.linspace(-1.0, 1.0, log_parameters.size, dtype=float)
+    alternating_span = numpy.array(
+        [1.0 if index % 2 == 0 else -1.0 for index in range(log_parameters.size)],
+        dtype=float,
+    )
+    perturbations = (
+        0.35 * position_span,
+        -0.35 * position_span,
+        0.45 * alternating_span,
+        -0.45 * alternating_span,
+    )
+    candidates: list[tuple[float, numpy.ndarray]] = []
+    for offset in perturbations:
+        candidate = numpy.clip(
+            log_parameters + offset,
+            DISCRETE_LOG_PARAMETER_LOWER_BOUND,
+            DISCRETE_LOG_PARAMETER_UPPER_BOUND,
         )
         candidates.append(
-            (float(math.exp(float(numpy.mean(log_parameters)))), log_parameters)
+            (
+                _scale_from_log_parameters(candidate),
+                candidate,
+            )
         )
+    if limit is not None:
+        return candidates[:limit]
     return candidates
+
+
+def _fit_symmetric_warm_start(
+    tree,
+    states_by_taxon: dict[str, str],
+    *,
+    state_order: list[str],
+    state_ordering: str,
+    allowed_transition_pairs: set[tuple[int, int]],
+    root_prior_mode: str,
+    ascertainment_policy: str,
+    equal_seed: numpy.ndarray,
+    target_layout,
+) -> numpy.ndarray | None:
+    reciprocal_pairs = {
+        pair
+        for pair in allowed_transition_pairs
+        if (pair[1], pair[0]) in allowed_transition_pairs
+    }
+    if not reciprocal_pairs or not _reciprocal_transition_graph_is_connected(
+        state_count=len(state_order),
+        reciprocal_pairs=reciprocal_pairs,
+    ):
+        return None
+    symmetric_layout = build_discrete_mk_parameter_layout(
+        state_order=state_order,
+        model="symmetric",
+        state_ordering=state_ordering,
+        allowed_transition_pairs=reciprocal_pairs,
+    )
+    ard_layout = build_discrete_mk_parameter_layout(
+        state_order=state_order,
+        model="all-rates-different",
+        state_ordering=state_ordering,
+        allowed_transition_pairs=reciprocal_pairs,
+    )
+    symmetric_seed = numpy.array(
+        broadcast_discrete_mk_log_parameters(
+            build_discrete_mk_parameter_layout(
+                state_order=state_order,
+                model="equal-rates",
+                state_ordering=state_ordering,
+                allowed_transition_pairs=reciprocal_pairs,
+            ),
+            symmetric_layout,
+            (float(equal_seed[0]),),
+        ),
+        dtype=float,
+    )
+    candidate_seeds = [symmetric_seed]
+    candidate_seeds.extend(
+        log_parameters
+        for _, log_parameters in _perturbed_discrete_seed_candidates(
+            symmetric_seed,
+            limit=2,
+        )
+    )
+    candidate_runs: list[_DiscreteOptimizationRun] = []
+    for seed in candidate_seeds:
+        try:
+            candidate_runs.append(
+                optimize_log_parameters(
+                    tree,
+                    states_by_taxon,
+                    state_order=state_order,
+                    model="symmetric",
+                    state_ordering=state_ordering,
+                    allowed_transition_pairs=reciprocal_pairs,
+                    root_prior_mode=root_prior_mode,
+                    ascertainment_policy=ascertainment_policy,
+                    initial_log_parameters=seed,
+                    initial_scale=_scale_from_log_parameters(seed),
+                )
+            )
+        except PhylogeneticsError:
+            continue
+    if not candidate_runs:
+        return None
+    best_run = max(candidate_runs, key=lambda run: run.log_likelihood)
+    reciprocal_seed = numpy.array(
+        broadcast_discrete_mk_log_parameters(
+            symmetric_layout,
+            ard_layout,
+            tuple(float(value) for value in best_run.log_parameters),
+        ),
+        dtype=float,
+    )
+    if target_layout.allowed_transition_pairs == ard_layout.allowed_transition_pairs:
+        return reciprocal_seed
+    merged_seed = equal_seed.copy()
+    for arc in ard_layout.arcs:
+        merged_seed[
+            target_layout.parameter_index_for_pair(
+                arc.source_index,
+                arc.target_index,
+            )
+        ] = reciprocal_seed[arc.parameter_index]
+    return merged_seed
+
+
+def _reciprocal_transition_graph_is_connected(
+    *,
+    state_count: int,
+    reciprocal_pairs: set[tuple[int, int]],
+) -> bool:
+    if state_count == 0:
+        return False
+    adjacency = {state_index: set() for state_index in range(state_count)}
+    for source_index, target_index in reciprocal_pairs:
+        adjacency[source_index].add(target_index)
+    if any(not neighbors for neighbors in adjacency.values()):
+        return False
+    visited: set[int] = set()
+    frontier = [0]
+    while frontier:
+        source_index = frontier.pop()
+        if source_index in visited:
+            continue
+        visited.add(source_index)
+        frontier.extend(
+            target_index
+            for target_index in adjacency[source_index]
+            if target_index not in visited
+        )
+    return len(visited) == state_count
+
+
+def _state_count_directional_seed(
+    baseline_seed: numpy.ndarray,
+    *,
+    state_order: list[str],
+    states_by_taxon: dict[str, str],
+    layout,
+) -> numpy.ndarray:
+    state_counts = {
+        state: sum(
+            1 for observed_state in states_by_taxon.values() if observed_state == state
+        )
+        for state in state_order
+    }
+    directional_seed = baseline_seed.copy()
+    for arc in layout.arcs:
+        source_count = state_counts.get(arc.source_state, 0)
+        target_count = state_counts.get(arc.target_state, 0)
+        directional_seed[arc.parameter_index] += 0.5 * math.log(
+            (target_count + 1.0) / (source_count + 1.0)
+        )
+    return numpy.clip(
+        directional_seed,
+        DISCRETE_LOG_PARAMETER_LOWER_BOUND,
+        DISCRETE_LOG_PARAMETER_UPPER_BOUND,
+    )
 
 
 @dataclass(slots=True)

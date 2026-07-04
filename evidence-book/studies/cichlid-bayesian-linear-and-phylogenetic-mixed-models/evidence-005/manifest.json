@@ -1,0 +1,62 @@
+{
+  "claim_ids": [
+    "pcm4-phylogenetic-fixed-effect-posteriors"
+  ],
+  "claim_tags": [
+    "scientific-validation",
+    "cichlid",
+    "phylogenetic-mixed-model",
+    "fixed-effects"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-005",
+  "evidence_title": "Cichlid phylogenetic fixed-effect posterior bundle",
+  "freshness": {
+    "governed_code_paths": [
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/scientific_validation_bundles.py",
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/comparative",
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/phylo"
+    ],
+    "last_generated_on": "2026-07-04",
+    "source_basis_locators": [
+      "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/provenance/lund-course-sources.json",
+      "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/registry.json",
+      "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/reference/README.md"
+    ]
+  },
+  "limitations": [
+    "The lecture posterior fixed-effect summaries remain external to the current governed runtime, so this bundle stays boundary-first."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "ownership": {
+    "analytical_surfaces": [
+      "phylogenetic-mixed-model",
+      "fixed-effect-posteriors"
+    ],
+    "owner_package": "bijux-phylogenetics"
+  },
+  "schema_version": 1,
+  "source_basis": [
+    {
+      "kind": "repository-reference",
+      "label": "source-1",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/provenance/lund-course-sources.json"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "source-2",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/registry.json"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "source-3",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/reference/README.md"
+    }
+  ],
+  "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+  "summary": "Governed study slice for the PCM4 Bayesian phylogenetic mixed-model fixed-effect posterior summaries.",
+  "verdict": {
+    "status": "not_comparable",
+    "summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM4 posterior workflow."
+  }
+}

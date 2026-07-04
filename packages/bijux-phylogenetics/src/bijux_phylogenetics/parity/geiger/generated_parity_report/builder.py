@@ -7,6 +7,7 @@ from bijux_phylogenetics.parity.geiger.runner import (
     GeigerParityReport,
     run_geiger_parity_cases,
 )
+from bijux_phylogenetics.parity.live_access import require_live_parity_access
 
 from .contracts import GeigerBenchmarkSummaryRow, GeneratedGeigerParityReport
 from .coverage_policy import (
@@ -35,6 +36,11 @@ def build_generated_geiger_parity_report(
 
     live_report = parity_report
     if live_report is None:
+        require_live_parity_access(
+            surface="geiger generated parity report live refresh",
+            reference_source="geiger-live",
+            executable=rscript_executable,
+        )
         live_report = run_geiger_parity_cases(
             case_ids=case_ids,
             rscript_executable=rscript_executable,

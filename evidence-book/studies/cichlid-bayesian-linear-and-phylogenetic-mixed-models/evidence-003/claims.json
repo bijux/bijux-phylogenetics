@@ -1,0 +1,21 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm4-gaussian-posterior-diagnostics",
+      "claim_title": "Cichlid Gaussian posterior diagnostics bundle",
+      "evidence_ids": [
+        "evidence-003"
+      ],
+      "source_fragments": [
+        "gaussian-chain-diagnostics",
+        "gaussian-posterior-summaries"
+      ],
+      "summary": "Governed study slice for the PCM4 Bayesian Gaussian regression chain diagnostics and posterior summaries.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-003",
+  "schema_version": 1,
+  "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+}

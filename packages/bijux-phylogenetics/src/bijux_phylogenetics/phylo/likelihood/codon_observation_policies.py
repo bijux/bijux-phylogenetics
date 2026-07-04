@@ -4,6 +4,10 @@ from itertools import product
 
 import numpy
 
+from bijux_phylogenetics.phylo.likelihood.observation_vectors import (
+    build_all_states_observation_vector,
+    build_state_selection_vector,
+)
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
 _CODON_DNA_BASES = frozenset({"A", "C", "G", "T"})
@@ -107,27 +111,24 @@ def resolve_codon_observation_leaf_vector(
         observation_policy,
         owner_name=f"{model_name} likelihood",
     )
-    vector = numpy.zeros(len(state_order), dtype=float)
     if codon in state_index:
-        vector[state_index[codon]] = 1.0
-        return vector
-    if any(
-        symbol in _CODON_EXPLICIT_MISSING_SYMBOLS or symbol == _CODON_GAP_SYMBOL
-        for symbol in codon
-    ):
-        if validated_policy == "reject":
+        return build_state_selection_vector(
+            state_count=len(state_order),
+            selected_indices=(state_index[codon],),
+        )
+    if validated_policy == "reject":
+        if any(
+            symbol in _CODON_EXPLICIT_MISSING_SYMBOLS or symbol == _CODON_GAP_SYMBOL
+            for symbol in codon
+        ):
             raise InvalidAlignmentError(
                 f"{model_name} likelihood observation policy 'reject' does not allow missing or gap codon state '{codon}' at taxon '{node_name}'"
             )
-        vector[:] = 1.0
-        return vector
-    if validated_policy == "reject":
         raise InvalidAlignmentError(
             f"{model_name} likelihood observation policy 'reject' does not allow ambiguous codon state '{codon}' at taxon '{node_name}'"
         )
     if validated_policy == "treat-as-missing":
-        vector[:] = 1.0
-        return vector
+        return build_all_states_observation_vector(state_count=len(state_order))
     compatible_codons = _compatible_sense_codons(
         codon,
         state_index=state_index,
@@ -136,9 +137,12 @@ def resolve_codon_observation_leaf_vector(
         raise InvalidAlignmentError(
             f"{model_name} likelihood ambiguity policy could not resolve '{codon}' to any supported sense codon at taxon '{node_name}'"
         )
-    for compatible_codon in compatible_codons:
-        vector[state_index[compatible_codon]] = 1.0
-    return vector
+    return build_state_selection_vector(
+        state_count=len(state_order),
+        selected_indices=(
+            state_index[compatible_codon] for compatible_codon in compatible_codons
+        ),
+    )
 
 
 def _compatible_sense_codons(
@@ -150,6 +154,9 @@ def _compatible_sense_codons(
     for symbol in codon:
         if symbol in _CODON_DNA_BASES:
             allowed_bases_by_position.append((symbol,))
+            continue
+        if symbol in _CODON_EXPLICIT_MISSING_SYMBOLS or symbol == _CODON_GAP_SYMBOL:
+            allowed_bases_by_position.append(tuple(sorted(_CODON_DNA_BASES)))
             continue
         ambiguity_bases = _CODON_AMBIGUITY_BASES_BY_SYMBOL.get(symbol)
         if ambiguity_bases is None:

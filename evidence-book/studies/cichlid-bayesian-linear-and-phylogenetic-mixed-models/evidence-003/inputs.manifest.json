@@ -1,0 +1,69 @@
+{
+  "evidence_id": "evidence-003",
+  "governed_local_artifact_count": 4,
+  "governed_local_artifacts": [
+    {
+      "input_id": "local-input-001",
+      "kind": "governed-result-surface",
+      "label": "results/README.md",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-003/results/README.md",
+      "read_only": false,
+      "sha256": "0fec76ce34923cfa1743ebdd9891c0eec591e4663bb65daabd62a493b5e9bcec"
+    },
+    {
+      "input_id": "local-input-002",
+      "kind": "governed-result-surface",
+      "label": "results/manifest.json",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-003/results/manifest.json",
+      "read_only": false,
+      "sha256": "d2acd2b0e65b29bd7914ca249750c2afecdd0c13496df72e312450de5aadad23"
+    },
+    {
+      "input_id": "local-input-003",
+      "kind": "governed-result-surface",
+      "label": "results/reviewer-summary.json",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-003/results/reviewer-summary.json",
+      "read_only": false,
+      "sha256": "6f3ac08ecbeb2c8c0f1997e53b9b29873a87879af69ca2e250e1ed112c139409"
+    },
+    {
+      "input_id": "local-input-004",
+      "kind": "governed-result-surface",
+      "label": "results/reviewer-summary.md",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-003/results/reviewer-summary.md",
+      "read_only": false,
+      "sha256": "ee81b26633f74c2f9bc36d57e7bad9df3242b5b8ee0899dd67880b9922422584"
+    }
+  ],
+  "local_input_count": 0,
+  "local_inputs": [],
+  "schema_version": 2,
+  "source_input_count": 3,
+  "source_inputs": [
+    {
+      "input_id": "source-input-001",
+      "kind": "repository-reference",
+      "label": "source-1",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/provenance/lund-course-sources.json",
+      "read_only": true,
+      "sha256": "250218029fccd0a9de8a92d4f2a82508f21ea106bcda3e355e757898816b89ac"
+    },
+    {
+      "input_id": "source-input-002",
+      "kind": "repository-reference",
+      "label": "source-2",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/registry.json",
+      "read_only": true,
+      "sha256": "de731544b3c61b9025a722dea089ff244f5cf57ddd2e2fb945f97ddb7f01355d"
+    },
+    {
+      "input_id": "source-input-003",
+      "kind": "repository-reference",
+      "label": "source-3",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/reference/README.md",
+      "read_only": true,
+      "sha256": "f9944462b065670f7bb94bc090e6dd140faeb8ba7a84af52f1ace4f8d1f479f7"
+    }
+  ],
+  "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+}

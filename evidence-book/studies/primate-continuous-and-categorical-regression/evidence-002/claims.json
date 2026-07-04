@@ -1,0 +1,21 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm3-baseline-gls-with-categorical-predictor",
+      "claim_title": "Primate baseline regression structure bundle",
+      "evidence_ids": [
+        "evidence-002"
+      ],
+      "source_fragments": [
+        "baseline-gls-fit",
+        "categorical-encoding-contract"
+      ],
+      "summary": "Governed study slice for the PCM3 baseline GLS fit with one continuous predictor and one categorical predictor.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-002",
+  "schema_version": 1,
+  "study_id": "primate-continuous-and-categorical-regression"
+}

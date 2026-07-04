@@ -1,0 +1,62 @@
+{
+  "authored_local_artifacts": [
+    {
+      "artifact_kind": "r-reference-program",
+      "artifact_path": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-009/reference.R",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "python-analysis-program",
+      "artifact_path": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-009/analysis.py",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "machine-check-contract",
+      "artifact_path": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-009/checks.json",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "human-report",
+      "artifact_path": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-009/report.md",
+      "generation_mode": "governed-bundle-template"
+    },
+    {
+      "artifact_kind": "provenance-record",
+      "artifact_path": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-009/provenance.json",
+      "generation_mode": "governed-bundle-template"
+    }
+  ],
+  "bundle_provenance_paths": [
+    "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/provenance/lund-course-sources.json"
+  ],
+  "bundle_result_surfaces": [
+    {
+      "artifact_kind": "governed-result-surface",
+      "artifact_path": "results/README.md"
+    },
+    {
+      "artifact_kind": "governed-result-surface",
+      "artifact_path": "results/manifest.json"
+    }
+  ],
+  "evidence_id": "evidence-009",
+  "schema_version": 2,
+  "source_basis_locators": [
+    "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/provenance/lund-course-sources.json",
+    "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/registry.json",
+    "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/reference/README.md",
+    "packages/bijux-phylogenetics/tests/test_phylogenetic_logistic.py"
+  ],
+  "source_intake_policy": "repository-owned-source",
+  "study_dataset_registry_locator": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/registry.json",
+  "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+  "study_provenance_locator": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/provenance/lund-course-sources.json",
+  "study_support_scripts": {
+    "build_script_path": null,
+    "reference_python_scripts": [],
+    "reference_r_scripts": [
+      "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/reference/PCM5_PGLMM.R",
+      "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/reference/PCM5_extra_code.R"
+    ]
+  }
+}

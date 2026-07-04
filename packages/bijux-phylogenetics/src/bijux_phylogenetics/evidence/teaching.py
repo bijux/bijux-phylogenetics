@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from collections import Counter
 from copy import deepcopy
+import json
+from pathlib import Path
 
 TEACHING_GUIDE_FILENAME = "teaching-guide.json"
 TEACHING_GUIDE_MARKDOWN_FILENAME = "teaching-guide.md"
@@ -677,12 +679,70 @@ def build_teaching_and_migration_index(
     }
 
 
+def build_repository_teaching_and_migration_index(
+    repo_root: Path | str,
+) -> dict[str, object]:
+    from .studies import (
+        build_primate_family_index,
+        build_primate_pgls_signal_family_index,
+        build_primate_pgls_signal_source_fragment_map,
+        build_primate_source_fragment_map,
+    )
+    from .study_contracts import load_study_contract
+
+    repo_root = Path(repo_root)
+    evidence_root = repo_root / "evidence-book" / "studies"
+    teaching_guides: list[dict[str, object]] = []
+    migration_guides: list[dict[str, object]] = []
+    reproducibility_contracts: list[dict[str, object]] = []
+
+    for study_id in sorted(teaching_study_ids()):
+        study_root = evidence_root / study_id
+        if not study_root.is_dir():
+            continue
+        study_manifest = load_study_contract(study_root)
+        if study_id == "primate-longevity-signal":
+            family_index = build_primate_family_index(repo_root)
+            source_fragment_map = build_primate_source_fragment_map(repo_root)
+        elif study_id == "primate-pgls-and-signal":
+            family_index = build_primate_pgls_signal_family_index(repo_root)
+            source_fragment_map = build_primate_pgls_signal_source_fragment_map()
+        else:
+            raise ValueError(
+                f"repository teaching index has no study builder for {study_id}"
+            )
+
+        bundle_manifests = [
+            json.loads(manifest_path.read_text(encoding="utf-8"))
+            for manifest_path in sorted(study_root.glob("evidence-*/manifest.json"))
+        ]
+        teaching_guides.append(
+            build_teaching_guide(study_manifest, family_index, source_fragment_map)
+        )
+        migration_guides.append(
+            build_migration_guide(
+                study_manifest,
+                source_fragment_map,
+                bundle_manifests,
+            )
+        )
+        reproducibility_contracts.append(
+            build_student_safe_reproducibility_contract(study_manifest)
+        )
+
+    return build_teaching_and_migration_index(
+        teaching_guides,
+        migration_guides,
+        reproducibility_contracts,
+    )
+
+
 def render_teaching_and_migration_index_markdown(payload: dict[str, object]) -> str:
     lines = [
         "# Teaching And Migration Evidence",
         "",
-        "This landing page separates Lund-derived teaching and migration studies",
-        "from the broader scientific-validation surfaces in the evidence-book.",
+        "Use this page when you want the course-derived studies that already have",
+        "clear teaching structure, migration notes, and reproducibility guidance.",
         "",
         f"- teaching studies: `{payload['teaching_study_count']}`",
         f"- migration studies: `{payload['migration_study_count']}`",
@@ -693,14 +753,14 @@ def render_teaching_and_migration_index_markdown(payload: dict[str, object]) -> 
         lines.append("")
         for topic, count in payload["course_topic_counts"].items():
             lines.append(f"- `{topic}`: `{count}`")
-        lines.append("")
+    lines.append("")
     lines.append("## Teaching Studies")
     lines.append("")
     for study in payload["teaching_studies"]:
         lines.append(f"- `{study['study_id']}` — {study['study_title']}")
         lines.append(f"  Course source: `{study['course_material_locator']}`")
-        lines.append(f"  Families: `{study['family_count']}`")
-        lines.append(f"  Concept tags: `{', '.join(study['concept_tags'])}`")
+        lines.append(f"  Teaching families: `{study['family_count']}`")
+        lines.append(f"  Main topics: `{', '.join(study['concept_tags'])}`")
     lines.append("")
     lines.append("## Migration Studies")
     lines.append("")
@@ -711,6 +771,6 @@ def render_teaching_and_migration_index_markdown(payload: dict[str, object]) -> 
         lines.append(f"- `{study['study_id']}` — {study['study_title']}")
         lines.append(f"  Comparison modes: {counts}")
         lines.append(f"  Side-by-side examples: `{study['example_count']}`")
-        lines.append(f"  Supported scope: {study['supported_scope']}")
+        lines.append(f"  Reproducible scope: {study['supported_scope']}")
     lines.append("")
     return "\n".join(lines).rstrip() + "\n"

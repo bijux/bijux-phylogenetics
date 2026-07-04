@@ -31,6 +31,8 @@ from .optimizer_search import (
 from .posterior_probabilities import estimate_marginal_state_probabilities
 from .rate_matrix import build_transition_rate_rows, rate_matrix_from_log_parameters
 
+_DISCRETE_OPTIMIZATION_TIE_TOLERANCE = 1e-8
+
 
 def reconstruct_likelihood_estimates(
     dataset,
@@ -131,11 +133,7 @@ def reconstruct_likelihood_estimates(
     )
     aic = (2.0 * count) - (2.0 * reported_log_likelihood)
     baseline_comparison = None
-    if (
-        include_equal_rates_baseline
-        and model != "equal-rates"
-        and allowed_transition_pairs is None
-    ):
+    if include_equal_rates_baseline and model != "equal-rates":
         try:
             baseline_fit = reconstruct_likelihood_estimates(
                 dataset,
@@ -144,7 +142,7 @@ def reconstruct_likelihood_estimates(
                 ordered_states=state_order,
                 root_prior_mode=root_prior_mode,
                 fixed_root_state=fixed_root_state,
-                allowed_transition_pairs=None,
+                allowed_transition_pairs=allowed_transition_pairs,
                 include_equal_rates_baseline=False,
                 stable_probability_mapping=stable_probability_mapping,
                 material_state_set=material_state_set,
@@ -223,6 +221,7 @@ def fit_discrete_mk_model(
         raise ValueError(
             "discrete ancestral reconstruction requires at least one allowed transition"
         )
+    initial_candidate_count = 1
     if count == 1:
         best_run = optimize_single_log_parameter(
             tree,
@@ -237,9 +236,17 @@ def fit_discrete_mk_model(
         best_log_parameters = best_run.log_parameters
     else:
         initial_candidates = build_discrete_initial_candidates(
+            tree,
+            states_by_taxon,
+            state_order=state_order,
             parameter_count=count,
             model=model,
+            state_ordering=state_ordering,
+            allowed_transition_pairs=allowed_transition_pairs,
+            root_prior_mode=root_prior_mode,
+            ascertainment_policy=ascertainment_policy,
         )
+        initial_candidate_count = len(initial_candidates)
         best_log_parameters: numpy.ndarray | None = None
         best_log_likelihood = float("-inf")
         best_run: _DiscreteOptimizationRun | None = None
@@ -256,7 +263,11 @@ def fit_discrete_mk_model(
                 initial_log_parameters=initial,
                 initial_scale=initial_scale,
             )
-            if run.log_likelihood > best_log_likelihood:
+            if _candidate_run_is_better(
+                run,
+                incumbent_run=best_run,
+                incumbent_log_likelihood=best_log_likelihood,
+            ):
                 best_run = run
                 best_log_parameters = run.log_parameters
                 best_log_likelihood = run.log_likelihood
@@ -290,7 +301,7 @@ def fit_discrete_mk_model(
         DiscreteOptimizerDiagnostics(
             optimizer_name=best_run.optimizer_name,
             parameter_count=count,
-            initial_candidate_count=best_run.initial_candidate_count,
+            initial_candidate_count=initial_candidate_count,
             best_initial_scale=best_run.initial_scale,
             converged=best_run.converged,
             iteration_count=best_run.iteration_count,
@@ -308,3 +319,26 @@ def fit_discrete_mk_model(
             ),
         ),
     )
+
+
+def _candidate_run_is_better(
+    candidate_run: _DiscreteOptimizationRun,
+    *,
+    incumbent_run: _DiscreteOptimizationRun | None,
+    incumbent_log_likelihood: float,
+) -> bool:
+    if incumbent_run is None:
+        return True
+    if (
+        candidate_run.log_likelihood
+        > incumbent_log_likelihood + _DISCRETE_OPTIMIZATION_TIE_TOLERANCE
+    ):
+        return True
+    if (
+        candidate_run.log_likelihood
+        < incumbent_log_likelihood - _DISCRETE_OPTIMIZATION_TIE_TOLERANCE
+    ):
+        return False
+    return tuple(
+        float(value) for value in candidate_run.log_parameters.tolist()
+    ) > tuple(float(value) for value in incumbent_run.log_parameters.tolist())

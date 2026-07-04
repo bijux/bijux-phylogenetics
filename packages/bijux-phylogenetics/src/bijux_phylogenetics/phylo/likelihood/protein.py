@@ -5,6 +5,15 @@ from collections.abc import Callable
 import numpy
 
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.finite_state_root_priors import (
+    ResolvedFiniteStateRootPrior,
+    resolve_finite_state_root_prior,
+    validate_finite_state_root_prior,
+)
+from bijux_phylogenetics.phylo.likelihood.observation_vectors import (
+    build_all_states_observation_vector,
+    build_state_selection_vector,
+)
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
 )
@@ -188,25 +197,57 @@ def validate_protein_root_prior(
     *,
     model_name: str,
 ) -> numpy.ndarray:
-    vector = numpy.asarray(root_prior, dtype=float)
-    if vector.shape != (len(PROTEIN_STATE_ORDER),):
-        raise InvalidAlignmentError(
-            f"{model_name} likelihood requires exactly twenty root-prior entries in protein state order"
-        )
-    if not numpy.all(numpy.isfinite(vector)):
-        raise InvalidAlignmentError(
-            f"{model_name} likelihood root prior must contain only finite values"
-        )
-    if numpy.any(vector < 0.0):
-        raise InvalidAlignmentError(
-            f"{model_name} likelihood root prior must be nonnegative"
-        )
-    total = float(vector.sum())
-    if total <= 0.0:
-        raise InvalidAlignmentError(
-            f"{model_name} likelihood root prior must sum to a positive value"
-        )
-    return vector / total
+    return validate_finite_state_root_prior(
+        root_prior,
+        state_labels=PROTEIN_STATE_ORDER,
+        owner_name=f"{model_name} likelihood",
+    )
+
+
+def estimate_empirical_protein_root_prior(
+    records: list[AlignmentRecord],
+    *,
+    model_name: str,
+) -> numpy.ndarray:
+    return resolve_finite_state_root_prior(
+        records,
+        state_labels=PROTEIN_STATE_ORDER,
+        owner_name=f"{model_name} likelihood",
+        default_policy="empirical",
+        root_prior_policy="empirical",
+        sequence_tokenizer=tuple,
+    ).root_prior
+
+
+def resolve_protein_root_prior(
+    records: list[AlignmentRecord],
+    *,
+    owner_name: str,
+    default_policy: str,
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
+    stationary_frequencies: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+) -> ResolvedFiniteStateRootPrior:
+    return resolve_finite_state_root_prior(
+        records,
+        state_labels=PROTEIN_STATE_ORDER,
+        owner_name=owner_name,
+        default_policy=default_policy,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        stationary_frequencies=stationary_frequencies,
+        sequence_tokenizer=tuple,
+    )
 
 
 def validate_empirical_protein_rate_matrix(
@@ -269,15 +310,16 @@ def protein_leaf_likelihood_vector(
         )
     state = states_by_taxon[node_name]
     if state in PROTEIN_STATE_INDEX:
-        vector = numpy.zeros(len(PROTEIN_STATE_ORDER), dtype=float)
-        vector[PROTEIN_STATE_INDEX[state]] = 1.0
-        return vector
+        return build_state_selection_vector(
+            state_count=len(PROTEIN_STATE_ORDER),
+            selected_indices=(PROTEIN_STATE_INDEX[state],),
+        )
     if state == PROTEIN_GAP_CHARACTER:
         if validate_protein_gap_policy(gap_policy, model_name=model_name) == "reject":
             raise InvalidAlignmentError(
                 f"{model_name} likelihood gap policy rejects '-' at taxon '{node_name}'"
             )
-        return numpy.ones(len(PROTEIN_STATE_ORDER), dtype=float)
+        return build_all_states_observation_vector(state_count=len(PROTEIN_STATE_ORDER))
     if state == PROTEIN_MISSING_CHARACTER:
         if (
             validate_protein_missing_policy(
@@ -289,7 +331,7 @@ def protein_leaf_likelihood_vector(
             raise InvalidAlignmentError(
                 f"{model_name} likelihood missing-state policy rejects '?' at taxon '{node_name}'"
             )
-        return numpy.ones(len(PROTEIN_STATE_ORDER), dtype=float)
+        return build_all_states_observation_vector(state_count=len(PROTEIN_STATE_ORDER))
     if state in PROTEIN_AMBIGUITY_STATES_BY_SYMBOL:
         validated_ambiguity_policy = validate_protein_ambiguity_policy(
             ambiguity_policy,
@@ -300,11 +342,16 @@ def protein_leaf_likelihood_vector(
                 f"{model_name} likelihood ambiguity policy rejects '{state}' at taxon '{node_name}'"
             )
         if validated_ambiguity_policy == "treat-as-missing":
-            return numpy.ones(len(PROTEIN_STATE_ORDER), dtype=float)
-        vector = numpy.zeros(len(PROTEIN_STATE_ORDER), dtype=float)
-        for compatible_state in PROTEIN_AMBIGUITY_STATES_BY_SYMBOL[state]:
-            vector[PROTEIN_STATE_INDEX[compatible_state]] = 1.0
-        return vector
+            return build_all_states_observation_vector(
+                state_count=len(PROTEIN_STATE_ORDER)
+            )
+        return build_state_selection_vector(
+            state_count=len(PROTEIN_STATE_ORDER),
+            selected_indices=(
+                PROTEIN_STATE_INDEX[compatible_state]
+                for compatible_state in PROTEIN_AMBIGUITY_STATES_BY_SYMBOL[state]
+            ),
+        )
     raise InvalidAlignmentError(
         f"{model_name} likelihood encountered unsupported amino-acid state '{state}' at taxon '{node_name}'"
     )

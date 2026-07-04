@@ -41,9 +41,13 @@ from bijux_phylogenetics.trees import (
 )
 from bijux_phylogenetics.validation import (
     CoreWorkflowValidationReport,
+    GammaInvariantMixtureFamilyCoverageReport,
+    InvariantMixtureFamilyCoverageReport,
     LevelOneReleaseGateReport,
     ProductionScaleReadinessReport,
     ReleaseTruthReport,
+    SharedContinuousFixtureCatalogReport,
+    SharedDiscreteFixtureCatalogReport,
 )
 
 
@@ -215,14 +219,58 @@ class ProductionScaleReadinessReportBuildResult:
     machine_manifest: dict[str, object]
 
 
+@dataclass(frozen=True, slots=True)
+class SharedContinuousFixtureCatalogReportBuildResult:
+    output_path: Path
+    machine_manifest_path: Path
+    report_kind: str
+    title: str
+    fixture_catalog: SharedContinuousFixtureCatalogReport
+    machine_manifest: dict[str, object]
+
+
+@dataclass(frozen=True, slots=True)
+class GammaInvariantMixtureFamilyCoverageReportBuildResult:
+    output_path: Path
+    machine_manifest_path: Path
+    report_kind: str
+    title: str
+    coverage: GammaInvariantMixtureFamilyCoverageReport
+    machine_manifest: dict[str, object]
+
+
+@dataclass(frozen=True, slots=True)
+class InvariantMixtureFamilyCoverageReportBuildResult:
+    output_path: Path
+    machine_manifest_path: Path
+    report_kind: str
+    title: str
+    coverage: InvariantMixtureFamilyCoverageReport
+    machine_manifest: dict[str, object]
+
+
+@dataclass(frozen=True, slots=True)
+class SharedDiscreteFixtureCatalogReportBuildResult:
+    output_path: Path
+    machine_manifest_path: Path
+    report_kind: str
+    title: str
+    fixture_catalog: SharedDiscreteFixtureCatalogReport
+    machine_manifest: dict[str, object]
+
+
 __all__ = [
     "AlignmentReportBuildResult",
     "DistanceReportBuildResult",
+    "GammaInvariantMixtureFamilyCoverageReportBuildResult",
+    "InvariantMixtureFamilyCoverageReportBuildResult",
     "ProductionScaleReadinessReportBuildResult",
     "ReleaseGateReportBuildResult",
     "ReleaseTruthReportBuildResult",
     "ReportBuildResult",
     "ReportInputLedgerEntry",
+    "SharedContinuousFixtureCatalogReportBuildResult",
+    "SharedDiscreteFixtureCatalogReportBuildResult",
     "TableLinkageReport",
     "TaxonReportBuildResult",
     "TreeSetComparisonReportBuildResult",

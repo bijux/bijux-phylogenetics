@@ -50,9 +50,11 @@ def find_package_root() -> Path:
 
 
 def find_repo_python(package_root: Path) -> Path:
+    repo_root = package_root.parents[1]
     candidates = (
         package_root / ".venv" / "bin" / "python",
-        package_root.parent / ".venv" / "bin" / "python",
+        repo_root / "artifacts" / "root" / "check-venv" / "bin" / "python",
+        repo_root / ".venv" / "bin" / "python",
     )
     for candidate in candidates:
         if candidate.is_file():

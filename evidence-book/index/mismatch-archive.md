@@ -28,7 +28,7 @@ This archive tracks every scalar parity row that is still represented as
 - `primate-pgls-and-signal-evidence-001-early-burst-rate-change` — `mismatch_unexplained` in `studies/primate-pgls-and-signal/evidence-001`
   Metric: `early_burst_rate_change` (`continuous-model-fitting`), diff=`10.6718757865625`
 - `primate-pgls-and-signal-evidence-001-estimated-diagnostic-fitted-correlation` — `mismatch_unexplained` in `studies/primate-pgls-and-signal/evidence-001`
-  Metric: `abs_residual_fitted_correlation` (`diagnostics`), diff=`0.095590356776682`
+  Metric: `abs_residual_fitted_correlation` (`diagnostics`), diff=`0.095590314522858`
 - `primate-pgls-and-signal-evidence-001-late-burst-minus-2-total-branch-length` — `mismatch_unexplained` in `studies/primate-pgls-and-signal/evidence-001`
   Metric: `late_burst_minus_2_total_branch_length` (`transformed-tree-workflows`), diff=`None`
 - `primate-pgls-and-signal-evidence-001-ou-alpha-1-total-branch-length` — `mismatch_unexplained` in `studies/primate-pgls-and-signal/evidence-001`

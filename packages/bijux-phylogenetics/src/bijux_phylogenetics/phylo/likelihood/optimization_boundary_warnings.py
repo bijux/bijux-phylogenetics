@@ -50,6 +50,104 @@ def build_substitution_parameter_boundary_warnings(
     return warnings
 
 
+def build_invariant_proportion_boundary_warnings(
+    *,
+    invariant_proportion: float,
+    lower_invariant_proportion_bound: float,
+    upper_invariant_proportion_bound: float,
+) -> list[LikelihoodOptimizationBoundaryWarning]:
+    """Render explicit invariant-mixture boundary warnings."""
+    warnings: list[LikelihoodOptimizationBoundaryWarning] = []
+    if math.isclose(
+        invariant_proportion,
+        lower_invariant_proportion_bound,
+        rel_tol=0.0,
+        abs_tol=_BOUNDARY_TOLERANCE,
+    ):
+        warnings.append(
+            LikelihoodOptimizationBoundaryWarning(
+                warning_kind="invariant-boundary",
+                affected_parameter="invariant_proportion",
+                boundary_side="lower",
+                observed_value=invariant_proportion,
+                lower_bound=lower_invariant_proportion_bound,
+                upper_bound=upper_invariant_proportion_bound,
+                affected_branch_id=None,
+                affected_branch_clade_id=None,
+                message="invariant proportion hit lower search boundary",
+            )
+        )
+    if math.isclose(
+        invariant_proportion,
+        upper_invariant_proportion_bound,
+        rel_tol=0.0,
+        abs_tol=_BOUNDARY_TOLERANCE,
+    ):
+        warnings.append(
+            LikelihoodOptimizationBoundaryWarning(
+                warning_kind="invariant-boundary",
+                affected_parameter="invariant_proportion",
+                boundary_side="upper",
+                observed_value=invariant_proportion,
+                lower_bound=lower_invariant_proportion_bound,
+                upper_bound=upper_invariant_proportion_bound,
+                affected_branch_id=None,
+                affected_branch_clade_id=None,
+                message="invariant proportion hit upper search boundary",
+            )
+        )
+    return warnings
+
+
+def build_rate_heterogeneity_alpha_boundary_warnings(
+    *,
+    alpha: float,
+    lower_alpha_bound: float,
+    upper_alpha_bound: float,
+) -> list[LikelihoodOptimizationBoundaryWarning]:
+    """Render explicit lower-alpha and flat-upper-alpha boundary warnings."""
+    warnings: list[LikelihoodOptimizationBoundaryWarning] = []
+    if math.isclose(
+        alpha,
+        lower_alpha_bound,
+        rel_tol=0.0,
+        abs_tol=_BOUNDARY_TOLERANCE,
+    ):
+        warnings.append(
+            LikelihoodOptimizationBoundaryWarning(
+                warning_kind="alpha-boundary",
+                affected_parameter="alpha",
+                boundary_side="lower",
+                observed_value=alpha,
+                lower_bound=lower_alpha_bound,
+                upper_bound=upper_alpha_bound,
+                affected_branch_id=None,
+                affected_branch_clade_id=None,
+                message="alpha hit lower search boundary",
+            )
+        )
+    if math.isclose(
+        alpha,
+        upper_alpha_bound,
+        rel_tol=0.0,
+        abs_tol=_BOUNDARY_TOLERANCE,
+    ):
+        warnings.append(
+            LikelihoodOptimizationBoundaryWarning(
+                warning_kind="flat-alpha",
+                affected_parameter="alpha",
+                boundary_side="upper",
+                observed_value=alpha,
+                lower_bound=lower_alpha_bound,
+                upper_bound=upper_alpha_bound,
+                affected_branch_id=None,
+                affected_branch_clade_id=None,
+                message="alpha hit upper search boundary",
+            )
+        )
+    return warnings
+
+
 def build_base_frequency_boundary_warnings(
     *,
     base_frequency_source: str | None,
@@ -57,6 +155,7 @@ def build_base_frequency_boundary_warnings(
     base_frequency_c: float | None,
     base_frequency_g: float | None,
     base_frequency_t: float | None,
+    lower_frequency_bound: float = 0.0,
 ) -> list[LikelihoodOptimizationBoundaryWarning]:
     """Render explicit lower-bound frequency warnings for estimated DNA frequencies."""
     if base_frequency_source != "estimated":
@@ -70,14 +169,19 @@ def build_base_frequency_boundary_warnings(
     ):
         if value is None:
             continue
-        if math.isclose(value, 0.0, rel_tol=0.0, abs_tol=_BOUNDARY_TOLERANCE):
+        if math.isclose(
+            value,
+            lower_frequency_bound,
+            rel_tol=0.0,
+            abs_tol=_BOUNDARY_TOLERANCE,
+        ):
             warnings.append(
                 LikelihoodOptimizationBoundaryWarning(
                     warning_kind="frequency-boundary",
                     affected_parameter=parameter_name,
                     boundary_side="lower",
                     observed_value=value,
-                    lower_bound=0.0,
+                    lower_bound=lower_frequency_bound,
                     upper_bound=1.0,
                     affected_branch_id=None,
                     affected_branch_clade_id=None,
@@ -164,6 +268,8 @@ def boundary_warning_messages(
 __all__ = [
     "LikelihoodOptimizationBoundaryWarning",
     "boundary_warning_messages",
+    "build_invariant_proportion_boundary_warnings",
+    "build_rate_heterogeneity_alpha_boundary_warnings",
     "build_base_frequency_boundary_warnings",
     "build_branch_length_boundary_warnings",
     "build_substitution_parameter_boundary_warnings",

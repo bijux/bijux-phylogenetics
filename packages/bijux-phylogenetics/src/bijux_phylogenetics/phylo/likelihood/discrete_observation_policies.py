@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import numpy
 
+from bijux_phylogenetics.phylo.likelihood.observation_vectors import (
+    build_all_states_observation_vector,
+    build_state_selection_vector,
+)
 from bijux_phylogenetics.runtime.errors import InvalidAlignmentError
 
 DISCRETE_AMBIGUITY_SEPARATOR = "|"
@@ -69,15 +73,16 @@ def resolve_discrete_observation_leaf_vector(
     normalized_observation = normalize_discrete_observation_token(observation)
     state_index = {state: index for index, state in enumerate(state_order)}
     if normalized_observation in state_index:
-        vector = numpy.zeros(len(state_order), dtype=float)
-        vector[state_index[normalized_observation]] = 1.0
-        return vector
+        return build_state_selection_vector(
+            state_count=len(state_order),
+            selected_indices=(state_index[normalized_observation],),
+        )
     if is_missing_discrete_observation_token(normalized_observation):
         if validated_policy == "reject":
             raise InvalidAlignmentError(
                 f"{model_name} likelihood observation policy 'reject' does not allow missing discrete state '{normalized_observation}' at taxon '{node_name}'"
             )
-        return numpy.ones(len(state_order), dtype=float)
+        return build_all_states_observation_vector(state_count=len(state_order))
     ambiguous_states = parse_discrete_ambiguity_token(normalized_observation)
     if ambiguous_states is not None:
         if validated_policy == "reject":
@@ -85,7 +90,7 @@ def resolve_discrete_observation_leaf_vector(
                 f"{model_name} likelihood observation policy 'reject' does not allow ambiguous discrete state '{normalized_observation}' at taxon '{node_name}'"
             )
         if validated_policy == "treat-as-missing":
-            return numpy.ones(len(state_order), dtype=float)
+            return build_all_states_observation_vector(state_count=len(state_order))
         unknown_states = [
             state for state in ambiguous_states if state not in state_index
         ]
@@ -93,10 +98,10 @@ def resolve_discrete_observation_leaf_vector(
             raise InvalidAlignmentError(
                 f"{model_name} likelihood ambiguity token '{normalized_observation}' contains undeclared states {', '.join(sorted(unknown_states))}"
             )
-        vector = numpy.zeros(len(state_order), dtype=float)
-        for state in ambiguous_states:
-            vector[state_index[state]] = 1.0
-        return vector
+        return build_state_selection_vector(
+            state_count=len(state_order),
+            selected_indices=(state_index[state] for state in ambiguous_states),
+        )
     raise InvalidAlignmentError(
         f"{model_name} likelihood encountered unsupported discrete state '{normalized_observation}' at taxon '{node_name}'"
     )

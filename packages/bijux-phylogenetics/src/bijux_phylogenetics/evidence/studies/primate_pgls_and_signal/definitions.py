@@ -4,14 +4,15 @@ from pathlib import Path
 
 STUDY_ID = "primate-pgls-and-signal"
 SUMMARY_EVIDENCE_ID = "evidence-001"
-PCM2_SOURCE_LOCATOR = "external:lund/pcm2-modes-pgls/script"
+PCM2_SOURCE_LOCATOR = (
+    "evidence-book/studies/primate-pgls-and-signal/reference/"
+    "lund_pcm2_modes_pgls_source.R"
+)
 PCM2_REFERENCE_SCRIPT_PATH = (
     "evidence-book/studies/primate-pgls-and-signal/reference/"
     "primate_pgls_and_signal_reference_r.R"
 )
-STUDY_ONE_REFERENCE_ROOT = (
-    Path("evidence-book") / "studies" / "primate-longevity-signal" / "datasets"
-)
+PCM2_DATASET_ROOT = Path("evidence-book") / "studies" / STUDY_ID / "datasets"
 
 FAMILY_DEFINITIONS = {
     "workflow-contracts": {
@@ -278,7 +279,7 @@ BUNDLE_DEFINITIONS = [
         "analytical_surfaces": ["workflow-contracts"],
         "source_fragments": ["workspace-reload-contract"],
         "limitations": [
-            "The raw lecture `primate.RData` file remains external; this bundle governs the object contract using repository-owned reference artifacts."
+            "The checked-in lecture `primate.RData` copy preserves the original reload surface, while this bundle governs the object contract through repository-owned reference artifacts."
         ],
     },
     {

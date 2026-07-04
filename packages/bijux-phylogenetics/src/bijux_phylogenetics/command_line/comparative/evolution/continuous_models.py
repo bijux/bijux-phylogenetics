@@ -227,6 +227,11 @@ def run_continuous_model_comparative_evolution_command(
                     "log_likelihood": report.log_likelihood,
                     "aic": report.aic,
                     "aicc": report.aicc,
+                    "optimizer_name": report.optimizer_diagnostics.optimizer_name,
+                    "optimizer_converged": report.optimizer_diagnostics.converged,
+                    "optimizer_function_evaluation_count": (
+                        report.optimizer_diagnostics.function_evaluation_count
+                    ),
                 },
                 data=report,
             ),

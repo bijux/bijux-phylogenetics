@@ -38,8 +38,12 @@ from bijux_phylogenetics.phylo.likelihood.k80 import (
     k80_transition_probability_matrix,
 )
 from bijux_phylogenetics.phylo.likelihood.models import (
+    LikelihoodOptimizationBoundaryWarning,
     SubstitutionModelSelectionReport,
     SubstitutionModelSelectionRow,
+)
+from bijux_phylogenetics.phylo.likelihood.optimization_boundary_warnings import (
+    build_rate_heterogeneity_alpha_boundary_warnings,
 )
 from bijux_phylogenetics.phylo.likelihood.parameter_search import (
     run_bounded_coordinate_likelihood_search,
@@ -282,6 +286,7 @@ def _fit_fixed_rate_candidate(
             },
         },
         warnings=list(fit_report.warnings),
+        boundary_warning_rows=[],
     )
 
 
@@ -348,6 +353,7 @@ def _fit_rate_heterogeneous_candidate(
             evaluate=evaluate_candidate,
             improvement_tolerance=improvement_tolerance,
             max_coordinate_passes=max_coordinate_passes,
+            owner_name="substitution model rate-heterogeneity fit",
         )
         resolved_parameters = dict(search_result.payload)
         log_likelihood = float(search_result.objective_value)
@@ -368,12 +374,17 @@ def _fit_rate_heterogeneous_candidate(
         optimization_pass_count=optimization_pass_count,
         function_evaluation_count=function_evaluation_count,
     )
+    boundary_warning_rows = _selection_parameter_boundary_warning_rows(
+        parameter_values=resolved_parameters,
+        bounds_by_name=bounds_by_name,
+    )
     return _successful_selection_row(
         specification=specification,
         parameter_count=parameter_count,
         log_likelihood=log_likelihood,
         parameter_values=resolved_parameters,
         warnings=warnings,
+        boundary_warning_rows=boundary_warning_rows,
     )
 
 
@@ -645,6 +656,65 @@ def _selection_parameter_warnings(
     return warnings
 
 
+def _selection_parameter_boundary_warning_rows(
+    *,
+    parameter_values: dict[str, float],
+    bounds_by_name: dict[str, tuple[float, float]],
+) -> list[LikelihoodOptimizationBoundaryWarning]:
+    boundary_warning_rows: list[LikelihoodOptimizationBoundaryWarning] = []
+    for parameter_name, (lower_bound, upper_bound) in bounds_by_name.items():
+        parameter_value = float(parameter_values[parameter_name])
+        if parameter_name == "alpha":
+            boundary_warning_rows.extend(
+                build_rate_heterogeneity_alpha_boundary_warnings(
+                    alpha=parameter_value,
+                    lower_alpha_bound=lower_bound,
+                    upper_alpha_bound=upper_bound,
+                )
+            )
+            continue
+        if parameter_name == "invariant_proportion":
+            if math.isclose(
+                parameter_value,
+                lower_bound,
+                rel_tol=0.0,
+                abs_tol=_BOUNDARY_TOLERANCE,
+            ):
+                boundary_warning_rows.append(
+                    LikelihoodOptimizationBoundaryWarning(
+                        warning_kind="invariant-boundary",
+                        affected_parameter="invariant_proportion",
+                        boundary_side="lower",
+                        observed_value=parameter_value,
+                        lower_bound=lower_bound,
+                        upper_bound=upper_bound,
+                        affected_branch_id=None,
+                        affected_branch_clade_id=None,
+                        message="invariant_proportion hit lower search boundary",
+                    )
+                )
+            if math.isclose(
+                parameter_value,
+                upper_bound,
+                rel_tol=0.0,
+                abs_tol=_BOUNDARY_TOLERANCE,
+            ):
+                boundary_warning_rows.append(
+                    LikelihoodOptimizationBoundaryWarning(
+                        warning_kind="invariant-boundary",
+                        affected_parameter="invariant_proportion",
+                        boundary_side="upper",
+                        observed_value=parameter_value,
+                        lower_bound=lower_bound,
+                        upper_bound=upper_bound,
+                        affected_branch_id=None,
+                        affected_branch_clade_id=None,
+                        message="invariant_proportion hit upper search boundary",
+                    )
+                )
+    return boundary_warning_rows
+
+
 def _successful_selection_row(
     *,
     specification: _CandidateSpecification,
@@ -652,6 +722,7 @@ def _successful_selection_row(
     log_likelihood: float,
     parameter_values: dict[str, float],
     warnings: list[str],
+    boundary_warning_rows: list[LikelihoodOptimizationBoundaryWarning],
 ) -> SubstitutionModelSelectionRow:
     aic = _compute_aic(log_likelihood, parameter_count=parameter_count)
     return SubstitutionModelSelectionRow(
@@ -675,6 +746,7 @@ def _successful_selection_row(
         selected_by_bic=False,
         parameter_values=parameter_values,
         warnings=warnings,
+        boundary_warning_rows=boundary_warning_rows,
     )
 
 

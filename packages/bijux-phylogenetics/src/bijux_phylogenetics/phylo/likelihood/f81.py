@@ -9,6 +9,9 @@ from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+)
 from bijux_phylogenetics.phylo.likelihood.dna import (
     DNA_STATE_ORDER,
     validate_dna_base_frequencies,
@@ -22,18 +25,22 @@ from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
     resolve_default_dna_root_prior_for_observation_policy,
     resolve_dna_observation_leaf_vector,
 )
-from bijux_phylogenetics.phylo.likelihood.models import F81TreeLikelihoodReport
+from bijux_phylogenetics.phylo.likelihood.finite_state import (
+    FiniteStateLikelihoodSurface,
+    compile_finite_state_likelihood_context,
+    evaluate_finite_state_tree_log_likelihood_from_patterns,
+)
+from bijux_phylogenetics.phylo.likelihood.models import (
+    F81TreeLikelihoodReport,
+    FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
+    FiniteStateInvariantMixtureTreeLikelihoodReport,
+)
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     CompressedAlignmentSitePatterns,
     compress_alignment_site_patterns_from_records,
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import (
-    log_likelihood_from_root_prior,
-    postorder_conditional_likelihoods,
     transition_probability_matrix,
-)
-from bijux_phylogenetics.phylo.likelihood.sites import (
-    sum_compressed_site_pattern_log_likelihoods,
 )
 from bijux_phylogenetics.phylo.likelihood.validation import (
     validate_explicit_branch_lengths,
@@ -183,6 +190,150 @@ def evaluate_f81_tree_likelihood_from_alignment(
     )
 
 
+def evaluate_f81_tree_likelihood_with_invariant_mixture(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    invariant_proportion: float,
+    base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    observation_policy: str = "reject",
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
+) -> FiniteStateInvariantMixtureTreeLikelihoodReport:
+    """Evaluate one F81 likelihood surface under one active +I mixture."""
+    from bijux_phylogenetics.phylo.likelihood.nucleotide_finite_state import (
+        evaluate_selected_nucleotide_tree_likelihood_with_invariant_mixture,
+    )
+
+    return evaluate_selected_nucleotide_tree_likelihood_with_invariant_mixture(
+        tree,
+        records,
+        model_name="f81",
+        owner_name="F81 likelihood",
+        invariant_proportion=invariant_proportion,
+        observation_policy=observation_policy,
+        base_frequencies=base_frequencies,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+    )
+
+
+def evaluate_f81_tree_likelihood_with_invariant_mixture_from_alignment(
+    tree_path: Path,
+    alignment_path: Path,
+    *,
+    invariant_proportion: float,
+    base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    observation_policy: str = "reject",
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
+) -> FiniteStateInvariantMixtureTreeLikelihoodReport:
+    """Evaluate one F81 +I likelihood from tree and alignment paths."""
+    return evaluate_f81_tree_likelihood_with_invariant_mixture(
+        load_tree(tree_path),
+        load_fasta_alignment(alignment_path),
+        invariant_proportion=invariant_proportion,
+        base_frequencies=base_frequencies,
+        observation_policy=observation_policy,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+    )
+
+
+def evaluate_f81_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    alpha: float,
+    invariant_proportion: float,
+    base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    category_count: int = 4,
+    lower_invariant_proportion_bound: float | None = None,
+    upper_invariant_proportion_bound: float | None = None,
+    emit_boundary_warnings: bool = False,
+    observation_policy: str = "reject",
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
+) -> FiniteStateDiscreteGammaInvariantTreeLikelihoodReport:
+    """Evaluate one F81 likelihood surface under one active +G+I mixture."""
+    from bijux_phylogenetics.phylo.likelihood.nucleotide_finite_state import (
+        evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture,
+    )
+
+    return evaluate_selected_nucleotide_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+        tree,
+        records,
+        model_name="f81",
+        owner_name="F81 likelihood",
+        alpha=alpha,
+        invariant_proportion=invariant_proportion,
+        category_count=category_count,
+        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        emit_boundary_warnings=emit_boundary_warnings,
+        observation_policy=observation_policy,
+        base_frequencies=base_frequencies,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+    )
+
+
+def evaluate_f81_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_alignment(
+    tree_path: Path,
+    alignment_path: Path,
+    *,
+    alpha: float,
+    invariant_proportion: float,
+    base_frequencies: dict[str, float] | numpy.ndarray | None = None,
+    category_count: int = 4,
+    lower_invariant_proportion_bound: float | None = None,
+    upper_invariant_proportion_bound: float | None = None,
+    emit_boundary_warnings: bool = False,
+    observation_policy: str = "reject",
+    root_prior_policy: str | None = None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None = None,
+    fixed_root_state: str | None = None,
+) -> FiniteStateDiscreteGammaInvariantTreeLikelihoodReport:
+    """Evaluate one F81 +G+I likelihood from tree and alignment paths."""
+    return evaluate_f81_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+        load_tree(tree_path),
+        load_fasta_alignment(alignment_path),
+        alpha=alpha,
+        invariant_proportion=invariant_proportion,
+        base_frequencies=base_frequencies,
+        category_count=category_count,
+        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        emit_boundary_warnings=emit_boundary_warnings,
+        observation_policy=observation_policy,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+    )
+
+
 def _evaluate_f81_tree_likelihood_from_patterns(
     tree: PhyloTree,
     compressed_patterns: CompressedAlignmentSitePatterns,
@@ -215,48 +366,44 @@ def _evaluate_f81_tree_likelihood_from_patterns(
             gap_state_frequency=gap_state_frequency,
             model_name="F81",
         )
-        transition_by_node_id = {
-            child.node_id: transition_probability_matrix(
-                augmented_rate_matrix,
-                max(float(child.branch_length or 0.0), 0.0),
-            )
-            for _parent, child in tree.iter_edges()
-        }
+
+        def transition_matrix_for_branch_length(branch_length: float) -> numpy.ndarray:
+            return transition_probability_matrix(augmented_rate_matrix, branch_length)
+
+        transition_rate_matrix = augmented_rate_matrix
     else:
-        transition_by_node_id = {
-            child.node_id: f81_transition_probability_matrix(
-                max(float(child.branch_length or 0.0), 0.0),
+
+        def transition_matrix_for_branch_length(branch_length: float) -> numpy.ndarray:
+            return f81_transition_probability_matrix(
+                branch_length,
                 base_frequencies=validated_frequencies,
             )
-            for _parent, child in tree.iter_edges()
-        }
 
-    def site_log_likelihood(states: tuple[str, ...]) -> float:
-        states_by_taxon = dict(
-            zip(compressed_patterns.taxon_order, states, strict=True)
-        )
-        pruning_pass = postorder_conditional_likelihoods(
-            tree,
-            state_count=len(state_order),
-            leaf_likelihood=lambda node: resolve_dna_observation_leaf_vector(
-                states_by_taxon,
-                model_name="F81",
-                node_name=node.name,
-                observation_policy=observation_policy,
-            ),
-            transition_matrix_for_child=lambda child: transition_by_node_id[
-                child.node_id or ""
-            ],
-        )
-        return log_likelihood_from_root_prior(
-            tree,
-            pruning_pass,
+        transition_rate_matrix = f81_rate_matrix(validated_frequencies)
+    context = compile_finite_state_likelihood_context(
+        tree,
+        FiniteStateLikelihoodSurface(
+            model_name="F81",
+            state_labels=tuple(state_order),
             root_prior=root_prior,
-        )
-
-    log_likelihood = sum_compressed_site_pattern_log_likelihoods(
+            root_prior_source="provided",
+            observation_policy=observation_policy,
+            normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+            transition_rate_matrix=transition_rate_matrix,
+            transition_matrix_for_branch_length=transition_matrix_for_branch_length,
+            leaf_likelihood_vector_for_state=lambda taxon_name, observed_state: (
+                resolve_dna_observation_leaf_vector(
+                    {taxon_name: observed_state},
+                    model_name="F81",
+                    node_name=taxon_name,
+                    observation_policy=observation_policy,
+                )
+            ),
+        ),
+    )
+    log_likelihood = evaluate_finite_state_tree_log_likelihood_from_patterns(
+        context,
         compressed_patterns,
-        site_log_likelihood=site_log_likelihood,
     )
     return F81TreeLikelihoodReport(
         taxa=compressed_patterns.taxon_order,
@@ -266,6 +413,7 @@ def _evaluate_f81_tree_likelihood_from_patterns(
         tree_newick=dumps_newick(tree),
         state_count=len(state_order),
         observation_policy=observation_policy,
+        normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
         base_frequency_source=base_frequency_source,
         base_frequency_a=float(validated_frequencies[0]),
         base_frequency_c=float(validated_frequencies[1]),

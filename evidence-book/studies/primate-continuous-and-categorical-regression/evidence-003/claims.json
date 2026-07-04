@@ -1,0 +1,21 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm3-transformed-response-and-model-tests",
+      "claim_title": "Primate transformed response and model test bundle",
+      "evidence_ids": [
+        "evidence-003"
+      ],
+      "source_fragments": [
+        "log-response-repair",
+        "marginal-versus-sequential-tests"
+      ],
+      "summary": "Governed study slice for the PCM3 log-response repair, residual review, and marginal-versus-sequential testing logic.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-003",
+  "schema_version": 1,
+  "study_id": "primate-continuous-and-categorical-regression"
+}

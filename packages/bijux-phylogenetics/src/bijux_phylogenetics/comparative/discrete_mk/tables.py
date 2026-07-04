@@ -21,6 +21,8 @@ def write_discrete_mk_summary_table(path: Path, report: DiscreteMkFitReport) -> 
             "taxon_column",
             "model",
             "ascertainment_policy",
+            "uncorrected_log_likelihood",
+            "ascertainment_log_likelihood_delta",
             "ascertainment_conditioning_log_probability",
             "invariant_pattern_log_probability",
             "transform",
@@ -49,10 +51,13 @@ def write_discrete_mk_summary_table(path: Path, report: DiscreteMkFitReport) -> 
             "transform_delta_aic",
             "preferred_transform_by_aic",
             "state_ordering",
+            "ordered_states",
             "analyzed_taxon_count",
             "excluded_taxon_count",
             "observed_state_count",
             "sparse_state_count",
+            "allowed_transition_count",
+            "restricted_transition_count",
             "log_likelihood",
             "parameter_count",
             "aic",
@@ -83,6 +88,14 @@ def write_discrete_mk_summary_table(path: Path, report: DiscreteMkFitReport) -> 
                 "taxon_column": report.taxon_column,
                 "model": report.model,
                 "ascertainment_policy": report.ascertainment_policy,
+                "uncorrected_log_likelihood": format(
+                    report.uncorrected_log_likelihood,
+                    ".15g",
+                ),
+                "ascertainment_log_likelihood_delta": format(
+                    report.ascertainment_log_likelihood_delta,
+                    ".15g",
+                ),
                 "ascertainment_conditioning_log_probability": (
                     ""
                     if report.ascertainment_conditioning_log_probability is None
@@ -208,12 +221,15 @@ def write_discrete_mk_summary_table(path: Path, report: DiscreteMkFitReport) -> 
                 if transform_baseline is None
                 else transform_baseline.preferred_transform_by_aic,
                 "state_ordering": report.state_ordering,
+                "ordered_states": ",".join(report.ordered_states),
                 "analyzed_taxon_count": str(report.taxon_count),
                 "excluded_taxon_count": str(
                     len(report.input_audit.pruned_missing_value_taxa)
                 ),
                 "observed_state_count": str(len(report.input_audit.observed_states)),
                 "sparse_state_count": str(len(report.input_audit.sparse_states)),
+                "allowed_transition_count": str(report.allowed_transition_count),
+                "restricted_transition_count": str(report.restricted_transition_count),
                 "log_likelihood": format(report.log_likelihood, ".15g"),
                 "parameter_count": str(report.parameter_count),
                 "aic": format(report.aic, ".15g"),

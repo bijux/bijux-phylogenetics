@@ -13,16 +13,19 @@
   "evidence_title": "Primate missing-data accounting parity bundle",
   "freshness": {
     "governed_code_paths": [
-      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles.py"
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles/definitions.py",
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles/study_context.py",
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles/report_payloads.py",
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles/bundle_builder.py"
     ],
-    "last_generated_on": "2026-05-14",
+    "last_generated_on": "2026-07-04",
     "source_basis_locators": [
       "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
       "evidence-book/studies/primate-longevity-signal/evidence-004/missing-data-accounting-parity.json"
     ]
   },
   "limitations": [
-    "The raw workbook remains external, so the bundle records the governed missing-value contract at the processed artifact boundary."
+    "The bundle records the governed missing-value contract at the processed artifact boundary even though the original workbook copy is also checked in."
   ],
   "owner_package": "bijux-phylogenetics",
   "ownership": {

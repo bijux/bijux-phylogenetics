@@ -9,6 +9,24 @@ from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
+    EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+    solve_ctmc_stationary_distribution,
+)
+from bijux_phylogenetics.phylo.likelihood.finite_state import (
+    FiniteStateLikelihoodSurface,
+    compile_finite_state_discrete_gamma_contexts,
+    compile_finite_state_likelihood_context,
+    evaluate_finite_state_site_log_likelihood_rows_from_patterns,
+    evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture,
+    evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns,
+    evaluate_finite_state_tree_likelihood_with_invariant_mixture,
+    evaluate_finite_state_tree_likelihood_with_invariant_mixture_from_patterns,
+)
+from bijux_phylogenetics.phylo.likelihood.fit_assessment import (
+    build_likelihood_fit_assessment,
+)
 from bijux_phylogenetics.phylo.likelihood.gamma import (
     build_discrete_gamma_rate_categories,
 )
@@ -27,12 +45,18 @@ from bijux_phylogenetics.phylo.likelihood.models import (
     DiscreteGammaInvariantMixtureSiteLikelihood,
     DiscreteGammaRateCategory,
     DiscreteGammaSiteLikelihood,
+    FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
+    FiniteStateInvariantMixtureTreeLikelihoodReport,
     InvariantMixtureSiteLikelihood,
     ProteinEmpiricalBranchLengthOptimizationReport,
     ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport,
     ProteinEmpiricalDiscreteGammaTreeLikelihoodReport,
     ProteinEmpiricalInvariantMixtureTreeLikelihoodReport,
     ProteinEmpiricalMatrixTreeLikelihoodReport,
+)
+from bijux_phylogenetics.phylo.likelihood.optimization_boundary_warnings import (
+    build_branch_length_boundary_warnings,
+    build_invariant_proportion_boundary_warnings,
 )
 from bijux_phylogenetics.phylo.likelihood.parameter_search import (
     run_bounded_coordinate_likelihood_search,
@@ -44,16 +68,22 @@ from bijux_phylogenetics.phylo.likelihood.patterns import (
 )
 from bijux_phylogenetics.phylo.likelihood.protein import (
     PROTEIN_STATE_ORDER,
-    UNIFORM_PROTEIN_ROOT_PRIOR,
     evaluate_fixed_topology_protein_site_log_likelihood,
     normalize_protein_likelihood_records,
     normalize_unambiguous_protein_records,
+    protein_leaf_likelihood_vector,
+    resolve_protein_root_prior,
     validate_empirical_protein_rate_matrix,
-    validate_protein_root_prior,
+)
+from bijux_phylogenetics.phylo.likelihood.protein_empirical_models import (
+    empirical_protein_rate_matrix,
+    validate_empirical_protein_model_name,
+)
+from bijux_phylogenetics.phylo.likelihood.protein_finite_state import (
+    build_empirical_protein_finite_state_surface,
 )
 from bijux_phylogenetics.phylo.likelihood.pruning import transition_probability_matrix
 from bijux_phylogenetics.phylo.likelihood.sites import (
-    expanded_site_log_likelihood_rows_from_patterns,
     validate_site_log_likelihood_reconstruction,
 )
 from bijux_phylogenetics.phylo.likelihood.validation import (
@@ -81,12 +111,52 @@ def validate_empirical_branch_optimization_model(likelihood_model: str) -> str:
     return likelihood_model
 
 
+def _stationary_distribution_for_empirical_rate_matrix(
+    rate_matrix: numpy.ndarray,
+) -> numpy.ndarray:
+    report = solve_ctmc_stationary_distribution(
+        rate_matrix,
+        state_labels=PROTEIN_STATE_ORDER,
+    )
+    return numpy.asarray(report.probabilities, dtype=float)
+
+
+def _resolve_empirical_protein_root_prior(
+    records: list[AlignmentRecord],
+    *,
+    owner_name: str,
+    validated_rate_matrix: numpy.ndarray,
+    default_policy: str = "equal",
+    root_prior_policy: str | None,
+    root_prior: dict[str, float]
+    | numpy.ndarray
+    | list[float]
+    | tuple[float, ...]
+    | None,
+    fixed_root_state: str | None,
+) -> tuple[numpy.ndarray, str]:
+    resolved = resolve_protein_root_prior(
+        records,
+        owner_name=owner_name,
+        default_policy=default_policy,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        stationary_frequencies=_stationary_distribution_for_empirical_rate_matrix(
+            validated_rate_matrix
+        ),
+    )
+    return resolved.root_prior, resolved.root_prior_source
+
+
 def evaluate_empirical_protein_tree_likelihood(
     tree: PhyloTree,
     records: list[AlignmentRecord],
     *,
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -103,22 +173,26 @@ def evaluate_empirical_protein_tree_likelihood(
     compressed_patterns = compress_alignment_site_patterns_from_records(
         normalized_records
     )
-    if root_prior is None:
-        validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
-        root_prior_source = "uniform"
-    else:
-        validated_root_prior = validate_protein_root_prior(
-            root_prior,
-            model_name="empirical protein matrix",
-        )
-        root_prior_source = "provided"
+    validated_rate_matrix = validate_empirical_protein_rate_matrix(
+        rate_matrix,
+        model_name="empirical protein matrix",
+    )
+    validated_root_prior, root_prior_source = _resolve_empirical_protein_root_prior(
+        normalized_records,
+        owner_name="empirical protein matrix",
+        validated_rate_matrix=validated_rate_matrix,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+    )
     return _evaluate_empirical_protein_tree_likelihood_from_patterns(
         tree,
         compressed_patterns,
-        rate_matrix=rate_matrix,
+        rate_matrix=validated_rate_matrix,
         root_prior=validated_root_prior,
         root_prior_source=root_prior_source,
         matrix_label=matrix_label,
+        normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
         ambiguity_policy=ambiguity_policy,
@@ -130,7 +204,9 @@ def evaluate_empirical_protein_tree_likelihood_from_alignment(
     alignment_path: Path,
     *,
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -141,8 +217,87 @@ def evaluate_empirical_protein_tree_likelihood_from_alignment(
         load_tree(tree_path),
         load_fasta_alignment(alignment_path),
         rate_matrix=rate_matrix,
+        root_prior_policy=root_prior_policy,
         root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         matrix_label=matrix_label,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
+    )
+
+
+def evaluate_named_empirical_protein_tree_likelihood(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    model_name: str,
+    root_prior_policy: str | None = None,
+    root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
+    gap_policy: str = "treat-as-missing",
+    missing_policy: str = "treat-as-missing",
+    ambiguity_policy: str = "reject",
+) -> ProteinEmpiricalMatrixTreeLikelihoodReport:
+    """Evaluate one fixed-topology protein likelihood from one named empirical model."""
+    validated_model_name = validate_empirical_protein_model_name(model_name)
+    normalized_records = normalize_protein_likelihood_records(
+        records,
+        model_name=f"{validated_model_name} empirical protein matrix",
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
+    )
+    compressed_patterns = compress_alignment_site_patterns_from_records(
+        normalized_records
+    )
+    validated_rate_matrix = validate_empirical_protein_rate_matrix(
+        empirical_protein_rate_matrix(validated_model_name),
+        model_name=f"{validated_model_name} empirical protein matrix",
+    )
+    validated_root_prior, root_prior_source = _resolve_empirical_protein_root_prior(
+        normalized_records,
+        owner_name=f"{validated_model_name} empirical protein matrix",
+        validated_rate_matrix=validated_rate_matrix,
+        default_policy="stationary",
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+    )
+    return _evaluate_empirical_protein_tree_likelihood_from_patterns(
+        tree,
+        compressed_patterns,
+        rate_matrix=validated_rate_matrix,
+        root_prior=validated_root_prior,
+        root_prior_source=root_prior_source,
+        matrix_label=validated_model_name,
+        normalization_policy=EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        ambiguity_policy=ambiguity_policy,
+    )
+
+
+def evaluate_named_empirical_protein_tree_likelihood_from_alignment(
+    tree_path: Path,
+    alignment_path: Path,
+    *,
+    model_name: str,
+    root_prior_policy: str | None = None,
+    root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
+    gap_policy: str = "treat-as-missing",
+    missing_policy: str = "treat-as-missing",
+    ambiguity_policy: str = "reject",
+) -> ProteinEmpiricalMatrixTreeLikelihoodReport:
+    """Evaluate one fixed-topology protein likelihood from paths and one named empirical model."""
+    return evaluate_named_empirical_protein_tree_likelihood(
+        load_tree(tree_path),
+        load_fasta_alignment(alignment_path),
+        model_name=model_name,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
         ambiguity_policy=ambiguity_policy,
@@ -158,7 +313,9 @@ def optimize_empirical_protein_branch_lengths(
     alpha: float | None = None,
     invariant_proportion: float | None = None,
     category_count: int = 4,
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -191,18 +348,17 @@ def optimize_empirical_protein_branch_lengths(
     compressed_patterns = compress_alignment_site_patterns_from_records(
         normalized_records
     )
-    if root_prior is None:
-        validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
-        root_prior_source = "uniform"
-    else:
-        validated_root_prior = validate_protein_root_prior(
-            root_prior,
-            model_name="empirical protein branch optimization",
-        )
-        root_prior_source = "provided"
     validated_rate_matrix = validate_empirical_protein_rate_matrix(
         rate_matrix,
         model_name="empirical protein branch optimization",
+    )
+    validated_root_prior, root_prior_source = _resolve_empirical_protein_root_prior(
+        normalized_records,
+        owner_name="empirical protein branch optimization",
+        validated_rate_matrix=validated_rate_matrix,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
     )
     validated_alpha, validated_invariant_proportion = (
         _validate_empirical_branch_optimization_parameters(
@@ -269,6 +425,7 @@ def optimize_empirical_protein_branch_lengths(
         evaluate=evaluate_candidate,
         improvement_tolerance=improvement_tolerance,
         max_coordinate_passes=max_coordinate_passes,
+        owner_name="empirical protein branch-length fit",
     )
     optimized_branch_lengths = dict(search_result.parameter_values)
     _assign_branch_lengths(working_tree, optimized_branch_lengths)
@@ -283,6 +440,18 @@ def optimize_empirical_protein_branch_lengths(
         )
         for node in edge_nodes
     ]
+    boundary_warnings = build_branch_length_boundary_warnings(
+        branches,
+        lower_branch_length_bound=lower_branch_length_bound,
+        upper_branch_length_bound=upper_branch_length_bound,
+    )
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=compressed_patterns.alignment_length,
+        pattern_count=compressed_patterns.pattern_count,
+        optimized_parameter_count=len(branches),
+        converged=search_result.converged,
+        boundary_warnings=boundary_warnings,
+    )
     return ProteinEmpiricalBranchLengthOptimizationReport(
         taxa=compressed_patterns.taxon_order,
         site_count=compressed_patterns.alignment_length,
@@ -303,9 +472,11 @@ def optimize_empirical_protein_branch_lengths(
         optimization_pass_count=search_result.optimization_pass_count,
         function_evaluation_count=search_result.function_evaluation_count,
         converged=search_result.converged,
+        fit_assessment=fit_assessment,
         lower_branch_length_bound=lower_branch_length_bound,
         upper_branch_length_bound=upper_branch_length_bound,
         branches=branches,
+        parameter_diagnostics=search_result.parameter_diagnostics,
     )
 
 
@@ -318,7 +489,9 @@ def optimize_empirical_protein_branch_lengths_from_alignment(
     alpha: float | None = None,
     invariant_proportion: float | None = None,
     category_count: int = 4,
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -336,7 +509,9 @@ def optimize_empirical_protein_branch_lengths_from_alignment(
         alpha=alpha,
         invariant_proportion=invariant_proportion,
         category_count=category_count,
+        root_prior_policy=root_prior_policy,
         root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         matrix_label=matrix_label,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
@@ -354,7 +529,9 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma(
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
     alpha: float,
     category_count: int = 4,
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -369,20 +546,23 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma(
     compressed_patterns = compress_alignment_site_patterns_from_records(
         normalized_records
     )
-    if root_prior is None:
-        validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
-        root_prior_source = "uniform"
-    else:
-        validated_root_prior = validate_protein_root_prior(
-            root_prior,
-            model_name="empirical protein matrix +G",
-        )
-        root_prior_source = "provided"
+    validated_rate_matrix = validate_empirical_protein_rate_matrix(
+        rate_matrix,
+        model_name="empirical protein matrix +G",
+    )
+    validated_root_prior, root_prior_source = _resolve_empirical_protein_root_prior(
+        normalized_records,
+        owner_name="empirical protein matrix +G",
+        validated_rate_matrix=validated_rate_matrix,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+    )
     return (
         _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_patterns(
             tree,
             compressed_patterns,
-            rate_matrix=rate_matrix,
+            rate_matrix=validated_rate_matrix,
             alpha=alpha,
             category_count=category_count,
             root_prior=validated_root_prior,
@@ -401,7 +581,9 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignmen
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
     alpha: float,
     category_count: int = 4,
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -413,7 +595,9 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_alignmen
         rate_matrix=rate_matrix,
         alpha=alpha,
         category_count=category_count,
+        root_prior_policy=root_prior_policy,
         root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         matrix_label=matrix_label,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
@@ -427,7 +611,9 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
     alpha: float,
     category_count: int = 4,
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     initial_invariant_proportion: float = 0.1,
     lower_invariant_proportion_bound: float = 0.0,
     upper_invariant_proportion_bound: float = 0.95,
@@ -445,15 +631,6 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
     compressed_patterns = compress_alignment_site_patterns_from_records(
         normalized_records
     )
-    if root_prior is None:
-        validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
-        root_prior_source = "uniform"
-    else:
-        validated_root_prior = validate_protein_root_prior(
-            root_prior,
-            model_name="empirical protein matrix +G+I",
-        )
-        root_prior_source = "provided"
     (
         validated_initial_invariant_proportion,
         validated_lower_invariant_proportion_bound,
@@ -468,61 +645,90 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         rate_matrix,
         model_name="empirical protein matrix +G+I",
     )
+    surface = build_empirical_protein_finite_state_surface(
+        normalized_records,
+        rate_matrix=validated_rate_matrix,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        matrix_label=matrix_label,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+    )
     categories = build_discrete_gamma_rate_categories(
         alpha=alpha,
         category_count=category_count,
+    )
+    contexts = compile_finite_state_discrete_gamma_contexts(
+        tree,
+        surface,
+        categories=categories,
     )
 
     def evaluate_candidate(
         invariant_proportion: float,
     ) -> tuple[ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport, float]:
-        report = _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns(
-            tree,
+        finite_state_report = evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns(
+            contexts,
             compressed_patterns,
-            validated_rate_matrix=validated_rate_matrix,
+            surface=surface,
             alpha=alpha,
-            categories=categories,
-            root_prior=validated_root_prior,
-            root_prior_source=root_prior_source,
+            category_rates=categories,
+            invariant_proportion=invariant_proportion,
+            lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
+            upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
+            emit_boundary_warnings=False,
+        )
+        report = _protein_empirical_discrete_gamma_invariant_report_from_finite_state(
+            finite_state_report,
+            alpha=alpha,
             matrix_label=matrix_label,
             gap_policy=gap_policy,
             missing_policy=missing_policy,
-            invariant_proportion=invariant_proportion,
             initial_invariant_proportion=validated_initial_invariant_proportion,
             lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
             upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
             function_evaluation_count=0,
             converged=False,
-            emit_boundary_warnings=False,
+            initial_log_likelihood=finite_state_report.log_likelihood,
         )
         return report, report.log_likelihood
 
-    initial_report, initial_log_likelihood = evaluate_candidate(
+    _initial_report, initial_log_likelihood = evaluate_candidate(
         validated_initial_invariant_proportion
     )
     search_result = run_bounded_likelihood_search(
         lower_bound=validated_lower_invariant_proportion_bound,
         upper_bound=validated_upper_invariant_proportion_bound,
         evaluate=evaluate_candidate,
+        parameter_name="invariant_proportion",
+        owner_name="empirical protein gamma-invariant fit",
     )
-    optimized_report = _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns(
-        tree,
+    optimized_finite_state_report = evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns(
+        contexts,
         compressed_patterns,
-        validated_rate_matrix=validated_rate_matrix,
+        surface=surface,
         alpha=alpha,
-        categories=categories,
-        root_prior=validated_root_prior,
-        root_prior_source=root_prior_source,
-        matrix_label=matrix_label,
-        gap_policy=gap_policy,
-        missing_policy=missing_policy,
+        category_rates=categories,
         invariant_proportion=search_result.parameter_value,
-        initial_invariant_proportion=validated_initial_invariant_proportion,
         lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
-        function_evaluation_count=search_result.function_evaluation_count,
-        converged=search_result.converged,
         emit_boundary_warnings=True,
+    )
+    optimized_report = (
+        _protein_empirical_discrete_gamma_invariant_report_from_finite_state(
+            optimized_finite_state_report,
+            alpha=alpha,
+            matrix_label=matrix_label,
+            gap_policy=gap_policy,
+            missing_policy=missing_policy,
+            initial_invariant_proportion=validated_initial_invariant_proportion,
+            lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
+            upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
+            function_evaluation_count=search_result.function_evaluation_count,
+            converged=search_result.converged,
+            initial_log_likelihood=initial_log_likelihood,
+        )
     )
     return ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport(
         taxa=optimized_report.taxa,
@@ -535,6 +741,7 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         root_prior_source=optimized_report.root_prior_source,
         gap_policy=optimized_report.gap_policy,
         missing_policy=optimized_report.missing_policy,
+        normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
         alpha=optimized_report.alpha,
         category_count=optimized_report.category_count,
         category_rates=optimized_report.category_rates,
@@ -544,6 +751,7 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         log_likelihood=optimized_report.log_likelihood,
         function_evaluation_count=search_result.function_evaluation_count,
         converged=search_result.converged,
+        fit_assessment=optimized_report.fit_assessment,
         lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
         hit_lower_invariant_proportion_boundary=(
@@ -553,6 +761,8 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
             optimized_report.hit_upper_invariant_proportion_boundary
         ),
         boundary_warnings=list(optimized_report.boundary_warnings),
+        boundary_warning_rows=list(optimized_report.boundary_warning_rows),
+        optimizer_diagnostics=search_result.diagnostics,
         site_likelihoods=optimized_report.site_likelihoods,
     )
 
@@ -564,7 +774,9 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
     alpha: float,
     category_count: int = 4,
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     initial_invariant_proportion: float = 0.1,
     lower_invariant_proportion_bound: float = 0.0,
     upper_invariant_proportion_bound: float = 0.95,
@@ -579,7 +791,9 @@ def optimize_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         rate_matrix=rate_matrix,
         alpha=alpha,
         category_count=category_count,
+        root_prior_policy=root_prior_policy,
         root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         initial_invariant_proportion=initial_invariant_proportion,
         lower_invariant_proportion_bound=lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=upper_invariant_proportion_bound,
@@ -597,7 +811,12 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
     alpha: float,
     invariant_proportion: float,
     category_count: int = 4,
+    lower_invariant_proportion_bound: float | None = None,
+    upper_invariant_proportion_bound: float | None = None,
+    emit_boundary_warnings: bool = False,
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -612,15 +831,6 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
     compressed_patterns = compress_alignment_site_patterns_from_records(
         normalized_records
     )
-    if root_prior is None:
-        validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
-        root_prior_source = "uniform"
-    else:
-        validated_root_prior = validate_protein_root_prior(
-            root_prior,
-            model_name="empirical protein matrix +G+I",
-        )
-        root_prior_source = "provided"
     validated_invariant_proportion = validate_invariant_proportion(
         invariant_proportion,
         model_name="empirical protein matrix +G+I",
@@ -629,28 +839,49 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         rate_matrix,
         model_name="empirical protein matrix +G+I",
     )
-    categories = build_discrete_gamma_rate_categories(
-        alpha=alpha,
-        category_count=category_count,
-    )
-    return _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant_mixture_from_patterns(
-        tree,
-        compressed_patterns,
-        validated_rate_matrix=validated_rate_matrix,
-        alpha=alpha,
-        categories=categories,
-        root_prior=validated_root_prior,
-        root_prior_source=root_prior_source,
+    surface = build_empirical_protein_finite_state_surface(
+        normalized_records,
+        rate_matrix=validated_rate_matrix,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         matrix_label=matrix_label,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
-        invariant_proportion=validated_invariant_proportion,
+    )
+    finite_state_report = (
+        evaluate_finite_state_tree_likelihood_with_discrete_gamma_and_invariant_mixture(
+            tree,
+            compressed_patterns,
+            surface=surface,
+            alpha=alpha,
+            category_count=category_count,
+            invariant_proportion=validated_invariant_proportion,
+            lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+            upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+            emit_boundary_warnings=emit_boundary_warnings,
+        )
+    )
+    return _protein_empirical_discrete_gamma_invariant_report_from_finite_state(
+        finite_state_report,
+        alpha=alpha,
+        matrix_label=matrix_label,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
         initial_invariant_proportion=validated_invariant_proportion,
-        lower_invariant_proportion_bound=validated_invariant_proportion,
-        upper_invariant_proportion_bound=validated_invariant_proportion,
+        lower_invariant_proportion_bound=(
+            validated_invariant_proportion
+            if lower_invariant_proportion_bound is None
+            else lower_invariant_proportion_bound
+        ),
+        upper_invariant_proportion_bound=(
+            validated_invariant_proportion
+            if upper_invariant_proportion_bound is None
+            else upper_invariant_proportion_bound
+        ),
         function_evaluation_count=1,
         converged=True,
-        emit_boundary_warnings=False,
+        initial_log_likelihood=finite_state_report.log_likelihood,
     )
 
 
@@ -662,7 +893,12 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
     alpha: float,
     invariant_proportion: float,
     category_count: int = 4,
+    lower_invariant_proportion_bound: float | None = None,
+    upper_invariant_proportion_bound: float | None = None,
+    emit_boundary_warnings: bool = False,
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -675,7 +911,12 @@ def evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invariant
         alpha=alpha,
         invariant_proportion=invariant_proportion,
         category_count=category_count,
+        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        emit_boundary_warnings=emit_boundary_warnings,
+        root_prior_policy=root_prior_policy,
         root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         matrix_label=matrix_label,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
@@ -687,7 +928,9 @@ def optimize_empirical_protein_tree_likelihood_with_invariant_mixture(
     records: list[AlignmentRecord],
     *,
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     initial_invariant_proportion: float = 0.1,
     lower_invariant_proportion_bound: float = 0.0,
     upper_invariant_proportion_bound: float = 0.95,
@@ -705,15 +948,6 @@ def optimize_empirical_protein_tree_likelihood_with_invariant_mixture(
     compressed_patterns = compress_alignment_site_patterns_from_records(
         normalized_records
     )
-    if root_prior is None:
-        validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
-        root_prior_source = "uniform"
-    else:
-        validated_root_prior = validate_protein_root_prior(
-            root_prior,
-            model_name="empirical protein matrix +I",
-        )
-        root_prior_source = "provided"
     (
         validated_initial_invariant_proportion,
         validated_lower_invariant_proportion_bound,
@@ -728,32 +962,39 @@ def optimize_empirical_protein_tree_likelihood_with_invariant_mixture(
         rate_matrix,
         model_name="empirical protein matrix +I",
     )
-    transition_by_node_id = {
-        child.node_id: transition_probability_matrix(
-            validated_rate_matrix,
-            max(float(child.branch_length or 0.0), 0.0),
-        )
-        for _parent, child in tree.iter_edges()
-    }
+    surface = build_empirical_protein_finite_state_surface(
+        normalized_records,
+        rate_matrix=validated_rate_matrix,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
+        matrix_label=matrix_label,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+    )
+    context = compile_finite_state_likelihood_context(tree, surface)
 
     def evaluate_candidate(
         invariant_proportion: float,
     ) -> tuple[ProteinEmpiricalInvariantMixtureTreeLikelihoodReport, float]:
-        report = _evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_patterns(
-            tree,
-            compressed_patterns,
-            root_prior=validated_root_prior,
-            root_prior_source=root_prior_source,
+        finite_state_report = (
+            evaluate_finite_state_tree_likelihood_with_invariant_mixture_from_patterns(
+                context,
+                compressed_patterns,
+                invariant_proportion=invariant_proportion,
+            )
+        )
+        report = _protein_empirical_invariant_mixture_report_from_finite_state(
+            finite_state_report,
             matrix_label=matrix_label,
             gap_policy=gap_policy,
             missing_policy=missing_policy,
-            invariant_proportion=invariant_proportion,
             initial_invariant_proportion=validated_initial_invariant_proportion,
             lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
             upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
-            transition_by_node_id=transition_by_node_id,
             function_evaluation_count=0,
             converged=False,
+            initial_log_likelihood=finite_state_report.log_likelihood,
         )
         return report, report.log_likelihood
 
@@ -764,8 +1005,31 @@ def optimize_empirical_protein_tree_likelihood_with_invariant_mixture(
         lower_bound=validated_lower_invariant_proportion_bound,
         upper_bound=validated_upper_invariant_proportion_bound,
         evaluate=evaluate_candidate,
+        parameter_name="invariant_proportion",
+        owner_name="empirical protein invariant-proportion fit",
     )
-    optimized_report = search_result.payload
+    optimized_finite_state_report = (
+        evaluate_finite_state_tree_likelihood_with_invariant_mixture_from_patterns(
+            context,
+            compressed_patterns,
+            invariant_proportion=search_result.parameter_value,
+            lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
+            upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
+            emit_boundary_warnings=True,
+        )
+    )
+    optimized_report = _protein_empirical_invariant_mixture_report_from_finite_state(
+        optimized_finite_state_report,
+        matrix_label=matrix_label,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        initial_invariant_proportion=validated_initial_invariant_proportion,
+        lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
+        function_evaluation_count=search_result.function_evaluation_count,
+        converged=search_result.converged,
+        initial_log_likelihood=initial_log_likelihood,
+    )
     return ProteinEmpiricalInvariantMixtureTreeLikelihoodReport(
         taxa=optimized_report.taxa,
         site_count=optimized_report.site_count,
@@ -777,14 +1041,25 @@ def optimize_empirical_protein_tree_likelihood_with_invariant_mixture(
         root_prior_source=optimized_report.root_prior_source,
         gap_policy=optimized_report.gap_policy,
         missing_policy=optimized_report.missing_policy,
+        normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
         initial_invariant_proportion=validated_initial_invariant_proportion,
         invariant_proportion=optimized_report.invariant_proportion,
         initial_log_likelihood=initial_log_likelihood,
         log_likelihood=optimized_report.log_likelihood,
         function_evaluation_count=search_result.function_evaluation_count,
         converged=search_result.converged,
+        fit_assessment=optimized_report.fit_assessment,
         lower_invariant_proportion_bound=validated_lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=validated_upper_invariant_proportion_bound,
+        hit_lower_invariant_proportion_boundary=(
+            optimized_report.hit_lower_invariant_proportion_boundary
+        ),
+        hit_upper_invariant_proportion_boundary=(
+            optimized_report.hit_upper_invariant_proportion_boundary
+        ),
+        boundary_warnings=list(optimized_report.boundary_warnings),
+        boundary_warning_rows=list(optimized_report.boundary_warning_rows),
+        optimizer_diagnostics=search_result.diagnostics,
         site_likelihoods=optimized_report.site_likelihoods,
     )
 
@@ -794,7 +1069,9 @@ def optimize_empirical_protein_tree_likelihood_with_invariant_mixture_from_align
     alignment_path: Path,
     *,
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     initial_invariant_proportion: float = 0.1,
     lower_invariant_proportion_bound: float = 0.0,
     upper_invariant_proportion_bound: float = 0.95,
@@ -807,7 +1084,9 @@ def optimize_empirical_protein_tree_likelihood_with_invariant_mixture_from_align
         load_tree(tree_path),
         load_fasta_alignment(alignment_path),
         rate_matrix=rate_matrix,
+        root_prior_policy=root_prior_policy,
         root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         initial_invariant_proportion=initial_invariant_proportion,
         lower_invariant_proportion_bound=lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=upper_invariant_proportion_bound,
@@ -823,7 +1102,9 @@ def evaluate_empirical_protein_tree_likelihood_with_invariant_mixture(
     *,
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
     invariant_proportion: float,
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -838,15 +1119,6 @@ def evaluate_empirical_protein_tree_likelihood_with_invariant_mixture(
     compressed_patterns = compress_alignment_site_patterns_from_records(
         normalized_records
     )
-    if root_prior is None:
-        validated_root_prior = UNIFORM_PROTEIN_ROOT_PRIOR
-        root_prior_source = "uniform"
-    else:
-        validated_root_prior = validate_protein_root_prior(
-            root_prior,
-            model_name="empirical protein matrix +I",
-        )
-        root_prior_source = "provided"
     validated_invariant_proportion = validate_invariant_proportion(
         invariant_proportion,
         model_name="empirical protein matrix +I",
@@ -855,28 +1127,33 @@ def evaluate_empirical_protein_tree_likelihood_with_invariant_mixture(
         rate_matrix,
         model_name="empirical protein matrix +I",
     )
-    transition_by_node_id = {
-        child.node_id: transition_probability_matrix(
-            validated_rate_matrix,
-            max(float(child.branch_length or 0.0), 0.0),
-        )
-        for _parent, child in tree.iter_edges()
-    }
-    return _evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_patterns(
-        tree,
-        compressed_patterns,
-        root_prior=validated_root_prior,
-        root_prior_source=root_prior_source,
+    surface = build_empirical_protein_finite_state_surface(
+        normalized_records,
+        rate_matrix=validated_rate_matrix,
+        root_prior_policy=root_prior_policy,
+        root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         matrix_label=matrix_label,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
+    )
+    finite_state_report = evaluate_finite_state_tree_likelihood_with_invariant_mixture(
+        tree,
+        compressed_patterns,
+        surface=surface,
         invariant_proportion=validated_invariant_proportion,
+    )
+    return _protein_empirical_invariant_mixture_report_from_finite_state(
+        finite_state_report,
+        matrix_label=matrix_label,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
         initial_invariant_proportion=validated_invariant_proportion,
         lower_invariant_proportion_bound=validated_invariant_proportion,
         upper_invariant_proportion_bound=validated_invariant_proportion,
-        transition_by_node_id=transition_by_node_id,
         function_evaluation_count=1,
         converged=True,
+        initial_log_likelihood=finite_state_report.log_likelihood,
     )
 
 
@@ -886,7 +1163,9 @@ def evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_align
     *,
     rate_matrix: numpy.ndarray | list[list[float]] | tuple[tuple[float, ...], ...],
     invariant_proportion: float,
+    root_prior_policy: str | None = None,
     root_prior: numpy.ndarray | list[float] | tuple[float, ...] | None = None,
+    fixed_root_state: str | None = None,
     matrix_label: str = "empirical",
     gap_policy: str = "treat-as-missing",
     missing_policy: str = "treat-as-missing",
@@ -897,10 +1176,130 @@ def evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_align
         load_fasta_alignment(alignment_path),
         rate_matrix=rate_matrix,
         invariant_proportion=invariant_proportion,
+        root_prior_policy=root_prior_policy,
         root_prior=root_prior,
+        fixed_root_state=fixed_root_state,
         matrix_label=matrix_label,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
+    )
+
+
+def _protein_empirical_invariant_mixture_report_from_finite_state(
+    report: FiniteStateInvariantMixtureTreeLikelihoodReport,
+    *,
+    matrix_label: str,
+    gap_policy: str,
+    missing_policy: str,
+    initial_invariant_proportion: float,
+    lower_invariant_proportion_bound: float,
+    upper_invariant_proportion_bound: float,
+    function_evaluation_count: int,
+    converged: bool,
+    initial_log_likelihood: float,
+) -> ProteinEmpiricalInvariantMixtureTreeLikelihoodReport:
+    normalization_policy = (
+        CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY
+        if report.normalization_policy is None
+        else report.normalization_policy
+    )
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=report.site_count,
+        pattern_count=report.pattern_count,
+        optimized_parameter_count=1,
+        converged=converged,
+        boundary_warnings=report.boundary_warning_rows,
+    )
+    return ProteinEmpiricalInvariantMixtureTreeLikelihoodReport(
+        taxa=report.taxa,
+        site_count=report.site_count,
+        pattern_count=report.pattern_count,
+        compression_used=report.compression_used,
+        tree_newick=report.tree_newick,
+        state_count=report.state_count,
+        matrix_label=matrix_label,
+        root_prior_source=report.root_prior_source,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        normalization_policy=normalization_policy,
+        initial_invariant_proportion=initial_invariant_proportion,
+        invariant_proportion=report.invariant_proportion,
+        initial_log_likelihood=initial_log_likelihood,
+        log_likelihood=report.log_likelihood,
+        function_evaluation_count=function_evaluation_count,
+        converged=converged,
+        fit_assessment=fit_assessment,
+        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        hit_lower_invariant_proportion_boundary=(
+            report.hit_lower_invariant_proportion_boundary
+        ),
+        hit_upper_invariant_proportion_boundary=(
+            report.hit_upper_invariant_proportion_boundary
+        ),
+        boundary_warnings=list(report.boundary_warnings),
+        boundary_warning_rows=list(report.boundary_warning_rows),
+        optimizer_diagnostics=None,
+        site_likelihoods=report.site_likelihoods,
+    )
+
+
+def _protein_empirical_discrete_gamma_invariant_report_from_finite_state(
+    report: FiniteStateDiscreteGammaInvariantTreeLikelihoodReport,
+    *,
+    alpha: float,
+    matrix_label: str,
+    gap_policy: str,
+    missing_policy: str,
+    initial_invariant_proportion: float,
+    lower_invariant_proportion_bound: float,
+    upper_invariant_proportion_bound: float,
+    function_evaluation_count: int,
+    converged: bool,
+    initial_log_likelihood: float,
+) -> ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport:
+    normalization_policy = (
+        CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY
+        if report.normalization_policy is None
+        else report.normalization_policy
+    )
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=report.site_count,
+        pattern_count=report.pattern_count,
+        optimized_parameter_count=1,
+        converged=converged,
+        boundary_warnings=report.boundary_warning_rows,
+    )
+    return ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport(
+        taxa=report.taxa,
+        site_count=report.site_count,
+        pattern_count=report.pattern_count,
+        compression_used=report.compression_used,
+        tree_newick=report.tree_newick,
+        state_count=report.state_count,
+        matrix_label=matrix_label,
+        root_prior_source=report.root_prior_source,
+        gap_policy=gap_policy,
+        missing_policy=missing_policy,
+        normalization_policy=normalization_policy,
+        alpha=alpha,
+        category_count=report.category_count,
+        category_rates=report.category_rates,
+        initial_invariant_proportion=initial_invariant_proportion,
+        invariant_proportion=report.invariant_proportion,
+        initial_log_likelihood=initial_log_likelihood,
+        log_likelihood=report.log_likelihood,
+        function_evaluation_count=function_evaluation_count,
+        converged=converged,
+        fit_assessment=fit_assessment,
+        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        hit_lower_invariant_proportion_boundary=report.hit_lower_invariant_proportion_boundary,
+        hit_upper_invariant_proportion_boundary=report.hit_upper_invariant_proportion_boundary,
+        boundary_warnings=list(report.boundary_warnings),
+        boundary_warning_rows=list(report.boundary_warning_rows),
+        optimizer_diagnostics=None,
+        site_likelihoods=report.site_likelihoods,
     )
 
 
@@ -912,6 +1311,7 @@ def _evaluate_empirical_protein_tree_likelihood_from_patterns(
     root_prior: numpy.ndarray,
     root_prior_source: str,
     matrix_label: str,
+    normalization_policy: str,
     gap_policy: str,
     missing_policy: str,
     ambiguity_policy: str,
@@ -920,31 +1320,37 @@ def _evaluate_empirical_protein_tree_likelihood_from_patterns(
         rate_matrix,
         model_name="empirical protein matrix",
     )
-    transition_by_node_id = {
-        child.node_id: transition_probability_matrix(
-            validated_rate_matrix,
-            max(float(child.branch_length or 0.0), 0.0),
-        )
-        for _parent, child in tree.iter_edges()
-    }
-    site_log_likelihoods, log_likelihood = (
-        expanded_site_log_likelihood_rows_from_patterns(
-            compressed_patterns,
-            site_log_likelihood=lambda states: (
-                evaluate_fixed_topology_protein_site_log_likelihood(
-                    tree,
-                    states,
-                    taxon_order=compressed_patterns.taxon_order,
+    context = compile_finite_state_likelihood_context(
+        tree,
+        FiniteStateLikelihoodSurface(
+            model_name="empirical protein matrix",
+            state_labels=PROTEIN_STATE_ORDER,
+            root_prior=root_prior,
+            root_prior_source=root_prior_source,
+            observation_policy=(
+                f"gap={gap_policy};missing={missing_policy};ambiguity={ambiguity_policy}"
+            ),
+            normalization_policy=normalization_policy,
+            transition_rate_matrix=validated_rate_matrix,
+            transition_matrix_for_branch_length=lambda branch_length: (
+                transition_probability_matrix(validated_rate_matrix, branch_length)
+            ),
+            leaf_likelihood_vector_for_state=lambda taxon_name, observed_state: (
+                protein_leaf_likelihood_vector(
+                    {taxon_name: observed_state},
                     model_name="empirical protein matrix",
-                    root_prior=root_prior,
-                    transition_matrix_for_child=lambda child: transition_by_node_id[
-                        child.node_id or ""
-                    ],
+                    node_name=taxon_name,
                     gap_policy=gap_policy,
                     missing_policy=missing_policy,
                     ambiguity_policy=ambiguity_policy,
                 )
             ),
+        ),
+    )
+    site_log_likelihoods, log_likelihood = (
+        evaluate_finite_state_site_log_likelihood_rows_from_patterns(
+            context,
+            compressed_patterns,
         )
     )
     validate_site_log_likelihood_reconstruction(
@@ -966,6 +1372,7 @@ def _evaluate_empirical_protein_tree_likelihood_from_patterns(
         gap_policy=gap_policy,
         missing_policy=missing_policy,
         ambiguity_policy=ambiguity_policy,
+        normalization_policy=normalization_policy,
         log_likelihood=log_likelihood,
         site_log_likelihoods=site_log_likelihoods,
     )
@@ -1039,6 +1446,7 @@ def _evaluate_empirical_protein_branch_optimization_objective(
             root_prior=root_prior,
             root_prior_source="provided",
             matrix_label="empirical",
+            normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
             gap_policy=gap_policy,
             missing_policy=missing_policy,
             ambiguity_policy="reject",
@@ -1303,6 +1711,7 @@ def _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_from_pattern
         root_prior_source=root_prior_source,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
+        normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
         alpha=alpha,
         category_count=category_count,
         category_rates=list(categories),
@@ -1406,6 +1815,22 @@ def _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invarian
         hit_lower_invariant_proportion_boundary = False
         hit_upper_invariant_proportion_boundary = False
         boundary_warnings = []
+    boundary_warning_rows = (
+        build_invariant_proportion_boundary_warnings(
+            invariant_proportion=invariant_proportion,
+            lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+            upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        )
+        if emit_boundary_warnings
+        else []
+    )
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=compressed_patterns.alignment_length,
+        pattern_count=compressed_patterns.pattern_count,
+        optimized_parameter_count=1,
+        converged=converged,
+        boundary_warnings=boundary_warning_rows,
+    )
     return ProteinEmpiricalDiscreteGammaInvariantTreeLikelihoodReport(
         taxa=compressed_patterns.taxon_order,
         site_count=compressed_patterns.alignment_length,
@@ -1417,6 +1842,7 @@ def _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invarian
         root_prior_source=root_prior_source,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
+        normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
         alpha=alpha,
         category_count=len(categories),
         category_rates=list(categories),
@@ -1426,11 +1852,14 @@ def _evaluate_empirical_protein_tree_likelihood_with_discrete_gamma_and_invarian
         log_likelihood=total_log_likelihood,
         function_evaluation_count=function_evaluation_count,
         converged=converged,
+        fit_assessment=fit_assessment,
         lower_invariant_proportion_bound=lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=upper_invariant_proportion_bound,
         hit_lower_invariant_proportion_boundary=hit_lower_invariant_proportion_boundary,
         hit_upper_invariant_proportion_boundary=hit_upper_invariant_proportion_boundary,
         boundary_warnings=boundary_warnings,
+        boundary_warning_rows=boundary_warning_rows,
+        optimizer_diagnostics=None,
         site_likelihoods=site_likelihoods,
     )
 
@@ -1502,6 +1931,18 @@ def _evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_patt
         expected_pattern_count=compressed_patterns.pattern_count,
         owner_name="empirical protein matrix +I likelihood",
     )
+    boundary_warning_rows = build_invariant_proportion_boundary_warnings(
+        invariant_proportion=invariant_proportion,
+        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+    )
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=compressed_patterns.alignment_length,
+        pattern_count=compressed_patterns.pattern_count,
+        optimized_parameter_count=1,
+        converged=converged,
+        boundary_warnings=boundary_warning_rows,
+    )
     return ProteinEmpiricalInvariantMixtureTreeLikelihoodReport(
         taxa=compressed_patterns.taxon_order,
         site_count=compressed_patterns.alignment_length,
@@ -1513,13 +1954,24 @@ def _evaluate_empirical_protein_tree_likelihood_with_invariant_mixture_from_patt
         root_prior_source=root_prior_source,
         gap_policy=gap_policy,
         missing_policy=missing_policy,
+        normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
         initial_invariant_proportion=initial_invariant_proportion,
         invariant_proportion=invariant_proportion,
         initial_log_likelihood=total_log_likelihood,
         log_likelihood=total_log_likelihood,
         function_evaluation_count=function_evaluation_count,
         converged=converged,
+        fit_assessment=fit_assessment,
         lower_invariant_proportion_bound=lower_invariant_proportion_bound,
         upper_invariant_proportion_bound=upper_invariant_proportion_bound,
+        hit_lower_invariant_proportion_boundary=any(
+            warning.boundary_side == "lower" for warning in boundary_warning_rows
+        ),
+        hit_upper_invariant_proportion_boundary=any(
+            warning.boundary_side == "upper" for warning in boundary_warning_rows
+        ),
+        boundary_warnings=[warning.message for warning in boundary_warning_rows],
+        boundary_warning_rows=boundary_warning_rows,
+        optimizer_diagnostics=None,
         site_likelihoods=site_likelihoods,
     )

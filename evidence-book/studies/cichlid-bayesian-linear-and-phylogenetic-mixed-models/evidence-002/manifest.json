@@ -1,0 +1,62 @@
+{
+  "claim_ids": [
+    "pcm4-gaussian-baseline-regression"
+  ],
+  "claim_tags": [
+    "scientific-validation",
+    "cichlid",
+    "gaussian-model",
+    "baseline-regression"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-002",
+  "evidence_title": "Cichlid Gaussian baseline regression bundle",
+  "freshness": {
+    "governed_code_paths": [
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/scientific_validation_bundles.py",
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/comparative",
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/phylo"
+    ],
+    "last_generated_on": "2026-07-04",
+    "source_basis_locators": [
+      "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/provenance/lund-course-sources.json",
+      "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/registry.json",
+      "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/reference/README.md"
+    ]
+  },
+  "limitations": [
+    "The baseline Gaussian fit is documented as its own slice, but this bundle does not yet claim checked-in lecture-parity coefficients."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "ownership": {
+    "analytical_surfaces": [
+      "baseline-regression",
+      "gaussian-model"
+    ],
+    "owner_package": "bijux-phylogenetics"
+  },
+  "schema_version": 1,
+  "source_basis": [
+    {
+      "kind": "repository-reference",
+      "label": "source-1",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/provenance/lund-course-sources.json"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "source-2",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/registry.json"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "source-3",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/reference/README.md"
+    }
+  ],
+  "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+  "summary": "Governed study slice for the PCM4 non-phylogenetic Gaussian baseline regression used before mixed-model sampling.",
+  "verdict": {
+    "status": "not_comparable",
+    "summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM4 posterior workflow."
+  }
+}

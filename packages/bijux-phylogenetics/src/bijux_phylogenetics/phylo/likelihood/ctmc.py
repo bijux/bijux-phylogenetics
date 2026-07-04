@@ -8,6 +8,9 @@ import numpy
 
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
+EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY = "expected-substitution-rate-one"
+CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY = "preserve-caller-rate-scale"
+
 
 @dataclass(frozen=True, slots=True)
 class ValidatedCtmcRateMatrix:
@@ -632,7 +635,9 @@ def _first_positive_diagonal_index(
 
 
 __all__ = [
+    "CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY",
     "compute_ctmc_expected_substitution_rate",
+    "EXPECTED_SUBSTITUTION_RATE_NORMALIZATION_POLICY",
     "normalize_ctmc_rate_matrix_by_expected_substitution_rate",
     "SolvedCtmcStationaryDistribution",
     "ValidatedCtmcRateMatrix",

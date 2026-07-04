@@ -19,6 +19,9 @@ from .definitions import (
     FRAGMENT_DEFINITIONS as FRAGMENT_DEFINITIONS,
 )
 from .definitions import (
+    PCM2_DATASET_ROOT as PCM2_DATASET_ROOT,
+)
+from .definitions import (
     PCM2_REFERENCE_SCRIPT_PATH as PCM2_REFERENCE_SCRIPT_PATH,
 )
 from .definitions import (
@@ -26,9 +29,6 @@ from .definitions import (
 )
 from .definitions import (
     STUDY_ID as STUDY_ID,
-)
-from .definitions import (
-    STUDY_ONE_REFERENCE_ROOT as STUDY_ONE_REFERENCE_ROOT,
 )
 from .definitions import (
     SUMMARY_EVIDENCE_ID as SUMMARY_EVIDENCE_ID,
@@ -69,10 +69,10 @@ __all__ = [
     "CLAIM_DEFINITIONS",
     "FAMILY_DEFINITIONS",
     "FRAGMENT_DEFINITIONS",
+    "PCM2_DATASET_ROOT",
     "PCM2_REFERENCE_SCRIPT_PATH",
     "PCM2_SOURCE_LOCATOR",
     "STUDY_ID",
-    "STUDY_ONE_REFERENCE_ROOT",
     "SUMMARY_EVIDENCE_ID",
     "build_primate_pgls_signal_bundle",
     "build_primate_pgls_signal_bundles",

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bijux_phylogenetics.phylo.alignment import DnaBinAlignment
+from bijux_phylogenetics.phylo.alignment import AlignmentRecord, DnaBinAlignment
 from bijux_phylogenetics.phylo.topology.bionj import (
     build_bionj_tree as _build_bionj_tree_impl,
 )
@@ -278,6 +278,25 @@ def compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment(
 
     return compute_impl(
         alignment,
+        model=model,
+        gap_handling=gap_handling,
+        ambiguity_policy=ambiguity_policy,
+    )
+
+
+def compute_pairwise_genetic_distance_matrix_from_records(
+    records: list[AlignmentRecord],
+    *,
+    model: DistanceModel = "p-distance",
+    gap_handling: GapHandlingMode = "pairwise-deletion",
+    ambiguity_policy: AmbiguityPolicy = "ignore",
+) -> GeneticDistanceMatrix:
+    from .matrix import (
+        compute_pairwise_genetic_distance_matrix_from_records as compute_impl,
+    )
+
+    return compute_impl(
+        records,
         model=model,
         gap_handling=gap_handling,
         ambiguity_policy=ambiguity_policy,

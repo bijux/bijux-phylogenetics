@@ -16,11 +16,18 @@ from bijux_phylogenetics.comparative.common import (
     load_comparative_dataset,
     tip_root_depths,
 )
+from bijux_phylogenetics.comparative.search import (
+    BoundedSearchControls,
+    BoundedSearchDiagnostics,
+    fit_bounded_scalar_parameter,
+)
 from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
     summarize_ultrametric_tip_depths,
 )
 from bijux_phylogenetics.phylo.topology.node_identity import ape_node_id_for_node
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
+
+_PAGEL_LAMBDA_PROFILE_STEP = 0.01
 
 
 @dataclass(slots=True)
@@ -135,25 +142,6 @@ class PagelLambdaLikelihoodReport:
 
 
 @dataclass(slots=True)
-class PagelLambdaOptimizerDiagnostics:
-    """Optimizer diagnostics for one Pagel's-lambda likelihood search."""
-
-    optimizer_name: str
-    coarse_step: float
-    fine_step: float
-    coarse_grid_point_count: int
-    fine_grid_point_count: int
-    function_evaluation_count: int
-    coarse_best_lambda: float
-    coarse_best_log_likelihood: float
-    fine_search_start: float
-    fine_search_stop: float
-    converged: bool
-    hit_lower_boundary: bool
-    hit_upper_boundary: bool
-
-
-@dataclass(slots=True)
 class PagelLambdaProfileRow:
     """One evaluated lambda profile point from the governed grid search."""
 
@@ -191,6 +179,9 @@ class PhylogeneticSignalPermutation:
     permutation_index: int
     permuted_k: float
     at_or_above_observed: bool
+
+
+PagelLambdaOptimizerDiagnostics = BoundedSearchDiagnostics
 
 
 def compute_phylogenetic_independent_contrasts(
@@ -622,56 +613,44 @@ def _estimate_pagels_lambda_from_dataset(
     coarse_step: float = 0.05,
     fine_step: float = 0.005,
 ) -> _PagelLambdaFitResult:
-    coarse_values = _grid_values(0.0, 1.0, coarse_step)
-    coarse_rows = [
-        (_lambda, _lambda_log_likelihood(dataset, _lambda)) for _lambda in coarse_values
-    ]
-    coarse_best_lambda, coarse_best_log_likelihood = max(
-        coarse_rows,
-        key=lambda item: item[1],
-    )
-    fine_start = max(0.0, coarse_best_lambda - coarse_step)
-    fine_stop = min(1.0, coarse_best_lambda + coarse_step)
-    fine_values = _grid_values(fine_start, fine_stop, fine_step)
-    fine_rows = [
-        (_lambda, _lambda_log_likelihood(dataset, _lambda)) for _lambda in fine_values
-    ]
-    lambda_value, log_likelihood = max(
-        fine_rows,
-        key=lambda item: item[1],
-    )
     profile_threshold = 0.5 * 3.841458820694124
-    profile_rows = [
-        PagelLambdaProfileRow(
-            lambda_value=row_lambda,
-            log_likelihood=row_log_likelihood,
-            delta_log_likelihood=max(0.0, log_likelihood - row_log_likelihood),
-            within_95_confidence_interval=(
-                (log_likelihood - row_log_likelihood) <= profile_threshold
+    fit = fit_bounded_scalar_parameter(
+        lower_bound=0.0,
+        upper_bound=1.0,
+        controls=BoundedSearchControls(
+            coarse_grid_point_count=_grid_point_count_for_step(1.0, coarse_step),
+            fine_grid_point_count=_grid_point_count_for_step(
+                min(1.0, 2.0 * coarse_step),
+                fine_step,
             ),
-        )
-        for row_lambda, row_log_likelihood in fine_rows
-    ]
-    diagnostics = PagelLambdaOptimizerDiagnostics(
+            refinement_start_count=3,
+        ),
+        evaluate=lambda lambda_value: (
+            lambda_value,
+            _lambda_log_likelihood(dataset, lambda_value),
+        ),
+        profile_parameter_values=_grid_values(0.0, 1.0, _PAGEL_LAMBDA_PROFILE_STEP),
+        confidence_interval_drop=profile_threshold,
+        parameter_name="lambda",
+        owner_name="phylogenetic signal Pagel lambda fit",
         optimizer_name="two-stage-grid-search",
-        coarse_step=coarse_step,
-        fine_step=fine_step,
-        coarse_grid_point_count=len(coarse_rows),
-        fine_grid_point_count=len(fine_rows),
-        function_evaluation_count=len(coarse_rows) + len(fine_rows),
-        coarse_best_lambda=coarse_best_lambda,
-        coarse_best_log_likelihood=coarse_best_log_likelihood,
-        fine_search_start=fine_start,
-        fine_search_stop=fine_stop,
-        converged=True,
-        hit_lower_boundary=math.isclose(lambda_value, 0.0, abs_tol=fine_step / 2.0),
-        hit_upper_boundary=math.isclose(lambda_value, 1.0, abs_tol=fine_step / 2.0),
+        parameter_search_strategy=(
+            "bounded-coarse-grid-with-multi-start-golden-section-refinement"
+        ),
     )
     return _PagelLambdaFitResult(
-        lambda_value=lambda_value,
-        log_likelihood=log_likelihood,
-        optimizer_diagnostics=diagnostics,
-        profile_rows=profile_rows,
+        lambda_value=fit.parameter_value,
+        log_likelihood=fit.objective_value,
+        optimizer_diagnostics=fit.optimizer_diagnostics,
+        profile_rows=[
+            PagelLambdaProfileRow(
+                lambda_value=row.parameter_value,
+                log_likelihood=row.objective_value,
+                delta_log_likelihood=row.delta_objective_value,
+                within_95_confidence_interval=row.within_95_confidence_interval,
+            )
+            for row in fit.profile_rows
+        ],
     )
 
 
@@ -697,6 +676,12 @@ def _grid_values(start: float, stop: float, step: float) -> list[float]:
         values.append(round(current, 6))
         current += step
     return values
+
+
+def _grid_point_count_for_step(span: float, step: float) -> int:
+    if step <= 0.0:
+        raise ValueError("step must be positive")
+    return int(round(span / step)) + 1
 
 
 @dataclass(slots=True)

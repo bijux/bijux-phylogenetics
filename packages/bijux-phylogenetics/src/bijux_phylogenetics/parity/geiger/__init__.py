@@ -42,9 +42,14 @@ from .runner import (
     write_geiger_parity_observation_table,
     write_geiger_parity_summary_table,
 )
+from .shards import (
+    GeigerParityShard,
+    list_geiger_parity_shards,
+)
 
 __all__ = [
     "GeigerParityCase",
+    "GeigerParityShard",
     "GeigerParityObservation",
     "GeigerParityReport",
     "GeigerParitySummaryRow",
@@ -62,6 +67,7 @@ __all__ = [
     "GeigerModelConfidenceRow",
     "GeigerParameterizationRegistryRow",
     "list_geiger_parity_cases",
+    "list_geiger_parity_shards",
     "build_generated_geiger_parity_report",
     "run_geiger_parity_cases",
     "write_geiger_parity_observation_table",

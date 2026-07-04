@@ -1,36 +1,80 @@
 # Changelog
 
-## Unreleased
+This file records notable repository-level changes for `bijux-phylogenetics`.
 
-- initialize the Bijux-standard phylogenetics workspace scaffold
-- add the `phylogenetic` compatibility alias distribution for the canonical runtime package
-- add alignment trimming, coding diagnostics, coding translation, and pairwise identity-matrix workflows
-- add DNA distance matrices with p-distance and Jukes-Cantor models, pairwise-deletion and complete-deletion gap handling, and NJ/UPGMA tree building
-- add imported distance-matrix validation, nonmetric diagnostics, imported-tree building, distance-analysis reports, and tree-assumption diagnostics
-- add tree-set loading, majority-rule consensus trees, clade-frequency tables, RF distance matrices, topology clusters, and instability summaries
-- add posterior tree-set comparison workflows and HTML tree-uncertainty reports
-- add seeded birth-death and coalescent tree simulation, Brownian and OU continuous-trait simulation, discrete-trait simulation, and DNA or protein alignment simulation
-- add local scientific benchmarks for tree validation, tree comparison, and alignment diagnostics across increasing problem sizes
-- add outgroup rooting and midpoint rerooting transforms
-- add comparative readiness checks, phylogenetic independent contrasts, phylogenetic signal estimation, and phylogenetic generalized least-squares workflows
-- add standalone Brownian and OU comparative model fitting, formula-driven PGLS interactions, multiple-testing correction, comparative audit and influence reports, and comparative comparisons across trees or pruning policies
-- deepen comparative validation with checked-in ape, phytools, geiger, and nlme reference expectations plus parameter-uncertainty, OU identifiability, residual-diagnostic, and leave-one-taxon-out maturity audits
-- expand comparative PGLS auditing with transformed predictor terms, explicit categorical and interaction audit tables, overfit margins, multiple-testing summaries, tree or pruning sensitivity flags, and stronger reviewer limitation text
-- add continuous and discrete ancestral-state reconstruction, uncertainty reporting, model comparison, annotated ancestral-tree rendering, table export, and HTML ancestral-state reports
-- add governed external-engine workflows for alignment, trimming, model selection, ML inference, bootstrap consensus, fast-tree comparison, and engine provenance capture
-- add inference resume safeguards, HTML inference workflow reports, and initial MrBayes preparation, posterior-tree summary, trace parsing, and ESS workflows
-- embed coding diagnostics and identity matrices in phylo-input reports
-- add tree diagnostics for child counts, singleton nodes, missing branch-length localization, branch outliers, and support-label interpretation
-- add deterministic tree figure rendering with phylogram, circular, support-label, trait-annotation, metadata-strip, heatmap, collapsed-clade, and publication-bundle workflows
-- expand distance analysis with Kimura 2-parameter and amino-acid p-distance models, ambiguity policies, saturation and low-information diagnostics, bootstrap support summaries, reference checks, and reproducibility bundles
-- deepen distance validation with explicit p-distance, JC69, Kimura, protein, NJ, and UPGMA reference checks plus imported-matrix quality audits and checksummed input provenance in distance bundles
-- expand distance workflows with explicit suitability decisions, reference-tree comparison, bootstrap support summaries, model and gap-sensitivity comparisons, machine-readable distance reports, and maturity-gate auditing
-- expand ancestral-state workflows with node-level low-confidence warnings, sensitivity summaries, supplement-style reports, publication figure bundles, ordered discrete-state modeling, and ER/SYM/ARD discrete-state reporting
-- expand discrete-state evolution workflows with transition reference validation, rate-uncertainty diagnostics, dominant-state and sparse-state warnings, model-sensitive ancestral-region comparison, stochastic-map summaries, and richer report caveats
-- add geographic-analysis readiness gates, state-coding audits, biogeographic interpretation reports, alignment inference-readiness audits, engine-output validation, metadata clustering checks, inference-failure taxonomy, and bootstrap tree-set validation
-- expand inference workflows with bootstrap support distributions, weak-backbone detection, model and engine tree comparisons, sensitivity reports, model-selection limitations reports, supplement-style workflow reports, and checksummed inference evidence bundles
-- add bootstrap-versus-posterior support comparison and HTML tree-set comparison reports for cross-analysis uncertainty review
-- add Bayesian posterior-tree thinning, MCC and node-age summaries, BEAST log validation and chain diagnostics, cross-run or scenario posterior comparisons, and reviewer-facing Bayesian diagnostics reports
-- deepen posterior uncertainty analysis with topology diversity and multimodality summaries, high-credibility clade conflicts, figure packages, supplementary diagnostics tables, and Bayesian methods text
-- add low-information, duplicate-policy, ambiguity-column, and sequence-ranking alignment diagnostics with dedicated alignment and taxonomy HTML reports plus dataset input ledgers
-- add checked-in Level 1 reference validation suites, workflow failure galleries, maturity classification, workflow-validation reports, and an end-to-end release gate
+It does not replace package-level release history. Versioning and package-local
+release notes belong to each distribution under `packages/`.
+
+Use this changelog for workspace changes that affect multiple packages or
+change contributor and maintainer workflows across the repository.
+
+## 0.1.0 - 2026-07-04
+
+### Added
+
+- Established the repository on the shared Bijux Python workspace model with
+  governed `configs/`, `makes/`, `tox`, artifact discipline, and synchronized
+  standards from `bijux-std`.
+- Published the canonical package `bijux-phylogenetics`, the short
+  compatibility alias `phylogenetic`, and the repository-owned maintainer
+  package `bijux-phylogenetics-dev`.
+- Added the first broad runtime surface across tree validation, tree
+  comparison, rooting, rendering, alignment diagnostics, trimming, coding
+  diagnostics, distance analysis, comparative workflows, ancestral-state
+  reconstruction, simulation, and governed report generation.
+- Added native finite-state likelihood foundations, native maximum-likelihood
+  search surfaces, native benchmark contracts, and public native Bayesian
+  inference entry points for owned DNA workflows.
+- Added governed adapter workflows for external tools including MAFFT,
+  trimAl, IQ-TREE2, FastTree, MrBayes, and BEAST, with explicit provenance and
+  boundary reporting.
+- Added the evidence-book trust program with five PCM study families, governed
+  bundle structure, freshness and integrity ledgers, comparative study guides,
+  and public reading surfaces.
+- Added packaging, smoke-install, publication-readiness, release-readiness,
+  evidence-governance, artifact-governance, package-boundary, and package-bundle
+  verification lanes.
+
+### Changed
+
+- Reworked public docs, the root handbook, and package entry surfaces around
+  reader questions, trustworthy scope boundaries, and named hyperlinks instead
+  of file-path-shaped navigation.
+- Clarified the repository contract around native ownership versus
+  wrapper-backed orchestration so runtime breadth and evidence closure are
+  described honestly rather than as one undifferentiated maturity claim.
+- Standardized artifact output discipline so transient local outputs belong
+  under `artifacts/`, while governed comparative trust studies stay under
+  `evidence-book/`.
+- Expanded the comparative analysis program with stronger parity references,
+  sensitivity review, multiple-testing summaries, reviewer-facing caveats, and
+  packaged example resources that support installation smoke proofs.
+- Hardened release and publication governance so docs, package metadata,
+  standards sync, build surfaces, and evidence reports are checked together as
+  one repository-level publishability story.
+
+### Fixed
+
+- Aligned managed shared make surfaces across sibling repositories so
+  repository contracts, full-suite package overrides, and release gates agree
+  on one governed build surface.
+- Restored public evidence-book and README trust wording after brittle
+  summary-style regressions so documentation reflects checked-in governed
+  sources instead of fragile snapshot counters.
+- Closed artifact-hygiene regressions around root cache directories and
+  publish-readiness drift so evidence-governance and release-readiness gates
+  pass on the intended repository-owned surfaces.
+
+## Changelog Scope
+
+Use this file for changes such as:
+
+- root governance and contributor policy
+- shared automation under `makes/`
+- shared configuration under `configs/`
+- root handbook and repository navigation
+- repository-level CI, publish, and release process changes
+- shared evidence-book and trust-surface governance
+
+Do not use this file for changes that only affect one package release stream
+unless the repository-level workflow changed too.

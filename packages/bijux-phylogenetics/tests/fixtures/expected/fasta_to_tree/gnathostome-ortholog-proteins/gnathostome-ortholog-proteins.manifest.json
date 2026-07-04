@@ -3642,7 +3642,7 @@
   "output_checksums": {
     "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.aln": "7238ad7696609bc7b71dfe0b46b2a2c33aae9e08bd15213e03a3f93c06ae3b4f",
     "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.log": "4a6335c73223b36cd3572f487ae8dbf6998b51f26f037afe8f93cd3d7142e8aa",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.methods-summary.md": "f5aafa871bb5884820a3bb569c54757dff9f2c680b1ad93c22882ddaec6ec007",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.methods-summary.md": "4b408be9c1e34867eaa17b51494df9ae8bb5ef0d8cafe12ca26d17abd933647b",
     "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.model.tsv": "637e28430956c64ece3b943d0fb5fb3fe26d9c7facc0d25de5903319daa190e5",
     "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.support.tsv": "86675935e74b2b805c7a780a014bb111147db300d0c84ff0f25ab35ec592eb8f",
     "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.tree": "e493d0a8742a0d43c589154bb2bdde499b81dbdf06ffaf20678ec8d90824e71e",
@@ -3773,7 +3773,7 @@
       },
       "output_checksums": {
         "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.log": "4a6335c73223b36cd3572f487ae8dbf6998b51f26f037afe8f93cd3d7142e8aa",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.methods-summary.md": "f5aafa871bb5884820a3bb569c54757dff9f2c680b1ad93c22882ddaec6ec007",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.methods-summary.md": "4b408be9c1e34867eaa17b51494df9ae8bb5ef0d8cafe12ca26d17abd933647b",
         "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.model.tsv": "637e28430956c64ece3b943d0fb5fb3fe26d9c7facc0d25de5903319daa190e5",
         "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/gnathostome-ortholog-proteins/gnathostome-ortholog-proteins.support.tsv": "86675935e74b2b805c7a780a014bb111147db300d0c84ff0f25ab35ec592eb8f"
       },

@@ -5,8 +5,8 @@
 
 ## Scalar Verdict Counts
 
-- `matched`: `25`
-- `matched_with_tolerance`: `50`
+- `matched`: `24`
+- `matched_with_tolerance`: `51`
 - `mismatch_unexplained`: `12`
 
 ## Comparison Kinds
@@ -31,5 +31,5 @@
 - path: `studies/primate-pgls-and-signal/evidence-001`
 - bundle verdict: `matched`
 - scalar rows: `56`
-- scalar verdict counts: matched=9, matched_with_tolerance=35, mismatch_unexplained=12
+- scalar verdict counts: matched=8, matched_with_tolerance=36, mismatch_unexplained=12
 - comparison kinds: exact_answer=14, scientific_equivalence=4, tolerance=38

@@ -7,6 +7,7 @@ import math
 from bijux_phylogenetics.bayesian.fixed_topology_dna import (
     FixedTopologyDnaModelDefinition,
     FixedTopologyDnaProposalSchedule,
+    _build_dna_alignment_likelihood_context,
     _build_fixed_topology_dna_prior_components,
     _build_initial_model_parameters,
     _evaluate_fixed_topology_dna_log_likelihood,
@@ -236,6 +237,14 @@ def run_joint_topology_dna_metropolis_hastings(
         initial_state=score_bayesian_phylogenetic_state(
             tree=working_tree,
             model_parameters=initial_model_parameters,
+            likelihood_context=_build_dna_alignment_likelihood_context(
+                analysis_name="joint-topology-dna",
+                topology_policy="joint",
+                tree=working_tree,
+                records=normalized_records,
+                substitution_model_name=model_definition.substitution_model_name,
+                observation_policy=validated_observation_policy,
+            ),
             update_prior_components=lambda state: (
                 _build_joint_topology_dna_prior_components(
                     state=state,

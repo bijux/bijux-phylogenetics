@@ -1,0 +1,50 @@
+{
+  "intake_policy": "repository-owned-source",
+  "schema_version": 1,
+  "source_count": 4,
+  "sources": [
+    {
+      "concept_tags": [
+        "bayesian-linear-models",
+        "mixed-models",
+        "phylogenetic-random-effects",
+        "cichlid-parasites"
+      ],
+      "kind": "repository-owned-source-copy",
+      "label": "Lund PCM4 Bayesian linear and phylogenetic mixed-model lecture script",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/reference/lund_pcm4_mixed_model_source.R",
+      "path_hint": "PCM4_PLMM/Lecture/R/Scripts/PCM4_LMM.R",
+      "read_only": true,
+      "source_id": "lund-pcm4-script"
+    },
+    {
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM4 cichlid observation table",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/cichlid.csv",
+      "path_hint": "PCM4_PLMM/Lecture/R/Data/cichlid.csv",
+      "read_only": true,
+      "source_id": "lund-pcm4-cichlid-table"
+    },
+    {
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM4 cichlid phylogeny",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/cichlidtree.nex",
+      "path_hint": "PCM4_PLMM/Lecture/R/Data/cichlidtree.nex",
+      "read_only": true,
+      "source_id": "lund-pcm4-cichlid-tree"
+    },
+    {
+      "kind": "repository-owned-workspace",
+      "label": "Checked-in PCM4 fishdata workspace",
+      "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/fishdata.RData",
+      "provides": [
+        "fish",
+        "fishSum",
+        "fishtree"
+      ],
+      "read_only": true,
+      "source_id": "lund-pcm4-fishdata-rdata"
+    }
+  ],
+  "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+}

@@ -37,6 +37,8 @@ from bijux_phylogenetics.bayesian.state import (
     BayesianModelParameterState,
     BayesianPhylogeneticState,
     BayesianPriorComponentState,
+    build_bayesian_likelihood_context_state,
+    build_bayesian_likelihood_partition_state,
     build_bayesian_prior_component_state,
 )
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
@@ -47,11 +49,10 @@ from bijux_phylogenetics.phylo.alignment.partitions import (
     validate_locus_partitions,
 )
 from bijux_phylogenetics.phylo.likelihood import (
-    evaluate_f81_tree_likelihood,
-    evaluate_gtr_tree_likelihood,
-    evaluate_hky85_tree_likelihood,
-    evaluate_jc69_tree_likelihood,
-    evaluate_k80_tree_likelihood,
+    PartitionedNucleotideModelAssignment,
+    compile_partitioned_nucleotide_likelihood_analysis,
+    evaluate_compiled_finite_state_likelihood_analysis,
+    evaluate_compiled_finite_state_partition_log_likelihood_rows,
 )
 from bijux_phylogenetics.phylo.likelihood.dna import validate_positive_kappa
 from bijux_phylogenetics.phylo.likelihood.dna_observation_policies import (
@@ -410,6 +411,10 @@ def run_fixed_topology_partitioned_dna_metropolis_hastings(
     )
     fixed_tree = tree.copy()
     fixed_tree.rooted = tree.rooted
+    _require_initial_tree_within_branch_length_prior_support(
+        tree=fixed_tree,
+        branch_length_prior=model_definition.branch_length_prior,
+    )
     initial_model_parameters = _build_initial_model_parameters(
         model_definition=model_definition,
         partition_records_by_name=partition_records_by_name,
@@ -418,6 +423,12 @@ def run_fixed_topology_partitioned_dna_metropolis_hastings(
     initial_state = score_bayesian_phylogenetic_state(
         tree=fixed_tree,
         model_parameters=initial_model_parameters,
+        likelihood_context=_build_partitioned_dna_likelihood_context(
+            tree=fixed_tree,
+            partition_records_by_name=partition_records_by_name,
+            model_definition=model_definition,
+            observation_policy=validated_observation_policy,
+        ),
         update_prior_components=lambda state: (
             _build_fixed_topology_partitioned_dna_prior_components(
                 state=state,
@@ -430,7 +441,7 @@ def run_fixed_topology_partitioned_dna_metropolis_hastings(
                 state=state,
                 model_definition=model_definition,
                 fixed_topology_id=None,
-                partition_records_by_name=partition_records_by_name,
+                records=normalized_records,
                 observation_policy=validated_observation_policy,
             )
         ),
@@ -458,7 +469,7 @@ def run_fixed_topology_partitioned_dna_metropolis_hastings(
                 state=state,
                 model_definition=model_definition,
                 fixed_topology_id=fixed_topology_id,
-                partition_records_by_name=partition_records_by_name,
+                records=normalized_records,
                 observation_policy=validated_observation_policy,
             )
         ),
@@ -470,7 +481,7 @@ def run_fixed_topology_partitioned_dna_metropolis_hastings(
         chain_report=chain_report,
         model_definition=model_definition,
         fixed_topology_id=fixed_topology_id,
-        partition_records_by_name=partition_records_by_name,
+        records=normalized_records,
         observation_policy=validated_observation_policy,
     )
     return FixedTopologyPartitionedDnaRunReport(
@@ -479,6 +490,116 @@ def run_fixed_topology_partitioned_dna_metropolis_hastings(
         observation_policy=validated_observation_policy,
         chain_report=chain_report,
         posterior_rows=posterior_rows,
+    )
+
+
+def _build_partitioned_dna_likelihood_context(
+    *,
+    tree: PhyloTree,
+    partition_records_by_name: dict[str, list[AlignmentRecord]],
+    model_definition: FixedTopologyPartitionedDnaModelDefinition,
+    observation_policy: str,
+):
+    partition_model_by_name = {
+        partition_model.partition_name: partition_model
+        for partition_model in model_definition.partition_models
+    }
+    partition_contexts = []
+    total_pattern_count = 0
+    for partition_name in (
+        partition_model.partition_name
+        for partition_model in model_definition.partition_models
+    ):
+        partition_records = partition_records_by_name[partition_name]
+        partition_alignment_length = _resolve_alignment_length(partition_records)
+        partition_pattern_count = _count_alignment_patterns(
+            partition_records,
+            partition_alignment_length,
+        )
+        total_pattern_count += partition_pattern_count
+        partition_model = partition_model_by_name[partition_name]
+        partition_contexts.append(
+            build_bayesian_likelihood_partition_state(
+                partition_name=partition_name,
+                observation_kind="alignment-site",
+                taxon_names=tree.tip_names,
+                observation_count=partition_alignment_length,
+                pattern_count=partition_pattern_count,
+                data_type=partition_model.data_type or "dna",
+                model_name=partition_model.model_name,
+                categorical_metadata={
+                    "topology-policy": "fixed",
+                    "base-model": partition_model.base_model_name,
+                },
+            )
+        )
+    return build_bayesian_likelihood_context_state(
+        analysis_name="fixed-topology-partitioned-dna",
+        observation_kind="alignment-site",
+        taxon_names=tree.tip_names,
+        observation_count=sum(
+            _resolve_alignment_length(partition_records)
+            for partition_records in partition_records_by_name.values()
+        ),
+        pattern_count=total_pattern_count,
+        missing_data_policy=observation_policy,
+        categorical_metadata={
+            "data-type": "dna",
+            "substitution-model": _MODEL_NAME,
+            "topology-policy": "fixed",
+        },
+        partition_contexts=partition_contexts,
+    )
+
+
+def _resolve_alignment_length(records: Sequence[AlignmentRecord]) -> int:
+    if not records:
+        raise PhylogeneticsError(
+            "partitioned DNA likelihood context requires at least one alignment record per partition",
+            code="partitioned_dna_likelihood_context_records_empty",
+        )
+    return len(records[0].sequence)
+
+
+def _count_alignment_patterns(
+    records: Sequence[AlignmentRecord],
+    alignment_length: int,
+) -> int:
+    return len(
+        {
+            tuple(record.sequence[position] for record in records)
+            for position in range(alignment_length)
+        }
+    )
+
+
+def _require_initial_tree_within_branch_length_prior_support(
+    *,
+    tree: PhyloTree,
+    branch_length_prior: BranchLengthPriorModel,
+) -> None:
+    branch_length_prior_report = evaluate_tree_branch_length_log_prior(
+        tree,
+        branch_length_prior,
+    )
+    if math.isfinite(branch_length_prior_report.total_log_prior):
+        return
+    violating_branches = [
+        {
+            "branch_id": row.branch_id,
+            "child_name": row.child_name,
+            "branch_length": row.branch_length,
+        }
+        for row in branch_length_prior_report.branch_rows
+        if not math.isfinite(row.log_density)
+    ]
+    raise PhylogeneticsError(
+        "fixed-topology partitioned DNA posterior runner requires starting tree branch lengths to lie within branch-length prior support",
+        code="fixed_topology_partitioned_dna_initial_branch_lengths_outside_prior_support",
+        details={
+            "family": branch_length_prior_report.family,
+            "violating_branches": violating_branches,
+        },
     )
 
 
@@ -714,116 +835,29 @@ def _evaluate_fixed_topology_partitioned_dna_log_likelihood(
     state: BayesianPhylogeneticState,
     model_definition: FixedTopologyPartitionedDnaModelDefinition,
     fixed_topology_id: str | None,
-    partition_records_by_name: dict[str, list[AlignmentRecord]],
+    records: Sequence[AlignmentRecord],
     observation_policy: str,
 ) -> float:
-    _linkage_plan, partition_parameter_states = (
+    linkage_plan, partition_parameter_states = (
         _require_fixed_topology_partitioned_dna_state_consistency(
             state=state,
             model_definition=model_definition,
             fixed_topology_id=fixed_topology_id,
         )
     )
-    partition_state_by_name = {
-        partition_state.partition_name: partition_state
-        for partition_state in partition_parameter_states
-    }
-    tree = state.tree.to_tree()
+    compiled_analysis = _compile_fixed_topology_partitioned_dna_likelihood_analysis(
+        tree=state.tree.to_tree(),
+        records=records,
+        model_definition=model_definition,
+        partition_parameter_states=partition_parameter_states,
+        linkage_plan=linkage_plan,
+        observation_policy=observation_policy,
+    )
     return float(
         format(
-            math.fsum(
-                _evaluate_partition_log_likelihood(
-                    tree=tree,
-                    partition_model=partition_model,
-                    partition_state=partition_state_by_name[
-                        partition_model.partition_name
-                    ],
-                    partition_records=partition_records_by_name[
-                        partition_model.partition_name
-                    ],
-                    observation_policy=observation_policy,
-                )
-                for partition_model in model_definition.partition_models
-            ),
+            evaluate_compiled_finite_state_likelihood_analysis(compiled_analysis),
             ".15g",
         )
-    )
-
-
-def _evaluate_partition_log_likelihood(
-    *,
-    tree: PhyloTree,
-    partition_model: PartitionSubstitutionModelDefinition,
-    partition_state: PartitionSubstitutionParameterState,
-    partition_records: Sequence[AlignmentRecord],
-    observation_policy: str,
-) -> float:
-    model_name = partition_model.base_model_name
-    if model_name == "JC69":
-        return evaluate_jc69_tree_likelihood(
-            tree,
-            partition_records,
-            observation_policy=observation_policy,
-        ).log_likelihood
-    if model_name == "F81":
-        if partition_state.base_frequencies is None:
-            raise PhylogeneticsError(
-                "fixed-topology partitioned DNA likelihood requires base frequencies for F81 partitions",
-                code="fixed_topology_partitioned_dna_f81_base_frequencies_missing",
-                details={"partition_name": partition_model.partition_name},
-            )
-        return evaluate_f81_tree_likelihood(
-            tree,
-            partition_records,
-            base_frequencies=partition_state.base_frequencies,
-            observation_policy=observation_policy,
-        ).log_likelihood
-    if model_name == "K80":
-        if partition_state.kappa is None:
-            raise PhylogeneticsError(
-                "fixed-topology partitioned DNA likelihood requires kappa for K80 partitions",
-                code="fixed_topology_partitioned_dna_k80_kappa_missing",
-                details={"partition_name": partition_model.partition_name},
-            )
-        return evaluate_k80_tree_likelihood(
-            tree,
-            partition_records,
-            kappa=partition_state.kappa,
-            observation_policy=observation_policy,
-        ).log_likelihood
-    if model_name == "HKY85":
-        if partition_state.kappa is None or partition_state.base_frequencies is None:
-            raise PhylogeneticsError(
-                "fixed-topology partitioned DNA likelihood requires kappa and base frequencies for HKY85 partitions",
-                code="fixed_topology_partitioned_dna_hky85_parameters_missing",
-                details={"partition_name": partition_model.partition_name},
-            )
-        return evaluate_hky85_tree_likelihood(
-            tree,
-            partition_records,
-            kappa=partition_state.kappa,
-            base_frequencies=partition_state.base_frequencies,
-            observation_policy=observation_policy,
-        ).log_likelihood
-    if model_name == "GTR":
-        if (
-            partition_state.exchangeabilities is None
-            or partition_state.base_frequencies is None
-        ):
-            raise PhylogeneticsError(
-                "fixed-topology partitioned DNA likelihood requires exchangeabilities and base frequencies for GTR partitions",
-                code="fixed_topology_partitioned_dna_gtr_parameters_missing",
-                details={"partition_name": partition_model.partition_name},
-            )
-        return evaluate_gtr_tree_likelihood(
-            tree,
-            partition_records,
-            exchangeabilities=partition_state.exchangeabilities,
-            base_frequencies=partition_state.base_frequencies,
-            observation_policy=observation_policy,
-        ).log_likelihood
-    raise AssertionError(
-        f"unsupported fixed-topology partitioned DNA model {model_name}"
     )
 
 
@@ -1374,7 +1408,7 @@ def _build_fixed_topology_partitioned_dna_posterior_rows(
     chain_report: MetropolisHastingsRunReport,
     model_definition: FixedTopologyPartitionedDnaModelDefinition,
     fixed_topology_id: str,
-    partition_records_by_name: dict[str, list[AlignmentRecord]],
+    records: Sequence[AlignmentRecord],
     observation_policy: str,
 ) -> list[FixedTopologyPartitionedDnaPosteriorRow]:
     posterior_rows: list[FixedTopologyPartitionedDnaPosteriorRow] = []
@@ -1389,7 +1423,7 @@ def _build_fixed_topology_partitioned_dna_posterior_rows(
         partition_rows = _build_partition_posterior_rows(
             state=state,
             model_definition=model_definition,
-            partition_records_by_name=partition_records_by_name,
+            records=records,
             partition_parameter_states=partition_parameter_states,
             linkage_plan=linkage_plan,
             observation_policy=observation_policy,
@@ -1420,16 +1454,29 @@ def _build_partition_posterior_rows(
     *,
     state: BayesianPhylogeneticState,
     model_definition: FixedTopologyPartitionedDnaModelDefinition,
-    partition_records_by_name: dict[str, list[AlignmentRecord]],
+    records: Sequence[AlignmentRecord],
     partition_parameter_states: Sequence[PartitionSubstitutionParameterState],
     linkage_plan,
     observation_policy: str,
 ) -> list[FixedTopologyPartitionedDnaPartitionRow]:
+    compiled_analysis = _compile_fixed_topology_partitioned_dna_likelihood_analysis(
+        tree=state.tree.to_tree(),
+        records=records,
+        model_definition=model_definition,
+        partition_parameter_states=partition_parameter_states,
+        linkage_plan=linkage_plan,
+        observation_policy=observation_policy,
+    )
+    partition_likelihood_rows, _total_log_likelihood = (
+        evaluate_compiled_finite_state_partition_log_likelihood_rows(compiled_analysis)
+    )
+    partition_likelihood_row_by_name = {
+        row.partition_name: row for row in partition_likelihood_rows
+    }
     partition_state_by_name = {
         partition_state.partition_name: partition_state
         for partition_state in partition_parameter_states
     }
-    tree = state.tree.to_tree()
     partition_rows: list[FixedTopologyPartitionedDnaPartitionRow] = []
     for partition_model in model_definition.partition_models:
         partition_state = partition_state_by_name[partition_model.partition_name]
@@ -1437,15 +1484,9 @@ def _build_partition_posterior_rows(
             FixedTopologyPartitionedDnaPartitionRow(
                 partition_name=partition_model.partition_name,
                 model_name=partition_model.model_name,
-                log_likelihood=_evaluate_partition_log_likelihood(
-                    tree=tree,
-                    partition_model=partition_model,
-                    partition_state=partition_state,
-                    partition_records=partition_records_by_name[
-                        partition_model.partition_name
-                    ],
-                    observation_policy=observation_policy,
-                ),
+                log_likelihood=partition_likelihood_row_by_name[
+                    partition_model.partition_name
+                ].log_likelihood,
                 linkage_groups={
                     target_name: linkage_plan.groups_for_target(target_name)[
                         partition_model.partition_name
@@ -1458,6 +1499,79 @@ def _build_partition_posterior_rows(
             )
         )
     return partition_rows
+
+
+def _compile_fixed_topology_partitioned_dna_likelihood_analysis(
+    *,
+    tree: PhyloTree,
+    records: Sequence[AlignmentRecord],
+    model_definition: FixedTopologyPartitionedDnaModelDefinition,
+    partition_parameter_states: Sequence[PartitionSubstitutionParameterState],
+    linkage_plan,
+    observation_policy: str,
+):
+    return compile_partitioned_nucleotide_likelihood_analysis(
+        tree,
+        list(records),
+        partition_map=model_definition.locus_partitions,
+        partition_model_assignments=_partitioned_nucleotide_model_assignments(
+            model_definition=model_definition,
+            partition_parameter_states=partition_parameter_states,
+            linkage_plan=linkage_plan,
+        ),
+        observation_policy=observation_policy,
+    )
+
+
+def _partitioned_nucleotide_model_assignments(
+    *,
+    model_definition: FixedTopologyPartitionedDnaModelDefinition,
+    partition_parameter_states: Sequence[PartitionSubstitutionParameterState],
+    linkage_plan,
+) -> tuple[PartitionedNucleotideModelAssignment, ...]:
+    partition_state_by_name = {
+        partition_state.partition_name: partition_state
+        for partition_state in partition_parameter_states
+    }
+    return tuple(
+        PartitionedNucleotideModelAssignment(
+            partition_name=partition_model.partition_name,
+            model_name=partition_model.base_model_name.lower(),
+            context_linkage_key=_partition_context_linkage_key(
+                partition_model=partition_model,
+                linkage_plan=linkage_plan,
+            ),
+            kappa=partition_state_by_name[partition_model.partition_name].kappa,
+            exchangeabilities=partition_state_by_name[
+                partition_model.partition_name
+            ].exchangeabilities,
+            base_frequencies=partition_state_by_name[
+                partition_model.partition_name
+            ].base_frequencies,
+        )
+        for partition_model in model_definition.partition_models
+    )
+
+
+def _partition_context_linkage_key(
+    *,
+    partition_model: PartitionSubstitutionModelDefinition,
+    linkage_plan,
+) -> str:
+    active_group_items = tuple(
+        (
+            target_name,
+            linkage_plan.groups_for_target(target_name)[partition_model.partition_name],
+        )
+        for target_name in partition_model.required_targets()
+        if target_name in _SUPPORTED_PARTITION_PARAMETER_TARGETS
+    )
+    if not active_group_items:
+        return f"{partition_model.partition_name}:{partition_model.base_model_name}"
+    group_text = ",".join(
+        f"{target_name}={group_name}" for target_name, group_name in active_group_items
+    )
+    return f"{partition_model.base_model_name}:{group_text}"
 
 
 def _partition_scalar_parameters(

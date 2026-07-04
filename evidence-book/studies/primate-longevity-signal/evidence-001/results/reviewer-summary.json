@@ -66,7 +66,7 @@
     "unrooted-tree-demo"
   ],
   "source_locators": [
-    "external:lund/pcm1-plots-signal/script",
+    "evidence-book/studies/primate-longevity-signal/reference/lund_pcm1_plots_signal_source.R",
     "evidence-book/studies/primate-longevity-signal/reference"
   ],
   "study_id": "primate-longevity-signal",

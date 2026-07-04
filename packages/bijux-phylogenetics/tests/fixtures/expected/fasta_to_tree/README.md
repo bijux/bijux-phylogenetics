@@ -1,27 +1,39 @@
-# Real FASTA-to-tree expected bundles
+# Real FASTA-to-Tree Expected Bundles
 
-Each directory in this fixture surface contains the checked reviewer-facing output bundle for one real raw FASTA dataset run through the canonical `adapter fasta-to-tree` workflow.
+Each directory in this surface holds the checked output bundle for one
+biologically real raw FASTA dataset run through the canonical
+`adapter fasta-to-tree` workflow.
 
-The checked files are limited to the durable outputs promised by the workflow contract:
+## Governed Output Set
+
+The checked bundle is intentionally limited to the durable outputs promised by
+the workflow contract:
 
 - `.aln`
 - `.trimmed.aln`
 - `.tree`
 - `.log`
+- `.methods-summary.md`
 - `.model.tsv`
 - `.support.tsv`
 - `.manifest.json`
 - `.run.json`
 
-Engine-specific intermediates remain runtime artifacts and are not tracked in this governed corpus.
+Engine-specific scratch files and other incidental intermediates remain runtime
+artifacts and are not treated as governed expected outputs here.
 
-Real-engine validation compares these bundles semantically rather than byte-for-byte.
-That keeps the scientific checks stable across harmless path and timestamp variation while still verifying the reviewer-facing workflow contract.
+## Comparison Policy
 
-The semantic checks are intentionally typed by artifact surface:
+Real-engine validation compares these bundles semantically rather than
+byte-for-byte. That keeps the review lane stable across harmless path,
+timestamp, and environment variation while still governing the reader-facing
+workflow contract.
 
-- trees must preserve rooted topology, compatible branch lengths, and clade support
-- tabular ledgers must preserve schema, stable row identity, and tolerated numeric values
-- FASTA and alignment outputs must preserve identifier-to-sequence content
-- HTML reports must preserve required reviewer sections and linked artifacts
-- manifests remain structured payloads whose recorded hashes still detect exact artifact changes when needed
+The comparison surfaces are typed deliberately:
+
+- trees must preserve compatible topology, tip identity, and support meaning
+- tabular ledgers must preserve schema, row identity, and tolerated numeric
+  values
+- alignments must preserve identifier-to-sequence content
+- manifests and run records must preserve structured output ownership and hash
+  coverage

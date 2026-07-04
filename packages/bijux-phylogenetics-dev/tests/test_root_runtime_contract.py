@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import ast
 from configparser import ConfigParser
+import os
 from pathlib import Path
+import subprocess
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PACKAGE_INIT = (
@@ -28,6 +30,9 @@ EXPECTED_ROOT_GATEWAYS = [
     "phylo",
     "trees",
 ]
+RUNTIME_PACKAGE_ROOT = REPO_ROOT / "packages" / "bijux-phylogenetics"
+RUNTIME_PACKAGE_PROFILE = REPO_ROOT / "makes" / "packages" / "bijux-phylogenetics.mk"
+RUNTIME_PACKAGE_VENV = REPO_ROOT / "artifacts" / "bijux-phylogenetics" / "venv"
 
 
 def _tox_config() -> ConfigParser:
@@ -111,6 +116,37 @@ def _package_init_module() -> ast.Module:
     return ast.parse(PACKAGE_INIT.read_text(encoding="utf-8"))
 
 
+def _runtime_package_make_dry_run(target: str) -> str:
+    profile_path = os.path.relpath(RUNTIME_PACKAGE_PROFILE, start=RUNTIME_PACKAGE_ROOT)
+    completed = subprocess.run(
+        [
+            "make",
+            "-n",
+            "-C",
+            str(RUNTIME_PACKAGE_ROOT),
+            "-f",
+            profile_path,
+            target,
+            "PROJECT_SLUG=bijux-phylogenetics",
+            f"MONOREPO_ROOT={REPO_ROOT}",
+            f"ROOT_MAKE_DIR={REPO_ROOT / 'makes'}",
+            f"CONFIG_DIR={REPO_ROOT / 'configs'}",
+            f"PROJECT_DIR={RUNTIME_PACKAGE_ROOT}",
+            f"PROJECT_ARTIFACTS_DIR={REPO_ROOT / 'artifacts' / 'bijux-phylogenetics'}",
+            f"API_DIR={REPO_ROOT / 'apis' / 'bijux-phylogenetics'}",
+            f"VENV={RUNTIME_PACKAGE_VENV}",
+            f"VENV_PYTHON={RUNTIME_PACKAGE_VENV / 'bin' / 'python'}",
+            f"PYTHON={RUNTIME_PACKAGE_VENV / 'bin' / 'python'}",
+            f"ACT={RUNTIME_PACKAGE_VENV / 'bin'}",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
+    return completed.stdout
+
+
 def _package_init_exports() -> list[str]:
     module = _package_init_module()
     for node in module.body:
@@ -149,13 +185,39 @@ def test_root_tox_keeps_the_shared_env_families_and_drops_proteomics_only_ones()
     assert "openapi-drift-core" not in envlist
 
 
+def test_root_tox_exposes_named_runtime_core_test_partitions() -> None:
+    envlist = _envlist()
+
+    expected_runtime_partitions = {
+        "test-core-sequence-data-foundations",
+        "test-core-ancestral-dating-evidence",
+        "test-core-bayesian-model-definition",
+        "test-core-bayesian-inference-runtime",
+        "test-core-comparative-regression-and-signal",
+        "test-core-comparative-biogeography-and-publication",
+        "test-core-likelihood-search-and-fit",
+        "test-core-likelihood-placements-and-topology",
+        "test-core-state-model-foundations",
+        "test-core-state-model-families",
+        "test-core-state-model-mixtures-and-optimization",
+        "test-core-trees-workflows-and-parity",
+    }
+
+    assert "test-core" not in envlist
+    assert expected_runtime_partitions <= envlist
+
+
 def test_root_make_declares_shared_maintainer_commands() -> None:
     root_make = (REPO_ROOT / "makes" / "root.mk").read_text(encoding="utf-8")
 
     assert "check:" in root_make
-    assert "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time" in root_make
+    assert (
+        "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time test-all-frozen"
+        in root_make
+    )
     assert "ROOT_TARGET_GROUPS_test-all ?= check" in root_make
     assert "ROOT_TARGET_GROUPS_test-all-plus-run-time ?= check" in root_make
+    assert "ROOT_TARGET_GROUPS_test-all-frozen ?= check" in root_make
     assert "sync-badges:" in root_make
     assert "check-badges:" in root_make
     assert "validate-evidence-book:" in root_make
@@ -201,6 +263,26 @@ def test_phylogenetic_alias_security_audits_the_installed_environment() -> None:
 
     assert "SECURITY_AUDIT_PREPARE_MODE = pyproject" not in package_make
     assert 'PIP_AUDIT_INPUTS = -r "$(SECURITY_REQS)"' not in package_make
+
+
+def test_phylogenetic_alias_make_exposes_frozen_full_suite_surface() -> None:
+    alias_make = (REPO_ROOT / "makes" / "packages" / "phylogenetic.mk").read_text(
+        encoding="utf-8"
+    )
+
+    assert (
+        "FROZEN_TEST_REPORT_PYTHON = $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python"
+        in alias_make
+    )
+    assert (
+        "test-all-frozen: ## Compare the full-suite output against TEST_ALL_FROZEN_REF"
+        in alias_make
+    )
+    assert (
+        '"$(FROZEN_TEST_REPORT_PYTHON)" -m bijux_phylogenetics_dev.quality.frozen_test_report check'
+        in alias_make
+    )
+    assert '--full-suite-workers "$(FULL_SUITE_PYTEST_WORKERS)"' in alias_make
 
 
 def test_top_level_runtime_exports_define_curated_domain_gateways() -> None:
@@ -269,8 +351,19 @@ def test_runtime_package_make_exposes_unfiltered_test_all_surface() -> None:
         'TEST_MAIN_ARGS = -m "not slow and not real_local and not evaluation"'
         in runtime_make
     )
+    assert "FULL_SUITE_PYTEST_WORKERS ?= 8" in runtime_make
+    assert "FULL_SUITE_PYTEST_DISTRIBUTION ?= worksteal" in runtime_make
+    assert (
+        "FULL_SUITE_TEST_PRE_TARGETS := sync-license-assets-package ensure-live-r-test-runtime"
+        in runtime_make
+    )
+    assert "ensure-live-r-test-runtime:" in runtime_make
     assert "test-all: TEST_MAIN_ARGS =" in runtime_make
-    assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in runtime_make
+    assert "test-all: TEST_PRE_TARGETS = $(FULL_SUITE_TEST_PRE_TARGETS)" in runtime_make
+    assert (
+        "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION)"
+        in runtime_make
+    )
     assert "test-all: test" in runtime_make
 
 
@@ -285,12 +378,94 @@ def test_runtime_package_make_exposes_unfiltered_test_all_plus_run_time_surface(
         'TEST_MAIN_ARGS = -m "not slow and not real_local and not evaluation"'
         in runtime_make
     )
+    assert (
+        "FULL_SUITE_TEST_PRE_TARGETS := sync-license-assets-package ensure-live-r-test-runtime"
+        in runtime_make
+    )
     assert "test-all-plus-run-time: TEST_MAIN_ARGS =" in runtime_make
     assert (
-        "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 --durations=0 --durations-min=0"
+        "test-all-plus-run-time: TEST_PRE_TARGETS = $(FULL_SUITE_TEST_PRE_TARGETS)"
+        in runtime_make
+    )
+    assert (
+        "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION) --durations=0 --durations-min=0"
         in runtime_make
     )
     assert "test-all-plus-run-time: test" in runtime_make
+
+
+def test_runtime_package_make_exposes_frozen_full_suite_surface() -> None:
+    runtime_make = (
+        REPO_ROOT / "makes" / "packages" / "bijux-phylogenetics.mk"
+    ).read_text(encoding="utf-8")
+
+    assert (
+        "FROZEN_TEST_REPORT_PYTHON = $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python"
+        in runtime_make
+    )
+    assert (
+        "test-all-frozen: ## Compare the full-suite output against TEST_ALL_FROZEN_REF"
+        in runtime_make
+    )
+    assert "TEST_ALL_FROZEN_REF is required" in runtime_make
+    assert (
+        '"$(FROZEN_TEST_REPORT_PYTHON)" -m bijux_phylogenetics_dev.quality.frozen_test_report check'
+        in runtime_make
+    )
+    assert '--full-suite-workers "$(FULL_SUITE_PYTEST_WORKERS)"' in runtime_make
+
+
+def test_runtime_package_make_default_test_lane_targets_smoke_suite() -> None:
+    dry_run = _runtime_package_make_dry_run("test")
+
+    assert "Running development smoke suite on tests/smoke" in dry_run
+    assert '"packages/bijux-phylogenetics/tests/smoke"' in dry_run
+    assert '-m "not slow and not real_local and not evaluation"' in dry_run
+
+
+def test_runtime_package_make_test_all_targets_full_test_tree_without_marker_skip() -> (
+    None
+):
+    dry_run = _runtime_package_make_dry_run("test-all")
+
+    assert "Running full test suite on tests" in dry_run
+    assert '"packages/bijux-phylogenetics/tests"' in dry_run
+    assert '"packages/bijux-phylogenetics/tests/smoke"' not in dry_run
+    assert '-m "not slow and not real_local and not evaluation"' not in dry_run
+    assert "ensure-live-r-test-runtime" in dry_run
+    assert "-n 8 --dist worksteal" in dry_run
+
+
+def test_runtime_package_make_test_all_plus_run_time_targets_full_test_tree() -> None:
+    dry_run = _runtime_package_make_dry_run("test-all-plus-run-time")
+
+    assert "Running full test suite on tests" in dry_run
+    assert '"packages/bijux-phylogenetics/tests"' in dry_run
+    assert '"packages/bijux-phylogenetics/tests/smoke"' not in dry_run
+    assert "ensure-live-r-test-runtime" in dry_run
+    assert "-n 8 --dist worksteal" in dry_run
+    assert "--durations=0 --durations-min=0" in dry_run
+
+
+def test_runtime_package_make_test_all_frozen_uses_repository_owned_comparison_tool() -> (
+    None
+):
+    dry_run = _runtime_package_make_dry_run("test-all-frozen")
+
+    assert (
+        'test -n "" || { echo "TEST_ALL_FROZEN_REF is required"; exit 2; }' in dry_run
+    )
+    assert f'make -C "{REPO_ROOT}" root-check-env >/dev/null' in dry_run
+    assert (
+        f'"{REPO_ROOT / "artifacts" / "root" / "check-venv" / "bin" / "python"}" -m bijux_phylogenetics_dev.quality.frozen_test_report check'
+        in dry_run
+    )
+    assert '--package "bijux-phylogenetics"' in dry_run
+    assert (
+        f'--artifacts-root "{REPO_ROOT / "artifacts" / "bijux-phylogenetics" / "test-frozen"}"'
+        in dry_run
+    )
+    assert '--full-suite-workers "8"' in dry_run
 
 
 def test_dev_package_make_excludes_slow_tests_by_default() -> None:
@@ -307,8 +482,13 @@ def test_dev_package_make_exposes_unfiltered_test_all_surface() -> None:
     ).read_text(encoding="utf-8")
 
     assert 'TEST_MAIN_ARGS = -m "not slow"' in dev_make
+    assert "FULL_SUITE_PYTEST_WORKERS ?= 8" in dev_make
+    assert "FULL_SUITE_PYTEST_DISTRIBUTION ?= worksteal" in dev_make
     assert "test-all: TEST_MAIN_ARGS =" in dev_make
-    assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in dev_make
+    assert (
+        "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION)"
+        in dev_make
+    )
     assert "test-all: test" in dev_make
 
 
@@ -320,10 +500,30 @@ def test_dev_package_make_exposes_unfiltered_test_all_plus_run_time_surface() ->
     assert 'TEST_MAIN_ARGS = -m "not slow"' in dev_make
     assert "test-all-plus-run-time: TEST_MAIN_ARGS =" in dev_make
     assert (
-        "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 --durations=0 --durations-min=0"
+        "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION) --durations=0 --durations-min=0"
         in dev_make
     )
     assert "test-all-plus-run-time: test" in dev_make
+
+
+def test_dev_package_make_exposes_frozen_full_suite_surface() -> None:
+    dev_make = (
+        REPO_ROOT / "makes" / "packages" / "bijux-phylogenetics-dev.mk"
+    ).read_text(encoding="utf-8")
+
+    assert (
+        "FROZEN_TEST_REPORT_PYTHON = $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python"
+        in dev_make
+    )
+    assert (
+        "test-all-frozen: ## Compare the full-suite output against TEST_ALL_FROZEN_REF"
+        in dev_make
+    )
+    assert (
+        '"$(FROZEN_TEST_REPORT_PYTHON)" -m bijux_phylogenetics_dev.quality.frozen_test_report check'
+        in dev_make
+    )
+    assert '--full-suite-workers "$(FULL_SUITE_PYTEST_WORKERS)"' in dev_make
 
 
 def test_long_running_runtime_workflows_stay_slow_marked() -> None:
@@ -332,6 +532,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "datasets"
+        / "studies"
         / "test_avian_reproductive_trait_dataset.py": {
             "test_write_avian_reproductive_trait_workflow_bundle_matches_packaged_expected_outputs",
             "test_run_avian_reproductive_trait_demo_materializes_dataset_and_workflow",
@@ -341,6 +543,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "workflows"
+        / "pipelines"
         / "test_fasta_to_tree_real_workflows.py": {
             "test_run_fasta_to_tree_workflow_matches_real_output_golden",
             "test_adapter_fasta_to_tree_cli_matches_real_output_golden",
@@ -349,6 +553,19 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "workflows"
+        / "benchmarks"
+        / "test_large_alignment_inference.py": {
+            "test_run_large_alignment_inference_streams_many_sequences_and_reports_resources",
+            "test_run_large_alignment_inference_honors_timeout_seconds",
+            "test_run_large_alignment_inference_can_clean_incomplete_outputs",
+        },
+        REPO_ROOT
+        / "packages"
+        / "bijux-phylogenetics"
+        / "tests"
+        / "workflows"
+        / "benchmarks"
         / "test_large_dataset_stress.py": {
             "test_benchmark_large_dataset_stress_suite_small_tier_reports_all_workloads",
             "test_cli_benchmark_stress_suite_reports_tier_and_observation_count",
@@ -358,12 +575,20 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "workflows"
+        / "benchmarks"
         / "test_validation_corpus_iteration.py": {
             "test_build_method_accuracy_dashboard_summarizes_fixture_and_corpus_pass_rates",
             "test_build_runtime_and_memory_dashboards_cover_sites_and_posterior_samples",
             "test_build_scientific_validation_report_separates_claim_statuses",
         },
-        REPO_ROOT / "packages" / "bijux-phylogenetics" / "tests" / "test_runtime.py": {
+        REPO_ROOT
+        / "packages"
+        / "bijux-phylogenetics"
+        / "tests"
+        / "workflows"
+        / "pipelines"
+        / "test_runtime.py": {
             "test_cli_benchmark_tree_validation_reports_observations",
             "test_cli_evidence_book_validate_json_output",
             "test_cli_evidence_book_build_json_output",
@@ -374,6 +599,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "datasets"
+        / "studies"
         / "test_primate_comparative_dataset.py": {
             "test_write_primate_comparative_workflow_bundle_matches_packaged_expected_outputs",
             "test_run_primate_comparative_demo_materializes_dataset_and_workflow",
@@ -383,6 +610,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "comparative"
+        / "regression"
         / "test_pgls_lambda_fit.py": {
             "test_run_pgls_estimated_lambda_matches_primate_reference_bundle",
         },
@@ -390,6 +619,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "datasets"
+        / "reference_panels"
         / "test_catarrhine_mitogenome_five_locus_panel_dataset.py": {
             "test_write_catarrhine_mitogenome_five_locus_panel_workflow_bundle_matches_packaged_expected_outputs",
             "test_run_catarrhine_mitogenome_five_locus_panel_demo_materializes_dataset_and_workflow",
@@ -399,6 +630,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "datasets"
+        / "reference_panels"
         / "test_pleistocene_bear_cytb_fragment_dataset.py": {
             "test_write_pleistocene_bear_cytb_fragment_workflow_bundle_matches_packaged_expected_outputs",
             "test_run_pleistocene_bear_cytb_fragment_demo_materializes_dataset_and_workflow",
@@ -408,6 +641,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "datasets"
+        / "studies"
         / "test_central_european_seashore_flora_dataset.py": {
             "test_write_central_european_seashore_flora_workflow_bundle_matches_packaged_expected_outputs",
             "test_run_central_european_seashore_flora_demo_materializes_dataset_and_workflow",
@@ -417,15 +652,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
-        / "test_rabies_cross_host_geography_panel_dataset.py": {
-            "test_write_rabies_cross_host_geography_panel_workflow_bundle_matches_packaged_expected_outputs",
-            "test_run_rabies_cross_host_geography_panel_demo_materializes_dataset_and_workflow",
-            "test_cli_demo_rabies_cross_host_geography_panel_json_output_reports_integrated_workflow",
-        },
-        REPO_ROOT
-        / "packages"
-        / "bijux-phylogenetics"
-        / "tests"
+        / "datasets"
+        / "reference_panels"
         / "test_influenza_a_ha_reference_dataset.py": {
             "test_write_influenza_a_ha_reference_workflow_bundle_matches_packaged_expected_outputs",
             "test_run_influenza_a_ha_reference_demo_materializes_dataset_and_workflow",
@@ -435,6 +663,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "datasets"
+        / "benchmarks"
         / "test_known_answer_reference_dataset.py": {
             "test_write_known_answer_reference_workflow_bundle_matches_packaged_expected_outputs",
             "test_run_known_answer_reference_demo_materializes_dataset_and_workflow",
@@ -445,6 +675,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "workflows"
+        / "pipelines"
         / "test_fasta_to_tree_workflow.py": {
             "test_run_fasta_to_tree_workflow_materializes_expected_outputs_for_three_datasets",
         },
@@ -452,6 +684,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "evidence"
+        / "authoring"
         / "test_evidence_workbench.py": {
             "test_refresh_evidence_book_writes_repo_index_outputs",
         },
@@ -470,11 +704,14 @@ def test_governed_stress_tests_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "workflows"
+        / "benchmarks"
         / "test_large_dataset_stress.py",
         REPO_ROOT
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "alignment"
         / "test_large_fasta_streaming.py",
     ]
 
@@ -530,11 +767,22 @@ def test_repository_test_all_surface_disables_pytest_timeout_in_all_packages() -
         encoding="utf-8"
     )
 
-    assert "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time" in root_make
+    assert (
+        "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time test-all-frozen"
+        in root_make
+    )
     assert "ROOT_TARGET_PACKAGES_test-all := $(CHECK_PACKAGES)" in root_make
     assert "test-all: TEST_MAIN_ARGS =" in dev_make
-    assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in dev_make
-    assert "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0" in alias_make
+    assert (
+        "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION)"
+        in dev_make
+    )
+    assert (
+        "test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION)"
+        in alias_make
+    )
+    assert "test-all-frozen:" in dev_make
+    assert "test-all-frozen:" in alias_make
 
 
 def test_repository_test_all_plus_run_time_surface_disables_timeout_and_reports_durations_in_all_packages() -> (
@@ -548,19 +796,43 @@ def test_repository_test_all_plus_run_time_surface_disables_timeout_and_reports_
         encoding="utf-8"
     )
 
-    assert "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time" in root_make
+    assert (
+        "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time test-all-frozen"
+        in root_make
+    )
     assert (
         "ROOT_TARGET_PACKAGES_test-all-plus-run-time := $(CHECK_PACKAGES)" in root_make
     )
     assert "test-all-plus-run-time: TEST_MAIN_ARGS =" in dev_make
     assert (
-        "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 --durations=0 --durations-min=0"
+        "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION) --durations=0 --durations-min=0"
         in dev_make
     )
     assert (
-        "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 --durations=0 --durations-min=0"
+        "test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION) --durations=0 --durations-min=0"
         in alias_make
     )
+
+
+def test_repository_test_all_frozen_surface_routes_across_all_package_profiles() -> (
+    None
+):
+    root_make = (REPO_ROOT / "makes" / "root.mk").read_text(encoding="utf-8")
+    dev_make = (
+        REPO_ROOT / "makes" / "packages" / "bijux-phylogenetics-dev.mk"
+    ).read_text(encoding="utf-8")
+    alias_make = (REPO_ROOT / "makes" / "packages" / "phylogenetic.mk").read_text(
+        encoding="utf-8"
+    )
+
+    assert (
+        "ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time test-all-frozen"
+        in root_make
+    )
+    assert "ROOT_TARGET_PACKAGES_test-all-frozen := $(CHECK_PACKAGES)" in root_make
+    assert "ROOT_TARGET_SHARED_ENV_test-all-frozen ?= 0" in root_make
+    assert "test-all-frozen:" in dev_make
+    assert "test-all-frozen:" in alias_make
 
 
 def test_root_conftest_registers_markers_from_repository_pytest_config() -> None:

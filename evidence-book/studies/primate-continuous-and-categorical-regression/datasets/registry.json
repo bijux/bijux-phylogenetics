@@ -1,0 +1,49 @@
+{
+  "dataset_count": 6,
+  "datasets": [
+    {
+      "dataset_id": "dataset-001",
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM3 primate raw workbook",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/primate_raw.xlsx",
+      "schema_summary": "Checked-in copy of the workbook used to derive the PCM3 workspace and its multivariable primate columns."
+    },
+    {
+      "dataset_id": "dataset-002",
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM3 primate tree",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/primatetree.nex",
+      "schema_summary": "Primary Nexus tree used for the multivariable primate regressions."
+    },
+    {
+      "dataset_id": "dataset-003",
+      "kind": "repository-owned-workspace-object",
+      "label": "Checked-in PCM3 primate workspace object `primate`",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/primate.RData#primate",
+      "schema_summary": "Reloaded lecture workspace table carrying the multivariable primate predictors and response used by the PCM3 regression examples."
+    },
+    {
+      "dataset_id": "dataset-004",
+      "kind": "repository-owned-workspace-object",
+      "label": "Checked-in PCM3 primate workspace object `primatetree`",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/primate.RData#primatetree",
+      "schema_summary": "Reloaded lecture workspace tree object paired with the PCM3 primate table after the course-side preprocessing step."
+    },
+    {
+      "dataset_id": "dataset-005",
+      "kind": "study-local-governed-derivative",
+      "label": "PCM3 governed primate reference table",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/reference_primate.csv",
+      "schema_summary": "Study-local governed primate table preserved inside the PCM3 dossier for reproducible workspace and regression review."
+    },
+    {
+      "dataset_id": "dataset-006",
+      "kind": "study-local-governed-derivative",
+      "label": "PCM3 governed trimmed primate tree",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/reference_trimmed_primatetree.nwk",
+      "schema_summary": "Study-local governed trimmed Newick tree preserved inside the PCM3 dossier for explicit tree-alignment review."
+    }
+  ],
+  "schema_version": 1,
+  "study_id": "primate-continuous-and-categorical-regression"
+}

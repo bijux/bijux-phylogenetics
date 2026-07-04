@@ -1,0 +1,21 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm5-repeated-measure-workspace-contract",
+      "claim_title": "Cichlid repeated-measure workspace contract bundle",
+      "evidence_ids": [
+        "evidence-001"
+      ],
+      "source_fragments": [
+        "fish-workspace-reload",
+        "repeated-measure-data-contract"
+      ],
+      "summary": "Governed study slice for the PCM5 fish workspace reload and repeated-measure data contract.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-001",
+  "schema_version": 1,
+  "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models"
+}

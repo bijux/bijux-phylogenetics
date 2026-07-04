@@ -1,5 +1,11 @@
 """Stable Python workflow entrypoints for notebook and pipeline use."""
 
+from bijux_phylogenetics.engines import (
+    NATIVE_MAXIMUM_LIKELIHOOD_ONLY_ENV_VAR,
+    is_native_maximum_likelihood_only_mode_enabled,
+    native_maximum_likelihood_only_mode,
+)
+
 from .workflow_results import (
     AlignmentWorkflowResult,
     AncestralReconstructionWorkflowResult,
@@ -34,11 +40,14 @@ __all__ = [
     "ConfiguredPhyloWorkflowResult",
     "FastaValidationResult",
     "InferenceWorkflowResult",
+    "NATIVE_MAXIMUM_LIKELIHOOD_ONLY_ENV_VAR",
     "ReportWorkflowResult",
     "SequenceToTreeWorkflowResult",
     "SupportWorkflowResult",
     "TreeComparisonWorkflowResult",
     "TrimmingWorkflowResult",
+    "is_native_maximum_likelihood_only_mode_enabled",
+    "native_maximum_likelihood_only_mode",
     "render_report_workflow",
     "run_alignment_workflow",
     "run_ancestral_reconstruction_workflow",

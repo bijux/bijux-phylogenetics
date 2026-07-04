@@ -7,7 +7,6 @@ import math
 import re
 
 from bijux_phylogenetics.bayesian.substitution_parameter_priors import (
-    SUBSTITUTION_PARAMETER_PRIOR_TARGETS,
     SubstitutionParameterPriorBundle,
     build_substitution_parameter_prior_bundle,
     evaluate_substitution_parameter_log_prior,
@@ -25,7 +24,13 @@ from bijux_phylogenetics.phylo.likelihood.invariant import (
 from bijux_phylogenetics.runtime.errors import PhylogeneticsError
 
 PARTITION_PARAMETER_LINKAGE_POLICIES = ("linked", "unlinked")
-PARTITION_MODEL_PRIOR_TARGETS = SUBSTITUTION_PARAMETER_PRIOR_TARGETS
+PARTITION_MODEL_PRIOR_TARGETS = (
+    "kappa",
+    "exchangeabilities",
+    "base-frequencies",
+    "gamma-alpha",
+    "invariant-proportion",
+)
 PARTITION_SUBSTITUTION_BASE_MODELS = ("F81", "GTR", "HKY85", "JC69", "K80")
 
 _PARTITION_MODEL_MODIFIER = re.compile(r"^G\d+$")

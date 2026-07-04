@@ -71,7 +71,10 @@ def validate_discrete_ancestral_reference_examples(
     )
     observations.append(_validate_root_prior_behavior())
     observations.append(_validate_ambiguous_state_behavior())
-    observations.append(_validate_ordered_constraint_behavior())
+    observations.extend(
+        _validate_ordered_constraint_behavior(model=model)
+        for model in ("equal-rates", "symmetric", "all-rates-different")
+    )
     observations.append(_validate_irreversible_constraint_behavior())
     external_case_count = sum(
         observation.category == "external-marginal-probability"
@@ -302,14 +305,17 @@ def _validate_ambiguous_state_behavior() -> DiscreteAncestralReferenceObservatio
     )
 
 
-def _validate_ordered_constraint_behavior() -> DiscreteAncestralReferenceObservation:
+def _validate_ordered_constraint_behavior(
+    *,
+    model: str,
+) -> DiscreteAncestralReferenceObservation:
     tree_fixture = get_shared_tree_fixture("balanced_rooted_ultrametric")
     trait_fixture = get_shared_trait_table_fixture("multistate_discrete_match")
     report = summarize_ordered_discrete_reconstruction(
         tree_fixture.path,
         trait_fixture.path,
         trait="region",
-        model="equal-rates",
+        model=model,
         ordered_states=["north", "south", "island"],
     )
     summary = summarize_ordered_discrete_report(report)
@@ -321,12 +327,24 @@ def _validate_ordered_constraint_behavior() -> DiscreteAncestralReferenceObserva
     expected_metrics = {
         "restricted_transition_count": 2,
         "preferred_ordering": "ordered",
+        "ordered_parameter_count": {
+            "equal-rates": 1,
+            "symmetric": 2,
+            "all-rates-different": 4,
+        }[model],
+        "unordered_parameter_count": {
+            "equal-rates": 1,
+            "symmetric": 3,
+            "all-rates-different": 6,
+        }[model],
         "north_to_island_allowed": False,
         "north_to_island_rate": 0.0,
     }
     observed_metrics = {
         "restricted_transition_count": summary.restricted_transition_count,
         "preferred_ordering": summary.preferred_ordering,
+        "ordered_parameter_count": summary.ordered_parameter_count,
+        "unordered_parameter_count": summary.unordered_parameter_count,
         "north_to_island_allowed": north_to_island.ordered_transition_allowed,
         "north_to_island_rate": north_to_island.ordered_rate,
     }
@@ -335,6 +353,10 @@ def _validate_ordered_constraint_behavior() -> DiscreteAncestralReferenceObserva
         == expected_metrics["restricted_transition_count"]
         and observed_metrics["preferred_ordering"]
         == expected_metrics["preferred_ordering"]
+        and observed_metrics["ordered_parameter_count"]
+        == expected_metrics["ordered_parameter_count"]
+        and observed_metrics["unordered_parameter_count"]
+        == expected_metrics["unordered_parameter_count"]
         and observed_metrics["north_to_island_allowed"]
         == expected_metrics["north_to_island_allowed"]
         and math.isclose(
@@ -345,10 +367,10 @@ def _validate_ordered_constraint_behavior() -> DiscreteAncestralReferenceObserva
         )
     )
     return DiscreteAncestralReferenceObservation(
-        case_id="ordered_transition_constraints",
+        case_id=f"ordered_transition_constraints_{model.replace('-', '_')}",
         category="ordered-constraint-policy",
         source="owned ordered-state policy",
-        model="equal-rates",
+        model=model,
         tolerance=1e-12,
         expected_metrics=expected_metrics,
         observed_metrics=observed_metrics,
@@ -370,7 +392,7 @@ def _validate_irreversible_constraint_behavior() -> (
         fixtures_root / "trees/example_tree_six_taxa.nwk",
         fixtures_root / "metadata/example_traits_irreversible_loss.tsv",
         trait="state",
-        model="all-rates-different",
+        model="irreversible",
         allowed_transition_pairs=[("present", "absent")],
     )
     summary = summarize_irreversible_discrete_report(report)
@@ -409,7 +431,7 @@ def _validate_irreversible_constraint_behavior() -> (
         case_id="irreversible_loss_constraints",
         category="irreversible-constraint-policy",
         source="owned irreversible-transition policy",
-        model="all-rates-different",
+        model="irreversible",
         tolerance=1e-12,
         expected_metrics=expected_metrics,
         observed_metrics=observed_metrics,

@@ -1,10 +1,10 @@
 {
   "bijux_signal_test": {
-    "estimated_lambda": 0.805,
-    "estimated_log_likelihood": -446.943635101219,
-    "likelihood_ratio": 41.0296165956062,
+    "estimated_lambda": 0.802734483418528,
+    "estimated_log_likelihood": -446.943234052594,
+    "likelihood_ratio": 41.0304186928552,
     "null_log_likelihood": -467.458443399022,
-    "p_value": 1.49939793856223e-10
+    "p_value": 1.49878271761195e-10
   },
   "evidence_id": "evidence-004",
   "r_signal_test": {

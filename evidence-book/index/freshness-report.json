@@ -1,20 +1,236 @@
 {
-  "bundle_count": 19,
+  "bundle_count": 43,
   "entries": [
     {
       "evidence_id": "evidence-001",
-      "freshness_status": "stale",
-      "last_generated_on": "2026-06-02",
-      "latest_governed_change_on": "2026-06-16",
-      "relative_path": "studies/primate-longevity-signal/evidence-001",
-      "study_id": "primate-longevity-signal",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-001",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
       "tracked_input_count": 2
     },
     {
       "evidence_id": "evidence-002",
       "freshness_status": "current",
-      "last_generated_on": "2026-06-02",
-      "latest_governed_change_on": "2026-05-31",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-002",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-003",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-003",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-004",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-004",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-005",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-005",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-006",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-006",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-007",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-007",
+      "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-001",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-001",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-002",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-002",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-003",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-003",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-004",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-004",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-005",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-005",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-006",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-006",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-007",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-007",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-008",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-008",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-009",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-009",
+      "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-001",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-001",
+      "study_id": "primate-continuous-and-categorical-regression",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-002",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-002",
+      "study_id": "primate-continuous-and-categorical-regression",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-003",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-003",
+      "study_id": "primate-continuous-and-categorical-regression",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-004",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-004",
+      "study_id": "primate-continuous-and-categorical-regression",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-005",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-005",
+      "study_id": "primate-continuous-and-categorical-regression",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-006",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-006",
+      "study_id": "primate-continuous-and-categorical-regression",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-007",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-007",
+      "study_id": "primate-continuous-and-categorical-regression",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-008",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/primate-continuous-and-categorical-regression/evidence-008",
+      "study_id": "primate-continuous-and-categorical-regression",
+      "tracked_input_count": 2
+    },
+    {
+      "evidence_id": "evidence-001",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
+      "relative_path": "studies/primate-longevity-signal/evidence-001",
+      "study_id": "primate-longevity-signal",
+      "tracked_input_count": 1
+    },
+    {
+      "evidence_id": "evidence-002",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
       "relative_path": "studies/primate-longevity-signal/evidence-002",
       "study_id": "primate-longevity-signal",
       "tracked_input_count": 3
@@ -22,160 +238,159 @@
     {
       "evidence_id": "evidence-003",
       "freshness_status": "current",
-      "last_generated_on": "2026-05-14",
-      "latest_governed_change_on": "2026-05-10",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
       "relative_path": "studies/primate-longevity-signal/evidence-003",
       "study_id": "primate-longevity-signal",
-      "tracked_input_count": 1
+      "tracked_input_count": 3
     },
     {
       "evidence_id": "evidence-004",
       "freshness_status": "current",
-      "last_generated_on": "2026-05-14",
-      "latest_governed_change_on": "2026-05-10",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
       "relative_path": "studies/primate-longevity-signal/evidence-004",
       "study_id": "primate-longevity-signal",
-      "tracked_input_count": 1
+      "tracked_input_count": 3
     },
     {
       "evidence_id": "evidence-005",
       "freshness_status": "current",
-      "last_generated_on": "2026-05-14",
-      "latest_governed_change_on": "2026-05-10",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
       "relative_path": "studies/primate-longevity-signal/evidence-005",
       "study_id": "primate-longevity-signal",
-      "tracked_input_count": 1
+      "tracked_input_count": 3
     },
     {
       "evidence_id": "evidence-006",
       "freshness_status": "current",
-      "last_generated_on": "2026-05-14",
-      "latest_governed_change_on": "2026-05-10",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
       "relative_path": "studies/primate-longevity-signal/evidence-006",
       "study_id": "primate-longevity-signal",
-      "tracked_input_count": 1
+      "tracked_input_count": 3
     },
     {
       "evidence_id": "evidence-007",
       "freshness_status": "current",
-      "last_generated_on": "2026-05-14",
-      "latest_governed_change_on": "2026-05-10",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
       "relative_path": "studies/primate-longevity-signal/evidence-007",
       "study_id": "primate-longevity-signal",
-      "tracked_input_count": 1
+      "tracked_input_count": 3
     },
     {
       "evidence_id": "evidence-008",
       "freshness_status": "current",
-      "last_generated_on": "2026-05-14",
-      "latest_governed_change_on": "2026-05-10",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
       "relative_path": "studies/primate-longevity-signal/evidence-008",
       "study_id": "primate-longevity-signal",
-      "tracked_input_count": 1
+      "tracked_input_count": 3
     },
     {
       "evidence_id": "evidence-009",
       "freshness_status": "current",
-      "last_generated_on": "2026-05-14",
-      "latest_governed_change_on": "2026-05-10",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
       "relative_path": "studies/primate-longevity-signal/evidence-009",
       "study_id": "primate-longevity-signal",
-      "tracked_input_count": 1
+      "tracked_input_count": 3
     },
     {
       "evidence_id": "evidence-001",
-      "freshness_status": "stale",
-      "last_generated_on": "2026-05-27",
-      "latest_governed_change_on": "2026-05-31",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
       "relative_path": "studies/primate-pgls-and-signal/evidence-001",
       "study_id": "primate-pgls-and-signal",
-      "tracked_input_count": 4
+      "tracked_input_count": 2
     },
     {
       "evidence_id": "evidence-002",
       "freshness_status": "current",
-      "last_generated_on": "2026-06-18",
-      "latest_governed_change_on": "2026-05-31",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
       "relative_path": "studies/primate-pgls-and-signal/evidence-002",
       "study_id": "primate-pgls-and-signal",
-      "tracked_input_count": 4
+      "tracked_input_count": 2
     },
     {
       "evidence_id": "evidence-003",
-      "freshness_status": "stale",
-      "last_generated_on": "2026-05-27",
-      "latest_governed_change_on": "2026-05-31",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
       "relative_path": "studies/primate-pgls-and-signal/evidence-003",
       "study_id": "primate-pgls-and-signal",
-      "tracked_input_count": 4
+      "tracked_input_count": 2
     },
     {
       "evidence_id": "evidence-004",
-      "freshness_status": "stale",
-      "last_generated_on": "2026-05-27",
-      "latest_governed_change_on": "2026-05-31",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
       "relative_path": "studies/primate-pgls-and-signal/evidence-004",
       "study_id": "primate-pgls-and-signal",
-      "tracked_input_count": 4
+      "tracked_input_count": 2
     },
     {
       "evidence_id": "evidence-005",
-      "freshness_status": "stale",
-      "last_generated_on": "2026-05-27",
-      "latest_governed_change_on": "2026-05-31",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
       "relative_path": "studies/primate-pgls-and-signal/evidence-005",
       "study_id": "primate-pgls-and-signal",
-      "tracked_input_count": 4
+      "tracked_input_count": 2
     },
     {
       "evidence_id": "evidence-006",
-      "freshness_status": "stale",
-      "last_generated_on": "2026-05-27",
-      "latest_governed_change_on": "2026-05-31",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
       "relative_path": "studies/primate-pgls-and-signal/evidence-006",
       "study_id": "primate-pgls-and-signal",
-      "tracked_input_count": 4
+      "tracked_input_count": 2
     },
     {
       "evidence_id": "evidence-007",
-      "freshness_status": "stale",
-      "last_generated_on": "2026-05-27",
-      "latest_governed_change_on": "2026-05-31",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
       "relative_path": "studies/primate-pgls-and-signal/evidence-007",
       "study_id": "primate-pgls-and-signal",
-      "tracked_input_count": 4
+      "tracked_input_count": 2
     },
     {
       "evidence_id": "evidence-008",
-      "freshness_status": "stale",
-      "last_generated_on": "2026-05-27",
-      "latest_governed_change_on": "2026-05-31",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
       "relative_path": "studies/primate-pgls-and-signal/evidence-008",
       "study_id": "primate-pgls-and-signal",
-      "tracked_input_count": 4
+      "tracked_input_count": 2
     },
     {
       "evidence_id": "evidence-009",
-      "freshness_status": "stale",
-      "last_generated_on": "2026-05-27",
-      "latest_governed_change_on": "2026-05-31",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
       "relative_path": "studies/primate-pgls-and-signal/evidence-009",
       "study_id": "primate-pgls-and-signal",
-      "tracked_input_count": 4
+      "tracked_input_count": 2
     },
     {
       "evidence_id": "evidence-010",
-      "freshness_status": "stale",
-      "last_generated_on": "2026-05-27",
-      "latest_governed_change_on": "2026-05-31",
+      "freshness_status": "current",
+      "last_generated_on": "2026-07-04",
+      "latest_governed_change_on": "2026-07-04",
       "relative_path": "studies/primate-pgls-and-signal/evidence-010",
       "study_id": "primate-pgls-and-signal",
-      "tracked_input_count": 4
+      "tracked_input_count": 2
     }
   ],
   "freshness_status_counts": {
-    "current": 9,
-    "stale": 10
+    "current": 43
   },
   "schema_version": 1
 }

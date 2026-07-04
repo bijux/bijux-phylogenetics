@@ -24,7 +24,7 @@
       "label": "results/reviewer-summary.json",
       "locator": "evidence-book/studies/primate-longevity-signal/evidence-002/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "bdcfb57ec23072f251635b75b679fa72e5c9cd7a351ed49e00b540c1cfcaeb80"
+      "sha256": "b31ad8f2af68dda1c71d00c80b0f38c8cbc7256bcfa83d2c177cf31b892d38fd"
     },
     {
       "input_id": "local-input-004",
@@ -32,7 +32,7 @@
       "label": "results/reviewer-summary.md",
       "locator": "evidence-book/studies/primate-longevity-signal/evidence-002/results/reviewer-summary.md",
       "read_only": false,
-      "sha256": "d342febcd2fc2d235a8b49fcf6af489b967de629cb32d2bfff01add1ca3d1523"
+      "sha256": "71f140d749cbb4f9c97a87a4cf6b501021b6c5be351f8580dc9c33b21620feea"
     },
     {
       "input_id": "local-input-005",
@@ -40,7 +40,7 @@
       "label": "results/workbook-loading-parity.json",
       "locator": "evidence-book/studies/primate-longevity-signal/evidence-002/results/workbook-loading-parity.json",
       "read_only": false,
-      "sha256": "888bd2bc18a08d4dd2b22c0642c856373403cc6a438cc50ab78267cefb3294cc"
+      "sha256": "a42e739a0407e9bed268b9c5132eecf8071360543ab0f5a442ed3e04176083b3"
     }
   ],
   "local_input_count": 0,
@@ -50,10 +50,11 @@
   "source_inputs": [
     {
       "input_id": "source-input-001",
-      "kind": "external-course-material",
-      "label": "lund pcm1 raw primate workbook",
-      "locator": "external:lund/pcm1-plots-signal/data/primate_raw.xlsx",
-      "read_only": true
+      "kind": "repository-reference",
+      "label": "checked-in pcm1 raw primate workbook",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/primate_raw.xlsx",
+      "read_only": true,
+      "sha256": "913dbc345dbbaa71ecbf8a5e303635a29a386e3ab9dff216710d3d8a3e89962d"
     },
     {
       "input_id": "source-input-002",

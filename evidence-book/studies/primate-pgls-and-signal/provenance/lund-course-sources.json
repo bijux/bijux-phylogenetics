@@ -1,7 +1,7 @@
 {
-  "intake_policy": "read-only-external-source",
+  "intake_policy": "repository-owned-source",
   "schema_version": 1,
-  "source_count": 3,
+  "source_count": 5,
   "sources": [
     {
       "concept_tags": [
@@ -10,17 +10,17 @@
         "gls",
         "evolutionary-models"
       ],
-      "kind": "external-course-script",
+      "kind": "repository-owned-source-copy",
       "label": "Lund PCM2 modes and PGLS lecture script",
-      "locator": "external:lund/pcm2-modes-pgls/script",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/reference/lund_pcm2_modes_pgls_source.R",
       "path_hint": "PCM2_modes_pgls/Lecture/R/Scripts/PCM2_modes_pgls.R",
       "read_only": true,
       "source_id": "lund-pcm2-script"
     },
     {
-      "kind": "external-course-workspace",
-      "label": "Lund primate workspace RData",
-      "locator": "external:lund/pcm2-modes-pgls/data/primate.RData",
+      "kind": "repository-owned-workspace",
+      "label": "Checked-in PCM2 primate workspace",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/datasets/primate.RData",
       "provides": [
         "primate",
         "primatetree"
@@ -29,15 +29,31 @@
       "source_id": "lund-primate-rdata"
     },
     {
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM2 primate raw workbook",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/datasets/primate_raw.xlsx",
+      "path_hint": "PCM2_modes_pgls/Lecture/R/Data/primate_raw.xlsx",
+      "read_only": true,
+      "source_id": "lund-pcm2-primate-workbook"
+    },
+    {
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM2 primate tree",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/datasets/primatetree.nex",
+      "path_hint": "PCM2_modes_pgls/Lecture/R/Data/primatetree.nex",
+      "read_only": true,
+      "source_id": "lund-pcm2-primate-tree"
+    },
+    {
       "kind": "repository-reference",
-      "label": "Governed primate CSV and trimmed tree from the earlier evidence study",
-      "locator": "evidence-book/studies/primate-longevity-signal/evidence-001",
+      "label": "PCM2-local governed primate CSV and trimmed tree",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/datasets",
       "provides": [
         "reference_primate.csv",
         "reference_trimmed_primatetree.nwk"
       ],
       "read_only": false,
-      "source_id": "governed-primate-reference-artifacts"
+      "source_id": "governed-pcm2-reference-artifacts"
     }
   ],
   "study_id": "primate-pgls-and-signal"

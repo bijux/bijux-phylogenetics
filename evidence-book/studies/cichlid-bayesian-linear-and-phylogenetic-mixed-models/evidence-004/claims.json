@@ -1,0 +1,21 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm4-tree-inverse-and-random-effect-setup",
+      "claim_title": "Cichlid phylogenetic inverse setup bundle",
+      "evidence_ids": [
+        "evidence-004"
+      ],
+      "source_fragments": [
+        "tree-inverse-construction",
+        "phylogenetic-random-effect-setup"
+      ],
+      "summary": "Governed study slice for the PCM4 tree inverse construction and phylogenetic random-effect setup.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-004",
+  "schema_version": 1,
+  "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+}

@@ -26,7 +26,7 @@
   ],
   "schema_version": 2,
   "source_basis_locators": [
-    "external:lund/pcm1-plots-signal/data/primate_raw.xlsx",
+    "evidence-book/studies/primate-longevity-signal/datasets/primate_raw.xlsx",
     "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
     "evidence-book/studies/primate-longevity-signal/evidence-002/workbook-loading-parity.json"
   ],

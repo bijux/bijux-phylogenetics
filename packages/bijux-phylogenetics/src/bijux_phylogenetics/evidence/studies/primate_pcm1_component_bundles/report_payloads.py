@@ -18,9 +18,9 @@ def build_component_report_payload(
             "schema_version": 1,
             "study_id": STUDY_ID,
             "evidence_id": evidence_id,
-            "raw_workbook_locator": "external:lund/pcm1-plots-signal/data/primate_raw.xlsx",
+            "raw_workbook_locator": "evidence-book/studies/primate-longevity-signal/datasets/primate_raw.xlsx",
             "governed_processed_reference_locator": (
-                "evidence-book/studies/primate-longevity-signal/evidence-001/"
+                "evidence-book/studies/primate-longevity-signal/datasets/"
                 "reference_primate.csv"
             ),
             "raw_row_count": r_results["data_processing"]["raw_row_count"],
@@ -33,7 +33,7 @@ def build_component_report_payload(
             ],
             "reference_column_order": list(reference_rows[0].keys()),
             "boundary_note": (
-                "The raw workbook remains external; the governed processed reference table is the reproducible repository-side handoff."
+                "The checked-in workbook copy is preserved for auditability, but the governed processed reference table remains the reproducible repository-side handoff."
             ),
         }
     if evidence_id == "evidence-003":
@@ -107,8 +107,8 @@ def build_component_report_payload(
             "schema_version": 1,
             "study_id": STUDY_ID,
             "evidence_id": evidence_id,
-            "original_tree_locator": "external:lund/pcm1-plots-signal/data/primatetree.nex",
-            "trimmed_tree_locator": "external:lund/pcm1-plots-signal/data/trimmed_primatetree.nex",
+            "original_tree_locator": "evidence-book/studies/primate-longevity-signal/datasets/primatetree.nex",
+            "trimmed_tree_locator": "evidence-book/studies/primate-longevity-signal/datasets/trimmed_primatetree.nex",
             "r_original_tip_count": tree_processing["r"]["original_tip_count"],
             "bijux_original_tip_count": tree_processing["bijux"]["original_tree"][
                 "inspect"
@@ -169,15 +169,15 @@ def build_component_report_payload(
             "schema_version": 1,
             "study_id": STUDY_ID,
             "evidence_id": evidence_id,
-            "processed_csv_locator": r_results["data_processing"][
-                "checked_in_processed_path"
-            ],
+            "processed_csv_locator": (
+                "evidence-book/studies/primate-longevity-signal/datasets/primate.csv"
+            ),
             "governed_processed_reference_locator": r_results["data_processing"][
                 "reference_processed_path"
             ],
-            "trimmed_tree_locator": "external:lund/pcm1-plots-signal/data/trimmed_primatetree.nex",
+            "trimmed_tree_locator": "evidence-book/studies/primate-longevity-signal/datasets/trimmed_primatetree.nex",
             "governed_trimmed_tree_reference_locator": (
-                "evidence-book/studies/primate-longevity-signal/evidence-001/"
+                "evidence-book/studies/primate-longevity-signal/datasets/"
                 "reference_trimmed_primatetree.nwk"
             ),
             "checked_in_processed_matches_reference": r_results["data_processing"][

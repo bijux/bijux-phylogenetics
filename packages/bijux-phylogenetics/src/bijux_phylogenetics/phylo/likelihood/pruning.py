@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 import math
 
@@ -11,6 +11,7 @@ from bijux_phylogenetics.phylo.topology.tree import PhyloTree, TreeNode
 from .ctmc import ValidatedCtmcRateMatrix, validate_ctmc_rate_matrix
 
 _EIGENVALUE_REAL_PART_TOLERANCE = 1e-9
+_EIGENVECTOR_CONDITION_NUMBER_MAX = 1e12
 _TRANSITION_NEGATIVE_TOLERANCE = 1e-12
 _TRANSITION_ROW_SUM_TOLERANCE = 1e-12
 _UNIFORMIZATION_TOLERANCE = 1e-12
@@ -42,24 +43,15 @@ class FiniteStateTransitionMatrixEvaluator:
     """Branch-length transition evaluator for one validated finite-state model."""
 
     validated_rate_matrix: ValidatedCtmcRateMatrix
-    eigenvalues: numpy.ndarray
-    eigenvectors: numpy.ndarray
-    inverse_vectors: numpy.ndarray
+    eigendecomposition: FiniteStateRateMatrixEigendecomposition | None
     cache_matrices: bool
     transition_matrix_by_branch_length: dict[float, numpy.ndarray]
+    matrix_exponential_backend: str
     matrix_exponential_evaluation_count: int = 0
 
     @property
     def cached_branch_length_count(self) -> int:
         return len(self.transition_matrix_by_branch_length)
-
-    @property
-    def eigendecomposition(self) -> FiniteStateRateMatrixEigendecomposition:
-        return FiniteStateRateMatrixEigendecomposition(
-            eigenvalues=self.eigenvalues,
-            eigenvectors=self.eigenvectors,
-            inverse_vectors=self.inverse_vectors,
-        )
 
     def transition_probability_matrix(self, branch_length: float) -> numpy.ndarray:
         normalized_branch_length = _normalize_branch_length(branch_length)
@@ -94,14 +86,15 @@ def build_transition_matrix_evaluator(
 ) -> FiniteStateTransitionMatrixEvaluator:
     """Build one reusable transition evaluator for a single finite-state model."""
     validated_rate_matrix = _validated_rate_matrix(rate_matrix)
-    eigendecomposition = _compute_rate_matrix_eigendecomposition(validated_rate_matrix)
+    eigendecomposition = _resolve_rate_matrix_eigendecomposition(validated_rate_matrix)
     return FiniteStateTransitionMatrixEvaluator(
         validated_rate_matrix=validated_rate_matrix,
-        eigenvalues=eigendecomposition.eigenvalues,
-        eigenvectors=eigendecomposition.eigenvectors,
-        inverse_vectors=eigendecomposition.inverse_vectors,
+        eigendecomposition=eigendecomposition,
         cache_matrices=cache_matrices,
         transition_matrix_by_branch_length={},
+        matrix_exponential_backend=(
+            "eigendecomposition" if eigendecomposition is not None else "uniformization"
+        ),
     )
 
 
@@ -154,6 +147,23 @@ def _compute_rate_matrix_eigendecomposition(
     )
 
 
+def _resolve_rate_matrix_eigendecomposition(
+    validated_rate_matrix: ValidatedCtmcRateMatrix,
+) -> FiniteStateRateMatrixEigendecomposition | None:
+    try:
+        eigendecomposition = _compute_rate_matrix_eigendecomposition(
+            validated_rate_matrix
+        )
+    except numpy.linalg.LinAlgError:
+        return None
+    condition_number = float(numpy.linalg.cond(eigendecomposition.eigenvectors))
+    if not math.isfinite(condition_number):
+        return None
+    if condition_number > _EIGENVECTOR_CONDITION_NUMBER_MAX:
+        return None
+    return eigendecomposition
+
+
 def _compute_transition_probability_matrix(
     validated_rate_matrix: ValidatedCtmcRateMatrix,
     branch_length: float,
@@ -163,24 +173,26 @@ def _compute_transition_probability_matrix(
     if branch_length == 0.0:
         return numpy.eye(validated_rate_matrix.state_count, dtype=float)
     if eigendecomposition is None:
-        eigendecomposition = _compute_rate_matrix_eigendecomposition(
+        eigendecomposition = _resolve_rate_matrix_eigendecomposition(
             validated_rate_matrix
         )
-    try:
-        eigenvalues = eigendecomposition.eigenvalues
-        eigenvectors = eigendecomposition.eigenvectors
-        inverse_vectors = eigendecomposition.inverse_vectors
-        validated_eigenvalues = _validated_transition_eigenvalues(eigenvalues)
-        diagonal = numpy.diag(numpy.exp(validated_eigenvalues * branch_length))
-        transition = eigenvectors @ diagonal @ inverse_vectors
-    except ValueError:
-        return _compute_transition_probability_matrix_by_uniformization(
-            validated_rate_matrix,
-            branch_length,
-        )
-    return _stabilize_transition_probability_matrix(
-        transition,
-        state_count=validated_rate_matrix.state_count,
+    if eigendecomposition is not None:
+        try:
+            eigenvalues = eigendecomposition.eigenvalues
+            eigenvectors = eigendecomposition.eigenvectors
+            inverse_vectors = eigendecomposition.inverse_vectors
+            validated_eigenvalues = _validated_transition_eigenvalues(eigenvalues)
+            diagonal = numpy.diag(numpy.exp(validated_eigenvalues * branch_length))
+            transition = eigenvectors @ diagonal @ inverse_vectors
+            return _stabilize_transition_probability_matrix(
+                transition,
+                state_count=validated_rate_matrix.state_count,
+            )
+        except ValueError:
+            pass
+    return _compute_transition_probability_matrix_by_uniformization(
+        validated_rate_matrix,
+        branch_length,
     )
 
 
@@ -300,36 +312,14 @@ def postorder_conditional_likelihoods(
             conditional_by_node_id[node.node_id] = conditional
             subtree_log_scaling_by_node_id[node.node_id] = 0.0
             continue
-
-        conditional = numpy.ones(state_count, dtype=float)
-        child_log_scaling = 0.0
-        child_impossible = False
-        for child in node.children:
-            if child.node_id is None:
-                raise ValueError("tree child node is missing a stable node_id")
-            child_transition = _validated_transition_matrix(
-                transition_matrix_for_child(child),
-                state_count=state_count,
-                context=f"branch '{child.node_id}'",
-            )
-            child_conditional = conditional_by_node_id[child.node_id]
-            conditional *= child_transition @ child_conditional
-            child_scale = subtree_log_scaling_by_node_id[child.node_id]
-            if math.isinf(child_scale) and child_scale < 0.0:
-                child_impossible = True
-            else:
-                child_log_scaling += child_scale
-
-        scale = float(conditional.sum())
-        if child_impossible or scale <= 0.0 or not math.isfinite(scale):
-            conditional_by_node_id[node.node_id] = conditional
-            subtree_log_scaling_by_node_id[node.node_id] = float("-inf")
-            continue
-        if normalize_internal_conditionals:
-            conditional /= scale
-            child_log_scaling += math.log(scale)
-        conditional_by_node_id[node.node_id] = conditional
-        subtree_log_scaling_by_node_id[node.node_id] = child_log_scaling
+        _refresh_internal_node_conditional(
+            node,
+            conditional_by_node_id=conditional_by_node_id,
+            subtree_log_scaling_by_node_id=subtree_log_scaling_by_node_id,
+            state_count=state_count,
+            transition_matrix_for_child=transition_matrix_for_child,
+            normalize_internal_conditionals=normalize_internal_conditionals,
+        )
 
     return FiniteStatePruningPass(
         conditional_by_node_id=conditional_by_node_id,
@@ -337,6 +327,38 @@ def postorder_conditional_likelihoods(
         state_count=state_count,
         normalized_internal_conditionals=normalize_internal_conditionals,
     )
+
+
+def refresh_postorder_conditional_likelihoods(
+    tree: PhyloTree,
+    pruning_pass: FiniteStatePruningPass,
+    *,
+    affected_node_ids: Iterable[str],
+    transition_matrix_for_child: Callable[[TreeNode], numpy.ndarray],
+) -> None:
+    """Refresh one cached pruning pass for one postorder-compatible internal slice."""
+    seen_node_ids: set[str] = set()
+    for node_id in affected_node_ids:
+        if node_id in seen_node_ids:
+            raise ValueError(
+                f"affected pruning slice contains duplicate node_id '{node_id}'"
+            )
+        seen_node_ids.add(node_id)
+        node = tree.node_by_id(node_id)
+        if node.is_leaf():
+            raise ValueError(
+                f"affected pruning slice contains leaf node '{node.node_id}'"
+            )
+        _refresh_internal_node_conditional(
+            node,
+            conditional_by_node_id=pruning_pass.conditional_by_node_id,
+            subtree_log_scaling_by_node_id=pruning_pass.subtree_log_scaling_by_node_id,
+            state_count=pruning_pass.state_count,
+            transition_matrix_for_child=transition_matrix_for_child,
+            normalize_internal_conditionals=(
+                pruning_pass.normalized_internal_conditionals
+            ),
+        )
 
 
 def log_likelihood_from_root_prior(
@@ -358,6 +380,48 @@ def log_likelihood_from_root_prior(
     if math.isinf(subtree_log_scaling) and subtree_log_scaling < 0.0:
         return float("-inf")
     return subtree_log_scaling + math.log(root_scale)
+
+
+def _refresh_internal_node_conditional(
+    node: TreeNode,
+    *,
+    conditional_by_node_id: dict[str, numpy.ndarray],
+    subtree_log_scaling_by_node_id: dict[str, float],
+    state_count: int,
+    transition_matrix_for_child: Callable[[TreeNode], numpy.ndarray],
+    normalize_internal_conditionals: bool,
+) -> None:
+    if node.node_id is None:
+        raise ValueError("tree node is missing a stable node_id")
+    conditional = numpy.ones(state_count, dtype=float)
+    child_log_scaling = 0.0
+    child_impossible = False
+    for child in node.children:
+        if child.node_id is None:
+            raise ValueError("tree child node is missing a stable node_id")
+        child_transition = _validated_transition_matrix(
+            transition_matrix_for_child(child),
+            state_count=state_count,
+            context=f"branch '{child.node_id}'",
+        )
+        child_conditional = conditional_by_node_id[child.node_id]
+        conditional *= child_transition @ child_conditional
+        child_scale = subtree_log_scaling_by_node_id[child.node_id]
+        if math.isinf(child_scale) and child_scale < 0.0:
+            child_impossible = True
+        else:
+            child_log_scaling += child_scale
+
+    scale = float(conditional.sum())
+    if child_impossible or scale <= 0.0 or not math.isfinite(scale):
+        conditional_by_node_id[node.node_id] = conditional
+        subtree_log_scaling_by_node_id[node.node_id] = float("-inf")
+        return
+    if normalize_internal_conditionals:
+        conditional /= scale
+        child_log_scaling += math.log(scale)
+    conditional_by_node_id[node.node_id] = conditional
+    subtree_log_scaling_by_node_id[node.node_id] = child_log_scaling
 
 
 def _validated_probability_vector(

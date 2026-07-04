@@ -15,6 +15,9 @@ QUALITY_PATHS := src tests
 ENABLE_PYDOCSTYLE := 1
 SKIP_MYPY := 0
 PACKAGE_ALL_TARGETS := clean install test lint quality security build sbom
+FROZEN_TEST_REPORT_PYTHON = $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python
+FULL_SUITE_PYTEST_WORKERS ?= 8
+FULL_SUITE_PYTEST_DISTRIBUTION ?= worksteal
 
 sync-license-assets-package:
 	@for file_name in LICENSE NOTICE; do \
@@ -30,12 +33,18 @@ sync-license-assets-package:
 	done
 .PHONY: sync-license-assets-package
 
-test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0
+test-all: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION)
 test-all: test
 .PHONY: test-all
 
-test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 --durations=0 --durations-min=0
+test-all-plus-run-time: PYTEST_ADDOPTS_EXTRA = -o timeout=0 -n $(FULL_SUITE_PYTEST_WORKERS) --dist $(FULL_SUITE_PYTEST_DISTRIBUTION) --durations=0 --durations-min=0
 test-all-plus-run-time: test
 .PHONY: test-all-plus-run-time
+
+test-all-frozen: ## Compare the full-suite output against TEST_ALL_FROZEN_REF
+	@test -n "$(TEST_ALL_FROZEN_REF)" || { echo "TEST_ALL_FROZEN_REF is required"; exit 2; }
+	@$(MAKE) -C "$(MONOREPO_ROOT)" root-check-env >/dev/null
+	@"$(FROZEN_TEST_REPORT_PYTHON)" -m bijux_phylogenetics_dev.quality.frozen_test_report check --repo-root "$(MONOREPO_ROOT)" --package "$(PROJECT_SLUG)" --frozen-ref "$(TEST_ALL_FROZEN_REF)" --artifacts-root "$(PROJECT_ARTIFACTS_DIR)/test-frozen" --json-out "$(PROJECT_ARTIFACTS_DIR)/test-frozen/report.json" --full-suite-workers "$(FULL_SUITE_PYTEST_WORKERS)"
+.PHONY: test-all-frozen
 
 include $(abspath $(dir $(firstword $(MAKEFILE_LIST))))/../bijux-py/package.mk

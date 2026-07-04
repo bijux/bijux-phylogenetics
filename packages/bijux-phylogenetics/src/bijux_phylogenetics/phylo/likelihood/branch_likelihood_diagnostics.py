@@ -10,6 +10,9 @@ from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.ctmc import (
+    CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
+)
 from bijux_phylogenetics.phylo.likelihood.dna import (
     evaluate_fixed_topology_dna_site_log_likelihood,
     normalize_unambiguous_dna_records,
@@ -209,6 +212,10 @@ def evaluate_protein_poisson_branch_likelihood_diagnostics(
         return _evaluate_protein_poisson_tree_likelihood_from_patterns(
             candidate_tree,
             compressed_patterns,
+            records=normalized_records,
+            root_prior_policy=None,
+            root_prior=None,
+            fixed_root_state=None,
             gap_policy=gap_policy,
             missing_policy=missing_policy,
             ambiguity_policy="reject",
@@ -297,6 +304,7 @@ def evaluate_empirical_protein_branch_likelihood_diagnostics(
                 root_prior=validated_root_prior,
                 root_prior_source=root_prior_source,
                 matrix_label=matrix_label,
+                normalization_policy=CALLER_SUPPLIED_RATE_SCALE_NORMALIZATION_POLICY,
                 gap_policy=gap_policy,
                 missing_policy=missing_policy,
                 ambiguity_policy="reject",

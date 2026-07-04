@@ -28,15 +28,15 @@ COMPONENT_BUNDLE_DEFINITIONS = [
         "comparison_mode": "direct_parity",
         "analytical_surfaces": ["data-preparation"],
         "limitations": [
-            "The raw workbook remains an external teaching source; the Python-side review starts from the governed processed reference artifact."
+            "The Python-side review starts from the governed processed reference artifact even though the original lecture workbook is now checked in locally for auditability."
         ],
         "source_fragments": ["primate-data-preprocessing"],
         "reference_line_specs": ["33-34", "77"],
         "source_basis": [
             {
-                "kind": "external-course-material",
-                "label": "lund pcm1 raw primate workbook",
-                "locator": "external:lund/pcm1-plots-signal/data/primate_raw.xlsx",
+                "kind": "repository-reference",
+                "label": "checked-in pcm1 raw primate workbook",
+                "locator": "evidence-book/studies/primate-longevity-signal/datasets/primate_raw.xlsx",
             },
             {
                 "kind": "repository-reference",
@@ -83,7 +83,7 @@ COMPONENT_BUNDLE_DEFINITIONS = [
         "comparison_mode": "direct_parity",
         "analytical_surfaces": ["data-preparation"],
         "limitations": [
-            "The raw workbook remains external, so the bundle records the governed missing-value contract at the processed artifact boundary."
+            "The bundle records the governed missing-value contract at the processed artifact boundary even though the original workbook copy is also checked in."
         ],
         "source_fragments": ["primate-data-preprocessing"],
         "reference_line_specs": ["41-47"],
@@ -113,7 +113,7 @@ COMPONENT_BUNDLE_DEFINITIONS = [
         "comparison_mode": "direct_parity",
         "analytical_surfaces": ["data-preparation"],
         "limitations": [
-            "The raw workbook is external, so duplicate consolidation is demonstrated through the governed row-count and species-count contract."
+            "Duplicate consolidation is demonstrated through the governed row-count and species-count contract rather than by replaying workbook import logic inside the bundle."
         ],
         "source_fragments": ["primate-data-preprocessing"],
         "reference_line_specs": ["41-47"],
@@ -144,9 +144,9 @@ COMPONENT_BUNDLE_DEFINITIONS = [
         "reference_line_specs": ["79-85"],
         "source_basis": [
             {
-                "kind": "external-course-material",
-                "label": "lund pcm1 original primate tree",
-                "locator": "external:lund/pcm1-plots-signal/data/primatetree.nex",
+                "kind": "repository-reference",
+                "label": "checked-in pcm1 original primate tree",
+                "locator": "evidence-book/studies/primate-longevity-signal/datasets/primatetree.nex",
             },
             {
                 "kind": "repository-reference",

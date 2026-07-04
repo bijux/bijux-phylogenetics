@@ -4,6 +4,10 @@ import math
 
 import numpy
 
+from bijux_phylogenetics.phylo.likelihood.optimization_boundary_warnings import (
+    boundary_warning_messages,
+    build_invariant_proportion_boundary_warnings,
+)
 from bijux_phylogenetics.phylo.likelihood.protein import (
     PROTEIN_GAP_CHARACTER,
     PROTEIN_MISSING_CHARACTER,
@@ -139,21 +143,14 @@ def invariant_proportion_boundary_warnings(
     upper_invariant_proportion_bound: float,
     boundary_tolerance: float = 1e-9,
 ) -> tuple[bool, bool, list[str]]:
-    hit_lower_boundary = math.isclose(
-        invariant_proportion,
-        lower_invariant_proportion_bound,
-        rel_tol=0.0,
-        abs_tol=boundary_tolerance,
+    warning_rows = build_invariant_proportion_boundary_warnings(
+        invariant_proportion=invariant_proportion,
+        lower_invariant_proportion_bound=lower_invariant_proportion_bound,
+        upper_invariant_proportion_bound=upper_invariant_proportion_bound,
     )
-    hit_upper_boundary = math.isclose(
-        invariant_proportion,
-        upper_invariant_proportion_bound,
-        rel_tol=0.0,
-        abs_tol=boundary_tolerance,
+    warning_messages = boundary_warning_messages(warning_rows)
+    return (
+        any(warning.boundary_side == "lower" for warning in warning_rows),
+        any(warning.boundary_side == "upper" for warning in warning_rows),
+        warning_messages,
     )
-    warnings: list[str] = []
-    if hit_lower_boundary:
-        warnings.append("invariant proportion hit lower search boundary")
-    if hit_upper_boundary:
-        warnings.append("invariant proportion hit upper search boundary")
-    return hit_lower_boundary, hit_upper_boundary, warnings

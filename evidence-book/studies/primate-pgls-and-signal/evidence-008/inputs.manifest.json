@@ -32,7 +32,7 @@
       "label": "results/reviewer-summary.json",
       "locator": "evidence-book/studies/primate-pgls-and-signal/evidence-008/results/reviewer-summary.json",
       "read_only": false,
-      "sha256": "6eb916faa071f95bbcb9e0fbe18d67835f42ab8f8be57642ad2d3d11634bf0e7"
+      "sha256": "43d800409f2ff853a4f0e00e651af629f691f02fa38095a8ffed1756fc992eeb"
     },
     {
       "input_id": "local-input-005",
@@ -54,13 +54,13 @@
       "label": "Lund source descriptors",
       "locator": "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
       "read_only": true,
-      "sha256": "73b4d1935c206db3ca294e1d8b4c5881870977f65f15efd21f73cd7d9aaae829"
+      "sha256": "32a82446e10198f4b0e8c7b53e668c1e2a0014375f59f2c838a6dc3172b968d2"
     },
     {
       "input_id": "source-input-002",
       "kind": "repository-reference",
       "label": "governed primate reference table",
-      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/datasets/reference_primate.csv",
       "read_only": true,
       "sha256": "c81d69146ec3b1e438bde5600d5bc379e8f36769b3defc9d914704d90ff74220"
     },
@@ -68,7 +68,7 @@
       "input_id": "source-input-003",
       "kind": "repository-reference",
       "label": "governed primate trimmed tree",
-      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/datasets/reference_trimmed_primatetree.nwk",
       "read_only": true,
       "sha256": "0962ba20a0e20818db750770cbc1840071fd9e346448c4545ae525913eb15abd"
     },

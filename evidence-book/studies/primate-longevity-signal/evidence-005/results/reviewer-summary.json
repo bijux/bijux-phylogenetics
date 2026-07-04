@@ -15,7 +15,7 @@
   "evidence_id": "evidence-005",
   "evidence_title": "Primate duplicate-species aggregation parity bundle",
   "limitations": [
-    "The raw workbook is external, so duplicate consolidation is demonstrated through the governed row-count and species-count contract."
+    "Duplicate consolidation is demonstrated through the governed row-count and species-count contract rather than by replaying workbook import logic inside the bundle."
   ],
   "owner_package": "bijux-phylogenetics",
   "reviewer_summary_lines": [

@@ -1,0 +1,73 @@
+{
+  "claim_ids": [
+    "pcm3-post-correction-diagnostics-and-tests"
+  ],
+  "claim_tags": [
+    "scientific-validation",
+    "primate",
+    "diagnostics",
+    "hypothesis-testing"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-008",
+  "evidence_title": "Primate post-correction diagnostics bundle",
+  "freshness": {
+    "governed_code_paths": [
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/scientific_validation_bundles.py",
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/comparative"
+    ],
+    "last_generated_on": "2026-07-04",
+    "source_basis_locators": [
+      "evidence-book/studies/primate-continuous-and-categorical-regression/provenance/lund-course-sources.json",
+      "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/registry.json",
+      "evidence-book/studies/primate-continuous-and-categorical-regression/reference/README.md",
+      "packages/bijux-phylogenetics/tests/test_pgls_interaction_coefficients.py",
+      "packages/bijux-phylogenetics/tests/test_regression_model_selection.py"
+    ]
+  },
+  "limitations": [
+    "This bundle keeps the diagnostic and testing boundary explicit without claiming a finished lecture-parity package for those outputs."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "ownership": {
+    "analytical_surfaces": [
+      "diagnostics",
+      "post-correction-tests"
+    ],
+    "owner_package": "bijux-phylogenetics"
+  },
+  "schema_version": 1,
+  "source_basis": [
+    {
+      "kind": "repository-reference",
+      "label": "source-1",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/provenance/lund-course-sources.json"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "source-2",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/registry.json"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "source-3",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/reference/README.md"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "source-4",
+      "locator": "packages/bijux-phylogenetics/tests/test_pgls_interaction_coefficients.py"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "source-5",
+      "locator": "packages/bijux-phylogenetics/tests/test_regression_model_selection.py"
+    }
+  ],
+  "study_id": "primate-continuous-and-categorical-regression",
+  "summary": "Governed study slice for PCM3 post-correction diagnostics and hypothesis testing after the phylogenetic regression fit.",
+  "verdict": {
+    "status": "not_comparable",
+    "summary": "This bundle is checked in and reviewable, but lecture-specific PCM3 parity for this slice is not yet claimed by the repository."
+  }
+}

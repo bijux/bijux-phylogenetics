@@ -26,9 +26,14 @@ from bijux_phylogenetics.bayesian.metropolis_hastings import (
 from bijux_phylogenetics.bayesian.posterior_sets.diagnostics import (
     highest_posterior_density_interval,
 )
+from bijux_phylogenetics.bayesian.prior_protocol import (
+    summarize_bayesian_prior_model,
+)
 from bijux_phylogenetics.bayesian.state import (
     BayesianPhylogeneticState,
     BayesianPriorComponentState,
+    build_bayesian_likelihood_context_state,
+    build_bayesian_likelihood_partition_state,
     build_bayesian_model_parameter_state,
     build_bayesian_prior_component_state,
 )
@@ -37,10 +42,10 @@ from bijux_phylogenetics.bayesian.time_tree_priors import (
     ConstantPopulationCoalescentPriorModel,
     SkylineCoalescentPriorModel,
     YuleTreePriorModel,
-    evaluate_birth_death_tree_log_prior,
-    evaluate_constant_population_coalescent_tree_log_prior,
-    evaluate_skyline_coalescent_tree_log_prior,
-    evaluate_yule_tree_log_prior,
+)
+from bijux_phylogenetics.bayesian.tree_topology_priors import (
+    evaluate_time_tree_topology_log_prior,
+    require_time_tree_topology_prior_model,
 )
 from bijux_phylogenetics.phylo.branch_lengths.ultrametric import (
     APE_ULTRAMETRIC_TOLERANCE,
@@ -254,6 +259,13 @@ def run_fixed_topology_strict_clock_metropolis_hastings(
     initial_state = score_bayesian_phylogenetic_state(
         tree=initial_tree,
         model_parameters=initial_model_parameters,
+        likelihood_context=_build_clock_tree_likelihood_context(
+            analysis_name="fixed-topology-strict-clock",
+            dated_tree=initial_tree,
+            substitution_tree=fixed_substitution_tree,
+            model_name=_MODEL_NAME,
+            calibration_count=len(model_definition.calibration_priors),
+        ),
         update_prior_components=lambda state: (
             _build_fixed_topology_strict_clock_prior_components(
                 state=state,
@@ -320,6 +332,55 @@ def run_fixed_topology_strict_clock_metropolis_hastings(
     )
 
 
+def _build_clock_tree_likelihood_context(
+    *,
+    analysis_name: str,
+    dated_tree: PhyloTree,
+    substitution_tree: PhyloTree,
+    model_name: str,
+    calibration_count: int,
+    rate_policy: str | None = None,
+):
+    branch_count = _count_tree_branches(dated_tree)
+    categorical_metadata = {
+        "data-type": "time-tree",
+        "clock-model": model_name,
+        "topology-policy": "fixed",
+    }
+    if rate_policy is not None:
+        categorical_metadata["rate-policy"] = rate_policy
+    return build_bayesian_likelihood_context_state(
+        analysis_name=analysis_name,
+        observation_kind="dated-tree-branch",
+        taxon_names=dated_tree.tip_names,
+        observation_count=branch_count,
+        categorical_metadata=categorical_metadata,
+        scalar_metadata={
+            "calibration-prior-count": float(calibration_count),
+            "substitution-branch-count": float(_count_tree_branches(substitution_tree)),
+        },
+        partition_contexts=[
+            build_bayesian_likelihood_partition_state(
+                partition_name="dated-tree",
+                observation_kind="dated-tree-branch",
+                taxon_names=dated_tree.tip_names,
+                observation_count=branch_count,
+                data_type="time-tree",
+                model_name=model_name,
+                categorical_metadata={
+                    key: value
+                    for key, value in categorical_metadata.items()
+                    if key != "data-type"
+                },
+            )
+        ],
+    )
+
+
+def _count_tree_branches(tree: PhyloTree) -> int:
+    return sum(1 for _parent, _child in tree.iter_edges())
+
+
 def _validate_time_tree_prior_model(
     time_tree_prior: object,
 ) -> (
@@ -328,18 +389,9 @@ def _validate_time_tree_prior_model(
     | ConstantPopulationCoalescentPriorModel
     | SkylineCoalescentPriorModel
 ):
-    if isinstance(
+    return require_time_tree_topology_prior_model(
         time_tree_prior,
-        (
-            YuleTreePriorModel,
-            BirthDeathTreePriorModel,
-            ConstantPopulationCoalescentPriorModel,
-            SkylineCoalescentPriorModel,
-        ),
-    ):
-        return time_tree_prior
-    raise PhylogeneticsError(
-        "fixed-topology strict-clock posterior model requires one supported rooted time-tree prior model",
+        owner_name="fixed-topology strict-clock posterior model",
         code="fixed_topology_strict_clock_time_tree_prior_type_invalid",
     )
 
@@ -482,28 +534,32 @@ def _build_fixed_topology_strict_clock_prior_components(
         fixed_topology_id=fixed_topology_id,
     )
     dated_tree = state.tree.to_tree()
-    time_tree_prior_report = _evaluate_time_tree_log_prior(
+    time_tree_prior_report = evaluate_time_tree_topology_log_prior(
         tree=dated_tree,
         prior_model=model_definition.time_tree_prior,
+    )
+    time_tree_prior_summary = summarize_bayesian_prior_model(
+        model_definition.time_tree_prior
+    )
+    global_clock_rate_prior_summary = summarize_bayesian_prior_model(
+        model_definition.global_clock_rate_prior
     )
     prior_components = [
         build_bayesian_prior_component_state(
             component_name="time-tree",
-            family=time_tree_prior_report.family,
+            family=time_tree_prior_summary.family,
             log_prior=time_tree_prior_report.log_prior,
-            parameter_values=_time_tree_prior_parameter_values(
-                model_definition.time_tree_prior
-            ),
+            parameter_values=time_tree_prior_summary.parameter_values,
         ),
         build_bayesian_prior_component_state(
             component_name="clock:global-clock-rate",
-            family=model_definition.global_clock_rate_prior.family,
+            family=global_clock_rate_prior_summary.family,
             log_prior=evaluate_clock_model_scalar_log_prior(
                 parameter_value=global_clock_rate,
                 prior_model=model_definition.global_clock_rate_prior,
                 parameter_name=_GLOBAL_CLOCK_RATE_PARAMETER_NAME,
             ),
-            parameter_values=model_definition.global_clock_rate_prior.parameter_values(),
+            parameter_values=global_clock_rate_prior_summary.parameter_values,
         ),
     ]
     if model_definition.calibration_priors:
@@ -805,36 +861,12 @@ def _require_fixed_topology_strict_clock_state_consistency(
         ) from error
 
 
-def _evaluate_time_tree_log_prior(
-    *,
-    tree: PhyloTree,
-    prior_model: (
-        YuleTreePriorModel
-        | BirthDeathTreePriorModel
-        | ConstantPopulationCoalescentPriorModel
-        | SkylineCoalescentPriorModel
-    ),
-):
-    if isinstance(prior_model, YuleTreePriorModel):
-        return evaluate_yule_tree_log_prior(tree, prior_model)
-    if isinstance(prior_model, BirthDeathTreePriorModel):
-        return evaluate_birth_death_tree_log_prior(tree, prior_model)
-    if isinstance(prior_model, ConstantPopulationCoalescentPriorModel):
-        return evaluate_constant_population_coalescent_tree_log_prior(
-            tree,
-            prior_model,
-        )
-    if isinstance(prior_model, SkylineCoalescentPriorModel):
-        return evaluate_skyline_coalescent_tree_log_prior(tree, prior_model)
-    raise AssertionError("unsupported time-tree prior model reached evaluation")
-
-
 def _invalid_prior_support_reason(
     *,
     tree: PhyloTree,
     model_definition: FixedTopologyStrictClockModelDefinition,
 ) -> str | None:
-    time_tree_prior_report = _evaluate_time_tree_log_prior(
+    time_tree_prior_report = evaluate_time_tree_topology_log_prior(
         tree=tree,
         prior_model=model_definition.time_tree_prior,
     )
@@ -854,43 +886,6 @@ def _invalid_prior_support_reason(
             "strict-clock proposal moved dated tree outside calibration prior support"
         )
     return None
-
-
-def _time_tree_prior_parameter_values(
-    prior_model: (
-        YuleTreePriorModel
-        | BirthDeathTreePriorModel
-        | ConstantPopulationCoalescentPriorModel
-        | SkylineCoalescentPriorModel
-    ),
-) -> dict[str, float]:
-    if isinstance(prior_model, YuleTreePriorModel):
-        return {"speciation_rate": prior_model.speciation_rate}
-    if isinstance(prior_model, BirthDeathTreePriorModel):
-        return {
-            "speciation_rate": prior_model.speciation_rate,
-            "extinction_rate": prior_model.extinction_rate,
-            "sampling_fraction": prior_model.sampling_fraction,
-        }
-    if isinstance(prior_model, ConstantPopulationCoalescentPriorModel):
-        return {"effective_population_size": prior_model.effective_population_size}
-    if isinstance(prior_model, SkylineCoalescentPriorModel):
-        parameter_values: dict[str, float] = {
-            "epoch_count": float(len(prior_model.epochs))
-        }
-        for index, epoch in enumerate(prior_model.epochs, start=1):
-            parameter_values[f"epoch_{index}_younger_boundary_age"] = (
-                epoch.younger_boundary_age
-            )
-            if epoch.older_boundary_age is not None:
-                parameter_values[f"epoch_{index}_older_boundary_age"] = (
-                    epoch.older_boundary_age
-                )
-            parameter_values[f"epoch_{index}_effective_population_size"] = (
-                epoch.effective_population_size
-            )
-        return parameter_values
-    raise AssertionError("unsupported time-tree prior model reached parameter export")
 
 
 def _derive_dated_tree_from_strict_clock_rate(

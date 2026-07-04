@@ -225,3 +225,201 @@ class SimulationReproducibilityReport:
     passed: bool
     cases: list[SimulationReproducibilityCase]
     limitations: list[str]
+
+
+@dataclass(slots=True)
+class InvariantMixtureModelCoverageCase:
+    """One eligible finite-state model checked under an active invariant mixture."""
+
+    model_name: str
+    surface_model_name: str
+    invariant_proportion: float
+    site_count: int
+    pattern_count: int
+    fixed_rate_log_likelihood: float
+    invariant_log_likelihood: float
+    likelihood_delta: float
+    invariant_component_likelihood: float
+    variable_component_likelihood: float
+    likelihood_changed: bool
+    invariant_component_active: bool
+    passed: bool
+    notes: list[str]
+
+
+@dataclass(slots=True)
+class InvariantMixtureFamilyCoverageEntry:
+    """One eligible finite-state family summarized across its governed model cases."""
+
+    family_name: str
+    supported_model_names: list[str]
+    covered_model_names: list[str]
+    model_count: int
+    passed_model_count: int
+    passed: bool
+    model_cases: list[InvariantMixtureModelCoverageCase]
+    notes: list[str]
+
+
+@dataclass(slots=True)
+class InvariantMixtureFamilyCoverageReport:
+    """Reviewer-facing proof that invariant mass is active across eligible models."""
+
+    goal_id: int
+    passed: bool
+    family_count: int
+    model_count: int
+    passed_family_count: int
+    passed_model_count: int
+    families: list[InvariantMixtureFamilyCoverageEntry]
+    limitations: list[str]
+
+
+@dataclass(slots=True)
+class GammaInvariantMixtureModelCoverageCase:
+    """One eligible finite-state model checked under one active combined gamma-plus-invariant mixture."""
+
+    model_name: str
+    surface_model_name: str
+    alpha: float
+    category_count: int
+    invariant_proportion: float
+    site_count: int
+    pattern_count: int
+    gamma_log_likelihood: float
+    gamma_invariant_log_likelihood: float
+    likelihood_delta: float
+    invariant_component_likelihood: float
+    variable_component_likelihood: float
+    category_likelihood_count: int
+    likelihood_changed: bool
+    invariant_component_active: bool
+    variable_component_active: bool
+    boundary_warning_count: int
+    hit_lower_invariant_proportion_boundary: bool
+    hit_upper_invariant_proportion_boundary: bool
+    boundary_warnings: list[str]
+    passed: bool
+    notes: list[str]
+
+
+@dataclass(slots=True)
+class GammaInvariantMixtureFamilyCoverageEntry:
+    """One eligible finite-state family summarized across its governed gamma-plus-invariant cases."""
+
+    family_name: str
+    supported_model_names: list[str]
+    covered_model_names: list[str]
+    model_count: int
+    passed_model_count: int
+    passed: bool
+    model_cases: list[GammaInvariantMixtureModelCoverageCase]
+    notes: list[str]
+
+
+@dataclass(slots=True)
+class GammaInvariantMixtureFamilyCoverageReport:
+    """Reviewer-facing proof that combined gamma and invariant mass stay active across eligible models."""
+
+    goal_id: int
+    passed: bool
+    family_count: int
+    model_count: int
+    passed_family_count: int
+    passed_model_count: int
+    families: list[GammaInvariantMixtureFamilyCoverageEntry]
+    limitations: list[str]
+
+
+@dataclass(slots=True)
+class SharedContinuousFixtureCatalogEntry:
+    """One governed continuous-trait fixture used by live `geiger` parity."""
+
+    fixture_id: str
+    tree_fixture_id: str
+    trait_table_fixture_id: str
+    trait_name: str
+    standard_error_trait_name: str | None
+    taxon_column: str
+    taxon_count: int | None
+    trait_row_count: int
+    supported_model_names: list[str]
+    covered_model_names: list[str]
+    live_case_count: int
+    validation_expectation: str
+    geiger_reference_expectation: str
+    feature_tags: list[str]
+    notes: str
+
+
+@dataclass(slots=True)
+class SharedContinuousFixtureCatalogReport:
+    """Goal 252 governed inventory for live `geiger::fitContinuous` fixtures."""
+
+    goal_id: int
+    fixture_count: int
+    live_case_count: int
+    fixtures: list[SharedContinuousFixtureCatalogEntry]
+    limitations: list[str]
+
+
+@dataclass(slots=True)
+class SharedDiscreteFixtureCatalogEntry:
+    """One governed discrete-trait fixture used by live `geiger` parity."""
+
+    fixture_id: str
+    tree_fixture_id: str
+    trait_table_fixture_id: str
+    trait_name: str
+    taxon_column: str
+    trait_kind: str
+    taxon_count: int | None
+    trait_row_count: int
+    supported_model_names: list[str]
+    covered_model_names: list[str]
+    live_case_count: int
+    validation_expectation: str
+    geiger_reference_expectation: str
+    feature_tags: list[str]
+    transition_matrix_metadata: dict[str, object] | None
+    notes: str
+
+
+@dataclass(slots=True)
+class SharedDiscreteFixtureCatalogReport:
+    """Goal 253 governed inventory for live `geiger::fitDiscrete` fixtures."""
+
+    goal_id: int
+    fixture_count: int
+    live_case_count: int
+    fixtures: list[SharedDiscreteFixtureCatalogEntry]
+    limitations: list[str]
+
+
+@dataclass(slots=True)
+class SubstitutionParameterPriorCoverageEntry:
+    """One governed substitution-prior target checked for score sensitivity."""
+
+    target_name: str
+    surface_name: str
+    prior_family: str
+    contribution_count: int
+    covered_names: list[str]
+    baseline_log_prior: float
+    comparison_log_prior: float
+    log_prior_delta: float
+    changed: bool
+    passed: bool
+    notes: list[str]
+
+
+@dataclass(slots=True)
+class SubstitutionParameterPriorCoverageReport:
+    """Proof that governed substitution-prior targets change prior scores."""
+
+    goal_id: int
+    passed: bool
+    target_count: int
+    passed_target_count: int
+    entries: list[SubstitutionParameterPriorCoverageEntry]
+    limitations: list[str]

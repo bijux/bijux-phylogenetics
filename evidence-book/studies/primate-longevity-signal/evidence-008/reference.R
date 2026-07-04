@@ -18,13 +18,14 @@ payload <- list(
   evidence_title = "Primate tree-data correspondence parity bundle",
   comparison_mode = "direct_parity",
   execution_mode = "study_reference_wrapper",
-  source_intake_policy = "read-only-external-source",
+  source_intake_policy = "repository-owned-source",
   source_basis_locators = c(
     "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
     "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
     "evidence-book/studies/primate-longevity-signal/evidence-008/tree-data-correspondence-parity.json",
   ),
   reference_scripts = c(
+    "evidence-book/studies/primate-longevity-signal/reference/lund_pcm1_plots_signal_source.R",
     "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R",
   )
 )

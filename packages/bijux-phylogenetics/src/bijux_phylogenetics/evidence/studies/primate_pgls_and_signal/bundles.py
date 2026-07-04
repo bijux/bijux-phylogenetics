@@ -6,10 +6,10 @@ from pathlib import Path
 from .definitions import (
     BUNDLE_DEFINITIONS,
     CLAIM_DEFINITIONS,
+    PCM2_DATASET_ROOT,
     PCM2_REFERENCE_SCRIPT_PATH,
     PCM2_SOURCE_LOCATOR,
     STUDY_ID,
-    STUDY_ONE_REFERENCE_ROOT,
     SUMMARY_EVIDENCE_ID,
 )
 from .parity import (
@@ -58,10 +58,8 @@ def _report_payload_for_bundle(repo_root: Path, evidence_id: str) -> dict[str, o
             "tip_count": r_results["source_contract"]["tip_count"],
             "species_tip_match": r_results["source_contract"]["species_tip_match"],
             "governed_reload_inputs": [
-                (STUDY_ONE_REFERENCE_ROOT / "reference_primate.csv").as_posix(),
-                (
-                    STUDY_ONE_REFERENCE_ROOT / "reference_trimmed_primatetree.nwk"
-                ).as_posix(),
+                (PCM2_DATASET_ROOT / "reference_primate.csv").as_posix(),
+                (PCM2_DATASET_ROOT / "reference_trimmed_primatetree.nwk").as_posix(),
             ],
             "scalar_row_count": scalar_table["row_count"],
             "verdict_counts": scalar_table["verdict_counts"],
@@ -226,13 +224,13 @@ def _manifest_for_bundle(
         {
             "kind": "repository-reference",
             "label": "governed primate reference table",
-            "locator": (STUDY_ONE_REFERENCE_ROOT / "reference_primate.csv").as_posix(),
+            "locator": (PCM2_DATASET_ROOT / "reference_primate.csv").as_posix(),
         },
         {
             "kind": "repository-reference",
             "label": "governed primate trimmed tree",
             "locator": (
-                STUDY_ONE_REFERENCE_ROOT / "reference_trimmed_primatetree.nwk"
+                PCM2_DATASET_ROOT / "reference_trimmed_primatetree.nwk"
             ).as_posix(),
         },
         {

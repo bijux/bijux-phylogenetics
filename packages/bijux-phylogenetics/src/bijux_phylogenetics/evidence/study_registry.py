@@ -27,6 +27,11 @@ from .studies.primate_pgls_and_signal import (
 from .studies.primate_pgls_and_signal import (
     STUDY_ID as PRIMATE_PCM2_STUDY_ID,
 )
+from .studies.scientific_validation_bundles import (
+    scientific_validation_study_ids,
+    scientific_validation_supported_evidence_ids,
+    write_scientific_validation_study,
+)
 from .study_contracts import load_study_contract
 
 
@@ -86,7 +91,7 @@ def _primate_pcm2_supported_evidence_ids() -> tuple[str, ...]:
 
 def study_registrations(repo_root: Path | str) -> tuple[EvidenceStudyRegistration, ...]:
     repo_root = _repo_root(repo_root)
-    return (
+    registrations = [
         EvidenceStudyRegistration(
             study_id=PRIMATE_PCM1_STUDY_ID,
             study_title=str(
@@ -109,7 +114,24 @@ def study_registrations(repo_root: Path | str) -> tuple[EvidenceStudyRegistratio
             supported_evidence_ids=_primate_pcm2_supported_evidence_ids(),
             supports_partial_rerun=True,
         ),
-    )
+    ]
+    for study_id in scientific_validation_study_ids():
+        registrations.append(
+            EvidenceStudyRegistration(
+                study_id=study_id,
+                study_title=str(
+                    load_study_contract(
+                        repo_root / "evidence-book" / "studies" / study_id
+                    )["study_title"]
+                ),
+                build_script_path=None,
+                supported_evidence_ids=scientific_validation_supported_evidence_ids(
+                    study_id
+                ),
+                supports_partial_rerun=True,
+            )
+        )
+    return tuple(sorted(registrations, key=lambda registration: registration.study_id))
 
 
 def get_study_registration(
@@ -250,6 +272,12 @@ def rerun_selected_evidence(
         updated_paths = _rerun_primate_pcm1_selection(repo_root, selected)
     elif study_id == PRIMATE_PCM2_STUDY_ID:
         updated_paths = _rerun_primate_pcm2_selection(repo_root, selected)
+    elif study_id in scientific_validation_study_ids():
+        updated_paths = write_scientific_validation_study(
+            repo_root,
+            study_id,
+            selected,
+        )
     else:
         raise EvidenceContractError(
             f"partial evidence rerun not implemented for {study_id}"

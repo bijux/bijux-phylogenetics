@@ -1,0 +1,20 @@
+{
+  "claim_count": 1,
+  "claims": [
+    {
+      "claim_id": "pcm4-gaussian-baseline-regression",
+      "claim_title": "Cichlid Gaussian baseline regression bundle",
+      "evidence_ids": [
+        "evidence-002"
+      ],
+      "source_fragments": [
+        "gaussian-baseline-fit"
+      ],
+      "summary": "Governed study slice for the PCM4 non-phylogenetic Gaussian baseline regression used before mixed-model sampling.",
+      "verdict": "not_comparable"
+    }
+  ],
+  "evidence_id": "evidence-002",
+  "schema_version": 1,
+  "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+}

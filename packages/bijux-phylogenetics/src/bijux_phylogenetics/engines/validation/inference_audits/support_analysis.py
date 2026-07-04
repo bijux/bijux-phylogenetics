@@ -35,10 +35,9 @@ def summarize_bootstrap_support_distribution(
     nodes: list[BootstrapSupportNode] = []
     warnings: list[str] = []
     total_tip_count = tree.tip_count
-    internal_node_count = sum(1 for node in tree.iter_nodes() if not node.is_leaf())
-    for node in tree.iter_nodes():
-        if node.is_leaf():
-            continue
+    internal_nodes = list(_iter_nonroot_internal_nodes(tree))
+    internal_node_count = len(internal_nodes)
+    for node in internal_nodes:
         descendant_taxa = node_descendant_taxa(node)
         support_label = _parse_iqtree_support_label(node.name)
         support = None if support_label is None else support_label.ufboot_support
@@ -243,9 +242,8 @@ def summarize_sh_alrt_support_distribution(
     nodes: list[ShAlrtSupportNode] = []
     warnings: list[str] = []
     total_tip_count = tree.tip_count
-    for node in tree.iter_nodes():
-        if node.is_leaf():
-            continue
+    internal_nodes = list(_iter_nonroot_internal_nodes(tree))
+    for node in internal_nodes:
         descendant_taxa = node_descendant_taxa(node)
         support_label = _parse_iqtree_support_label(node.name)
         if support_label is None:
@@ -282,7 +280,8 @@ def summarize_sh_alrt_support_distribution(
                 support_agreement=support_agreement,
             )
         )
-    if len(nodes) < sum(1 for node in tree.iter_nodes() if not node.is_leaf()):
+    internal_node_count = len(internal_nodes)
+    if len(nodes) < internal_node_count:
         warnings.append(
             "one or more internal nodes did not expose parsable sh-alrt or ufboot labels"
         )
@@ -306,7 +305,7 @@ def summarize_sh_alrt_support_distribution(
     )
     return ShAlrtSupportSummaryReport(
         tree_path=tree_path,
-        internal_node_count=sum(1 for node in tree.iter_nodes() if not node.is_leaf()),
+        internal_node_count=internal_node_count,
         annotated_node_count=len(nodes),
         fully_scored_node_count=sum(
             1
@@ -372,3 +371,11 @@ def _median_support(values: list[float]) -> float | None:
     if len(values) % 2 == 1:
         return values[midpoint]
     return (values[midpoint - 1] + values[midpoint]) / 2.0
+
+
+def _iter_nonroot_internal_nodes(tree: object):
+    root = getattr(tree, "root", None)
+    for node in tree.iter_nodes():
+        if node is root or node.is_leaf():
+            continue
+        yield node

@@ -21,13 +21,13 @@
   },
   "estimated_lambda_diagnostics": {
     "bijux": {
-      "abs_residual_fitted_correlation": 0.109972191549302,
-      "max_abs_z_residual": 2.98631530647783,
+      "abs_residual_fitted_correlation": 0.109972233803126,
+      "max_abs_z_residual": 2.98631521745234,
       "outlier_count_abs_z_ge_2": 4,
-      "qq_correlation": 0.977685033649863,
-      "residual_mean": 42.6665002202872,
-      "residual_sd": 112.113772315026,
-      "residual_variance": 12569.4979427056
+      "qq_correlation": 0.97768503639436,
+      "residual_mean": 42.6665096550236,
+      "residual_sd": 112.113776531182,
+      "residual_variance": 12569.4988880838
     },
     "r": {
       "abs_residual_fitted_correlation": 0.205562548325984,

@@ -14,6 +14,12 @@ from .contracts import (
     BenchmarkDashboardRow,
     CorpusDatasetCase,
     CorpusDatasetCaseResult,
+    GammaInvariantMixtureFamilyCoverageEntry,
+    GammaInvariantMixtureFamilyCoverageReport,
+    GammaInvariantMixtureModelCoverageCase,
+    InvariantMixtureFamilyCoverageEntry,
+    InvariantMixtureFamilyCoverageReport,
+    InvariantMixtureModelCoverageCase,
     LargeAlignmentScalingBenchmarkDashboard,
     LargeTreeScalingBenchmarkDashboard,
     LargeTreeSetScalingBenchmarkDashboard,
@@ -27,14 +33,26 @@ from .contracts import (
     RuntimeBenchmarkDashboard,
     ScientificValidationClaim,
     ScientificValidationReport,
+    SharedContinuousFixtureCatalogEntry,
+    SharedContinuousFixtureCatalogReport,
+    SharedDiscreteFixtureCatalogEntry,
+    SharedDiscreteFixtureCatalogReport,
     SimulationReproducibilityCase,
     SimulationReproducibilityReport,
+    SubstitutionParameterPriorCoverageEntry,
+    SubstitutionParameterPriorCoverageReport,
     WorkflowPracticalLimitDashboard,
 )
 from .dataset_corpora import (
     build_broken_benchmark_corpus,
     build_clean_benchmark_corpus,
     build_messy_benchmark_corpus,
+)
+from .gamma_invariant_family_coverage import (
+    build_gamma_invariant_family_coverage,
+)
+from .invariant_mixture_family_coverage import (
+    build_invariant_mixture_family_coverage,
 )
 from .presentation import write_validation_corpus_json
 from .regression_corpus import build_regression_dataset_corpus
@@ -43,13 +61,20 @@ from .scientific_review import (
     build_method_limitation_registry,
     build_scientific_validation_report,
 )
+from .shared_continuous_fixture_catalog import build_shared_continuous_fixture_catalog
+from .shared_discrete_fixture_catalog import build_shared_discrete_fixture_catalog
+from .substitution_parameter_prior_coverage import (
+    build_substitution_parameter_prior_coverage,
+)
 
 __all__ = [
     "build_broken_benchmark_corpus",
     "build_clean_benchmark_corpus",
+    "build_gamma_invariant_family_coverage",
     "build_large_alignment_scaling_benchmark_dashboard",
     "build_large_tree_scaling_benchmark_dashboard",
     "build_large_tree_set_scaling_benchmark_dashboard",
+    "build_invariant_mixture_family_coverage",
     "build_memory_benchmark_dashboard",
     "build_messy_benchmark_corpus",
     "build_method_accuracy_dashboard",
@@ -57,14 +82,22 @@ __all__ = [
     "build_regression_dataset_corpus",
     "build_runtime_benchmark_dashboard",
     "build_scientific_validation_report",
+    "build_shared_continuous_fixture_catalog",
+    "build_shared_discrete_fixture_catalog",
     "build_workflow_practical_limit_dashboard",
     "BenchmarkCorpusReport",
     "BenchmarkDashboardRow",
     "CorpusDatasetCase",
     "CorpusDatasetCaseResult",
+    "GammaInvariantMixtureFamilyCoverageEntry",
+    "GammaInvariantMixtureFamilyCoverageReport",
+    "GammaInvariantMixtureModelCoverageCase",
     "LargeAlignmentScalingBenchmarkDashboard",
     "LargeTreeScalingBenchmarkDashboard",
     "LargeTreeSetScalingBenchmarkDashboard",
+    "InvariantMixtureFamilyCoverageEntry",
+    "InvariantMixtureModelCoverageCase",
+    "InvariantMixtureFamilyCoverageReport",
     "MemoryBenchmarkDashboard",
     "MethodAccuracyDashboard",
     "MethodAccuracyRow",
@@ -75,9 +108,16 @@ __all__ = [
     "RuntimeBenchmarkDashboard",
     "ScientificValidationClaim",
     "ScientificValidationReport",
+    "SharedContinuousFixtureCatalogEntry",
+    "SharedContinuousFixtureCatalogReport",
+    "SharedDiscreteFixtureCatalogEntry",
+    "SharedDiscreteFixtureCatalogReport",
+    "SubstitutionParameterPriorCoverageEntry",
+    "SubstitutionParameterPriorCoverageReport",
     "SimulationReproducibilityCase",
     "SimulationReproducibilityReport",
     "WorkflowPracticalLimitDashboard",
+    "build_substitution_parameter_prior_coverage",
     "validate_simulation_reproducibility",
     "write_validation_corpus_json",
 ]

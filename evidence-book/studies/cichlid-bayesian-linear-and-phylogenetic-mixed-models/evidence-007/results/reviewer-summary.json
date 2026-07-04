@@ -1,0 +1,37 @@
+{
+  "bundle_verdict_status": "not_comparable",
+  "bundle_verdict_summary": "This bundle is checked in and reviewable, but the repository does not yet claim governed parity for the PCM4 posterior workflow.",
+  "claim_count": 1,
+  "claim_tags": [
+    "scientific-validation",
+    "cichlid",
+    "brownian-pgls",
+    "comparator"
+  ],
+  "claim_titles": [
+    "Cichlid Brownian comparator bundle"
+  ],
+  "comparison_mode": "direct_parity",
+  "evidence_id": "evidence-007",
+  "evidence_title": "Cichlid Brownian comparator bundle",
+  "limitations": [
+    "The repository can support comparator surfaces nearby, but this bundle does not yet claim a finished lecture-parity bridge between the posterior model and the Brownian comparator."
+  ],
+  "owner_package": "bijux-phylogenetics",
+  "reviewer_summary_lines": [
+    "Governed study slice for the PCM4 comparison back to a Brownian PGLS baseline after the mixed-model workflow.",
+    "Comparison mode: direct_parity. Bundle verdict: not_comparable.",
+    "Claims stay explicit and reviewer-readable through governed claim rows, portable source locators, and tracked limitations."
+  ],
+  "schema_version": 1,
+  "source_fragment_ids": [
+    "brownian-pgls-comparison"
+  ],
+  "source_locators": [
+    "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/provenance/lund-course-sources.json",
+    "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/registry.json",
+    "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/reference/README.md"
+  ],
+  "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
+  "study_title": "Cichlid Bayesian Linear And Phylogenetic Mixed Models"
+}

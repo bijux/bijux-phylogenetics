@@ -21,6 +21,8 @@ from bijux_phylogenetics.bayesian.required_values import require_present
 from bijux_phylogenetics.bayesian.state import (
     BayesianPhylogeneticState,
     BayesianPriorComponentState,
+    build_bayesian_likelihood_context_state,
+    build_bayesian_likelihood_partition_state,
     build_bayesian_model_parameter_state,
     build_bayesian_prior_component_state,
 )
@@ -384,6 +386,10 @@ def run_fixed_topology_dna_metropolis_hastings(
     )
     fixed_tree = tree.copy()
     fixed_tree.rooted = tree.rooted
+    _require_initial_tree_within_branch_length_prior_support(
+        tree=fixed_tree,
+        branch_length_prior=model_definition.branch_length_prior,
+    )
     initial_model_parameters = _build_initial_model_parameters(
         model_definition=model_definition,
         records=normalized_records,
@@ -392,6 +398,14 @@ def run_fixed_topology_dna_metropolis_hastings(
     initial_state = score_bayesian_phylogenetic_state(
         tree=fixed_tree,
         model_parameters=initial_model_parameters,
+        likelihood_context=_build_dna_alignment_likelihood_context(
+            analysis_name="fixed-topology-dna",
+            topology_policy="fixed",
+            tree=fixed_tree,
+            records=normalized_records,
+            substitution_model_name=model_definition.substitution_model_name,
+            observation_policy=validated_observation_policy,
+        ),
         update_prior_components=lambda state: (
             _build_fixed_topology_dna_prior_components(
                 state=state,
@@ -485,6 +499,95 @@ def _build_initial_model_parameters(
         },
         scalar_parameters=scalar_parameters,
         vector_parameters=vector_parameters,
+    )
+
+
+def _build_dna_alignment_likelihood_context(
+    *,
+    analysis_name: str,
+    topology_policy: str,
+    tree: PhyloTree,
+    records: Sequence[AlignmentRecord],
+    substitution_model_name: str,
+    observation_policy: str,
+):
+    alignment_length = _resolve_alignment_length(records)
+    pattern_count = _count_alignment_patterns(records, alignment_length)
+    return build_bayesian_likelihood_context_state(
+        analysis_name=analysis_name,
+        observation_kind="alignment-site",
+        taxon_names=tree.tip_names,
+        observation_count=alignment_length,
+        pattern_count=pattern_count,
+        missing_data_policy=observation_policy,
+        categorical_metadata={
+            "data-type": "dna",
+            "substitution-model": substitution_model_name,
+            "topology-policy": topology_policy,
+        },
+        partition_contexts=[
+            build_bayesian_likelihood_partition_state(
+                partition_name="full-alignment",
+                observation_kind="alignment-site",
+                taxon_names=tree.tip_names,
+                observation_count=alignment_length,
+                pattern_count=pattern_count,
+                data_type="dna",
+                model_name=substitution_model_name,
+                categorical_metadata={"topology-policy": topology_policy},
+            )
+        ],
+    )
+
+
+def _resolve_alignment_length(records: Sequence[AlignmentRecord]) -> int:
+    if not records:
+        raise PhylogeneticsError(
+            "DNA likelihood context requires at least one alignment record",
+            code="dna_likelihood_context_records_empty",
+        )
+    return len(records[0].sequence)
+
+
+def _count_alignment_patterns(
+    records: Sequence[AlignmentRecord],
+    alignment_length: int,
+) -> int:
+    return len(
+        {
+            tuple(record.sequence[position] for record in records)
+            for position in range(alignment_length)
+        }
+    )
+
+
+def _require_initial_tree_within_branch_length_prior_support(
+    *,
+    tree: PhyloTree,
+    branch_length_prior: BranchLengthPriorModel,
+) -> None:
+    branch_length_prior_report = evaluate_tree_branch_length_log_prior(
+        tree,
+        branch_length_prior,
+    )
+    if math.isfinite(branch_length_prior_report.total_log_prior):
+        return
+    violating_branches = [
+        {
+            "branch_id": row.branch_id,
+            "child_name": row.child_name,
+            "branch_length": row.branch_length,
+        }
+        for row in branch_length_prior_report.branch_rows
+        if not math.isfinite(row.log_density)
+    ]
+    raise PhylogeneticsError(
+        "fixed-topology DNA posterior runner requires starting tree branch lengths to lie within branch-length prior support",
+        code="fixed_topology_dna_initial_branch_lengths_outside_prior_support",
+        details={
+            "family": branch_length_prior_report.family,
+            "violating_branches": violating_branches,
+        },
     )
 
 

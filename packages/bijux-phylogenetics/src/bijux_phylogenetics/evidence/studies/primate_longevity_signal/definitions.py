@@ -2,7 +2,10 @@ from __future__ import annotations
 
 STUDY_ID = "primate-longevity-signal"
 EVIDENCE_ID = "evidence-001"
-SOURCE_LOCATOR = "external:lund/pcm1-plots-signal/script"
+SOURCE_LOCATOR = (
+    "evidence-book/studies/primate-longevity-signal/reference/"
+    "lund_pcm1_plots_signal_source.R"
+)
 
 FAMILY_DEFINITIONS = {
     "workflow-contracts": {

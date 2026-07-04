@@ -6,6 +6,7 @@ from pathlib import Path
 import subprocess  # nosec B404
 import tempfile
 
+from ...live_access import require_live_parity_access
 from ..boundary_warning_registry import build_geiger_boundary_warning_rows
 from ..likelihood_policy import build_geiger_likelihood_policy_rows
 from ..model_confidence import build_geiger_model_confidence_rows
@@ -17,6 +18,7 @@ from ..registry import (
 from ..registry import (
     list_geiger_parity_cases as list_geiger_parity_cases,
 )
+from ..shards import resolve_geiger_parity_case_ids
 from .comparison import (
     load_json as _load_json,
 )
@@ -99,11 +101,21 @@ def _build_bijux_case_payload(
 def run_geiger_parity_cases(
     *,
     case_ids: list[str] | None = None,
+    shard_ids: list[str] | None = None,
     rscript_executable: str = "Rscript",
     failure_root: Path | None = None,
 ) -> GeigerParityReport:
     """Run governed live `geiger` parity cases through the checked-in R runner."""
-    selected = _selected_cases(case_ids)
+    require_live_parity_access(
+        surface="geiger live parity runner",
+        reference_source="geiger-live",
+        executable=rscript_executable,
+    )
+    selected_case_ids = resolve_geiger_parity_case_ids(
+        case_ids=case_ids,
+        shard_ids=shard_ids,
+    )
+    selected = _selected_cases(selected_case_ids)
     observations: list[GeigerParityObservation] = []
     active_failure_root = _failure_root() if failure_root is None else failure_root
     bijux_version = _bijux_version()

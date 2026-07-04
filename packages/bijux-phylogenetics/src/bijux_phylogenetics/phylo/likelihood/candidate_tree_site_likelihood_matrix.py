@@ -15,20 +15,24 @@ from bijux_phylogenetics.io.newick import (
 )
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
 from bijux_phylogenetics.phylo.likelihood.dna import normalize_unambiguous_dna_records
+from bijux_phylogenetics.phylo.likelihood.finite_state import (
+    compile_finite_state_likelihood_context,
+    evaluate_finite_state_site_log_likelihood_rows_from_patterns,
+    update_compiled_finite_state_context_topology,
+)
 from bijux_phylogenetics.phylo.likelihood.models import (
     CandidateTreeSiteLikelihoodMatrixReport,
     CandidateTreeSiteLikelihoodRow,
     CandidateTreeSiteLikelihoodSummary,
 )
+from bijux_phylogenetics.phylo.likelihood.nucleotide_finite_state import (
+    build_selected_nucleotide_finite_state_surface,
+)
 from bijux_phylogenetics.phylo.likelihood.nucleotide_models import (
-    resolve_selected_nucleotide_likelihood_specification,
     validate_selected_nucleotide_likelihood_model,
 )
 from bijux_phylogenetics.phylo.likelihood.patterns import (
     compress_alignment_site_patterns_from_records,
-)
-from bijux_phylogenetics.phylo.likelihood.site_log_likelihoods import (
-    evaluate_selected_dna_site_log_likelihoods_from_patterns,
 )
 from bijux_phylogenetics.phylo.topology import rooted_topology_fingerprint
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
@@ -84,10 +88,11 @@ def evaluate_nucleotide_candidate_tree_site_likelihood_matrix(
     compressed_patterns = compress_alignment_site_patterns_from_records(
         normalized_records
     )
-    specification = resolve_selected_nucleotide_likelihood_specification(
+    surface = build_selected_nucleotide_finite_state_surface(
         normalized_records,
         model_name=normalized_model_name,
         owner_name=f"{normalized_model_name.upper()} candidate tree site likelihood matrix",
+        observation_policy="reject",
         kappa=kappa,
         base_frequencies=base_frequencies,
         exchangeabilities=exchangeabilities,
@@ -98,23 +103,24 @@ def evaluate_nucleotide_candidate_tree_site_likelihood_matrix(
 
     candidate_trees: list[CandidateTreeSiteLikelihoodSummary] = []
     matrix_rows: list[CandidateTreeSiteLikelihoodRow] = []
+    context = compile_finite_state_likelihood_context(
+        resolved_tree_records[0].tree,
+        surface,
+    )
     for candidate in resolved_tree_records:
         try:
-            tree_report = evaluate_selected_dna_site_log_likelihoods_from_patterns(
-                candidate.tree,
-                compressed_patterns,
-                model_name=specification.model_name,
-                state_count=specification.state_count,
-                observation_policy=specification.observation_policy,
-                root_prior=specification.root_prior,
-                parameter_values=specification.parameter_values,
-                transition_matrix_for_child=lambda child: (
-                    specification.transition_matrix_for_branch_length(
-                        max(float(child.branch_length or 0.0), 0.0)
-                    )
-                ),
+            if candidate is not resolved_tree_records[0]:
+                update_compiled_finite_state_context_topology(
+                    context,
+                    tree=candidate.tree,
+                )
+            site_rows, total_log_likelihood = (
+                evaluate_finite_state_site_log_likelihood_rows_from_patterns(
+                    context,
+                    compressed_patterns,
+                )
             )
-        except PhylogeneticsError as error:
+        except (PhylogeneticsError, ValueError) as error:
             raise ValueError(
                 f"{candidate.candidate_tree_label} is incompatible with the shared alignment/model surface: {error}"
             ) from error
@@ -123,8 +129,8 @@ def evaluate_nucleotide_candidate_tree_site_likelihood_matrix(
                 candidate_tree_id=candidate.candidate_tree_id,
                 candidate_tree_label=candidate.candidate_tree_label,
                 topology_fingerprint=rooted_topology_fingerprint(candidate.tree),
-                tree_newick=tree_report.tree_newick,
-                log_likelihood=tree_report.log_likelihood,
+                tree_newick=candidate.tree.to_newick(),
+                log_likelihood=total_log_likelihood,
                 observed_delta_log_likelihood=0.0,
             )
         )
@@ -132,14 +138,14 @@ def evaluate_nucleotide_candidate_tree_site_likelihood_matrix(
             CandidateTreeSiteLikelihoodRow(
                 candidate_tree_id=candidate.candidate_tree_id,
                 candidate_tree_label=candidate.candidate_tree_label,
-                tree_newick=tree_report.tree_newick,
+                tree_newick=candidate.tree.to_newick(),
                 pattern_id=row.pattern_id,
                 pattern_weight=row.pattern_weight,
                 site_position=row.site_position,
                 site_states=row.site_states,
                 log_likelihood=row.log_likelihood,
             )
-            for row in tree_report.site_log_likelihoods
+            for row in site_rows
         )
     observed_best_candidate = select_observed_best_candidate_tree_summary(
         candidate_trees
@@ -158,7 +164,7 @@ def evaluate_nucleotide_candidate_tree_site_likelihood_matrix(
         for row in candidate_trees
     ]
     return CandidateTreeSiteLikelihoodMatrixReport(
-        model_name=specification.model_name,
+        model_name=surface.model_name,
         tree_set_path=None
         if resolved_tree_set_path is None
         else str(resolved_tree_set_path),
@@ -172,7 +178,7 @@ def evaluate_nucleotide_candidate_tree_site_likelihood_matrix(
         compression_used=True,
         expansion_policy="candidate-tree-expanded-site-rows",
         comparison_caution_label=_CANDIDATE_TREE_COMPARISON_CAUTION_LABEL,
-        parameter_values=specification.parameter_values,
+        parameter_values=dict(surface.parameter_values),
         candidate_trees=candidate_trees,
         matrix_rows=matrix_rows,
     )

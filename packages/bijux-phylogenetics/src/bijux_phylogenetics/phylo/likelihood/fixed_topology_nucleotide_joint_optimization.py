@@ -9,6 +9,9 @@ from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
 from bijux_phylogenetics.io.newick import dumps_newick, loads_newick
 from bijux_phylogenetics.io.trees import load_tree
 from bijux_phylogenetics.phylo.alignment.models import AlignmentRecord
+from bijux_phylogenetics.phylo.likelihood.fit_assessment import (
+    build_likelihood_fit_assessment,
+)
 from bijux_phylogenetics.phylo.likelihood.fixed_topology_branch_lengths import (
     optimize_fixed_topology_nucleotide_branch_lengths,
 )
@@ -25,8 +28,11 @@ from bijux_phylogenetics.phylo.likelihood.models import (
     BranchLengthOptimizationRow,
     FixedTopologyNucleotideJointOptimizationReport,
     FixedTopologyNucleotideJointOptimizationRestartReport,
+    GtrTreeLikelihoodReport,
+    Hky85TreeLikelihoodReport,
     JointNucleotideOptimizationRestartAttemptRow,
     JointNucleotideOptimizationUpdateRow,
+    K80TreeLikelihoodReport,
     SubstitutionParameterOptimizationRow,
 )
 from bijux_phylogenetics.phylo.likelihood.optimization_boundary_warnings import (
@@ -220,6 +226,7 @@ def optimize_fixed_topology_nucleotide_branches_and_model_with_restarts(
         attempt_count=len(attempt_rows),
         selected_attempt_index=selected_attempt_index,
         selected_solution_reason=selected_solution_reason,
+        fit_assessment=selected_report.fit_assessment,
         selected_report=selected_report,
         attempt_rows=attempt_rows,
     )
@@ -499,6 +506,27 @@ def optimize_fixed_topology_nucleotide_branches_and_model(
     for warning in boundary_warning_messages(boundary_warnings):
         if warning not in warnings:
             warnings.append(warning)
+    fit_assessment = build_likelihood_fit_assessment(
+        site_count=latest_branch_report.site_count,
+        pattern_count=latest_branch_report.pattern_count,
+        optimized_parameter_count=(
+            len(final_branch_rows) + latest_model_report.parameter_count
+        ),
+        converged=(schedule_converged and inner_converged),
+        boundary_warnings=boundary_warnings,
+    )
+    final_evaluation_report = _evaluate_joint_state_report(
+        current_tree,
+        records,
+        model_name=normalized_model_name,
+        base_frequencies=current_base_frequencies,
+        kappa=current_kappa,
+        exchangeabilities=current_exchangeabilities,
+    )
+    final_root_prior_source, final_root_prior_values = _resolve_joint_state_root_prior(
+        model_name=normalized_model_name,
+        base_frequencies=current_base_frequencies,
+    )
     return FixedTopologyNucleotideJointOptimizationReport(
         model_name=latest_model_report.model_name,
         taxa=latest_branch_report.taxa,
@@ -508,9 +536,9 @@ def optimize_fixed_topology_nucleotide_branches_and_model(
         initial_tree_newick=initial_tree_newick,
         optimized_tree_newick=dumps_newick(current_tree),
         state_count=latest_branch_report.state_count,
-        observation_policy=latest_branch_report.observation_policy,
-        root_prior_source=latest_branch_report.root_prior_source,
-        root_prior_values=list(latest_branch_report.root_prior_values),
+        observation_policy=final_evaluation_report.observation_policy,
+        root_prior_source=final_root_prior_source,
+        root_prior_values=final_root_prior_values,
         parameter_count=latest_model_report.parameter_count,
         base_frequency_source=latest_model_report.base_frequency_source,
         base_frequency_a=latest_model_report.base_frequency_a,
@@ -521,11 +549,12 @@ def optimize_fixed_topology_nucleotide_branches_and_model(
         parameter_rows=final_parameter_rows,
         branch_rows=final_branch_rows,
         initial_log_likelihood=initial_log_likelihood,
-        optimized_log_likelihood=current_log_likelihood,
+        optimized_log_likelihood=final_evaluation_report.log_likelihood,
         function_evaluation_count=total_function_evaluation_count,
         joint_optimization_pass_count=executed_joint_pass_count,
         converged=(schedule_converged and inner_converged),
         convergence_reason=convergence_reason,
+        fit_assessment=fit_assessment,
         lower_branch_length_bound=lower_branch_length_bound,
         upper_branch_length_bound=upper_branch_length_bound,
         update_rows=update_rows,
@@ -597,22 +626,46 @@ def _evaluate_joint_state_log_likelihood(
         | None
     ),
 ) -> float:
+    return _evaluate_joint_state_report(
+        tree,
+        records,
+        model_name=model_name,
+        base_frequencies=base_frequencies,
+        kappa=kappa,
+        exchangeabilities=exchangeabilities,
+    ).log_likelihood
+
+
+def _evaluate_joint_state_report(
+    tree: PhyloTree,
+    records: list[AlignmentRecord],
+    *,
+    model_name: str,
+    base_frequencies: dict[str, float] | numpy.ndarray | None,
+    kappa: float | None,
+    exchangeabilities: (
+        dict[tuple[str, str], float]
+        | dict[str, float]
+        | numpy.ndarray
+        | list[float]
+        | tuple[float, ...]
+        | None
+    ),
+) -> K80TreeLikelihoodReport | Hky85TreeLikelihoodReport | GtrTreeLikelihoodReport:
     if model_name == "k80":
-        report = evaluate_k80_tree_likelihood(
+        return evaluate_k80_tree_likelihood(
             tree,
             records,
             kappa=(1.0 if kappa is None else kappa),
         )
-        return report.log_likelihood
     if model_name == "hky85":
-        report = evaluate_hky85_tree_likelihood(
+        return evaluate_hky85_tree_likelihood(
             tree,
             records,
             base_frequencies=base_frequencies,
             kappa=(1.0 if kappa is None else kappa),
         )
-        return report.log_likelihood
-    report = evaluate_gtr_tree_likelihood(
+    return evaluate_gtr_tree_likelihood(
         tree,
         records,
         base_frequencies=base_frequencies,
@@ -629,7 +682,23 @@ def _evaluate_joint_state_log_likelihood(
             else exchangeabilities
         ),
     )
-    return report.log_likelihood
+
+
+def _resolve_joint_state_root_prior(
+    *,
+    model_name: str,
+    base_frequencies: dict[str, float] | numpy.ndarray | None,
+) -> tuple[str, list[float]]:
+    if model_name == "k80":
+        return ("equal", [0.25, 0.25, 0.25, 0.25])
+    if base_frequencies is None:
+        raise AssertionError(
+            "joint nucleotide optimization lost final base frequencies"
+        )
+    return (
+        "stationary",
+        [float(base_frequencies[state]) for state in ("A", "C", "G", "T")],
+    )
 
 
 def _resolved_base_frequencies(

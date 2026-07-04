@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+from typing import TypeGuard
 
 from bijux_phylogenetics.phylo.topology.tree import PhyloTree
 from bijux_phylogenetics.runtime.errors import (
@@ -11,7 +12,35 @@ from bijux_phylogenetics.runtime.errors import (
 )
 from bijux_phylogenetics.trees.tree_sets.topology import _rooted_topology_id
 
+from .time_tree_priors import (
+    BirthDeathTreePriorEvaluationReport,
+    BirthDeathTreePriorModel,
+    ConstantPopulationCoalescentPriorEvaluationReport,
+    ConstantPopulationCoalescentPriorModel,
+    SkylineCoalescentPriorEvaluationReport,
+    SkylineCoalescentPriorModel,
+    YuleTreePriorEvaluationReport,
+    YuleTreePriorModel,
+    evaluate_birth_death_tree_log_prior,
+    evaluate_constant_population_coalescent_tree_log_prior,
+    evaluate_skyline_coalescent_tree_log_prior,
+    evaluate_yule_tree_log_prior,
+)
+
 TREE_TOPOLOGY_PRIOR_FAMILIES = ("uniform-rooted-labeled-bifurcating",)
+TIME_TREE_TOPOLOGY_PRIOR_FAMILIES = (
+    "constant-population-coalescent",
+    "crown-conditioned-birth-death",
+    "crown-conditioned-yule",
+    "skyline-coalescent",
+)
+
+TimeTreeTopologyPriorEvaluationReport = (
+    YuleTreePriorEvaluationReport
+    | BirthDeathTreePriorEvaluationReport
+    | ConstantPopulationCoalescentPriorEvaluationReport
+    | SkylineCoalescentPriorEvaluationReport
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -22,6 +51,13 @@ class TreeTopologyPriorModel:
     taxa: list[str]
     topology_count: int
     log_topology_probability: float
+
+    def parameter_values(self) -> dict[str, float]:
+        return {
+            "taxon_count": float(len(self.taxa)),
+            "topology_count": float(self.topology_count),
+            "log_topology_probability": self.log_topology_probability,
+        }
 
 
 @dataclass(frozen=True, slots=True)
@@ -139,3 +175,62 @@ def _log_rooted_labeled_bifurcating_topology_count(taxon_count: int) -> float:
     return math.fsum(
         math.log(odd_value) for odd_value in range(1, (2 * taxon_count) - 2, 2)
     )
+
+
+def supports_time_tree_topology_prior_model(
+    value: object,
+) -> TypeGuard[
+    YuleTreePriorModel
+    | BirthDeathTreePriorModel
+    | ConstantPopulationCoalescentPriorModel
+    | SkylineCoalescentPriorModel
+]:
+    """Check whether one value is one supported rooted time-tree topology prior."""
+    return isinstance(
+        value,
+        (
+            YuleTreePriorModel,
+            BirthDeathTreePriorModel,
+            ConstantPopulationCoalescentPriorModel,
+            SkylineCoalescentPriorModel,
+        ),
+    )
+
+
+def require_time_tree_topology_prior_model(
+    value: object,
+    *,
+    owner_name: str,
+    code: str,
+):
+    """Require one supported rooted time-tree topology prior model."""
+    if supports_time_tree_topology_prior_model(value):
+        return value
+    raise PhylogeneticsError(
+        f"{owner_name} requires one supported rooted time-tree prior model",
+        code=code,
+    )
+
+
+def evaluate_time_tree_topology_log_prior(
+    tree: PhyloTree,
+    prior_model: object,
+) -> TimeTreeTopologyPriorEvaluationReport:
+    """Evaluate one rooted time tree under one supported time-tree topology prior."""
+    validated_prior_model = require_time_tree_topology_prior_model(
+        prior_model,
+        owner_name="time-tree topology prior evaluation",
+        code="time_tree_topology_prior_type_invalid",
+    )
+    if isinstance(validated_prior_model, YuleTreePriorModel):
+        return evaluate_yule_tree_log_prior(tree, validated_prior_model)
+    if isinstance(validated_prior_model, BirthDeathTreePriorModel):
+        return evaluate_birth_death_tree_log_prior(tree, validated_prior_model)
+    if isinstance(validated_prior_model, ConstantPopulationCoalescentPriorModel):
+        return evaluate_constant_population_coalescent_tree_log_prior(
+            tree,
+            validated_prior_model,
+        )
+    if isinstance(validated_prior_model, SkylineCoalescentPriorModel):
+        return evaluate_skyline_coalescent_tree_log_prior(tree, validated_prior_model)
+    raise AssertionError("unsupported time-tree topology prior reached evaluation")
