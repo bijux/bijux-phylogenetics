@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.1.2 - 2026-07-05
+
+### Changed
+
+- Extended badge synchronization to the package `README.pypi.md` surfaces so
+  PyPI publication pages and GitHub package readmes share one managed badge
+  contract.
+- Added tests that keep package long descriptions Mermaid-free for PyPI while
+  still requiring the generated badge blocks and trusted-publisher-ready
+  release workflow defaults.
+- Updated publish-readiness policies and guards to expect the
+  `bijux-phylogenetics>=0.1.2,<1.0` alias dependency contract for the next
+  release line.
+
 ## 0.1.1 - 2026-07-05
 
 ### Changed

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.2 - 2026-07-05
+
+### Changed
+
+- Restored the managed badge block on the alias package's PyPI long
+  description so the shorter install-name page keeps release, docs, and
+  package links without reintroducing Mermaid rendering failures.
+- Raised the canonical runtime dependency floor to `bijux-phylogenetics
+  >=0.1.2,<1.0` so the alias package resolves to the next release line and the
+  repository-owned publishability checks enforce the same contract.
+
 ## 0.1.1 - 2026-07-05
 
 ### Changed

@@ -46,7 +46,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "bijux-phylogenetics>=0.1.1,<1.0",
+    "bijux-phylogenetics>=0.1.2,<1.0",
 ]
 
 [project.urls]
@@ -93,7 +93,7 @@ phylogenetic = "phylogenetic.cli:main"
 [tool.hatch.version]
 source = "vcs"
 tag-pattern = "^v(?P<version>.*)$"
-fallback-version = "0.1.1"
+fallback-version = "0.1.2"
 raw-options = { git_describe_command = "git describe --dirty --tags --long --match 'v*'", local_scheme = "dirty-tag", version_scheme = "guess-next-dev", root = "../..", search_parent_directories = true }
 
 [tool.hatch.build]

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.2 - 2026-07-05
+
+### Changed
+
+- Restored the managed badge block on the PyPI long-description surface so the
+  package page keeps release, docs, and distribution links while staying
+  compatible with PyPI's Markdown renderer.
+- Kept the PyPI readme text-first and Mermaid-free, making the public package
+  page render cleanly without hiding the fuller diagram-rich handbook that
+  remains on GitHub and the documentation site.
+
 ## 0.1.1 - 2026-07-05
 
 ### Changed

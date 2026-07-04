@@ -73,7 +73,7 @@ exclude_dirs = [".venv", "tests", "artifacts", ".pytest_cache", ".ruff_cache"]
 [tool.hatch.version]
 source = "vcs"
 tag-pattern = "^v(?P<version>.*)$"
-fallback-version = "0.1.1"
+fallback-version = "0.1.2"
 raw-options = { git_describe_command = "git describe --dirty --tags --long --match 'v*'", local_scheme = "dirty-tag", version_scheme = "guess-next-dev", root = ".", search_parent_directories = true }
 
 [tool.hatch.build.targets.wheel]

@@ -726,7 +726,7 @@ def build_publish_readiness_report(repo_root: Path) -> JsonObject:
                 message="runtime package must not depend on the compatibility alias package",
             )
         )
-    if alias_deps != {"bijux-phylogenetics>=0.1.1,<1.0"}:
+    if alias_deps != {"bijux-phylogenetics>=0.1.2,<1.0"}:
         package_issues.append(
             ReadinessIssue(
                 code="alias-dependency-drift",
