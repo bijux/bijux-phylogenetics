@@ -22,17 +22,16 @@
 Compatibility alias package for `bijux-phylogenetics`.
 
 This distribution installs the canonical phylogenetics runtime under the
-shorter `phylogenetic` package and CLI names. The runtime behavior, report
-contracts, and public API continue to live in `bijux-phylogenetics`; this
-package exists so installations can use the shorter distribution name without
-forking the implementation surface.
+shorter `phylogenetic` package and CLI names. It is not a reduced runtime and
+it is not a fork. It points at the same benchmark, workflow, and reporting
+surfaces that the canonical package publishes.
 
-That includes the same documented native likelihood, native inference,
-benchmark, workflow, and reporting surfaces that the canonical package
-publishes.
-
-Choose this package when you want the shorter install and command names while
-keeping the same public runtime contract.
+```mermaid
+flowchart LR
+    A[phylogenetic] --> B[Shorter install name]
+    A --> C[Shorter CLI name]
+    A --> D[Same canonical runtime behavior]
+```
 
 ## Install
 
@@ -43,18 +42,36 @@ python3.11 -m pip install phylogenetic
 phylogenetic --help
 ```
 
-## Read this next
+## What You Still Get
+
+Installing the alias package still gives you access to the same documented
+runtime depth:
+
+| Capability family | What carries through the alias |
+| --- | --- |
+| Trees and alignments | inspection, validation, comparison, and preparation workflows |
+| Native runtime | native likelihood and native inference surfaces |
+| Comparative analysis | comparative and ancestral workflows |
+| Reporting | benchmark, workflow, and reporting surfaces |
+| External engines | governed wrapper-backed external-engine workflows |
+
+Choose this package when you want the shorter install and command names while
+keeping the same public runtime contract.
+
+Choose the canonical `bijux-phylogenetics` package instead when you want the
+most explicit package name for notebooks, papers, release notes, or downstream
+documentation.
+
+## Read This Next
 
 - [Runtime product guide](https://bijux.io/bijux-phylogenetics/phylogenetics/)
 - [Runtime architecture](https://bijux.io/bijux-phylogenetics/phylogenetics/architecture/)
 - [Surface selection guide](https://bijux.io/bijux-phylogenetics/phylogenetics/interfaces/surface-selection/)
 - [Artifact consumption guide](https://bijux.io/bijux-phylogenetics/phylogenetics/interfaces/artifact-consumption-guide/)
-- [Native inference and benchmarks](https://bijux.io/bijux-phylogenetics/phylogenetics/interfaces/native-inference-and-benchmarks/)
+- [Native Inference And Benchmark Surfaces](https://bijux.io/bijux-phylogenetics/phylogenetics/interfaces/native-inference-and-benchmarks/)
 - [Native maximum-likelihood workflows](https://bijux.io/bijux-phylogenetics/phylogenetics/operations/native-maximum-likelihood-workflows/)
 - [Native Bayesian workflows](https://bijux.io/bijux-phylogenetics/phylogenetics/operations/native-bayesian-workflows/)
 - [Native benchmark review](https://bijux.io/bijux-phylogenetics/phylogenetics/operations/native-benchmark-review/)
 - [Release review workflow](https://bijux.io/bijux-phylogenetics/phylogenetics/quality/release-review-workflow/)
 - [Evidence-book guide](https://bijux.io/bijux-phylogenetics/phylogenetics-evidence-book/)
 - [Canonical runtime package on GitHub](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics)
-- [Alias package changelog](https://github.com/bijux/bijux-phylogenetics/blob/main/packages/phylogenetic/CHANGELOG.md)
-- [Security policy](https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md)

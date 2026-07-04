@@ -30,6 +30,32 @@ package metadata.
 Choose this package when you are maintaining documentation, release readiness,
 or repository policy surfaces rather than consuming the public runtime.
 
+```mermaid
+flowchart LR
+    A[Repository change] --> B[README and docs review]
+    A --> C[Quality and release checks]
+    B --> D[Public truth surface]
+    C --> D
+```
+
+## What This Package Governs
+
+- documentation ownership across the root README, package READMEs, and public
+  handbooks
+- native surface documentation so public pages do not hide locally owned
+  likelihood, inference, and benchmark work
+- public trust surface maintenance across evidence-book guides, release
+  summaries, and quality narratives
+- release surface alignment so package metadata, docs, and governed reports do
+  not drift apart
+
+## Why This Matters
+
+The runtime package can only be trusted if its packaging, documentation, and
+release claims remain synchronized. This package exists to keep that review
+work explicit and repository-owned rather than leaving it to ad hoc manual
+cleanup.
+
 ## Read this next
 
 - [Maintainer handbook](https://bijux.io/bijux-phylogenetics/phylogenetics-maintainer/)
