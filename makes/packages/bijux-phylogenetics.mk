@@ -41,6 +41,15 @@ SBOM_REQUIREMENTS_WRITER := -m bijux_phylogenetics_dev.quality.requirements_writ
 FROZEN_TEST_REPORT_PYTHON = $(MONOREPO_ROOT)/artifacts/root/check-venv/bin/python
 FULL_SUITE_PYTEST_WORKERS ?= 8
 FULL_SUITE_PYTEST_DISTRIBUTION ?= worksteal
+CORE_TEST_FILTER_ARGS = -m "not slow and not real_local and not evaluation" --maxfail=1 -q
+
+define run_unit_partition
+	@$(SELF_MAKE) test \
+		TEST_LABEL="$(1)" \
+		TEST_PATHS="$(2)" \
+		TEST_MAIN_ARGS='$(CORE_TEST_FILTER_ARGS)' \
+		TEST_ARTIFACTS_DIR="$(PROJECT_ARTIFACTS_DIR)/test/$(3)"
+endef
 
 quality-compileall:
 	@"$(VENV_PYTHON)" -m compileall src | tee "$(PROJECT_ARTIFACTS_DIR)/quality/compileall.log"
@@ -75,6 +84,46 @@ test-all-frozen: ## Compare the full-suite output against TEST_ALL_FROZEN_REF
 	@$(MAKE) -C "$(MONOREPO_ROOT)" root-check-env >/dev/null
 	@"$(FROZEN_TEST_REPORT_PYTHON)" -m bijux_phylogenetics_dev.quality.frozen_test_report check --repo-root "$(MONOREPO_ROOT)" --package "$(PROJECT_SLUG)" --frozen-ref "$(TEST_ALL_FROZEN_REF)" --artifacts-root "$(PROJECT_ARTIFACTS_DIR)/test-frozen" --json-out "$(PROJECT_ARTIFACTS_DIR)/test-frozen/report.json" --full-suite-workers "$(FULL_SUITE_PYTEST_WORKERS)"
 .PHONY: test-all-frozen
+
+test-unit-sequence-data-foundations:
+	$(call run_unit_partition,unit sequence data foundations,tests/alignment tests/datasets tests/distance,sequence-data-foundations)
+.PHONY: test-unit-sequence-data-foundations
+
+test-unit-ancestral-dating-evidence:
+	$(call run_unit_partition,unit ancestral dating and evidence,tests/ancestral tests/dating tests/evidence,ancestral-dating-evidence)
+.PHONY: test-unit-ancestral-dating-evidence
+
+test-unit-bayesian-model-definition:
+	$(call run_unit_partition,unit bayesian model definition,tests/bayesian/models tests/bayesian/priors,bayesian-model-definition)
+.PHONY: test-unit-bayesian-model-definition
+
+test-unit-bayesian-inference-runtime:
+	$(call run_unit_partition,unit bayesian inference runtime,tests/bayesian/engines tests/bayesian/posterior tests/bayesian/proposals tests/bayesian/sampling,bayesian-inference-runtime)
+.PHONY: test-unit-bayesian-inference-runtime
+
+test-unit-comparative-regression-and-signal:
+	$(call run_unit_partition,unit comparative regression and signal,tests/comparative/assessment tests/comparative/contracts tests/comparative/foundations tests/comparative/optimization tests/comparative/regression tests/comparative/trait_evolution,comparative-regression-and-signal)
+.PHONY: test-unit-comparative-regression-and-signal
+
+test-unit-comparative-biogeography-and-publication:
+	$(call run_unit_partition,unit comparative biogeography and publication,tests/comparative/biogeography tests/comparative/macroevolution tests/comparative/publication tests/publication,comparative-biogeography-and-publication)
+.PHONY: test-unit-comparative-biogeography-and-publication
+
+test-unit-likelihood-search-and-fit:
+	$(call run_unit_partition,unit likelihood search and fit,tests/likelihood/assessment tests/likelihood/optimization tests/likelihood/search,likelihood-search-and-fit)
+.PHONY: test-unit-likelihood-search-and-fit
+
+test-unit-likelihood-placements-and-topology:
+	$(call run_unit_partition,unit likelihood placements and topology,tests/likelihood/inference tests/likelihood/placement tests/likelihood/starting_trees tests/likelihood/support tests/likelihood/wrappers tests/parsimony tests/topology,likelihood-placements-and-topology)
+.PHONY: test-unit-likelihood-placements-and-topology
+
+test-unit-state-model-foundations:
+	$(call run_unit_partition,unit state model foundations,tests/state_models/compiled tests/state_models/ctmc tests/state_models/discrete_traits tests/state_models/finite_state tests/state_models/parameters,state-model-foundations)
+.PHONY: test-unit-state-model-foundations
+
+test-unit-state-model-mixtures-and-tree-workflows:
+	$(call run_unit_partition,unit state model mixtures and tree workflows,tests/state_models/families tests/state_models/mixtures tests/state_models/optimization tests/trees tests/workflows tests/parity,state-model-mixtures-and-tree-workflows)
+.PHONY: test-unit-state-model-mixtures-and-tree-workflows
 
 build-install-smoke:
 	@rm -rf "$(PROJECT_ARTIFACTS_DIR)/tmp/build-install-smoke"
