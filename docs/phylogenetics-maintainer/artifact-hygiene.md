@@ -12,6 +12,14 @@ last_reviewed: 2026-07-04
 Repository execution should leave governed outputs under `artifacts/`, not
 durable clutter at the repository root.
 
+```mermaid
+flowchart LR
+    A[Repository run] --> B[artifacts/root/...]
+    A --> C[Disposable root aliases]
+    B --> D[Canonical location]
+    C --> E[Compatibility only]
+```
+
 ## Canonical Paths
 
 Prefer the canonical artifact-owned paths directly when a maintainer command needs a concrete executable or output root:
@@ -44,3 +52,9 @@ an acceptable steady state.
   `./.venv`?
 - Does cleanup remove disposable aliases and stray caches without touching
   checked-in evidence?
+
+## Why This Matters
+
+Public trust is partly operational. A repository that claims governed outputs
+but leaves unmanaged root clutter behind looks less reproducible and less
+intentional, even when the code itself is sound.

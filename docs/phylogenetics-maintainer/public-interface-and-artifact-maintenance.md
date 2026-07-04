@@ -11,6 +11,14 @@ last_reviewed: 2026-07-04
 
 The repository documents several public interface layers. Those layers include surface-selection guidance, CLI and Python reference pages, native inference reference pages, artifact guides, and metadata links. They should change together when a workflow, native contract, or output family changes materially.
 
+```mermaid
+flowchart TD
+    A[Interface change] --> B[Selection guidance]
+    A --> C[Reference pages]
+    A --> D[Artifact guides]
+    A --> E[README and metadata links]
+```
+
 ## Review Surfaces Together
 
 - `docs/phylogenetics/interfaces/index.md`
@@ -42,3 +50,9 @@ The usual failure is partial interface drift:
 
 That leaves the repository looking larger in code than it does in its public
 contract story.
+
+## Maintenance Rule
+
+The interface story is only complete when a new reader can discover the
+surface, choose it for the right reason, and understand what durable artifacts
+it emits without having to inspect source code first.

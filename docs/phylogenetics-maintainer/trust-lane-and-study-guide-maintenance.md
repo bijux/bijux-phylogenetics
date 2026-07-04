@@ -11,6 +11,16 @@ last_reviewed: 2026-07-04
 
 The public trust story depends on more than general docs and release guides. It also depends on quality pages that explain validation lanes, foundation pages that explain claim types, and PCM study guides that explain bounded analytical scope.
 
+```mermaid
+flowchart TD
+    A[Trust question] --> B[Validation lanes]
+    A --> C[Claim vocabulary]
+    A --> D[PCM study guides]
+    B --> E[What was tested]
+    C --> F[What kind of claim this is]
+    D --> G[Where the study boundary sits]
+```
+
 ## Review These Together
 
 - `docs/phylogenetics/quality/`
@@ -38,3 +48,9 @@ The failure here is trust compression:
 - readers start overreading one lane or one study as broader closure than it is
 
 These guides exist to keep those boundaries readable.
+
+## Maintenance Rule
+
+Every trust-oriented page should answer one distinct question clearly. If two
+pages start collapsing into the same vague "confidence" story, the site loses
+the precision that makes the evidence-book valuable.

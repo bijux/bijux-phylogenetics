@@ -11,6 +11,14 @@ last_reviewed: 2026-07-04
 
 This repository has several public trust surfaces that must move together.
 
+```mermaid
+flowchart LR
+    A[Runtime docs] --> E[Unified public trust story]
+    B[Evidence-book guides] --> E
+    C[Release and quality guides] --> E
+    D[Package metadata and READMEs] --> E
+```
+
 ## Surfaces To Review Together
 
 - runtime architecture pages
@@ -46,3 +54,10 @@ The common failure is not one missing page. It is partial alignment:
 
 That is when the repository starts looking polished in fragments instead of
 coherent as one release surface.
+
+## Maintainer Rule
+
+When one trust surface changes materially, do not stop after updating the most
+obvious page. Keep going until the runtime docs, evidence guides, release
+guides, and package surfaces tell the same story at the same level of
+confidence.

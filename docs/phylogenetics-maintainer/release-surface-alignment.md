@@ -12,6 +12,13 @@ last_reviewed: 2026-07-04
 Release readiness in this repository depends on narrative alignment as much as
 on green checks.
 
+```mermaid
+flowchart LR
+    A[Code and tests] --> D[Release claim]
+    B[Docs and READMEs] --> D
+    C[Metadata and reports] --> D
+```
+
 ## Surfaces That Must Agree
 
 - root `README.md`
@@ -37,6 +44,12 @@ on green checks.
 - run the narrow documentation contract tests when they exist
 - run publish-readiness or release-readiness validation when metadata or
   package identity changes materially
+
+## Practical Release Rule
+
+If a capable external reader could compare the README, docs site, package
+metadata, and release reports and come away with four different impressions of
+the product, the repository is not release-ready yet.
 
 ## Release-Blocking Failure Mode
 
