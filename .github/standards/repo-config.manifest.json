@@ -2054,8 +2054,7 @@
               "package_slug": "bijux-phylogenetics"
             },
             {
-              "package_slug": "phylogenetic",
-              "publish_auth": "token"
+              "package_slug": "phylogenetic"
             }
           ]
         },
