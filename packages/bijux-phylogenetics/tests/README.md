@@ -29,6 +29,7 @@ single flat namespace.
 - `parity/ape`, `parity/geiger`, and `parity/phytools` own toolkit-specific parity cases; the `parity/` root is reserved for cross-tool access policy.
 - `bayesian/sampling`, `bayesian/priors`, `bayesian/proposals`, `bayesian/models`, `bayesian/posterior`, and `bayesian/engines` separate sampling mechanics, prior families, proposal kernels, native model definitions, posterior analysis, and wrapper-facing execution surfaces.
 - `publication/integrity` owns release-surface equivalence and schema checks, `publication/packages` owns publication-bundle validation, and `publication/supplementary` owns table-generation surfaces.
+- `likelihood/search` owns topology-search heuristics, convergence, replay, and multi-start orchestration, `likelihood/starting_trees` owns starting-tree construction and validation surfaces, and `likelihood/inference` owns end-to-end inference and bootstrap workflows.
 - `state_models/ctmc` owns continuous-time Markov chain normalization, stationary-distribution, and transition-matrix tests so the broader state-model surface can separate likelihood and mixture behavior from core matrix math.
 - `state_models/compiled` owns compiled candidate-matrix and compiled finite-state analysis surfaces so generated kernels and proof-style equivalence checks do not stay mixed with native model behavior.
 - `state_models/finite_state` owns generic finite-state kernel behavior such as protocol, posterior, cache, and branch or topology update invariants, leaving family-specific likelihoods out of the shared mechanics surface.
