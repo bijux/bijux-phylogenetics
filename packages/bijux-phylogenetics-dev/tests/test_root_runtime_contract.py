@@ -460,7 +460,7 @@ def test_runtime_package_make_test_all_frozen_uses_repository_owned_comparison_t
     )
     assert '--package "bijux-phylogenetics"' in dry_run
     assert (
-        '--artifacts-root "/Users/bijan/bijux/bijux-phylogenetics/artifacts/bijux-phylogenetics/test-frozen"'
+        f'--artifacts-root "{REPO_ROOT / "artifacts" / "bijux-phylogenetics" / "test-frozen"}"'
         in dry_run
     )
     assert '--full-suite-workers "8"' in dry_run
