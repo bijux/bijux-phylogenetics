@@ -38,6 +38,7 @@ single flat namespace.
 - `state_models/optimization` owns branch-length, exchangeability, kappa, and state-frequency search behavior, while `state_models/parameters` owns simplex, bounded-parameter, and parameter-layout invariants that support those optimizers.
 - `trees/reporting` owns tree-review reports, publication packages, and reader-facing CLI surfaces so the `trees/` root can focus on structural tree behavior, fixtures, and single-tree algorithms.
 - `trees/pruning` owns shared-taxon pruning workflows and minimal pruning proofs, `trees/reconciliation` owns duplication-loss-transfer study surfaces, and `trees/taxonomy` owns taxon table and taxonomy iteration review.
+- `trees/formats` owns Newick, Nexus, and support-label parsing or writing behavior, while `trees/references` owns shared fixture and reference-governance checks for tree-adjacent study inputs.
 - `workflows/engines` owns external-engine contracts, `workflows/pipelines` owns end-to-end orchestration and replay surfaces, and `workflows/benchmarks` owns governed scale and performance lanes.
 - `trees/tree_sets` owns posterior, consensus, quartet, and uncertainty coverage for multi-tree analyses so single-tree structure tests can stay focused at the `trees/` root.
 
