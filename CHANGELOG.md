@@ -8,6 +8,23 @@ release notes belong to each distribution under `packages/`.
 Use this changelog for workspace changes that affect multiple packages or
 change contributor and maintainer workflows across the repository.
 
+## 0.1.1 - 2026-07-05
+
+### Changed
+
+- Prepared the `0.1.1` release line across the repository and package
+  changelog surfaces so the first post-`0.1.0` maintenance release has clear,
+  bounded release notes.
+- Strengthened the two published package records on PyPI with more compelling
+  summaries, broader discovery metadata, richer project links, and classifier
+  declarations through Python `3.14`.
+- Reworked the root README and the public handbook landing pages so they speak
+  directly to readers about runtime breadth, evidence boundaries, and release
+  trust instead of narrating how the documentation ought to be written.
+- Prepared the published package descriptions for a Mermaid-free PyPI release
+  surface and aligned the alias package so it resolves to the `0.1.1`
+  canonical runtime line.
+
 ## 0.1.0 - 2026-07-04
 
 ### Added

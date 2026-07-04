@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.1 - 2026-07-05
+
+### Changed
+
+- Tightened the repository truth surface around root and handbook entry pages
+  so reader-facing docs describe runtime depth, evidence limits, and release
+  stewardship in final public language rather than meta-documentation.
+- Continued release-preparation support for `0.1.1` by documenting the PyPI
+  publication cleanup and the post-`0.1.0` documentation alignment work.
+
 ## 0.1.0 - 2026-07-04
 
 ### Added

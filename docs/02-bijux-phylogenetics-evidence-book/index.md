@@ -4,7 +4,7 @@ audience: public
 type: evidence-navigation
 status: active
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-05
 ---
 
 # Evidence Book
@@ -12,12 +12,12 @@ last_reviewed: 2026-07-04
 This section explains the comparative study record behind the public
 phylogenetics runtime.
 
-The five study families come from course material that the repository has
-turned into checked-in, reviewable evidence. All five now have governed
-parity bundle IDs. Some studies already carry stronger numerical
-parity records, while others keep parity verdicts open because the
-scientific workflow still depends on an external engine or an unclosed
-lecture-specific boundary.
+The repository currently exposes five study families and forty-three governed
+evidence bundles. Together they cover primate signal and regression studies,
+plus the cichlid mixed-model sequence. Some study families already carry
+stronger numerical parity records, while others still keep verdicts open
+because the scientific workflow depends on an external engine or on a
+lecture-specific boundary that has not been closed yet.
 
 ```mermaid
 flowchart LR
@@ -37,17 +37,17 @@ flowchart LR
 Treat those checked-in reports as the current source of truth when you need
 live repository status rather than the stable narrative on this page.
 
-## At A Glance
+## Evidence Program Snapshot
 
-- studies: `5`
-- evidence bundles: `43`
-- teaching studies: `2`
-- migration studies: `2`
-- freshness statuses: `current=43`
-- coverage gaps still tracked: `28`
-- foundational numerical trust: `bounded`
-- reviewer readiness: `bounded`
-- maturity tier: `reviewable_but_incomplete`
+- Five study families are published today: PCM1 through PCM5.
+- Every study family now has governed parity bundle IDs.
+- PCM1 and PCM2 currently provide the strongest end-to-end primate examples.
+- PCM3 keeps its lecture-specific interpretation boundaries explicit.
+- PCM4 and PCM5 remain scientifically useful, but they still rely on external
+  posterior tooling for the largest open boundary.
+- Repository-wide freshness, integrity, and coverage-gap status lives in the
+  checked-in review reports rather than in a manually maintained summary on
+  this page.
 
 ## Core Reading Order
 

@@ -39,7 +39,7 @@ package_dir = "packages/phylogenetic"
 module_root = "phylogenetic"
 allowed_repo_import_roots = ["phylogenetic", "bijux_phylogenetics"]
 owned_module_prefixes = ["phylogenetic"]
-required_install_dependencies = ["bijux-phylogenetics>=0.1.0,<1.0"]
+required_install_dependencies = ["bijux-phylogenetics>=0.1.1,<1.0"]
 
 [tool.bijux_phylogenetics.package_boundaries.package_roles."bijux-phylogenetics-dev"]
 role = "maintainer"

@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bijux-phylogenetics"
-description = "Native phylogenetic runtime, comparative workflows, and evidence-linked reporting."
-readme = "README.md"
+description = "Comprehensive phylogenetics runtime for tree analysis, native inference, comparative models, parsimony, and evidence-linked reporting."
+readme = "README.pypi.md"
 requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
 license-files = []
@@ -13,21 +13,37 @@ authors = [
     { name = "Bijan Mousavi", email = "bijan@bijux.io" },
 ]
 keywords = [
+    "ancestral-state-reconstruction",
     "bayesian-inference",
     "bioinformatics",
     "comparative-biology",
+    "comparative-methods",
     "evolution",
     "maximum-likelihood",
+    "parsimony",
+    "phylogenomics",
     "phylogenetics",
+    "sequence-analysis",
+    "tree-analysis",
+    "tree-comparison",
 ]
 dynamic = ["version"]
 classifiers = [
     "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
 ]
 dependencies = [
     "biopython>=1.87,<2.0",
@@ -37,6 +53,7 @@ dependencies = [
 ]
 
 [project.urls]
+Homepage = "https://bijux.io/bijux-phylogenetics/"
 Documentation = "https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/"
 "Native Workflows" = "https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/"
 "Evidence Book" = "https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-evidence-book/"
@@ -45,7 +62,9 @@ Benchmarks = "https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operat
 "Artifact Guide" = "https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/artifact-consumption-guide/"
 "Release Guide" = "https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/quality/release-review-workflow/"
 Repository = "https://github.com/bijux/bijux-phylogenetics"
+Source = "https://github.com/bijux/bijux-phylogenetics"
 Issues = "https://github.com/bijux/bijux-phylogenetics/issues"
+Tracker = "https://github.com/bijux/bijux-phylogenetics/issues"
 Changelog = "https://github.com/bijux/bijux-phylogenetics/blob/main/packages/bijux-phylogenetics/CHANGELOG.md"
 Security = "https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md"
 
@@ -86,11 +105,12 @@ bijux-phylogenetics = "bijux_phylogenetics.command_line:main"
 [tool.hatch.version]
 source = "vcs"
 tag-pattern = "^v(?P<version>.*)$"
-fallback-version = "0.1.0"
+fallback-version = "0.1.1"
 raw-options = { git_describe_command = "git describe --dirty --tags --long --match 'v*'", local_scheme = "dirty-tag", version_scheme = "guess-next-dev", root = "../..", search_parent_directories = true }
 
 [tool.hatch.build]
 include = [
+    "README.pypi.md",
     "README.md",
     "CHANGELOG.md",
     "src/bijux_phylogenetics/**",
@@ -99,6 +119,7 @@ include = [
 [tool.hatch.build.targets.sdist]
 exclude = ["LICENSE", "NOTICE", "tests"]
 include = [
+    "README.pypi.md",
     "README.md",
     "CHANGELOG.md",
     "src/bijux_phylogenetics/**",

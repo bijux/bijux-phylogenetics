@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.1.1 - 2026-07-05
+
+### Changed
+
+- Raised the package metadata bar on PyPI with a stronger summary, broader
+  discovery keywords, a richer project-link set, and classifiers for Python
+  `3.12`, `3.13`, and `3.14`.
+- Reworked the PyPI long description so the package index gets a clean
+  text-first overview with the same runtime scope, install guidance, and docs
+  links as the GitHub handbook, but without Mermaid-only presentation blocks.
+- Clarified the package-level trust story so PyPI readers can distinguish
+  between usable runtime breadth, native ownership, and evidence-book closure
+  without leaving the release surface.
+
 ## 0.1.0 - 2026-07-04
 
 ### Added

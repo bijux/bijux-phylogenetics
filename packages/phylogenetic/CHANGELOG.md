@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.1.1 - 2026-07-05
+
+### Changed
+
+- Raised the alias package metadata bar on PyPI with a clearer summary,
+  broader discovery keywords, a richer project-link set, and classifiers for
+  Python `3.12`, `3.13`, and `3.14`.
+- Reworked the PyPI long description so the alias package publishes a clean
+  text-first explanation of what changes and what does not change when users
+  choose the shorter distribution name.
+- Raised the canonical-runtime dependency floor to `bijux-phylogenetics
+  >=0.1.1` so the alias package cannot resolve to the older release line after
+  the `0.1.1` publication.
+
 ## 0.1.0 - 2026-07-04
 
 ### Added
