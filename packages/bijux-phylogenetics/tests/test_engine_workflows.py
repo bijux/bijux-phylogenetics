@@ -1343,6 +1343,55 @@ def test_run_bootstrap_support_estimation_exports_branch_ledgers_and_histogram(
     }
 
 
+def test_run_bootstrap_support_estimation_accepts_treefile_only_support_output(
+    tmp_path: Path,
+) -> None:
+    executable = _write_executable(
+        tmp_path / "iqtree-treefile-only-bootstrap",
+        """#!/usr/bin/env python3
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+if "--version" in args:
+    print("IQ-TREE multicore version 2.9.9")
+    raise SystemExit(0)
+
+prefix = Path(args[args.index("-pre") + 1]) if "-pre" in args else Path("iqtree")
+prefix.parent.mkdir(parents=True, exist_ok=True)
+support_tree = "((A:0.1,B:0.1)95:0.2,(C:0.1,D:0.1)88:0.2);\\n"
+prefix.with_suffix(".treefile").write_text(support_tree, encoding="utf-8")
+prefix.with_suffix(".ufboot").write_text(
+    "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n"
+    "((A:0.1,B:0.1):0.2,(C:0.1,D:0.1):0.2);\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".iqtree").write_text(
+    "Best-fit model: GTR+G\\nLog-likelihood of the tree: -234.567\\nBootstrap analysis completed\\n",
+    encoding="utf-8",
+)
+prefix.with_suffix(".log").write_text(
+    "IQ-TREE fixture bootstrap log\\nBEST SCORE FOUND : -234.567\\n",
+    encoding="utf-8",
+)
+""",
+    )
+
+    report = run_bootstrap_support_estimation(
+        fixture("alignments/example_alignment.fasta"),
+        out_dir=tmp_path / "bootstrap-treefile-only",
+        model="GTR+G",
+        executable=executable,
+        prefix="example",
+        replicates=1000,
+    )
+
+    assert report.output_paths["support_tree"].suffix == ".treefile"
+    assert report.output_paths["support_tree"].exists()
+    assert report.bootstrap_support_summary is not None
+    assert report.bootstrap_support_summary.supported_node_count == 2
+
+
 def test_run_sh_alrt_support_estimation_exports_combined_support_and_conflicts(
     tmp_path: Path,
 ) -> None:

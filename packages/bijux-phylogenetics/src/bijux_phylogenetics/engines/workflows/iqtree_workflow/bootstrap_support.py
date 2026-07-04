@@ -53,6 +53,16 @@ from .shared import (
 )
 
 
+def _resolve_support_tree_path(prefix_path: Path) -> Path:
+    for candidate in (
+        prefix_path.with_suffix(".contree"),
+        prefix_path.with_suffix(".treefile"),
+    ):
+        if candidate.exists():
+            return candidate
+    return prefix_path.with_suffix(".contree")
+
+
 def run_bootstrap_support_estimation(
     input_path: Path,
     *,
@@ -107,7 +117,7 @@ def run_bootstrap_support_estimation(
         raise EngineWorkflowError(
             "mixed DNA/protein partition analyses require a model-selection keyword such as MF, MFP, TEST, or TESTMERGE"
         )
-    support_tree_path = prefix_path.with_suffix(".contree")
+    support_tree_path = _resolve_support_tree_path(prefix_path)
     bootstrap_tree_path = prefix_path.with_suffix(".ufboot")
     support_table_path = prefix_path.with_suffix(".support.tsv")
     low_support_branches_path = prefix_path.with_suffix(".low-support.tsv")
@@ -160,7 +170,6 @@ def run_bootstrap_support_estimation(
         stdout_path=prefix_path.with_suffix(".stdout.log"),
         stderr_path=prefix_path.with_suffix(".stderr.log"),
         output_paths={
-            "support_tree": support_tree_path,
             "bootstrap_trees": bootstrap_tree_path,
             "iqtree_report": report_path,
             "iqtree_log": log_path,
@@ -169,6 +178,8 @@ def run_bootstrap_support_estimation(
         timeout_seconds=timeout_seconds,
     )
     try:
+        support_tree_path = _resolve_support_tree_path(prefix_path)
+        run.output_paths["support_tree"] = support_tree_path
         _validate_iqtree_required_artifacts(prefix_path, workflow="bootstrap-support")
         _validate_tree_output(
             support_tree_path,
