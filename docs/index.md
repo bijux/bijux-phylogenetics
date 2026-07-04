@@ -59,7 +59,7 @@ quality automation.
 - native benchmark review: [Native benchmark review](public/phylogenetics/operations/native-benchmark-review.md)
 - release review workflow: [Release review workflow](public/phylogenetics/quality/release-review-workflow.md)
 - public evidence guide: [Evidence-book guide](public/phylogenetics-evidence-book/index.md)
-- internal maintainer guide: [Internal documentation](internal/index.md)
+- internal maintainer guide: [Maintainer guide](internal/maintain/index.md)
 
 
 ## Notable Runtime Surfaces
