@@ -15,60 +15,48 @@ Pagel-lambda regression, and signal diagnostics on the same lecture family.
 
 ## Why PCM2 Matters
 
-PCM1 proves the study inputs. PCM2 asks whether more demanding comparative
-methods still behave coherently once phylogenetic correction and model
-comparison enter the picture.
+PCM1 establishes the prepared study inputs. PCM2 asks whether more demanding
+comparative methods still behave coherently once phylogenetic correction and
+model comparison enter the picture.
 
 ## Read PCM2 In Order
 
-1. [model comparisons and PGLS](model-comparisons-and-pgls.md)
-2. [signal diagnostics and open boundaries](signal-diagnostics-and-open-boundaries.md)
+1. [Model comparisons and PGLS](model-comparisons-and-pgls.md)
+2. [Signal diagnostics and open boundaries](signal-diagnostics-and-open-boundaries.md)
 
 ## Checked-In Study Dossier
 
-The full study dossier lives in the repository under
+The full checked-in record lives under
 [`evidence-book/studies/primate-pgls-and-signal/`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/README.md).
-That dossier carries the governed parity bundles and the one explicit open
-boundary that still remains visible.
 
-## Checked-In Inputs
+## Inputs And Evidence Map
 
 - lecture source copies:
   `primate_raw.xlsx`, `primate.RData`, and `primatetree.nex`
-- study-local governed derivatives:
+- governed derivatives:
   `reference_primate.csv` and `reference_trimmed_primatetree.nwk`
-- study-local catalogs:
+- catalogs:
   [dataset catalog](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/datasets/README.md)
   and
   [provenance guide](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/provenance/README.md)
+- evidence bundles:
+  `evidence-001` through `evidence-010`
 
-## Evidence Bundle Atlas
+## What To Take From PCM2
 
-- `evidence-001`: reload semantics and governed input contract
-- `evidence-002` to `evidence-005`: baseline GLS, PGLS, signal, and diagnostics
-- `evidence-006` to `evidence-009`: transformed trees, evolutionary modes,
-  likelihood ratios, and ancestral review
-- `evidence-010`: explicit remaining coverage boundary
+- baseline GLS and phylogenetically corrected PGLS can be read as one
+  comparative sequence
+- transformed trees and model comparisons belong in the same analytical story,
+  not in separate islands
+- open boundaries can improve credibility when they remain visible
 
 ## What PCM2 Does Not Prove
 
-- it does not close every comparative model in the repository
-- it does not erase remaining open boundaries named inside the study
-- it does not substitute for release review or broader evidence-book coverage
-  reports
+- PCM2 does not close every comparative model in the repository.
+- It does not erase the remaining open boundaries named inside the study.
+- It does not substitute for release review or broader evidence-book coverage
+  reports.
 
-## Current Repository State
-
-- Governed parity bundles are deployed for `evidence-001` through
-  `evidence-010`.
-- The checked-in evidence record covers reload semantics, baseline GLS, PGLS,
-  transformed trees, evolutionary modes, likelihood ratios, and ancestral
-  review on the same lecture family.
-- The repository keeps the remaining intercept-sweep fragment explicit rather
-  than rounding it into a broader success claim.
-- PCM2 still focuses on one primate system; it does not cover the later
-  categorical-regression or mixed-model lecture families.
-
-## Read This Study Next
+## Read Next
 
 - [PCM3: primate continuous and categorical regression](../pcm3-primate-continuous-and-categorical-regression/index.md)

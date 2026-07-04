@@ -9,32 +9,29 @@ last_reviewed: 2026-07-04
 
 # PCM1 Data And Tree Preparation
 
-The first half of PCM1 is about getting the study state into a form that later
-comparative work can honestly use.
+The first half of PCM1 asks a simple question: is the study state good enough
+to support later comparative claims?
 
-That includes:
+## What This Part Covers
 
 - loading the primate table into a governed shape
 - making type repair and missing-data decisions explicit
 - importing and checking the trimmed tree
 - proving that tree tips and trait rows correspond before model fitting
 
-This matters because later signal results are only meaningful if those earlier
-joins and exclusions are already visible.
+## Why This Matters
+
+Later signal results are only meaningful if the earlier joins, exclusions, and
+tree adjustments are already visible. This page is therefore not just about
+cleaning. It is about making the prepared study state reviewable.
 
 ## What This Part Answers
 
-- are the primate traits in one governed shape before model work starts
-- does the trimmed tree still match the trait table
-- are missing-value and exclusion decisions visible before any signal claim is
-  made
-
-## Why This Is A Trust Surface
-
-This part of PCM1 is not only data cleaning. It is the proof that later
-comparative outputs are anchored to one reviewable prepared study state rather
-than one hidden preprocessing step.
+- Are the primate traits in one governed shape before model work starts?
+- Does the trimmed tree still match the trait table?
+- Are missing-value and exclusion decisions visible before any signal claim is
+  made?
 
 ## Read Next
 
-- [signal and ancestral results](signal-and-ancestral-results.md)
+- [Signal and ancestral results](signal-and-ancestral-results.md)

@@ -9,28 +9,29 @@ last_reviewed: 2026-07-04
 
 # PCM1 Signal And Ancestral Results
 
-The second half of PCM1 is where the repository checks whether R and Bijux stay
-aligned on the core comparative story.
+The second half of PCM1 asks whether R and Bijux tell the same comparative
+story on the prepared primate dataset.
 
-The governed slices cover:
+## What This Part Covers
 
 - lambda-oriented signal behavior on random and primate data
-- ancestral-state output agreement within bounded tolerances
-- explicit handling of visual surfaces without pretending figure parity is
-  already the main closure goal
+- ancestral-state agreement within bounded tolerances
+- explicit handling of visual outputs without treating plot-for-plot identity
+  as the main closure criterion
 
-PCM1 therefore acts as the introduction study: it teaches preparation,
-comparative signal, and bounded ancestral parity in one readable family.
+## Why It Matters
 
-## What This Part Answers
+PCM1 is the introductory trust study in the evidence book. It shows one full
+path from prepared study state to bounded signal and ancestral review.
 
-- do the core signal surfaces stay aligned on the governed primate study
-- do ancestral outputs stay within the study's bounded parity expectations
-- are visual or presentation surfaces kept secondary to the analytical claim
+## Questions This Part Answers
+
+- Do the core signal surfaces stay aligned on the governed primate study?
+- Do ancestral outputs stay within the study's bounded expectations?
+- Are visual surfaces kept secondary to the analytical claim?
 
 ## What To Keep In Mind
 
-PCM1 is intentionally introductory. A good result here means the repository can
-show one readable path from prepared study state to bounded signal and
-ancestral review. It does not mean every later comparative, Bayesian, or
-benchmark surface is already closed by this study.
+PCM1 is intentionally introductory. A good result here is meaningful, but it
+does not close later regression, Bayesian, or benchmark-heavy families by
+itself.

@@ -10,69 +10,58 @@ last_reviewed: 2026-07-04
 # PCM3: Primate Continuous And Categorical Regression
 
 PCM3 is the multivariable regression study in the evidence book. It stays with
-the primate dataset, but the main question changes: how should readers interpret
-models once continuous predictors, categorical predictors, interactions, and
-phylogenetic correction all appear together?
+the primate dataset, but the main question changes: how should readers
+interpret models once continuous predictors, categorical predictors,
+interactions, and phylogenetic correction all appear together?
 
 ```mermaid
 flowchart LR
-    A[Standardized predictors] --> B[Categorical predictors]
-    B --> C[Interaction terms]
+    A[Continuous predictor] --> B[Categorical predictor]
+    B --> C[Interaction term]
     C --> D[Phylogenetic regression]
 ```
 
-## What PCM3 Answers
-
-This study is useful when you need to understand:
+## What PCM3 Helps You Read
 
 - how the intercept changes meaning after standardization or transformation
 - how categorical predictors depend on a clear coding choice
-- how interactions should be read as joint effects instead of isolated slopes
+- how interactions should be read as joint effects rather than isolated slopes
 - how the regression story changes again after phylogenetic correction
 
 ## Read PCM3 In Order
 
-1. [model design and phylogenetic regression](model-design-and-phylogenetic-regression.md)
+1. [Model design and phylogenetic regression](model-design-and-phylogenetic-regression.md)
 
-## What The Repository Already Provides
-
-- a checked-in source record for the full lecture family
-- repository-owned comparative regression and PGLS surfaces that match much of
-  the lecture's analytical shape
-- one governed parity bundle ID for each lecture slice, `evidence-001` through
-  `evidence-008`
-- a study breakdown that keeps each lecture question separate instead of
-  collapsing everything into one regression claim
-
-## What PCM3 Does Not Prove
-
-- It does not turn deployed governed parity bundles into a blanket claim of
-  full numerical parity.
-- It does not mean each PCM3 bundle already closes its lecture-specific
-  coefficient or diagnostic verdict.
-- It does not replace the need to inspect the checked-in source record when you
-  need detailed provenance.
-
-## Checked-In Evidence Record
+## Checked-In Study Dossier
 
 The full checked-in record lives under
 [`evidence-book/studies/primate-continuous-and-categorical-regression/`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-continuous-and-categorical-regression/README.md).
 
-## Checked-In Inputs
+## Inputs And Evidence Map
 
 - lecture source copies:
   `primate_raw.xlsx`, `primate.RData`, and `primatetree.nex`
-- study-local governed derivatives:
+- governed derivatives:
   `reference_primate.csv` and `reference_trimmed_primatetree.nwk`
-- study-local catalogs:
+- catalogs:
   [dataset catalog](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-continuous-and-categorical-regression/datasets/README.md)
   and
   [provenance guide](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-continuous-and-categorical-regression/provenance/README.md)
+- evidence bundles:
+  `evidence-001` through `evidence-008`
 
-## Evidence Bundle Atlas
+## What To Take From PCM3
 
-- `evidence-001`: source intake and workspace alignment
-- `evidence-002` to `evidence-006`: baseline design, transforms, contrasts,
-  interactions, and scaling semantics
-- `evidence-007` and `evidence-008`: phylogenetic regression and post-fit
-  review
+- the repository now exposes a structured regression study rather than a single
+  undifferentiated "PGLS" claim
+- interaction and coding choices are part of the scientific interpretation,
+  not merely model syntax
+- deployed bundles improve reviewability even when lecture-specific verdicts
+  remain narrower than PCM1 or PCM2
+
+## What Not To Overread
+
+- Bundle deployment is not a blanket claim of full numerical parity.
+- PCM3 does not replace the need to inspect the checked-in source record when
+  provenance matters.
+- The study remains narrower than a full closed lecture-equivalent suite.

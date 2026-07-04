@@ -9,28 +9,30 @@ last_reviewed: 2026-07-04
 
 # PCM2 Model Comparisons And PGLS
 
-PCM2 pushes beyond preparation and into comparative model behavior.
+PCM2 moves beyond preparation and into comparative model behavior.
 
-The governed study slices cover:
+## What This Part Covers
 
 - transformed-tree behavior
-- Brownian, OU, and early-burst style mode fitting
+- Brownian, OU, and early-burst model families
 - likelihood-ratio model comparisons
 - baseline GLS before phylogenetic correction
 - Pagel-lambda PGLS after phylogenetic correction
 
-This study matters because it checks whether the runtime can support serious
-comparative workflows without quietly drifting from the Lund R reference path.
+## Why This Matters
+
+This part tests whether the runtime can support serious comparative workflows
+without quietly drifting from the reference R path.
 
 ## What This Part Answers
 
-- do transformed-tree and comparative model-fit surfaces behave coherently on
-  the governed primate study
-- do baseline GLS and phylogenetically corrected PGLS stay readable as one
-  comparative narrative rather than isolated outputs
-- can the public runtime story support serious comparative modeling without
-  hiding the dependence on governed reference review
+- Do transformed-tree and comparative model-fit surfaces behave coherently on
+  the governed primate study?
+- Do baseline GLS and phylogenetically corrected PGLS stay readable as one
+  comparative narrative?
+- Can the public runtime story support serious comparative modeling without
+  hiding its dependence on governed reference review?
 
 ## Read Next
 
-- [signal diagnostics and open boundaries](signal-diagnostics-and-open-boundaries.md)
+- [Signal diagnostics and open boundaries](signal-diagnostics-and-open-boundaries.md)
