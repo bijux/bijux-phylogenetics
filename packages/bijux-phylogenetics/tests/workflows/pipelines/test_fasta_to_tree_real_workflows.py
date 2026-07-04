@@ -11,8 +11,8 @@ from bijux_phylogenetics.engines.inference import run_fasta_to_tree_workflow
 from bijux_phylogenetics.io.fasta import load_fasta_alignment
 from bijux_phylogenetics.io.trees import load_tree
 
-from ..support.external_engines import require_alignment_engine_executables
-from ..support.paths import REPOSITORY_ROOT
+from ...support.external_engines import require_alignment_engine_executables
+from ...support.paths import REPOSITORY_ROOT
 
 pytestmark = [
     pytest.mark.real_local,

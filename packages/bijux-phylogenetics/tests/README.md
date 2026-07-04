@@ -17,10 +17,18 @@ single flat namespace.
 - `parity/`: live and governed reference-parity validation surfaces
 - `parsimony/`: parsimony search, reconstructions, and character scoring
 - `publication/`: publication packages, supplementary tables, and golden outputs
+- `real_local/`: opt-in local engine lanes that depend on workstation-installed tools
+- `smoke/`: repository gateway and command-surface smoke coverage
 - `state_models/`: finite-state kernels, substitution models, and transition math
 - `topology/`: topology neighborhoods, rooted move families, and pruning refresh
 - `trees/`: tree structures, tree-set workflows, clade/support review, and taxonomy
 - `workflows/`: workflow orchestration, CLI/runtime integration, and engine lanes
+
+## Nested Boundaries
+
+- `parity/ape`, `parity/geiger`, and `parity/phytools` own toolkit-specific parity cases; the `parity/` root is reserved for cross-tool access policy.
+- `publication/integrity` owns release-surface equivalence and schema checks, `publication/packages` owns publication-bundle validation, and `publication/supplementary` owns table-generation surfaces.
+- `workflows/engines` owns external-engine contracts, `workflows/pipelines` owns end-to-end orchestration and replay surfaces, and `workflows/benchmarks` owns governed scale and performance lanes.
 
 ## Shared Fixtures
 

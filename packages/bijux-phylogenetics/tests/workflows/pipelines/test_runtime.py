@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from ..support.paths import REPOSITORY_ROOT
+from ...support.paths import REPOSITORY_ROOT
 
 import bijux_phylogenetics
 from bijux_phylogenetics.bayesian import (

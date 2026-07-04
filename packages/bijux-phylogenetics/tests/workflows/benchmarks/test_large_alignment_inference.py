@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ..support.paths import REPOSITORY_ROOT
+from ...support.paths import REPOSITORY_ROOT
 
 import pytest
 
@@ -51,7 +51,7 @@ def _fake_fasttree_streaming(path: Path) -> Path:
 import sys
 from pathlib import Path
 
-from ..support.paths import REPOSITORY_ROOT
+from ...support.paths import REPOSITORY_ROOT
 
 args = sys.argv[1:]
 if not args or "-help" in args:

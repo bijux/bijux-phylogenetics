@@ -7,7 +7,7 @@ import time
 
 import pytest
 
-from ..support.paths import REPOSITORY_ROOT
+from ...support.paths import REPOSITORY_ROOT
 
 from bijux_phylogenetics.engines import (
     build_inference_sensitivity_report,
