@@ -76,8 +76,8 @@ uncertainty, and repeated measures in one workflow.
 
 ## Checked-In Study Inputs
 
-- [datasets](./datasets/)
-- [provenance](./provenance/)
+- [dataset catalog](./datasets/README.md)
+- [provenance guide](./provenance/README.md)
 - [runtime reference mapping](./reference/README.md)
 - governed parity bundles: `evidence-001` to `evidence-009`
 - checked-in lecture source copies:

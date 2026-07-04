@@ -31,6 +31,25 @@ The full study dossier lives in the repository under
 That dossier carries the governed parity bundles and the one explicit open
 boundary that still remains visible.
 
+## Checked-In Inputs
+
+- lecture source copies:
+  `primate_raw.xlsx`, `primate.RData`, and `primatetree.nex`
+- study-local governed derivatives:
+  `reference_primate.csv` and `reference_trimmed_primatetree.nwk`
+- study-local catalogs:
+  [dataset catalog](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/datasets/README.md)
+  and
+  [provenance guide](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/provenance/README.md)
+
+## Evidence Bundle Atlas
+
+- `evidence-001`: reload semantics and governed input contract
+- `evidence-002` to `evidence-005`: baseline GLS, PGLS, signal, and diagnostics
+- `evidence-006` to `evidence-009`: transformed trees, evolutionary modes,
+  likelihood ratios, and ancestral review
+- `evidence-010`: explicit remaining coverage boundary
+
 ## What PCM2 Does Not Prove
 
 - it does not close every comparative model in the repository

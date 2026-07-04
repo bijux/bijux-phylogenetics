@@ -53,3 +53,20 @@ random-effect uncertainty, and a phylogenetic inverse covariance passed into
 
 The full checked-in record lives under
 [`evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/README.md).
+
+## Checked-In Inputs
+
+- lecture source copies:
+  `cichlid.csv`, `cichlidtree.nex`, and `fishdata.RData`
+- study-local catalogs:
+  [dataset catalog](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/README.md)
+  and
+  [provenance guide](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/provenance/README.md)
+
+## Evidence Bundle Atlas
+
+- `evidence-001`: data-tree alignment and species summarization
+- `evidence-002`: Gaussian baseline regression
+- `evidence-003` to `evidence-006`: posterior diagnostics, inverse setup,
+  fixed effects, and variance components
+- `evidence-007`: Brownian comparator bridge

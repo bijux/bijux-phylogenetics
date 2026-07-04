@@ -57,3 +57,22 @@ This study is useful when you need to understand:
 
 The full checked-in record lives under
 [`evidence-book/studies/primate-continuous-and-categorical-regression/`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-continuous-and-categorical-regression/README.md).
+
+## Checked-In Inputs
+
+- lecture source copies:
+  `primate_raw.xlsx`, `primate.RData`, and `primatetree.nex`
+- study-local governed derivatives:
+  `reference_primate.csv` and `reference_trimmed_primatetree.nwk`
+- study-local catalogs:
+  [dataset catalog](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-continuous-and-categorical-regression/datasets/README.md)
+  and
+  [provenance guide](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-continuous-and-categorical-regression/provenance/README.md)
+
+## Evidence Bundle Atlas
+
+- `evidence-001`: source intake and workspace alignment
+- `evidence-002` to `evidence-006`: baseline design, transforms, contrasts,
+  interactions, and scaling semantics
+- `evidence-007` and `evidence-008`: phylogenetic regression and post-fit
+  review

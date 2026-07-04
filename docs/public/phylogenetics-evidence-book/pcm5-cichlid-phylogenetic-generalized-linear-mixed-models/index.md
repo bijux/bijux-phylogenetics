@@ -58,3 +58,22 @@ distinct model families and distinct scientific questions:
 
 The full checked-in record lives under
 [`evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/README.md).
+
+## Checked-In Inputs
+
+- lecture source copies:
+  `cichlid.csv`, `cichlidtree.nex`, `fishdata.RData`, `PCM5_PGLMM.R`, and
+  `PCM5_extra_code.R`
+- study-local catalogs:
+  [dataset catalog](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/README.md)
+  and
+  [provenance guide](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/provenance/README.md)
+
+## Evidence Bundle Atlas
+
+- `evidence-001` to `evidence-004`: workspace contract, posterior signal,
+  ancestral export, and ancestral plotting
+- `evidence-005` to `evidence-007`: Poisson, multinomial, and probability-scale
+  model interpretation
+- `evidence-008` and `evidence-009`: repeated-measure random effects and
+  variance partition review

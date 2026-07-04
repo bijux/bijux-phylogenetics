@@ -37,6 +37,26 @@ The full study dossier lives in the repository under
 That dossier includes the shared datasets, source provenance, and the smaller
 evidence slices that support this public guide.
 
+## Checked-In Inputs
+
+- lecture source copies:
+  `primate_raw.xlsx`, `primate.RData`, `primate.csv`, `primatetree.nex`, and
+  `trimmed_primatetree.nex`
+- governed derivatives:
+  `reference_primate.csv` and `reference_trimmed_primatetree.nwk`
+- study-local catalogs:
+  [dataset catalog](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-longevity-signal/datasets/README.md)
+  and
+  [provenance guide](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-longevity-signal/provenance/README.md)
+
+## Evidence Bundle Atlas
+
+- `evidence-001`: end-to-end governed parity summary
+- `evidence-002` to `evidence-005`: workbook repair and processed-table trust
+- `evidence-006` to `evidence-008`: tree import, diagnostics, and tree-data
+  correspondence
+- `evidence-009`: processed export contract for downstream reuse
+
 ## What PCM1 Does Not Prove
 
 - it does not close every comparative method in the repository

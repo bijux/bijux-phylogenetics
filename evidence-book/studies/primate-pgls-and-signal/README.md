@@ -66,8 +66,8 @@ workflow becomes statistically richer:
 
 ## Study Surfaces
 
-- [datasets](./datasets/)
-- [provenance](./provenance/)
+- [dataset catalog](./datasets/README.md)
+- [provenance guide](./provenance/README.md)
 - [runtime reference mapping](./reference/README.md)
 - checked-in lecture source copies:
   `primate_raw.xlsx`, `primate.RData`, `primatetree.nex`,

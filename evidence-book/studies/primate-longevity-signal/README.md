@@ -66,8 +66,8 @@ block, the study keeps them separated as explicit evidence IDs.
 ## Study Surfaces
 
 - [Summary evidence bundle](./evidence-001/README.md)
-- [Shared datasets](./datasets/)
-- [Study provenance](./provenance/)
+- [Dataset catalog](./datasets/README.md)
+- [Study provenance](./provenance/README.md)
 - [runtime reference mapping](./reference/README.md)
 - checked-in lecture source copies:
   `primate_raw.xlsx`, `primate.RData`, `primate.csv`, `primatetree.nex`, and

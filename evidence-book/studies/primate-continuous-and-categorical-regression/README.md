@@ -74,8 +74,8 @@ later mixed-model lectures.
 
 ## Checked-In Study Inputs
 
-- [datasets](./datasets/)
-- [provenance](./provenance/)
+- [dataset catalog](./datasets/README.md)
+- [provenance guide](./provenance/README.md)
 - [runtime reference mapping](./reference/README.md)
 - governed parity bundles: `evidence-001` to `evidence-008`
 - checked-in lecture source copies:
