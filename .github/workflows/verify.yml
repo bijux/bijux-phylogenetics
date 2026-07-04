@@ -95,7 +95,7 @@ jobs:
           - package_slug: bijux-phylogenetics
             package_dir: packages/bijux-phylogenetics
             artifacts_dir: artifacts/bijux-phylogenetics
-            test_targets: "[\"test-unit-sequence-data-foundations\", \"test-unit-ancestral-dating-evidence\", \"test-unit-bayesian-model-definition\", \"test-unit-bayesian-inference-runtime\", \"test-unit-comparative-regression-and-signal\", \"test-unit-comparative-biogeography-and-publication\", \"test-unit-likelihood-search-and-fit\", \"test-unit-likelihood-placements-and-topology\", \"test-unit-state-model-foundations\", \"test-unit-state-model-mixtures-and-tree-workflows\"]"
+            test_targets: "[\"test-unit-sequence-data-foundations\", \"test-unit-ancestral-dating-evidence\", \"test-unit-bayesian-model-definition\", \"test-unit-bayesian-inference-runtime\", \"test-unit-comparative-regression-and-signal\", \"test-unit-comparative-biogeography-and-publication\", \"test-unit-likelihood-search-and-fit\", \"test-unit-likelihood-placements-and-topology\", \"test-unit-state-model-foundations\", \"test-unit-state-model-families\", \"test-unit-state-model-mixtures-and-optimization\", \"test-unit-trees-workflows-and-parity\"]"
             check_targets: "[\"quality\", \"security\", \"api\", \"openapi-drift\", \"build\", \"sbom\"]"
           - package_slug: phylogenetic
             package_dir: packages/phylogenetic

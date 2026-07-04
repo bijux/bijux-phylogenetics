@@ -198,7 +198,9 @@ def test_root_tox_exposes_named_runtime_core_test_partitions() -> None:
         "test-core-likelihood-search-and-fit",
         "test-core-likelihood-placements-and-topology",
         "test-core-state-model-foundations",
-        "test-core-state-model-mixtures-and-tree-workflows",
+        "test-core-state-model-families",
+        "test-core-state-model-mixtures-and-optimization",
+        "test-core-trees-workflows-and-parity",
     }
 
     assert "test-core" not in envlist

@@ -121,9 +121,17 @@ test-unit-state-model-foundations:
 	$(call run_unit_partition,unit state model foundations,tests/state_models/compiled tests/state_models/ctmc tests/state_models/discrete_traits tests/state_models/finite_state tests/state_models/parameters,state-model-foundations)
 .PHONY: test-unit-state-model-foundations
 
-test-unit-state-model-mixtures-and-tree-workflows:
-	$(call run_unit_partition,unit state model mixtures and tree workflows,tests/state_models/families tests/state_models/mixtures tests/state_models/optimization tests/trees tests/workflows tests/parity,state-model-mixtures-and-tree-workflows)
-.PHONY: test-unit-state-model-mixtures-and-tree-workflows
+test-unit-state-model-families:
+	$(call run_unit_partition,unit state model families,tests/state_models/families,state-model-families)
+.PHONY: test-unit-state-model-families
+
+test-unit-state-model-mixtures-and-optimization:
+	$(call run_unit_partition,unit state model mixtures and optimization,tests/state_models/mixtures tests/state_models/optimization,state-model-mixtures-and-optimization)
+.PHONY: test-unit-state-model-mixtures-and-optimization
+
+test-unit-trees-workflows-and-parity:
+	$(call run_unit_partition,unit trees workflows and parity,tests/trees tests/workflows tests/parity,trees-workflows-and-parity)
+.PHONY: test-unit-trees-workflows-and-parity
 
 build-install-smoke:
 	@rm -rf "$(PROJECT_ARTIFACTS_DIR)/tmp/build-install-smoke"

@@ -102,7 +102,9 @@ def test_verify_workflow_checks_canonical_alias_and_dev_packages() -> None:
         '"test-unit-likelihood-search-and-fit", '
         '"test-unit-likelihood-placements-and-topology", '
         '"test-unit-state-model-foundations", '
-        '"test-unit-state-model-mixtures-and-tree-workflows"]'
+        '"test-unit-state-model-families", '
+        '"test-unit-state-model-mixtures-and-optimization", '
+        '"test-unit-trees-workflows-and-parity"]'
     )
 
 
