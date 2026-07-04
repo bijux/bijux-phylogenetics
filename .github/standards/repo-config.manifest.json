@@ -2054,7 +2054,8 @@
               "package_slug": "bijux-phylogenetics"
             },
             {
-              "package_slug": "phylogenetic"
+              "package_slug": "phylogenetic",
+              "publish_auth": "token"
             }
           ]
         },
@@ -2171,11 +2172,6 @@
                   "type": "string",
                   "default": "[\"3.11\"]"
                 },
-                "test_targets": {
-                  "required": false,
-                  "type": "string",
-                  "default": "[\"test\"]"
-                },
                 "check_targets": {
                   "required": false,
                   "type": "string",
@@ -2203,13 +2199,12 @@
           },
           "jobs": {
             "tests": {
-              "name": "tests-${{ inputs.package_slug }}-${{ matrix.target }}-py${{ matrix.python-version }}",
+              "name": "tests-${{ inputs.package_slug }}-py${{ matrix.python-version }}",
               "runs-on": "ubuntu-latest",
               "strategy": {
                 "fail-fast": false,
                 "matrix": {
-                  "python-version": "${{ fromJson(inputs.test_python_versions) }}",
-                  "target": "${{ fromJson(inputs.test_targets) }}"
+                  "python-version": "${{ fromJson(inputs.test_python_versions) }}"
                 }
               },
               "steps": [
@@ -2237,7 +2232,7 @@
                 {
                   "name": "Run tests",
                   "shell": "bash",
-                  "run": "set -euo pipefail; makefile=\"${GITHUB_WORKSPACE}/makes/packages/$(basename '${{ inputs.package_dir }}').mk\"; make -f \"$makefile\" -C \"${{ inputs.package_dir }}\" ${{ matrix.target }} "
+                  "run": "set -euo pipefail; makefile=\"${GITHUB_WORKSPACE}/makes/packages/$(basename '${{ inputs.package_dir }}').mk\"; make -f \"$makefile\" -C \"${{ inputs.package_dir }}\" test "
                 },
                 {
                   "name": "Run post-test validation",
@@ -2253,7 +2248,7 @@
                   "if": "${{ always() }}",
                   "uses": "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
                   "with": {
-                    "name": "${{ inputs.package_slug }}-${{ matrix.target }}-py${{ matrix.python-version }}",
+                    "name": "${{ inputs.package_slug }}-test-py${{ matrix.python-version }}",
                     "path": "${{ inputs.artifacts_dir }}/test",
                     "if-no-files-found": "ignore",
                     "retention-days": 14
@@ -2291,7 +2286,7 @@
                   "uses": "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e",
                   "if": "${{ contains(fromJson(inputs.api_toolchain_targets), matrix.target) }}",
                   "with": {
-                    "node-version": 22
+                    "node-version": 20
                   }
                 },
                 {
@@ -2470,7 +2465,6 @@
                       "package_slug": "bijux-phylogenetics",
                       "package_dir": "packages/bijux-phylogenetics",
                       "artifacts_dir": "artifacts/bijux-phylogenetics",
-                      "test_targets": "[\"test-unit-sequence-data-foundations\", \"test-unit-ancestral-dating-evidence\", \"test-unit-bayesian-model-definition\", \"test-unit-bayesian-inference-runtime\", \"test-unit-comparative-regression-and-signal\", \"test-unit-comparative-biogeography-and-publication\", \"test-unit-likelihood-search-and-fit\", \"test-unit-likelihood-placements-and-topology\", \"test-unit-state-model-foundations\", \"test-unit-state-model-families\", \"test-unit-state-model-mixtures-and-optimization\", \"test-unit-trees-workflows-and-parity\"]",
                       "check_targets": "[\"quality\", \"security\", \"api\", \"openapi-drift\", \"build\", \"sbom\"]"
                     },
                     {
@@ -2494,7 +2488,6 @@
                 "package_dir": "${{ matrix.package_dir }}",
                 "artifacts_dir": "${{ matrix.artifacts_dir }}",
                 "test_python_versions": "${{ matrix.test_python_versions || '[\"3.11\"]' }}",
-                "test_targets": "${{ matrix.test_targets || '[\"test\"]' }}",
                 "check_targets": "${{ matrix.check_targets || '[\"quality\", \"security\", \"docs\", \"api\", \"build\", \"sbom\"]' }}",
                 "api_toolchain_targets": "${{ matrix.api_toolchain_targets || '[\"api\", \"openapi-drift\"]' }}",
                 "post_test_command": "${{ matrix.post_test_command || '' }}"
