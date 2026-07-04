@@ -996,10 +996,7 @@ def test_run_fasta_to_tree_workflow_rejects_missing_support_tree_output(
         tmp_path / "iqtree-missing-support-tree-fixture"
     )
 
-    with pytest.raises(
-        EngineWorkflowError,
-        match="iqtree bootstrap-support did not produce expected outputs",
-    ):
+    with pytest.raises(EngineWorkflowError) as error:
         run_fasta_to_tree_workflow(
             fixture("alignments/example_sequences_raw.fasta"),
             out_dir=tmp_path / "missing-support-tree",
@@ -1009,6 +1006,8 @@ def test_run_fasta_to_tree_workflow_rejects_missing_support_tree_output(
             iqtree_executable=iqtree,
             bootstrap_replicates=1000,
         )
+    assert error.value.code == "engine_required_output_missing"
+    assert error.value.details["output_name"] == "support_tree"
 
 
 def test_run_fasta_to_tree_workflow_passes_named_trimal_mode_to_trimming_step(

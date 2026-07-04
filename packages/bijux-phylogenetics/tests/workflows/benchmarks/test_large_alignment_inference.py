@@ -9,12 +9,9 @@ from bijux_phylogenetics.engines.inference import (
 )
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError
 
-from ...support.paths import REPOSITORY_ROOT
-
 pytestmark = pytest.mark.engine_contract
 
 FIXTURES = Path(__file__).parent / "fixtures"
-REPOSITORY_ROOT = REPOSITORY_ROOT
 
 
 def fixture(path: str) -> Path:
@@ -50,8 +47,6 @@ def _fake_fasttree_streaming(path: Path) -> Path:
         """#!/usr/bin/env python3
 import sys
 from pathlib import Path
-
-from ...support.paths import REPOSITORY_ROOT
 
 args = sys.argv[1:]
 if not args or "-help" in args:
