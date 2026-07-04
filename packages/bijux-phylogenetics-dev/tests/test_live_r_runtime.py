@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from bijux_phylogenetics_dev.quality import live_r_runtime
 
 
 def test_ensure_live_r_test_packages_reports_existing_runtime(
-    monkeypatch,
+    monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
     monkeypatch.setattr(
@@ -17,10 +19,9 @@ def test_ensure_live_r_test_packages_reports_existing_runtime(
     monkeypatch.setattr(
         live_r_runtime,
         "query_live_r_test_packages",
-        lambda repo_root, **_: {
-            package_name: True
-            for package_name in live_r_runtime.DEFAULT_LIVE_R_TEST_PACKAGES
-        },
+        lambda repo_root, **_: dict.fromkeys(
+            live_r_runtime.DEFAULT_LIVE_R_TEST_PACKAGES, True
+        ),
     )
     install_calls: list[tuple[str, ...]] = []
     monkeypatch.setattr(
@@ -40,7 +41,7 @@ def test_ensure_live_r_test_packages_reports_existing_runtime(
 
 
 def test_ensure_live_r_test_packages_installs_missing_runtime_packages(
-    monkeypatch,
+    monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
     monkeypatch.setattr(

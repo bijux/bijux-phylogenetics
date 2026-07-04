@@ -91,8 +91,7 @@ def test_repository_evidence_book_study_roots_are_minimal() -> None:
     assert {
         path.name
         for path in (
-            STUDIES_ROOT
-            / "cichlid-phylogenetic-generalized-linear-mixed-models"
+            STUDIES_ROOT / "cichlid-phylogenetic-generalized-linear-mixed-models"
         ).iterdir()
     } == {
         "README.md",

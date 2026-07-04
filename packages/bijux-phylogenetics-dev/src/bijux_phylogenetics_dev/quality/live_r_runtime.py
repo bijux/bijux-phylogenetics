@@ -1,3 +1,5 @@
+"""Govern repository-owned live R runtime preparation for full-suite test lanes."""
+
 from __future__ import annotations
 
 import argparse
@@ -5,8 +7,10 @@ import json
 import os
 from pathlib import Path
 import shutil
-import subprocess
 import sys
+from typing import Protocol, TypedDict
+
+from bijux_phylogenetics_dev.trusted_process import run_text
 
 DEFAULT_LIVE_R_TEST_PACKAGES = (
     "ape",
@@ -19,7 +23,28 @@ DEFAULT_LIVE_R_TEST_PACKAGES = (
 DEFAULT_CRAN_REPOSITORY = "https://cloud.r-project.org"
 
 
+class LiveRRuntimeReport(TypedDict):
+    """Governed report describing live R runtime readiness for full-suite lanes."""
+
+    status: str
+    rscript_executable: str
+    cran_repository: str
+    r_library: str
+    required_packages: list[str]
+    already_available: list[str]
+    installed_now: list[str]
+
+
+class RScriptRunResult(Protocol):
+    """Minimal subprocess result surface consumed by live R runtime helpers."""
+
+    returncode: int
+    stdout: str
+    stderr: str
+
+
 def repository_r_library(repo_root: Path) -> Path:
+    """Return the repository-owned R library path used by live validation lanes."""
     return repo_root / "artifacts" / "r-lib"
 
 
@@ -39,7 +64,17 @@ def _base_environment(repo_root: Path) -> dict[str, str]:
 
 def _resolve_rscript_executable(rscript_executable: str | None) -> str:
     if rscript_executable:
-        return rscript_executable
+        requested_executable = Path(rscript_executable).expanduser()
+        if requested_executable.is_absolute():
+            return str(requested_executable)
+        resolved = shutil.which(rscript_executable)
+        if resolved is not None:
+            return resolved
+        if requested_executable.is_file():
+            return str(requested_executable.resolve())
+        raise RuntimeError(
+            "The requested Rscript executable could not be resolved to an installed command."
+        )
     resolved = shutil.which("Rscript")
     if resolved is None:
         raise RuntimeError(
@@ -54,14 +89,13 @@ def _run_rscript(
     expression: str,
     rscript_executable: str,
     environment: dict[str, str],
-) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
+) -> RScriptRunResult:
+    return run_text(
         [rscript_executable, "-e", expression],
         capture_output=True,
         check=False,
         cwd=repo_root,
         env=environment,
-        text=True,
     )
 
 
@@ -71,6 +105,7 @@ def query_live_r_test_packages(
     package_names: tuple[str, ...] = DEFAULT_LIVE_R_TEST_PACKAGES,
     rscript_executable: str | None = None,
 ) -> dict[str, bool]:
+    """Report whether each required live R test package is already available."""
     resolved_rscript = _resolve_rscript_executable(rscript_executable)
     r_library = repository_r_library(repo_root)
     r_library.mkdir(parents=True, exist_ok=True)
@@ -120,6 +155,7 @@ def install_live_r_test_packages(
     cran_repository: str = DEFAULT_CRAN_REPOSITORY,
     rscript_executable: str | None = None,
 ) -> None:
+    """Install the requested live R test packages into the repository library."""
     resolved_rscript = _resolve_rscript_executable(rscript_executable)
     r_library = repository_r_library(repo_root)
     r_library.mkdir(parents=True, exist_ok=True)
@@ -158,7 +194,8 @@ def ensure_live_r_test_packages(
     package_names: tuple[str, ...] = DEFAULT_LIVE_R_TEST_PACKAGES,
     cran_repository: str = DEFAULT_CRAN_REPOSITORY,
     rscript_executable: str | None = None,
-) -> dict[str, object]:
+) -> LiveRRuntimeReport:
+    """Ensure the governed live R runtime is ready and return its readiness report."""
     resolved_rscript = _resolve_rscript_executable(rscript_executable)
     initial_availability = query_live_r_test_packages(
         repo_root,
@@ -201,7 +238,9 @@ def ensure_live_r_test_packages(
         "r_library": str(repository_r_library(repo_root)),
         "required_packages": list(package_names),
         "already_available": [
-            package_name for package_name in package_names if package_name not in installed_now
+            package_name
+            for package_name in package_names
+            if package_name not in installed_now
         ],
         "installed_now": list(installed_now),
     }
@@ -237,6 +276,7 @@ def _build_argument_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the live R runtime preparation command-line entry point."""
     parser = _build_argument_parser()
     args = parser.parse_args(argv)
     report = ensure_live_r_test_packages(
@@ -251,8 +291,9 @@ def main(argv: list[str] | None = None) -> int:
             encoding="utf-8",
         )
     print(f"live R test runtime ready: {', '.join(report['required_packages'])}")
-    if report["installed_now"]:
-        print("installed now: " + ", ".join(report["installed_now"]))
+    installed_now = report["installed_now"]
+    if installed_now:
+        print("installed now: " + ", ".join(installed_now))
     else:
         print("installed now: none")
     return 0

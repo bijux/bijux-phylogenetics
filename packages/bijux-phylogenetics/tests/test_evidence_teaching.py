@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from bijux_phylogenetics.evidence.teaching import (
-    build_repository_teaching_and_migration_index,
     build_migration_guide,
+    build_repository_teaching_and_migration_index,
     build_student_safe_reproducibility_contract,
     build_teaching_and_migration_index,
     build_teaching_guide,

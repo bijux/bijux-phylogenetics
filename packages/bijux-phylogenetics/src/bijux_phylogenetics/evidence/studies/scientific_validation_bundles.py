@@ -75,7 +75,10 @@ SCIENTIFIC_VALIDATION_STUDIES: dict[str, ScientificValidationStudyDefinition] = 
                     "workflow",
                     "dataset-alignment",
                 ),
-                source_fragments=("workspace-reload-contract", "shared-dataset-alignment"),
+                source_fragments=(
+                    "workspace-reload-contract",
+                    "shared-dataset-alignment",
+                ),
                 limitations=(
                     "This bundle records the checked-in study contract and does not yet claim lecture-specific object-for-object parity.",
                 ),
@@ -123,7 +126,10 @@ SCIENTIFIC_VALIDATION_STUDIES: dict[str, ScientificValidationStudyDefinition] = 
                     "response-transformation",
                     "model-tests",
                 ),
-                source_fragments=("log-response-repair", "marginal-versus-sequential-tests"),
+                source_fragments=(
+                    "log-response-repair",
+                    "marginal-versus-sequential-tests",
+                ),
                 limitations=(
                     "This bundle documents the test structure and response transformation without claiming checked-in lecture-level parity outputs.",
                 ),
@@ -195,7 +201,10 @@ SCIENTIFIC_VALIDATION_STUDIES: dict[str, ScientificValidationStudyDefinition] = 
                     "scaling",
                     "intercept-semantics",
                 ),
-                source_fragments=("predictor-scaling", "standardized-intercept-semantics"),
+                source_fragments=(
+                    "predictor-scaling",
+                    "standardized-intercept-semantics",
+                ),
                 limitations=(
                     "This bundle keeps the standardization story explicit without yet claiming checked-in parity for the lecture’s scaled outputs.",
                 ),
@@ -219,7 +228,10 @@ SCIENTIFIC_VALIDATION_STUDIES: dict[str, ScientificValidationStudyDefinition] = 
                     "phylogenetic-regression",
                     "martins-covariance",
                 ),
-                source_fragments=("martins-covariance-fit", "categorical-phylogenetic-regression"),
+                source_fragments=(
+                    "martins-covariance-fit",
+                    "categorical-phylogenetic-regression",
+                ),
                 limitations=(
                     "The repository documents the covariance and model structure clearly, but it does not yet claim lecture-specific Martins-covariance parity.",
                 ),
@@ -243,7 +255,10 @@ SCIENTIFIC_VALIDATION_STUDIES: dict[str, ScientificValidationStudyDefinition] = 
                     "diagnostics",
                     "hypothesis-testing",
                 ),
-                source_fragments=("post-correction-diagnostics", "post-correction-hypothesis-tests"),
+                source_fragments=(
+                    "post-correction-diagnostics",
+                    "post-correction-hypothesis-tests",
+                ),
                 limitations=(
                     "This bundle keeps the diagnostic and testing boundary explicit without claiming a finished lecture-parity package for those outputs.",
                 ),
@@ -290,7 +305,10 @@ SCIENTIFIC_VALIDATION_STUDIES: dict[str, ScientificValidationStudyDefinition] = 
                     "tree-alignment",
                     "species-summarization",
                 ),
-                source_fragments=("cichlid-data-tree-alignment", "species-level-summarization"),
+                source_fragments=(
+                    "cichlid-data-tree-alignment",
+                    "species-level-summarization",
+                ),
                 limitations=(
                     "This bundle documents the shared species-level contract without claiming lecture-specific parity for the derived workspace.",
                 ),
@@ -338,7 +356,10 @@ SCIENTIFIC_VALIDATION_STUDIES: dict[str, ScientificValidationStudyDefinition] = 
                     "posterior-diagnostics",
                     "gaussian-posterior",
                 ),
-                source_fragments=("gaussian-chain-diagnostics", "gaussian-posterior-summaries"),
+                source_fragments=(
+                    "gaussian-chain-diagnostics",
+                    "gaussian-posterior-summaries",
+                ),
                 limitations=(
                     "The repository does not yet own the lecture posterior workflow, so this bundle remains a governed boundary record rather than a parity claim.",
                 ),
@@ -362,7 +383,10 @@ SCIENTIFIC_VALIDATION_STUDIES: dict[str, ScientificValidationStudyDefinition] = 
                     "phylogenetic-inverse",
                     "random-effects",
                 ),
-                source_fragments=("tree-inverse-construction", "phylogenetic-random-effect-setup"),
+                source_fragments=(
+                    "tree-inverse-construction",
+                    "phylogenetic-random-effect-setup",
+                ),
                 limitations=(
                     "This bundle keeps the inverse-covariance setup reviewable without claiming that the downstream posterior fit is already governed in-repository.",
                 ),
@@ -379,7 +403,10 @@ SCIENTIFIC_VALIDATION_STUDIES: dict[str, ScientificValidationStudyDefinition] = 
                     " mixed-model fixed-effect posterior summaries."
                 ),
                 claim_id="pcm4-phylogenetic-fixed-effect-posteriors",
-                analytical_surfaces=("phylogenetic-mixed-model", "fixed-effect-posteriors"),
+                analytical_surfaces=(
+                    "phylogenetic-mixed-model",
+                    "fixed-effect-posteriors",
+                ),
                 claim_tags=(
                     "scientific-validation",
                     "cichlid",
@@ -482,7 +509,10 @@ SCIENTIFIC_VALIDATION_STUDIES: dict[str, ScientificValidationStudyDefinition] = 
                     "workflow",
                     "repeated-measures",
                 ),
-                source_fragments=("fish-workspace-reload", "repeated-measure-data-contract"),
+                source_fragments=(
+                    "fish-workspace-reload",
+                    "repeated-measure-data-contract",
+                ),
                 limitations=(
                     "This bundle records the checked-in study contract and does not yet claim lecture-specific parity for the derived fish workspace.",
                 ),
@@ -530,7 +560,10 @@ SCIENTIFIC_VALIDATION_STUDIES: dict[str, ScientificValidationStudyDefinition] = 
                     "ancestral-states",
                     "posterior-export",
                 ),
-                source_fragments=("ancestral-posterior-extraction", "ancestral-export-rules"),
+                source_fragments=(
+                    "ancestral-posterior-extraction",
+                    "ancestral-export-rules",
+                ),
                 limitations=(
                     "The repository does not yet own the lecture ancestral posterior workflow, so this bundle remains a governed boundary record.",
                 ),
@@ -602,7 +635,10 @@ SCIENTIFIC_VALIDATION_STUDIES: dict[str, ScientificValidationStudyDefinition] = 
                     "multinomial-model",
                     "logit-scale",
                 ),
-                source_fragments=("multinomial-infection-model", "logit-scale-summaries"),
+                source_fragments=(
+                    "multinomial-infection-model",
+                    "logit-scale-summaries",
+                ),
                 limitations=(
                     "This bundle makes the multinomial summary boundary explicit without claiming repository-owned parity for the lecture posterior fit.",
                 ),

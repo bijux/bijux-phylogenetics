@@ -270,13 +270,17 @@ def render_docs_evidence_overview(
             else "none"
         )
         if study_id == "primate-longevity-signal":
-            state = "Governed parity bundles deployed; plotting boundary remains explicit"
+            state = (
+                "Governed parity bundles deployed; plotting boundary remains explicit"
+            )
         elif study_id == "primate-pgls-and-signal":
             state = "Governed parity bundles deployed; one coverage boundary remains explicit"
         elif study_id == "primate-continuous-and-categorical-regression":
             state = "Governed parity bundles deployed; lecture-specific verdicts remain open"
         elif study_id.startswith("cichlid-"):
-            state = "Governed parity bundles deployed; posterior workflow still external"
+            state = (
+                "Governed parity bundles deployed; posterior workflow still external"
+            )
         lines.append(
             f"| [{study['study_title']}](./{study_page}/index.md) | {study_question_by_id[study_id]} | {evidence_span} | {state} |"
         )
