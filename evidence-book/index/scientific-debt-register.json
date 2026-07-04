@@ -458,11 +458,11 @@
     {
       "debt_id": "primate-pgls-and-signal-evidence-001-estimated-diagnostic-fitted-correlation",
       "debt_kind": "unresolved_mismatch",
-      "detail": "abs_residual_fitted_correlation remains unresolved with observed absolute difference 0.095590356776682.",
+      "detail": "abs_residual_fitted_correlation remains unresolved with observed absolute difference 0.095590314522858.",
       "evidence": [
         "verdict=mismatch_unexplained",
         "r_value=0.205562548325984",
-        "bijux_value=0.109972191549302"
+        "bijux_value=0.109972233803126"
       ],
       "evidence_id": "evidence-001",
       "relative_path": "studies/primate-pgls-and-signal/evidence-001",

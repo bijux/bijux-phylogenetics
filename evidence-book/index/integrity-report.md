@@ -5,53 +5,53 @@
 
 ## Bundle Digests
 
-- `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-001` — `6138fe71c0df0f5ee0b080ff1021f12b2f2b4469b59dd7e987c1f2388384c7e3`
+- `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-001` — `9120591fc89f3ec0e7553d6702871c7efc0750271dd495fbb2c66b4f3ca1e486`
   Files: `13`
-- `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-002` — `39d469f18450ddafc13f55b9cd9b13c1c7c0d7093cf5fc965b48800e97c0b12b`
+- `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-002` — `869def538bf6b8b03d90f4b942de5ebbc940f7e99ef09f400bf21a87b5030ae9`
   Files: `13`
-- `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-003` — `b4a1c9ee30e7835664535ff8465446c83cb1889480ba10c270023adc5bff8154`
+- `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-003` — `84c0c5eccd50b3c24b6d32928614354496365ee2c7f2fbb91a66715f6b654f8f`
   Files: `13`
-- `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-004` — `7a2ac5387b67a66c41b24127252c209beb8502d0e755eb19a953539496bdc401`
+- `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-004` — `cf4629efd545002fa3bde4b367f563094b7a8851b3de34c01d0f19c80772296b`
   Files: `13`
-- `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-005` — `2fdf6ce3e048583e23ed7658de62655311f5aa09694eb82b88e71c7be164dda4`
+- `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-005` — `ca70d533cd140c6dfa753908d56cbc761a63041557ccab35c692dd7903268cd7`
   Files: `13`
-- `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-006` — `a612b671976bc9b5f9e5e47ca42dc1166e444d8a3bb9e73840077dc0d4ae798c`
+- `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-006` — `ff2ff08d21ff58c51c3fa1c1966fefa9e15f9088152417fd0460ab38e760e52b`
   Files: `13`
-- `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-007` — `ebbf65150866df28165a66f31e02469007f1a488051746008adf344edf561e1a`
+- `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-007` — `3881d17ed5474fedc211313a95107e4302709a18a85bae2a5c27b8e97abbda52`
   Files: `13`
-- `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-001` — `3c954e8c8a0f9a0f9ea4147fc160126604faae7513340e8f6e830400f99c5461`
+- `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-001` — `8eb660bb8865edc80cff52bf34662bf6f46e0f1eed5eaf036331331315f20a90`
   Files: `13`
-- `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-002` — `9c6c5c8f64fa93140b60a35f6f769feefd82bcf35370dc4459296700c5f2ff41`
+- `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-002` — `2a208a5b07e6d9f8bc7086d8b67381659dc3f87b2d041b617cc5398f6ae55482`
   Files: `13`
-- `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-003` — `4b8d1ae08fc9709e76eab317ab788a0c284a9d4fcb29de123993f625d1bb404b`
+- `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-003` — `06868cc2db99762c717e3fbad4ce7f02b3dd46c89af27e1803e00098b22adcf9`
   Files: `13`
-- `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-004` — `14cfa3cb6241b676af0076b326cc4f2d1b3f7845b27598247cff1af4ba7779d4`
+- `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-004` — `b669f527424bebef84f7d8a6c110ffe74bc32fdc64a57a2b34be0d80baf83dd1`
   Files: `13`
-- `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-005` — `ccd108b56ff943cfdeee3edfb88eaf92b199ae138ce779a7a260fe21a36c3019`
+- `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-005` — `09aab95cf5c48e16f86e2903b006bc067ba84013470871789b1fcdb3b3617c5d`
   Files: `13`
-- `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-006` — `e4dfcde75ae63b3528d9a61243359eed9d4cf35ed5dbabd8e8275666cb2ffa32`
+- `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-006` — `e31b1e6f18a9214c468da69c351f1aaf424d64da7367a7e050d6c95962eb43b6`
   Files: `13`
-- `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-007` — `4c49c06f508f202b6f33d548296dc72c5cb86cb03580c1a0024efca913f67c2e`
+- `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-007` — `4cc94c1be9e2a0c56da415f6a7a01af56b27836317bafb574daead9c9954c36e`
   Files: `13`
-- `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-008` — `5b799f235e84bd898ff6434f73c5608e258d8c4398aae1395d195dea38bf8756`
+- `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-008` — `b27ccf0926f151b965167f5ee4f28fa334ad6dcc95cdf5df50035898488f6b41`
   Files: `13`
-- `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-009` — `365ebe233f932f4719ef22a6a5dcb17b3421e2058f8d7a3c51fa83168ea6885e`
+- `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-009` — `82c1fba11419eb81352ecc9adddc4d6803d9a3c4053719a8863195551ad04d94`
   Files: `13`
-- `primate-continuous-and-categorical-regression/evidence-001` — `35d1f3ad6855d0592362dfdd541cfdcdebd72bd1a405511dde5f19521b5e83f9`
+- `primate-continuous-and-categorical-regression/evidence-001` — `f55961933d76c2f374f6c455da13325303f700e33219cd3f3c3b5ecb6a27cbdc`
   Files: `13`
-- `primate-continuous-and-categorical-regression/evidence-002` — `47e6775f291be04be0351da0d8373bad1063b7cdf1d74fda5402cf7ae57fb4a2`
+- `primate-continuous-and-categorical-regression/evidence-002` — `60c24ee860c99be4a049c7b5404e5de1d783cdf61d98773f846fad752ef00d13`
   Files: `13`
-- `primate-continuous-and-categorical-regression/evidence-003` — `137daca4223a04f5b8de6d6d0b392372a7ce3372492555038783e69eb6ee040b`
+- `primate-continuous-and-categorical-regression/evidence-003` — `f51d1a9ce186fa701a7d4ed7b1aa369d1b864b737f1679cc574350448f89a895`
   Files: `13`
-- `primate-continuous-and-categorical-regression/evidence-004` — `b19ee74f7142090ac20f08b1c12bc95035635b2b31d6c7a2cd2cb6e8f0de8782`
+- `primate-continuous-and-categorical-regression/evidence-004` — `6df24650832cf4e152859357bc3706d58abd059e86b17884446bdbc607be7b9d`
   Files: `13`
-- `primate-continuous-and-categorical-regression/evidence-005` — `f0197724332cefd9c44848364b4b9cebb0fd2e1f277343f2aa2300cdaf057211`
+- `primate-continuous-and-categorical-regression/evidence-005` — `1ec1c4f1e0a7a67e3c42c1509e3b9c224e346e216ce3749b5069d282e27acc89`
   Files: `13`
-- `primate-continuous-and-categorical-regression/evidence-006` — `23ad6c4209ffb3b631b0a5a2b0664cce9e0fe5bfe033881eb51c608c7d24f06c`
+- `primate-continuous-and-categorical-regression/evidence-006` — `02bf3a5abe49af78b2ba0867216309271ac36f4125eaf45ab836c713ff4d389a`
   Files: `13`
-- `primate-continuous-and-categorical-regression/evidence-007` — `9bec75a667964bbad807fac57b6031b65559ef4e95e16b42993994b3ced37b47`
+- `primate-continuous-and-categorical-regression/evidence-007` — `f0e99b20a27ee66ef2d6956f16dae61f77c5f185d293e5c8a067eedd3f2d3e0e`
   Files: `13`
-- `primate-continuous-and-categorical-regression/evidence-008` — `f8e0718b61640adca52c6e060e352bd063a7699322b7d1260f9790ef21b349dc`
+- `primate-continuous-and-categorical-regression/evidence-008` — `fb14c6190b870b39772c8184e8e4061fcf861f1e5595d02988ebc7545d367751`
   Files: `13`
 - `primate-longevity-signal/evidence-001` — `526a9daac094bd5e5ff61dcbfe101a9fbe267ad0019934885c916a5fb35c5fc4`
   Files: `61`
@@ -73,7 +73,7 @@
   Files: `14`
 - `primate-pgls-and-signal/evidence-001` — `e4cc8b0083c370f1d71900dfc0da03274fec25bbd970b4f3f99c058fd0bdf712`
   Files: `16`
-- `primate-pgls-and-signal/evidence-002` — `5044d5439e548d7e74ab5f04b5f4f238af45da5e04059c4da8315893717719ec`
+- `primate-pgls-and-signal/evidence-002` — `78564c3a6d99e4badf443e22eb38625171e5aabcfb347ddaf3805cbe2d8baf65`
   Files: `14`
 - `primate-pgls-and-signal/evidence-003` — `2bdad181918eb8f1cd7f0fa5fb08134995ac1ba502a802a9e7507c71b7303518`
   Files: `14`

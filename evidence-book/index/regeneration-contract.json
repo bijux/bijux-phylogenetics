@@ -108,9 +108,15 @@
       ],
       "rerun_command": "UV_PROJECT_ENVIRONMENT=artifacts/root/venv uv run --python 3.11 python -m bijux_phylogenetics.command_line evidence book build --study-id cichlid-bayesian-linear-and-phylogenetic-mixed-models",
       "source_paths": [
+        "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/README.md",
+        "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/cichlid.csv",
+        "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/cichlidtree.nex",
+        "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/fishdata.RData",
         "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/registry.json",
+        "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/provenance/README.md",
         "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/provenance/lund-course-sources.json",
-        "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/reference/README.md"
+        "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/reference/README.md",
+        "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/reference/lund_pcm4_mixed_model_source.R"
       ],
       "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
       "study_title": "Cichlid Bayesian Linear And Phylogenetic Mixed Models"
@@ -250,8 +256,15 @@
       ],
       "rerun_command": "UV_PROJECT_ENVIRONMENT=artifacts/root/venv uv run --python 3.11 python -m bijux_phylogenetics.command_line evidence book build --study-id cichlid-phylogenetic-generalized-linear-mixed-models",
       "source_paths": [
+        "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/README.md",
+        "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/cichlid.csv",
+        "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/cichlidtree.nex",
+        "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/fishdata.RData",
         "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/registry.json",
+        "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/provenance/README.md",
         "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/provenance/lund-course-sources.json",
+        "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/reference/PCM5_PGLMM.R",
+        "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/reference/PCM5_extra_code.R",
         "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/reference/README.md"
       ],
       "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
@@ -378,9 +391,17 @@
       ],
       "rerun_command": "UV_PROJECT_ENVIRONMENT=artifacts/root/venv uv run --python 3.11 python -m bijux_phylogenetics.command_line evidence book build --study-id primate-continuous-and-categorical-regression",
       "source_paths": [
+        "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/README.md",
+        "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/primate.RData",
+        "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/primate_raw.xlsx",
+        "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/primatetree.nex",
+        "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/reference_primate.csv",
+        "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/reference_trimmed_primatetree.nwk",
         "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/registry.json",
+        "evidence-book/studies/primate-continuous-and-categorical-regression/provenance/README.md",
         "evidence-book/studies/primate-continuous-and-categorical-regression/provenance/lund-course-sources.json",
-        "evidence-book/studies/primate-continuous-and-categorical-regression/reference/README.md"
+        "evidence-book/studies/primate-continuous-and-categorical-regression/reference/README.md",
+        "evidence-book/studies/primate-continuous-and-categorical-regression/reference/lund_pcm3_contcat_source.R"
       ],
       "study_id": "primate-continuous-and-categorical-regression",
       "study_title": "Primate Continuous And Categorical Regression"
@@ -576,11 +597,19 @@
       ],
       "rerun_command": "UV_PROJECT_ENVIRONMENT=artifacts/root/venv uv run --python 3.11 python -m bijux_phylogenetics.command_line evidence book build --study-id primate-longevity-signal",
       "source_paths": [
+        "evidence-book/studies/primate-longevity-signal/datasets/README.md",
+        "evidence-book/studies/primate-longevity-signal/datasets/primate.RData",
+        "evidence-book/studies/primate-longevity-signal/datasets/primate.csv",
+        "evidence-book/studies/primate-longevity-signal/datasets/primate_raw.xlsx",
+        "evidence-book/studies/primate-longevity-signal/datasets/primatetree.nex",
         "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
         "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
         "evidence-book/studies/primate-longevity-signal/datasets/registry.json",
+        "evidence-book/studies/primate-longevity-signal/datasets/trimmed_primatetree.nex",
+        "evidence-book/studies/primate-longevity-signal/provenance/README.md",
         "evidence-book/studies/primate-longevity-signal/provenance/lund-course-sources.json",
         "evidence-book/studies/primate-longevity-signal/reference/README.md",
+        "evidence-book/studies/primate-longevity-signal/reference/lund_pcm1_plots_signal_source.R",
         "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_bijux.py",
         "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R"
       ],
@@ -749,9 +778,17 @@
       ],
       "rerun_command": "UV_PROJECT_ENVIRONMENT=artifacts/root/venv uv run --python 3.11 python -m bijux_phylogenetics.command_line evidence book build --study-id primate-pgls-and-signal",
       "source_paths": [
+        "evidence-book/studies/primate-pgls-and-signal/datasets/README.md",
+        "evidence-book/studies/primate-pgls-and-signal/datasets/primate.RData",
+        "evidence-book/studies/primate-pgls-and-signal/datasets/primate_raw.xlsx",
+        "evidence-book/studies/primate-pgls-and-signal/datasets/primatetree.nex",
+        "evidence-book/studies/primate-pgls-and-signal/datasets/reference_primate.csv",
+        "evidence-book/studies/primate-pgls-and-signal/datasets/reference_trimmed_primatetree.nwk",
         "evidence-book/studies/primate-pgls-and-signal/datasets/registry.json",
+        "evidence-book/studies/primate-pgls-and-signal/provenance/README.md",
         "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
         "evidence-book/studies/primate-pgls-and-signal/reference/README.md",
+        "evidence-book/studies/primate-pgls-and-signal/reference/lund_pcm2_modes_pgls_source.R",
         "evidence-book/studies/primate-pgls-and-signal/reference/primate_pgls_and_signal_reference_r.R",
         "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json"
       ],

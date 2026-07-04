@@ -78,7 +78,7 @@
 - `primate-pgls-and-signal/evidence-001` — `stale`
   Generated: `2026-05-27`; latest governed change: `2026-05-31`
 - `primate-pgls-and-signal/evidence-002` — `current`
-  Generated: `2026-07-03`; latest governed change: `2026-05-31`
+  Generated: `2026-07-04`; latest governed change: `2026-05-31`
 - `primate-pgls-and-signal/evidence-003` — `stale`
   Generated: `2026-05-27`; latest governed change: `2026-05-31`
 - `primate-pgls-and-signal/evidence-004` — `stale`

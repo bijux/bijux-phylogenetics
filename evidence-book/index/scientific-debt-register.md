@@ -119,7 +119,7 @@ boundaries, and reviewer-visible trust weaknesses across the evidence-book.
   Detail: early_burst_rate_change remains unresolved with observed absolute difference 10.6718757865625.
 - `primate-pgls-and-signal-evidence-001-estimated-diagnostic-fitted-correlation` — `unresolved_mismatch`
   Path: `studies/primate-pgls-and-signal/evidence-001`
-  Detail: abs_residual_fitted_correlation remains unresolved with observed absolute difference 0.095590356776682.
+  Detail: abs_residual_fitted_correlation remains unresolved with observed absolute difference 0.095590314522858.
 - `primate-pgls-and-signal-evidence-001-late-burst-minus-2-total-branch-length` — `unresolved_mismatch`
   Path: `studies/primate-pgls-and-signal/evidence-001`
   Detail: late_burst_minus_2_total_branch_length remains unresolved with observed absolute difference None.

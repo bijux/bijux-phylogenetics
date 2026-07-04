@@ -22,4 +22,4 @@
 
 ## Limitations
 
-- The raw lecture `primate.RData` file remains external; this bundle governs the object contract using repository-owned reference artifacts.
+- The checked-in lecture `primate.RData` copy preserves the original reload surface, while this bundle governs the object contract through repository-owned reference artifacts.
