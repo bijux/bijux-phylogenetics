@@ -49,7 +49,7 @@ class RuntimeBudgetIssue:
 _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
     RuntimeBudgetPolicy(
         nodeid_prefix=(
-            "packages/bijux-phylogenetics/tests/test_geiger_parity_cli.py::"
+            "packages/bijux-phylogenetics/tests/parity/geiger/test_geiger_parity_cli.py::"
         ),
         classification="split",
         rationale=(
@@ -58,7 +58,7 @@ _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
     ),
     RuntimeBudgetPolicy(
         nodeid_prefix=(
-            "packages/bijux-phylogenetics/tests/test_phytools_parity_cli.py::"
+            "packages/bijux-phylogenetics/tests/parity/phytools/test_phytools_parity_cli.py::"
         ),
         classification="split",
         rationale=(
@@ -76,7 +76,7 @@ _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
     ),
     RuntimeBudgetPolicy(
         nodeid_prefix=(
-            "packages/bijux-phylogenetics/tests/test_comparative_model_figure_reference_validation.py::"
+            "packages/bijux-phylogenetics/tests/comparative/publication/test_comparative_model_figure_reference_validation.py::"
         ),
         classification="frozen",
         rationale=(
@@ -85,7 +85,7 @@ _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
     ),
     RuntimeBudgetPolicy(
         nodeid_prefix=(
-            "packages/bijux-phylogenetics/tests/test_comparative_model_figure_package.py::"
+            "packages/bijux-phylogenetics/tests/comparative/publication/test_comparative_model_figure_package.py::"
         ),
         classification="frozen",
         rationale=(
@@ -94,7 +94,7 @@ _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
     ),
     RuntimeBudgetPolicy(
         nodeid_prefix=(
-            "packages/bijux-phylogenetics/tests/test_avian_reproductive_trait_dataset.py::"
+            "packages/bijux-phylogenetics/tests/datasets/studies/test_avian_reproductive_trait_dataset.py::"
         ),
         classification="frozen",
         rationale=(
@@ -103,7 +103,7 @@ _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
     ),
     RuntimeBudgetPolicy(
         nodeid_prefix=(
-            "packages/bijux-phylogenetics/tests/test_discrete_mode_recovery.py::"
+            "packages/bijux-phylogenetics/tests/comparative/trait_evolution/test_discrete_mode_recovery.py::"
         ),
         classification="frozen",
         rationale=(
@@ -112,7 +112,7 @@ _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
     ),
     RuntimeBudgetPolicy(
         nodeid_prefix=(
-            "packages/bijux-phylogenetics/tests/test_large_fasta_streaming.py::"
+            "packages/bijux-phylogenetics/tests/alignment/test_large_fasta_streaming.py::"
         ),
         classification="slow",
         rationale=(
@@ -121,7 +121,7 @@ _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
     ),
     RuntimeBudgetPolicy(
         nodeid_prefix=(
-            "packages/bijux-phylogenetics/tests/test_macroevolution_recovery_suite_dataset.py::"
+            "packages/bijux-phylogenetics/tests/datasets/benchmarks/test_macroevolution_recovery_suite_dataset.py::"
         ),
         classification="frozen",
         rationale=(
@@ -130,7 +130,7 @@ _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
     ),
     RuntimeBudgetPolicy(
         nodeid_prefix=(
-            "packages/bijux-phylogenetics/tests/test_discrete_mk.py::test_fit_discrete_mk_model_"
+            "packages/bijux-phylogenetics/tests/state_models/discrete_traits/test_discrete_mk.py::test_fit_discrete_mk_model_"
         ),
         classification="optimize",
         rationale=(
@@ -139,7 +139,7 @@ _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
     ),
     RuntimeBudgetPolicy(
         nodeid_prefix=(
-            "packages/bijux-phylogenetics/tests/test_real_dataset_macroevolution_benchmark.py::"
+            "packages/bijux-phylogenetics/tests/datasets/benchmarks/test_real_dataset_macroevolution_benchmark.py::"
         ),
         classification="frozen",
         rationale=(
@@ -148,7 +148,7 @@ _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
     ),
     RuntimeBudgetPolicy(
         nodeid_prefix=(
-            "packages/bijux-phylogenetics/tests/test_large_dataset_stress.py::"
+            "packages/bijux-phylogenetics/tests/workflows/benchmarks/test_large_dataset_stress.py::"
         ),
         classification="slow",
         rationale=(
@@ -157,7 +157,7 @@ _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
     ),
     RuntimeBudgetPolicy(
         nodeid_prefix=(
-            "packages/bijux-phylogenetics/tests/test_shared_phytools_comparative_fixtures.py::"
+            "packages/bijux-phylogenetics/tests/trees/references/test_shared_phytools_comparative_fixtures.py::"
         ),
         classification="slow",
         rationale=(
@@ -166,7 +166,7 @@ _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
     ),
     RuntimeBudgetPolicy(
         nodeid_prefix=(
-            "packages/bijux-phylogenetics/tests/test_shared_geiger_continuous_fixtures.py::"
+            "packages/bijux-phylogenetics/tests/trees/references/test_shared_geiger_continuous_fixtures.py::"
         ),
         classification="slow",
         rationale=(
@@ -175,7 +175,7 @@ _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
     ),
     RuntimeBudgetPolicy(
         nodeid_prefix=(
-            "packages/bijux-phylogenetics/tests/test_fasta_to_tree_real_workflows.py::"
+            "packages/bijux-phylogenetics/tests/workflows/pipelines/test_fasta_to_tree_real_workflows.py::"
         ),
         classification="frozen",
         rationale=(
@@ -184,7 +184,7 @@ _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
     ),
     RuntimeBudgetPolicy(
         nodeid_prefix=(
-            "packages/bijux-phylogenetics/tests/test_primate_comparative_dataset.py::"
+            "packages/bijux-phylogenetics/tests/datasets/studies/test_primate_comparative_dataset.py::"
         ),
         classification="frozen",
         rationale=(
@@ -193,7 +193,7 @@ _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
     ),
     RuntimeBudgetPolicy(
         nodeid_prefix=(
-            "packages/bijux-phylogenetics/tests/test_native_maximum_likelihood_accuracy_benchmark.py::"
+            "packages/bijux-phylogenetics/tests/workflows/benchmarks/test_native_maximum_likelihood_accuracy_benchmark.py::"
         ),
         classification="optimize",
         rationale=(
@@ -202,7 +202,7 @@ _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
     ),
     RuntimeBudgetPolicy(
         nodeid_prefix=(
-            "packages/bijux-phylogenetics/tests/test_reference_parity_extended.py::"
+            "packages/bijux-phylogenetics/tests/parity/ape/test_reference_parity_extended.py::"
         ),
         classification="frozen",
         rationale=(
@@ -211,7 +211,7 @@ _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
     ),
     RuntimeBudgetPolicy(
         nodeid_prefix=(
-            "packages/bijux-phylogenetics/tests/test_runtime.py::test_cli_evidence_book_"
+            "packages/bijux-phylogenetics/tests/workflows/pipelines/test_runtime.py::test_cli_evidence_book_"
         ),
         classification="split",
         rationale=(
@@ -220,7 +220,7 @@ _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
     ),
     RuntimeBudgetPolicy(
         nodeid_prefix=(
-            "packages/bijux-phylogenetics/tests/test_discrete_mode_recovery_dataset.py::"
+            "packages/bijux-phylogenetics/tests/comparative/trait_evolution/test_discrete_mode_recovery_dataset.py::"
         ),
         classification="frozen",
         rationale=(
@@ -229,7 +229,7 @@ _RUNTIME_BUDGET_POLICIES: tuple[RuntimeBudgetPolicy, ...] = (
     ),
     RuntimeBudgetPolicy(
         nodeid_prefix=(
-            "packages/bijux-phylogenetics/tests/test_continuous_mode_recovery.py::"
+            "packages/bijux-phylogenetics/tests/comparative/trait_evolution/test_continuous_mode_recovery.py::"
         ),
         classification="frozen",
         rationale=(

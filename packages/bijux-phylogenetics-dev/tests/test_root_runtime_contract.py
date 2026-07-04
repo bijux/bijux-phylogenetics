@@ -513,6 +513,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "datasets"
+        / "studies"
         / "test_avian_reproductive_trait_dataset.py": {
             "test_write_avian_reproductive_trait_workflow_bundle_matches_packaged_expected_outputs",
             "test_run_avian_reproductive_trait_demo_materializes_dataset_and_workflow",
@@ -522,6 +524,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "workflows"
+        / "pipelines"
         / "test_fasta_to_tree_real_workflows.py": {
             "test_run_fasta_to_tree_workflow_matches_real_output_golden",
             "test_adapter_fasta_to_tree_cli_matches_real_output_golden",
@@ -530,6 +534,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "workflows"
+        / "benchmarks"
         / "test_large_alignment_inference.py": {
             "test_run_large_alignment_inference_streams_many_sequences_and_reports_resources",
             "test_run_large_alignment_inference_honors_timeout_seconds",
@@ -539,6 +545,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "workflows"
+        / "benchmarks"
         / "test_large_dataset_stress.py": {
             "test_benchmark_large_dataset_stress_suite_small_tier_reports_all_workloads",
             "test_cli_benchmark_stress_suite_reports_tier_and_observation_count",
@@ -548,12 +556,20 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "workflows"
+        / "benchmarks"
         / "test_validation_corpus_iteration.py": {
             "test_build_method_accuracy_dashboard_summarizes_fixture_and_corpus_pass_rates",
             "test_build_runtime_and_memory_dashboards_cover_sites_and_posterior_samples",
             "test_build_scientific_validation_report_separates_claim_statuses",
         },
-        REPO_ROOT / "packages" / "bijux-phylogenetics" / "tests" / "test_runtime.py": {
+        REPO_ROOT
+        / "packages"
+        / "bijux-phylogenetics"
+        / "tests"
+        / "workflows"
+        / "pipelines"
+        / "test_runtime.py": {
             "test_cli_benchmark_tree_validation_reports_observations",
             "test_cli_evidence_book_validate_json_output",
             "test_cli_evidence_book_build_json_output",
@@ -564,6 +580,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "datasets"
+        / "studies"
         / "test_primate_comparative_dataset.py": {
             "test_write_primate_comparative_workflow_bundle_matches_packaged_expected_outputs",
             "test_run_primate_comparative_demo_materializes_dataset_and_workflow",
@@ -573,6 +591,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "comparative"
+        / "regression"
         / "test_pgls_lambda_fit.py": {
             "test_run_pgls_estimated_lambda_matches_primate_reference_bundle",
         },
@@ -580,6 +600,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "datasets"
+        / "reference_panels"
         / "test_catarrhine_mitogenome_five_locus_panel_dataset.py": {
             "test_write_catarrhine_mitogenome_five_locus_panel_workflow_bundle_matches_packaged_expected_outputs",
             "test_run_catarrhine_mitogenome_five_locus_panel_demo_materializes_dataset_and_workflow",
@@ -589,6 +611,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "datasets"
+        / "reference_panels"
         / "test_pleistocene_bear_cytb_fragment_dataset.py": {
             "test_write_pleistocene_bear_cytb_fragment_workflow_bundle_matches_packaged_expected_outputs",
             "test_run_pleistocene_bear_cytb_fragment_demo_materializes_dataset_and_workflow",
@@ -598,6 +622,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "datasets"
+        / "studies"
         / "test_central_european_seashore_flora_dataset.py": {
             "test_write_central_european_seashore_flora_workflow_bundle_matches_packaged_expected_outputs",
             "test_run_central_european_seashore_flora_demo_materializes_dataset_and_workflow",
@@ -607,6 +633,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "datasets"
+        / "reference_panels"
         / "test_influenza_a_ha_reference_dataset.py": {
             "test_write_influenza_a_ha_reference_workflow_bundle_matches_packaged_expected_outputs",
             "test_run_influenza_a_ha_reference_demo_materializes_dataset_and_workflow",
@@ -616,6 +644,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "datasets"
+        / "benchmarks"
         / "test_known_answer_reference_dataset.py": {
             "test_write_known_answer_reference_workflow_bundle_matches_packaged_expected_outputs",
             "test_run_known_answer_reference_demo_materializes_dataset_and_workflow",
@@ -626,6 +656,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "workflows"
+        / "pipelines"
         / "test_fasta_to_tree_workflow.py": {
             "test_run_fasta_to_tree_workflow_materializes_expected_outputs_for_three_datasets",
         },
@@ -633,6 +665,8 @@ def test_long_running_runtime_workflows_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "evidence"
+        / "authoring"
         / "test_evidence_workbench.py": {
             "test_refresh_evidence_book_writes_repo_index_outputs",
         },
@@ -651,11 +685,14 @@ def test_governed_stress_tests_stay_slow_marked() -> None:
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "workflows"
+        / "benchmarks"
         / "test_large_dataset_stress.py",
         REPO_ROOT
         / "packages"
         / "bijux-phylogenetics"
         / "tests"
+        / "alignment"
         / "test_large_fasta_streaming.py",
     ]
 
