@@ -347,16 +347,27 @@ def test_runtime_and_alias_metadata_publish_beta_native_runtime_story() -> None:
 
     assert (
         runtime_project["description"]
-        == "Native phylogenetic runtime, comparative workflows, and evidence-linked reporting."
+        == "Comprehensive phylogenetics runtime for tree analysis, native inference, comparative models, parsimony, and evidence-linked reporting."
     )
     assert (
         alias_project["description"]
-        == "Compatibility alias package for the canonical native phylogenetics runtime."
+        == "Short install name for the full Bijux phylogenetics runtime, CLI, and comparative-analysis workflows."
     )
     assert "Development Status :: 4 - Beta" in runtime_classifiers
     assert "Development Status :: 4 - Beta" in alias_classifiers
+    assert "Environment :: Console" in runtime_classifiers
+    assert "Environment :: Console" in alias_classifiers
+    assert "Programming Language :: Python :: 3.12" in runtime_classifiers
+    assert "Programming Language :: Python :: 3.13" in runtime_classifiers
+    assert "Programming Language :: Python :: 3.14" in runtime_classifiers
+    assert "Programming Language :: Python :: 3.12" in alias_classifiers
+    assert "Programming Language :: Python :: 3.13" in alias_classifiers
+    assert "Programming Language :: Python :: 3.14" in alias_classifiers
     assert "maximum-likelihood" in runtime_keywords
     assert "bayesian-inference" in runtime_keywords
+    assert "parsimony" in runtime_keywords
+    assert "tree-comparison" in runtime_keywords
+    assert runtime_urls["Homepage"].endswith("/bijux-phylogenetics/")
     assert runtime_urls["Native Workflows"].endswith("/operations/")
     assert runtime_urls["Evidence Book"].endswith(
         "/02-bijux-phylogenetics-evidence-book/"
@@ -369,6 +380,9 @@ def test_runtime_and_alias_metadata_publish_beta_native_runtime_story() -> None:
     assert runtime_urls["Release Guide"].endswith("/quality/release-review-workflow/")
     assert "maximum-likelihood" in alias_keywords
     assert "bayesian-inference" in alias_keywords
+    assert "parsimony" in alias_keywords
+    assert "tree-comparison" in alias_keywords
+    assert alias_urls["Homepage"].endswith("/bijux-phylogenetics/")
     assert alias_urls["Native Workflows"].endswith("/operations/")
     assert alias_urls["Evidence Book"].endswith(
         "/02-bijux-phylogenetics-evidence-book/"
