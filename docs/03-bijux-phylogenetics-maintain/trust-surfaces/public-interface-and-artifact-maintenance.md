@@ -21,11 +21,11 @@ flowchart TD
 
 ## Review Surfaces Together
 
-- `docs/phylogenetics/interfaces/index.md`
-- `docs/phylogenetics/interfaces/surface-selection.md`
+- `docs/01-bijux-phylogenetics/interfaces/index.md`
+- `docs/01-bijux-phylogenetics/interfaces/surface-selection.md`
 - the affected CLI, API, Python, or native reference pages
-- `docs/phylogenetics/interfaces/artifact-contracts.md`
-- `docs/phylogenetics/interfaces/artifact-consumption-guide.md`
+- `docs/01-bijux-phylogenetics/interfaces/artifact-contracts.md`
+- `docs/01-bijux-phylogenetics/interfaces/artifact-consumption-guide.md`
 - root and package README links
 - package `pyproject.toml` URLs
 

@@ -27,8 +27,8 @@ last_reviewed: 2026-07-04
 [![bijux-phylogenetics](https://img.shields.io/badge/bijux--phylogenetics-ghcr-181717?logo=github)](https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fbijux-phylogenetics)
 [![phylogenetic](https://img.shields.io/badge/phylogenetic-ghcr-181717?logo=github)](https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fphylogenetic)
 
-[![bijux-phylogenetics docs](https://img.shields.io/badge/docs-bijux--phylogenetics-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/phylogenetics/)
-[![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/phylogenetics/)
+[![bijux-phylogenetics docs](https://img.shields.io/badge/docs-bijux--phylogenetics-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
+[![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
 <!-- bijux-phylogenetics-badges:generated:end -->
 
 `bijux-phylogenetics` is a large phylogenetics runtime and evidence-bearing
@@ -56,8 +56,8 @@ flowchart TD
 
 | Surface | What it is for |
 | --- | --- |
-| [Product handbook](phylogenetics/index.md) | runtime ownership, interfaces, workflows, outputs, and quality reading |
-| [Evidence book](phylogenetics-evidence-book/index.md) | governed comparative-study dossiers, bundle IDs, provenance, and bounded study claims |
+| [Product handbook](01-bijux-phylogenetics/index.md) | runtime ownership, interfaces, workflows, outputs, and quality reading |
+| [Evidence book](02-bijux-phylogenetics-evidence-book/index.md) | governed comparative-study dossiers, bundle IDs, provenance, and bounded study claims |
 | [Maintainer handbook](03-bijux-phylogenetics-maintain/index.md) | documentation truth, release alignment, artifact hygiene, and public trust stewardship |
 
 ## What The Checked-In Runtime Already Covers
@@ -74,10 +74,10 @@ flowchart TD
 ## Start By Goal
 
 - I want to understand what the runtime owns and which interface I should use.
-  Start with the [Phylogenetics product handbook](phylogenetics/index.md).
+  Start with the [Phylogenetics product handbook](01-bijux-phylogenetics/index.md).
 - I want to understand what the governed comparative-study record actually
   proves.
-  Start with the [Evidence book](phylogenetics-evidence-book/index.md).
+  Start with the [Evidence book](02-bijux-phylogenetics-evidence-book/index.md).
 - I want to understand how the repository keeps documentation and release
   language honest.
   Start with the [Maintainer handbook](03-bijux-phylogenetics-maintain/index.md).
@@ -100,11 +100,11 @@ flowchart LR
 
 ## Flagship Starting Points
 
-- [Surface selection guide](phylogenetics/interfaces/surface-selection.md)
-- [Native maximum-likelihood workflows](phylogenetics/operations/native-maximum-likelihood-workflows.md)
-- [Native Bayesian workflows](phylogenetics/operations/native-bayesian-workflows.md)
-- [Validation lanes](phylogenetics/quality/validation-lanes.md)
-- [Evidence book overview](phylogenetics-evidence-book/index.md)
+- [Surface selection guide](01-bijux-phylogenetics/interfaces/surface-selection.md)
+- [Native maximum-likelihood workflows](01-bijux-phylogenetics/operations/native-maximum-likelihood-workflows.md)
+- [Native Bayesian workflows](01-bijux-phylogenetics/operations/native-bayesian-workflows.md)
+- [Validation lanes](01-bijux-phylogenetics/quality/validation-lanes.md)
+- [Evidence book overview](02-bijux-phylogenetics-evidence-book/index.md)
 - [Maintainer handbook overview](03-bijux-phylogenetics-maintain/index.md)
 
 ## Important Boundary

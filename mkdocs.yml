@@ -64,62 +64,62 @@ not_in_nav: |
 nav:
   - Home: index.md
   - Phylogenetics:
-      - Overview: phylogenetics/index.md
+      - Overview: 01-bijux-phylogenetics/index.md
       - Foundation:
-          - Overview: phylogenetics/foundation/index.md
-          - Claim Reading Guide: phylogenetics/foundation/claim-reading-guide.md
-          - Repository Scope and Limits: phylogenetics/foundation/repository-scope-and-limits.md
-          - Product Surface and Ownership: phylogenetics/foundation/product-surface-and-ownership.md
-          - Runtime and Evidence Boundary: phylogenetics/foundation/evidence-boundary.md
+          - Overview: 01-bijux-phylogenetics/foundation/index.md
+          - Claim Reading Guide: 01-bijux-phylogenetics/foundation/claim-reading-guide.md
+          - Repository Scope and Limits: 01-bijux-phylogenetics/foundation/repository-scope-and-limits.md
+          - Product Surface and Ownership: 01-bijux-phylogenetics/foundation/product-surface-and-ownership.md
+          - Runtime and Evidence Boundary: 01-bijux-phylogenetics/foundation/evidence-boundary.md
       - Architecture:
-          - Overview: phylogenetics/architecture/index.md
-          - Runtime System Map: phylogenetics/architecture/runtime-system-map.md
-          - Package Map: phylogenetics/architecture/package-map.md
-          - Evidence Consumer Boundary: phylogenetics/architecture/evidence-consumer-boundary.md
+          - Overview: 01-bijux-phylogenetics/architecture/index.md
+          - Runtime System Map: 01-bijux-phylogenetics/architecture/runtime-system-map.md
+          - Package Map: 01-bijux-phylogenetics/architecture/package-map.md
+          - Evidence Consumer Boundary: 01-bijux-phylogenetics/architecture/evidence-consumer-boundary.md
       - Interfaces:
-          - Overview: phylogenetics/interfaces/index.md
-          - Surface Selection Guide: phylogenetics/interfaces/surface-selection.md
-          - API Surface: phylogenetics/interfaces/api-surface.md
-          - CLI Surface: phylogenetics/interfaces/cli-surface.md
-          - Python Surface: phylogenetics/interfaces/python-surface.md
-          - Native Inference and Benchmarks: phylogenetics/interfaces/native-inference-and-benchmarks.md
-          - Artifact Consumption Guide: phylogenetics/interfaces/artifact-consumption-guide.md
-          - Artifact Contracts: phylogenetics/interfaces/artifact-contracts.md
+          - Overview: 01-bijux-phylogenetics/interfaces/index.md
+          - Surface Selection Guide: 01-bijux-phylogenetics/interfaces/surface-selection.md
+          - API Surface: 01-bijux-phylogenetics/interfaces/api-surface.md
+          - CLI Surface: 01-bijux-phylogenetics/interfaces/cli-surface.md
+          - Python Surface: 01-bijux-phylogenetics/interfaces/python-surface.md
+          - Native Inference and Benchmarks: 01-bijux-phylogenetics/interfaces/native-inference-and-benchmarks.md
+          - Artifact Consumption Guide: 01-bijux-phylogenetics/interfaces/artifact-consumption-guide.md
+          - Artifact Contracts: 01-bijux-phylogenetics/interfaces/artifact-contracts.md
       - Operations:
-          - Overview: phylogenetics/operations/index.md
-          - Installation and Setup: phylogenetics/operations/installation-and-setup.md
-          - Common Workflows: phylogenetics/operations/common-workflows.md
-          - Native Maximum-Likelihood Workflows: phylogenetics/operations/native-maximum-likelihood-workflows.md
-          - Native Bayesian Workflows: phylogenetics/operations/native-bayesian-workflows.md
-          - Native Benchmark Review: phylogenetics/operations/native-benchmark-review.md
-          - Operational Boundaries: phylogenetics/operations/operational-boundaries.md
+          - Overview: 01-bijux-phylogenetics/operations/index.md
+          - Installation and Setup: 01-bijux-phylogenetics/operations/installation-and-setup.md
+          - Common Workflows: 01-bijux-phylogenetics/operations/common-workflows.md
+          - Native Maximum-Likelihood Workflows: 01-bijux-phylogenetics/operations/native-maximum-likelihood-workflows.md
+          - Native Bayesian Workflows: 01-bijux-phylogenetics/operations/native-bayesian-workflows.md
+          - Native Benchmark Review: 01-bijux-phylogenetics/operations/native-benchmark-review.md
+          - Operational Boundaries: 01-bijux-phylogenetics/operations/operational-boundaries.md
       - Quality:
-          - Overview: phylogenetics/quality/index.md
-          - Test Strategy: phylogenetics/quality/test-strategy.md
-          - Validation Lanes: phylogenetics/quality/validation-lanes.md
-          - Native Benchmark Evidence: phylogenetics/quality/native-benchmark-evidence.md
-          - Release Review Workflow: phylogenetics/quality/release-review-workflow.md
-          - Release and Publication Gates: phylogenetics/quality/release-and-publication-gates.md
-          - Evidence Honesty and Limits: phylogenetics/quality/evidence-honesty-and-limits.md
+          - Overview: 01-bijux-phylogenetics/quality/index.md
+          - Test Strategy: 01-bijux-phylogenetics/quality/test-strategy.md
+          - Validation Lanes: 01-bijux-phylogenetics/quality/validation-lanes.md
+          - Native Benchmark Evidence: 01-bijux-phylogenetics/quality/native-benchmark-evidence.md
+          - Release Review Workflow: 01-bijux-phylogenetics/quality/release-review-workflow.md
+          - Release and Publication Gates: 01-bijux-phylogenetics/quality/release-and-publication-gates.md
+          - Evidence Honesty and Limits: 01-bijux-phylogenetics/quality/evidence-honesty-and-limits.md
   - Evidence Book:
-      - Overview: phylogenetics-evidence-book/index.md
+      - Overview: 02-bijux-phylogenetics-evidence-book/index.md
       - PCM1:
-          - Overview: phylogenetics-evidence-book/pcm1-primate-longevity-signal/index.md
-          - Data and Tree Preparation: phylogenetics-evidence-book/pcm1-primate-longevity-signal/data-and-tree-preparation.md
-          - Signal and Ancestral Results: phylogenetics-evidence-book/pcm1-primate-longevity-signal/signal-and-ancestral-results.md
+          - Overview: 02-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/index.md
+          - Data and Tree Preparation: 02-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/data-and-tree-preparation.md
+          - Signal and Ancestral Results: 02-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/signal-and-ancestral-results.md
       - PCM2:
-          - Overview: phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/index.md
-          - Model Comparisons and PGLS: phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/model-comparisons-and-pgls.md
-          - Signal Diagnostics and Open Boundaries: phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/signal-diagnostics-and-open-boundaries.md
+          - Overview: 02-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/index.md
+          - Model Comparisons and PGLS: 02-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/model-comparisons-and-pgls.md
+          - Signal Diagnostics and Open Boundaries: 02-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/signal-diagnostics-and-open-boundaries.md
       - PCM3:
-          - Overview: phylogenetics-evidence-book/pcm3-primate-continuous-and-categorical-regression/index.md
-          - Model Design and Phylogenetic Regression: phylogenetics-evidence-book/pcm3-primate-continuous-and-categorical-regression/model-design-and-phylogenetic-regression.md
+          - Overview: 02-bijux-phylogenetics-evidence-book/pcm3-primate-continuous-and-categorical-regression/index.md
+          - Model Design and Phylogenetic Regression: 02-bijux-phylogenetics-evidence-book/pcm3-primate-continuous-and-categorical-regression/model-design-and-phylogenetic-regression.md
       - PCM4:
-          - Overview: phylogenetics-evidence-book/pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md
-          - Mixed-Model Evidence Boundary: phylogenetics-evidence-book/pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/mixed-model-evidence-boundary.md
+          - Overview: 02-bijux-phylogenetics-evidence-book/pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md
+          - Mixed-Model Evidence Boundary: 02-bijux-phylogenetics-evidence-book/pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/mixed-model-evidence-boundary.md
       - PCM5:
-          - Overview: phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md
-          - Generalized Mixed-Model Evidence Boundary: phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/generalized-mixed-model-evidence-boundary.md
+          - Overview: 02-bijux-phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md
+          - Generalized Mixed-Model Evidence Boundary: 02-bijux-phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/generalized-mixed-model-evidence-boundary.md
   - Maintainer:
       - Maintainer Handbook: 03-bijux-phylogenetics-maintain/index.md
       - Documentation System:

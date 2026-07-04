@@ -27,12 +27,12 @@ Each flagship native surface should have all of the following:
 The native maximum-likelihood and native Bayesian families follow that shape:
 
 - reference:
-  `docs/phylogenetics/interfaces/native-inference-and-benchmarks.md`
+  `docs/01-bijux-phylogenetics/interfaces/native-inference-and-benchmarks.md`
 - workflows:
   the native maximum-likelihood and native Bayesian pages under
-  `docs/phylogenetics/operations/`
+  `docs/01-bijux-phylogenetics/operations/`
 - benchmark interpretation:
-  `docs/phylogenetics/quality/native-benchmark-evidence.md`
+  `docs/01-bijux-phylogenetics/quality/native-benchmark-evidence.md`
 
 ## Entry Surfaces To Check
 
@@ -41,7 +41,7 @@ The native maximum-likelihood and native Bayesian families follow that shape:
 - `packages/phylogenetic/README.md` when the alias package should advertise
   the same runtime story
 - `docs/index.md`
-- `docs/phylogenetics/index.md`
+- `docs/01-bijux-phylogenetics/index.md`
 - the matching reference, operations, and quality pages
 
 ## Weak Pattern To Prevent

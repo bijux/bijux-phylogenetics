@@ -70,7 +70,7 @@ from .study_registry import (
 )
 
 DOCS_EVIDENCE_OVERVIEW = (
-    Path("docs") / "phylogenetics-evidence-book" / "index.md"
+    Path("docs") / "02-bijux-phylogenetics-evidence-book" / "index.md"
 )
 
 

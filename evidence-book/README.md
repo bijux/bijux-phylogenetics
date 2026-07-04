@@ -18,7 +18,7 @@ flowchart LR
 ## Start In Two Layers
 
 - Reader-facing study guides live under
-  [`docs/public/phylogenetics-evidence-book/`](../docs/public/phylogenetics-evidence-book/)
+  [`docs/02-bijux-phylogenetics-evidence-book/`](../docs/02-bijux-phylogenetics-evidence-book/)
 - Checked-in study records, datasets, and provenance live under
   [`studies/`](./studies/)
 

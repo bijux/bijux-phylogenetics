@@ -66,4 +66,4 @@ Do not convert one claim type into another automatically.
 - [Runtime and evidence boundary](evidence-boundary.md)
 - [Product surface and ownership](product-surface-and-ownership.md)
 - [Validation lanes](../quality/validation-lanes.md)
-- [Evidence Book](../../phylogenetics-evidence-book/index.md)
+- [Evidence Book](../../02-bijux-phylogenetics-evidence-book/index.md)

@@ -17,9 +17,9 @@ question, and maintainers should not let them blur together.
 - the root `README.md` introduces what the repository publishes and where the
   major boundaries are
 - package `README.md` files explain the durable role of each published package
-- `docs/phylogenetics/` describes the runtime product surface, public
+- `docs/01-bijux-phylogenetics/` describes the runtime product surface, public
   interfaces, operations, and quality boundaries
-- `docs/phylogenetics-evidence-book/` explains study evidence, parity, and
+- `docs/02-bijux-phylogenetics-evidence-book/` explains study evidence, parity, and
   scientific trust boundaries
 - flagship native surfaces should be visible across reference, workflow, and quality pages rather than only in one inventory page
 

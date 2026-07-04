@@ -38,7 +38,7 @@ flowchart TD
 | Run a documented workflow and get files | [CLI surface](cli-surface.md) | Best for governed outputs, reports, and shell use |
 | Run the same workflow from Python | [API surface](api-surface.md) | Best for typed workflow control |
 | Work with one owned runtime object directly | [Python surface](python-surface.md) and [native inference and benchmarks](native-inference-and-benchmarks.md) | Best for lower-level or library use |
-| Judge trust, parity, or release posture | [Evidence Book](../../phylogenetics-evidence-book/index.md) and [quality docs](../quality/index.md) | Best for bounded claims and review surfaces |
+| Judge trust, parity, or release posture | [Evidence Book](../../02-bijux-phylogenetics-evidence-book/index.md) and [quality docs](../quality/index.md) | Best for bounded claims and review surfaces |
 | Review a frozen integration contract | [API surface](api-surface.md) | Best for schema and interface review |
 
 I want one governed end-user workflow or report artifact.

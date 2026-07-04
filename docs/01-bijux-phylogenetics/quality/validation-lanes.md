@@ -55,4 +55,4 @@ Do not collapse those lanes into one generic confidence score. a runtime unit or
 - [Test strategy](test-strategy.md)
 - [Native benchmark evidence](native-benchmark-evidence.md)
 - [Release review workflow](release-review-workflow.md)
-- [Evidence Book](../../phylogenetics-evidence-book/index.md)
+- [Evidence Book](../../02-bijux-phylogenetics-evidence-book/index.md)
