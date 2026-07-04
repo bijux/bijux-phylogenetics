@@ -34,4 +34,4 @@ Governed evidence for how missing values are handled before the processed primat
 
 ## Limits
 
-- The raw workbook remains external, so the bundle records the governed missing-value contract at the processed artifact boundary.
+- The bundle records the governed missing-value contract at the processed artifact boundary even though the original workbook copy is also checked in.

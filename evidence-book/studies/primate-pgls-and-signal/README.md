@@ -60,11 +60,15 @@ workflow becomes statistically richer:
   instead of burying it in caveats.
 - Keep ancestral reconstruction tied to the same reviewed model family rather
   than treating it as a detached plotting step.
-- Reuse the governed primate derivatives from PCM1 so cross-study agreement is
-  based on explicit shared inputs.
+- Keep the governed primate derivatives inside this dossier so review does not
+  depend on a cross-study file lookup, while still matching the earlier PCM1
+  contracts.
 
 ## Study Surfaces
 
 - [datasets](./datasets/)
 - [provenance](./provenance/)
 - [runtime reference mapping](./reference/README.md)
+- checked-in lecture source copies:
+  `primate_raw.xlsx`, `primate.RData`, `primatetree.nex`,
+  `reference_primate.csv`, and `reference_trimmed_primatetree.nwk`

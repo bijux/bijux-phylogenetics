@@ -22,8 +22,8 @@ Governed representation of the lecture one-line primate workspace reload contrac
 ## Source Basis
 
 - `evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json`
-- `evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv`
-- `evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk`
+- `evidence-book/studies/primate-pgls-and-signal/datasets/reference_primate.csv`
+- `evidence-book/studies/primate-pgls-and-signal/datasets/reference_trimmed_primatetree.nwk`
 - `evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json`
 - `evidence-book/studies/primate-pgls-and-signal/evidence-001/rdata-reload-semantics.json`
 - `evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json`
@@ -38,4 +38,4 @@ Governed representation of the lecture one-line primate workspace reload contrac
 
 ## Limits
 
-- The raw lecture `primate.RData` file remains external; this bundle governs the object contract using repository-owned reference artifacts.
+- The checked-in lecture `primate.RData` copy preserves the original reload surface, while this bundle governs the object contract through repository-owned reference artifacts.

@@ -18,16 +18,17 @@ payload <- list(
   evidence_title = "Primate reload semantics bundle",
   comparison_mode = "direct_parity",
   execution_mode = "study_reference_wrapper",
-  source_intake_policy = "read-only-external-source",
+  source_intake_policy = "repository-owned-source",
   source_basis_locators = c(
     "evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json",
-    "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
-    "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
+    "evidence-book/studies/primate-pgls-and-signal/datasets/reference_primate.csv",
+    "evidence-book/studies/primate-pgls-and-signal/datasets/reference_trimmed_primatetree.nwk",
     "evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json",
     "evidence-book/studies/primate-pgls-and-signal/evidence-001/rdata-reload-semantics.json",
     "evidence-book/studies/primate-pgls-and-signal/evidence-001/scalar-parity-table.json",
   ),
   reference_scripts = c(
+    "evidence-book/studies/primate-pgls-and-signal/reference/lund_pcm2_modes_pgls_source.R",
     "evidence-book/studies/primate-pgls-and-signal/reference/primate_pgls_and_signal_reference_r.R",
   )
 )

@@ -22,4 +22,4 @@
 
 ## Limitations
 
-- The raw workbook remains an external teaching source; the Python-side review starts from the governed processed reference artifact.
+- The Python-side review starts from the governed processed reference artifact even though the original lecture workbook is now checked in locally for auditability.

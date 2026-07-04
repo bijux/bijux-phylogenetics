@@ -13,11 +13,14 @@
   "evidence_title": "Primate tree import parity bundle",
   "freshness": {
     "governed_code_paths": [
-      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles.py"
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles/definitions.py",
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles/study_context.py",
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles/report_payloads.py",
+      "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles/bundle_builder.py"
     ],
-    "last_generated_on": "2026-05-14",
+    "last_generated_on": "2026-07-04",
     "source_basis_locators": [
-      "external:lund/pcm1-plots-signal/data/primatetree.nex",
+      "evidence-book/studies/primate-longevity-signal/datasets/primatetree.nex",
       "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
       "evidence-book/studies/primate-longevity-signal/evidence-006/tree-import-parity.json"
     ]
@@ -52,9 +55,9 @@
   "schema_version": 1,
   "source_basis": [
     {
-      "kind": "external-course-material",
-      "label": "lund pcm1 original primate tree",
-      "locator": "external:lund/pcm1-plots-signal/data/primatetree.nex"
+      "kind": "repository-reference",
+      "label": "checked-in pcm1 original primate tree",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/primatetree.nex"
     },
     {
       "kind": "repository-reference",

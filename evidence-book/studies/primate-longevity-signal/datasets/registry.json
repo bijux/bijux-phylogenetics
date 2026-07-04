@@ -1,33 +1,54 @@
 {
-  "dataset_count": 4,
+  "dataset_count": 7,
   "datasets": [
     {
       "dataset_id": "dataset-001",
-      "kind": "external-read-only-source",
-      "label": "Lund PCM1 primate raw workbook",
-      "locator": "external:lund/pcm1-plots-signal/data/primate_raw.xlsx",
-      "schema_summary": "Workbook with primate trait and life-history source columns used in the lecture workflow."
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM1 primate raw workbook",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/primate_raw.xlsx",
+      "schema_summary": "Checked-in copy of the lecture workbook with primate trait and life-history source columns."
     },
     {
       "dataset_id": "dataset-002",
-      "kind": "external-read-only-source",
-      "label": "Lund PCM1 primate tree",
-      "locator": "external:lund/pcm1-plots-signal/data/primatetree.nex",
-      "schema_summary": "Primary Nexus tree used by the lecture before trimming and normalization."
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM1 primate workspace",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/primate.RData",
+      "schema_summary": "Checked-in copy of the lecture workspace containing the primate table and tree objects."
     },
     {
       "dataset_id": "dataset-003",
-      "kind": "study-shared-governed-derivative",
-      "label": "Governed primate reference table",
-      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
-      "schema_summary": "Repository-owned normalized primate table reused by PCM1 and PCM2 evidence units."
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM1 processed primate table",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/primate.csv",
+      "schema_summary": "Lecture-side processed CSV that bridges the raw workbook workflow and the governed derivative table."
     },
     {
       "dataset_id": "dataset-004",
-      "kind": "study-shared-governed-derivative",
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM1 original primate tree",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/primatetree.nex",
+      "schema_summary": "Primary Nexus tree used by the lecture before trimming and normalization."
+    },
+    {
+      "dataset_id": "dataset-005",
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM1 trimmed primate tree",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/trimmed_primatetree.nex",
+      "schema_summary": "Lecture-side trimmed Nexus tree preserved as a checked-in source copy."
+    },
+    {
+      "dataset_id": "dataset-006",
+      "kind": "study-local-governed-derivative",
+      "label": "Governed primate reference table",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
+      "schema_summary": "Repository-owned normalized primate table produced from the checked-in lecture sources."
+    },
+    {
+      "dataset_id": "dataset-007",
+      "kind": "study-local-governed-derivative",
       "label": "Governed trimmed primate tree",
       "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
-      "schema_summary": "Repository-owned trimmed Newick tree reused by PCM1 and PCM2 evidence units."
+      "schema_summary": "Repository-owned trimmed Newick tree produced from the checked-in lecture tree sources."
     }
   ],
   "schema_version": 1,

@@ -1,7 +1,7 @@
 {
-  "intake_policy": "read-only-external-source",
+  "intake_policy": "repository-owned-source",
   "schema_version": 1,
-  "source_count": 4,
+  "source_count": 7,
   "sources": [
     {
       "concept_tags": [
@@ -9,28 +9,52 @@
         "tree-preprocessing",
         "ancestral-reconstruction"
       ],
-      "kind": "external-course-script",
+      "kind": "repository-owned-source-copy",
       "label": "Lund PCM1 plots and signal lecture script",
-      "locator": "external:lund/pcm1-plots-signal/script",
+      "locator": "evidence-book/studies/primate-longevity-signal/reference/lund_pcm1_plots_signal_source.R",
       "path_hint": "PCM1_plots_signal/Lecture/R/Rcripts/PCM1_plots_signal.R",
-      "read_only": true,
+      "read_only": false,
       "source_id": "lund-pcm1-script"
     },
     {
-      "kind": "external-course-data",
-      "label": "Lund PCM1 primate raw workbook",
-      "locator": "external:lund/pcm1-plots-signal/data/primate_raw.xlsx",
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM1 primate raw workbook",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/primate_raw.xlsx",
       "path_hint": "PCM1_plots_signal/Lecture/R/Data/primate_raw.xlsx",
-      "read_only": true,
+      "read_only": false,
       "source_id": "lund-pcm1-primate-workbook"
     },
     {
-      "kind": "external-course-data",
-      "label": "Lund PCM1 primate tree",
-      "locator": "external:lund/pcm1-plots-signal/data/primatetree.nex",
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM1 primate workspace",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/primate.RData",
+      "path_hint": "PCM1_plots_signal/Lecture/R/Data/primate.RData",
+      "read_only": false,
+      "source_id": "lund-pcm1-primate-workspace"
+    },
+    {
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM1 original primate tree",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/primatetree.nex",
       "path_hint": "PCM1_plots_signal/Lecture/R/Data/primatetree.nex",
-      "read_only": true,
+      "read_only": false,
       "source_id": "lund-pcm1-primate-tree"
+    },
+    {
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM1 trimmed primate tree",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/trimmed_primatetree.nex",
+      "path_hint": "PCM1_plots_signal/Lecture/R/Data/trimmed_primatetree.nex",
+      "read_only": false,
+      "source_id": "lund-pcm1-trimmed-primate-tree"
+    },
+    {
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM1 processed primate table",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/primate.csv",
+      "path_hint": "PCM1_plots_signal/Lecture/R/Data/primate.csv",
+      "read_only": false,
+      "source_id": "lund-pcm1-processed-primate-table"
     },
     {
       "kind": "repository-reference",

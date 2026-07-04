@@ -30,7 +30,7 @@ Checked-in parity evidence for the Lund primate longevity signal workflow and th
 
 ## Source Basis
 
-- `external:lund/pcm1-plots-signal/script`
+- `evidence-book/studies/primate-longevity-signal/reference/lund_pcm1_plots_signal_source.R`
 - `evidence-book/studies/primate-longevity-signal/reference`
 
 ## Governed Primary Outputs

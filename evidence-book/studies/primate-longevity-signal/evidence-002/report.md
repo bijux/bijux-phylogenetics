@@ -21,7 +21,7 @@ Governed evidence for the raw workbook intake boundary and the resulting process
 
 ## Source Basis
 
-- `external:lund/pcm1-plots-signal/data/primate_raw.xlsx`
+- `evidence-book/studies/primate-longevity-signal/datasets/primate_raw.xlsx`
 - `evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv`
 - `evidence-book/studies/primate-longevity-signal/evidence-002/workbook-loading-parity.json`
 
@@ -35,4 +35,4 @@ Governed evidence for the raw workbook intake boundary and the resulting process
 
 ## Limits
 
-- The raw workbook remains an external teaching source; the Python-side review starts from the governed processed reference artifact.
+- The Python-side review starts from the governed processed reference artifact even though the original lecture workbook is now checked in locally for auditability.

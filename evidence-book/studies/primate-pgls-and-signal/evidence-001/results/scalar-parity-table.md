@@ -39,28 +39,28 @@
 | fixed-reference-pgls-slope-p-value | phylogenetic-regression | fixed_reference_social_group_size_p_value | tolerance | matched_with_tolerance | 0.0168886063098727 | 0.0168886050849197 |
 | fixed-reference-pgls-log-likelihood | phylogenetic-regression | fixed_reference_log_likelihood | tolerance | matched_with_tolerance | -444.069148162235 | -444.069148162264 |
 | fixed-reference-pgls-aic | phylogenetic-regression | fixed_reference_aic | tolerance | matched_with_tolerance | 894.13829632447 | 894.138296324528 |
-| estimated-lambda-value | phylogenetic-regression | lambda_value | tolerance | matched_with_tolerance | 0.768656451898616 | 0.76865646856019 |
-| estimated-pgls-intercept | phylogenetic-regression | intercept | tolerance | matched_with_tolerance | 249.9584349618 | 249.95843497104 |
-| estimated-pgls-slope | phylogenetic-regression | social_group_size | tolerance | matched_with_tolerance | 1.66214823716133 | 1.66214823566609 |
-| estimated-pgls-intercept-standard-error | phylogenetic-regression | intercept_standard_error | tolerance | matched_with_tolerance | 49.7282720332178 | 49.7282721257287 |
-| estimated-pgls-slope-standard-error | phylogenetic-regression | social_group_size_standard_error | tolerance | matched_with_tolerance | 0.679751504116516 | 0.67975150416116 |
-| estimated-pgls-log-likelihood | phylogenetic-regression | log_likelihood | tolerance | matched_with_tolerance | -444.069148162235 | -444.069148162264 |
-| estimated-pgls-aic | phylogenetic-regression | aic | tolerance | matched_with_tolerance | 896.13829632447 | 896.138296324527 |
-| estimated-pgls-intercept-p-value | phylogenetic-regression | intercept_p_value | tolerance | matched | 3.44325081102684e-06 | 3.44325093304398e-06 |
-| estimated-pgls-slope-p-value | phylogenetic-regression | social_group_size_p_value | tolerance | matched_with_tolerance | 0.0168886063098727 | 0.0168886064118261 |
+| estimated-lambda-value | phylogenetic-regression | lambda_value | tolerance | matched_with_tolerance | 0.768656451898616 | 0.768657155570374 |
+| estimated-pgls-intercept | phylogenetic-regression | intercept | tolerance | matched_with_tolerance | 249.9584349618 | 249.95843742385 |
+| estimated-pgls-slope | phylogenetic-regression | social_group_size | tolerance | matched_with_tolerance | 1.66214823716133 | 1.66214743691498 |
+| estimated-pgls-intercept-standard-error | phylogenetic-regression | intercept_standard_error | tolerance | matched_with_tolerance | 49.7282720332178 | 49.7283213357441 |
+| estimated-pgls-slope-standard-error | phylogenetic-regression | social_group_size_standard_error | tolerance | matched_with_tolerance | 0.679751504116516 | 0.679751529615506 |
+| estimated-pgls-log-likelihood | phylogenetic-regression | log_likelihood | tolerance | matched_with_tolerance | -444.069148162235 | -444.06914816229 |
+| estimated-pgls-aic | phylogenetic-regression | aic | tolerance | matched_with_tolerance | 896.13829632447 | 896.138296324579 |
+| estimated-pgls-intercept-p-value | phylogenetic-regression | intercept_p_value | tolerance | matched_with_tolerance | 3.44325081102684e-06 | 3.443316538565e-06 |
+| estimated-pgls-slope-p-value | phylogenetic-regression | social_group_size_p_value | tolerance | matched_with_tolerance | 0.0168886063098727 | 0.0168886611245798 |
 | estimated-pgls-slope-significance | phylogenetic-regression | social_group_size_significant_under_0.05 | scientific_equivalence | matched_with_tolerance | True | True |
-| signal-estimated-lambda | phylogenetic-signal | estimated_lambda | tolerance | matched_with_tolerance | 0.80273442404245 | 0.805 |
-| signal-likelihood-ratio | phylogenetic-signal | likelihood_ratio | tolerance | matched_with_tolerance | 41.0304186930398 | 41.0296165956062 |
+| signal-estimated-lambda | phylogenetic-signal | estimated_lambda | tolerance | matched_with_tolerance | 0.80273442404245 | 0.802734483418528 |
+| signal-likelihood-ratio | phylogenetic-signal | likelihood_ratio | tolerance | matched_with_tolerance | 41.0304186930398 | 41.0304186928552 |
 | signal-reject-lambda-zero | phylogenetic-signal | p_value_below_0.05 | scientific_equivalence | matched_with_tolerance | True | True |
 | baseline-diagnostic-qq-correlation | diagnostics | qq_correlation | tolerance | matched_with_tolerance | 0.974950137688634 | 0.974935270488255 |
 | baseline-diagnostic-fitted-correlation | diagnostics | abs_residual_fitted_correlation | tolerance | matched_with_tolerance | 0.0234397354786275 | 0.0234397354757235 |
 | baseline-diagnostic-outlier-pressure | diagnostics | outlier_count_abs_z_ge_2_close | scientific_equivalence | matched_with_tolerance | 5 | 5 |
-| estimated-diagnostic-qq-correlation | diagnostics | qq_correlation | tolerance | matched_with_tolerance | 0.980223544138575 | 0.977685033649863 |
-| estimated-diagnostic-fitted-correlation | diagnostics | abs_residual_fitted_correlation | tolerance | mismatch_unexplained | 0.205562548325984 | 0.109972191549302 |
+| estimated-diagnostic-qq-correlation | diagnostics | qq_correlation | tolerance | matched_with_tolerance | 0.980223544138575 | 0.97768503639436 |
+| estimated-diagnostic-fitted-correlation | diagnostics | abs_residual_fitted_correlation | tolerance | mismatch_unexplained | 0.205562548325984 | 0.109972233803126 |
 | estimated-diagnostic-outlier-pressure | diagnostics | outlier_count_abs_z_ge_2_close | scientific_equivalence | matched_with_tolerance | 3 | 4 |
 
 ## Verdict Counts
 
-- `matched`: `9`
-- `matched_with_tolerance`: `35`
+- `matched`: `8`
+- `matched_with_tolerance`: `36`
 - `mismatch_unexplained`: `12`

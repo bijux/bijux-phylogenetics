@@ -18,7 +18,7 @@ from bijux_phylogenetics.comparative import (
 from bijux_phylogenetics.comparative.pgls import run_pgls
 from bijux_phylogenetics.comparative.signal import estimate_pagels_lambda
 
-from .definitions import STUDY_ID, STUDY_ONE_REFERENCE_ROOT
+from .definitions import PCM2_DATASET_ROOT, STUDY_ID
 
 
 def study_root(repo_root: Path) -> Path:
@@ -26,7 +26,7 @@ def study_root(repo_root: Path) -> Path:
 
 
 def source_reference_paths(repo_root: Path) -> tuple[Path, Path]:
-    root = Path(repo_root) / STUDY_ONE_REFERENCE_ROOT
+    root = Path(repo_root) / PCM2_DATASET_ROOT
     return root / "reference_trimmed_primatetree.nwk", root / "reference_primate.csv"
 
 

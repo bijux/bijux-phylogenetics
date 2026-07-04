@@ -8,6 +8,15 @@ Checked-in reference artifacts:
 
 - `primate_pgls_and_signal_reference_r.R`
 - `reference_results.json`
+- `lund_pcm2_modes_pgls_source.R`
+
+Checked-in lecture source copies now live beside the study:
+
+- `../datasets/primate_raw.xlsx`
+- `../datasets/primate.RData`
+- `../datasets/primatetree.nex`
+- `../datasets/reference_primate.csv`
+- `../datasets/reference_trimmed_primatetree.nwk`
 
 Relevant owned surfaces include:
 

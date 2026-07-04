@@ -1,7 +1,7 @@
 # Evidence 001
 
 This is a registered cross-reference example for the full lecture script
-[`PCM1_plots_signal.R`](external:lund/pcm1-plots-signal/script).
+[`PCM1_plots_signal.R`](evidence-book/studies/primate-longevity-signal/reference/lund_pcm1_plots_signal_source.R).
 
 Identity:
 
@@ -335,8 +335,8 @@ save.image("Data/primate.RData") #Or all files present in your environment. Simp
 
 **Comparison Evidence**
 
-- processed CSV written by R: `external:lund/pcm1-plots-signal/data/primate.csv`
-- trimmed tree written by R: `external:lund/pcm1-plots-signal/data/trimmed_primatetree.nex`
+- processed CSV written by R: `evidence-book/studies/primate-longevity-signal/datasets/primate.csv`
+- trimmed tree written by R: `evidence-book/studies/primate-longevity-signal/datasets/trimmed_primatetree.nex`
 
 Raw comparison payload: [`block-payloads/processed-analysis-artifacts.json`](./results/block-payloads/processed-analysis-artifacts.json)
 

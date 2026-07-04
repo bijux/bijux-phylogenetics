@@ -7,6 +7,15 @@ Checked-in reference artifacts:
 
 - `primate_lifespan_signal_reference_r.R`
 - `primate_lifespan_signal_reference_bijux.py`
+- `lund_pcm1_plots_signal_source.R`
+
+Checked-in lecture source copies now live beside the study:
+
+- `../datasets/primate_raw.xlsx`
+- `../datasets/primate.RData`
+- `../datasets/primate.csv`
+- `../datasets/primatetree.nex`
+- `../datasets/trimmed_primatetree.nex`
 
 Relevant owned surfaces include:
 

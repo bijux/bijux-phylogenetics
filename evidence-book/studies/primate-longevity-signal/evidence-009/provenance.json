@@ -46,7 +46,7 @@
     "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
     "evidence-book/studies/primate-longevity-signal/evidence-009/processed-export-parity.json"
   ],
-  "source_intake_policy": "read-only-external-source",
+  "source_intake_policy": "repository-owned-source",
   "study_dataset_registry_locator": "evidence-book/studies/primate-longevity-signal/datasets/registry.json",
   "study_id": "primate-longevity-signal",
   "study_provenance_locator": "evidence-book/studies/primate-longevity-signal/provenance/lund-course-sources.json",
@@ -56,6 +56,7 @@
       "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_bijux.py"
     ],
     "reference_r_scripts": [
+      "evidence-book/studies/primate-longevity-signal/reference/lund_pcm1_plots_signal_source.R",
       "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R"
     ]
   }

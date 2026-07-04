@@ -1,40 +1,47 @@
 {
-  "dataset_count": 5,
+  "dataset_count": 6,
   "datasets": [
     {
       "dataset_id": "dataset-001",
-      "kind": "external-read-only-source",
-      "label": "Lund PCM2 primate raw workbook",
-      "locator": "external:lund/pcm2-modes-pgls/data/primate_raw.xlsx",
-      "schema_summary": "Original workbook used to derive the lecture workspace."
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM2 primate raw workbook",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/datasets/primate_raw.xlsx",
+      "schema_summary": "Checked-in copy of the lecture workbook used to derive the PCM2 workspace."
     },
     {
       "dataset_id": "dataset-002",
-      "kind": "external-read-only-source",
-      "label": "Lund PCM2 primate workspace object `primate`",
-      "locator": "external:lund/pcm2-modes-pgls/data/primate.RData#primate",
+      "kind": "repository-owned-workspace-object",
+      "label": "Checked-in PCM2 primate workspace object `primate`",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/datasets/primate.RData#primate",
       "schema_summary": "Reloaded lecture workspace table carrying the primate comparative variables consumed by the PCM2 regression and signal workflow."
     },
     {
       "dataset_id": "dataset-003",
-      "kind": "external-read-only-source",
-      "label": "Lund PCM2 primate workspace object `primatetree`",
-      "locator": "external:lund/pcm2-modes-pgls/data/primate.RData#primatetree",
+      "kind": "repository-owned-workspace-object",
+      "label": "Checked-in PCM2 primate workspace object `primatetree`",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/datasets/primate.RData#primatetree",
       "schema_summary": "Reloaded lecture workspace tree object paired with the PCM2 primate table after the course-side preprocessing step."
     },
     {
       "dataset_id": "dataset-004",
-      "kind": "study-shared-governed-derivative",
-      "label": "Governed primate reference table reused from PCM1",
-      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
-      "schema_summary": "Repository-owned normalized primate table reused across both Lund-derived studies."
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM2 lecture primate tree",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/datasets/primatetree.nex",
+      "schema_summary": "Primary Nexus tree preserved locally alongside the PCM2 study workspace."
     },
     {
       "dataset_id": "dataset-005",
-      "kind": "study-shared-governed-derivative",
-      "label": "Governed trimmed primate tree reused from PCM1",
-      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
-      "schema_summary": "Repository-owned trimmed Newick tree reused across both Lund-derived studies."
+      "kind": "study-local-governed-derivative",
+      "label": "PCM2 governed primate reference table",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/datasets/reference_primate.csv",
+      "schema_summary": "Study-local governed primate table copied into the PCM2 dossier so the workflow is reviewable without cross-study lookup."
+    },
+    {
+      "dataset_id": "dataset-006",
+      "kind": "study-local-governed-derivative",
+      "label": "PCM2 governed trimmed primate tree",
+      "locator": "evidence-book/studies/primate-pgls-and-signal/datasets/reference_trimmed_primatetree.nwk",
+      "schema_summary": "Study-local governed trimmed tree copied into the PCM2 dossier so reload and parity checks stay self-contained."
     }
   ],
   "schema_version": 1,

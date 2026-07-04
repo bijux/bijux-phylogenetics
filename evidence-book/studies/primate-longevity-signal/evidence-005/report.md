@@ -34,4 +34,4 @@ Governed evidence for duplicate-species consolidation before processed trait ana
 
 ## Limits
 
-- The raw workbook is external, so duplicate consolidation is demonstrated through the governed row-count and species-count contract.
+- Duplicate consolidation is demonstrated through the governed row-count and species-count contract rather than by replaying workbook import logic inside the bundle.

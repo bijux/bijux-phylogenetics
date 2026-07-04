@@ -532,12 +532,12 @@
       "verdict": "matched_with_tolerance"
     },
     {
-      "bijux_value": 0.76865646856019,
+      "bijux_value": 0.768657155570374,
       "comparison_kind": "tolerance",
       "fragment_id": "pagel-lambda-regression",
       "method_family": "phylogenetic-regression",
       "metric_name": "lambda_value",
-      "observed_abs_diff": 1.6661574009369e-08,
+      "observed_abs_diff": 7.03671757973368e-07,
       "parity_expectation": "statistical_tolerance",
       "r_value": 0.768656451898616,
       "row_id": "estimated-lambda-value",
@@ -545,12 +545,12 @@
       "verdict": "matched_with_tolerance"
     },
     {
-      "bijux_value": 249.95843497104,
+      "bijux_value": 249.95843742385,
       "comparison_kind": "tolerance",
       "fragment_id": "pagel-lambda-regression",
       "method_family": "phylogenetic-regression",
       "metric_name": "intercept",
-      "observed_abs_diff": 9.23998300095263e-09,
+      "observed_abs_diff": 2.46204999143629e-06,
       "parity_expectation": "statistical_tolerance",
       "r_value": 249.9584349618,
       "row_id": "estimated-pgls-intercept",
@@ -558,12 +558,12 @@
       "verdict": "matched_with_tolerance"
     },
     {
-      "bijux_value": 1.66214823566609,
+      "bijux_value": 1.66214743691498,
       "comparison_kind": "tolerance",
       "fragment_id": "pagel-lambda-regression",
       "method_family": "phylogenetic-regression",
       "metric_name": "social_group_size",
-      "observed_abs_diff": 1.49524015391478e-09,
+      "observed_abs_diff": 8.00246350074474e-07,
       "parity_expectation": "statistical_tolerance",
       "r_value": 1.66214823716133,
       "row_id": "estimated-pgls-slope",
@@ -571,12 +571,12 @@
       "verdict": "matched_with_tolerance"
     },
     {
-      "bijux_value": 49.7282721257287,
+      "bijux_value": 49.7283213357441,
       "comparison_kind": "tolerance",
       "fragment_id": "pagel-lambda-regression",
       "method_family": "phylogenetic-regression",
       "metric_name": "intercept_standard_error",
-      "observed_abs_diff": 9.25109020499804e-08,
+      "observed_abs_diff": 4.93025262997548e-05,
       "parity_expectation": "statistical_tolerance",
       "r_value": 49.7282720332178,
       "row_id": "estimated-pgls-intercept-standard-error",
@@ -584,12 +584,12 @@
       "verdict": "matched_with_tolerance"
     },
     {
-      "bijux_value": 0.67975150416116,
+      "bijux_value": 0.679751529615506,
       "comparison_kind": "tolerance",
       "fragment_id": "pagel-lambda-regression",
       "method_family": "phylogenetic-regression",
       "metric_name": "social_group_size_standard_error",
-      "observed_abs_diff": 4.46440662216219e-11,
+      "observed_abs_diff": 2.54989900305702e-08,
       "parity_expectation": "statistical_tolerance",
       "r_value": 0.679751504116516,
       "row_id": "estimated-pgls-slope-standard-error",
@@ -597,12 +597,12 @@
       "verdict": "matched_with_tolerance"
     },
     {
-      "bijux_value": -444.069148162264,
+      "bijux_value": -444.06914816229,
       "comparison_kind": "tolerance",
       "fragment_id": "pagel-lambda-regression",
       "method_family": "phylogenetic-regression",
       "metric_name": "log_likelihood",
-      "observed_abs_diff": 2.89901436190121e-11,
+      "observed_abs_diff": 5.49675860384014e-11,
       "parity_expectation": "statistical_tolerance",
       "r_value": -444.069148162235,
       "row_id": "estimated-pgls-log-likelihood",
@@ -610,12 +610,12 @@
       "verdict": "matched_with_tolerance"
     },
     {
-      "bijux_value": 896.138296324527,
+      "bijux_value": 896.138296324579,
       "comparison_kind": "tolerance",
       "fragment_id": "pagel-lambda-regression",
       "method_family": "phylogenetic-regression",
       "metric_name": "aic",
-      "observed_abs_diff": 5.69571056985296e-11,
+      "observed_abs_diff": 1.08911990537308e-10,
       "parity_expectation": "statistical_tolerance",
       "r_value": 896.13829632447,
       "row_id": "estimated-pgls-aic",
@@ -623,25 +623,25 @@
       "verdict": "matched_with_tolerance"
     },
     {
-      "bijux_value": 3.44325093304398e-06,
+      "bijux_value": 3.443316538565e-06,
       "comparison_kind": "tolerance",
       "fragment_id": "pagel-lambda-regression",
       "method_family": "phylogenetic-regression",
       "metric_name": "intercept_p_value",
-      "observed_abs_diff": 1.22017139942484e-13,
+      "observed_abs_diff": 6.57275381599323e-11,
       "parity_expectation": "statistical_tolerance",
       "r_value": 3.44325081102684e-06,
       "row_id": "estimated-pgls-intercept-p-value",
       "tolerance_abs_diff": 5e-06,
-      "verdict": "matched"
+      "verdict": "matched_with_tolerance"
     },
     {
-      "bijux_value": 0.0168886064118261,
+      "bijux_value": 0.0168886611245798,
       "comparison_kind": "tolerance",
       "fragment_id": "pagel-lambda-regression",
       "method_family": "phylogenetic-regression",
       "metric_name": "social_group_size_p_value",
-      "observed_abs_diff": 1.01953400583055e-10,
+      "observed_abs_diff": 5.48147070997262e-08,
       "parity_expectation": "statistical_tolerance",
       "r_value": 0.0168886063098727,
       "row_id": "estimated-pgls-slope-p-value",
@@ -663,12 +663,12 @@
       "verdict": "matched_with_tolerance"
     },
     {
-      "bijux_value": 0.805,
+      "bijux_value": 0.802734483418528,
       "comparison_kind": "tolerance",
       "fragment_id": "phylogenetic-signal-test",
       "method_family": "phylogenetic-signal",
       "metric_name": "estimated_lambda",
-      "observed_abs_diff": 0.00226557595755006,
+      "observed_abs_diff": 5.93760780542851e-08,
       "parity_expectation": "statistical_tolerance",
       "r_value": 0.80273442404245,
       "row_id": "signal-estimated-lambda",
@@ -676,12 +676,12 @@
       "verdict": "matched_with_tolerance"
     },
     {
-      "bijux_value": 41.0296165956062,
+      "bijux_value": 41.0304186928552,
       "comparison_kind": "tolerance",
       "fragment_id": "phylogenetic-signal-test",
       "method_family": "phylogenetic-signal",
       "metric_name": "likelihood_ratio",
-      "observed_abs_diff": 0.000802097433599158,
+      "observed_abs_diff": 1.84599002750474e-10,
       "parity_expectation": "statistical_tolerance",
       "r_value": 41.0304186930398,
       "row_id": "signal-likelihood-ratio",
@@ -743,12 +743,12 @@
       "verdict": "matched_with_tolerance"
     },
     {
-      "bijux_value": 0.977685033649863,
+      "bijux_value": 0.97768503639436,
       "comparison_kind": "tolerance",
       "fragment_id": "estimated-lambda-diagnostics",
       "method_family": "diagnostics",
       "metric_name": "qq_correlation",
-      "observed_abs_diff": 0.00253851048871201,
+      "observed_abs_diff": 0.00253850774421505,
       "parity_expectation": "statistical_tolerance",
       "r_value": 0.980223544138575,
       "row_id": "estimated-diagnostic-qq-correlation",
@@ -756,12 +756,12 @@
       "verdict": "matched_with_tolerance"
     },
     {
-      "bijux_value": 0.109972191549302,
+      "bijux_value": 0.109972233803126,
       "comparison_kind": "tolerance",
       "fragment_id": "estimated-lambda-diagnostics",
       "method_family": "diagnostics",
       "metric_name": "abs_residual_fitted_correlation",
-      "observed_abs_diff": 0.095590356776682,
+      "observed_abs_diff": 0.095590314522858,
       "parity_expectation": "statistical_tolerance",
       "r_value": 0.205562548325984,
       "row_id": "estimated-diagnostic-fitted-correlation",
@@ -786,8 +786,8 @@
   "schema_version": 1,
   "study_id": "primate-pgls-and-signal",
   "verdict_counts": {
-    "matched": 9,
-    "matched_with_tolerance": 35,
+    "matched": 8,
+    "matched_with_tolerance": 36,
     "mismatch_unexplained": 12
   }
 }

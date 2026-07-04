@@ -18,15 +18,15 @@
       "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles/report_payloads.py",
       "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles/bundle_builder.py"
     ],
-    "last_generated_on": "2026-06-02",
+    "last_generated_on": "2026-07-04",
     "source_basis_locators": [
-      "external:lund/pcm1-plots-signal/data/primate_raw.xlsx",
+      "evidence-book/studies/primate-longevity-signal/datasets/primate_raw.xlsx",
       "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
       "evidence-book/studies/primate-longevity-signal/evidence-002/workbook-loading-parity.json"
     ]
   },
   "limitations": [
-    "The raw workbook remains an external teaching source; the Python-side review starts from the governed processed reference artifact."
+    "The Python-side review starts from the governed processed reference artifact even though the original lecture workbook is now checked in locally for auditability."
   ],
   "owner_package": "bijux-phylogenetics",
   "ownership": {
@@ -56,9 +56,9 @@
   "schema_version": 1,
   "source_basis": [
     {
-      "kind": "external-course-material",
-      "label": "lund pcm1 raw primate workbook",
-      "locator": "external:lund/pcm1-plots-signal/data/primate_raw.xlsx"
+      "kind": "repository-reference",
+      "label": "checked-in pcm1 raw primate workbook",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/primate_raw.xlsx"
     },
     {
       "kind": "repository-reference",

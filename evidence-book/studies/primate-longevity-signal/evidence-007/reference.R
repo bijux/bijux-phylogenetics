@@ -18,12 +18,13 @@ payload <- list(
   evidence_title = "Primate tree diagnostics parity bundle",
   comparison_mode = "direct_parity",
   execution_mode = "study_reference_wrapper",
-  source_intake_policy = "read-only-external-source",
+  source_intake_policy = "repository-owned-source",
   source_basis_locators = c(
     "evidence-book/studies/primate-longevity-signal/evidence-001/results/block-payloads/tree-import-and-pruning.json",
     "evidence-book/studies/primate-longevity-signal/evidence-007/tree-diagnostics-parity.json",
   ),
   reference_scripts = c(
+    "evidence-book/studies/primate-longevity-signal/reference/lund_pcm1_plots_signal_source.R",
     "evidence-book/studies/primate-longevity-signal/reference/primate_lifespan_signal_reference_r.R",
   )
 )

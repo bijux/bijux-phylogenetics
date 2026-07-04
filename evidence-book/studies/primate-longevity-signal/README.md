@@ -69,3 +69,6 @@ block, the study keeps them separated as explicit evidence IDs.
 - [Shared datasets](./datasets/)
 - [Study provenance](./provenance/)
 - [runtime reference mapping](./reference/README.md)
+- checked-in lecture source copies:
+  `primate_raw.xlsx`, `primate.RData`, `primate.csv`, `primatetree.nex`, and
+  `trimmed_primatetree.nex`

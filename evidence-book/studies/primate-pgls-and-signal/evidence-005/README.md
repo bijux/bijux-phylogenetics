@@ -11,5 +11,5 @@ Governed machine-readable residual diagnostics for the baseline and estimated-la
 
 ## Source Locators
 
-- `external:lund/pcm2-modes-pgls/script`
+- `evidence-book/studies/primate-pgls-and-signal/reference/lund_pcm2_modes_pgls_source.R`
 - `evidence-book/studies/primate-pgls-and-signal/reference/primate_pgls_and_signal_reference_r.R`

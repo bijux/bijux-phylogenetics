@@ -15,7 +15,7 @@
   "evidence_id": "evidence-002",
   "evidence_title": "Primate workbook loading parity bundle",
   "limitations": [
-    "The raw workbook remains an external teaching source; the Python-side review starts from the governed processed reference artifact."
+    "The Python-side review starts from the governed processed reference artifact even though the original lecture workbook is now checked in locally for auditability."
   ],
   "owner_package": "bijux-phylogenetics",
   "reviewer_summary_lines": [
@@ -28,7 +28,7 @@
     "primate-data-preprocessing"
   ],
   "source_locators": [
-    "external:lund/pcm1-plots-signal/data/primate_raw.xlsx",
+    "evidence-book/studies/primate-longevity-signal/datasets/primate_raw.xlsx",
     "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
     "evidence-book/studies/primate-longevity-signal/evidence-002/workbook-loading-parity.json"
   ],

@@ -22,8 +22,8 @@ Governed parity for the lecture Brownian, OU, and early-burst fitContinuous-styl
 ## Source Basis
 
 - `evidence-book/studies/primate-pgls-and-signal/provenance/lund-course-sources.json`
-- `evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv`
-- `evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk`
+- `evidence-book/studies/primate-pgls-and-signal/datasets/reference_primate.csv`
+- `evidence-book/studies/primate-pgls-and-signal/datasets/reference_trimmed_primatetree.nwk`
 - `evidence-book/studies/primate-pgls-and-signal/reference/reference_results.json`
 - `evidence-book/studies/primate-pgls-and-signal/evidence-007/continuous-mode-fit-parity.json`
 

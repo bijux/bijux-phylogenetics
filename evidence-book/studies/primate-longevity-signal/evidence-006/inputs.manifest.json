@@ -52,7 +52,7 @@
       "input_id": "source-input-001",
       "kind": "external-course-material",
       "label": "lund pcm1 original primate tree",
-      "locator": "external:lund/pcm1-plots-signal/data/primatetree.nex",
+      "locator": "evidence-book/studies/primate-longevity-signal/datasets/primatetree.nex",
       "read_only": true
     },
     {

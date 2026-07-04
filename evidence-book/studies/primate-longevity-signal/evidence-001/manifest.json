@@ -28,9 +28,9 @@
     "governed_code_paths": [
       "packages/bijux-phylogenetics/src/bijux_phylogenetics"
     ],
-    "last_generated_on": "2026-06-02",
+    "last_generated_on": "2026-07-04",
     "source_basis_locators": [
-      "external:lund/pcm1-plots-signal/script",
+      "evidence-book/studies/primate-longevity-signal/reference/lund_pcm1_plots_signal_source.R",
       "evidence-book/studies/primate-longevity-signal/reference"
     ]
   },
@@ -64,7 +64,7 @@
     {
       "kind": "external-course-material",
       "label": "lund pcm1 plots signal script",
-      "locator": "external:lund/pcm1-plots-signal/script"
+      "locator": "evidence-book/studies/primate-longevity-signal/reference/lund_pcm1_plots_signal_source.R"
     },
     {
       "kind": "repository-reference",
@@ -72,7 +72,7 @@
       "locator": "evidence-book/studies/primate-longevity-signal/reference"
     }
   ],
-  "source_script": "external:lund/pcm1-plots-signal/script",
+  "source_script": "evidence-book/studies/primate-longevity-signal/reference/lund_pcm1_plots_signal_source.R",
   "status_counts": {
     "artifact_only": 2,
     "plot_only": 10,

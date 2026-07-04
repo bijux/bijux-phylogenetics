@@ -19,4 +19,4 @@ Reference script locators:
 
 Limitations:
 
-- The raw workbook is external, so duplicate consolidation is demonstrated through the governed row-count and species-count contract.
+- Duplicate consolidation is demonstrated through the governed row-count and species-count contract rather than by replaying workbook import logic inside the bundle.
