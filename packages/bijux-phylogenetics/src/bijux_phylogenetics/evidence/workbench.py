@@ -261,7 +261,12 @@ def render_docs_evidence_overview(
     ]
     for study in index_payload["studies"]:
         study_id = str(study["study_id"])
-        study_page = study_page_by_id[study_id]
+        study_page = study_page_by_id.get(study_id)
+        study_title = str(study["study_title"])
+        study_question = study_question_by_id.get(
+            study_id,
+            "What evidence, datasets, and governed bundle boundaries define this study?",
+        )
         state = "Documented study family with open limits"
         evidence_ids = [str(entry["evidence_id"]) for entry in study["evidence"]]
         evidence_span = (
@@ -281,8 +286,13 @@ def render_docs_evidence_overview(
             state = (
                 "Governed parity bundles deployed; posterior workflow still external"
             )
+        study_label = (
+            study_title
+            if study_page is None
+            else f"[{study_title}](./{study_page}/index.md)"
+        )
         lines.append(
-            f"| [{study['study_title']}](./{study_page}/index.md) | {study_question_by_id[study_id]} | {evidence_span} | {state} |"
+            f"| {study_label} | {study_question} | {evidence_span} | {state} |"
         )
     lines.extend(
         [

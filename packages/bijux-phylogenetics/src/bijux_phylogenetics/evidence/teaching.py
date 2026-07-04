@@ -698,6 +698,8 @@ def build_repository_teaching_and_migration_index(
 
     for study_id in sorted(teaching_study_ids()):
         study_root = evidence_root / study_id
+        if not study_root.is_dir():
+            continue
         study_manifest = load_study_contract(study_root)
         if study_id == "primate-longevity-signal":
             family_index = build_primate_family_index(repo_root)
