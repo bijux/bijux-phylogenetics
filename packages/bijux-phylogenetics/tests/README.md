@@ -41,6 +41,9 @@ single flat namespace.
 - `parsimony/reconstruction` owns Fitch, Sankoff, ACCTRAN, DELTRAN, Dollo, Wagner, Camin-Sokal, and constrained discrete reconstruction surfaces so ancestral-state criteria stay separated from search heuristics and score summaries.
 - `parsimony/placement` owns parsimony phylogenetic-placement workflows, ranked alternative ledgers, and CLI/reporting surfaces so query placement does not remain mixed with search or reconstruction lanes.
 - `parsimony/comparison` owns deep-coalescence counting and reporting surfaces so gene-tree versus species-tree comparison contracts stay separated from character-parsimony workflows.
+- `parsimony/search` owns NNI and SPR heuristic search, ratchet exploration, and stepwise-addition construction surfaces so tree-search mechanics are separated from reconstruction criteria and score review.
+- `parsimony/support` owns bootstrap, jackknife, Bremer-support, and equal-best consensus surfaces so parsimony support summarization stays separate from heuristic search and character scoring contracts.
+- `parsimony/scoring` owns character weighting, tree-length, and consistency or retention index surfaces so parsimony score ledgers and CLI reviews stay grouped by shared summary semantics.
 - `likelihood/search` owns topology-search heuristics, convergence, replay, and multi-start orchestration, `likelihood/starting_trees` owns starting-tree construction and validation surfaces, and `likelihood/inference` owns end-to-end inference and bootstrap workflows.
 - `likelihood/optimization` owns bounded search, simplex parameterization, and fixed-topology optimization surfaces so lower-level optimizer behavior does not stay mixed with placement, support, and fit-assessment workflows.
 - `likelihood/assessment` owns fit diagnostics, information-criteria review, likelihood-ratio reporting, and result-validation surfaces so evaluation contracts are separated from optimization and search mechanics.
