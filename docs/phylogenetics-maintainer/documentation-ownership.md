@@ -23,6 +23,12 @@ question, and maintainers should not let them blur together.
   scientific trust boundaries
 - flagship native surfaces should be visible across reference, workflow, and quality pages rather than only in one inventory page
 
+## Reader-Facing Rule
+
+Public documentation should help an external reader understand the runtime
+depth quickly. It should not read like a private repo note, a checklist, or a
+thin wrapper disclaimer when the code and tests now support a deeper story.
+
 ## Maintainer Surface Responsibilities
 
 - `docs/phylogenetics-maintainer/` is for repository stewardship, release
@@ -40,6 +46,9 @@ surface in the same review pass:
 - the matching public handbook page
 - package metadata if description or maturity language changed
 - maintainer handbook guidance if maintainers need a new review rule
+
+That review pass should make the new surface visible in public language, not
+just technically present in code or tests.
 
 ## Failure Modes To Avoid
 

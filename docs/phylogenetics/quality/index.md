@@ -32,6 +32,17 @@ flowchart TD
     A --> F[Claim honesty]
 ```
 
+## Quality Reading Model
+
+- read validation lanes to understand what runtime behavior was actually
+  checked
+- read benchmark evidence to understand performance signals without turning
+  them into blanket scientific claims
+- read release review and publication gates to understand whether the public
+  repository story is still aligned
+- read evidence honesty guidance whenever a green check might be mistaken for
+  broader scientific closure
+
 ## Read Next
 
 - [Test strategy](test-strategy.md)

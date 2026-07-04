@@ -47,6 +47,27 @@ flowchart TD
 - how evidence, benchmarks, and release gates should be read
 - where public usage guidance ends and maintainer guidance begins
 
+## Runtime Capability Map
+
+| Question area | Where the handbook goes deep |
+| --- | --- |
+| Runtime purpose | ownership, scope, and evidence boundaries |
+| Runtime architecture | package roles, system map, and evidence-consumer boundary |
+| Public interfaces | CLI, workflow API, native Python, artifacts, and benchmark surfaces |
+| Practical operation | installation, common workflows, native ML, native Bayesian, and benchmark review |
+| Trust and quality | validation lanes, benchmark interpretation, release review, and claim honesty |
+
+## Why Readers Should Not Underestimate This Runtime
+
+The public runtime is broader than a simple workflow wrapper. It includes:
+
+- owned tree and topology semantics reused across comparison, support, and
+  reporting workflows
+- native finite-state likelihood families and native inference result objects
+- typed Python workflow contracts that emit durable reviewer-facing artifacts
+- governed benchmark and evidence-linked review surfaces that keep the release
+  story inspectable
+
 ## Read By Question
 
 - What is this repository trying to do, and what is it not trying to claim?

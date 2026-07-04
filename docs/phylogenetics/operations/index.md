@@ -32,3 +32,11 @@ This section explicitly includes native maximum-likelihood workflows, native Bay
 - choose between workflow-oriented and native-oriented operating modes
 - understand when a workflow is operationally convenient but scientifically
   review-heavy
+
+## Operational Modes
+
+| Mode | Best for | Representative guides |
+| --- | --- | --- |
+| Workflow-first | end-to-end runs that should emit reviewable artifacts | installation, common workflows, artifact guides |
+| Native-first | direct use of owned maximum-likelihood or Bayesian contracts | native maximum-likelihood workflows, native Bayesian workflows |
+| Review-first | understanding performance posture and benchmark limits | native benchmark review, operational boundaries |

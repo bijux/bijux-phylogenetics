@@ -20,6 +20,15 @@ directly.
 - benchmark and evidence-adjacent runtime contracts
 - emitted artifact and report families
 
+## Interface Selection Heuristic
+
+| If you need | Start here | Why |
+| --- | --- | --- |
+| one governed workflow or report | CLI | easiest path to durable artifacts |
+| notebook or pipeline composition | workflow Python | typed results and stable writers |
+| lower-level runtime control | native Python | direct access to owned contracts |
+| trust or schema review | artifact pages | explicit output families and boundaries |
+
 ```mermaid
 flowchart LR
     A[Need an interface] --> B[CLI]

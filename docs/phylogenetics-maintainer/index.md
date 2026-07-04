@@ -34,6 +34,25 @@ flowchart TD
   readiness reports
 - preventing root clutter and unmanaged artifact drift
 
+## Stewardship Loop
+
+```mermaid
+flowchart LR
+    A[Runtime or evidence change] --> B[Public docs and README review]
+    B --> C[Quality and release review]
+    C --> D[Publishable repository state]
+```
+
+## What This Handbook Helps Prevent
+
+- public pages that understate the runtime depth now present in the code and
+  tests
+- native surfaces that appear in code but disappear from package READMEs or
+  release guidance
+- evidence-book pages that sound conclusive when the governed study record is
+  still bounded
+- repository runs that leave unmanaged root artifacts behind
+
 ## Read By Question
 
 - How do repository runs keep root aliases disposable and avoid root clutter?

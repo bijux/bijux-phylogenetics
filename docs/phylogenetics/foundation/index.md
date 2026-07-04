@@ -27,6 +27,16 @@ through one documented product surface.
 - wrapper orchestration for selected external scientific tools
 - report, bundle, and artifact generation for downstream review
 
+## Why This Runtime Matters
+
+The repository is useful because it combines three things that often stay
+split across separate projects:
+
+- owned runtime semantics for trees, alignments, and comparative workflows
+- practical workflow entry points for users who need end-to-end execution
+- reviewer-facing artifacts and evidence boundaries for readers who need to
+  inspect what happened
+
 ## What This Handbook Will Not Do
 
 - describe every external workflow as if it were a native implementation
@@ -49,9 +59,11 @@ The runtime can be broader than the currently closed evidence surface. That is
 acceptable only when the documentation says so plainly and routes readers to
 the right trust surface.
 
+Use the claim reading guide when you need that distinction spelled out
+explicitly.
+
 ## Continue With
 
-- the [claim reading guide](claim-reading-guide.md)
 - [Claim reading guide](claim-reading-guide.md)
 - [Repository scope and limits](repository-scope-and-limits.md)
 - [Product surface and ownership](product-surface-and-ownership.md)

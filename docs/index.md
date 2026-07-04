@@ -56,6 +56,16 @@ flowchart LR
     H --> I[Release and docs stewardship]
 ```
 
+## Runtime Depth Snapshot
+
+| Capability family | Publicly documented depth |
+| --- | --- |
+| Trees | owned `PhyloTree` review, rootedness, support, clade, split, and topology comparison surfaces |
+| Alignments | validation, trimming, coding checks, translation, and dataset preparation workflows |
+| Native methods | finite-state likelihood, native maximum-likelihood results, and supported native Bayesian DNA workflows |
+| Comparative methods | PGLS, signal, regression review, ancestral reconstruction, and discrete-state analysis |
+| Review surfaces | benchmarks, release-truth reports, evidence bundles, and study-backed documentation |
+
 ## Start By Goal
 
 - I want to understand the runtime surface and choose the right interface.
@@ -89,6 +99,15 @@ flowchart LR
   of opaque notebook state
 - governed wrapper orchestration for external scientific engines when the
   wrapper is itself the honest public surface
+
+## Reader Map
+
+- Read the product guide when the question is "what can I run and how should I
+  choose the right interface?"
+- Read the evidence book when the question is "what has been checked, where
+  are the governed bundles, and where do the scientific boundaries still sit?"
+- Read the maintainer guide when the question is "how do docs, package
+  metadata, quality lanes, and release claims stay synchronized?"
 
 ## Read In Order
 

@@ -30,10 +30,21 @@ flowchart TD
     G[Compatibility alias] --> A
 ```
 
+## Architectural Promise
+
+The architecture is organized so public capability claims remain traceable:
+
+- package roles stay explicit instead of hiding runtime, evidence, and
+  maintainer concerns in one surface
+- capability families group by durable scientific responsibility rather than
+  by temporary delivery history
+- evidence consumers read governed outputs from the runtime without turning the
+  evidence-book into a shadow runtime layer
+
 ## Questions This Section Answers
 
 - which package should I install or depend on
-- Which distribution should I install?
+- Which runtime family owns a capability?
 - Which package owns the runtime story?
 - Where does native ownership end and wrapper orchestration begin?
 - How does the evidence book consume runtime outputs without becoming the
