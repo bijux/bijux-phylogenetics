@@ -15,6 +15,9 @@ change contributor and maintainer workflows across the repository.
 - Prepared the `0.1.1` release line across the repository and package
   changelog surfaces so the first post-`0.1.0` maintenance release has clear,
   bounded release notes.
+- Strengthened the two published package records on PyPI with more compelling
+  summaries, broader discovery metadata, richer project links, and classifier
+  declarations through Python `3.14`.
 - Reworked the root README and the public handbook landing pages so they speak
   directly to readers about runtime breadth, evidence boundaries, and release
   trust instead of narrating how the documentation ought to be written.

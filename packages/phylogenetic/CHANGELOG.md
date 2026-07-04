@@ -4,6 +4,9 @@
 
 ### Changed
 
+- Raised the alias package metadata bar on PyPI with a clearer summary,
+  broader discovery keywords, a richer project-link set, and classifiers for
+  Python `3.12`, `3.13`, and `3.14`.
 - Reworked the PyPI long description so the alias package publishes a clean
   text-first explanation of what changes and what does not change when users
   choose the shorter distribution name.
