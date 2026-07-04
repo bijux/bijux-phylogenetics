@@ -108,7 +108,7 @@ def test_setup_materializes_governed_artifact_aliases(tmp_path: Path) -> None:
             )
 
 
-def test_root_setup_refuses_non_symlink_root_alias_conflicts(tmp_path: Path) -> None:
+def test_root_setup_reconciles_disposable_root_alias_conflicts(tmp_path: Path) -> None:
     workspace = _workspace_metadata()
     repo_root = tmp_path / "repo"
     packages_dir = repo_root / "packages"
@@ -137,14 +137,24 @@ def test_root_setup_refuses_non_symlink_root_alias_conflicts(tmp_path: Path) -> 
         text=True,
     )
 
-    assert completed.returncode == 2
-    assert "refusing to replace non-symlink path" in completed.stderr
-    assert conflicting_root_venv.exists()
-    assert conflicting_root_venv.is_dir()
-    assert not conflicting_root_venv.is_symlink()
-    assert not (repo_root / ".hypothesis").exists()
-    assert not (repo_root / ".benchmarks").exists()
-    assert not (repo_root / ".tox").exists()
+    assert completed.returncode == 0
+    assert completed.stderr == ""
+    _assert_symlink(
+        link_path=conflicting_root_venv,
+        expected_target=ROOT_ARTIFACT_LINKS[".venv"],
+    )
+    _assert_symlink(
+        link_path=repo_root / ".hypothesis",
+        expected_target=ROOT_ARTIFACT_LINKS[".hypothesis"],
+    )
+    _assert_symlink(
+        link_path=repo_root / ".benchmarks",
+        expected_target=ROOT_ARTIFACT_LINKS[".benchmarks"],
+    )
+    _assert_symlink(
+        link_path=repo_root / ".tox",
+        expected_target=ROOT_ARTIFACT_LINKS[".tox"],
+    )
 
 
 def test_artifact_alias_paths_are_ignored_by_git() -> None:
