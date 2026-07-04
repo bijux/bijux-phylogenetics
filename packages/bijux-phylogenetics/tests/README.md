@@ -30,7 +30,7 @@ single flat namespace.
 - `comparative/biogeography` owns geographic state, host-association, and phylogeography workflows so comparative regression and trait-evolution tests do not remain mixed with geography-specific surfaces.
 - `comparative/macroevolution` owns diversification, disparity, ecological-niche, and multispecies-coalescent review surfaces so those study-style analyses are separated from generic comparative reporting.
 - `comparative/publication` owns comparative report bundles, figure packages, methods-summary exports, and trait-tree publication surfaces so public-output contracts are separated from analytical model checks.
-- `comparative/regression` owns PGLS, phylogenetic regression, residual, and signal-review surfaces so comparative statistics are separated from trait-evolution and geography-specific workflows.
+- `comparative/regression` owns PGLS, phylogenetic regression, clade-stability, residual, and signal-review surfaces so comparative statistics are separated from trait-evolution and geography-specific workflows.
 - `comparative/trait_evolution` owns trait-dynamics models, mode-recovery checks, and simulation surfaces so comparative regression and reporting tests do not remain mixed with evolution-specific workflows.
 - `bayesian/sampling`, `bayesian/priors`, `bayesian/proposals`, `bayesian/models`, `bayesian/posterior`, and `bayesian/engines` separate sampling mechanics, prior families, proposal kernels, native model definitions, posterior analysis, and wrapper-facing execution surfaces.
 - `publication/integrity` owns release-surface equivalence and schema checks, `publication/packages` owns publication-bundle validation, and `publication/supplementary` owns table-generation surfaces.
@@ -48,6 +48,7 @@ single flat namespace.
 - `trees/reporting` owns tree-review reports, publication packages, and reader-facing CLI surfaces so the `trees/` root can focus on structural tree behavior, fixtures, and single-tree algorithms.
 - `trees/pruning` owns shared-taxon pruning workflows and minimal pruning proofs, `trees/reconciliation` owns duplication-loss-transfer study surfaces, and `trees/taxonomy` owns taxon table and taxonomy iteration review.
 - `trees/formats` owns Newick, Nexus, and support-label parsing or writing behavior, while `trees/references` owns shared fixture and reference-governance checks for tree-adjacent study inputs.
+- `trees/structures` owns core tree-model, clade-signature, and structural-parity behavior, `trees/metrics` owns node-depth, tip-distance, and ultrametricity analysis, and `trees/simulation` owns random-tree generation and simulation-runtime surfaces.
 - `workflows/engines` owns external-engine contracts, `workflows/pipelines` owns end-to-end orchestration and replay surfaces, and `workflows/benchmarks` owns governed scale and performance lanes.
 - `trees/tree_sets` owns posterior, consensus, quartet, and uncertainty coverage for multi-tree analyses so single-tree structure tests can stay focused at the `trees/` root.
 
