@@ -6,7 +6,7 @@ from pathlib import Path
 import shutil
 
 from bijux_phylogenetics.reports import write_supplementary_batch_summary_table
-from ..support.paths import PACKAGE_ROOT
+from ...support.paths import PACKAGE_ROOT
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

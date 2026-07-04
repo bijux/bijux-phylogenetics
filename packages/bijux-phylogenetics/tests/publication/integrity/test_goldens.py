@@ -3,12 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 import re
 
-from ..support.paths import PACKAGE_ROOT
+from ...support.paths import PACKAGE_ROOT
 
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.reports.service import render_tree_report
 
-from ..support.scientific_output_assertions import (
+from ...support.scientific_output_assertions import (
     assert_scientific_outputs_equivalent,
 )
 

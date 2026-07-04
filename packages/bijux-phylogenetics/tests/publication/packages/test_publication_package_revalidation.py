@@ -7,7 +7,7 @@ from bijux_phylogenetics.reports import (
     write_publication_package_revalidation_report,
 )
 
-from ..support.rabies_cross_host_geography_package import (
+from ...support.rabies_cross_host_geography_package import (
     build_stub_rabies_cross_host_geography_package,
 )
 

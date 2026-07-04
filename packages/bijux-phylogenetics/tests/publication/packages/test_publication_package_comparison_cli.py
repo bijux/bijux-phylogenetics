@@ -5,7 +5,7 @@ from pathlib import Path
 
 from bijux_phylogenetics.command_line import main
 
-from ..support.rabies_cross_host_geography_package import (
+from ...support.rabies_cross_host_geography_package import (
     build_stub_rabies_cross_host_geography_package,
     refresh_stub_rabies_cross_host_geography_package,
 )
