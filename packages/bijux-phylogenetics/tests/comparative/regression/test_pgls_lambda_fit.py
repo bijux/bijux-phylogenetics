@@ -11,7 +11,7 @@ from bijux_phylogenetics.comparative.pgls.lambda_fit import (
     summarize_pgls_lambda_fit,
     write_pgls_lambda_profile_table,
 )
-from ..support.paths import REPOSITORY_ROOT
+from ...support.paths import REPOSITORY_ROOT
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")

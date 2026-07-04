@@ -11,7 +11,7 @@ from bijux_phylogenetics.comparative.pgls import (
     run_pgls,
     run_pgls_multiple_testing,
 )
-from ..support.paths import REPOSITORY_ROOT
+from ...support.paths import REPOSITORY_ROOT
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
