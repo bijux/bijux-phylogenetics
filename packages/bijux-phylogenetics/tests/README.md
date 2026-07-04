@@ -27,7 +27,9 @@ single flat namespace.
 ## Nested Boundaries
 
 - `parity/ape`, `parity/geiger`, and `parity/phytools` own toolkit-specific parity cases; the `parity/` root is reserved for cross-tool access policy.
+- `comparative/assessment` owns covariance audits, reference validation, uncertainty review, and maturity-assessment surfaces so analytical review stays separate from comparative model execution and publication contracts.
 - `comparative/biogeography` owns geographic state, host-association, and phylogeography workflows so comparative regression and trait-evolution tests do not remain mixed with geography-specific surfaces.
+- `comparative/contracts` owns comparative CLI, runtime-export, and artifact-schema surfaces so public interfaces are separated from internal analyses and audit helpers.
 - `comparative/foundations` owns dataset readiness, shared comparative math, and model-matrix construction surfaces so low-level preparation and encoding behavior is separated from regression, optimization, and publication review.
 - `comparative/macroevolution` owns diversification, disparity, ecological-niche, and multispecies-coalescent review surfaces so those study-style analyses are separated from generic comparative reporting.
 - `comparative/optimization` owns shared bounded-search routing and scalar-fit diagnostics so comparative optimizers are separated from domain analyses that consume them.

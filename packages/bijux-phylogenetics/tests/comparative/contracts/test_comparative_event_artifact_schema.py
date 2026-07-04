@@ -24,7 +24,7 @@ from bijux_phylogenetics.io.artifact_schema import (
     validate_comparative_traits_table_schema,
     validate_geographic_event_table_schema,
 )
-from ..support.paths import PACKAGE_ROOT
+from ...support.paths import PACKAGE_ROOT
 
 DATASET_CONFIG = (
     PACKAGE_ROOT
