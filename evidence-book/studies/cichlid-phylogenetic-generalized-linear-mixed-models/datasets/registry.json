@@ -1,5 +1,5 @@
 {
-  "dataset_count": 3,
+  "dataset_count": 5,
   "datasets": [
     {
       "dataset_id": "dataset-001",
@@ -18,9 +18,23 @@
     {
       "dataset_id": "dataset-003",
       "kind": "external-read-only-source",
-      "label": "Lund PCM5 derived fish workspace",
-      "locator": "external:lund/pcm5-pglmm/data/fishdata.RData",
-      "schema_summary": "Saved R workspace expected to provide the lecture's prepared fish tables and tree objects."
+      "label": "Lund PCM5 fish workspace object `fish`",
+      "locator": "external:lund/pcm5-pglmm/data/fishdata.RData#fish",
+      "schema_summary": "Reloaded lecture workspace table representing the repeated-measure cichlid observations after the course-side import and repair step."
+    },
+    {
+      "dataset_id": "dataset-004",
+      "kind": "external-read-only-source",
+      "label": "Lund PCM5 fish workspace object `fishSum`",
+      "locator": "external:lund/pcm5-pglmm/data/fishdata.RData#fishSum",
+      "schema_summary": "Reloaded species-level summary table used to compare phylogenetic mixed-model variants and ancestral summaries in PCM5."
+    },
+    {
+      "dataset_id": "dataset-005",
+      "kind": "external-read-only-source",
+      "label": "Lund PCM5 fish workspace object `fishtree`",
+      "locator": "external:lund/pcm5-pglmm/data/fishdata.RData#fishtree",
+      "schema_summary": "Reloaded lecture workspace tree object aligned to the species-level cichlid summary table for PCM5 phylogenetic random effects."
     }
   ],
   "schema_version": 1,

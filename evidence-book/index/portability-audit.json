@@ -3,8 +3,8 @@
   "audited_json_file_count": 390,
   "issues": [],
   "locator_kind_counts": {
-    "external_locator": 96,
-    "repo_relative": 2538,
+    "external_locator": 102,
+    "repo_relative": 2539,
     "suspicious_path_like": 661
   },
   "report_like_file_count": 599,

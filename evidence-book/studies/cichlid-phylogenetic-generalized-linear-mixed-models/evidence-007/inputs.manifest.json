@@ -54,7 +54,7 @@
       "label": "source-2",
       "locator": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/registry.json",
       "read_only": true,
-      "sha256": "edf598b67c21acde8bafe787e45aa10da37b2a48a6891e2d43c6966cc5748520"
+      "sha256": "bf41d5a346acf7c3c5d95b732a7e0adb47f07aa80ea27807c2d7e42013567a5e"
     },
     {
       "input_id": "source-input-003",
