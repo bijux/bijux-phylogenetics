@@ -103,21 +103,21 @@ nav:
           - Evidence Honesty and Limits: phylogenetics/quality/evidence-honesty-and-limits.md
   - Evidence Book:
       - Overview: phylogenetics-evidence-book/index.md
-      - PCM1 Primate Longevity Signal:
+      - PCM1:
           - Overview: phylogenetics-evidence-book/pcm1-primate-longevity-signal/index.md
           - Data and Tree Preparation: phylogenetics-evidence-book/pcm1-primate-longevity-signal/data-and-tree-preparation.md
           - Signal and Ancestral Results: phylogenetics-evidence-book/pcm1-primate-longevity-signal/signal-and-ancestral-results.md
-      - PCM2 Primate PGLS and Signal:
+      - PCM2:
           - Overview: phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/index.md
           - Model Comparisons and PGLS: phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/model-comparisons-and-pgls.md
           - Signal Diagnostics and Open Boundaries: phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/signal-diagnostics-and-open-boundaries.md
-      - PCM3 Primate Continuous and Categorical Regression:
+      - PCM3:
           - Overview: phylogenetics-evidence-book/pcm3-primate-continuous-and-categorical-regression/index.md
           - Model Design and Phylogenetic Regression: phylogenetics-evidence-book/pcm3-primate-continuous-and-categorical-regression/model-design-and-phylogenetic-regression.md
-      - PCM4 Cichlid Bayesian Linear and Phylogenetic Mixed Models:
+      - PCM4:
           - Overview: phylogenetics-evidence-book/pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md
           - Mixed-Model Evidence Boundary: phylogenetics-evidence-book/pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/mixed-model-evidence-boundary.md
-      - PCM5 Cichlid Phylogenetic Generalized Linear Mixed Models:
+      - PCM5:
           - Overview: phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md
           - Generalized Mixed-Model Evidence Boundary: phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/generalized-mixed-model-evidence-boundary.md
   - Maintainer:
