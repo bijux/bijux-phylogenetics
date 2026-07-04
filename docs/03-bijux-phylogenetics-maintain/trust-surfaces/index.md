@@ -10,8 +10,9 @@ last_reviewed: 2026-07-04
 # Trust Surfaces
 
 Trust in this repository comes from alignment across product docs,
-evidence-book pages, validation guides, and interface documentation. This
-section keeps those reader-facing surfaces reviewable as one bounded system.
+evidence-book pages, validation guides, interface documentation, and release
+language. This section keeps those reader-facing surfaces reviewable as one
+bounded system.
 
 ```mermaid
 flowchart TD
@@ -20,17 +21,23 @@ flowchart TD
     C[Quality and interface guides] --> D
 ```
 
+## Why This Section Matters
+
+The repository is now deep enough that trust does not live in one page. It
+lives in whether multiple public surfaces still agree about ownership,
+evidence strength, and scientific limits.
+
 ## Section Scope
 
 - [Public trust surface maintenance](public-trust-surface-maintenance.md)
   explains how architecture, evidence, release, and package surfaces move
-  together.
+  together
 - [Public interface and artifact maintenance](public-interface-and-artifact-maintenance.md)
   explains how selection guides, reference pages, and artifact docs stay
-  synchronized.
+  synchronized
 - [Trust lane and study guide maintenance](trust-lane-and-study-guide-maintenance.md)
   explains how validation-lane and PCM study language should stay bounded and
-  readable.
+  readable
 
 ## Start With
 

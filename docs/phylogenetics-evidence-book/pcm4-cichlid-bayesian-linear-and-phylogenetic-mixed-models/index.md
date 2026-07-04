@@ -52,14 +52,14 @@ The full checked-in record lives under
   evidence units
 - the Brownian PGLS comparator is useful context, but it is not a substitute
   for the lecture's posterior workflow
-- the main scientific boundary is posterior mixed-model reproduction, not basic
-  study intake
+- the main scientific boundary is posterior mixed-model reproduction, not
+  basic study intake
 
 ## What Not To Overread
 
 - PCM4 does not prove repository-owned replacement of the lecture's full
-  posterior workflow.
-- It does not treat nearby regression utilities as if they were `MCMCglmm`
-  results.
-- It keeps posterior summaries and random-effect uncertainty outside the
-  current parity claim on purpose.
+  posterior workflow
+- it does not treat nearby regression utilities as if they were `MCMCglmm`
+  results
+- it keeps posterior summaries and random-effect uncertainty outside the
+  current parity claim on purpose

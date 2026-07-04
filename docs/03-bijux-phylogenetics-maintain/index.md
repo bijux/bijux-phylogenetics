@@ -1,3 +1,4 @@
+---
 title: Maintainer Handbook
 audience: maintainer
 type: handbook
@@ -10,6 +11,10 @@ last_reviewed: 2026-07-04
 
 Use this handbook when the question is about repository health, release
 alignment, or documentation stewardship rather than runtime product use.
+
+These pages are public on purpose. This repository now publishes enough
+runtime and evidence depth that release stewardship is part of the public
+trust surface, not a private afterthought.
 
 ```mermaid
 flowchart TD
@@ -51,17 +56,6 @@ flowchart LR
 - evidence-book pages that sound conclusive when the governed study record is
   still bounded
 - repository runs that leave unmanaged root artifacts behind
-
-## Why This Maintainer Surface Exists
-
-This repository now publishes a much larger public story than a small utility
-package would. That means maintainers are responsible not only for keeping the
-site green, but also for making sure:
-
-- package READMEs do not undersell what the runtime now owns
-- public docs do not hide major native surfaces behind workflow-only language
-- evidence guides do not imply more closure than the checked-in record
-- release narratives stay aligned across docs, metadata, and governed reports
 
 ## Handbook Sections
 

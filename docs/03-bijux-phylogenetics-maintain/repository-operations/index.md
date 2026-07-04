@@ -22,12 +22,18 @@ flowchart LR
     C --> E[Publishable public story]
 ```
 
+## Why This Section Matters
+
+Operational drift is visible. A repository that claims governed outputs but
+still leaves root clutter, contradictory release language, or unmanaged local
+state behind will look less trustworthy even when the code itself is strong.
+
 ## Section Scope
 
 - [Artifact hygiene](artifact-hygiene.md) explains canonical artifact paths,
-  disposable root aliases, and root-clutter review.
+  disposable root aliases, and root-clutter review
 - [Release surface alignment](release-surface-alignment.md) explains how docs,
-  metadata, and governed reports need to agree before release.
+  metadata, and governed reports need to agree before release
 
 ## Start With
 

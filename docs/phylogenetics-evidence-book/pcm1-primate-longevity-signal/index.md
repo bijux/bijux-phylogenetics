@@ -23,8 +23,9 @@ flowchart LR
 ## Why PCM1 Matters
 
 Later studies only make sense if these earlier steps are already clear. PCM1
-shows where the primate data came from, how the tree was trimmed, and how the
-first comparative claims were checked.
+shows where the primate data came from, how the tree was trimmed, how the
+species alignment was made reviewable, and how the first comparative claims
+were bounded.
 
 ## Read PCM1 In Order
 

@@ -21,16 +21,19 @@ flowchart LR
     C --> D[Phylogenetic regression]
 ```
 
+## Why PCM3 Matters
+
+PCM3 is where the evidence book stops sounding like "PGLS" as a single broad
+label and starts showing how interpretation really changes when coding,
+standardization, interaction terms, and phylogenetic correction all matter at
+once.
+
 ## What PCM3 Helps You Read
 
 - how the intercept changes meaning after standardization or transformation
 - how categorical predictors depend on a clear coding choice
 - how interactions should be read as joint effects rather than isolated slopes
 - how the regression story changes again after phylogenetic correction
-
-## Read PCM3 In Order
-
-1. [Model design and phylogenetic regression](model-design-and-phylogenetic-regression.md)
 
 ## Checked-In Study Dossier
 
@@ -50,6 +53,10 @@ The full checked-in record lives under
 - evidence bundles:
   `evidence-001` through `evidence-008`
 
+## Read PCM3 In Order
+
+1. [Model design and phylogenetic regression](model-design-and-phylogenetic-regression.md)
+
 ## What To Take From PCM3
 
 - the repository now exposes a structured regression study rather than a single
@@ -61,7 +68,7 @@ The full checked-in record lives under
 
 ## What Not To Overread
 
-- Bundle deployment is not a blanket claim of full numerical parity.
+- bundle deployment is not a blanket claim of full numerical parity
 - PCM3 does not replace the need to inspect the checked-in source record when
-  provenance matters.
-- The study remains narrower than a full closed lecture-equivalent suite.
+  provenance matters
+- the study remains narrower than a full closed lecture-equivalent suite

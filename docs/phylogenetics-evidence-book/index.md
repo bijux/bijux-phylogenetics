@@ -9,22 +9,23 @@ last_reviewed: 2026-07-04
 
 # Evidence Book
 
-This section explains the comparative study record behind the public
+This section explains the governed comparative-study record behind the public
 phylogenetics runtime.
 
 The five study families come from course material that the repository has
 turned into checked-in, reviewable evidence. All five now have governed
-parity bundle IDs. Some studies already carry stronger numerical
-parity records, while others keep parity verdicts open because the
-scientific workflow still depends on an external engine or an unclosed
-lecture-specific boundary.
+bundle IDs, local public study guides, dataset catalogs, and checked-in
+dossiers. Some studies already carry stronger numerical closure than others,
+but all five are now part of one decomposed public record instead of a vague
+"teaching example" bucket.
 
 ```mermaid
 flowchart LR
     A[Source lecture] --> B[Public study guide]
-    B --> C[Checked-in evidence dossier]
-    C --> D[Freshness and integrity reports]
-    C --> E[Study-specific evidence bundles]
+    B --> C[Checked-in study dossier]
+    C --> D[Datasets and provenance]
+    C --> E[Evidence bundles]
+    C --> F[Freshness and integrity reports]
 ```
 
 ## What This Guide Is For
@@ -36,6 +37,27 @@ flowchart LR
   same level of trust
 - to show that even this first evidence cluster already covers preparation,
   signal, comparative regression, and bounded mixed-model study families
+
+## What The Checked-In Record Already Contains
+
+| Evidence surface | What is already here |
+| --- | --- |
+| Study families | five public study guides with local dossier links |
+| Bundle governance | `43` governed evidence bundles across PCM1 through PCM5 |
+| Study materials | source copies, governed derivatives, dataset catalogs, provenance guides, freshness reports, and integrity reports |
+| Trust language | explicit coverage gaps and bounded parity wording where lecture-equivalent closure is still open |
+
+## Why This Evidence Group Matters
+
+This evidence book is not trying to prove every scientific surface in the
+repository at once. It does already prove that the repository can preserve one
+serious comparative-study family with:
+
+- durable source provenance
+- named datasets and derivative inputs
+- decomposed evidence IDs instead of one vague study label
+- bounded trust language where the lecture workflow still exceeds repository
+  closure
 
 ## Start Here
 
@@ -51,36 +73,9 @@ live repository status rather than the stable narrative on this page.
 
 - studies: `5`
 - evidence bundles: `43`
-- teaching studies: `2`
-- migration studies: `2`
-- freshness statuses: `current=43`
-- coverage gaps still tracked: `28`
 - foundational numerical trust: `bounded`
 - reviewer readiness: `bounded`
 - maturity tier: `reviewable_but_incomplete`
-
-## What The Checked-In Record Already Contains
-
-- five study families with local public study guides
-- governed evidence IDs across PCM1, PCM2, PCM3, PCM4, and PCM5
-- checked-in datasets, dossier reports, freshness reports, and integrity
-  reports
-- explicit coverage-gap tracking where the repository has not yet closed a
-  lecture or workflow boundary
-- reviewer-facing documentation that distinguishes strong numerical parity from
-  still-open scientific scope
-
-## Why This Evidence Group Matters
-
-This evidence-book is not trying to prove every scientific surface in the
-repository at once. It does already prove that the repository can preserve one
-serious comparative-study family with:
-
-- durable source provenance
-- named datasets and derivative inputs
-- decomposed evidence IDs instead of one vague study label
-- bounded trust language where the lecture workflow still exceeds repository
-  closure
 
 ## Core Reading Order
 
@@ -91,9 +86,9 @@ serious comparative-study family with:
 5. `PCM4: cichlid Bayesian linear and phylogenetic mixed models`
 6. `PCM5: cichlid phylogenetic generalized linear mixed models`
 
-That sequence mirrors the course progression. It starts with data and tree
-preparation, moves through comparative regression, and ends with the
-cichlid mixed-model studies where external posterior tooling remains the
+That sequence mirrors the teaching progression. It starts with primate data
+preparation and signal work, moves through regression interpretation, and ends
+with the cichlid mixed-model studies where posterior workflows remain the
 largest open boundary.
 
 ## Study Atlas
@@ -108,27 +103,24 @@ largest open boundary.
 
 ## How To Read A Study Dossier
 
-1. Start with PCM1 if you need the full preparation path from raw primate
-   traits and tree files to signal estimation and ancestral reconstruction.
+1. Start with PCM1 if you need the full path from raw workbook and tree inputs
+   to prepared study state, signal estimation, and ancestral reconstruction.
 2. Continue to PCM2 and PCM3 when the question shifts from preparation into
-   comparative regression and model interpretation.
+   phylogenetically corrected regression and interpretation.
 3. Read PCM4 and PCM5 together when the question is the cichlid mixed-model
-   sequence, because they share the same dataset family and the same external
+   sequence, because they share dataset material and the same external
    posterior boundary.
 4. Follow the linked dossier and repository-wide reports whenever you need the
    governed bundle record rather than the narrative summary.
 
-## When To Use These Pages
-
-- Use the public study guides when you want the scientific story in plain language.
-- Use the checked-in evidence-book when you need provenance, registries, or bundle-level proof.
-- Use the index reports when you need freshness, integrity, or repository-wide gap tracking.
-
 ## Reading Boundaries
 
-- These pages do not claim that every lecture has already been reproduced end to end inside the repository.
-- They do not hide external-tool dependencies just because nearby Python surfaces exist.
-- They do keep those limits visible, especially for PCM4 and PCM5.
+- These pages do not claim that every lecture has already been reproduced end
+  to end inside the repository.
+- They do not hide external-tool dependencies just because nearby Python
+  surfaces exist.
+- They do keep those limits visible, especially for PCM4 and PCM5, because
+  bounded trust language is part of the value of the evidence book.
 
 ## Review Reports
 
@@ -139,6 +131,3 @@ largest open boundary.
 - coverage gaps: [`evidence-book/index/coverage-gaps.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/coverage-gaps.md)
 - claim re-audit: [`evidence-book/index/claim-reaudit.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/claim-reaudit.md)
 - closure criteria: [`evidence-book/index/closure-criteria.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/closure-criteria.md)
-
-The study record is useful because it keeps strong results visible without
-pretending that every workflow is fully reproduced inside the repository.

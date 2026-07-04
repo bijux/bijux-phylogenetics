@@ -29,6 +29,11 @@ Public documentation should help an external reader understand the runtime
 depth quickly. It should not read like a private repo note, a checklist, or a
 thin wrapper disclaimer when the code and tests now support a deeper story.
 
+That rule matters here because the repository now owns enough runtime and
+evidence depth that weak language becomes a kind of under-documentation. Public
+docs should sound accurate, concrete, and reader-facing, not apologetic or
+half-internal.
+
 ## Maintainer Surface Responsibilities
 
 - `docs/03-bijux-phylogenetics-maintain/` is for repository stewardship, release

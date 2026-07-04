@@ -57,7 +57,7 @@ The full checked-in record lives under
 ## What Not To Overread
 
 - PCM5 does not claim a repository-owned replacement for the lecture's full
-  posterior PGLMM workflow.
-- It does not merge distinct model families into one oversimplified summary.
-- It does not treat nearby binary regression support as proof of full mixed
-  model reproduction.
+  posterior PGLMM workflow
+- it does not merge distinct model families into one oversimplified summary
+- it does not treat nearby binary regression support as proof of full mixed
+  model reproduction

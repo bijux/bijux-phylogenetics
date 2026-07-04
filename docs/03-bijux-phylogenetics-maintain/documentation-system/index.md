@@ -10,8 +10,8 @@ last_reviewed: 2026-07-04
 # Documentation System
 
 The documentation system section exists so maintainers can review how the
-repository describes itself in public without mixing product behavior, evidence
-status, and maintainer-only policy into one blurry surface.
+repository describes itself in public without mixing product behavior,
+evidence status, and maintainer-only policy into one blurry surface.
 
 ```mermaid
 flowchart LR
@@ -23,13 +23,19 @@ flowchart LR
     D --> E
 ```
 
+## Why This Section Matters
+
+The runtime is now broad enough that weak public language becomes misleading
+quickly. A page that sounds small, generic, or overly internal can make the
+package look less capable than the code and tests already show.
+
 ## Section Scope
 
 - [Documentation ownership](documentation-ownership.md) explains which
-  documentation layer owns which question.
+  documentation layer owns which question
 - [Native surface documentation](native-surface-documentation.md) explains how
   flagship native work stays visible across reference, workflow, and quality
-  pages.
+  pages
 
 ## Start With
 
