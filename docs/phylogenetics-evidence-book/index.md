@@ -34,6 +34,8 @@ flowchart LR
   bundles behind that study
 - to keep open boundaries visible instead of flattening every study into the
   same level of trust
+- to show that even this first evidence cluster already covers preparation,
+  signal, comparative regression, and bounded mixed-model study families
 
 ## Start Here
 
@@ -45,7 +47,19 @@ flowchart LR
 Treat those checked-in reports as the current source of truth when you need
 live repository status rather than the stable narrative on this page.
 
-## What The Checked-In Record Includes
+## At A Glance
+
+- studies: `5`
+- evidence bundles: `43`
+- teaching studies: `2`
+- migration studies: `2`
+- freshness statuses: `current=43`
+- coverage gaps still tracked: `28`
+- foundational numerical trust: `bounded`
+- reviewer readiness: `bounded`
+- maturity tier: `reviewable_but_incomplete`
+
+## What The Checked-In Record Already Contains
 
 - five study families with local public study guides
 - governed evidence IDs across PCM1, PCM2, PCM3, PCM4, and PCM5
@@ -55,6 +69,18 @@ live repository status rather than the stable narrative on this page.
   lecture or workflow boundary
 - reviewer-facing documentation that distinguishes strong numerical parity from
   still-open scientific scope
+
+## Why This Evidence Group Matters
+
+This evidence-book is not trying to prove every scientific surface in the
+repository at once. It does already prove that the repository can preserve one
+serious comparative-study family with:
+
+- durable source provenance
+- named datasets and derivative inputs
+- decomposed evidence IDs instead of one vague study label
+- bounded trust language where the lecture workflow still exceeds repository
+  closure
 
 ## Core Reading Order
 

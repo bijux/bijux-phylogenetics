@@ -95,6 +95,21 @@ The public story is stronger than "we can call a few external tools":
 - the evidence-book and maintainer package make release claims traceable rather
   than leaving them as marketing text
 
+## Flagship Runtime Surfaces
+
+Readers who want the fastest route to the most substantial owned work should
+start here:
+
+- tree, topology, and support review on the owned `PhyloTree` runtime
+- native finite-state likelihood across nucleotide, protein, codon, and
+  discrete Mk families
+- native maximum-likelihood tree inference results with governed benchmark
+  review
+- native Bayesian public inference entry points for supported DNA workflows
+- comparative and ancestral workflows that emit reviewer-facing artifacts
+- evidence-book study families that keep course-derived comparative work
+  inspectable and bounded
+
 ## What Exists Today
 
 The runtime already supports all of the following broad capability groups:

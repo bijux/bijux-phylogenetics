@@ -68,6 +68,17 @@ The public runtime is broader than a simple workflow wrapper. It includes:
 - governed benchmark and evidence-linked review surfaces that keep the release
   story inspectable
 
+## What The Product Guide Makes Visible
+
+Use this handbook when you want the high-level product story without losing
+sight of the technical depth:
+
+- where native ownership already exists
+- where wrapper-backed orchestration remains the honest boundary
+- how the major runtime families fit together instead of reading as one flat
+  feature list
+- where to shift from product docs into evidence or maintainer reading
+
 ## Read By Question
 
 - What is this repository trying to do, and what is it not trying to claim?

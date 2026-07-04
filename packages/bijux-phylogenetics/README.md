@@ -85,6 +85,15 @@ copy_example_inputs(Path("artifacts/example-inputs"))
 - it keeps wrapper-backed orchestration honest by separating native ownership
   from external-engine execution
 
+## Flagship User Paths
+
+- use the CLI when you want one governed workflow with durable files
+- use `bijux_phylogenetics.api` when you want typed workflow results in Python
+- use native likelihood or Bayesian modules when you want lower-level owned
+  runtime contracts
+- use the benchmark and evidence-book guides when you need trust-oriented
+  review rather than only execution
+
 ## Python Workflow Surface
 
 The stable notebook-and-pipeline surface lives under `bijux_phylogenetics.api`.

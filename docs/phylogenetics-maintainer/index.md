@@ -53,6 +53,17 @@ flowchart LR
   still bounded
 - repository runs that leave unmanaged root artifacts behind
 
+## Why This Maintainer Surface Exists
+
+This repository now publishes a much larger public story than a small utility
+package would. That means maintainers are responsible not only for keeping the
+site green, but also for making sure:
+
+- package READMEs do not undersell what the runtime now owns
+- public docs do not hide major native surfaces behind workflow-only language
+- evidence guides do not imply more closure than the checked-in record
+- release narratives stay aligned across docs, metadata, and governed reports
+
 ## Read By Question
 
 - How do repository runs keep root aliases disposable and avoid root clutter?

@@ -66,6 +66,18 @@ flowchart LR
 | Comparative methods | PGLS, signal, regression review, ancestral reconstruction, and discrete-state analysis |
 | Review surfaces | benchmarks, release-truth reports, evidence bundles, and study-backed documentation |
 
+## Why The Public Surface Is Larger Than It Looks At First
+
+The package and docs surface now spans more than one usage style:
+
+- end-to-end workflows for readers who need one governed artifact path
+- native runtime surfaces for readers who need locally owned likelihood and
+  inference contracts
+- comparative and ancestral analysis surfaces for readers who need biological
+  interpretation workflows
+- evidence and release guides for readers who need to judge what has really
+  been checked
+
 ## Start By Goal
 
 - I want to understand the runtime surface and choose the right interface.
@@ -108,6 +120,14 @@ flowchart LR
   are the governed bundles, and where do the scientific boundaries still sit?"
 - Read the maintainer guide when the question is "how do docs, package
   metadata, quality lanes, and release claims stay synchronized?"
+
+## Start With These Flagship Pages
+
+- [Native maximum-likelihood workflows](phylogenetics/operations/native-maximum-likelihood-workflows.md)
+- [Native Bayesian workflows](phylogenetics/operations/native-bayesian-workflows.md)
+- [Native benchmark review](phylogenetics/operations/native-benchmark-review.md)
+- [Evidence Book](phylogenetics-evidence-book/index.md)
+- [Maintainer guide](phylogenetics-maintainer/index.md)
 
 ## Read In Order
 
