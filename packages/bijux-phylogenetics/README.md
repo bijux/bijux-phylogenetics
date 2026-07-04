@@ -21,12 +21,12 @@
 
 Canonical runtime package for the `bijux-phylogenetics` repository.
 
-This package is the public Python API and CLI for tree validation, inspection,
-comparison, metadata linkage, comparative trait analysis, ancestral-state
-reconstruction, discrete-state evolution analysis, external-engine
-orchestration, native likelihood and inference, Bayesian posterior
-summarization, diversification and macroevolution analysis, evidence bundle
-creation, explicit parsimony scoring, and HTML report generation.
+This package is the public Python API and CLI for tree validation, alignment
+handling, comparative trait analysis, ancestral-state reconstruction,
+discrete-state evolution analysis, external-engine orchestration, native
+likelihood and inference, Bayesian posterior summarization, diversification
+review, evidence bundles, explicit parsimony scoring, and HTML report
+generation.
 
 Choose this package when you want the full runtime contract rather than the
 shorter compatibility alias.
@@ -172,8 +172,8 @@ comparative.write_tsv(Path("artifacts/comparative-model.tsv"))
 
 ## Native Inference And Benchmark Surfaces
 
-Native Inference And Benchmark Surfaces are now part of the public package
-story, not hidden implementation detail.
+Native Inference And Benchmark Surfaces are part of the public package
+contract.
 
 Public native surfaces include:
 

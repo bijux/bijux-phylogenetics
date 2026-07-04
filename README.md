@@ -22,12 +22,11 @@
 [![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
 <!-- bijux-phylogenetics-badges:generated:end -->
 
-`bijux-phylogenetics` is a contract-first repository for phylogenetic runtime
-engineering, comparative analysis, native inference, evidence-linked
-reporting, and release-grade scientific documentation.
+`bijux-phylogenetics` is the repository for the canonical Bijux phylogenetics
+runtime, its comparative-analysis evidence, and its release-grade public
+documentation.
 
-This repository is not a thin wrapper around a few shell commands. The
-checked-in runtime already spans tree semantics, alignments, native
+The checked-in runtime already spans tree semantics, alignments, native
 likelihood, maximum-likelihood inference, supported Bayesian workflows,
 comparative and ancestral analysis, explicit parsimony, datasets, reporting,
 benchmarks, and governed evidence.
@@ -69,8 +68,7 @@ flowchart LR
 
 ## Runtime Depth At A Glance
 
-The public surface should make the breadth visible instead of hiding it behind
-generic toolkit language:
+The repository already covers the following capability families:
 
 | Capability family | What is already here |
 | --- | --- |
@@ -87,7 +85,7 @@ generic toolkit language:
 
 ## Why This Is A Real Runtime
 
-The public story is stronger than "we can call a few external tools":
+This repository owns runtime behavior rather than only shell orchestration:
 
 - the repository owns a real tree runtime with explicit topology, support,
   rootedness, split, and distance semantics
@@ -100,8 +98,7 @@ The public story is stronger than "we can call a few external tools":
 
 ## Flagship Runtime Surfaces
 
-Readers who want the fastest route to the most substantial owned work should
-start here:
+Start here when you want the clearest view of the most substantial owned work:
 
 - tree, topology, and support review on the owned `PhyloTree` runtime
 - native finite-state likelihood across nucleotide, protein, codon, and
@@ -136,10 +133,10 @@ The runtime already supports all of the following broad capability groups:
   IQ-TREE2, FastTree, MrBayes, and BEAST
 - evidence bundle creation, publication review, and artifact packaging
 
-The root README still needs to say this carefully: native maximum-likelihood
-tree inference results and native Bayesian public inference entry points now
-exist, but that is not the same claim as saying every inference workflow in the
-repository is equally mature or fully evidence-closed.
+Native maximum-likelihood tree inference results and native Bayesian public
+inference entry points are part of the runtime today. That does not mean every
+inference workflow in the repository is equally mature or fully
+evidence-closed.
 
 ## How To Read The Breadth Honestly
 
