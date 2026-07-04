@@ -2,15 +2,17 @@
 
 Canonical runtime package for the `bijux-phylogenetics` repository.
 
-This package is the public Python API and CLI for tree validation, inspection,
-comparison, metadata linkage, comparative trait analysis, ancestral-state
-reconstruction, discrete-state evolution analysis, external-engine
-orchestration, native likelihood and inference, Bayesian posterior
-summarization, diversification and macroevolution analysis, evidence bundle
-creation, explicit parsimony scoring, and HTML report generation.
+`bijux-phylogenetics` is the full public Python and CLI surface for tree
+validation, alignment handling, native likelihood and inference, comparative
+analysis, ancestral reconstruction, explicit parsimony, and evidence-linked
+report generation.
 
 Choose this package when you want the full runtime contract rather than the
 shorter compatibility alias.
+
+The full handbook includes diagrams, architecture maps, and study navigation
+on the documentation site. This PyPI page stays text-first so it renders
+cleanly in the package index.
 
 ## Install
 
@@ -31,7 +33,7 @@ from bijux_phylogenetics.core import copy_example_inputs
 copy_example_inputs(Path("artifacts/example-inputs"))
 ```
 
-## What This Package Already Covers
+## What This Package Covers
 
 | Capability family | Examples |
 | --- | --- |
@@ -44,7 +46,7 @@ copy_example_inputs(Path("artifacts/example-inputs"))
 | Parsimony | Fitch, Wagner, Sankoff, Dollo, Camin-Sokal, ACCTRAN, DELTRAN, bootstrap, jackknife, NNI, SPR, ratchet |
 | Reports and artifacts | reviewer-facing TSV, JSON, HTML, manifest, benchmark, and evidence-linked bundle surfaces |
 
-## Why This Package Is Not Just A Wrapper
+## Why This Package Is More Than A Thin Wrapper
 
 - it owns the `PhyloTree` runtime and the topology, support, and tree-distance
   semantics that sit underneath multiple workflows
@@ -55,14 +57,19 @@ copy_example_inputs(Path("artifacts/example-inputs"))
 - it keeps wrapper-backed orchestration honest by separating native ownership
   from external-engine execution
 
-## Flagship User Paths
+## Trust And Evidence
 
-- use the CLI when you want one governed workflow with durable files
-- use `bijux_phylogenetics.api` when you want typed workflow results in Python
-- use native likelihood or Bayesian modules when you want lower-level owned
-  runtime contracts
-- use the benchmark and evidence-book guides when you need trust-oriented
-  review rather than only execution
+The runtime surface is broader than the closed evidence surface, and the
+evidence surface is narrower than the full runtime surface. That distinction
+is deliberate:
+
+- a documented runtime surface is usable
+- a native surface is locally implemented rather than only wrapped
+- an evidence-book study explains how much trust a scientific claim currently
+  carries
+
+Use the package for execution. Use the docs and evidence-book when you need
+quality boundaries, parity review, or study-specific provenance.
 
 ## Python Workflow Surface
 
@@ -118,7 +125,15 @@ workflow.write_tsv(Path("artifacts/sequence-to-tree/workflow.tsv"))
 comparative.write_tsv(Path("artifacts/comparative-model.tsv"))
 ```
 
-## Read This Next
+## Choose This Package When
+
+- you want the canonical package name for notebooks, papers, or downstream
+  integration
+- you want both CLI workflows and typed Python workflow results
+- you want the full public runtime contract rather than the shorter alias
+  surface
+
+## Read Next
 
 - [Runtime guide](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
 - [Surface selection guide](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/surface-selection/)

@@ -30,7 +30,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 dependencies = [
-    "bijux-phylogenetics>=0.1.0,<1.0",
+    "bijux-phylogenetics>=0.1.1,<1.0",
 ]
 
 [project.urls]

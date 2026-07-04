@@ -7,6 +7,10 @@ shorter `phylogenetic` package and CLI names. It is not a reduced runtime and
 it is not a fork. It points at the same benchmark, workflow, and reporting
 surfaces that the canonical package publishes.
 
+The full handbook includes diagrams and architecture maps on the documentation
+site. This PyPI page stays text-first so it renders cleanly in the package
+index.
+
 ## Install
 
 `phylogenetic` supports Python 3.11 and newer.
@@ -40,7 +44,13 @@ Choose the canonical `bijux-phylogenetics` package instead when you want the
 most explicit package name for notebooks, papers, release notes, or downstream
 documentation.
 
-## Read This Next
+## Trust And Evidence
+
+The alias changes naming, not scientific scope. Runtime breadth, benchmark
+surfaces, and evidence-book boundaries all come from the canonical runtime and
+documentation set.
+
+## Read Next
 
 - [Runtime product guide](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
 - [Runtime architecture](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/architecture/)
