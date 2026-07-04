@@ -29,6 +29,7 @@ single flat namespace.
 - `parity/ape`, `parity/geiger`, and `parity/phytools` own toolkit-specific parity cases; the `parity/` root is reserved for cross-tool access policy.
 - `publication/integrity` owns release-surface equivalence and schema checks, `publication/packages` owns publication-bundle validation, and `publication/supplementary` owns table-generation surfaces.
 - `workflows/engines` owns external-engine contracts, `workflows/pipelines` owns end-to-end orchestration and replay surfaces, and `workflows/benchmarks` owns governed scale and performance lanes.
+- `trees/tree_sets` owns posterior, consensus, quartet, and uncertainty coverage for multi-tree analyses so single-tree structure tests can stay focused at the `trees/` root.
 
 ## Shared Fixtures
 
