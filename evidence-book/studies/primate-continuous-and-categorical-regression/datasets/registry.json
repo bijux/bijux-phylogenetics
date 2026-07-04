@@ -3,45 +3,45 @@
   "datasets": [
     {
       "dataset_id": "dataset-001",
-      "kind": "external-read-only-source",
-      "label": "Lund PCM3 primate raw workbook",
-      "locator": "external:lund/pcm3-contcat/data/primate_raw.xlsx",
-      "schema_summary": "Original workbook used to derive the lecture workspace and group-size, dimorphism, and longevity columns."
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM3 primate raw workbook",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/primate_raw.xlsx",
+      "schema_summary": "Checked-in copy of the workbook used to derive the PCM3 workspace and its multivariable primate columns."
     },
     {
       "dataset_id": "dataset-002",
-      "kind": "external-read-only-source",
-      "label": "Lund PCM3 primate tree",
-      "locator": "external:lund/pcm3-contcat/data/primatetree.nex",
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM3 primate tree",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/primatetree.nex",
       "schema_summary": "Primary Nexus tree used for the multivariable primate regressions."
     },
     {
       "dataset_id": "dataset-003",
-      "kind": "external-read-only-source",
-      "label": "Lund PCM3 primate workspace object `primate`",
-      "locator": "external:lund/pcm3-contcat/data/primate.RData#primate",
+      "kind": "repository-owned-workspace-object",
+      "label": "Checked-in PCM3 primate workspace object `primate`",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/primate.RData#primate",
       "schema_summary": "Reloaded lecture workspace table carrying the multivariable primate predictors and response used by the PCM3 regression examples."
     },
     {
       "dataset_id": "dataset-004",
-      "kind": "external-read-only-source",
-      "label": "Lund PCM3 primate workspace object `primatetree`",
-      "locator": "external:lund/pcm3-contcat/data/primate.RData#primatetree",
+      "kind": "repository-owned-workspace-object",
+      "label": "Checked-in PCM3 primate workspace object `primatetree`",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/primate.RData#primatetree",
       "schema_summary": "Reloaded lecture workspace tree object paired with the PCM3 primate table after the course-side preprocessing step."
     },
     {
       "dataset_id": "dataset-005",
-      "kind": "study-shared-governed-derivative",
-      "label": "Governed primate reference table reused from PCM1",
-      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
-      "schema_summary": "Repository-owned normalized primate table reused to make the PCM3 workspace assumptions reviewable without re-importing the raw workbook."
+      "kind": "study-local-governed-derivative",
+      "label": "PCM3 governed primate reference table",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/reference_primate.csv",
+      "schema_summary": "Study-local governed primate table preserved inside the PCM3 dossier for reproducible workspace and regression review."
     },
     {
       "dataset_id": "dataset-006",
-      "kind": "study-shared-governed-derivative",
-      "label": "Governed trimmed primate tree reused from PCM1",
-      "locator": "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",
-      "schema_summary": "Repository-owned trimmed Newick tree reused to keep the PCM3 tree-alignment contract explicit and file-addressable."
+      "kind": "study-local-governed-derivative",
+      "label": "PCM3 governed trimmed primate tree",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/reference_trimmed_primatetree.nwk",
+      "schema_summary": "Study-local governed trimmed Newick tree preserved inside the PCM3 dossier for explicit tree-alignment review."
     }
   ],
   "schema_version": 1,

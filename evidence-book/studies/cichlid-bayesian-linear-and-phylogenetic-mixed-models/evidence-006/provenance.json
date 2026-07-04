@@ -46,13 +46,15 @@
     "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/registry.json",
     "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/reference/README.md"
   ],
-  "source_intake_policy": "read-only-external-source",
+  "source_intake_policy": "repository-owned-source",
   "study_dataset_registry_locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/datasets/registry.json",
   "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models",
   "study_provenance_locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/provenance/lund-course-sources.json",
   "study_support_scripts": {
     "build_script_path": null,
     "reference_python_scripts": [],
-    "reference_r_scripts": []
+    "reference_r_scripts": [
+      "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/reference/lund_pcm4_mixed_model_source.R"
+    ]
   }
 }

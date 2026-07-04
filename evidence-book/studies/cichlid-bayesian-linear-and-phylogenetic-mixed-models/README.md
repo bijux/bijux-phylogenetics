@@ -78,3 +78,5 @@ workflow whose main scientific claim still lives in an external engine.
 - [provenance](./provenance/)
 - [runtime reference mapping](./reference/README.md)
 - governed parity bundles: `evidence-001` to `evidence-007`
+- checked-in lecture source copies:
+  `cichlid.csv`, `cichlidtree.nex`, and `fishdata.RData`

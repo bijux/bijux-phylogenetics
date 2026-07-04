@@ -47,13 +47,16 @@
     "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/reference/README.md",
     "packages/bijux-phylogenetics/tests/test_phylogenetic_logistic.py"
   ],
-  "source_intake_policy": "read-only-external-source",
+  "source_intake_policy": "repository-owned-source",
   "study_dataset_registry_locator": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/registry.json",
   "study_id": "cichlid-phylogenetic-generalized-linear-mixed-models",
   "study_provenance_locator": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/provenance/lund-course-sources.json",
   "study_support_scripts": {
     "build_script_path": null,
     "reference_python_scripts": [],
-    "reference_r_scripts": []
+    "reference_r_scripts": [
+      "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/reference/PCM5_PGLMM.R",
+      "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/reference/PCM5_extra_code.R"
+    ]
   }
 }

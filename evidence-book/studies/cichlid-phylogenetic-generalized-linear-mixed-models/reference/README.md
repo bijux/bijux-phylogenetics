@@ -23,3 +23,11 @@ They do not provide:
 This dossier makes that boundary explicit so PCM5 is documented and deployed as
 source-backed, parity-bundle-backed review scope, not over-claimed as
 present-day repository parity.
+
+Checked-in study-local lecture source copies:
+
+- `PCM5_PGLMM.R`
+- `PCM5_extra_code.R`
+- `../datasets/cichlid.csv`
+- `../datasets/cichlidtree.nex`
+- `../datasets/fishdata.RData`

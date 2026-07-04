@@ -17,8 +17,8 @@ payload <- list(
   evidence_id = "evidence-008",
   evidence_title = "Cichlid repeated-measure random effects bundle",
   comparison_mode = "direct_parity",
-  execution_mode = "not_applicable",
-  source_intake_policy = "read-only-external-source",
+  execution_mode = "study_reference_wrapper",
+  source_intake_policy = "repository-owned-source",
   source_basis_locators = c(
     "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/provenance/lund-course-sources.json",
     "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/registry.json",
@@ -26,6 +26,8 @@ payload <- list(
     "packages/bijux-phylogenetics/tests/test_phylogenetic_logistic.py",
   ),
   reference_scripts = c(
+    "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/reference/PCM5_PGLMM.R",
+    "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/reference/PCM5_extra_code.R",
   )
 )
 
@@ -33,6 +35,8 @@ write_json(payload, file.path(out_dir, "reference-contract.json"), auto_unbox = 
 cat(toJSON(payload, auto_unbox = TRUE, pretty = TRUE))
 cat("\n")
 
-# This evidence unit is a Bijux-native or fixture-backed surface with no
-# canonical external R comparison program. The wrapper therefore records
-# the bundle-local contract instead of pretending an R parity run exists.
+# To run the governed study reference, invoke the study-owned R script
+# listed in `reference_scripts` with the source context required by that
+# study. This bundle-local wrapper stays focused on one evidence unit and
+# records the exact comparison contract without editing the untouched
+# Lund materials in place.

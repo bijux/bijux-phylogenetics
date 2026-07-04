@@ -78,3 +78,6 @@ later mixed-model lectures.
 - [provenance](./provenance/)
 - [runtime reference mapping](./reference/README.md)
 - governed parity bundles: `evidence-001` to `evidence-008`
+- checked-in lecture source copies:
+  `primate_raw.xlsx`, `primate.RData`, `primatetree.nex`,
+  `reference_primate.csv`, and `reference_trimmed_primatetree.nwk`

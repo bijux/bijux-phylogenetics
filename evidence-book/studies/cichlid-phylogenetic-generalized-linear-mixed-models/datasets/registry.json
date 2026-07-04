@@ -3,37 +3,37 @@
   "datasets": [
     {
       "dataset_id": "dataset-001",
-      "kind": "external-read-only-source",
-      "label": "Lund PCM5 cichlid observation table",
-      "locator": "external:lund/pcm5-pglmm/data/cichlid.csv",
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM5 cichlid observation table",
+      "locator": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/cichlid.csv",
       "schema_summary": "Observation-level cichlid parasite dataset used for Poisson, multinomial, and repeated-measure examples."
     },
     {
       "dataset_id": "dataset-002",
-      "kind": "external-read-only-source",
-      "label": "Lund PCM5 cichlid phylogeny",
-      "locator": "external:lund/pcm5-pglmm/data/cichlidtree.nex",
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM5 cichlid phylogeny",
+      "locator": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/cichlidtree.nex",
       "schema_summary": "Nexus phylogeny used to define phylogenetic random effects and ancestral-state ordering."
     },
     {
       "dataset_id": "dataset-003",
-      "kind": "external-read-only-source",
-      "label": "Lund PCM5 fish workspace object `fish`",
-      "locator": "external:lund/pcm5-pglmm/data/fishdata.RData#fish",
+      "kind": "repository-owned-workspace-object",
+      "label": "Checked-in PCM5 fish workspace object `fish`",
+      "locator": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/fishdata.RData#fish",
       "schema_summary": "Reloaded lecture workspace table representing the repeated-measure cichlid observations after the course-side import and repair step."
     },
     {
       "dataset_id": "dataset-004",
-      "kind": "external-read-only-source",
-      "label": "Lund PCM5 fish workspace object `fishSum`",
-      "locator": "external:lund/pcm5-pglmm/data/fishdata.RData#fishSum",
+      "kind": "repository-owned-workspace-object",
+      "label": "Checked-in PCM5 fish workspace object `fishSum`",
+      "locator": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/fishdata.RData#fishSum",
       "schema_summary": "Reloaded species-level summary table used to compare phylogenetic mixed-model variants and ancestral summaries in PCM5."
     },
     {
       "dataset_id": "dataset-005",
-      "kind": "external-read-only-source",
-      "label": "Lund PCM5 fish workspace object `fishtree`",
-      "locator": "external:lund/pcm5-pglmm/data/fishdata.RData#fishtree",
+      "kind": "repository-owned-workspace-object",
+      "label": "Checked-in PCM5 fish workspace object `fishtree`",
+      "locator": "evidence-book/studies/cichlid-phylogenetic-generalized-linear-mixed-models/datasets/fishdata.RData#fishtree",
       "schema_summary": "Reloaded lecture workspace tree object aligned to the species-level cichlid summary table for PCM5 phylogenetic random effects."
     }
   ],

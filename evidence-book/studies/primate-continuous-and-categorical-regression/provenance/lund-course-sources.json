@@ -1,7 +1,7 @@
 {
-  "intake_policy": "read-only-external-source",
+  "intake_policy": "repository-owned-source",
   "schema_version": 1,
-  "source_count": 5,
+  "source_count": 6,
   "sources": [
     {
       "concept_tags": [
@@ -10,39 +10,46 @@
         "interaction-terms",
         "phylogenetic-regression"
       ],
-      "kind": "external-course-script",
+      "kind": "repository-owned-source-copy",
       "label": "Lund PCM3 continuous and categorical regression lecture script",
-      "locator": "external:lund/pcm3-contcat/script",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/reference/lund_pcm3_contcat_source.R",
       "path_hint": "PCM3_contcat/Lecture/R/Scripts/PCM3_contcat.R",
-      "read_only": true,
+      "read_only": false,
       "source_id": "lund-pcm3-script"
     },
     {
-      "kind": "external-course-workspace",
-      "label": "Lund PCM3 primate workspace RData",
-      "locator": "external:lund/pcm3-contcat/data/primate.RData",
+      "kind": "repository-owned-workspace",
+      "label": "Checked-in PCM3 primate workspace",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/primate.RData",
       "provides": [
         "primate",
         "primatetree"
       ],
-      "read_only": true,
+      "read_only": false,
       "source_id": "lund-pcm3-primate-rdata"
     },
     {
-      "kind": "external-course-data",
-      "label": "Lund PCM3 primate raw workbook",
-      "locator": "external:lund/pcm3-contcat/data/primate_raw.xlsx",
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM3 primate raw workbook",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/primate_raw.xlsx",
       "path_hint": "PCM3_contcat/Lecture/R/Data/primate_raw.xlsx",
-      "read_only": true,
+      "read_only": false,
       "source_id": "lund-pcm3-primate-workbook"
     },
     {
-      "kind": "external-course-data",
-      "label": "Lund PCM3 primate tree",
-      "locator": "external:lund/pcm3-contcat/data/primatetree.nex",
+      "kind": "repository-owned-source-copy",
+      "label": "Checked-in PCM3 primate tree",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/primatetree.nex",
       "path_hint": "PCM3_contcat/Lecture/R/Data/primatetree.nex",
-      "read_only": true,
+      "read_only": false,
       "source_id": "lund-pcm3-primate-tree"
+    },
+    {
+      "kind": "repository-reference",
+      "label": "PCM3-local governed primate derivatives",
+      "locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets",
+      "read_only": false,
+      "source_id": "governed-pcm3-reference-artifacts"
     },
     {
       "kind": "repository-reference",

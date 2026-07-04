@@ -80,3 +80,6 @@ uncertainty, and repeated measures in one workflow.
 - [provenance](./provenance/)
 - [runtime reference mapping](./reference/README.md)
 - governed parity bundles: `evidence-001` to `evidence-009`
+- checked-in lecture source copies:
+  `cichlid.csv`, `cichlidtree.nex`, `fishdata.RData`, `PCM5_PGLMM.R`, and
+  `PCM5_extra_code.R`

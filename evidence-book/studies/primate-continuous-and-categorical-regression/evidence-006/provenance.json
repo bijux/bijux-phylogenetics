@@ -48,13 +48,15 @@
     "packages/bijux-phylogenetics/tests/test_pgls_interaction_coefficients.py",
     "packages/bijux-phylogenetics/tests/test_regression_model_selection.py"
   ],
-  "source_intake_policy": "read-only-external-source",
+  "source_intake_policy": "repository-owned-source",
   "study_dataset_registry_locator": "evidence-book/studies/primate-continuous-and-categorical-regression/datasets/registry.json",
   "study_id": "primate-continuous-and-categorical-regression",
   "study_provenance_locator": "evidence-book/studies/primate-continuous-and-categorical-regression/provenance/lund-course-sources.json",
   "study_support_scripts": {
     "build_script_path": null,
     "reference_python_scripts": [],
-    "reference_r_scripts": []
+    "reference_r_scripts": [
+      "evidence-book/studies/primate-continuous-and-categorical-regression/reference/lund_pcm3_contcat_source.R"
+    ]
   }
 }

@@ -29,3 +29,12 @@ The missing piece is not a total lack of runtime support. The missing piece is
 the lecture-specific coefficient, diagnostic, and hypothesis-test parity that
 would turn the deployed governed parity bundles into a closed PCM3 parity
 program.
+
+Checked-in study-local lecture source copies:
+
+- `lund_pcm3_contcat_source.R`
+- `../datasets/primate_raw.xlsx`
+- `../datasets/primate.RData`
+- `../datasets/primatetree.nex`
+- `../datasets/reference_primate.csv`
+- `../datasets/reference_trimmed_primatetree.nwk`
