@@ -96,6 +96,17 @@ def test_alias_package_badge_block_prioritizes_the_alias_distribution() -> None:
     )
 
 
+def test_pypi_package_readmes_keep_generated_badges_without_mermaid() -> None:
+    for path in (
+        Path("packages/bijux-phylogenetics/README.pypi.md"),
+        Path("packages/phylogenetic/README.pypi.md"),
+    ):
+        text = path.read_text(encoding="utf-8")
+        assert GENERATED_BLOCK_RE.search(text), f"{path} is missing the managed badge block"
+        assert "```mermaid" not in text, f"{path} must stay Mermaid-free for PyPI"
+        assert "text-first" in text, f"{path} should explain the PyPI-safe text-first contract"
+
+
 def test_badge_surfaces_are_synchronized() -> None:
     assert synchronize_badges(check=True) == []
 
@@ -105,7 +116,9 @@ def test_managed_surfaces_only_use_generated_badges() -> None:
         Path("README.md"),
         Path("docs/index.md"),
         Path("packages/bijux-phylogenetics/README.md"),
+        Path("packages/bijux-phylogenetics/README.pypi.md"),
         Path("packages/phylogenetic/README.md"),
+        Path("packages/phylogenetic/README.pypi.md"),
         Path("packages/bijux-phylogenetics-dev/README.md"),
     ]
     for path in targets:

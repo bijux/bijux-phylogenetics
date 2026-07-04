@@ -223,12 +223,20 @@ def iter_badge_targets() -> tuple[BadgeTarget, ...]:
     workspace = _workspace_metadata()
     docs_package = cast(str, workspace["docs_package"])
     package_targets = tuple(
-        BadgeTarget(
-            path=REPO_ROOT / "packages" / package_slug / "README.md",
-            kind="package",
-            package_slug=package_slug,
-        )
+        target
         for package_slug in _public_package_slugs()
+        for target in (
+            BadgeTarget(
+                path=REPO_ROOT / "packages" / package_slug / "README.md",
+                kind="package",
+                package_slug=package_slug,
+            ),
+            BadgeTarget(
+                path=REPO_ROOT / "packages" / package_slug / "README.pypi.md",
+                kind="package",
+                package_slug=package_slug,
+            ),
+        )
     )
     return (
         BadgeTarget(path=REPO_ROOT / "README.md", kind="repository"),
