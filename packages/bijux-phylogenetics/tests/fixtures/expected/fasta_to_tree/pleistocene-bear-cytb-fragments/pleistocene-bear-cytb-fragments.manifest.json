@@ -1410,7 +1410,7 @@
   "output_checksums": {
     "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.aln": "90374ceb63d11789868e1f349c3768670e36a510a4450349d2b743745a1aff00",
     "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.log": "d1eba239b3bdd8b913dbb908e16a566f62b53a48f8b3aa8140bc2ca32e90b6f0",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.methods-summary.md": "2c19a01dbf11b13b96ea16fe4b6005fe964dd3c6b8368762c785a69b3ae19417",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.methods-summary.md": "e116b2d899f437d97efd929af1895afc5d3b4a70834b678dac4964926e586293",
     "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.model.tsv": "f9b85fd2e455d02b4f7bc71fd8221d93a9aa3dd151dde82480e110251ae21738",
     "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.support.tsv": "b5a434276488f2006fed96190dc6219cfde683e2adb34418e0717c881a7de09e",
     "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.tree": "53c8648a66a7daba2f9e4ed4d3c0dc1354a8c78ab3dd9fa9e149ee624a72dae8",
@@ -1541,7 +1541,7 @@
       },
       "output_checksums": {
         "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.log": "d1eba239b3bdd8b913dbb908e16a566f62b53a48f8b3aa8140bc2ca32e90b6f0",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.methods-summary.md": "2c19a01dbf11b13b96ea16fe4b6005fe964dd3c6b8368762c785a69b3ae19417",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.methods-summary.md": "e116b2d899f437d97efd929af1895afc5d3b4a70834b678dac4964926e586293",
         "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.model.tsv": "f9b85fd2e455d02b4f7bc71fd8221d93a9aa3dd151dde82480e110251ae21738",
         "/Users/bijan/bijux/bijux-phylogenetics/artifacts/tmp4s0lj80m/pleistocene-bear-cytb-fragments/pleistocene-bear-cytb-fragments.support.tsv": "b5a434276488f2006fed96190dc6219cfde683e2adb34418e0717c881a7de09e"
       },

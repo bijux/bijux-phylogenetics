@@ -4295,7 +4295,7 @@
   "output_checksums": {
     "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/strnog-enog411bqtj-proteins.aln": "930b51ded3819e435911dcdc9f3521f4ac08679511dcac65e348da088fa5b7a2",
     "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/strnog-enog411bqtj-proteins.log": "65d18ecdf757c8cfd2706697a7c083494a754a68180bf15ecb48c315b6313ab5",
-    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/strnog-enog411bqtj-proteins.methods-summary.md": "d375e3b54c315cd134317f0a931484751438f93037daee09d2907cd83c0b2989",
+    "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/strnog-enog411bqtj-proteins.methods-summary.md": "9f4bfdf5d29eb3fcc5238265aeb81ca8396474e1d195c8c9f68bc23048755126",
     "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/strnog-enog411bqtj-proteins.model.tsv": "b58a53be46312ffe2d28d60aaceceeed31db2b2706533c3f1819debe5bf54cc0",
     "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/strnog-enog411bqtj-proteins.support.tsv": "681d9628611bb80b958b06f4f91323a35708a8bd266d1a1008d90c85d1704dc1",
     "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/strnog-enog411bqtj-proteins.tree": "7361dc5f8f802e47856b614609e8ba578dbd751d7fe3e63ff304800f2adff693",
@@ -4426,7 +4426,7 @@
       },
       "output_checksums": {
         "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/strnog-enog411bqtj-proteins.log": "65d18ecdf757c8cfd2706697a7c083494a754a68180bf15ecb48c315b6313ab5",
-        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/strnog-enog411bqtj-proteins.methods-summary.md": "d375e3b54c315cd134317f0a931484751438f93037daee09d2907cd83c0b2989",
+        "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/strnog-enog411bqtj-proteins.methods-summary.md": "9f4bfdf5d29eb3fcc5238265aeb81ca8396474e1d195c8c9f68bc23048755126",
         "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/strnog-enog411bqtj-proteins.model.tsv": "b58a53be46312ffe2d28d60aaceceeed31db2b2706533c3f1819debe5bf54cc0",
         "/Users/bijan/bijux/bijux-phylogenetics/artifacts/fasta-to-tree-golden-refresh/strnog-recheck/strnog-enog411bqtj-proteins.support.tsv": "681d9628611bb80b958b06f4f91323a35708a8bd266d1a1008d90c85d1704dc1"
       },

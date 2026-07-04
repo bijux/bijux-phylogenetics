@@ -27,6 +27,21 @@ def _manifest_path_text(value: object | None) -> str:
     return str(value)
 
 
+def _artifact_reference(value: object | None) -> str:
+    if value is None:
+        return "not recorded"
+    text = str(value)
+    path = Path(text)
+    parts = path.parts
+    if "engine-artifacts" in parts:
+        index = parts.index("engine-artifacts")
+        return "/".join(parts[index:])
+    if "inputs" in parts:
+        index = parts.index("inputs")
+        return "/".join(parts[index:])
+    return path.name or text
+
+
 def _manifest_dict(payload: dict[str, object], key: str) -> dict[str, object]:
     value = payload.get(key)
     if not isinstance(value, dict):
@@ -136,13 +151,13 @@ def write_tree_inference_methods_summary_text(
     warnings = _tree_inference_warning_lines(payload)
     repaired_input_path = payload.get("prepared_input_path")
     raw_input_path = payload.get("input_path")
-    raw_path_text = _manifest_path_text(raw_input_path)
-    prepared_path_text = _manifest_path_text(repaired_input_path)
+    raw_path_text = _artifact_reference(raw_input_path)
+    prepared_path_text = _artifact_reference(repaired_input_path)
     input_repair = _manifest_nested_dict(payload, "input_repair")
     input_repair_lines = (
         [
             "- input FASTA was repaired before alignment",
-            f"- prepared input path: `{prepared_path_text}`",
+            f"- prepared input artifact: `{prepared_path_text}`",
             "- normalized identifiers: "
             f"`{len(_manifest_list(input_repair, 'normalized_identifiers'))}`",
             "- removed invalid records: "
@@ -151,18 +166,19 @@ def write_tree_inference_methods_summary_text(
         if input_repair is not None
         else [
             "- input FASTA was used directly without identifier or record repair",
-            f"- prepared input path: `{prepared_path_text}`",
+            f"- prepared input artifact: `{prepared_path_text}`",
         ]
     )
     text = (
         "# Tree Inference Methods Summary\n\n"
-        f"The workflow manifest `{manifest_path.name}` records one Bijux `{workflow_name}` run from raw FASTA input "
-        f"`{Path(str(raw_input_path)).name}` through alignment, trimming, model selection, maximum-likelihood inference, "
-        f"and bootstrap-supported tree finalization. The selected substitution model was `{selected_model}`, "
-        f"the sequence type used for inference was `{payload.get('sequence_type')}`, and the final delivered tree was "
-        f"`{Path(str(output_paths.get('tree'))).name}`.\n\n"
+        f"This summary describes one governed Bijux `{workflow_name}` run recorded in "
+        f"`{manifest_path.name}`. The workflow starts from raw FASTA input "
+        f"`{_artifact_reference(raw_input_path)}`, runs alignment, trimming, model selection, "
+        f"maximum-likelihood inference, and bootstrap support, then delivers the final tree "
+        f"`{_artifact_reference(output_paths.get('tree'))}`. The selected substitution model was "
+        f"`{selected_model}`, and the reviewed sequence type was `{payload.get('sequence_type')}`.\n\n"
         "## Input And Alignment Preparation\n\n"
-        f"- raw input path: `{raw_path_text}`\n"
+        f"- raw input artifact: `{raw_path_text}`\n"
         + "\n".join(input_repair_lines)
         + "\n"
         + f"- validated sequence count: `{input_summary.get('sequence_count')}`\n"
@@ -170,13 +186,13 @@ def write_tree_inference_methods_summary_text(
         + f"- inferred raw sequence alphabet: `{input_summary.get('inferred_alphabet')}`\n"
         + f"- alignment engine: `{_manifest_path_text(_manifest_dict(payload, 'alignment_workflow').get('engine_name'))}`\n"
         + f"- alignment mode: `{payload.get('alignment_mode')}`\n"
-        + f"- aligned output path: `{_manifest_path_text(output_paths.get('alignment'))}`\n"
+        + f"- aligned output artifact: `{_artifact_reference(output_paths.get('alignment'))}`\n"
         + f"- trimming engine: `{_manifest_path_text(trimming_workflow.get('engine_name'))}`\n"
         + f"- trimming mode: `{payload.get('trimming_mode')}`\n"
         + f"- trimming gap threshold: `{format(float(payload.get('trim_gap_threshold', 0.0)), '.15g')}`\n"
         + f"- retained alignment length: `{trimming_summary.get('trimmed_alignment_length')}` of `{trimming_summary.get('input_alignment_length')}`\n"
         + f"- removed alignment sites: `{trimming_summary.get('removed_site_count')}`\n"
-        + f"- trimmed alignment path: `{_manifest_path_text(output_paths.get('trimmed_alignment'))}`\n\n"
+        + f"- trimmed alignment artifact: `{_artifact_reference(output_paths.get('trimmed_alignment'))}`\n\n"
         "## Model Selection\n\n"
         + f"- model-selection engine: `{_manifest_path_text(model_selection_workflow.get('engine_name'))}`\n"
         + f"- candidate substitution models reviewed: `{model_selection_summary.get('candidate_count')}`\n"
@@ -184,13 +200,13 @@ def write_tree_inference_methods_summary_text(
         + f"- selected substitution model: `{selected_model}`\n"
         + f"- iqtree random seed: `{payload.get('iqtree_seed')}`\n"
         + f"- iqtree threads: `{payload.get('iqtree_threads')}`\n"
-        + f"- model-selection manifest: `{_manifest_path_text(step_manifests.get('model_selection'))}`\n\n"
+        + f"- model-selection manifest artifact: `{_artifact_reference(step_manifests.get('model_selection'))}`\n\n"
         "## Maximum-Likelihood Inference\n\n"
         + f"- inference engine: `{_manifest_path_text(maximum_likelihood_workflow.get('engine_name'))}`\n"
         + f"- inference model: `{selected_model}`\n"
         + f"- maximum-likelihood log-likelihood: `{_manifest_path_text(maximum_likelihood_workflow.get('log_likelihood'))}`\n"
-        + f"- unannotated maximum-likelihood tree artifact: `{_manifest_path_text(_output_paths_dict(maximum_likelihood_workflow).get('tree'))}`\n"
-        + f"- inference manifest: `{_manifest_path_text(step_manifests.get('maximum_likelihood'))}`\n\n"
+        + f"- unannotated maximum-likelihood tree artifact: `{_artifact_reference(_output_paths_dict(maximum_likelihood_workflow).get('tree'))}`\n"
+        + f"- inference manifest artifact: `{_artifact_reference(step_manifests.get('maximum_likelihood'))}`\n\n"
         "## Branch Support And Final Tree\n\n"
         + f"- support engine: `{_manifest_path_text(bootstrap_workflow.get('engine_name'))}`\n"
         + f"- support workflow: ultrafast bootstrap support on the same trimmed alignment under `{selected_model}`\n"
@@ -198,17 +214,17 @@ def write_tree_inference_methods_summary_text(
         + f"- supported internal nodes: `{support_summary.get('supported_node_count')}` of `{support_summary.get('internal_node_count')}`\n"
         + f"- minimum/median/maximum support: `{_manifest_path_text(support_summary.get('minimum_support'))}` / `{_manifest_path_text(support_summary.get('median_support'))}` / `{_manifest_path_text(support_summary.get('maximum_support'))}`\n"
         + f"- weakly supported clade count: `{support_summary.get('weakly_supported_clade_count')}`\n"
-        + f"- bootstrap-supported tree artifact: `{_manifest_path_text(_output_paths_dict(bootstrap_workflow).get('support_tree'))}`\n"
-        + f"- bootstrap tree-set artifact: `{_manifest_path_text(_output_paths_dict(bootstrap_workflow).get('bootstrap_trees'))}`\n"
-        + f"- support manifest: `{_manifest_path_text(step_manifests.get('bootstrap_support'))}`\n\n"
+        + f"- bootstrap-supported tree artifact: `{_artifact_reference(_output_paths_dict(bootstrap_workflow).get('support_tree'))}`\n"
+        + f"- bootstrap tree-set artifact: `{_artifact_reference(_output_paths_dict(bootstrap_workflow).get('bootstrap_trees'))}`\n"
+        + f"- support manifest artifact: `{_artifact_reference(step_manifests.get('bootstrap_support'))}`\n\n"
         "## Tree Processing And Traceability\n\n"
         + "- the final delivered tree is copied from the bootstrap-supported inference artifact so branch support remains attached to the reviewer-facing tree\n"
         + "- the workflow records a separate unannotated maximum-likelihood tree under engine-artifacts for audit and comparison\n"
         + "- no outgroup rooting, midpoint rerooting, or posterior summarization step is recorded in this fasta-to-tree workflow manifest\n"
-        + f"- final tree path: `{_manifest_path_text(output_paths.get('tree'))}`\n"
-        + f"- reviewer-facing model table: `{_manifest_path_text(output_paths.get('model_table'))}`\n"
-        + f"- reviewer-facing support table: `{_manifest_path_text(output_paths.get('support_table'))}`\n"
-        + f"- workflow manifest path: `{manifest_path}`\n\n"
+        + f"- final tree artifact: `{_artifact_reference(output_paths.get('tree'))}`\n"
+        + f"- reviewer-facing model table: `{_artifact_reference(output_paths.get('model_table'))}`\n"
+        + f"- reviewer-facing support table: `{_artifact_reference(output_paths.get('support_table'))}`\n"
+        + f"- workflow manifest artifact: `{_artifact_reference(manifest_path)}`\n\n"
         "## Workflow Warnings\n\n"
         + (
             "\n".join(f"- {warning}" for warning in warnings)
