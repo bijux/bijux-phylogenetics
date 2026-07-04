@@ -17,7 +17,7 @@ on green checks.
 - root `README.md`
 - package `README.md` files
 - public docs
-- internal maintainer docs where release rules are described
+- maintainer docs where release rules are described
 - package `pyproject.toml` metadata
 - release-readiness and publish-readiness reports
 

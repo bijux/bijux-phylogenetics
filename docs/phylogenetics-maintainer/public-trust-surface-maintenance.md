@@ -26,10 +26,10 @@ When one major public capability changes, review all of these together:
 
 - `README.md`
 - package `README.md` files
-- `docs/public/phylogenetics/architecture/`
-- `docs/public/phylogenetics/operations/`
-- `docs/public/phylogenetics/quality/`
-- `docs/public/phylogenetics-evidence-book/`
+- `docs/phylogenetics/architecture/`
+- `docs/phylogenetics/operations/`
+- `docs/phylogenetics/quality/`
+- `docs/phylogenetics-evidence-book/`
 - package `pyproject.toml` metadata
 
 ## Questions To Ask

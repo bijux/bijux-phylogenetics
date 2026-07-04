@@ -17,18 +17,18 @@ same question.
 - the root `README.md` tells a new reader what the repository publishes and
   where the major boundaries are
 - package `README.md` files explain the durable role of each published package
-- the public docs under `docs/public/phylogenetics/` describe the runtime
+- the public docs under `docs/phylogenetics/` describe the runtime
   product surface, public interfaces, operations, and quality boundaries
 - the evidence-book docs describe governed scientific trust and study evidence,
   not the entire runtime product surface
 - flagship native surfaces should be visible across reference, workflow, and
   quality pages rather than only one API inventory page
 
-## Internal Surface Responsibilities
+## Maintainer Surface Responsibilities
 
-- `docs/internal/` is for maintainers, release operations, and repo-health
+- `docs/phylogenetics-maintainer/` is for maintainers, release operations, and repo-health
   contracts
-- internal docs should explain how to keep the public story truthful, not
+- maintainer docs should explain how to keep the public story truthful, not
   replace the public docs
 
 ## When Runtime Ownership Changes
@@ -40,7 +40,7 @@ following that are affected:
 - the relevant package `README.md`
 - the matching public handbook page
 - package metadata if the package description or maturity claim changed
-- internal handbook guidance when maintainers need one new review rule
+- maintainer handbook guidance when maintainers need one new review rule
 
 ## What To Avoid
 

@@ -15,8 +15,8 @@
 [![bijux-phylogenetics](https://img.shields.io/badge/bijux--phylogenetics-ghcr-181717?logo=github)](https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fbijux-phylogenetics)
 [![phylogenetic](https://img.shields.io/badge/phylogenetic-ghcr-181717?logo=github)](https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fphylogenetic)
 
-[![bijux-phylogenetics docs](https://img.shields.io/badge/docs-bijux--phylogenetics-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
-[![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
+[![bijux-phylogenetics docs](https://img.shields.io/badge/docs-bijux--phylogenetics-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/phylogenetics/)
+[![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/phylogenetics/)
 <!-- bijux-phylogenetics-badges:generated:end -->
 
 Canonical runtime package for the `bijux-phylogenetics` repository.
@@ -129,14 +129,14 @@ closure are related, but they are not the same claim.
 
 Practical public guides for those surfaces live at:
 
-- [Surface selection guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/surface-selection/)
-- [Artifact consumption guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/artifact-consumption-guide/)
-- [Native maximum-likelihood workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-maximum-likelihood-workflows/)
-- [Native Bayesian workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-bayesian-workflows/)
-- [Native benchmark review](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-benchmark-review/)
-- [Runtime architecture](https://bijux.io/bijux-phylogenetics/public/phylogenetics/architecture/)
-- [Release review workflow](https://bijux.io/bijux-phylogenetics/public/phylogenetics/quality/release-review-workflow/)
-- [Evidence-book guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics-evidence-book/)
+- [Surface selection guide](https://bijux.io/bijux-phylogenetics/phylogenetics/interfaces/surface-selection/)
+- [Artifact consumption guide](https://bijux.io/bijux-phylogenetics/phylogenetics/interfaces/artifact-consumption-guide/)
+- [Native maximum-likelihood workflows](https://bijux.io/bijux-phylogenetics/phylogenetics/operations/native-maximum-likelihood-workflows/)
+- [Native Bayesian workflows](https://bijux.io/bijux-phylogenetics/phylogenetics/operations/native-bayesian-workflows/)
+- [Native benchmark review](https://bijux.io/bijux-phylogenetics/phylogenetics/operations/native-benchmark-review/)
+- [Runtime architecture](https://bijux.io/bijux-phylogenetics/phylogenetics/architecture/)
+- [Release review workflow](https://bijux.io/bijux-phylogenetics/phylogenetics/quality/release-review-workflow/)
+- [Evidence-book guide](https://bijux.io/bijux-phylogenetics/phylogenetics-evidence-book/)
 
 ## Native Tree Model
 
@@ -203,7 +203,7 @@ tested so downstream scripts do not have to infer headers or top-level keys
 from incidental examples.
 
 Use the public
-[artifact consumption guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/artifact-consumption-guide/)
+[artifact consumption guide](https://bijux.io/bijux-phylogenetics/phylogenetics/interfaces/artifact-consumption-guide/)
 when the main question is how to consume those outputs correctly across human
 review and automation surfaces.
 
@@ -2587,15 +2587,15 @@ through a single kitchen-sink file.
 
 ## Read this next
 
-- [Runtime product guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
-- [Surface selection guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/surface-selection/)
-- [Artifact consumption guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/artifact-consumption-guide/)
-- [Native maximum-likelihood workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-maximum-likelihood-workflows/)
-- [Native Bayesian workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-bayesian-workflows/)
-- [Native benchmark review](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-benchmark-review/)
-- [Runtime architecture](https://bijux.io/bijux-phylogenetics/public/phylogenetics/architecture/)
-- [Release review workflow](https://bijux.io/bijux-phylogenetics/public/phylogenetics/quality/release-review-workflow/)
-- [Evidence-book guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics-evidence-book/)
+- [Runtime product guide](https://bijux.io/bijux-phylogenetics/phylogenetics/)
+- [Surface selection guide](https://bijux.io/bijux-phylogenetics/phylogenetics/interfaces/surface-selection/)
+- [Artifact consumption guide](https://bijux.io/bijux-phylogenetics/phylogenetics/interfaces/artifact-consumption-guide/)
+- [Native maximum-likelihood workflows](https://bijux.io/bijux-phylogenetics/phylogenetics/operations/native-maximum-likelihood-workflows/)
+- [Native Bayesian workflows](https://bijux.io/bijux-phylogenetics/phylogenetics/operations/native-bayesian-workflows/)
+- [Native benchmark review](https://bijux.io/bijux-phylogenetics/phylogenetics/operations/native-benchmark-review/)
+- [Runtime architecture](https://bijux.io/bijux-phylogenetics/phylogenetics/architecture/)
+- [Release review workflow](https://bijux.io/bijux-phylogenetics/phylogenetics/quality/release-review-workflow/)
+- [Evidence-book guide](https://bijux.io/bijux-phylogenetics/phylogenetics-evidence-book/)
 - [Runtime package source on GitHub](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics)
 - [Runtime package changelog](https://github.com/bijux/bijux-phylogenetics/blob/main/packages/bijux-phylogenetics/CHANGELOG.md)
 - [Security policy](https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md)

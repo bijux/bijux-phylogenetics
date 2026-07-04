@@ -18,8 +18,8 @@
 [![bijux-phylogenetics](https://img.shields.io/badge/bijux--phylogenetics-ghcr-181717?logo=github)](https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fbijux-phylogenetics)
 [![phylogenetic](https://img.shields.io/badge/phylogenetic-ghcr-181717?logo=github)](https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fphylogenetic)
 
-[![bijux-phylogenetics docs](https://img.shields.io/badge/docs-bijux--phylogenetics-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
-[![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
+[![bijux-phylogenetics docs](https://img.shields.io/badge/docs-bijux--phylogenetics-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/phylogenetics/)
+[![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/phylogenetics/)
 <!-- bijux-phylogenetics-badges:generated:end -->
 
 `bijux-phylogenetics` is a contract-first Python repository for reproducible
@@ -42,18 +42,18 @@ the same staged assets to the GitHub Release.
 ## Start Here
 
 - [Documentation home](https://bijux.io/bijux-phylogenetics/)
-- [Phylogenetics product guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
-- [Runtime architecture](https://bijux.io/bijux-phylogenetics/public/phylogenetics/architecture/)
-- [Surface selection guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/surface-selection/)
-- [Artifact consumption guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/artifact-consumption-guide/)
-- [Validation lanes](https://bijux.io/bijux-phylogenetics/public/phylogenetics/quality/validation-lanes/)
-- [Claim reading guide](https://bijux.io/bijux-phylogenetics/public/phylogenetics/foundation/claim-reading-guide/)
-- [Native maximum-likelihood workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-maximum-likelihood-workflows/)
-- [Native Bayesian workflows](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-bayesian-workflows/)
-- [Native benchmark review](https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-benchmark-review/)
-- [Release review workflow](https://bijux.io/bijux-phylogenetics/public/phylogenetics/quality/release-review-workflow/)
-- [Evidence Book](https://bijux.io/bijux-phylogenetics/public/phylogenetics-evidence-book/)
-- [Internal maintainer documentation](https://bijux.io/bijux-phylogenetics/internal/)
+- [Phylogenetics product guide](https://bijux.io/bijux-phylogenetics/phylogenetics/)
+- [Runtime architecture](https://bijux.io/bijux-phylogenetics/phylogenetics/architecture/)
+- [Surface selection guide](https://bijux.io/bijux-phylogenetics/phylogenetics/interfaces/surface-selection/)
+- [Artifact consumption guide](https://bijux.io/bijux-phylogenetics/phylogenetics/interfaces/artifact-consumption-guide/)
+- [Validation lanes](https://bijux.io/bijux-phylogenetics/phylogenetics/quality/validation-lanes/)
+- [Claim reading guide](https://bijux.io/bijux-phylogenetics/phylogenetics/foundation/claim-reading-guide/)
+- [Native maximum-likelihood workflows](https://bijux.io/bijux-phylogenetics/phylogenetics/operations/native-maximum-likelihood-workflows/)
+- [Native Bayesian workflows](https://bijux.io/bijux-phylogenetics/phylogenetics/operations/native-bayesian-workflows/)
+- [Native benchmark review](https://bijux.io/bijux-phylogenetics/phylogenetics/operations/native-benchmark-review/)
+- [Release review workflow](https://bijux.io/bijux-phylogenetics/phylogenetics/quality/release-review-workflow/)
+- [Evidence Book](https://bijux.io/bijux-phylogenetics/phylogenetics-evidence-book/)
+- [Maintainer handbook](https://bijux.io/bijux-phylogenetics/phylogenetics-maintainer/)
 - [Runtime package overview](packages/bijux-phylogenetics/README.md)
 
 ## What This Repository Produces
@@ -71,8 +71,8 @@ The `2` publishable packages in this repository are:
 
 | Package | Role | Links |
 | --- | --- | --- |
-| `bijux-phylogenetics` | Canonical runtime package for phylogenetic diagnostics, comparative workflows, and reporting surfaces | <a href="https://pypi.org/project/bijux-phylogenetics/"><img alt="PyPI" src="https://img.shields.io/badge/pypi-3775A9?logo=pypi&logoColor=white" height="18"></a> <a href="https://bijux.io/bijux-phylogenetics/public/phylogenetics/"><img alt="Docs" src="https://img.shields.io/badge/docs-2563EB?logo=materialformkdocs&logoColor=white" height="18"></a> <a href="https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fbijux-phylogenetics"><img alt="GHCR" src="https://img.shields.io/badge/ghcr-181717?logo=github&logoColor=white" height="18"></a> <a href="https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics"><img alt="Source" src="https://img.shields.io/badge/source-181717?logo=github&logoColor=white" height="18"></a> |
-| `phylogenetic` | Compatibility alias package that installs the canonical runtime with a shorter distribution and CLI name | <a href="https://pypi.org/project/phylogenetic/"><img alt="PyPI" src="https://img.shields.io/badge/pypi-3775A9?logo=pypi&logoColor=white" height="18"></a> <a href="https://bijux.io/bijux-phylogenetics/public/phylogenetics/"><img alt="Docs" src="https://img.shields.io/badge/docs-2563EB?logo=materialformkdocs&logoColor=white" height="18"></a> <a href="https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fphylogenetic"><img alt="GHCR" src="https://img.shields.io/badge/ghcr-181717?logo=github&logoColor=white" height="18"></a> <a href="https://github.com/bijux/bijux-phylogenetics/tree/main/packages/phylogenetic"><img alt="Source" src="https://img.shields.io/badge/source-181717?logo=github&logoColor=white" height="18"></a> |
+| `bijux-phylogenetics` | Canonical runtime package for phylogenetic diagnostics, comparative workflows, and reporting surfaces | <a href="https://pypi.org/project/bijux-phylogenetics/"><img alt="PyPI" src="https://img.shields.io/badge/pypi-3775A9?logo=pypi&logoColor=white" height="18"></a> <a href="https://bijux.io/bijux-phylogenetics/phylogenetics/"><img alt="Docs" src="https://img.shields.io/badge/docs-2563EB?logo=materialformkdocs&logoColor=white" height="18"></a> <a href="https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fbijux-phylogenetics"><img alt="GHCR" src="https://img.shields.io/badge/ghcr-181717?logo=github&logoColor=white" height="18"></a> <a href="https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics"><img alt="Source" src="https://img.shields.io/badge/source-181717?logo=github&logoColor=white" height="18"></a> |
+| `phylogenetic` | Compatibility alias package that installs the canonical runtime with a shorter distribution and CLI name | <a href="https://pypi.org/project/phylogenetic/"><img alt="PyPI" src="https://img.shields.io/badge/pypi-3775A9?logo=pypi&logoColor=white" height="18"></a> <a href="https://bijux.io/bijux-phylogenetics/phylogenetics/"><img alt="Docs" src="https://img.shields.io/badge/docs-2563EB?logo=materialformkdocs&logoColor=white" height="18"></a> <a href="https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fphylogenetic"><img alt="GHCR" src="https://img.shields.io/badge/ghcr-181717?logo=github&logoColor=white" height="18"></a> <a href="https://github.com/bijux/bijux-phylogenetics/tree/main/packages/phylogenetic"><img alt="Source" src="https://img.shields.io/badge/source-181717?logo=github&logoColor=white" height="18"></a> |
 
 Repository-owned developer tooling also lives here in the
 [maintainer package](packages/bijux-phylogenetics-dev/README.md), but it is
@@ -170,13 +170,13 @@ The canonical project documentation lives in `docs/` and is built with MkDocs.
 Useful entry points:
 
 - [Documentation home](docs/index.md)
-- [Public phylogenetics guide](docs/public/phylogenetics/index.md)
-- [Surface selection guide](docs/public/phylogenetics/interfaces/surface-selection.md)
-- [Artifact consumption guide](docs/public/phylogenetics/interfaces/artifact-consumption-guide.md)
-- [Validation lanes](docs/public/phylogenetics/quality/validation-lanes.md)
-- [Claim reading guide](docs/public/phylogenetics/foundation/claim-reading-guide.md)
-- [Evidence Book guide](docs/public/phylogenetics-evidence-book/index.md)
-- [Internal maintainer guide](docs/internal/maintain/index.md)
+- [Public phylogenetics guide](docs/phylogenetics/index.md)
+- [Surface selection guide](docs/phylogenetics/interfaces/surface-selection.md)
+- [Artifact consumption guide](docs/phylogenetics/interfaces/artifact-consumption-guide.md)
+- [Validation lanes](docs/phylogenetics/quality/validation-lanes.md)
+- [Claim reading guide](docs/phylogenetics/foundation/claim-reading-guide.md)
+- [Evidence Book guide](docs/phylogenetics-evidence-book/index.md)
+- [Maintainer guide](docs/phylogenetics-maintainer/index.md)
 - [Runtime package source](packages/bijux-phylogenetics/src)
 - [Runtime package tests](packages/bijux-phylogenetics/tests)
 

@@ -24,11 +24,11 @@ or output family changes materially.
 
 When one public interface changes, review:
 
-- `docs/public/phylogenetics/interfaces/index.md`
-- `docs/public/phylogenetics/interfaces/surface-selection.md`
+- `docs/phylogenetics/interfaces/index.md`
+- `docs/phylogenetics/interfaces/surface-selection.md`
 - the affected CLI, API, Python, or native reference pages
-- `docs/public/phylogenetics/interfaces/artifact-contracts.md`
-- `docs/public/phylogenetics/interfaces/artifact-consumption-guide.md`
+- `docs/phylogenetics/interfaces/artifact-contracts.md`
+- `docs/phylogenetics/interfaces/artifact-consumption-guide.md`
 - root and package README links
 - package `pyproject.toml` URLs
 

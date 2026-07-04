@@ -22,9 +22,9 @@ guides. It also depends on:
 
 When trust language or study coverage changes, review:
 
-- `docs/public/phylogenetics/quality/`
-- `docs/public/phylogenetics/foundation/`
-- `docs/public/phylogenetics-evidence-book/`
+- `docs/phylogenetics/quality/`
+- `docs/phylogenetics/foundation/`
+- `docs/phylogenetics-evidence-book/`
 - root and package README pointers into those sections
 
 ## Questions To Ask

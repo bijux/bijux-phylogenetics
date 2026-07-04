@@ -24,7 +24,7 @@ environment, copies packaged example inputs through the installed runtime API,
 and verifies packaged example and dataset resources through the public CLI.
 
 It also owns the maintainer-side guardrails that keep the published story
-aligned across READMEs, public docs, internal docs, quality reports, and
+aligned across READMEs, public docs, maintainer docs, quality reports, and
 package metadata.
 
 Choose this package when you are maintaining documentation, release readiness,
@@ -32,13 +32,13 @@ or repository policy surfaces rather than consuming the public runtime.
 
 ## Read this next
 
-- [Maintainer handbook](https://bijux.io/bijux-phylogenetics/internal/maintain/)
-- [Documentation ownership](https://bijux.io/bijux-phylogenetics/internal/maintain/documentation-ownership/)
-- [Native surface documentation](https://bijux.io/bijux-phylogenetics/internal/maintain/native-surface-documentation/)
-- [Public trust surface maintenance](https://bijux.io/bijux-phylogenetics/internal/maintain/public-trust-surface-maintenance/)
-- [Public interface and artifact maintenance](https://bijux.io/bijux-phylogenetics/internal/maintain/public-interface-and-artifact-maintenance/)
-- [Trust lane and study guide maintenance](https://bijux.io/bijux-phylogenetics/internal/maintain/trust-lane-and-study-guide-maintenance/)
-- [Release surface alignment](https://bijux.io/bijux-phylogenetics/internal/maintain/release-surface-alignment/)
+- [Maintainer handbook](https://bijux.io/bijux-phylogenetics/phylogenetics-maintainer/)
+- [Documentation ownership](https://bijux.io/bijux-phylogenetics/phylogenetics-maintainer/documentation-ownership/)
+- [Native surface documentation](https://bijux.io/bijux-phylogenetics/phylogenetics-maintainer/native-surface-documentation/)
+- [Public trust surface maintenance](https://bijux.io/bijux-phylogenetics/phylogenetics-maintainer/public-trust-surface-maintenance/)
+- [Public interface and artifact maintenance](https://bijux.io/bijux-phylogenetics/phylogenetics-maintainer/public-interface-and-artifact-maintenance/)
+- [Trust lane and study guide maintenance](https://bijux.io/bijux-phylogenetics/phylogenetics-maintainer/trust-lane-and-study-guide-maintenance/)
+- [Release surface alignment](https://bijux.io/bijux-phylogenetics/phylogenetics-maintainer/release-surface-alignment/)
 - [Maintainer source on GitHub](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics-dev)
 - [Developer tooling changelog](https://github.com/bijux/bijux-phylogenetics/blob/main/packages/bijux-phylogenetics-dev/CHANGELOG.md)
 - [Security policy](https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md)

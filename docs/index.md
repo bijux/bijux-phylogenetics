@@ -27,8 +27,8 @@ last_reviewed: 2026-07-03
 [![bijux-phylogenetics](https://img.shields.io/badge/bijux--phylogenetics-ghcr-181717?logo=github)](https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fbijux-phylogenetics)
 [![phylogenetic](https://img.shields.io/badge/phylogenetic-ghcr-181717?logo=github)](https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fphylogenetic)
 
-[![bijux-phylogenetics docs](https://img.shields.io/badge/docs-bijux--phylogenetics-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
-[![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/public/phylogenetics/)
+[![bijux-phylogenetics docs](https://img.shields.io/badge/docs-bijux--phylogenetics-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/phylogenetics/)
+[![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/phylogenetics/)
 <!-- bijux-phylogenetics-badges:generated:end -->
 
 `bijux-phylogenetics` is a reproducible phylogenetics workbench for tree
@@ -48,18 +48,18 @@ quality automation.
 
 ## Read this next
 
-- public runtime guide: [Phylogenetics product guide](public/phylogenetics/index.md)
-- runtime architecture guide: [Runtime architecture](public/phylogenetics/architecture/index.md)
-- surface selection guide: [Surface selection guide](public/phylogenetics/interfaces/surface-selection.md)
-- artifact consumption guide: [Artifact consumption guide](public/phylogenetics/interfaces/artifact-consumption-guide.md)
-- validation-lane guide: [Validation lanes](public/phylogenetics/quality/validation-lanes.md)
-- claim-reading guide: [Claim reading guide](public/phylogenetics/foundation/claim-reading-guide.md)
-- native maximum-likelihood workflows: [Native maximum-likelihood workflows](public/phylogenetics/operations/native-maximum-likelihood-workflows.md)
-- native Bayesian workflows: [Native Bayesian workflows](public/phylogenetics/operations/native-bayesian-workflows.md)
-- native benchmark review: [Native benchmark review](public/phylogenetics/operations/native-benchmark-review.md)
-- release review workflow: [Release review workflow](public/phylogenetics/quality/release-review-workflow.md)
-- public evidence guide: [Evidence-book guide](public/phylogenetics-evidence-book/index.md)
-- internal maintainer guide: [Maintainer guide](internal/maintain/index.md)
+- public runtime guide: [Phylogenetics product guide](phylogenetics/index.md)
+- runtime architecture guide: [Runtime architecture](phylogenetics/architecture/index.md)
+- surface selection guide: [Surface selection guide](phylogenetics/interfaces/surface-selection.md)
+- artifact consumption guide: [Artifact consumption guide](phylogenetics/interfaces/artifact-consumption-guide.md)
+- validation-lane guide: [Validation lanes](phylogenetics/quality/validation-lanes.md)
+- claim-reading guide: [Claim reading guide](phylogenetics/foundation/claim-reading-guide.md)
+- native maximum-likelihood workflows: [Native maximum-likelihood workflows](phylogenetics/operations/native-maximum-likelihood-workflows.md)
+- native Bayesian workflows: [Native Bayesian workflows](phylogenetics/operations/native-bayesian-workflows.md)
+- native benchmark review: [Native benchmark review](phylogenetics/operations/native-benchmark-review.md)
+- release review workflow: [Release review workflow](phylogenetics/quality/release-review-workflow.md)
+- public evidence guide: [Evidence-book guide](phylogenetics-evidence-book/index.md)
+- maintainer guide: [Maintainer guide](phylogenetics-maintainer/index.md)
 
 
 ## Notable Runtime Surfaces
@@ -78,5 +78,5 @@ The governed evidence-book records that difference explicitly, and the public
 handbook now distinguishes native ownership, wrapper orchestration, and
 evidence closure rather than flattening them into one claim:
 
-- start from the public evidence guide: [Evidence Book](public/phylogenetics-evidence-book/index.md)
+- start from the public evidence guide: [Evidence Book](phylogenetics-evidence-book/index.md)
 - review analytical surface coverage and closure status from the linked evidence-book index outputs there

@@ -73,11 +73,11 @@ surface, the highest-signal pages are:
 - [release review workflow](quality/release-review-workflow.md)
 - [evidence-book overview](../phylogenetics-evidence-book/index.md)
 
-## Public Versus Internal
+## Public Versus Maintainer
 
-The public handbook explains the product and runtime surface. Internal
-maintainer rules, managed standards behavior, release operations, and repo
-health contracts are intentionally kept separate under the internal docs area.
+The public handbook explains the product and runtime surface. Maintainer
+rules, managed standards behavior, release operations, and repo-health
+contracts are intentionally kept separate under the maintainer handbook.
 
 The evidence-book is also separate. It is the scientific trust surface for
 governed parity and coverage boundaries, not the general runtime handbook.

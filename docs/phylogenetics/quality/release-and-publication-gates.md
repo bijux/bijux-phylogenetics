@@ -51,7 +51,7 @@ The serious release story has to hold across:
 
 - package metadata
 - root and package READMEs
-- public and internal docs
+- public and maintainer docs
 - package build verification
 - release-readiness and publish-readiness reports
 - runtime, parity, benchmark, and evidence-governance surfaces

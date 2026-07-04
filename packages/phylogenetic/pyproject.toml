@@ -34,13 +34,13 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://bijux.io/bijux-phylogenetics/public/phylogenetics/"
-"Native Workflows" = "https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/"
-"Evidence Book" = "https://bijux.io/bijux-phylogenetics/public/phylogenetics-evidence-book/"
-Benchmarks = "https://bijux.io/bijux-phylogenetics/public/phylogenetics/operations/native-benchmark-review/"
-"Interface Guide" = "https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/surface-selection/"
-"Artifact Guide" = "https://bijux.io/bijux-phylogenetics/public/phylogenetics/interfaces/artifact-consumption-guide/"
-"Release Guide" = "https://bijux.io/bijux-phylogenetics/public/phylogenetics/quality/release-review-workflow/"
+Documentation = "https://bijux.io/bijux-phylogenetics/phylogenetics/"
+"Native Workflows" = "https://bijux.io/bijux-phylogenetics/phylogenetics/operations/"
+"Evidence Book" = "https://bijux.io/bijux-phylogenetics/phylogenetics-evidence-book/"
+Benchmarks = "https://bijux.io/bijux-phylogenetics/phylogenetics/operations/native-benchmark-review/"
+"Interface Guide" = "https://bijux.io/bijux-phylogenetics/phylogenetics/interfaces/surface-selection/"
+"Artifact Guide" = "https://bijux.io/bijux-phylogenetics/phylogenetics/interfaces/artifact-consumption-guide/"
+"Release Guide" = "https://bijux.io/bijux-phylogenetics/phylogenetics/quality/release-review-workflow/"
 Repository = "https://github.com/bijux/bijux-phylogenetics"
 Issues = "https://github.com/bijux/bijux-phylogenetics/issues"
 Changelog = "https://github.com/bijux/bijux-phylogenetics/blob/main/packages/phylogenetic/CHANGELOG.md"

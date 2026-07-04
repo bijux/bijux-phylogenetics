@@ -25,10 +25,10 @@ Each flagship native surface should have all of the following:
 The current native maximum-likelihood and native Bayesian surfaces now follow
 that shape:
 
-- reference: `docs/public/phylogenetics/interfaces/native-inference-and-benchmarks.md`
+- reference: `docs/phylogenetics/interfaces/native-inference-and-benchmarks.md`
 - workflows: the native maximum-likelihood and native Bayesian pages under
-  `docs/public/phylogenetics/operations/`
-- benchmark interpretation: `docs/public/phylogenetics/quality/native-benchmark-evidence.md`
+  `docs/phylogenetics/operations/`
+- benchmark interpretation: `docs/phylogenetics/quality/native-benchmark-evidence.md`
 
 ## Entry Surfaces That Usually Need Updates
 
@@ -39,7 +39,7 @@ When one native surface becomes public-facing, check all of these:
 - `packages/phylogenetic/README.md` when the alias package should advertise
   the same runtime story
 - `docs/index.md`
-- `docs/public/phylogenetics/index.md`
+- `docs/phylogenetics/index.md`
 - the matching public reference, operations, and quality pages
 
 ## Failure Mode To Prevent
