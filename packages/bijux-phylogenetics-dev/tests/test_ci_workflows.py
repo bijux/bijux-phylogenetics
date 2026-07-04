@@ -81,6 +81,7 @@ def test_verify_workflow_checks_canonical_alias_and_dev_packages() -> None:
     workflow = _workflow(WORKFLOWS_DIR / "verify.yml")
     jobs = _as_dict(workflow.get("jobs"))
     package_job = _as_dict(jobs.get("package"))
+    package_inputs = _as_dict(package_job.get("with"))
 
     assert package_job.get("uses") == "./.github/workflows/ci.yml"
 
@@ -94,17 +95,13 @@ def test_verify_workflow_checks_canonical_alias_and_dev_packages() -> None:
     assert runtime_entry["check_targets"] == (
         '["quality", "security", "api", "openapi-drift", "build", "sbom"]'
     )
-    assert runtime_entry["test_targets"] == (
-        '["test-unit-sequence-data-foundations", "test-unit-ancestral-dating-evidence", '
-        '"test-unit-bayesian-model-definition", "test-unit-bayesian-inference-runtime", '
-        '"test-unit-comparative-regression-and-signal", '
-        '"test-unit-comparative-biogeography-and-publication", '
-        '"test-unit-likelihood-search-and-fit", '
-        '"test-unit-likelihood-placements-and-topology", '
-        '"test-unit-state-model-foundations", '
-        '"test-unit-state-model-families", '
-        '"test-unit-state-model-mixtures-and-optimization", '
-        '"test-unit-trees-workflows-and-parity"]'
+    assert "test_targets" not in runtime_entry
+    assert package_inputs["test_python_versions"] == (
+        "${{ matrix.test_python_versions || '[\"3.11\"]' }}"
+    )
+    assert package_inputs["check_targets"] == (
+        "${{ matrix.check_targets || '[\"quality\", \"security\", "
+        "\"docs\", \"api\", \"build\", \"sbom\"]' }}"
     )
 
 
