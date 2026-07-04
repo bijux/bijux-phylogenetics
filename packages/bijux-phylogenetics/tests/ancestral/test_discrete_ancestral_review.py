@@ -23,6 +23,7 @@ from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_trait_table_fixture,
     get_shared_tree_fixture,
 )
+from ..support.paths import REPOSITORY_ROOT
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -295,7 +296,7 @@ def test_reconstruct_discrete_ancestral_states_matches_checked_ace_reference() -
     reference = json.loads(
         fixture("discrete_ancestral_ace_reference.json").read_text(encoding="utf-8")
     )
-    repository_root = Path(__file__).resolve().parents[3]
+    repository_root = REPOSITORY_ROOT
     for case in reference["cases"]:
         report = reconstruct_discrete_ancestral_states(
             repository_root / case["tree"],
@@ -326,7 +327,7 @@ def test_reconstruct_discrete_ancestral_states_tracks_live_ape_ace_when_availabl
     rscript = shutil.which("Rscript")
     if rscript is None:
         pytest.skip("Rscript is not available")
-    repository_root = Path(__file__).resolve().parents[3]
+    repository_root = REPOSITORY_ROOT
     r_library = repository_root / "artifacts" / "r-lib"
     environment = dict(os.environ)
     if r_library.is_dir():
@@ -425,7 +426,7 @@ def test_reconstruct_discrete_ancestral_states_tracks_live_ape_ace_on_shared_bin
     rscript = shutil.which("Rscript")
     if rscript is None:
         pytest.skip("Rscript is not available")
-    repository_root = Path(__file__).resolve().parents[3]
+    repository_root = REPOSITORY_ROOT
     r_library = repository_root / "artifacts" / "r-lib"
     environment = dict(os.environ)
     if r_library.is_dir():

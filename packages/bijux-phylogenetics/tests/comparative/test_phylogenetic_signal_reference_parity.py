@@ -10,6 +10,7 @@ from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
     estimate_pagels_lambda,
 )
+from ..support.paths import REPOSITORY_ROOT
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -144,7 +145,7 @@ def test_pagels_lambda_matches_governed_primate_reference() -> None:
         fixture("reference_parity_extended_comparative.json"),
         case="pagel-lambda-primate-longevity",
     )
-    repository_root = Path(__file__).resolve().parents[3]
+    repository_root = REPOSITORY_ROOT
     report = estimate_pagels_lambda(
         repository_root
         / "evidence-book/studies/primate-longevity-signal/datasets/reference_trimmed_primatetree.nwk",

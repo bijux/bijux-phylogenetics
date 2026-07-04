@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from bijux_phylogenetics.comparative.pgls import build_pgls_model_matrix, run_pgls
+from ..support.paths import REPOSITORY_ROOT
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -151,7 +152,7 @@ def test_run_pgls_matches_interaction_brownian_reference_case() -> None:
 
 @pytest.mark.slow
 def test_run_pgls_matches_primate_fixed_reference_lambda_case() -> None:
-    repository_root = Path(__file__).resolve().parents[3]
+    repository_root = REPOSITORY_ROOT
     reference = _extended_reference_case(
         "pgls-primate-longevity-fixed-reference-lambda"
     )
@@ -182,7 +183,7 @@ def test_run_pgls_matches_primate_fixed_reference_lambda_case() -> None:
 
 @pytest.mark.slow
 def test_run_pgls_matches_primate_estimated_lambda_reference_case() -> None:
-    repository_root = Path(__file__).resolve().parents[3]
+    repository_root = REPOSITORY_ROOT
     reference = _extended_reference_case("pgls-primate-longevity-estimated-lambda")
     report = run_pgls(
         repository_root

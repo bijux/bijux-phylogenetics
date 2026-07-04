@@ -11,6 +11,7 @@ from bijux_phylogenetics.comparative.pgls import (
     run_pgls,
     run_pgls_multiple_testing,
 )
+from ..support.paths import REPOSITORY_ROOT
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -218,7 +219,7 @@ def test_run_pgls_multiple_testing_adjusts_p_values() -> None:
 
 
 def test_run_pgls_matches_primate_reference_when_lambda_is_fixed() -> None:
-    repository_root = Path(__file__).resolve().parents[3]
+    repository_root = REPOSITORY_ROOT
     parity_fixture = (
         repository_root
         / "evidence-book"
@@ -303,7 +304,7 @@ def test_run_pgls_matches_primate_reference_when_lambda_is_fixed() -> None:
 
 @pytest.mark.slow
 def test_run_pgls_reports_aic_for_estimated_lambda() -> None:
-    repository_root = Path(__file__).resolve().parents[3]
+    repository_root = REPOSITORY_ROOT
     report = run_pgls(
         repository_root
         / "evidence-book"

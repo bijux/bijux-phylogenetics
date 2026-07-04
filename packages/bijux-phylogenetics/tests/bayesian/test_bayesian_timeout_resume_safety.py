@@ -20,7 +20,7 @@ from bijux_phylogenetics.runtime.errors import (
     EngineWorkflowError,
 )
 
-from .support.fake_bayesian_engines import (
+from ..support.fake_bayesian_engines import (
     fake_beast,
     fake_beast_killed,
     fake_beast_malformed_outputs,

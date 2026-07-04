@@ -20,6 +20,7 @@ from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_trait_table_fixture,
     get_shared_tree_fixture,
 )
+from ..support.paths import REPOSITORY_ROOT
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -134,7 +135,7 @@ def test_summarize_continuous_ancestral_report_tracks_anc_ml_optimizer() -> None
 def test_reconstruct_continuous_ancestral_states_matches_primate_reference_fixture() -> (
     None
 ):
-    repository_root = Path(__file__).resolve().parents[3]
+    repository_root = REPOSITORY_ROOT
     parity_fixture = (
         repository_root
         / "evidence-book"
@@ -192,7 +193,7 @@ def test_reconstruct_continuous_ancestral_states_tracks_live_ape_ace_when_availa
     rscript = shutil.which("Rscript")
     if rscript is None:
         pytest.skip("Rscript is not available")
-    repository_root = Path(__file__).resolve().parents[3]
+    repository_root = REPOSITORY_ROOT
     r_library = repository_root / "artifacts" / "r-lib"
     environment = dict(os.environ)
     if r_library.is_dir():
@@ -292,7 +293,7 @@ def test_reconstruct_continuous_ancestral_states_tracks_live_ape_ace_on_shared_f
     rscript = shutil.which("Rscript")
     if rscript is None:
         pytest.skip("Rscript is not available")
-    repository_root = Path(__file__).resolve().parents[3]
+    repository_root = REPOSITORY_ROOT
     r_library = repository_root / "artifacts" / "r-lib"
     environment = dict(os.environ)
     if r_library.is_dir():

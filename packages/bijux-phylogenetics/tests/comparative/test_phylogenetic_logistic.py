@@ -16,6 +16,7 @@ from bijux_phylogenetics.comparative.regression import (
     write_phylogenetic_logistic_fitted_table,
 )
 from bijux_phylogenetics.runtime.errors import ComparativeMethodError
+from ..support.paths import REPOSITORY_ROOT
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected")
@@ -142,7 +143,7 @@ def test_summarize_phylogenetic_logistic_tracks_live_phyloglm_when_available() -
     rscript = shutil.which("Rscript")
     if rscript is None:
         pytest.skip("Rscript is not available")
-    repository_root = Path(__file__).resolve().parents[3]
+    repository_root = REPOSITORY_ROOT
     r_library = repository_root / "artifacts" / "r-lib"
     environment = dict(os.environ)
     if r_library.is_dir():

@@ -24,7 +24,7 @@ from bijux_phylogenetics.simulation import (
     write_discrete_trait_table,
 )
 
-from .support.geiger_fitdiscrete_ard_reference import (
+from ..support.geiger_fitdiscrete_ard_reference import (
     GEIGER_FITDISCRETE_ARD_REFERENCE_PAYLOADS,
 )
 
