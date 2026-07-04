@@ -48,6 +48,19 @@ flowchart TD
   Reviewer-facing bundles, figures, manifests, benchmark outputs, and
   evidence-linked reporting.
 
+## How The Families Fit Together
+
+The runtime is deeper than one flat list of commands:
+
+- tree and alignment families provide the structural substrate
+- likelihood and inference families add model-driven analytical depth
+- comparative and ancestral families turn those foundations into biological
+  workflows
+- adapter families keep external-engine orchestration explicit where native
+  ownership is not the honest boundary
+- report and artifact families make the results reviewable instead of leaving
+  them trapped inside ad hoc execution state
+
 ## How To Read This Map
 
 Some families are primarily native implementation surfaces. Others are public

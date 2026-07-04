@@ -12,6 +12,14 @@ last_reviewed: 2026-07-04
 The runtime handbook and the evidence book answer different questions. Keeping
 them separate makes the public story more honest, not less complete.
 
+```mermaid
+flowchart TD
+    A[Reader question] --> B[How do I use this surface?]
+    A --> C[How much has this surface been checked?]
+    B --> D[Runtime handbook]
+    C --> E[Evidence book]
+```
+
 ## The Runtime Handbook Answers
 
 - what the product surface is
@@ -43,3 +51,12 @@ studies?", move to the evidence book.
 
 Use the claim reading guide when you need the fuller vocabulary for runtime,
 native, wrapper, evidence, and release claims.
+
+## Boundary Examples
+
+- a native maximum-likelihood workflow belongs in the runtime handbook because
+  that is where usage, inputs, and outputs are documented
+- a PCM study parity bundle belongs in the evidence book because that is where
+  bounded trust, freshness, and study scope are documented
+- a benchmark difference belongs in quality guidance because it answers a
+  review question, not a basic usage question

@@ -13,6 +13,14 @@ This repository owns a serious phylogenetics runtime, but it still has clear
 limits. Those limits matter because the public docs should explain what the
 repository can support today without borrowing credibility from future work.
 
+```mermaid
+flowchart LR
+    A[Repository scope] --> B[Owned runtime]
+    A --> C[Wrapper-backed workflows]
+    A --> D[Evidence-linked reporting]
+    A --> E[Explicit limits]
+```
+
 ## In Scope
 
 - deterministic tree and alignment workflows
@@ -29,6 +37,17 @@ repository can support today without borrowing credibility from future work.
 - describing narrow native inference ownership as if it already covered every
   model family and every phylogenetic workflow in the repository
 - hiding unresolved runtime or evidence limits behind marketing language
+
+## What The Limits Protect
+
+These limits protect three parts of the public story:
+
+- users can still see substantial runtime depth without being misled about
+  closure
+- reviewers can tell which surfaces are owned, wrapped, benchmarked, or
+  study-backed
+- releases can stay credible because the docs avoid implying a larger
+  scientific claim than the evidence-book supports
 
 ## Why This Matters
 

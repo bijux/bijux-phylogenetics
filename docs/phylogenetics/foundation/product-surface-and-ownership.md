@@ -11,6 +11,14 @@ last_reviewed: 2026-07-03
 
 The public runtime surface is intentionally narrower than the full repository.
 
+```mermaid
+flowchart LR
+    A[Full repository] --> B[Public runtime surface]
+    A --> C[Maintainer-only machinery]
+    B --> D[Documented packages and interfaces]
+    B --> E[Named native and wrapper contracts]
+```
+
 ## Public Product Surface
 
 - the canonical runtime package: `bijux-phylogenetics`
@@ -35,6 +43,15 @@ The public runtime surface is intentionally narrower than the full repository.
 - it does not mean every internal helper or report row is a stable public API
 - it does not mean every public workflow is native-first
 - it does not mean the evidence-book has already closed every owned surface
+
+## Ownership Reading Rule
+
+Treat a surface as part of the product when three things are true together:
+
+1. it is named in the public docs or package README surfaces
+2. it has a stable public route such as the CLI, workflow API, or documented
+   import path
+3. the docs explain its limits instead of implying a vague larger capability
 
 ## Non-Public Ownership
 

@@ -13,6 +13,13 @@ PCM4 deserves a direct boundary page because it is easy to over-read. The
 lecture uses a Bayesian mixed-model workflow whose main outputs are posterior
 summaries, convergence checks, and phylogenetic variance estimates.
 
+```mermaid
+flowchart TD
+    A[Documented source lecture] --> B[Checked-in datasets and bundles]
+    B --> C[Reviewable study boundary]
+    C --> D[Posterior workflow still external]
+```
+
 ## What Is Source-Backed And Deployed
 
 - the cichlid dataset and tree provenance
@@ -27,6 +34,15 @@ summaries, convergence checks, and phylogenetic variance estimates.
 - chain-convergence diagnostics equivalent to the lecture
 - governed posterior ledgers for phylogenetic random effects
 - governed credible-interval summaries for the mixed-model parameters
+
+## What Readers Can Safely Conclude
+
+- the repository has preserved the lecture family in a reviewable, checked-in
+  structure
+- the repository has made the dataset, decomposition, and evidence units
+  inspectable
+- the repository has not yet reproduced the lecture's posterior engine under a
+  governed native or parity-equivalent claim
 
 ## Why This Boundary Is Useful
 

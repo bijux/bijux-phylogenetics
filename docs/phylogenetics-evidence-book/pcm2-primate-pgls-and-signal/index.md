@@ -13,6 +13,13 @@ PCM2 is the deeper primate comparative study. It covers transformed trees,
 comparative model fitting, likelihood-ratio comparisons, baseline GLS,
 Pagel-lambda regression, and signal diagnostics on the same lecture family.
 
+```mermaid
+flowchart LR
+    A[Baseline GLS] --> B[Tree transformation]
+    B --> C[PGLS]
+    C --> D[Signal diagnostics]
+```
+
 ## Why PCM2 Matters
 
 PCM1 establishes the prepared study inputs. PCM2 asks whether more demanding
@@ -49,6 +56,15 @@ The full checked-in record lives under
 - transformed trees and model comparisons belong in the same analytical story,
   not in separate islands
 - open boundaries can improve credibility when they remain visible
+
+## What Readers Should Watch Closely
+
+- whether the transformed-tree step changes only fit quality or also the
+  comparative interpretation
+- whether model-comparison results are being read alongside the signal story
+  instead of in isolation
+- whether the remaining open boundaries are made explicit rather than hidden
+  under one generic "PGLS complete" claim
 
 ## What PCM2 Does Not Prove
 

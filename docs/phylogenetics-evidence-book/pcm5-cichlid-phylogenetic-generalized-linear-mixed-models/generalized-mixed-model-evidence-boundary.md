@@ -13,6 +13,13 @@ PCM5 extends the cichlid workflow into generalized mixed models and posterior
 phylogenetic quantities. It is the clearest example of a study family that is
 fully documented but not yet fully reproduced inside the repository.
 
+```mermaid
+flowchart LR
+    A[Study sources and datasets] --> B[Governed evidence bundles]
+    B --> C[Documented analytical map]
+    C --> D[Posterior PGLMM boundary remains open]
+```
+
 ## What Is Source-Backed And Deployed
 
 - the lecture scripts and supplementary code references
@@ -29,6 +36,15 @@ fully documented but not yet fully reproduced inside the repository.
 - probability-scale posterior slope transforms
 - governed variance partitions matching the lecture's multi-random-effect
   models
+
+## What Readers Can Safely Conclude
+
+- the repository now documents the PCM5 lecture family at a much finer-grained
+  evidence-ID level than one generic summary
+- the repository preserves the study inputs and analytical decomposition well
+  enough for serious review
+- the remaining gap is not source intake or documentation quality; it is the
+  posterior mixed-model reproduction boundary itself
 
 ## Nearby Repository Support
 

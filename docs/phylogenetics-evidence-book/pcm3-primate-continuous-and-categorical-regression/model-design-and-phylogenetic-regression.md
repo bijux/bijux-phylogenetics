@@ -13,6 +13,14 @@ PCM3 is about model structure, not only model output. The lecture walks
 through how one primate response changes interpretation as the regression
 becomes more realistic.
 
+```mermaid
+flowchart LR
+    A[Baseline GLS] --> B[Response transformation]
+    B --> C[Categorical coding]
+    C --> D[Interaction term]
+    D --> E[Phylogenetic covariance]
+```
+
 ## Main Analytical Steps
 
 - fit a baseline GLS with one continuous and one categorical predictor
@@ -33,6 +41,17 @@ PCM3 forces the repository to be explicit about:
 - how interaction coefficients should be read
 - whether taxa were excluded before or after phylogenetic correction
 - how diagnostic improvement is separated from biological interpretation
+
+## What Readers Should Watch Closely
+
+- whether the intercept is still biologically meaningful after transformation
+  or standardization
+- whether categorical coefficients are being read against the correct reference
+  level
+- whether the interaction term changes the meaning of the main effects rather
+  than merely adding one more coefficient
+- whether the move into `corMartins` changes the scientific interpretation or
+  only the residual structure
 
 ## Current Repository Support
 

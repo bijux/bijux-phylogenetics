@@ -41,3 +41,12 @@ Ask which question you are actually trying to answer:
 Keeping those questions separate is part of the public honesty model. The
 runtime can be broader than the currently closed evidence surface without that
 difference being hidden.
+
+## Why The Split Improves Clarity
+
+- runtime docs can stay practical instead of trying to embed every dossier
+  detail
+- evidence pages can stay trust-focused instead of pretending to be the main
+  product manual
+- readers can move between usage, validation, and bounded trust without one
+  page trying to answer every question badly
