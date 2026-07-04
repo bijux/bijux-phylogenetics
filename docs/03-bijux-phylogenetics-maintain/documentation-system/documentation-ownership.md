@@ -31,7 +31,7 @@ thin wrapper disclaimer when the code and tests now support a deeper story.
 
 ## Maintainer Surface Responsibilities
 
-- `docs/phylogenetics-maintainer/` is for repository stewardship, release
+- `docs/03-bijux-phylogenetics-maintain/` is for repository stewardship, release
   operations, and documentation alignment rules
 - maintainer docs should explain how to keep the public story truthful, not
   replace the public docs

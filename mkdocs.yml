@@ -121,10 +121,17 @@ nav:
           - Overview: phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md
           - Generalized Mixed-Model Evidence Boundary: phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/generalized-mixed-model-evidence-boundary.md
   - Maintainer:
-      - Overview: phylogenetics-maintainer/index.md
-      - Documentation Ownership: phylogenetics-maintainer/documentation-ownership.md
-      - Native Surface Documentation: phylogenetics-maintainer/native-surface-documentation.md
-      - Public Trust Surface Maintenance: phylogenetics-maintainer/public-trust-surface-maintenance.md
-      - Public Interface And Artifact Maintenance: phylogenetics-maintainer/public-interface-and-artifact-maintenance.md
-      - Trust Lane And Study Guide Maintenance: phylogenetics-maintainer/trust-lane-and-study-guide-maintenance.md
-      - Release Surface Alignment: phylogenetics-maintainer/release-surface-alignment.md
+      - Maintainer Handbook: 03-bijux-phylogenetics-maintain/index.md
+      - Documentation System:
+          - Documentation System: 03-bijux-phylogenetics-maintain/documentation-system/index.md
+          - Documentation Ownership: 03-bijux-phylogenetics-maintain/documentation-system/documentation-ownership.md
+          - Native Surface Documentation: 03-bijux-phylogenetics-maintain/documentation-system/native-surface-documentation.md
+      - Trust Surfaces:
+          - Trust Surfaces: 03-bijux-phylogenetics-maintain/trust-surfaces/index.md
+          - Public Trust Surface Maintenance: 03-bijux-phylogenetics-maintain/trust-surfaces/public-trust-surface-maintenance.md
+          - Public Interface And Artifact Maintenance: 03-bijux-phylogenetics-maintain/trust-surfaces/public-interface-and-artifact-maintenance.md
+          - Trust Lane And Study Guide Maintenance: 03-bijux-phylogenetics-maintain/trust-surfaces/trust-lane-and-study-guide-maintenance.md
+      - Repository Operations:
+          - Repository Operations: 03-bijux-phylogenetics-maintain/repository-operations/index.md
+          - Artifact Hygiene: 03-bijux-phylogenetics-maintain/repository-operations/artifact-hygiene.md
+          - Release Surface Alignment: 03-bijux-phylogenetics-maintain/repository-operations/release-surface-alignment.md

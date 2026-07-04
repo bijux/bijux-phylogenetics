@@ -105,6 +105,6 @@ sight of the technical depth:
 
 - Use the [Evidence Book](../phylogenetics-evidence-book/index.md) when the
   question is study evidence, parity, freshness, or coverage gaps.
-- Use the [Maintainer guide](../phylogenetics-maintainer/index.md) when the
+- Use the [Maintainer handbook](../03-bijux-phylogenetics-maintain/index.md) when the
   question is release stewardship, documentation alignment, or repository
   health.

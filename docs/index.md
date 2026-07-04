@@ -42,7 +42,7 @@ clear:
 - the product guide explains what the runtime does and how to use it
 - the evidence book explains what has been checked against governed study
   records
-- the maintainer guide explains how documentation, release, and repository
+- the maintainer handbook explains how documentation, release, and repository
   health stay aligned
 
 ```mermaid
@@ -52,7 +52,7 @@ flowchart LR
     C --> D[Evidence book]
     B --> E[Public users]
     D --> F[Scientific reviewers]
-    G[Maintainer tooling] --> H[Maintainer guide]
+    G[Maintainer tooling] --> H[Maintainer handbook]
     H --> I[Release and docs stewardship]
 ```
 
@@ -87,7 +87,7 @@ The package and docs surface now spans more than one usage style:
   Start with the [Evidence Book](phylogenetics-evidence-book/index.md).
 - I want to maintain this repository without letting docs and release claims
   drift.
-  Start with the [Maintainer guide](phylogenetics-maintainer/index.md).
+  Start with the [Maintainer handbook](03-bijux-phylogenetics-maintain/index.md).
 
 ## What This Repository Publishes
 
@@ -118,7 +118,7 @@ The package and docs surface now spans more than one usage style:
   choose the right interface?"
 - Read the evidence book when the question is "what has been checked, where
   are the governed bundles, and where do the scientific boundaries still sit?"
-- Read the maintainer guide when the question is "how do docs, package
+- Read the maintainer handbook when the question is "how do docs, package
   metadata, quality lanes, and release claims stay synchronized?"
 
 ## Start With These Flagship Pages
@@ -127,7 +127,7 @@ The package and docs surface now spans more than one usage style:
 - [Native Bayesian workflows](phylogenetics/operations/native-bayesian-workflows.md)
 - [Native benchmark review](phylogenetics/operations/native-benchmark-review.md)
 - [Evidence Book](phylogenetics-evidence-book/index.md)
-- [Maintainer guide](phylogenetics-maintainer/index.md)
+- [Maintainer handbook](03-bijux-phylogenetics-maintain/index.md)
 
 ## Read In Order
 

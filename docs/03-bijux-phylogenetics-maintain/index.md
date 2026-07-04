@@ -1,5 +1,4 @@
----
-title: Maintainer Guide
+title: Maintainer Handbook
 audience: maintainer
 type: handbook
 status: active
@@ -7,7 +6,7 @@ owner: bijux-phylogenetics-dev
 last_reviewed: 2026-07-04
 ---
 
-# Maintainer Guide
+# Maintainer Handbook
 
 Use this handbook when the question is about repository health, release
 alignment, or documentation stewardship rather than runtime product use.
@@ -64,24 +63,41 @@ site green, but also for making sure:
 - evidence guides do not imply more closure than the checked-in record
 - release narratives stay aligned across docs, metadata, and governed reports
 
-## Read By Question
+## Handbook Sections
 
-- How do repository runs keep root aliases disposable and avoid root clutter?
-  [Artifact hygiene](artifact-hygiene.md)
-- How should public docs and package READMEs map to the runtime surface?
-  [Documentation ownership](documentation-ownership.md)
-- How do flagship native surfaces stay documented across reference, workflow,
-  and quality pages?
-  [Native surface documentation](native-surface-documentation.md)
-- How do architecture, evidence, and release pages stay aligned as one public
-  trust story?
-  [Public trust surface maintenance](public-trust-surface-maintenance.md)
-- How do interface guides, artifact guides, and metadata links stay aligned?
-  [Public interface and artifact maintenance](public-interface-and-artifact-maintenance.md)
-- How do validation-lane guides and PCM study guides stay aligned with trust
-  language?
-  [Trust lane and study guide maintenance](trust-lane-and-study-guide-maintenance.md)
-- How should a release-minded maintainer check narrative alignment?
-  [Release surface alignment](release-surface-alignment.md)
+- [Documentation system](documentation-system/index.md) for documentation
+  ownership and native surface documentation rules
+- [Trust surfaces](trust-surfaces/index.md) for public trust surface
+  maintenance, public interface and artifact maintenance, and trust lane and
+  study guide maintenance
+- [Repository operations](repository-operations/index.md) for artifact hygiene
+  and release surface alignment
 
-For maintainers scanning by keyword, this guide explicitly covers artifact hygiene, native surface documentation, public trust surface maintenance, public interface and artifact maintenance, trust lane and study guide maintenance, and release surface alignment.
+## Start With
+
+- Open [Documentation system](documentation-system/index.md) when the question
+  is how public docs, package READMEs, and flagship native surfaces should be
+  described together.
+- Open [Trust surfaces](trust-surfaces/index.md) when the concern is whether
+  architecture, evidence-book, interface, and validation pages still tell one
+  bounded public story.
+- Open [Repository operations](repository-operations/index.md) when the
+  question begins with artifact hygiene, release alignment, or repository
+  execution discipline.
+
+## Boundary
+
+This handbook exists for repository stewardship, not product semantics. When a
+maintainer rule only wraps a runtime surface, this handbook should stop at the
+integration point and send the reader back to the owning product page.
+
+For maintainers scanning by keyword, this handbook explicitly covers
+documentation ownership, native surface documentation, public trust surface
+maintenance, public interface and artifact maintenance, trust lane and study
+guide maintenance, artifact hygiene, and release surface alignment.
+
+The maintained review vocabulary in this handbook includes these exact surface
+names because they are part of the repository's checked-in trust contract:
+
+- `public trust surface maintenance`
+- `trust lane and study guide maintenance`

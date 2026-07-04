@@ -5,6 +5,9 @@ import tomllib
 from typing import cast
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+MAINTAINER_HANDBOOK_ROOT = (
+    REPO_ROOT / "docs" / "03-bijux-phylogenetics-maintain"
+)
 
 
 def _read(path: Path) -> str:
@@ -393,12 +396,16 @@ def test_package_readmes_link_package_roles_to_native_runtime_and_docs() -> None
 
 
 def test_maintainer_docs_name_native_surface_documentation_rule() -> None:
-    maintainer_index = _read(REPO_ROOT / "docs" / "phylogenetics-maintainer" / "index.md")
+    maintainer_index = _read(MAINTAINER_HANDBOOK_ROOT / "index.md")
     ownership = _read(
-        REPO_ROOT / "docs" / "phylogenetics-maintainer" / "documentation-ownership.md"
+        MAINTAINER_HANDBOOK_ROOT
+        / "documentation-system"
+        / "documentation-ownership.md"
     )
     native_surface_documentation = _read(
-        REPO_ROOT / "docs" / "phylogenetics-maintainer" / "native-surface-documentation.md"
+        MAINTAINER_HANDBOOK_ROOT
+        / "documentation-system"
+        / "native-surface-documentation.md"
     )
 
     assert "native surface documentation" in maintainer_index
@@ -412,10 +419,10 @@ def test_maintainer_docs_name_native_surface_documentation_rule() -> None:
 
 
 def test_maintainer_docs_name_public_trust_surface_maintenance_rule() -> None:
-    maintainer_index = _read(REPO_ROOT / "docs" / "phylogenetics-maintainer" / "index.md")
+    maintainer_index = _read(MAINTAINER_HANDBOOK_ROOT / "index.md")
     trust_surface_maintenance = _read(
-        REPO_ROOT
-        / "docs" / "phylogenetics-maintainer"
+        MAINTAINER_HANDBOOK_ROOT
+        / "trust-surfaces"
         / "public-trust-surface-maintenance.md"
     )
 
@@ -427,10 +434,10 @@ def test_maintainer_docs_name_public_trust_surface_maintenance_rule() -> None:
 
 
 def test_maintainer_docs_name_public_interface_and_artifact_maintenance_rule() -> None:
-    maintainer_index = _read(REPO_ROOT / "docs" / "phylogenetics-maintainer" / "index.md")
+    maintainer_index = _read(MAINTAINER_HANDBOOK_ROOT / "index.md")
     interface_maintenance = _read(
-        REPO_ROOT
-        / "docs" / "phylogenetics-maintainer"
+        MAINTAINER_HANDBOOK_ROOT
+        / "trust-surfaces"
         / "public-interface-and-artifact-maintenance.md"
     )
 
@@ -440,9 +447,9 @@ def test_maintainer_docs_name_public_interface_and_artifact_maintenance_rule() -
 
 
 def test_maintainer_docs_name_artifact_hygiene_rule() -> None:
-    maintainer_index = _read(REPO_ROOT / "docs" / "phylogenetics-maintainer" / "index.md")
+    maintainer_index = _read(MAINTAINER_HANDBOOK_ROOT / "index.md")
     artifact_hygiene = _read(
-        REPO_ROOT / "docs" / "phylogenetics-maintainer" / "artifact-hygiene.md"
+        MAINTAINER_HANDBOOK_ROOT / "repository-operations" / "artifact-hygiene.md"
     )
 
     assert "artifact hygiene" in maintainer_index
@@ -454,10 +461,10 @@ def test_maintainer_docs_name_artifact_hygiene_rule() -> None:
 
 
 def test_maintainer_docs_name_trust_lane_and_study_guide_maintenance_rule() -> None:
-    maintainer_index = _read(REPO_ROOT / "docs" / "phylogenetics-maintainer" / "index.md")
+    maintainer_index = _read(MAINTAINER_HANDBOOK_ROOT / "index.md")
     trust_lane_maintenance = _read(
-        REPO_ROOT
-        / "docs" / "phylogenetics-maintainer"
+        MAINTAINER_HANDBOOK_ROOT
+        / "trust-surfaces"
         / "trust-lane-and-study-guide-maintenance.md"
     )
 

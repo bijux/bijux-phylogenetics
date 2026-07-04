@@ -53,7 +53,7 @@ flowchart LR
 - [Native Bayesian workflows](https://bijux.io/bijux-phylogenetics/phylogenetics/operations/native-bayesian-workflows/)
 - [Native benchmark review](https://bijux.io/bijux-phylogenetics/phylogenetics/operations/native-benchmark-review/)
 - [Evidence Book](https://bijux.io/bijux-phylogenetics/phylogenetics-evidence-book/)
-- [Maintainer handbook](https://bijux.io/bijux-phylogenetics/phylogenetics-maintainer/)
+- [Maintainer handbook](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-maintain/)
 
 ## What This Repository Publishes
 
@@ -235,7 +235,7 @@ Useful entry points:
 - [Validation lanes](docs/phylogenetics/quality/validation-lanes.md)
 - [Claim reading guide](docs/phylogenetics/foundation/claim-reading-guide.md)
 - [Evidence Book guide](docs/phylogenetics-evidence-book/index.md)
-- [Maintainer guide](docs/phylogenetics-maintainer/index.md)
+- [Maintainer handbook](docs/03-bijux-phylogenetics-maintain/index.md)
 - [Runtime package README](packages/bijux-phylogenetics/README.md)
 - [Alias package README](packages/phylogenetic/README.md)
 

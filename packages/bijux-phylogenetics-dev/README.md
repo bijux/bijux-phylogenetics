@@ -58,13 +58,16 @@ cleanup.
 
 ## Read this next
 
-- [Maintainer handbook](https://bijux.io/bijux-phylogenetics/phylogenetics-maintainer/)
-- [Documentation ownership](https://bijux.io/bijux-phylogenetics/phylogenetics-maintainer/documentation-ownership/)
-- [Native surface documentation](https://bijux.io/bijux-phylogenetics/phylogenetics-maintainer/native-surface-documentation/)
-- [Public trust surface maintenance](https://bijux.io/bijux-phylogenetics/phylogenetics-maintainer/public-trust-surface-maintenance/)
-- [Public interface and artifact maintenance](https://bijux.io/bijux-phylogenetics/phylogenetics-maintainer/public-interface-and-artifact-maintenance/)
-- [Trust lane and study guide maintenance](https://bijux.io/bijux-phylogenetics/phylogenetics-maintainer/trust-lane-and-study-guide-maintenance/)
-- [Release surface alignment](https://bijux.io/bijux-phylogenetics/phylogenetics-maintainer/release-surface-alignment/)
+- [Maintainer handbook](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-maintain/)
+- [Documentation system](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-maintain/documentation-system/)
+- [Documentation ownership](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-maintain/documentation-system/documentation-ownership/)
+- [Native surface documentation](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-maintain/documentation-system/native-surface-documentation/)
+- [Trust surfaces](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-maintain/trust-surfaces/)
+- [Public trust surface maintenance](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-maintain/trust-surfaces/public-trust-surface-maintenance/)
+- [Public interface and artifact maintenance](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-maintain/trust-surfaces/public-interface-and-artifact-maintenance/)
+- [Trust lane and study guide maintenance](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-maintain/trust-surfaces/trust-lane-and-study-guide-maintenance/)
+- [Repository operations](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-maintain/repository-operations/)
+- [Release surface alignment](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-maintain/repository-operations/release-surface-alignment/)
 - [Maintainer source on GitHub](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics-dev)
 - [Developer tooling changelog](https://github.com/bijux/bijux-phylogenetics/blob/main/packages/bijux-phylogenetics-dev/CHANGELOG.md)
 - [Security policy](https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md)
