@@ -23,12 +23,14 @@
 <!-- bijux-phylogenetics-badges:generated:end -->
 
 `bijux-phylogenetics` is a contract-first repository for phylogenetic runtime
-engineering, comparative workflows, native inference, evidence-linked
+engineering, comparative analysis, native inference, evidence-linked
 reporting, and release-grade scientific documentation.
 
-This repository is not a thin wrapper around a few shell commands. It exposes a
-deep Python runtime, a broad workflow surface, governed study evidence, and a
-maintainer toolchain that keeps those public claims aligned.
+This repository is not a thin wrapper around a few shell commands. The
+checked-in runtime already spans tree semantics, alignments, native
+likelihood, maximum-likelihood inference, supported Bayesian workflows,
+comparative and ancestral analysis, explicit parsimony, datasets, reporting,
+benchmarks, and governed evidence.
 
 ```mermaid
 flowchart LR
@@ -67,8 +69,8 @@ flowchart LR
 
 ## Runtime Depth At A Glance
 
-The current repository breadth is already substantial. Public docs should make
-that visible:
+The public surface should make the breadth visible instead of hiding it behind
+generic toolkit language:
 
 | Capability family | What is already here |
 | --- | --- |
@@ -79,6 +81,7 @@ that visible:
 | Comparative analysis | PGLS, Brownian and OU modeling, phylogenetic signal, discrete-state evolution, regression review, and model-selection ledgers |
 | Ancestral analysis | continuous and discrete ancestral reconstruction, uncertainty ledgers, state-transition review, and reviewer-facing output bundles |
 | Parsimony | Fitch, Wagner, Sankoff, Dollo, Camin-Sokal, ACCTRAN, DELTRAN, bootstrap, jackknife, NNI, SPR, and ratchet-oriented owned scoring surfaces |
+| Simulation and datasets | packaged example inputs, study datasets, benchmark corpora, and simulation families used by tests and review workflows |
 | External-engine workflows | MAFFT, trimAl, IQ-TREE2, FastTree, MrBayes, and BEAST orchestration where wrapper ownership remains the honest product boundary |
 | Reports and bundles | HTML reports, TSV and JSON artifacts, manifests, evidence-linked bundles, benchmark outputs, and release-truth surfaces |
 
@@ -127,6 +130,8 @@ The runtime already supports all of the following broad capability groups:
 - comparative trait analysis, ancestral-state workflows, discrete-state
   evolution analysis, diversification review, and simulation surfaces
 - explicit parsimony scoring, ancestral reconstruction, and search families
+- packaged datasets, benchmark corpora, and simulation surfaces that support
+  both runtime examples and review workflows
 - governed adapter surfaces for external tools such as MAFFT, trimAl,
   IQ-TREE2, FastTree, MrBayes, and BEAST
 - evidence bundle creation, publication review, and artifact packaging
@@ -148,11 +153,10 @@ This repository owns three related but different public stories:
 That distinction matters because the code surface is broader than the currently
 closed evidence surface. The public trust model lives in:
 
-- [Analytical surface coverage](evidence-book/index/analytical-surface-coverage.md)
-- [Claim re-audit](evidence-book/index/claim-reaudit.md)
-- [Closure criteria](evidence-book/index/closure-criteria.md)
-- [Maturity scorecard](evidence-book/index/evidence-maturity-scorecard.md)
-- [Completion gates](evidence-book/index/completion-gates.md)
+- [Validation lanes](https://bijux.io/bijux-phylogenetics/phylogenetics/quality/validation-lanes/)
+- [Evidence honesty and limits](https://bijux.io/bijux-phylogenetics/phylogenetics/quality/evidence-honesty-and-limits/)
+- [Evidence Book](https://bijux.io/bijux-phylogenetics/phylogenetics-evidence-book/)
+- [Maintainer handbook](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-maintain/)
 
 ## Reader Entry Points
 

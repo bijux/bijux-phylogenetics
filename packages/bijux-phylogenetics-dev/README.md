@@ -49,6 +49,16 @@ flowchart LR
 - release surface alignment so package metadata, docs, and governed reports do
   not drift apart
 
+## Why This Package Exists Publicly
+
+The repository is large enough that documentation and release truth are part
+of the product surface. This package exists so that:
+
+- public docs do not undersell the runtime
+- package metadata does not contradict the docs
+- evidence language does not drift into overclaiming
+- release readiness depends on narrative integrity as well as green checks
+
 ## Why This Matters
 
 The runtime package can only be trusted if its packaging, documentation, and

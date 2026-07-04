@@ -55,6 +55,13 @@ runtime depth:
 | Reporting | benchmark, workflow, and reporting surfaces |
 | External engines | governed wrapper-backed external-engine workflows |
 
+## What The Alias Does Not Change
+
+- it does not remove native inference surfaces
+- it does not remove comparative, ancestral, or parsimony families
+- it does not change the evidence-book or quality reading model
+- it does not publish a smaller scientific contract than the canonical package
+
 Choose this package when you want the shorter install and command names while
 keeping the same public runtime contract.
 

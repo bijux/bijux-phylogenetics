@@ -74,6 +74,17 @@ copy_example_inputs(Path("artifacts/example-inputs"))
 | Parsimony | Fitch, Wagner, Sankoff, Dollo, Camin-Sokal, ACCTRAN, DELTRAN, bootstrap, jackknife, NNI, SPR, ratchet |
 | Reports and artifacts | reviewer-facing TSV, JSON, HTML, manifest, benchmark, and evidence-linked bundle surfaces |
 
+## Why The Package Is Deeper Than A Typical Wrapper Toolkit
+
+The package surface is broad because it joins several families that often live
+in separate projects:
+
+- owned tree and topology semantics
+- workflow APIs that emit typed, reviewable results
+- native maximum-likelihood and supported native Bayesian public surfaces
+- comparative, ancestral, and parsimony families
+- packaged datasets, example inputs, reports, and benchmark contracts
+
 ## Why This Package Is Not Just A Wrapper
 
 - it owns the `PhyloTree` runtime and the topology, support, and tree-distance
@@ -93,6 +104,17 @@ copy_example_inputs(Path("artifacts/example-inputs"))
   runtime contracts
 - use the benchmark and evidence-book guides when you need trust-oriented
   review rather than only execution
+
+## Public Runtime Families
+
+```mermaid
+flowchart LR
+    A[bijux-phylogenetics] --> B[CLI workflows]
+    A --> C[Workflow Python]
+    A --> D[Native runtime]
+    A --> E[Comparative analysis]
+    A --> F[Reports and artifacts]
+```
 
 ## Python Workflow Surface
 

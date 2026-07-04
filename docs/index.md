@@ -31,116 +31,86 @@ last_reviewed: 2026-07-04
 [![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/phylogenetics/)
 <!-- bijux-phylogenetics-badges:generated:end -->
 
-`bijux-phylogenetics` is a reproducible phylogenetics toolkit for tree
-inspection, alignment review, native inference, comparative analysis,
-ancestral reconstruction, evidence-linked reporting, and governed workflow
-bundles.
+`bijux-phylogenetics` is a large phylogenetics runtime and evidence-bearing
+repository. The checked-in tree already covers owned tree semantics, alignment
+processing, native likelihood and inference, comparative analysis, ancestral
+reconstruction, explicit parsimony, report generation, benchmark review, and
+governed study evidence.
 
-This documentation is split into three reader-facing surfaces so claims stay
-clear:
-
-- the product guide explains what the runtime does and how to use it
-- the evidence book explains what has been checked against governed study
-  records
-- the maintainer handbook explains how documentation, release, and repository
-  health stay aligned
+This site exists to make that depth visible without overstating what has been
+scientifically closed.
 
 ```mermaid
-flowchart LR
-    A[Runtime package] --> B[Product guide]
-    A --> C[Workflow outputs and reports]
-    C --> D[Evidence book]
-    B --> E[Public users]
-    D --> F[Scientific reviewers]
-    G[Maintainer tooling] --> H[Maintainer handbook]
-    H --> I[Release and docs stewardship]
+flowchart TD
+    A[Canonical runtime] --> B[Product handbook]
+    A --> C[CLI, Python, and native contracts]
+    C --> D[Governed artifacts and reports]
+    D --> E[Evidence book]
+    F[Maintainer package] --> G[Maintainer handbook]
+    B --> H[Users and downstream developers]
+    E --> I[Scientific reviewers]
+    G --> J[Release and trust stewardship]
 ```
 
-## Runtime Depth Snapshot
+## What Readers Should Understand Immediately
 
-| Capability family | Publicly documented depth |
+| Surface | What it is for |
 | --- | --- |
-| Trees | owned `PhyloTree` review, rootedness, support, clade, split, and topology comparison surfaces |
-| Alignments | validation, trimming, coding checks, translation, and dataset preparation workflows |
-| Native methods | finite-state likelihood, native maximum-likelihood results, and supported native Bayesian DNA workflows |
-| Comparative methods | PGLS, signal, regression review, ancestral reconstruction, and discrete-state analysis |
-| Review surfaces | benchmarks, release-truth reports, evidence bundles, and study-backed documentation |
+| [Product handbook](phylogenetics/index.md) | runtime ownership, interfaces, workflows, outputs, and quality reading |
+| [Evidence book](phylogenetics-evidence-book/index.md) | governed comparative-study dossiers, bundle IDs, provenance, and bounded study claims |
+| [Maintainer handbook](03-bijux-phylogenetics-maintain/index.md) | documentation truth, release alignment, artifact hygiene, and public trust stewardship |
 
-## Why The Public Surface Is Larger Than It Looks At First
+## What The Checked-In Runtime Already Covers
 
-The package and docs surface now spans more than one usage style:
-
-- end-to-end workflows for readers who need one governed artifact path
-- native runtime surfaces for readers who need locally owned likelihood and
-  inference contracts
-- comparative and ancestral analysis surfaces for readers who need biological
-  interpretation workflows
-- evidence and release guides for readers who need to judge what has really
-  been checked
+| Capability family | Publicly visible depth |
+| --- | --- |
+| Trees | `PhyloTree`, rootedness, support normalization, topology comparison, clades, MRCA review, tree sets, and rendering |
+| Alignments | FASTA validation, trimming, translation, coding checks, partition-aware handling, and packaged example inputs |
+| Native inference | finite-state likelihood, native maximum-likelihood result objects, supported native Bayesian DNA workflows, and benchmark surfaces |
+| Comparative biology | PGLS, signal, regression interpretation, discrete evolution, diversification, and model-selection reading |
+| Ancestral and parsimony analysis | continuous and discrete reconstruction, uncertainty-ledger outputs, and explicit parsimony families |
+| Datasets and reporting | packaged datasets, study inputs, benchmark corpora, HTML and TSV outputs, manifests, and evidence-linked bundles |
 
 ## Start By Goal
 
-- I want to understand the runtime surface and choose the right interface.
-  Start with the [Phylogenetics product guide](phylogenetics/index.md).
-- I want to understand what has been checked on course-derived comparative
-  studies.
-  Start with the [Evidence Book](phylogenetics-evidence-book/index.md).
-- I want to maintain this repository without letting docs and release claims
-  drift.
+- I want to understand what the runtime owns and which interface I should use.
+  Start with the [Phylogenetics product handbook](phylogenetics/index.md).
+- I want to understand what the governed comparative-study record actually
+  proves.
+  Start with the [Evidence book](phylogenetics-evidence-book/index.md).
+- I want to understand how the repository keeps documentation and release
+  language honest.
   Start with the [Maintainer handbook](03-bijux-phylogenetics-maintain/index.md).
 
-## What This Repository Publishes
+## Reader Routes
 
-- `bijux-phylogenetics`
-  The canonical runtime distribution and the documentation center of gravity.
-- `phylogenetic`
-  A shorter compatibility distribution that maps to the same runtime story.
-- `bijux-phylogenetics-dev`
-  Repository-owned maintainer tooling for docs, release, and quality
-  automation.
+```mermaid
+flowchart LR
+    A[What can I run?] --> B[Product handbook]
+    C[What has been checked?] --> D[Evidence book]
+    E[Why should I trust the release story?] --> F[Maintainer handbook]
+```
 
-## Product Highlights
+- Read the product handbook when the question is about runtime behavior,
+  package roles, interfaces, workflows, outputs, or validation lanes.
+- Read the evidence book when the question is about provenance, bundle IDs,
+  study dossiers, or bounded parity claims.
+- Read the maintainer handbook when the question is about narrative
+  alignment, artifact hygiene, metadata truth, or release readiness.
 
-- owned tree, split, and tree-set review on the `PhyloTree` runtime
-- native finite-state likelihood across nucleotide, protein, codon, and
-  discrete Mk families
-- native maximum-likelihood result objects with support and benchmark evidence
-- native Bayesian DNA workflows for supported fixed-topology and
-  joint-topology runs
-- comparative and ancestral workflows that write reviewable artifacts instead
-  of opaque notebook state
-- governed wrapper orchestration for external scientific engines when the
-  wrapper is itself the honest public surface
+## Flagship Starting Points
 
-## Reader Map
-
-- Read the product guide when the question is "what can I run and how should I
-  choose the right interface?"
-- Read the evidence book when the question is "what has been checked, where
-  are the governed bundles, and where do the scientific boundaries still sit?"
-- Read the maintainer handbook when the question is "how do docs, package
-  metadata, quality lanes, and release claims stay synchronized?"
-
-## Start With These Flagship Pages
-
+- [Surface selection guide](phylogenetics/interfaces/surface-selection.md)
 - [Native maximum-likelihood workflows](phylogenetics/operations/native-maximum-likelihood-workflows.md)
 - [Native Bayesian workflows](phylogenetics/operations/native-bayesian-workflows.md)
-- [Native benchmark review](phylogenetics/operations/native-benchmark-review.md)
-- [Evidence Book](phylogenetics-evidence-book/index.md)
-- [Maintainer handbook](03-bijux-phylogenetics-maintain/index.md)
-
-## Read In Order
-
-1. [Product guide](phylogenetics/index.md)
-2. [Surface selection guide](phylogenetics/interfaces/surface-selection.md)
-3. [Installation and setup](phylogenetics/operations/installation-and-setup.md)
-4. [Claim reading guide](phylogenetics/foundation/claim-reading-guide.md)
-5. [Evidence Book](phylogenetics-evidence-book/index.md)
-6. [Release review workflow](phylogenetics/quality/release-review-workflow.md)
+- [Validation lanes](phylogenetics/quality/validation-lanes.md)
+- [Evidence book overview](phylogenetics-evidence-book/index.md)
+- [Maintainer handbook overview](03-bijux-phylogenetics-maintain/index.md)
 
 ## Important Boundary
 
-The runtime surface is broader than the currently closed evidence surface. The
-documentation keeps that distinction explicit on purpose. A feature can be
-published, documented, and usable without implying that every scientific claim
-around it is already closed by study evidence.
+The code surface is broader than the currently closed evidence surface, and
+the evidence surface is narrower than the full runtime surface. These docs
+keep that distinction explicit on purpose. A feature can be documented and
+usable without claiming that every surrounding scientific interpretation has
+already been closed by governed study evidence.
