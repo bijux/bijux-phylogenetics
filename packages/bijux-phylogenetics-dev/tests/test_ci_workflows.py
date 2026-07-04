@@ -100,8 +100,8 @@ def test_verify_workflow_checks_canonical_alias_and_dev_packages() -> None:
         "${{ matrix.test_python_versions || '[\"3.11\"]' }}"
     )
     assert package_inputs["check_targets"] == (
-        "${{ matrix.check_targets || '[\"quality\", \"security\", "
-        "\"docs\", \"api\", \"build\", \"sbom\"]' }}"
+        '${{ matrix.check_targets || \'["quality", "security", '
+        '"docs", "api", "build", "sbom"]\' }}'
     )
 
 
