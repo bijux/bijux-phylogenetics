@@ -37,6 +37,7 @@ class PhytoolsRegistryFixtureCatalog:
     ard_binary_discrete_missing_fixture: SharedPhytoolsComparativeFixture
     ard_multistate_discrete_missing_fixture: SharedPhytoolsComparativeFixture
 
+
 def build_phytools_registry_fixture_catalog() -> PhytoolsRegistryFixtureCatalog:
     """Resolve the shared fixtures consumed by the governed `phytools` parity cases."""
 

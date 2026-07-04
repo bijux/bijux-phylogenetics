@@ -1,9 +1,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
-
-from ...support.paths import REPOSITORY_ROOT
 
 from bijux_phylogenetics.evidence.book import (
     build_evidence_book_index,
@@ -13,6 +10,8 @@ from bijux_phylogenetics.evidence.book import (
 from bijux_phylogenetics.evidence.teaching import (
     build_repository_teaching_and_migration_index,
 )
+
+from ...support.paths import REPOSITORY_ROOT
 
 REPO_ROOT = REPOSITORY_ROOT
 

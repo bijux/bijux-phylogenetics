@@ -10,6 +10,7 @@ from bijux_phylogenetics.comparative.signal import (
     compute_blombergs_k,
     estimate_pagels_lambda,
 )
+
 from ...support.paths import REPOSITORY_ROOT
 
 FIXTURES = Path(__file__).parent / "fixtures"

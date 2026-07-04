@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
+from bijux_phylogenetics.evidence.book import validate_evidence_book
 
 from ...support.paths import REPOSITORY_ROOT
-
-from bijux_phylogenetics.evidence.book import validate_evidence_book
 
 REPO_ROOT = REPOSITORY_ROOT
 STUDIES_ROOT = REPO_ROOT / "evidence-book" / "studies"

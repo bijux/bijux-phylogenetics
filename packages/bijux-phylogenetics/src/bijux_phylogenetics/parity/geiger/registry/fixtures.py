@@ -62,6 +62,7 @@ class GeigerRegistryFixtureCatalog:
     discrete_ard_four_state_fixture: SharedGeigerDiscreteFixture
     discrete_ard_missing_fixture: SharedGeigerDiscreteFixture
 
+
 def build_geiger_registry_fixture_catalog() -> GeigerRegistryFixtureCatalog:
     """Resolve the shared fixtures consumed by the governed `geiger` parity cases."""
 

@@ -109,7 +109,9 @@ def _is_package_root(candidate: Path) -> bool:
 
 
 def _is_repository_root(candidate: Path) -> bool:
-    return candidate.is_dir() and _is_package_root(candidate / _REPOSITORY_PACKAGE_MARKER)
+    return candidate.is_dir() and _is_package_root(
+        candidate / _REPOSITORY_PACKAGE_MARKER
+    )
 
 
 def _is_fixture_root(candidate: Path) -> bool:

@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ...support.paths import REPOSITORY_ROOT
-
 import pytest
 
 from bijux_phylogenetics.engines.inference import (
     run_large_alignment_inference,
 )
 from bijux_phylogenetics.runtime.errors import EngineWorkflowError
+
+from ...support.paths import REPOSITORY_ROOT
 
 pytestmark = pytest.mark.engine_contract
 

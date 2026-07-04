@@ -50,7 +50,7 @@ def _report_payload_for_bundle(repo_root: Path, evidence_id: str) -> dict[str, o
     if evidence_id == "evidence-001":
         scalar_table = build_primate_pgls_signal_scalar_parity_table(repo_root)
         return {
-                "schema_version": 1,
+            "schema_version": 1,
             "study_id": STUDY_ID,
             "evidence_id": evidence_id,
             "object_names": r_results["source_contract"]["object_names"],
@@ -59,9 +59,7 @@ def _report_payload_for_bundle(repo_root: Path, evidence_id: str) -> dict[str, o
             "species_tip_match": r_results["source_contract"]["species_tip_match"],
             "governed_reload_inputs": [
                 (PCM2_DATASET_ROOT / "reference_primate.csv").as_posix(),
-                (
-                    PCM2_DATASET_ROOT / "reference_trimmed_primatetree.nwk"
-                ).as_posix(),
+                (PCM2_DATASET_ROOT / "reference_trimmed_primatetree.nwk").as_posix(),
             ],
             "scalar_row_count": scalar_table["row_count"],
             "verdict_counts": scalar_table["verdict_counts"],

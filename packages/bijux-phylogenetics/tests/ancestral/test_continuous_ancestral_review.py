@@ -20,6 +20,7 @@ from bijux_phylogenetics.datasets.shared_fixtures import (
     get_shared_trait_table_fixture,
     get_shared_tree_fixture,
 )
+
 from ..support.paths import REPOSITORY_ROOT
 
 FIXTURES = Path(__file__).parent / "fixtures"

@@ -1,9 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
-from ...support.paths import REPOSITORY_ROOT
-
 import pytest
 
 from bijux_phylogenetics.evidence.workbench import (
@@ -11,6 +7,8 @@ from bijux_phylogenetics.evidence.workbench import (
     list_registered_evidence_studies,
     refresh_evidence_book,
 )
+
+from ...support.paths import REPOSITORY_ROOT
 
 REPO_ROOT = REPOSITORY_ROOT
 pytestmark = pytest.mark.slow

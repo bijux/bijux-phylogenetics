@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from bijux_phylogenetics.command_line import main
+
 from ...support.paths import PACKAGE_ROOT
 
 RABIES_EXPECTED_BUNDLE = (

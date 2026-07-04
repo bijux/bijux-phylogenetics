@@ -6,8 +6,6 @@ from pathlib import Path
 
 import pytest
 
-from ...support.paths import REPOSITORY_ROOT
-
 import bijux_phylogenetics
 from bijux_phylogenetics.bayesian import (
     BAYESIAN_BURNIN_POLICY_NAMES,
@@ -858,6 +856,8 @@ from bijux_phylogenetics.validation import (
     validate_taxon_naming_reference_fixtures,
     validate_tree_reference_fixtures,
 )
+
+from ...support.paths import REPOSITORY_ROOT
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_GROUPS = ("trees", "alignments", "metadata", "expected", "parsimony")

@@ -12,9 +12,7 @@ PCM2_REFERENCE_SCRIPT_PATH = (
     "evidence-book/studies/primate-pgls-and-signal/reference/"
     "primate_pgls_and_signal_reference_r.R"
 )
-PCM2_DATASET_ROOT = (
-    Path("evidence-book") / "studies" / STUDY_ID / "datasets"
-)
+PCM2_DATASET_ROOT = Path("evidence-book") / "studies" / STUDY_ID / "datasets"
 
 FAMILY_DEFINITIONS = {
     "workflow-contracts": {

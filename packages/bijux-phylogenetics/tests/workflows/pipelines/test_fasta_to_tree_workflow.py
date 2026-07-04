@@ -19,6 +19,7 @@ from bijux_phylogenetics.runtime.errors import (
     EngineWorkflowError,
     InvalidAlignmentError,
 )
+
 from ...support.paths import REPOSITORY_ROOT
 
 FIXTURES = Path(__file__).parent / "fixtures"

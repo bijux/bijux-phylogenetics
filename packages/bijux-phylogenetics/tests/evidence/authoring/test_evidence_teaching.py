@@ -1,9 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
-from ...support.paths import REPOSITORY_ROOT
-
 from bijux_phylogenetics.evidence.teaching import (
     build_migration_guide,
     build_repository_teaching_and_migration_index,
@@ -15,6 +11,8 @@ from bijux_phylogenetics.evidence.teaching import (
     render_teaching_and_migration_index_markdown,
     render_teaching_guide_markdown,
 )
+
+from ...support.paths import REPOSITORY_ROOT
 
 
 def _study_manifest() -> dict[str, object]:

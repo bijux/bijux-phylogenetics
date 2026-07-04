@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from bijux_phylogenetics.comparative.pgls import build_pgls_model_matrix, run_pgls
+
 from ...support.paths import REPOSITORY_ROOT
 
 FIXTURES = Path(__file__).parent / "fixtures"

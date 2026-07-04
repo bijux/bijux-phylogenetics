@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ...support.paths import PACKAGE_ROOT
-
 import pytest
 
 import bijux_phylogenetics.benchmark as benchmark_api
@@ -15,6 +13,8 @@ from bijux_phylogenetics.benchmark.macroevolution import (
 from tests.support.scientific_output_assertions import (
     assert_selected_scientific_outputs_equivalent,
 )
+
+from ...support.paths import PACKAGE_ROOT
 
 
 @pytest.mark.slow

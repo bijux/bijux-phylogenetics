@@ -7,8 +7,6 @@ import time
 
 import pytest
 
-from ...support.paths import REPOSITORY_ROOT
-
 from bijux_phylogenetics.engines import (
     build_inference_sensitivity_report,
     build_model_selection_limitations_report,
@@ -42,6 +40,8 @@ from bijux_phylogenetics.runtime.errors import (
     EngineWorkflowError,
     InvalidAlignmentError,
 )
+
+from ...support.paths import REPOSITORY_ROOT
 
 pytestmark = pytest.mark.engine_contract
 
