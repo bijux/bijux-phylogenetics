@@ -4,18 +4,18 @@ audience: public
 type: index
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-05
 ---
 
 # Bijux Phylogenetics Product Guide
 
-This handbook explains the public runtime at the level a serious reader
-actually needs: what the repository owns, how the capability families fit
-together, which interfaces are stable, how to operate them, and how to read
-their quality boundaries without flattening everything into one vague claim.
+This handbook explains the public runtime in product terms: what the
+repository owns, how the capability families fit together, which interfaces
+are stable, how to operate them, and how to read their quality boundaries
+without flattening everything into one vague claim.
 
-Use this handbook when you want the product answer first rather than the
-source-tree answer first, but do not want the source-tree depth to disappear.
+Use it when you want the product answer first without losing the source-tree
+depth behind that answer.
 
 ```mermaid
 flowchart TD
@@ -40,10 +40,9 @@ flowchart TD
   <a class="md-button" href="quality/">Quality and release limits</a>
 </div>
 
-## What This Handbook Has To Make Visible
+## What The Runtime Already Makes Possible
 
-The public docs should not undersell the package. The checked-in runtime
-already spans:
+The checked-in runtime already spans:
 
 - tree inspection, comparison, support handling, rootedness review, and
   rendering
@@ -65,7 +64,7 @@ already spans:
 | Workflow runtime | CLI and typed Python routes that emit durable artifacts |
 | Trust runtime | benchmarks, validation lanes, evidence links, and release-facing quality reading |
 
-## Why Readers Should Not Mistake This For A Small Wrapper Layer
+## Why This Is Not A Small Wrapper Layer
 
 ```mermaid
 flowchart LR
@@ -76,10 +75,10 @@ flowchart LR
     A --> F[Benchmarks and validation]
 ```
 
-The runtime is larger than a "FASTA to tree" wrapper story. It already owns a
-real tree runtime, lower-level likelihood contracts, benchmark surfaces, typed
-workflow results, and substantial comparative-analysis families. The handbook
-has to show that depth while still keeping evidence limits visible.
+The runtime is larger than a "FASTA to tree" wrapper story. It owns a real
+tree runtime, lower-level likelihood contracts, benchmark surfaces, typed
+workflow results, and substantial comparative-analysis families. This
+handbook keeps that depth visible while also keeping evidence limits visible.
 
 ## Read By Question
 

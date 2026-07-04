@@ -4,7 +4,7 @@ audience: public
 type: overview
 status: active
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-05
 ---
 
 # Bijux Phylogenetics
@@ -31,14 +31,14 @@ last_reviewed: 2026-07-04
 [![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
 <!-- bijux-phylogenetics-badges:generated:end -->
 
-`bijux-phylogenetics` is a large phylogenetics runtime and evidence-bearing
-repository. The checked-in tree already covers owned tree semantics, alignment
-processing, native likelihood and inference, comparative analysis, ancestral
-reconstruction, explicit parsimony, report generation, benchmark review, and
-governed study evidence.
+`bijux-phylogenetics` combines a substantial phylogenetics runtime with a
+checked-in evidence program and a maintainer-facing trust surface.
 
-This site exists to make that depth visible without overstating what has been
-scientifically closed.
+This site helps readers answer three questions directly:
+
+- what the runtime can do today
+- what the governed evidence actually supports
+- how release claims are kept aligned with code, artifacts, and documentation
 
 ```mermaid
 flowchart TD
@@ -52,7 +52,7 @@ flowchart TD
     G --> J[Release and trust stewardship]
 ```
 
-## What Readers Should Understand Immediately
+## Start With The Right Surface
 
 | Surface | What it is for |
 | --- | --- |
@@ -110,7 +110,6 @@ flowchart LR
 ## Important Boundary
 
 The code surface is broader than the currently closed evidence surface, and
-the evidence surface is narrower than the full runtime surface. These docs
-keep that distinction explicit on purpose. A feature can be documented and
-usable without claiming that every surrounding scientific interpretation has
-already been closed by governed study evidence.
+the evidence surface is narrower than the full runtime surface. A feature can
+be documented and usable without claiming that every surrounding scientific
+interpretation has already been closed by governed study evidence.
