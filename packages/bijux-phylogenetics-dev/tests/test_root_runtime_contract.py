@@ -453,10 +453,7 @@ def test_runtime_package_make_test_all_frozen_uses_repository_owned_comparison_t
     assert (
         'test -n "" || { echo "TEST_ALL_FROZEN_REF is required"; exit 2; }' in dry_run
     )
-    assert (
-        f'make -C "{REPO_ROOT}" root-check-env >/dev/null'
-        in dry_run
-    )
+    assert f'make -C "{REPO_ROOT}" root-check-env >/dev/null' in dry_run
     assert (
         f'"{REPO_ROOT / "artifacts" / "root" / "check-venv" / "bin" / "python"}" -m bijux_phylogenetics_dev.quality.frozen_test_report check'
         in dry_run
