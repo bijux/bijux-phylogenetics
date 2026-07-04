@@ -78,7 +78,7 @@ package_dir = "packages/phylogenetic"
 module_root = "phylogenetic"
 allowed_repo_import_roots = ["phylogenetic", "bijux_phylogenetics"]
 owned_module_prefixes = ["phylogenetic"]
-required_install_dependencies = ["bijux-phylogenetics>=0.1.0,<1.0"]
+required_install_dependencies = ["bijux-phylogenetics>=0.1.1,<1.0"]
 
 [tool.bijux_phylogenetics.package_boundaries.package_roles."bijux-phylogenetics-dev"]
 role = "maintainer"
@@ -91,7 +91,7 @@ required_install_dependencies = ["PyYAML>=6.0"]
 [tool.bijux_phylogenetics.package_boundaries.target_package_roles."bijux-phylogenetics-evidence"]
 role = "evidence-consumer"
 target_module_root = "bijux_phylogenetics_evidence"
-required_runtime_dependency = "bijux-phylogenetics>=0.1.0,<1.0"
+required_runtime_dependency = "bijux-phylogenetics>=0.1.1,<1.0"
 """.strip()
         + "\n",
     )
@@ -176,7 +176,7 @@ forbidden_archive_prefixes = ["tests/", "docs/"]
 [tool.bijux_phylogenetics.publication_readiness.package_policy."phylogenetic"]
 package_dir = "packages/phylogenetic"
 wheel_module_root = "phylogenetic"
-allowed_dependencies = ["bijux-phylogenetics>=0.1.0,<1.0"]
+allowed_dependencies = ["bijux-phylogenetics>=0.1.1,<1.0"]
 required_sdist_entries = ["src/phylogenetic/__init__.py"]
 required_wheel_entries = ["phylogenetic/__init__.py"]
 forbidden_archive_prefixes = ["tests/", "docs/"]
@@ -336,7 +336,7 @@ __all__ = ["inspect_pgls_inputs", "run_pgls"]
         """
 [project]
 name = "phylogenetic"
-dependencies = ["bijux-phylogenetics>=0.1.0,<1.0"]
+dependencies = ["bijux-phylogenetics>=0.1.1,<1.0"]
 
 [tool.hatch.build.targets.sdist]
 include = ["src/phylogenetic/**"]
