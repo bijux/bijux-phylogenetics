@@ -4,7 +4,7 @@ audience: public
 type: how-to
 status: active
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-05-13
+last_reviewed: 2026-07-04
 ---
 
 # Installation And Setup
@@ -13,27 +13,24 @@ Use the canonical runtime package when you want the main product surface.
 
 ## Basic Route
 
-- install the runtime package
-- confirm the CLI resolves
-- run a small tree inspection or validation workflow
-- direct local run products into `artifacts/`
+1. Install the runtime package.
+2. Confirm the CLI resolves.
+3. Run a small validation or inspection command.
+4. Keep local run products under `artifacts/`.
 
 The operational goal is predictable local behavior, not hidden notebook state
 or scattered temporary outputs.
 
 ## External Engine Runtime
 
-Some owned workflows execute scientific binaries directly instead of using
-mocked adapters. Those lanes need the local runtime to be installed before the
-real integration or governed scientific-validation commands will pass.
-
-On macOS with Homebrew, use:
+Some workflows execute real scientific binaries rather than mock adapters. On
+macOS with Homebrew, install the current local engine set with:
 
 ```bash
 make install-external-engine-runtime
 ```
 
-That target installs the repository's current local engine set:
+That target installs:
 
 - `mafft`
 - `trimal`
@@ -42,24 +39,25 @@ That target installs the repository's current local engine set:
 - `mb` from MrBayes
 - `beast` from BEAST2
 
-If you install those executables by another route, make sure they resolve on
+If you install those executables another way, make sure they resolve on
 `PATH` before you run the real local lanes.
 
 ## Local Verification Routes
 
-Use the split verification commands when you want a real executable check
-instead of the default lightweight test surface.
+Use these commands when you want an executable-backed verification rather than
+the default lightweight surface:
 
 ```bash
 make test-external-engines
 make test-scientific-validation-slow
 ```
 
-`make test-external-engines` runs the compact real-engine integration lane plus
-the non-slow governed scientific-validation reruns.
-`make test-scientific-validation-slow` keeps the slower FASTA-to-tree golden
-reruns separate so they can use a longer timeout budget without slowing every
-local engine check.
+- `make test-external-engines`
+  Runs the compact real-engine integration lane plus the non-slow governed
+  scientific-validation reruns.
+- `make test-scientific-validation-slow`
+  Keeps the longer FASTA-to-tree reruns separate so they do not slow every
+  local engine check.
 
-Keep the outputs from those runs under the repository `artifacts/` tree. The
-owned make surfaces already do that by default.
+The repository-owned make targets already route outputs into `artifacts/` by
+default.

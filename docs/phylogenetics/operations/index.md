@@ -4,19 +4,31 @@ audience: public
 type: how-to
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-04
 ---
 
 # Runtime Operations
 
-This section covers how to get the runtime working locally and how to use it
-without drifting into maintainer-only surfaces.
+This section covers installation, local execution, and practical workflow use.
 
-## Read This Section Next
+Use it when you want to get work done with the runtime rather than study the
+interface map or release posture.
 
-- [installation and setup](installation-and-setup.md)
-- [common workflows](common-workflows.md)
-- [native maximum-likelihood workflows](native-maximum-likelihood-workflows.md)
-- [native Bayesian workflows](native-bayesian-workflows.md)
-- [native benchmark review](native-benchmark-review.md)
-- [operational boundaries](operational-boundaries.md)
+## Operational Reading Order
+
+1. [Installation and setup](installation-and-setup.md)
+2. [Common workflows](common-workflows.md)
+3. [Native maximum-likelihood workflows](native-maximum-likelihood-workflows.md)
+4. [Native Bayesian workflows](native-bayesian-workflows.md)
+5. [Native benchmark review](native-benchmark-review.md)
+6. [Operational boundaries](operational-boundaries.md)
+
+This section explicitly includes native maximum-likelihood workflows, native Bayesian workflows, and native benchmark review so the flagship runtime surfaces are discoverable from the main operations landing page.
+
+## What This Section Helps You Do
+
+- install the canonical runtime surface
+- run documented workflows without scattering local outputs
+- choose between workflow-oriented and native-oriented operating modes
+- understand when a workflow is operationally convenient but scientifically
+  review-heavy

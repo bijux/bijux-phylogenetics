@@ -4,7 +4,7 @@ audience: public
 type: overview
 status: active
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-04
 ---
 
 # Bijux Phylogenetics
@@ -31,52 +31,77 @@ last_reviewed: 2026-07-03
 [![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/phylogenetics/)
 <!-- bijux-phylogenetics-badges:generated:end -->
 
-`bijux-phylogenetics` is a reproducible phylogenetics workbench for tree
-inspection, validation, comparison, alignment trimming, coding-sequence
-translation, native likelihood and inference work, publication figure
-packaging, evidence capture, and publishable HTML reports.
+`bijux-phylogenetics` is a reproducible phylogenetics toolkit for tree
+inspection, alignment review, native inference, comparative analysis,
+ancestral reconstruction, evidence-linked reporting, and governed workflow
+bundles.
 
-The repository keeps the same managed Python workspace shape as the other
-Bijux scientific repos: shared standards under `.bijux/`, repository-owned
-`makes/` and `configs/`, one canonical runtime package, one compatibility
-alias package, and one maintainer package.
+This documentation is split into three reader-facing surfaces so claims stay
+clear:
 
-The public distributions are `bijux-phylogenetics` for the canonical runtime
-surface and `phylogenetic` for the shorter compatibility alias. The same
-repository also carries a maintainer package for documentation, release, and
-quality automation.
+- the product guide explains what the runtime does and how to use it
+- the evidence book explains what has been checked against governed study
+  records
+- the maintainer guide explains how documentation, release, and repository
+  health stay aligned
 
-## Read this next
+```mermaid
+flowchart LR
+    A[Runtime package] --> B[Product guide]
+    A --> C[Workflow outputs and reports]
+    C --> D[Evidence book]
+    B --> E[Public users]
+    D --> F[Scientific reviewers]
+    G[Maintainer tooling] --> H[Maintainer guide]
+    H --> I[Release and docs stewardship]
+```
 
-- public runtime guide: [Phylogenetics product guide](phylogenetics/index.md)
-- runtime architecture guide: [Runtime architecture](phylogenetics/architecture/index.md)
-- surface selection guide: [Surface selection guide](phylogenetics/interfaces/surface-selection.md)
-- artifact consumption guide: [Artifact consumption guide](phylogenetics/interfaces/artifact-consumption-guide.md)
-- validation-lane guide: [Validation lanes](phylogenetics/quality/validation-lanes.md)
-- claim-reading guide: [Claim reading guide](phylogenetics/foundation/claim-reading-guide.md)
-- native maximum-likelihood workflows: [Native maximum-likelihood workflows](phylogenetics/operations/native-maximum-likelihood-workflows.md)
-- native Bayesian workflows: [Native Bayesian workflows](phylogenetics/operations/native-bayesian-workflows.md)
-- native benchmark review: [Native benchmark review](phylogenetics/operations/native-benchmark-review.md)
-- release review workflow: [Release review workflow](phylogenetics/quality/release-review-workflow.md)
-- public evidence guide: [Evidence-book guide](phylogenetics-evidence-book/index.md)
-- maintainer guide: [Maintainer guide](phylogenetics-maintainer/index.md)
+## Start By Goal
 
+- I want to understand the runtime surface and choose the right interface.
+  Start with the [Phylogenetics product guide](phylogenetics/index.md).
+- I want to understand what has been checked on course-derived comparative
+  studies.
+  Start with the [Evidence Book](phylogenetics-evidence-book/index.md).
+- I want to maintain this repository without letting docs and release claims
+  drift.
+  Start with the [Maintainer guide](phylogenetics-maintainer/index.md).
 
-## Notable Runtime Surfaces
+## What This Repository Publishes
 
-- tree, split, and tree-set review on one owned `PhyloTree` runtime
-- native finite-state likelihood evaluation across nucleotide, protein, codon, and discrete Mk families
-- native maximum-likelihood inference result objects, support evidence, and wrapper-comparison benchmark reports
-- native Bayesian entry points for supported DNA fixed-topology and topology-sampling workflows
-- comparative and ancestral analysis surfaces that link directly to governed artifacts and reviewer-facing reports
-- external-engine workflow orchestration where the repository intentionally treats wrappers as product surfaces rather than pretending they are native implementations
+- `bijux-phylogenetics`
+  The canonical runtime distribution and the documentation center of gravity.
+- `phylogenetic`
+  A shorter compatibility distribution that maps to the same runtime story.
+- `bijux-phylogenetics-dev`
+  Repository-owned maintainer tooling for docs, release, and quality
+  automation.
 
-## Evidence Closure
+## Product Highlights
 
-The runtime surface is broader than the currently closed evidence surface.
-The governed evidence-book records that difference explicitly, and the public
-handbook now distinguishes native ownership, wrapper orchestration, and
-evidence closure rather than flattening them into one claim:
+- owned tree, split, and tree-set review on the `PhyloTree` runtime
+- native finite-state likelihood across nucleotide, protein, codon, and
+  discrete Mk families
+- native maximum-likelihood result objects with support and benchmark evidence
+- native Bayesian DNA workflows for supported fixed-topology and
+  joint-topology runs
+- comparative and ancestral workflows that write reviewable artifacts instead
+  of opaque notebook state
+- governed wrapper orchestration for external scientific engines when the
+  wrapper is itself the honest public surface
 
-- start from the public evidence guide: [Evidence Book](phylogenetics-evidence-book/index.md)
-- review analytical surface coverage and closure status from the linked evidence-book index outputs there
+## Read In Order
+
+1. [Product guide](phylogenetics/index.md)
+2. [Surface selection guide](phylogenetics/interfaces/surface-selection.md)
+3. [Installation and setup](phylogenetics/operations/installation-and-setup.md)
+4. [Claim reading guide](phylogenetics/foundation/claim-reading-guide.md)
+5. [Evidence Book](phylogenetics-evidence-book/index.md)
+6. [Release review workflow](phylogenetics/quality/release-review-workflow.md)
+
+## Important Boundary
+
+The runtime surface is broader than the currently closed evidence surface. The
+documentation keeps that distinction explicit on purpose. A feature can be
+published, documented, and usable without implying that every scientific claim
+around it is already closed by study evidence.

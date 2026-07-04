@@ -4,18 +4,39 @@ audience: public
 type: explanation
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-04
 ---
 
 # Quality And Limits
 
-Public trust in this repository depends on explicit checks and explicit limits.
+This section explains how the repository tests itself, how it describes its
+confidence boundaries, and how it decides whether a release is serious enough
+to publish.
 
-## Read This Section Next
+Start with validation lanes when the question is what a green result actually
+proves.
 
-- [test strategy](test-strategy.md)
-- [validation lanes](validation-lanes.md)
-- [native benchmark evidence](native-benchmark-evidence.md)
-- [release review workflow](release-review-workflow.md)
-- [release and publication gates](release-and-publication-gates.md)
-- [evidence honesty and limits](evidence-honesty-and-limits.md)
+## What This Section Answers
+
+- Which validation lane proves which kind of behavior?
+- How should benchmark results be interpreted?
+- What makes a release believable instead of merely green?
+- How does the project keep public claims narrower than the evidence supports?
+
+```mermaid
+flowchart TD
+    A[Quality question] --> B[Testing strategy]
+    A --> C[Validation lanes]
+    A --> D[Benchmark interpretation]
+    A --> E[Release review]
+    A --> F[Claim honesty]
+```
+
+## Read Next
+
+- [Test strategy](test-strategy.md)
+- [Validation lanes](validation-lanes.md)
+- [Native benchmark evidence](native-benchmark-evidence.md)
+- [Release review workflow](release-review-workflow.md)
+- [Release and publication gates](release-and-publication-gates.md)
+- [Evidence honesty and limits](evidence-honesty-and-limits.md)

@@ -4,57 +4,66 @@ audience: public
 type: explanation
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-04
 ---
 
 # Claim Reading Guide
 
-This repository publishes multiple kinds of claim, and they do not all mean the
-same thing.
+This repository publishes different kinds of claim. They should not be read as
+synonyms.
 
-## Main Claim Types
+## Claim Types
 
 - runtime claim
-  The package owns and documents a surface that users can run.
+  A documented feature is part of the public runtime surface.
 - native ownership claim
-  The repository implements the named surface locally rather than only wrapping
-  an external engine.
+  The named feature is implemented locally rather than only delegated to an
+  external engine.
 - wrapper claim
-  The repository intentionally exposes an external-engine workflow as a governed
-  product surface without pretending the implementation is native.
+  An external-engine workflow is intentionally published as a governed product
+  surface without being described as native.
 - evidence claim
-  The repository has bounded trust material showing how one surface behaved on
-  governed studies, parity cases, or benchmark lanes.
+  Governed studies, parity cases, or benchmark lanes support a bounded trust
+  statement.
 - release claim
-  The repository currently looks publishable across docs, metadata, readiness
-  reports, and evidence boundaries.
+  Docs, metadata, readiness reports, and evidence boundaries align closely
+  enough for a publishable repository story.
 
 ## Reading Rule
 
+```mermaid
+flowchart LR
+    A[Published feature] --> B[Runtime claim]
+    B --> C{Native or wrapper?}
+    C --> D[Native ownership claim]
+    C --> E[Wrapper claim]
+    B --> F[Evidence claim may exist]
+    F --> G[Release claim may still be narrower]
+```
+
 Do not convert one claim type into another automatically.
 
+- A documented runtime surface is not automatically evidence-closed.
 - a documented runtime surface is not automatically evidence-closed
-- a native implementation is not automatically broader than the documented
-  public contract
-- a wrapper-backed workflow is not automatically a weaker product surface, but
-  it also is not a native claim
-- one evidence study does not automatically close the whole runtime family
-- one green release gate does not erase bounded or open evidence limits
+- A native implementation is not automatically broader than its documented
+  contract.
+- A wrapper-backed workflow can still be a real product surface.
+- One study does not close an entire runtime family.
+- One green release gate does not erase bounded evidence limits.
 
 ## Practical Examples
 
-- native maximum-likelihood result objects are public runtime and native
-  ownership claims
-- external FASTA-to-tree orchestration is a public workflow claim with wrapper
-  ownership where that remains the honest boundary
-- the evidence-book records where those surfaces have bounded study, parity, or
-  benchmark support
-- the release review workflow records whether the repository tells that story
-  coherently at one release point
+- Native maximum-likelihood result objects are runtime claims and native
+  ownership claims.
+- FASTA-to-tree orchestration can be a runtime claim with wrapper ownership.
+- The evidence book records whether those surfaces have bounded study or parity
+  support.
+- Release-readiness reports judge whether the repository tells that full story
+  coherently at one release point.
 
-## Read This With
+## Read Alongside
 
-- [runtime and evidence boundary](evidence-boundary.md)
-- [product surface and ownership](product-surface-and-ownership.md)
-- [validation lanes](../quality/validation-lanes.md)
-- [evidence-book overview](../../phylogenetics-evidence-book/index.md)
+- [Runtime and evidence boundary](evidence-boundary.md)
+- [Product surface and ownership](product-surface-and-ownership.md)
+- [Validation lanes](../quality/validation-lanes.md)
+- [Evidence Book](../../phylogenetics-evidence-book/index.md)

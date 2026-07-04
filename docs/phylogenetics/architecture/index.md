@@ -4,36 +4,43 @@ audience: public
 type: explanation
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-04
 ---
 
 # Runtime Architecture
 
-The runtime architecture is designed to keep public behavior understandable and
-package ownership explicit.
+This section explains how the runtime is organized so capability claims stay
+readable and package ownership stays explicit.
 
-## Architectural Priorities
+## Design Priorities
 
 - one canonical runtime package
-- one thin compatibility alias package
-- explicit boundaries between runtime, maintainer tooling, and evidence
-- public-facing capability families grouped by owned responsibility rather than
-  by module history
-- deterministic artifacts instead of ad hoc local outputs
+- one thin compatibility distribution
+- a clear split between runtime, evidence, and maintainer tooling
+- capability families grouped by durable responsibility rather than by delivery
+  history
+- governed artifacts instead of ad hoc local output layouts
 
-## What This Section Answers
+```mermaid
+flowchart TD
+    A[Canonical runtime package] --> B[Public interfaces]
+    A --> C[Workflow and report outputs]
+    C --> D[Evidence consumers]
+    E[Maintainer package] --> F[Docs, quality, release tooling]
+    G[Compatibility alias] --> A
+```
 
-Use the architecture section when the question is:
+## Questions This Section Answers
 
 - which package should I install or depend on
-- where native runtime ownership ends and wrapper orchestration begins
-- how major capability families are grouped inside the public runtime story
-- why the evidence-book is linked to the repository but not treated as the
-  runtime itself
+- Which distribution should I install?
+- Which package owns the runtime story?
+- Where does native ownership end and wrapper orchestration begin?
+- How does the evidence book consume runtime outputs without becoming the
+  runtime itself?
 
-## Read This Section Next
+## Read Next
 
-- [runtime system map](runtime-system-map.md) for the main capability families
-- [package map](package-map.md) for package ownership
-- [evidence consumer boundary](evidence-consumer-boundary.md) for the runtime
-  versus evidence split
+- [Runtime system map](runtime-system-map.md)
+- [Package map](package-map.md)
+- [Evidence consumer boundary](evidence-consumer-boundary.md)

@@ -4,49 +4,55 @@ audience: public
 type: explanation
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-04
 ---
 
 # What This Runtime Is For
 
-`bijux-phylogenetics` is a reproducible phylogenetics runtime for inspection,
+`bijux-phylogenetics` is a reproducible runtime for phylogenetic inspection,
 comparison, annotation, comparative analysis, ancestral reconstruction,
-native likelihood and inference, adapter-driven engine workflows, and
-evidence-linked reporting.
+native likelihood and inference, and governed reporting.
 
-It is not trying to replace every upstream inference engine. Its value comes
-from making important phylogenetic operations reviewable, repeatable, and
-packaged behind one governed Python surface.
+Its value is not that it replaces every upstream engine. Its value is that it
+makes important phylogenetic work inspectable, repeatable, and reviewable
+through one documented product surface.
 
-## The Core Job
+## Core Responsibilities
 
-The runtime owns the operational layer between tracked inputs and reviewable
-outputs:
-
-- tree validation, rooting, comparison, and rendering
+- tree validation, rooting, comparison, rendering, and tree-set review
 - alignment diagnostics, trimming, coding checks, and translation
-- native finite-state likelihood, native maximum-likelihood tree inference, and supported native Bayesian inference surfaces
-- comparative trait analysis and ancestral-state reconstruction
-- adapter workflows for external alignment and inference tools
+- native finite-state likelihood, native maximum-likelihood inference, and
+  supported native Bayesian inference surfaces
+- comparative analysis and ancestral-state reconstruction
+- wrapper orchestration for selected external scientific tools
 - report, bundle, and artifact generation for downstream review
 
-## What The Runtime Does Not Claim
+## What This Handbook Will Not Do
 
-- it does not claim that every inference workflow in the repository is native,
-  benchmark-closed, or equally mature
-- it does not claim that wrapper-backed workflow orchestration should be
-  described as if it were native implementation ownership
-- it does not claim that the evidence-book already closes every runtime surface
-- it does not flatten serious scientific questions into one generic success
-  message
+- describe every external workflow as if it were a native implementation
+- imply that every documented feature is already evidence-closed
+- flatten scientific review into a single success label
+- substitute repository-health rules for user-facing runtime guidance
 
-## Use This Section Next
+## How To Read The Boundary
 
-- [claim reading guide](claim-reading-guide.md) for how to interpret public,
-  native, wrapper, evidence, and release claims
-- [repository scope and limits](repository-scope-and-limits.md) for the hard
-  boundary
-- [product surface and ownership](product-surface-and-ownership.md) for the
-  runtime/package split
-- [evidence boundary](evidence-boundary.md) for the difference between runtime
-  capability and evidence closure
+```mermaid
+flowchart LR
+    A[Published runtime surface] --> B[Native ownership]
+    A --> C[Wrapper orchestration]
+    B --> D[Usage guidance]
+    C --> D
+    D --> E[Evidence review remains separate]
+```
+
+The runtime can be broader than the currently closed evidence surface. That is
+acceptable only when the documentation says so plainly and routes readers to
+the right trust surface.
+
+## Continue With
+
+- the [claim reading guide](claim-reading-guide.md)
+- [Claim reading guide](claim-reading-guide.md)
+- [Repository scope and limits](repository-scope-and-limits.md)
+- [Product surface and ownership](product-surface-and-ownership.md)
+- [Runtime and evidence boundary](evidence-boundary.md)
