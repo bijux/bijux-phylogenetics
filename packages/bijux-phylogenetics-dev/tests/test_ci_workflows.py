@@ -94,6 +94,16 @@ def test_verify_workflow_checks_canonical_alias_and_dev_packages() -> None:
     assert runtime_entry["check_targets"] == (
         '["quality", "security", "api", "openapi-drift", "build", "sbom"]'
     )
+    assert runtime_entry["test_targets"] == (
+        '["test-unit-sequence-data-foundations", "test-unit-ancestral-dating-evidence", '
+        '"test-unit-bayesian-model-definition", "test-unit-bayesian-inference-runtime", '
+        '"test-unit-comparative-regression-and-signal", '
+        '"test-unit-comparative-biogeography-and-publication", '
+        '"test-unit-likelihood-search-and-fit", '
+        '"test-unit-likelihood-placements-and-topology", '
+        '"test-unit-state-model-foundations", '
+        '"test-unit-state-model-mixtures-and-tree-workflows"]'
+    )
 
 
 def test_workflow_directory_matches_the_shared_python_repository_surface() -> None:

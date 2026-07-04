@@ -95,6 +95,7 @@ jobs:
           - package_slug: bijux-phylogenetics
             package_dir: packages/bijux-phylogenetics
             artifacts_dir: artifacts/bijux-phylogenetics
+            test_targets: "[\"test-unit-sequence-data-foundations\", \"test-unit-ancestral-dating-evidence\", \"test-unit-bayesian-model-definition\", \"test-unit-bayesian-inference-runtime\", \"test-unit-comparative-regression-and-signal\", \"test-unit-comparative-biogeography-and-publication\", \"test-unit-likelihood-search-and-fit\", \"test-unit-likelihood-placements-and-topology\", \"test-unit-state-model-foundations\", \"test-unit-state-model-mixtures-and-tree-workflows\"]"
             check_targets: "[\"quality\", \"security\", \"api\", \"openapi-drift\", \"build\", \"sbom\"]"
           - package_slug: phylogenetic
             package_dir: packages/phylogenetic
@@ -110,6 +111,7 @@ jobs:
       package_dir: "${{ matrix.package_dir }}"
       artifacts_dir: "${{ matrix.artifacts_dir }}"
       test_python_versions: "${{ matrix.test_python_versions || '[\"3.11\"]' }}"
+      test_targets: "${{ matrix.test_targets || '[\"test\"]' }}"
       check_targets: "${{ matrix.check_targets || '[\"quality\", \"security\", \"docs\", \"api\", \"build\", \"sbom\"]' }}"
       api_toolchain_targets: "${{ matrix.api_toolchain_targets || '[\"api\", \"openapi-drift\"]' }}"
       post_test_command: "${{ matrix.post_test_command || '' }}"

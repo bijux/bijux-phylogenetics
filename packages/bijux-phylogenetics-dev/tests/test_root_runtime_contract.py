@@ -185,6 +185,26 @@ def test_root_tox_keeps_the_shared_env_families_and_drops_proteomics_only_ones()
     assert "openapi-drift-core" not in envlist
 
 
+def test_root_tox_exposes_named_runtime_core_test_partitions() -> None:
+    envlist = _envlist()
+
+    expected_runtime_partitions = {
+        "test-core-sequence-data-foundations",
+        "test-core-ancestral-dating-evidence",
+        "test-core-bayesian-model-definition",
+        "test-core-bayesian-inference-runtime",
+        "test-core-comparative-regression-and-signal",
+        "test-core-comparative-biogeography-and-publication",
+        "test-core-likelihood-search-and-fit",
+        "test-core-likelihood-placements-and-topology",
+        "test-core-state-model-foundations",
+        "test-core-state-model-mixtures-and-tree-workflows",
+    }
+
+    assert "test-core" not in envlist
+    assert expected_runtime_partitions <= envlist
+
+
 def test_root_make_declares_shared_maintainer_commands() -> None:
     root_make = (REPO_ROOT / "makes" / "root.mk").read_text(encoding="utf-8")
 
@@ -434,11 +454,11 @@ def test_runtime_package_make_test_all_frozen_uses_repository_owned_comparison_t
         'test -n "" || { echo "TEST_ALL_FROZEN_REF is required"; exit 2; }' in dry_run
     )
     assert (
-        'make -C "/Users/bijan/bijux/bijux-phylogenetics" root-check-env >/dev/null'
+        f'make -C "{REPO_ROOT}" root-check-env >/dev/null'
         in dry_run
     )
     assert (
-        '"/Users/bijan/bijux/bijux-phylogenetics/artifacts/root/check-venv/bin/python" -m bijux_phylogenetics_dev.quality.frozen_test_report check'
+        f'"{REPO_ROOT / "artifacts" / "root" / "check-venv" / "bin" / "python"}" -m bijux_phylogenetics_dev.quality.frozen_test_report check'
         in dry_run
     )
     assert '--package "bijux-phylogenetics"' in dry_run

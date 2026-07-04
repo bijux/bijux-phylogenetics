@@ -129,7 +129,7 @@ def test_root_make_dispatches_test_all_to_requested_package_surface() -> None:
     assert 'resolved_package="bijux-phylogenetics"' in dry_run
     assert 'echo "==> $package: test-all"' in dry_run
     assert (
-        "bijux-phylogenetics=/Users/bijan/bijux/bijux-phylogenetics/makes/packages/bijux-phylogenetics.mk"
+        f"bijux-phylogenetics={REPO_ROOT / 'makes' / 'packages' / 'bijux-phylogenetics.mk'}"
         in dry_run
     )
     assert 'make -C "packages/$package" -f "$profile_path"' in dry_run
