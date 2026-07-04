@@ -31,6 +31,9 @@ single flat namespace.
 - `publication/integrity` owns release-surface equivalence and schema checks, `publication/packages` owns publication-bundle validation, and `publication/supplementary` owns table-generation surfaces.
 - `state_models/ctmc` owns continuous-time Markov chain normalization, stationary-distribution, and transition-matrix tests so the broader state-model surface can separate likelihood and mixture behavior from core matrix math.
 - `state_models/compiled` owns compiled candidate-matrix and compiled finite-state analysis surfaces so generated kernels and proof-style equivalence checks do not stay mixed with native model behavior.
+- `state_models/finite_state` owns generic finite-state kernel behavior such as protocol, posterior, cache, and branch or topology update invariants, leaving family-specific likelihoods out of the shared mechanics surface.
+- `state_models/discrete_traits` owns discrete-trait evolution, Mk-model, ascertainment, and history-simulation workflows so those trait-focused lanes do not remain interleaved with nucleotide or protein family tests.
+- `state_models/families` owns native nucleotide, protein, and codon family likelihood surfaces together with substitution-model selection and site-report exports.
 - `state_models/mixtures` owns invariant-site and discrete-gamma family behavior across nucleotide, protein, codon, and generic finite-state models so those cross-cutting mixture surfaces do not stay interleaved with base likelihood tests.
 - `state_models/optimization` owns branch-length, exchangeability, kappa, and state-frequency search behavior, while `state_models/parameters` owns simplex, bounded-parameter, and parameter-layout invariants that support those optimizers.
 - `trees/reporting` owns tree-review reports, publication packages, and reader-facing CLI surfaces so the `trees/` root can focus on structural tree behavior, fixtures, and single-tree algorithms.
