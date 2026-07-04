@@ -42,6 +42,9 @@ single flat namespace.
 - `likelihood/optimization` owns bounded search, simplex parameterization, and fixed-topology optimization surfaces so lower-level optimizer behavior does not stay mixed with placement, support, and fit-assessment workflows.
 - `likelihood/assessment` owns fit diagnostics, information-criteria review, likelihood-ratio reporting, and result-validation surfaces so evaluation contracts are separated from optimization and search mechanics.
 - `likelihood/placement` owns query-placement workflows, `likelihood/support` owns approximate topology and SH-like support review, and `likelihood/wrappers` owns wrapper-correspondence and wrapper-benchmark comparison surfaces.
+- `topology/comparison` owns agreement-subtree workflows, topology-distance review, and governed topology reference CLIs so cross-tree comparison surfaces are separated from move mechanics and construction helpers.
+- `topology/rearrangements` owns rooted NNI, SPR, and TBR move application, neighborhood enumeration, validity review, and neighborhood-summary surfaces so topology edit mechanics stay grouped by shared move semantics.
+- `topology/construction` owns deterministic rooting and stepwise-addition construction surfaces so topology-building helpers are separated from topology comparison and rearrangement analysis.
 - `state_models/ctmc` owns continuous-time Markov chain normalization, stationary-distribution, and transition-matrix tests so the broader state-model surface can separate likelihood and mixture behavior from core matrix math.
 - `state_models/compiled` owns compiled candidate-matrix and compiled finite-state analysis surfaces so generated kernels and proof-style equivalence checks do not stay mixed with native model behavior.
 - `state_models/finite_state` owns generic finite-state kernel behavior such as protocol, posterior, cache, and branch or topology update invariants, leaving family-specific likelihoods out of the shared mechanics surface.
