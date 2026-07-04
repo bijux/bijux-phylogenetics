@@ -17,7 +17,7 @@ from bijux_phylogenetics.datasets.rabies_method_sensitivity import (
 )
 import bijux_phylogenetics.datasets.rabies_method_sensitivity.workflow as rabies_method_sensitivity_workflow
 
-from ..support.scientific_output_assertions import (
+from ...support.scientific_output_assertions import (
     assert_selected_scientific_outputs_equivalent,
 )
 

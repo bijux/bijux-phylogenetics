@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from ..support.paths import REPOSITORY_ROOT
+from ...support.paths import REPOSITORY_ROOT
 
 REPO_ROOT = REPOSITORY_ROOT
 STUDY_ROOT = REPO_ROOT / "evidence-book" / "studies" / "primate-pgls-and-signal"

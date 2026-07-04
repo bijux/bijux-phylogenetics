@@ -15,7 +15,7 @@ from bijux_phylogenetics.datasets.macroevolution_recovery_suite import (
     write_macroevolution_recovery_suite_workflow_bundle,
 )
 
-from ..support.scientific_output_assertions import (
+from ...support.scientific_output_assertions import (
     assert_selected_scientific_outputs_equivalent,
 )
 

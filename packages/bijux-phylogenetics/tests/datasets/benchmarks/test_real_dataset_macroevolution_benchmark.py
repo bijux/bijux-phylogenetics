@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ..support.paths import PACKAGE_ROOT
+from ...support.paths import PACKAGE_ROOT
 
 import pytest
 

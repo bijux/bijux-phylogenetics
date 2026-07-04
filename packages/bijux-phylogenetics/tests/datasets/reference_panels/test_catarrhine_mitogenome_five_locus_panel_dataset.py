@@ -15,7 +15,7 @@ from bijux_phylogenetics.datasets.phylogenomics import (
     write_catarrhine_mitogenome_five_locus_panel_workflow_bundle,
 )
 
-from ..support.scientific_output_assertions import (
+from ...support.scientific_output_assertions import (
     assert_selected_scientific_outputs_equivalent,
 )
 

@@ -13,7 +13,7 @@ from bijux_phylogenetics.datasets.rabies_geography import (
     write_rabies_geographic_transition_panel_workflow_bundle,
 )
 
-from ..support.scientific_output_assertions import (
+from ...support.scientific_output_assertions import (
     assert_selected_scientific_outputs_equivalent,
 )
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ..support.paths import REPOSITORY_ROOT
+from ...support.paths import REPOSITORY_ROOT
 
 REPO_ROOT = REPOSITORY_ROOT
 STUDY_ROOT = REPO_ROOT / "evidence-book" / "studies" / "primate-longevity-signal"

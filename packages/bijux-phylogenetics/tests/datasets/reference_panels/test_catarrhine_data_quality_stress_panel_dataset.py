@@ -13,7 +13,7 @@ from bijux_phylogenetics.datasets.data_quality_stress import (
     write_catarrhine_data_quality_stress_panel_workflow_bundle,
 )
 
-from ..support.scientific_output_assertions import (
+from ...support.scientific_output_assertions import (
     assert_selected_scientific_outputs_equivalent,
 )
 

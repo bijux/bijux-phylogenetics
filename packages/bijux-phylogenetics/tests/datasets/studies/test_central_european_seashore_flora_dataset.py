@@ -7,42 +7,44 @@ import pytest
 
 from bijux_phylogenetics.command_line import main
 from bijux_phylogenetics.datasets import (
-    export_avian_reproductive_trait_dataset,
-    load_avian_reproductive_trait_dataset,
-    run_avian_reproductive_trait_demo,
-    run_avian_reproductive_trait_workflow,
-    write_avian_reproductive_trait_workflow_bundle,
+    export_central_european_seashore_flora_dataset,
+    load_central_european_seashore_flora_dataset,
+    run_central_european_seashore_flora_demo,
+    run_central_european_seashore_flora_workflow,
+    write_central_european_seashore_flora_workflow_bundle,
 )
-import bijux_phylogenetics.datasets.avian_reproductive_traits as birds_api
+import bijux_phylogenetics.datasets.central_european_seashore_flora as plants_api
 
-from ..support.scientific_output_assertions import (
+from ...support.scientific_output_assertions import (
     assert_selected_scientific_outputs_equivalent,
 )
 
 
-def test_load_avian_reproductive_trait_dataset_exposes_packaged_bird_surface() -> None:
-    dataset = load_avian_reproductive_trait_dataset()
-    assert dataset.dataset_id == "avian_reproductive_traits"
-    assert dataset.label == "Avian reproductive trait dataset"
+def test_load_central_european_seashore_flora_dataset_exposes_packaged_plant_surface() -> (
+    None
+):
+    dataset = load_central_european_seashore_flora_dataset()
+    assert dataset.dataset_id == "central_european_seashore_flora"
+    assert dataset.label == "Central European seashore flora dataset"
     assert dataset.taxon_column == "species"
-    assert dataset.taxon_count == 94
+    assert dataset.taxon_count == 42
     assert dataset.tree_path.is_file()
     assert dataset.traits_path.is_file()
     assert dataset.reference_output_root.is_dir()
-    assert dataset.workflow_continuous_trait == "testes_mass"
-    assert dataset.workflow_pgls_predictor == "body_mass"
-    assert dataset.workflow_discrete_trait == "mating_system"
-    assert dataset.workflow_clade_trait == "mating_system"
-    assert "multiple_paternity_percentage" in dataset.continuous_traits
-    assert "development_mode" in dataset.categorical_traits
+    assert dataset.workflow_continuous_trait == "seed_mass"
+    assert dataset.workflow_pgls_predictor == "plant_height"
+    assert dataset.workflow_discrete_trait == "lifeform"
+    assert dataset.workflow_clade_trait == "lifeform"
+    assert "salt" in dataset.continuous_traits
+    assert "habitat" in dataset.categorical_traits
 
 
 @pytest.mark.slow
-def test_write_avian_reproductive_trait_workflow_bundle_matches_packaged_expected_outputs(
+def test_write_central_european_seashore_flora_workflow_bundle_matches_packaged_expected_outputs(
     tmp_path: Path,
 ) -> None:
-    report = run_avian_reproductive_trait_workflow()
-    bundle = write_avian_reproductive_trait_workflow_bundle(
+    report = run_central_european_seashore_flora_workflow()
+    bundle = write_central_european_seashore_flora_workflow_bundle(
         tmp_path / "workflow", report
     )
     expected_root = report.dataset.reference_output_root
@@ -82,11 +84,11 @@ def test_write_avian_reproductive_trait_workflow_bundle_matches_packaged_expecte
 
 
 @pytest.mark.slow
-def test_run_avian_reproductive_trait_demo_materializes_dataset_and_workflow(
+def test_run_central_european_seashore_flora_demo_materializes_dataset_and_workflow(
     tmp_path: Path,
 ) -> None:
-    result = run_avian_reproductive_trait_demo(tmp_path / "demo")
-    assert result.dataset.taxon_count == 94
+    result = run_central_european_seashore_flora_demo(tmp_path / "demo")
+    assert result.dataset.taxon_count == 42
     assert result.dataset_export.tree_path.is_file()
     assert result.dataset_export.traits_path.is_file()
     assert result.workflow_bundle.summary_path.is_file()
@@ -95,11 +97,10 @@ def test_run_avian_reproductive_trait_demo_materializes_dataset_and_workflow(
     assert "workflow summary" in result.overview_path.read_text(encoding="utf-8")
 
 
-@pytest.mark.slow
-def test_export_avian_reproductive_trait_dataset_copies_expected_outputs(
+def test_export_central_european_seashore_flora_dataset_copies_expected_outputs(
     tmp_path: Path,
 ) -> None:
-    result = export_avian_reproductive_trait_dataset(tmp_path / "dataset")
+    result = export_central_european_seashore_flora_dataset(tmp_path / "dataset")
     expected_files = {path.name for path in result.expected_output_root.glob("*.tsv")}
     assert result.readme_path.is_file()
     assert result.tree_path.is_file()
@@ -108,46 +109,46 @@ def test_export_avian_reproductive_trait_dataset_copies_expected_outputs(
     assert "clade-trait-summary.tsv" in expected_files
 
 
-@pytest.mark.slow
-def test_public_runtime_exports_include_avian_reproductive_trait_dataset_surface() -> (
+def test_public_runtime_exports_include_central_european_seashore_flora_dataset_surface() -> (
     None
 ):
     assert (
-        birds_api.load_avian_reproductive_trait_dataset
-        is load_avian_reproductive_trait_dataset
+        plants_api.load_central_european_seashore_flora_dataset
+        is load_central_european_seashore_flora_dataset
     )
     assert (
-        birds_api.export_avian_reproductive_trait_dataset
-        is export_avian_reproductive_trait_dataset
+        plants_api.export_central_european_seashore_flora_dataset
+        is export_central_european_seashore_flora_dataset
     )
     assert (
-        birds_api.run_avian_reproductive_trait_workflow
-        is run_avian_reproductive_trait_workflow
+        plants_api.run_central_european_seashore_flora_workflow
+        is run_central_european_seashore_flora_workflow
     )
     assert (
-        birds_api.write_avian_reproductive_trait_workflow_bundle
-        is write_avian_reproductive_trait_workflow_bundle
+        plants_api.write_central_european_seashore_flora_workflow_bundle
+        is write_central_european_seashore_flora_workflow_bundle
     )
     assert (
-        birds_api.run_avian_reproductive_trait_demo is run_avian_reproductive_trait_demo
+        plants_api.run_central_european_seashore_flora_demo
+        is run_central_european_seashore_flora_demo
     )
 
 
 @pytest.mark.slow
-def test_cli_demo_avian_reproductive_traits_json_output_reports_dataset_and_workflow(
+def test_cli_demo_central_european_seashore_flora_json_output_reports_dataset_and_workflow(
     tmp_path: Path, capsys
 ) -> None:
-    output = tmp_path / "avian-demo"
+    output = tmp_path / "plant-demo"
     exit_code = main(
-        ["demo", "avian-reproductive-traits", "--out", str(output), "--json"]
+        ["demo", "central-european-seashore-flora", "--out", str(output), "--json"]
     )
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["command"] == "demo"
     assert payload["metrics"]["artifact_count"] == 16
-    assert payload["metrics"]["dataset_taxon_count"] == 94
+    assert payload["metrics"]["dataset_taxon_count"] == 42
     assert payload["metrics"]["reference_output_count"] == 17
-    assert payload["data"]["dataset"]["dataset_id"] == "avian_reproductive_traits"
+    assert payload["data"]["dataset"]["dataset_id"] == "central_european_seashore_flora"
     assert payload["data"]["workflow_bundle"]["summary_path"] == str(
         output / "workflow" / "workflow-summary.tsv"
     )

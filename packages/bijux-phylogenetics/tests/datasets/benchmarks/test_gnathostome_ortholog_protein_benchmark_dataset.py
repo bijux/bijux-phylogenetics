@@ -15,8 +15,8 @@ from bijux_phylogenetics.datasets import (
 )
 import bijux_phylogenetics.datasets.gnathostome_ortholog_protein_benchmark as vertebrates_api
 
-from ..support.external_engines import require_alignment_engine_executables
-from ..support.scientific_output_assertions import (
+from ...support.external_engines import require_alignment_engine_executables
+from ...support.scientific_output_assertions import (
     assert_selected_scientific_outputs_equivalent,
 )
 

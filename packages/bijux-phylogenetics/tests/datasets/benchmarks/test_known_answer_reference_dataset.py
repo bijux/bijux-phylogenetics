@@ -15,7 +15,7 @@ from bijux_phylogenetics.datasets.known_answer_reference import (
     write_known_answer_reference_workflow_bundle,
 )
 
-from ..support.scientific_output_assertions import (
+from ...support.scientific_output_assertions import (
     assert_selected_scientific_outputs_equivalent,
 )
 

@@ -15,7 +15,7 @@ from bijux_phylogenetics.datasets import (
 )
 import bijux_phylogenetics.datasets.pathogens as pathogens_api
 
-from ..support.scientific_output_assertions import (
+from ...support.scientific_output_assertions import (
     assert_selected_scientific_outputs_equivalent,
 )
 
