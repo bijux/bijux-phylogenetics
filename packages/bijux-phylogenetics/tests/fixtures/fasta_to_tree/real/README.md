@@ -1,6 +1,12 @@
-# Real FASTA-to-tree reference inputs
+# Real FASTA-to-Tree Reference Inputs
 
-These fixtures carry biologically real sequence records derived from the repository-local trimAl reference corpus. They are stored here as raw FASTA inputs so the canonical `adapter fasta-to-tree` workflow can be exercised end to end with real engines and checked outputs.
+These fixtures hold biologically real raw sequence inputs for end-to-end
+tree-inference validation with installed engines.
 
-Each FASTA file was produced by removing alignment gap characters from the named source alignment listed in `provenance.json`.
-The fixture names describe the biological scope or stable external ortholog identifier rather than the temporary source example number.
+They let the canonical `adapter fasta-to-tree` workflow run against reviewed
+real data rather than only synthetic toy examples.
+
+- Each FASTA file was derived from the source alignment recorded in
+  `provenance.json` by removing alignment gap characters.
+- Fixture names describe biological scope or stable ortholog identity, not
+  temporary example numbering.

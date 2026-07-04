@@ -1,9 +1,11 @@
 # Test Suite Layout
 
-The runtime test suite is organized by durable product domains rather than a
-single flat namespace.
+The runtime test suite is organized by durable product surfaces, not by
+delivery sequence or short-lived implementation history. Each top-level test
+directory should answer a simple ownership question: what user-facing or
+library-facing capability is being reviewed here?
 
-## Directory Boundaries
+## Top-Level Boundaries
 
 - `alignment/`: alignment transforms, partitioning, and sequence layout review
 - `ancestral/`: ancestral reconstruction, summaries, and sensitivity analysis
@@ -65,8 +67,20 @@ single flat namespace.
 - `workflows/engines` owns external-engine contracts, `workflows/pipelines` owns end-to-end orchestration and replay surfaces, and `workflows/benchmarks` owns governed scale and performance lanes.
 - `trees/tree_sets` owns posterior, consensus, quartet, and uncertainty coverage for multi-tree analyses so single-tree structure tests can stay focused at the `trees/` root.
 
-## Shared Fixtures
+## Fixture Rule
 
 Each domain directory exposes a local `fixtures` link back to the shared
 `tests/fixtures/` tree. Tests should treat that link as the stable source of
 checked-in fixture material instead of assuming the suite stays flat forever.
+
+## Adding Coverage
+
+Add a new test to the narrowest durable owner that matches the behavior under
+review.
+
+- Choose the directory by domain meaning, not by which implementation file was
+  touched most recently.
+- Keep public-interface checks near their publication, contract, or reporting
+  owner rather than mixing them into lower-level mechanics.
+- Prefer creating a new owned subdirectory when one domain starts to mix
+  unrelated analytical, reporting, and execution concerns at the same level.
