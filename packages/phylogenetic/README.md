@@ -26,12 +26,11 @@ shorter `phylogenetic` package and CLI names. It is not a reduced runtime and
 it is not a fork. It points at the same benchmark, workflow, and reporting
 surfaces that the canonical package publishes.
 
-```mermaid
-flowchart LR
-    A[phylogenetic] --> B[Shorter install name]
-    A --> C[Shorter CLI name]
-    A --> D[Same canonical runtime behavior]
-```
+## Alias Structure At A Glance
+
+- shorter install name
+- shorter CLI name
+- same canonical runtime behavior
 
 ## Install
 

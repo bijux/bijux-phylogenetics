@@ -4,12 +4,12 @@
 
 ### Changed
 
-- Extended badge synchronization to the package `README.pypi.md` surfaces so
-  PyPI publication pages and GitHub package readmes share one managed badge
-  contract.
-- Added tests that keep package long descriptions Mermaid-free for PyPI while
-  still requiring the generated badge blocks and trusted-publisher-ready
-  release workflow defaults.
+- Re-centered badge synchronization on the single package `README.md`
+  surfaces so package publication stays aligned with the same SSOT pattern
+  used in sibling Bijux repositories.
+- Added tests that keep package readmes Mermaid-free for PyPI while still
+  requiring the generated badge blocks and trusted-publisher-ready release
+  workflow defaults.
 - Updated publish-readiness policies and guards to expect the
   `bijux-phylogenetics>=0.1.2,<1.0` alias dependency contract for the next
   release line.
