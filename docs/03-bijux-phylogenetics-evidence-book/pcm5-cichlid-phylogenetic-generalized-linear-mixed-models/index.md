@@ -39,6 +39,20 @@ differ, which changes posterior phylogenetic-signal calculations.
 Repeated observations add another variance component. Species identity and
 phylogenetic relatedness must not be merged into one unnamed random effect.
 
+## Preserve The Scale Of Every Quantity
+
+| Model component | Linear-predictor scale | Response-scale interpretation |
+| --- | --- | --- |
+| Gaussian response | identity | expected response changes directly with the coefficient |
+| Poisson count | log | exponentiated coefficient is a multiplicative expected-count ratio |
+| binary-style outcome | logit or source-declared latent scale | inverse-link transformation yields probability; averaging and transforming do not generally commute |
+| phylogenetic random effect | model-specific latent scale | variance contribution depends on covariance scaling and family convention |
+| species random effect | model-specific latent scale | repeated-observation heterogeneity distinct from phylogenetic covariance |
+
+Posterior intervals should be transformed draw by draw when a response-scale
+summary is required. Transforming only posterior means can conceal asymmetry
+and does not preserve interval coverage.
+
 ## Evidence Decomposition
 
 | Bundle | Evaluated surface |
@@ -57,6 +71,17 @@ The bundle structure is deployed; posterior parity verdicts remain open. The
 repository's binary comparative utilities provide adjacent capability but do
 not reproduce the external generalized mixed-model posterior.
 
+## Current Verdict
+
+All nine bundle manifests record `not_comparable`. The dossiers identify the
+source code, datasets, claim boundaries, and required outputs, but no governed
+lane currently reproduces the `MCMCglmm` Poisson, binary-style, ancestral, or
+multiple-random-effect posteriors under matched priors and chain policy.
+
+This status also prevents an unsafe substitution: a phylogenetic logistic
+approximation, a Gaussian model, or a non-phylogenetic generalized model cannot
+inherit the PCM5 claim merely because it accepts similar columns.
+
 ## Inputs And Provenance
 
 The dossier contains `cichlid.csv`, `cichlidtree.nex`, `fishdata.RData`,
@@ -72,6 +97,11 @@ formula. Posterior phylogenetic signal must name the variance components and
 denominator; the convention for a binary-style model cannot be silently copied
 from the Gaussian model. Ancestral node effects must retain node-to-tree
 identity rather than relying on plotting order.
+
+When a denominator contains phylogenetic, species, residual, or
+distribution-specific variance, record every term and the scale on which it is
+defined. Two quantities labelled “phylogenetic signal” are not comparable if
+their denominators or latent-scale conventions differ.
 
 ## Review Priorities
 

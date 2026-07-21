@@ -43,6 +43,22 @@ The inverse covariance is not an implementation detail: taxon order,
 rootedness, branch lengths, and alignment with the species table determine the
 random-effect structure.
 
+## Model Components
+
+The central phylogenetic mixed model can be read as:
+
+```text
+y = X beta + Z u_phylogeny + epsilon
+u_phylogeny ~ Normal(0, sigma_phylogeny^2 A)
+epsilon     ~ Normal(0, sigma_residual^2 I)
+```
+
+`A` is the tree-derived covariance in the aligned species order. The source
+workflow supplies its inverse to `MCMCglmm`. A valid comparison must therefore
+align not only fixed-effect formulas but also covariance scaling, random-effect
+levels, priors on variance components, observation aggregation, and posterior
+summaries.
+
 ## Evidence Decomposition
 
 | Bundle | Evaluated surface |
@@ -60,6 +76,19 @@ remain open because the central computation is still the external `MCMCglmm`
 workflow. The locally available PGLS comparator is useful evidence, but it is
 not a replacement posterior.
 
+## Current Verdict
+
+All seven bundle manifests record `not_comparable`. This is the correct status
+for the present execution boundary: source and data provenance are governed,
+and nearby Gaussian and PGLS surfaces can be inspected, but no repository-owned
+lane currently executes the reference posterior and compares aligned samples
+or summaries.
+
+The status must remain separate from data preparation quality. A verified
+tree–table join or Brownian PGLS coefficient can support its own bounded claim
+without causing fixed-effect, variance-component, or convergence claims from
+the mixed model to pass.
+
 ## Inputs And Provenance
 
 The study carries `cichlid.csv`, `cichlidtree.nex`, and `fishdata.RData` with
@@ -74,6 +103,11 @@ burn-in, thinning, seed policy, effective sample size, autocorrelation, and
 convergence evidence. Point estimates alone cannot establish parity. Fixed
 effects, phylogenetic variance, residual variance, and their credible intervals
 must be compared under matching parameterization.
+
+At least two independently initialized chains or an explicitly justified
+alternative are needed to assess between-chain behavior. Effective sample size
+and autocorrelation qualify each monitored quantity; a large retained row
+count does not by itself demonstrate effective posterior information.
 
 ## Review Priorities
 

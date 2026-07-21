@@ -41,6 +41,22 @@ conditional slope under a specific reference coding. Standardization changes
 the location represented by the intercept. Those semantics must match before
 coefficients from different implementations can be compared.
 
+## Read Coefficients From The Design Matrix
+
+For a model with continuous predictor `x`, group indicator `B`, and interaction
+`x:B`, the fitted mean is interpreted as:
+
+```text
+reference group:  beta_0 + beta_x * x
+group B:          (beta_0 + beta_B) + (beta_x + beta_x:B) * x
+```
+
+`beta_B` is the group difference at the point represented by `x = 0`.
+`beta_x:B` is the change in slope for group B. Centering or standardizing `x`
+therefore changes the intercept and group contrast without changing the raw
+observations. A comparison must align the reference level and transformation
+before interpreting coefficient differences.
+
 ## Evidence Decomposition
 
 | Bundle | Evaluated surface |
@@ -59,6 +75,20 @@ lecture-specific parity verdicts remain open. Evidence infrastructure is
 complete enough to localize the missing comparisons; it is not a passing
 parity result.
 
+## Current Verdict
+
+All eight bundle manifests record `not_comparable`. The repository has the
+source programs, identified inputs, claim decomposition, runtime mapping,
+checks, and review locations, but it does not yet have governed
+observation-level lecture outputs under aligned factor coding, transformations,
+covariance, and hypothesis-test semantics.
+
+Closing a bundle requires more than executing a neighboring regression API.
+The comparison must reconstruct the same design matrix, analysis population,
+coefficient names, test type, and phylogenetic covariance, then retain the
+reference and Bijux observations with an explicit tolerance or structural
+rule.
+
 ## Inputs And Provenance
 
 PCM3 reuses the primate source workspace and governed tree/trait derivatives
@@ -76,6 +106,11 @@ and [runtime mapping](https://github.com/bijux/bijux-phylogenetics/blob/main/evi
 - Distinguish marginal from sequential hypothesis tests.
 - Confirm that the phylogenetic fit uses the same taxa and response as the
   non-phylogenetic comparator.
+
+For every coefficient table, retain the term-to-design-column mapping. For
+every hypothesis-test table, identify whether the test is marginal,
+sequential, or based on nested-model comparison. Equal labels across tools do
+not guarantee equal hypotheses.
 
 ## Current Scope
 

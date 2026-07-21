@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections import Counter
+import json
 from pathlib import Path
 import tomllib
 from typing import cast
@@ -11,6 +13,7 @@ DOMAINS_ROOT = DOCS_ROOT / "02-bijux-phylogenetics-domains"
 EVIDENCE_GUIDE_ROOT = DOCS_ROOT / "03-bijux-phylogenetics-evidence-book"
 PARITIES_ROOT = DOCS_ROOT / "04-bijux-phylogenetics-parities"
 MAINTAINER_ROOT = DOCS_ROOT / "05-bijux-phylogenetics-maintain"
+EVIDENCE_RECORD_ROOT = REPO_ROOT / "evidence-book" / "studies"
 
 
 def _read(path: Path) -> str:
@@ -20,6 +23,16 @@ def _read(path: Path) -> str:
 def _load_toml(path: Path) -> dict[str, object]:
     with path.open("rb") as handle:
         return tomllib.load(handle)
+
+
+def _verdict_counts(study_id: str) -> Counter[str]:
+    statuses: list[str] = []
+    for path in sorted(
+        (EVIDENCE_RECORD_ROOT / study_id).glob("evidence-*/manifest.json")
+    ):
+        payload = json.loads(_read(path))
+        statuses.append(cast(dict[str, str], payload["verdict"])["status"])
+    return Counter(statuses)
 
 
 def test_documentation_hierarchy_has_canonical_domain_and_redirect_paths() -> None:
@@ -282,6 +295,49 @@ def test_primate_guides_publish_values_and_open_boundaries() -> None:
     assert "likelihood-ratio" in models
     assert "intercept-mode likelihood sweep" in boundaries
     assert "boundary register" in boundaries
+
+
+def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> None:
+    evidence_index = _read(EVIDENCE_GUIDE_ROOT / "index.md")
+    pcm3 = _read(
+        EVIDENCE_GUIDE_ROOT
+        / "pcm3-primate-continuous-and-categorical-regression"
+        / "index.md"
+    )
+    pcm4 = _read(
+        EVIDENCE_GUIDE_ROOT
+        / "pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+        / "index.md"
+    )
+    pcm5 = _read(
+        EVIDENCE_GUIDE_ROOT
+        / "pcm5-cichlid-phylogenetic-generalized-linear-mixed-models"
+        / "index.md"
+    )
+
+    assert "Current Verdict Ledger" in evidence_index
+    assert "Evidence Strength Is Multidimensional" in evidence_index
+    assert "Read Coefficients From The Design Matrix" in pcm3
+    assert "All eight bundle manifests record `not_comparable`" in pcm3
+    assert "Model Components" in pcm4
+    assert "All seven bundle manifests record `not_comparable`" in pcm4
+    assert "Preserve The Scale Of Every Quantity" in pcm5
+    assert "All nine bundle manifests record `not_comparable`" in pcm5
+    assert _verdict_counts("primate-longevity-signal") == Counter(
+        {"matched": 8, "matched_with_tolerance": 1}
+    )
+    assert _verdict_counts("primate-pgls-and-signal") == Counter(
+        {"matched": 3, "matched_with_tolerance": 6, "not_comparable": 1}
+    )
+    assert _verdict_counts("primate-continuous-and-categorical-regression") == Counter(
+        {"not_comparable": 8}
+    )
+    assert _verdict_counts(
+        "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+    ) == Counter({"not_comparable": 7})
+    assert _verdict_counts(
+        "cichlid-phylogenetic-generalized-linear-mixed-models"
+    ) == Counter({"not_comparable": 9})
 
 
 def test_package_metadata_points_to_canonical_documentation_paths() -> None:
