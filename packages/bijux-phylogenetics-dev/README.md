@@ -51,8 +51,11 @@ repository imports.
 
 Evidence checks distinguish structural completeness, input identity,
 provenance, execution, verdict, freshness, and publication eligibility.
-Open or blocked scientific verdicts remain valid governed states. Tooling must
-not convert them to passing status to satisfy a release check.
+Scientific verdicts use `matched`, `matched_with_tolerance`,
+`mismatch_explained`, `mismatch_unexplained`, and `not_comparable`. Open or
+blocked follow-through belongs to the resolution workflow, not the verdict
+vocabulary. Tooling must preserve both records and must not convert either one
+to passing status to satisfy a release check.
 
 ## Repository Commands
 
@@ -69,6 +72,20 @@ make package-verify
 These commands create transient environments and reports under `artifacts/`.
 Individual Python modules are implementation surfaces for repository
 automation and may have narrower compatibility than the runtime API.
+
+## Governed Report Map
+
+| Decision | Owning command | Retained record |
+| --- | --- | --- |
+| Are evidence bundles structurally complete? | `make check-evidence-completeness` | `artifacts/root/evidence-completeness.json` |
+| Are local output paths and caches governed? | `make check-artifact-governance` | `artifacts/root/artifact-governance.json` |
+| Do imports and dependencies respect package roles? | `make check-package-boundaries` | `artifacts/root/package-boundaries.json` |
+| Do commands execute through declared owners? | `make check-execution-surfaces` | `artifacts/root/execution-surfaces.json` |
+| Are packages and evidence eligible for publication? | `make check-release-readiness` | `artifacts/root/publish-readiness.json` |
+
+Treat the command exit status as the gate and the JSON record as the
+reconstruction evidence. A copied success message without its revision,
+configuration, and retained report is not a release decision record.
 
 ## What The Governed Commands Establish
 

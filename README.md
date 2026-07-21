@@ -109,6 +109,20 @@ computational engines. Their adapters own input preparation, invocation,
 failure capture, output parsing, and normalization; they do not relabel the
 external algorithms as native code.
 
+## Select An Execution Contract
+
+| Work | Execution owner | Record to preserve | Strongest claim available from that record |
+| --- | --- | --- | --- |
+| inspect or transform an in-memory scientific object | named runtime module | typed return value plus input identity | the documented operation completed under its preconditions |
+| compose a repeatable analysis | `bijux_phylogenetics.api` workflow | workflow result and serialized output inventory | the declared stages completed with the retained diagnostics |
+| infer with an owned numerical method | native likelihood, inference, Bayesian, or parsimony surface | model/search state, estimates, diagnostics, seed, and artifacts | Bijux performed the identified computation |
+| invoke MAFFT, IQ-TREE2, BEAST, or another supported engine | adapter plus external executable | command, executable identity, native files, parser state, and normalized result | the named engine produced output accepted by the adapter contract |
+| evaluate a governed scientific claim | Evidence Book bundle | claim, provenance, inputs, observations, checks, freshness, and verdict | the bundle verdict supports only its identified claim scope |
+
+Choose the contract before choosing the command. A normalized adapter result
+does not become a native result, and a completed workflow does not become
+study evidence until a governed claim consumes it.
+
 ## Read A Result At The Right Layer
 
 | Record | Question it answers | Question it cannot answer alone |

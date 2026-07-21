@@ -94,6 +94,22 @@ flowchart LR
 Human-readable HTML is an inspection surface, not a stable data-exchange API.
 Use structured output when another program needs to consume the result.
 
+## Accept Or Refuse A Result
+
+Do not equate file creation or a zero process exit with a usable scientific
+result. Acceptance depends on the contract that produced it:
+
+| Producer | Accept only when | Preserve on refusal |
+| --- | --- | --- |
+| Python workflow | result status, required output inventory, and method diagnostics satisfy the caller's policy | typed failure or partial state, warnings, configuration, and any valid diagnostics |
+| CLI workflow | exit status agrees with structured status and every required artifact is present | stderr, JSON error record, manifest, and produced subset |
+| native inference | model/search or chain state is complete enough for the intended interpretation | start/chain diagnostics, boundary estimates, rejected moves, and seed |
+| external adapter | executable identity, invocation, native output, parser state, and normalized result are mutually consistent | captured streams, exit state, native partial output, and parse failure |
+
+The caller owns the final suitability decision. The runtime exposes the state
+needed to make it without treating warnings, skipped components, or partial
+output as success.
+
 ## Workflow API
 
 Use the curated `bijux_phylogenetics.api` namespace for application and

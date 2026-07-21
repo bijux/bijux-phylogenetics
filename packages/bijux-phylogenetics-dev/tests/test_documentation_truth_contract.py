@@ -74,6 +74,8 @@ def test_root_readme_publishes_native_external_and_evidence_boundaries() -> None
     assert "artifacts/capability-demo/manifest.json" in readme
     assert "Read A Result At The Right Layer" in readme
     assert "Evidence Book bundle" in readme
+    assert "Select An Execution Contract" in readme
+    assert "the contract before choosing the command" in readme
 
 
 def test_site_landing_connects_first_run_to_scientific_review() -> None:
@@ -84,6 +86,8 @@ def test_site_landing_connects_first_run_to_scientific_review() -> None:
     assert "Follow A Scientific Question" in landing
     assert "it is not a numerical inference\nbenchmark" in landing
     assert "Locate The Authoritative Record" in landing
+    assert "Build A Review Packet" in landing
+    assert "missing outputs disappear from the denominator" in landing
     assert (
         "Runtime parity and Evidence Book status use different vocabularies" in landing
     )
@@ -496,12 +500,15 @@ def test_package_readmes_define_installed_alias_and_governance_contracts() -> No
     assert "Verify The Installed Artifact" in runtime
     assert "Select A Public Surface" in runtime
     assert "it is not an inference-accuracy result" in runtime
+    assert "Accept Or Refuse A Result" in runtime
     assert "Verify The Alias End To End" in alias
     assert "Diagnose A Difference" in alias
     assert "It does not create a second implementation" in alias
     assert "What The Governed Commands Establish" in maintainer
     assert "Change-To-Check Map" in maintainer
     assert "make validate-evidence-book" in maintainer
+    assert "Governed Report Map" in maintainer
+    assert "blocked follow-through belongs to the resolution workflow" in maintainer
 
 
 def test_maintainer_handbook_defines_change_and_artifact_ownership() -> None:

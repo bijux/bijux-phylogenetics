@@ -94,6 +94,24 @@ HTML and figures are interpretation surfaces. When a value also exists in JSON,
 TSV, a schema-governed result, or a bundle manifest, the structured record owns
 its identity and status.
 
+## Build A Review Packet
+
+A durable analysis is a connected set of records, not a directory of files.
+Retain the smallest packet that lets another person establish identity,
+execution, interpretation, and completeness without rerunning the process.
+
+| Packet component | Minimum content | Reject the packet when… |
+| --- | --- | --- |
+| identity | package and external-engine versions, operation, configuration, seed, input hashes | the computation owner or exact inputs cannot be identified |
+| execution | exit or completion state, warnings, search/sampling diagnostics, parser state | a report exists but execution state is unknown |
+| results | typed or structured estimates, topology/history identity, uncertainty, exclusions | headline values exist only in prose or figures |
+| inventory | expected and present outputs, schemas, checksums where governed | missing outputs disappear from the denominator |
+| interpretation | model assumptions, units/scales, comparison rule, bounded non-claims | the scientific meaning depends on undocumented defaults |
+| claim evidence | claim ID, provenance, observations, acceptance rule, freshness, verdict | a broad conclusion is inferred from a neighboring bundle |
+
+Runtime work normally stops after the first five components. The sixth exists
+only for claims governed by the Evidence Book.
+
 ## Follow A Scientific Question
 
 ```mermaid
