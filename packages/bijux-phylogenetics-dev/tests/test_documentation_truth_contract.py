@@ -407,6 +407,22 @@ def test_maintainer_handbook_defines_change_and_artifact_ownership() -> None:
     assert "artifacts/" in artifacts
 
 
+def test_maintainer_indexes_define_operational_decisions_without_meta_prose() -> None:
+    documentation = _read(MAINTAINER_ROOT / "documentation-system" / "index.md")
+    trust = _read(MAINTAINER_ROOT / "trust-surfaces" / "index.md")
+    operations = _read(MAINTAINER_ROOT / "repository-operations" / "index.md")
+
+    assert "Resolve Ownership Before Editing" in documentation
+    assert "Completion Criteria" in documentation
+    assert "Detect Cross-Surface Drift" in trust
+    assert "Release Review Questions" in trust
+    assert "Classify Every Output" in operations
+    assert "Operational Completion" in operations
+    for page in (documentation, trust, operations):
+        assert "Why This Section Matters" not in page
+        assert "public story" not in page
+
+
 def test_public_markdown_avoids_obsolete_meta_language() -> None:
     public_roots = (PRODUCT_ROOT, DOMAINS_ROOT, EVIDENCE_GUIDE_ROOT)
     forbidden = (

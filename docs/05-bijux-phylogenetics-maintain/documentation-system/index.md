@@ -4,43 +4,61 @@ audience: maintainer
 type: handbook
 status: active
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-21
 ---
 
 # Documentation System
 
-The documentation system section exists so maintainers can review how the
-repository describes itself in public without mixing product behavior,
-evidence status, and maintainer-only policy into one blurry surface.
+Every maintained statement has one canonical owner and may have several
+projections. Runtime behavior is owned by source and executable contracts;
+scientific verdicts are owned by Evidence Book records; package identity is
+owned by distribution metadata; generated references are owned by their
+generator inputs. Handwritten pages explain those authorities without
+replacing them.
 
 ```mermaid
-flowchart LR
-    A[Runtime change] --> B[README surfaces]
-    A --> C[Public handbook pages]
-    A --> D[Maintainer documentation rules]
-    B --> E[Consistent public story]
-    C --> E
-    D --> E
+flowchart TD
+    change["Behavior, schema, evidence,<br/>or package change"]
+    owner{"Canonical owner"}
+    generated["Generated references<br/>and indexes"]
+    handbook["Reader-facing explanation<br/>and examples"]
+    contracts["Semantic and build<br/>validation"]
+
+    change --> owner
+    owner --> generated
+    owner --> handbook
+    generated --> contracts
+    handbook --> contracts
 ```
 
-## Why This Section Matters
+## Resolve Ownership Before Editing
 
-The runtime is now broad enough that weak public language becomes misleading
-quickly. A page that sounds small, generic, or overly internal can make the
-package look less capable than the code and tests already show.
+| Changed fact | Canonical owner | Maintained projections |
+| --- | --- | --- |
+| Python signature or typed result | public source surface and contract tests | API guide, examples, generated references |
+| CLI command, option, or exit behavior | command registry and CLI tests | CLI reference, workflow guide, README example |
+| artifact field or manifest relationship | schema/producer and consumer tests | artifact contract and consumption guide |
+| numerical ownership or scientific boundary | implementation, numerical tests, parity/evidence records | domain, workflow, quality, and parity pages |
+| evidence verdict or freshness | bundle manifests and generated indexes | Evidence Book study guides and landing ledger |
+| distribution name, requirement, or URL | package metadata | root and package READMEs, installation guide |
 
-## Section Scope
+Edit the owner first. Regenerate owned derivatives with repository commands.
+Then revise handwritten explanations whose reader-visible meaning changed.
+Never hand-edit a generated page to mask disagreement with its input.
+
+## Maintained Guides
 
 - [Documentation ownership](documentation-ownership.md) explains which
-  documentation layer owns which question
+  source owns a fact, how canonicality is resolved, and which duplication is
+  intentional.
 - [Native surface documentation](native-surface-documentation.md) explains how
-  flagship native work stays visible across reference, workflow, and quality
-  pages
+  an owned scientific implementation is connected to API, workflow,
+  diagnostics, benchmark, and evidence boundaries.
 
-## Start With
+## Completion Criteria
 
-- Open [Documentation ownership](documentation-ownership.md) when the question
-  is where a new claim belongs.
-- Open [Native surface documentation](native-surface-documentation.md) when
-  the question is whether a new native surface is documented deeply enough to
-  be part of the public release story.
+A documentation change is complete when the canonical owner and every affected
+projection agree, generated assets are current, examples use installed public
+surfaces, links resolve in a strict site build, scientific strength is bounded
+by executable evidence, and no maintainer-only delivery commentary appears in
+public scientific guidance.
