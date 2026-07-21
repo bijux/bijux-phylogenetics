@@ -32,7 +32,7 @@ flowchart TD
 | find incomplete coverage | [`index/coverage-gaps.md`](index/coverage-gaps.md) |
 | understand closure requirements | [`index/closure-criteria.md`](index/closure-criteria.md) |
 
-The public [Evidence Book guide](../docs/02-bijux-phylogenetics-evidence-book/index.md)
+The public [Evidence Book guide](../docs/03-bijux-phylogenetics-evidence-book/index.md)
 provides the scientific reading route. This directory remains the primary
 record when narrative and generated status differ.
 

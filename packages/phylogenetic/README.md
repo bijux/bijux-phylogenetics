@@ -94,11 +94,12 @@ when metadata implies different scientific capability.
 ## Documentation
 
 - [Product handbook](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
+- [Scientific domains](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-domains/)
 - [Distribution map](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/architecture/package-map/)
 - [Surface selection](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/surface-selection/)
 - [Workflow operations](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/)
 - [Artifact contracts](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/artifact-contracts/)
-- [Evidence Book](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-evidence-book/)
+- [Evidence Book](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-evidence-book/)
 - [Canonical package source](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics)
 
 Apache License 2.0.

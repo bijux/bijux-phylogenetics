@@ -31,6 +31,18 @@ checked-in [`evidence-book/`](https://github.com/bijux/bijux-phylogenetics/tree/
 for primary bundle records, registries, sources, and repository-wide review
 reports. The narrative explains; the checked-in record adjudicates.
 
+## At A Glance
+
+- studies: `5`
+- evidence bundles: `43`
+- teaching studies: `2`
+- migration studies: `2`
+- freshness statuses: `current=43`
+- coverage gaps still tracked: `28`
+- foundational numerical trust: `bounded`
+- reviewer readiness: `bounded`
+- maturity tier: `reviewable_but_incomplete`
+
 ## Review A Claim In This Order
 
 1. Find the study and claim identifier.
@@ -45,11 +57,11 @@ reports. The narrative explains; the checked-in record adjudicates.
 
 | Study family | Scientific focus | Governed bundles | Material boundary |
 | --- | --- | ---: | --- |
-| [PCM1: primate longevity signal](pcm1-primate-longevity-signal/index.md) | preparation, signal, ancestral reconstruction | 9 | plotting boundary remains explicit |
-| [PCM2: primate PGLS and signal](pcm2-primate-pgls-and-signal/index.md) | GLS/PGLS, transformed trees, signal tests | 10 | one coverage boundary remains explicit |
-| [PCM3: continuous and categorical regression](pcm3-primate-continuous-and-categorical-regression/index.md) | predictors, interactions, comparative regression | 8 | lecture-specific verdicts remain open |
-| [PCM4: cichlid mixed models](pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md) | Bayesian linear and phylogenetic mixed models | 7 | posterior computation remains external |
-| [PCM5: cichlid generalized mixed models](pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md) | count, binary, repeated-measure models | 9 | posterior computation remains external |
+| [Cichlid Bayesian Linear And Phylogenetic Mixed Models](./pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md) | Bayesian linear and phylogenetic mixed models | 7 | posterior computation remains external |
+| [Cichlid Phylogenetic Generalized Linear Mixed Models](./pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md) | count, binary, repeated-measure models | 9 | posterior computation remains external |
+| [Primate Continuous And Categorical Regression](./pcm3-primate-continuous-and-categorical-regression/index.md) | predictors, interactions, comparative regression | 8 | lecture-specific verdicts remain open |
+| [Primate Longevity Signal](./pcm1-primate-longevity-signal/index.md) | preparation, signal, ancestral reconstruction | 9 | plotting boundary remains explicit |
+| [Primate PGLS And Signal](./pcm2-primate-pgls-and-signal/index.md) | GLS/PGLS, transformed trees, signal tests | 10 | one coverage boundary remains explicit |
 
 The bundle count describes inventory, not number of passing claims. Consult
 the live indexes for verdicts.

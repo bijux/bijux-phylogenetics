@@ -78,4 +78,4 @@ the missing comparison or closure criterion. Absence of evidence is not a
 failure to market aggressively; it is a boundary a reader deserves to see.
 
 Continue with [validation lanes](../quality/validation-lanes.md) and the
-[Evidence Book](../../02-bijux-phylogenetics-evidence-book/index.md).
+[Evidence Book](../../03-bijux-phylogenetics-evidence-book/index.md).

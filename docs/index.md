@@ -56,8 +56,9 @@ flowchart LR
 | Goal | Destination | Coverage |
 | --- | --- | --- |
 | run an analysis | [Product handbook](01-bijux-phylogenetics/index.md) | which Python, CLI, or artifact surface fits the work |
-| inspect a scientific claim | [Evidence book](02-bijux-phylogenetics-evidence-book/index.md) | which bundle, provenance record, and open boundary support it |
-| maintain or release the repository | [Maintainer handbook](03-bijux-phylogenetics-maintain/index.md) | how code, docs, packages, and evidence stay synchronized |
+| understand a scientific capability | [Scientific domains](02-bijux-phylogenetics-domains/index.md) | objects, methods, assumptions, outputs, and failure modes |
+| inspect a scientific claim | [Evidence book](03-bijux-phylogenetics-evidence-book/index.md) | which bundle, provenance record, and open boundary support it |
+| maintain or release the repository | [Maintainer handbook](04-bijux-phylogenetics-maintain/index.md) | how code, docs, packages, and evidence stay synchronized |
 
 ## What The Runtime Owns
 

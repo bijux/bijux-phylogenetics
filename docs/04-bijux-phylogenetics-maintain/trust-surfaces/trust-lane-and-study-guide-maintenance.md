@@ -25,7 +25,7 @@ flowchart TD
 
 - `docs/01-bijux-phylogenetics/quality/`
 - `docs/01-bijux-phylogenetics/foundation/`
-- `docs/02-bijux-phylogenetics-evidence-book/`
+- `docs/03-bijux-phylogenetics-evidence-book/`
 - root and package README pointers into those sections
 
 ## Questions To Ask

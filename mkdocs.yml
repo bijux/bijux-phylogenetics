@@ -20,6 +20,39 @@ watch:
   - mkdocs.shared.yml
   - packages/bijux-phylogenetics-dev/src/bijux_phylogenetics_dev/docs
 
+plugins:
+  - search
+  - autorefs
+  - redirects:
+      redirect_maps:
+        02-bijux-phylogenetics-evidence-book/index.md: 03-bijux-phylogenetics-evidence-book/index.md
+        02-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/index.md: 03-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/index.md
+        02-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/data-and-tree-preparation.md: 03-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/data-and-tree-preparation.md
+        02-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/signal-and-ancestral-results.md: 03-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/signal-and-ancestral-results.md
+        02-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/index.md: 03-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/index.md
+        02-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/model-comparisons-and-pgls.md: 03-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/model-comparisons-and-pgls.md
+        02-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/signal-diagnostics-and-open-boundaries.md: 03-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/signal-diagnostics-and-open-boundaries.md
+        02-bijux-phylogenetics-evidence-book/pcm3-primate-continuous-and-categorical-regression/index.md: 03-bijux-phylogenetics-evidence-book/pcm3-primate-continuous-and-categorical-regression/index.md
+        02-bijux-phylogenetics-evidence-book/pcm3-primate-continuous-and-categorical-regression/model-design-and-phylogenetic-regression.md: 03-bijux-phylogenetics-evidence-book/pcm3-primate-continuous-and-categorical-regression/model-design-and-phylogenetic-regression.md
+        02-bijux-phylogenetics-evidence-book/pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md: 03-bijux-phylogenetics-evidence-book/pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md
+        02-bijux-phylogenetics-evidence-book/pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/mixed-model-evidence-boundary.md: 03-bijux-phylogenetics-evidence-book/pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/mixed-model-evidence-boundary.md
+        02-bijux-phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md: 03-bijux-phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md
+        02-bijux-phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/generalized-mixed-model-evidence-boundary.md: 03-bijux-phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/generalized-mixed-model-evidence-boundary.md
+        03-bijux-phylogenetics-maintain/index.md: 04-bijux-phylogenetics-maintain/index.md
+        03-bijux-phylogenetics-maintain/documentation-system/index.md: 04-bijux-phylogenetics-maintain/documentation-system/index.md
+        03-bijux-phylogenetics-maintain/documentation-system/documentation-ownership.md: 04-bijux-phylogenetics-maintain/documentation-system/documentation-ownership.md
+        03-bijux-phylogenetics-maintain/documentation-system/native-surface-documentation.md: 04-bijux-phylogenetics-maintain/documentation-system/native-surface-documentation.md
+        03-bijux-phylogenetics-maintain/trust-surfaces/index.md: 04-bijux-phylogenetics-maintain/trust-surfaces/index.md
+        03-bijux-phylogenetics-maintain/trust-surfaces/public-trust-surface-maintenance.md: 04-bijux-phylogenetics-maintain/trust-surfaces/public-trust-surface-maintenance.md
+        03-bijux-phylogenetics-maintain/trust-surfaces/public-interface-and-artifact-maintenance.md: 04-bijux-phylogenetics-maintain/trust-surfaces/public-interface-and-artifact-maintenance.md
+        03-bijux-phylogenetics-maintain/trust-surfaces/trust-lane-and-study-guide-maintenance.md: 04-bijux-phylogenetics-maintain/trust-surfaces/trust-lane-and-study-guide-maintenance.md
+        03-bijux-phylogenetics-maintain/repository-operations/index.md: 04-bijux-phylogenetics-maintain/repository-operations/index.md
+        03-bijux-phylogenetics-maintain/repository-operations/artifact-hygiene.md: 04-bijux-phylogenetics-maintain/repository-operations/artifact-hygiene.md
+        03-bijux-phylogenetics-maintain/repository-operations/release-surface-alignment.md: 04-bijux-phylogenetics-maintain/repository-operations/release-surface-alignment.md
+  - git-revision-date-localized:
+      enable_creation_date: false
+      fallback_to_build_date: true
+
 theme:
   custom_dir: docs/overrides
 
@@ -101,37 +134,41 @@ nav:
           - Release Review Workflow: 01-bijux-phylogenetics/quality/release-review-workflow.md
           - Release and Publication Gates: 01-bijux-phylogenetics/quality/release-and-publication-gates.md
           - Evidence Honesty and Limits: 01-bijux-phylogenetics/quality/evidence-honesty-and-limits.md
+  - Scientific Domains:
+      - Domain Map: 02-bijux-phylogenetics-domains/index.md
+      - Trees, Alignments, And Taxa: 02-bijux-phylogenetics-domains/trees-alignments-and-taxa.md
+      - Likelihood And Inference: 02-bijux-phylogenetics-domains/likelihood-and-inference.md
   - Evidence Book:
-      - Overview: 02-bijux-phylogenetics-evidence-book/index.md
+      - Overview: 03-bijux-phylogenetics-evidence-book/index.md
       - PCM1:
-          - Overview: 02-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/index.md
-          - Data and Tree Preparation: 02-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/data-and-tree-preparation.md
-          - Signal and Ancestral Results: 02-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/signal-and-ancestral-results.md
+          - Overview: 03-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/index.md
+          - Data and Tree Preparation: 03-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/data-and-tree-preparation.md
+          - Signal and Ancestral Results: 03-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/signal-and-ancestral-results.md
       - PCM2:
-          - Overview: 02-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/index.md
-          - Model Comparisons and PGLS: 02-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/model-comparisons-and-pgls.md
-          - Signal Diagnostics and Open Boundaries: 02-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/signal-diagnostics-and-open-boundaries.md
+          - Overview: 03-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/index.md
+          - Model Comparisons and PGLS: 03-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/model-comparisons-and-pgls.md
+          - Signal Diagnostics and Open Boundaries: 03-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/signal-diagnostics-and-open-boundaries.md
       - PCM3:
-          - Overview: 02-bijux-phylogenetics-evidence-book/pcm3-primate-continuous-and-categorical-regression/index.md
-          - Model Design and Phylogenetic Regression: 02-bijux-phylogenetics-evidence-book/pcm3-primate-continuous-and-categorical-regression/model-design-and-phylogenetic-regression.md
+          - Overview: 03-bijux-phylogenetics-evidence-book/pcm3-primate-continuous-and-categorical-regression/index.md
+          - Model Design and Phylogenetic Regression: 03-bijux-phylogenetics-evidence-book/pcm3-primate-continuous-and-categorical-regression/model-design-and-phylogenetic-regression.md
       - PCM4:
-          - Overview: 02-bijux-phylogenetics-evidence-book/pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md
-          - Mixed-Model Evidence Boundary: 02-bijux-phylogenetics-evidence-book/pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/mixed-model-evidence-boundary.md
+          - Overview: 03-bijux-phylogenetics-evidence-book/pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md
+          - Mixed-Model Evidence Boundary: 03-bijux-phylogenetics-evidence-book/pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/mixed-model-evidence-boundary.md
       - PCM5:
-          - Overview: 02-bijux-phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md
-          - Generalized Mixed-Model Evidence Boundary: 02-bijux-phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/generalized-mixed-model-evidence-boundary.md
+          - Overview: 03-bijux-phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md
+          - Generalized Mixed-Model Evidence Boundary: 03-bijux-phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/generalized-mixed-model-evidence-boundary.md
   - Maintainer:
-      - Maintainer Handbook: 03-bijux-phylogenetics-maintain/index.md
+      - Maintainer Handbook: 04-bijux-phylogenetics-maintain/index.md
       - Documentation System:
-          - Documentation System: 03-bijux-phylogenetics-maintain/documentation-system/index.md
-          - Documentation Ownership: 03-bijux-phylogenetics-maintain/documentation-system/documentation-ownership.md
-          - Native Surface Documentation: 03-bijux-phylogenetics-maintain/documentation-system/native-surface-documentation.md
+          - Documentation System: 04-bijux-phylogenetics-maintain/documentation-system/index.md
+          - Documentation Ownership: 04-bijux-phylogenetics-maintain/documentation-system/documentation-ownership.md
+          - Native Surface Documentation: 04-bijux-phylogenetics-maintain/documentation-system/native-surface-documentation.md
       - Trust Surfaces:
-          - Trust Surfaces: 03-bijux-phylogenetics-maintain/trust-surfaces/index.md
-          - Public Trust Surface Maintenance: 03-bijux-phylogenetics-maintain/trust-surfaces/public-trust-surface-maintenance.md
-          - Public Interface And Artifact Maintenance: 03-bijux-phylogenetics-maintain/trust-surfaces/public-interface-and-artifact-maintenance.md
-          - Trust Lane And Study Guide Maintenance: 03-bijux-phylogenetics-maintain/trust-surfaces/trust-lane-and-study-guide-maintenance.md
+          - Trust Surfaces: 04-bijux-phylogenetics-maintain/trust-surfaces/index.md
+          - Public Trust Surface Maintenance: 04-bijux-phylogenetics-maintain/trust-surfaces/public-trust-surface-maintenance.md
+          - Public Interface And Artifact Maintenance: 04-bijux-phylogenetics-maintain/trust-surfaces/public-interface-and-artifact-maintenance.md
+          - Trust Lane And Study Guide Maintenance: 04-bijux-phylogenetics-maintain/trust-surfaces/trust-lane-and-study-guide-maintenance.md
       - Repository Operations:
-          - Repository Operations: 03-bijux-phylogenetics-maintain/repository-operations/index.md
-          - Artifact Hygiene: 03-bijux-phylogenetics-maintain/repository-operations/artifact-hygiene.md
-          - Release Surface Alignment: 03-bijux-phylogenetics-maintain/repository-operations/release-surface-alignment.md
+          - Repository Operations: 04-bijux-phylogenetics-maintain/repository-operations/index.md
+          - Artifact Hygiene: 04-bijux-phylogenetics-maintain/repository-operations/artifact-hygiene.md
+          - Release Surface Alignment: 04-bijux-phylogenetics-maintain/repository-operations/release-surface-alignment.md

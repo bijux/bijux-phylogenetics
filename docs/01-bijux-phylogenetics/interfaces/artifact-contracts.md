@@ -95,5 +95,5 @@ rules; copying output into an `evidence-*` directory is not promotion.
 
 Continue with the [artifact consumption guide](artifact-consumption-guide.md)
 for a reviewer-oriented traversal and the
-[Evidence book](../../02-bijux-phylogenetics-evidence-book/index.md) for
+[Evidence book](../../03-bijux-phylogenetics-evidence-book/index.md) for
 governed claim records.

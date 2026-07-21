@@ -10,7 +10,7 @@ last_reviewed: 2026-07-04
 # Runtime And Evidence Boundary
 
 The runtime handbook and the evidence book answer different questions. Keeping
-them separate makes the public story more honest, not less complete.
+them separate preserves the meaning and scope of each claim.
 
 ```mermaid
 flowchart TD

@@ -79,8 +79,8 @@ as enough.
   surface
 - do native workflow claims stay bounded by documented native contracts
 - do wrapper-backed surfaces remain labeled as wrappers
-- do evidence freshness and coverage reports support the public story being
-  told for this release
+- do evidence freshness and coverage reports support every scientific claim
+  made for this release
 
 ## What This Workflow Does Not Replace
 

@@ -79,5 +79,5 @@ verdicts. Begin with `manifest.json`, `inputs.manifest.json`, `claims.json`, and
 A checksum proves byte identity; it does not prove scientific correctness.
 
 See [artifact contracts](artifact-contracts.md) for producer guarantees and
-the [Evidence Book](../../02-bijux-phylogenetics-evidence-book/index.md) for
+the [Evidence Book](../../03-bijux-phylogenetics-evidence-book/index.md) for
 claim adjudication.

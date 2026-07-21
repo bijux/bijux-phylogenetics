@@ -19,7 +19,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-Documentation = "https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-maintain/"
+Documentation = "https://bijux.io/bijux-phylogenetics/04-bijux-phylogenetics-maintain/"
 Repository = "https://github.com/bijux/bijux-phylogenetics"
 Issues = "https://github.com/bijux/bijux-phylogenetics/issues"
 Changelog = "https://github.com/bijux/bijux-phylogenetics/blob/main/packages/bijux-phylogenetics-dev/CHANGELOG.md"

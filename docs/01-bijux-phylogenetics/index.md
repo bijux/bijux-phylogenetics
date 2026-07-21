@@ -96,6 +96,10 @@ reviewer.
 
 ## Recommended Reading Paths
 
+**Scientific capability:** [domain map](../02-bijux-phylogenetics-domains/index.md)
+→ [trees, alignments, and taxa](../02-bijux-phylogenetics-domains/trees-alignments-and-taxa.md)
+→ [likelihood and inference](../02-bijux-phylogenetics-domains/likelihood-and-inference.md).
+
 **First analysis:** [installation](operations/installation-and-setup.md) →
 [surface selection](interfaces/surface-selection.md) →
 [common workflows](operations/common-workflows.md) →
@@ -108,7 +112,7 @@ reviewer.
 
 **Scientific claim review:** [claim reading guide](foundation/claim-reading-guide.md)
 → [evidence boundary](foundation/evidence-boundary.md) →
-[Evidence book](../02-bijux-phylogenetics-evidence-book/index.md).
+[Evidence book](../03-bijux-phylogenetics-evidence-book/index.md).
 
 ## Product Limits
 
