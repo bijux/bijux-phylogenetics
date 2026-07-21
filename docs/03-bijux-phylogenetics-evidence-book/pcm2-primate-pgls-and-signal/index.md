@@ -44,21 +44,27 @@ the fitted relationship causal.
 
 ## Evidence Decomposition
 
-| Bundle | Evaluated surface | Current boundary |
+| Bundle | Evaluated surface | Manifest verdict |
 | --- | --- | --- |
-| `evidence-001` | reload semantics | governed parity deployed |
-| `evidence-002` | baseline GLS | governed parity deployed |
-| `evidence-003` | Pagel-λ regression | governed parity deployed |
-| `evidence-004` | phylogenetic signal | governed parity deployed |
-| `evidence-005` | residual diagnostics | governed parity deployed |
-| `evidence-006` | transformed tree | governed parity deployed |
-| `evidence-007` | evolutionary mode fits | governed parity deployed |
-| `evidence-008` | likelihood-ratio comparison | governed parity deployed |
+| `evidence-001` | reload semantics | `matched` |
+| `evidence-002` | baseline GLS | `matched` |
+| `evidence-003` | Pagel-λ regression | `matched_with_tolerance` |
+| `evidence-004` | phylogenetic signal | `matched_with_tolerance` |
+| `evidence-005` | residual diagnostics | `matched_with_tolerance` |
+| `evidence-006` | transformed tree | `matched` |
+| `evidence-007` | evolutionary mode fits | `matched_with_tolerance` |
+| `evidence-008` | likelihood-ratio comparison | `matched_with_tolerance` |
 | `evidence-009` | ancestral modes | `matched_with_tolerance` for named node identities |
-| `evidence-010` | intercept sweep | `not_comparable`; coverage follow-through remains open |
+| `evidence-010` | intercept sweep | `not_comparable`; required observations are absent |
 
 The final row prevents a mostly aligned bundle ledger from being summarized as
 unqualified end-to-end parity.
+
+These verdicts are claim-scoped. They coexist with the aggregate scalar table's
+12 `mismatch_unexplained` rows because the scalar table compares a broader set
+of observations than several focused bundle claims. The bundle ledger and
+scalar ledger answer different questions; neither may be used to erase the
+other.
 
 ## Comparison Dependency Graph
 
@@ -156,6 +162,25 @@ for row identifiers, values, tolerances, and comparison kinds.
 The first four statements can be narrower than the whole study. The last one
 cannot be constructed by counting favorable bundle manifests while omitting
 the scalar mismatch ledger or `evidence-010`.
+
+## Reconstruct The Two-Ledger Decision
+
+1. Read the relevant bundle `manifest.json` to identify the exact claim and
+   its current verdict.
+2. Follow its input manifest and freshness locators to the registered primate
+   derivatives, reference result, and owned PCM2 runtime definition.
+3. For a PCM2-wide statement, inspect
+   `evidence-001/results/scalar-parity-table.json` and retain all 12 unexplained
+   mismatches in the denominator.
+4. Read `evidence-010` separately: `not_comparable` means the required
+   intercept-sweep observations are not available under a registered
+   comparison contract.
+5. Cite a favorable focused claim only at its own scope. Do not promote it to
+   evolutionary-mode, ancestral, or study-wide equivalence.
+
+This route explains an apparent contradiction without weakening either
+record: a narrow registered claim can match while broader retained
+observations still disagree.
 
 ## Inputs And Provenance
 
