@@ -327,6 +327,23 @@ def test_quality_guides_separate_tests_benchmarks_and_release_evidence() -> None
     assert "Release Blockers" in review
 
 
+def test_maintainer_docs_define_ownership_and_native_publication() -> None:
+    maintain_root = REPO_ROOT / "docs" / "05-bijux-phylogenetics-maintain"
+    ownership = _read(
+        maintain_root / "documentation-system" / "documentation-ownership.md"
+    )
+    native = _read(
+        maintain_root / "documentation-system" / "native-surface-documentation.md"
+    )
+
+    assert "Resolve A Statement To Its Owner" in ownership
+    assert "Duplication And Projection" in ownership
+    assert "Native Surface Publication Contract" in native
+    assert "Keep Capability And Assurance Separate" in native
+    assert "Publication Blockers" in native
+    assert "release story" not in native
+
+
 def test_primate_guides_publish_values_and_open_boundaries() -> None:
     pcm1 = EVIDENCE_GUIDE_ROOT / "pcm1-primate-longevity-signal"
     pcm2 = EVIDENCE_GUIDE_ROOT / "pcm2-primate-pgls-and-signal"

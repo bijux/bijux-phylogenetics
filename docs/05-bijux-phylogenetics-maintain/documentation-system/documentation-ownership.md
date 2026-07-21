@@ -38,6 +38,37 @@ evidence record.
 
 Prose explains these sources; it does not override them.
 
+## Resolve A Statement To Its Owner
+
+Before editing a claim, identify the object that can prove or falsify it.
+
+| Statement kind | Canonical owner | Documentation responsibility |
+| --- | --- | --- |
+| public name, signature, or default | curated source and contract tests | explain use and link to generated reference detail |
+| command availability and options | CLI registry and generated command reference | provide task-oriented examples without copying the inventory |
+| service request or response | pinned OpenAPI schema and server contract tests | explain workflow, failure semantics, and compatibility |
+| result or manifest field | versioned schema plus producer/consumer tests | explain interpretation, units, omissions, and migration |
+| numerical or topological behavior | implementation plus named validation lane | state corpus, tolerance, assumptions, and exclusions |
+| comparison or study verdict | governed evidence bundle and generated index | interpret the bounded result without widening its scope |
+| distribution identity | package metadata and built-artifact inspection | state install and compatibility behavior |
+
+If no canonical owner exists, the statement is not ready to be copied across
+public surfaces. Establish the contract or narrow the statement first.
+
+## Duplication And Projection
+
+Repeated prose is acceptable only when each copy serves a distinct reader
+decision. Keep one canonical explanation and use shorter projections elsewhere:
+
+- entry surfaces identify the product, install path, and supported first action;
+- guides explain decisions, workflows, diagnostics, and scientific meaning;
+- generated references enumerate public interfaces;
+- evidence guides interpret governed records;
+- maintainer pages define ownership and change obligations.
+
+Do not duplicate schemas, command inventories, benchmark tables, or verdict
+ledgers by hand. Those values drift silently and are better linked or generated.
+
 ## Public Writing Standard
 
 Describe the scientific object, method, input, result, assumption, and limit
@@ -68,6 +99,11 @@ flowchart LR
 Update every affected projection in the same coherent change. If generated
 output and handwritten interpretation are independently reviewable, keep their
 commit boundaries separate.
+
+Contract removals and semantic changes require a compatibility decision. State
+whether consumers receive a backward-compatible extension, a governed
+deprecation, or a breaking schema/interface change; then update migration and
+artifact-consumption guidance with the owning contract.
 
 ## Review Checklist
 
