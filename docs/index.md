@@ -100,6 +100,34 @@ example into accuracy or biological evidence.
 | compare with established tools | [Parities and correspondence](04-bijux-phylogenetics-parities/index.md) | which APE, GEIGER, phytools, and external-engine relationships are governed |
 | maintain or release the repository | [Maintainer handbook](05-bijux-phylogenetics-maintain/index.md) | how code, docs, packages, and evidence stay synchronized |
 
+## Choose The Durable Record First
+
+Begin with the decision another person must be able to review, then choose the
+runtime surface. This prevents a convenient command or attractive report from
+becoming the accidental evidence standard.
+
+```mermaid
+flowchart LR
+    decision["Decision to preserve"]
+    owner["Scientific and<br/>computational owner"]
+    execution["Python, CLI, or<br/>external-engine execution"]
+    record["Typed result, manifest,<br/>or governed bundle"]
+    review["Independent review"]
+
+    decision --> owner --> execution --> record --> review
+```
+
+| Decision to preserve | Required durable record | Interface is secondary because… |
+| --- | --- | --- |
+| whether an input is admissible | structured validation result with exclusions and input identity | Python and CLI may project the same validation contract differently |
+| which topology or model was selected | result plus candidates, objective or support, configuration, and diagnostics | the winning value alone erases the selection denominator |
+| whether an external engine completed acceptably | manifest, engine identity, command, native outputs, parser state, and normalized result | a wrapper cannot replace the external computation record |
+| whether two implementations correspond | selected case, both observations, normalization, tolerance, and verdict | matching display values do not establish comparable estimands |
+| whether a scientific statement is supportable | current Evidence Book claim record and its complete governed bundle | runtime availability and neighboring evidence do not transfer support |
+
+If the required record cannot be produced, narrow the intended conclusion
+before execution. Do not compensate afterward with a richer narrative.
+
 ## Locate The Authoritative Record
 
 | Reader question | Inspect first | Then verify |

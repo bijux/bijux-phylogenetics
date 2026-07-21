@@ -54,6 +54,39 @@ behavior, and serialize output. Python can preserve rich objects and let the
 caller choose persistence. An artifact is a frozen view of either path and
 must carry enough provenance to stand alone.
 
+## Preserve State Across Handoffs
+
+Every interface handoff must preserve the state that determines whether a
+result can be interpreted. Serialization may reduce representation richness;
+it must not turn an unresolved or partial analysis into an apparently complete
+one.
+
+```mermaid
+stateDiagram-v2
+    [*] --> AcceptedInput
+    AcceptedInput --> Running
+    AcceptedInput --> Refused
+    Running --> Complete
+    Running --> Partial
+    Running --> Failed
+    Complete --> Persisted
+    Partial --> Persisted
+    Failed --> Persisted
+    Refused --> Persisted
+```
+
+| Handoff | State that must survive | Evidence of preservation |
+| --- | --- | --- |
+| Python result to files | typed status, warnings, exclusions, units, ordering, and absent fields | manifest inventory and schema-valid structured artifacts |
+| CLI process to automation | exit status, structured scientific status, stderr diagnostics, and paths written | captured channels plus the manifest named by the command |
+| engine process to adapter result | executable identity, command, return state, native files, parser state, and omissions | engine record linked to—not replaced by—the normalized result |
+| producer bundle to downstream consumer | schema version, input and run identity, expected inventory, checksums, and completeness | acceptance record created before values are imported |
+| runtime or parity record to a public claim | exact claim identifier and evidence scope | governed Evidence Book dependency rather than an inferred link |
+
+When a target surface cannot represent a required state, the handoff must
+refuse, preserve an explicit unknown, or retain a link to the richer owning
+record. Silent coercion is a contract violation.
+
 ## Interface Invariants
 
 ```mermaid

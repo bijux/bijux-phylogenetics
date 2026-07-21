@@ -40,6 +40,25 @@ the assumptions behind these routes. The [surface selection guide](interfaces/su
 then distinguishes Python composition, repeatable CLI execution, and durable
 artifact consumption.
 
+## Define Completion Before Running
+
+An analysis route is ready only when its completion condition names both the
+scientific result and the record needed to review that result. “The command
+finished” is an execution observation, not a scientific completion rule.
+
+| Route | Scientific completion condition | Review record that closes the route |
+| --- | --- | --- |
+| tree or alignment validation | every retained, excluded, and refused item has an explicit reason | structured result with the original input identity and complete denominator |
+| likelihood or comparative fit | estimand, model, fitted population, objective convention, and diagnostics are resolved | typed result plus configuration, taxa/design identity, warnings, and persisted tables |
+| topology search or ancestral reconstruction | selected solutions remain connected to search coverage or uncertainty | result plus candidates or samples, node/clade identity, and uncertainty diagnostics |
+| external-engine workflow | engine execution and parsing both reach an accepted terminal state | engine command and version, native outputs, parser record, normalized result, and manifest |
+| reference correspondence | the selected comparison case reaches a governed verdict | registry selection, raw observations, normalization, tolerance, and failure artifact when applicable |
+| Evidence Book claim | every required claim dependency is present, current, and internally consistent | governed bundle with provenance, inputs, primary output, checks, freshness, and verdict |
+
+A partial or refused result can be a complete record when the contract retains
+why it stopped and what was not produced. It is not a completed scientific
+analysis, and downstream consumers must preserve that distinction.
+
 ## Locate The Scientific Decision
 
 The public interface starts a computation; the owning runtime module decides

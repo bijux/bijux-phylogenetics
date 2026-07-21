@@ -101,6 +101,8 @@ def test_site_landing_connects_first_run_to_scientific_review() -> None:
     assert "Choose The Evidence Needed For The Decision" in landing
     assert "Trace A Result When Something Looks Wrong" in landing
     assert "changing a caption\nor omitting a row cannot resolve" in landing
+    assert "Choose The Durable Record First" in landing
+    assert "the selection denominator" in landing
 
 
 def test_foundation_and_architecture_define_owned_runtime_contracts() -> None:
@@ -174,6 +176,8 @@ def test_product_handbook_routes_analysis_and_preserves_run_identity() -> None:
     assert "Make Four Decisions Before Execution" in product
     assert "Locate The Scientific Decision" in product
     assert "public interface starts a computation" in product
+    assert "Define Completion Before Running" in product
+    assert "A partial or refused result can be a complete record" in product
     assert "Open or blocked\n  resolution work" in product
     assert "Establish The Run Identity First" in operations
     assert "Minimum Handoff Record" in operations
@@ -196,6 +200,8 @@ def test_public_interfaces_define_supported_python_and_handoff_contracts() -> No
     cli = _read(interfaces / "cli-surface.md")
 
     assert "Interface Invariants" in index
+    assert "Preserve State Across Handoffs" in index
+    assert "Silent coercion is a contract violation" in index
     assert "Worked Selections" in selection
     assert "Supported Import Layers" in python
     assert "Workflow API" in python
