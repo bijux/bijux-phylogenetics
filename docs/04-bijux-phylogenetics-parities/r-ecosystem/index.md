@@ -17,9 +17,9 @@ drop-in-equivalence surface.
 
 | Reference | Strongest governed relationship | Main scientific territory |
 | --- | --- | --- |
-| APE | live case registry plus checked fixtures | trees, topology, distances, DNA utilities, covariance, contrasts, ancestral states |
-| GEIGER | live model registry plus generated review report | continuous and discrete evolutionary-model fitting |
-| phytools | live case registry plus stochastic-summary policies | signal, Mk models, simulation, stochastic maps, ancestral estimates |
+| [APE](ape.md) | live case registry plus checked fixtures | trees, topology, distances, DNA utilities, covariance, contrasts, ancestral states |
+| [GEIGER](geiger.md) | live model registry plus generated review report | continuous and discrete evolutionary-model fitting |
+| [phytools](phytools.md) | live case registry plus stochastic-summary policies | signal, Mk models, simulation, stochastic maps, ancestral estimates |
 | `nlme` | checked reference outputs with APE covariance | GLS/PGLS coefficients and model comparison |
 | `MCMCglmm` | external study boundary | Bayesian phylogenetic mixed models in PCM4 and PCM5 |
 

@@ -188,7 +188,11 @@ nav:
           - Generalized Mixed-Model Evidence Boundary: 03-bijux-phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/generalized-mixed-model-evidence-boundary.md
   - Parities And Correspondence:
       - Overview: 04-bijux-phylogenetics-parities/index.md
-      - R Ecosystem: 04-bijux-phylogenetics-parities/r-ecosystem/index.md
+      - R Ecosystem:
+          - Overview: 04-bijux-phylogenetics-parities/r-ecosystem/index.md
+          - APE: 04-bijux-phylogenetics-parities/r-ecosystem/ape.md
+          - GEIGER: 04-bijux-phylogenetics-parities/r-ecosystem/geiger.md
+          - phytools: 04-bijux-phylogenetics-parities/r-ecosystem/phytools.md
       - External Engines: 04-bijux-phylogenetics-parities/external-engines/index.md
       - Interpreting Correspondence: 04-bijux-phylogenetics-parities/correspondence/index.md
   - Maintainer:

@@ -167,6 +167,21 @@ def test_parity_handbook_separates_live_reference_and_adapter_boundaries() -> No
     assert "--ape-shard load_tree" in correspondence
 
 
+def test_r_parity_guides_publish_registry_scope_and_non_claims() -> None:
+    r_root = PARITIES_ROOT / "r-ecosystem"
+    ape = _read(r_root / "ape.md")
+    geiger = _read(r_root / "geiger.md")
+    phytools = _read(r_root / "phytools.md")
+
+    assert "180 cases across 35" in ape
+    assert "ape::dist.dna" not in ape
+    assert "`dist.dna` registry" in ape
+    assert "48 cases across 17" in geiger
+    assert "optimizer triage" in geiger
+    assert "65 cases across 21" in phytools
+    assert "exact histories are not expected" in phytools
+
+
 def test_quality_guides_separate_tests_benchmarks_and_release_evidence() -> None:
     test_strategy = _read(PRODUCT_ROOT / "quality" / "test-strategy.md")
     benchmark = _read(PRODUCT_ROOT / "quality" / "native-benchmark-evidence.md")
