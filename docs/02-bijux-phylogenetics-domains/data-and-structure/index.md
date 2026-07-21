@@ -29,6 +29,18 @@ Start with [Trees, Alignments, And Taxa](trees-alignments-and-taxa.md) for
 rootedness, branch-length meaning, tree sets, alignment partitions, support
 labels, and taxon reconciliation.
 
+## Choose The Data Contract
+
+| Starting material | Read first | Decision owned there |
+| --- | --- | --- |
+| packaged biological or validation dataset | [Datasets And Study Inputs](datasets-and-study-inputs.md) | dataset role, provenance, schema, analytical population, and export identity |
+| Newick, Nexus, FASTA, or tabular files | [Data Interchange And Identity](data-interchange-and-identity.md) | which semantics survive parsing, normalization, and serialization |
+| trees, alignments, partitions, or tree sets already in memory | [Trees, Alignments, And Taxa](trees-alignments-and-taxa.md) | rootedness, branch meaning, state coding, support, and taxon reconciliation |
+
+These routes meet at the admitted analytical object. A packaged dataset is not
+automatically analysis-ready, and a successfully parsed file is not
+automatically scientifically identified.
+
 ## Intake Contract
 
 | Object | Required identity | Method-sensitive meaning |

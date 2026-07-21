@@ -361,6 +361,12 @@ def test_native_benchmark_review_exposes_executable_suite_and_dimensions() -> No
 def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     domain_index = _read(DOMAINS_ROOT / "index.md")
     data_index = _read(DOMAINS_ROOT / "data-and-structure" / "index.md")
+    datasets_domain = _read(
+        DOMAINS_ROOT / "data-and-structure" / "datasets-and-study-inputs.md"
+    )
+    interchange_domain = _read(
+        DOMAINS_ROOT / "data-and-structure" / "data-interchange-and-identity.md"
+    )
     inference_index = _read(DOMAINS_ROOT / "inference" / "index.md")
     evolution_index = _read(DOMAINS_ROOT / "evolutionary-analysis" / "index.md")
     assurance_index = _read(DOMAINS_ROOT / "scientific-assurance" / "index.md")
@@ -402,6 +408,13 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "reconciliation handoff" in tree_domain
     assert "Downstream Handoff Contracts" in tree_domain
     assert "Repair creates a new governed object" in tree_domain
+    assert "Choose The Data Contract" in data_index
+    assert "Choose A Dataset By Its Evidential Role" in datasets_domain
+    assert "Keep Load, Export, Demo, And Workflow Distinct" in datasets_domain
+    assert "align_tree_and_trait_table" in datasets_domain
+    assert "Compare Semantics, Not Rendering" in interchange_domain
+    assert "Round-Trip Acceptance" in interchange_domain
+    assert "Incidental node numbers" in interchange_domain
     assert "Finite-State Likelihood" in inference_domain
     assert "Bayesian Inference" in inference_domain
     assert "Layered Runtime Surfaces" in inference_domain

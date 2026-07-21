@@ -155,6 +155,8 @@ nav:
       - Domain Map: 02-bijux-phylogenetics-domains/index.md
       - Data And Structure:
           - Overview: 02-bijux-phylogenetics-domains/data-and-structure/index.md
+          - Datasets And Study Inputs: 02-bijux-phylogenetics-domains/data-and-structure/datasets-and-study-inputs.md
+          - Data Interchange And Identity: 02-bijux-phylogenetics-domains/data-and-structure/data-interchange-and-identity.md
           - Trees, Alignments, And Taxa: 02-bijux-phylogenetics-domains/data-and-structure/trees-alignments-and-taxa.md
       - Inference:
           - Overview: 02-bijux-phylogenetics-domains/inference/index.md
