@@ -39,6 +39,20 @@ This is a common dependency shape, not a claim that all capabilities must reach
 every node. Release checks may legitimately publish a well-tested feature with
 no study evidence if documentation says exactly that.
 
+## Select A Lane From The Claim
+
+| Proposed statement | Required lane | Missing proof if only the previous lane passes |
+| --- | --- | --- |
+| “the file is interpretable” | structural | public behavior and scientific values remain unchecked |
+| “the documented command behaves as specified” | contract | numerical correctness remains unchecked |
+| “the method returns the declared value within tolerance” | numerical | composed workflow and artifact behavior remain unchecked |
+| “the workflow preserves inputs, diagnostics, and outputs” | integration | reference agreement and scale behavior remain unchecked |
+| “behavior meets a target on this corpus” | benchmark | transfer beyond the corpus remains unchecked |
+| “this study claim has the recorded verdict” | evidence | claims outside the registered scope remain unchecked |
+| “this revision is publishable under repository policy” | release | future revisions and undeclared scientific scope remain unchecked |
+
+Start from the statement being made, not the check that is easiest to run.
+
 ## Structural Lane
 
 Checks formats, required fields, taxon uniqueness, manifest shape, and schema
@@ -68,17 +82,27 @@ makes a scientific result unusable; preserve both outcomes.
 Checks defined metrics on named corpora under recorded environments. Always
 report failures and exclusions. See [native benchmark review](../operations/native-benchmark-review.md).
 
+For every aggregate, retain selected, executed, successful, failed, skipped,
+and missing counts. A benchmark that reports only completed cases cannot
+support a corpus-wide claim.
+
 ## Evidence Lane
 
 Checks claim IDs against sources, inputs, executions, and verdict rules in the
-Evidence Book. Open and blocked verdicts are valid records and must not be
-rewritten as passing because adjacent claims pass.
+Evidence Book. Open follow-through and named blockers are valid resolution
+states and must not be rewritten as matched because adjacent claims pass.
+
+Evidence Book verdicts use their governed comparison vocabulary:
+`matched`, `matched_with_tolerance`, `mismatch_explained`,
+`mismatch_unexplained`, and `not_comparable`. Workflow resolution such as open
+follow-through is recorded separately; do not substitute one namespace for the
+other.
 
 ## Release Lane
 
 Checks that distributions build, public metadata agrees, docs render, schemas
 validate, and declared evidence is fresh enough for publication. It protects
-the release narrative; it cannot broaden the underlying proofs.
+the declared release surface; it cannot broaden the underlying proofs.
 
 ## Claim Template
 

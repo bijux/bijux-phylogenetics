@@ -51,6 +51,23 @@ configuration, comparison or invariant, tolerance or acceptance rule, and
 current verdict. “Validated” without those qualifiers forces the reader to
 invent a stronger meaning than the evidence may support.
 
+## Quality Decision Record
+
+| Field | Reviewer requirement |
+| --- | --- |
+| subject | exact parser, method, workflow, adapter, artifact, package, or claim |
+| scope | fixtures, corpus, taxa, models, versions, configuration, and exclusions |
+| owner | native implementation, Bijux adapter, or named external engine |
+| observation | invariant, value, topology, distribution summary, artifact, or gate condition |
+| rule | exact, tolerance-based, structural, distributional, or policy acceptance criterion |
+| denominator | selected, executed, passed, failed, skipped, and missing cases |
+| status | lane-specific verdict plus warnings and unresolved boundaries |
+| revision | code, data, reference, schema, and environment identity |
+
+A percentage without its denominator and exclusions is not an adequate quality
+record. Neither is a green aggregate whose failed or skipped components cannot
+be enumerated.
+
 ## Important Separations
 
 - Correct serialization does not establish correct science.
@@ -67,6 +84,14 @@ invent a stronger meaning than the evidence may support.
 Warnings, non-convergence, weak support, sensitivity, excluded cases, and open
 evidence verdicts must remain visible. A pipeline that converts all completed
 processes into success destroys information reviewers need.
+
+## Stronger Context Can Reveal New Failure
+
+A method may pass unit and known-answer tests yet fail integration because
+taxa are misaligned, fail a benchmark because a boundary case is unstable, or
+remain non-comparable in a study because the external reference cannot be
+executed under matched assumptions. Later lanes add context; they do not merely
+repeat earlier checks at larger scale.
 
 ## Reader Standard
 

@@ -300,10 +300,20 @@ def test_correspondence_matrix_distinguishes_verified_and_open_surfaces() -> Non
 
 
 def test_quality_guides_separate_tests_benchmarks_and_release_evidence() -> None:
+    quality_index = _read(PRODUCT_ROOT / "quality" / "index.md")
+    lanes = _read(PRODUCT_ROOT / "quality" / "validation-lanes.md")
+    honesty = _read(PRODUCT_ROOT / "quality" / "evidence-honesty-and-limits.md")
     test_strategy = _read(PRODUCT_ROOT / "quality" / "test-strategy.md")
     benchmark = _read(PRODUCT_ROOT / "quality" / "native-benchmark-evidence.md")
     release = _read(PRODUCT_ROOT / "quality" / "release-and-publication-gates.md")
+    review = _read(PRODUCT_ROOT / "quality" / "release-review-workflow.md")
 
+    assert "Quality Decision Record" in quality_index
+    assert "Stronger Context Can Reveal New Failure" in quality_index
+    assert "Select A Lane From The Claim" in lanes
+    assert "mismatch_unexplained" in lanes
+    assert "Governed Verdict Meanings" in honesty
+    assert "Observation Status And Bundle Verdict" in honesty
     assert "engine_contract" in test_strategy
     assert "engine_real" in test_strategy
     assert "scientific_validation" in test_strategy
@@ -312,6 +322,9 @@ def test_quality_guides_separate_tests_benchmarks_and_release_evidence() -> None
     assert "Missing And Failed Cases" in benchmark
     assert "make check-release-readiness" in release
     assert "Open Scientific Verdicts" in release
+    assert "Required Evidence Set" in review
+    assert "Review Procedure" in review
+    assert "Release Blockers" in review
 
 
 def test_primate_guides_publish_values_and_open_boundaries() -> None:
