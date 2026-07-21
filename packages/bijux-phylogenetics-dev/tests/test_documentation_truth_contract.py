@@ -322,11 +322,18 @@ def test_engine_correspondence_guides_preserve_computational_ownership() -> None
 
     assert "MAFFT owns" in alignment
     assert "numerical parity claim" in alignment
+    assert "Stage Acceptance And Handoff" in alignment
+    assert "`--resume` is reuse under an identity check" in alignment
     assert "incomplete bundles" in inference
     assert "remain different statistical" in inference
     assert "quantities and are labeled" in inference
+    assert "Engine Result Identity" in inference
+    assert "Comparison Denominator" in inference
     assert "prepared-only analysis" in bayesian
     assert "does not dispatch through MrBayes or BEAST" in bayesian
+    assert "Run Identity And Resume Safety" in bayesian
+    assert "Resume therefore preserves execution lineage" in bayesian
+    assert "Diagnostic Interpretation" in bayesian
 
 
 def test_correspondence_matrix_distinguishes_verified_and_open_surfaces() -> None:

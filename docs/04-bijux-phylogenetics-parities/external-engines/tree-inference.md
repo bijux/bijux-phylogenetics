@@ -26,6 +26,17 @@ The adapters reject incomplete bundles even when a process exits successfully.
 A stale tree from an earlier run is not accepted as evidence for the current
 configuration.
 
+## Engine Result Identity
+
+| Identity field | IQ-TREE2 | FastTree | Comparison consequence |
+| --- | --- | --- | --- |
+| aligned input | matrix checksum and sequence type | same matrix checksum and sequence type | differing inputs invalidate an engine comparison |
+| model | selected/requested likelihood model and report | FastTree mode and sequence model | labels are retained separately; they are not normalized into one model |
+| search/run control | seed, threads, command, engine version | command, engine version, resource/preflight state | reproducibility is interpreted within each engine's controls |
+| topology | tree, taxon set, rooting policy | tree, taxon set, rooting policy | reconciliation precedes distance or clade comparison |
+| support | UFBoot or SH-aLRT method and scale | SH-like local support and scale | display normalization never erases method identity |
+| completeness | required native files and accepted process state | valid tree, log/runtime state, accepted process state | one incomplete side keeps the pair out of the compared denominator |
+
 ## Comparing Trees
 
 `compare-engines` runs IQ-TREE2 and FastTree on the same aligned matrix, then
@@ -62,6 +73,18 @@ Use `adapter reproducibility` when the question is whether repeated IQ-TREE2
 runs preserve deterministic artifacts or stable supported topology under a
 fixed configuration. Use `infer-large` when streamed preflight and resource
 reporting matter for a large aligned matrix.
+
+## Comparison Denominator
+
+Report selected engines, engines that executed, engines with complete accepted
+bundles, and engine pairs actually compared. If IQ-TREE2 is unavailable or
+FastTree output is malformed, retain that state and the valid independent
+engine artifact, but do not emit a two-engine agreement claim. Missing engines
+are execution coverage, not topology agreement or disagreement.
+
+For repeated runs, retain the repeat count, every seed and command, complete
+versus incomplete runs, topology fingerprints, support differences, and any
+artifact instability. A stable filename is not a reproducibility observation.
 
 ## Claim Boundary
 

@@ -42,6 +42,20 @@ Success does not mean the alignment is biologically optimal. Strategy choice,
 gap treatment, trimming threshold, coding frame, and downstream sensitivity
 remain study decisions.
 
+## Stage Acceptance And Handoff
+
+| Stage | Accept when | Preserve for the next stage |
+| --- | --- | --- |
+| sequence preflight | identifiers are unique, declared type is coherent, and exclusions are explicit | input hash, accepted/excluded taxa, alphabet and coding diagnostics |
+| MAFFT execution | executable/version and command are known, exit state is accepted, and output parses | native streams, mode, output alignment, taxon and dimension checks |
+| codon-aware alignment | translation policy, genetic code, exclusions, guide alignment, and back-translation are coherent | sequence type, codon decisions, protein guide identity, final nucleotide alignment |
+| trimAl execution | input alignment identity matches the handoff and trimmed output parses | mode, threshold, before/after dimensions, removed-site summary |
+| inference handoff | selected post-alignment artifact is unambiguous and complete | exact alignment path/hash, partition/coding state, manifest lineage |
+
+The input to inference is the accepted handoff artifact, not whichever FASTA
+file is newest in the output directory. A composed `fasta-to-tree` run must
+retain the same stage identities and failures as the separate commands.
+
 ## Use The Adapters
 
 ```bash
@@ -57,6 +71,11 @@ bijux-phylogenetics adapter trim \
 Use the command help for version-specific options and executable overrides.
 `adapter fasta-to-tree` composes alignment, optional trimming, and inference
 when one governed workflow bundle is preferable to separate stages.
+
+`--resume` is reuse under an identity check, not permission to trust arbitrary
+existing output. Input, configuration, executable, manifest, and recorded
+outputs must still match. Incomplete output is rejected or cleaned according
+to the explicit incomplete-run policy; it is never silently promoted.
 
 ## Correspondence, Not Reimplementation
 
