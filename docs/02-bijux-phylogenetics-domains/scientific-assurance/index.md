@@ -30,6 +30,26 @@ flowchart LR
 - [Validation, Benchmarks, And Reporting](validation-benchmarks-and-reporting.md)
   explains proof layers, experiment design, implementation comparison,
   artifacts, and promotion into evidence.
+- [Diagnostics And Sensitivity](diagnostics-and-sensitivity.md) explains tree
+  validation, assumption findings, temporal-signal diagnostics, conclusion
+  stability, and failure-aware sensitivity matrices.
+
+## Assurance Is A Decision Chain
+
+```mermaid
+flowchart LR
+    identity["Object and<br/>revision identity"]
+    rule["Named assumption<br/>or acceptance rule"]
+    observations["Observations · failures<br/>and exclusions"]
+    scope["Claim and<br/>population scope"]
+    action["Accept · qualify<br/>refuse · investigate"]
+
+    identity --> rule --> observations --> scope --> action
+```
+
+The decision is reproducible only when the object, rule, denominator, and
+action remain linked. A passing scalar detached from that chain is not an
+assurance record.
 
 ## Choose Evidence That Matches The Claim
 

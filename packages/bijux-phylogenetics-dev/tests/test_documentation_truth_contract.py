@@ -216,6 +216,9 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     comparative_domain = _read(
         DOMAINS_ROOT / "evolutionary-analysis" / "comparative-and-ancestral-methods.md"
     )
+    ecology_domain = _read(
+        DOMAINS_ROOT / "evolutionary-analysis" / "ecology-and-phylogeography.md"
+    )
     parsimony_domain = _read(DOMAINS_ROOT / "inference" / "parsimony.md")
     distance_domain = _read(DOMAINS_ROOT / "inference" / "distance-based-inference.md")
     bayesian_domain = _read(DOMAINS_ROOT / "inference" / "bayesian-inference.md")
@@ -224,6 +227,9 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     )
     assurance_domain = _read(
         DOMAINS_ROOT / "scientific-assurance" / "validation-benchmarks-and-reporting.md"
+    )
+    diagnostics_domain = _read(
+        DOMAINS_ROOT / "scientific-assurance" / "diagnostics-and-sensitivity.md"
     )
 
     for domain in (
@@ -247,6 +253,9 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "Ancestral Reconstruction" in comparative_domain
     assert "Method And Record Locators" in comparative_domain
     assert "Model Identity Before Values" in comparative_domain
+    assert "Host-Switching Records" in ecology_domain
+    assert "summarize_continuous_phylogeography" in ecology_domain
+    assert "Presentation Is Downstream" in ecology_domain
     assert "Searching Tree Space" in parsimony_domain
     assert "Support And Consensus" in parsimony_domain
     assert "Establish Matrix Identity" in distance_domain
@@ -259,6 +268,9 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "Preventing Simulation Circularity" in simulation_domain
     assert "Benchmark Design" in assurance_domain
     assert "From Benchmark To Evidence" in assurance_domain
+    assert "Tree Inspection, Validation, And Forensics" in diagnostics_domain
+    assert "diagnose_tip_date_randomization" in diagnostics_domain
+    assert "Conclusion Stability" in diagnostics_domain
     assert "Domain Handoffs" in domain_index
     assert "Cross-Domain Handoff Record" in domain_index
     assert "Attribute Failure To The Deciding Domain" in domain_index
@@ -272,9 +284,13 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "Interpret The Run State" in inference_index
     assert "Completion is not a scientific verdict" in inference_index
     assert "Match The Question To The Model Family" in evolution_index
+    assert "From Reconstructed State To Historical Claim" in evolution_index
     assert "Sensitivity Axes" in evolution_index
     assert "Choose Evidence That Matches The Claim" in assurance_index
+    assert "Assurance Is A Decision Chain" in assurance_index
     assert "Preserve Negative Evidence" in assurance_index
+    assert "Ecology and phylogeography" in domain_index
+    assert "Diagnostics and sensitivity" in domain_index
     assert "Status Namespaces" in assurance_domain
     assert "live parity case" in assurance_domain
     assert "resolution workflow" in assurance_domain

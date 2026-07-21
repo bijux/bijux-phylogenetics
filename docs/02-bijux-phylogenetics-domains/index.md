@@ -21,6 +21,7 @@ flowchart TB
     foundations["Topology · branch lengths<br/>state spaces · covariance"]
     likelihood["Likelihood, distance<br/>and Bayesian inference"]
     comparative["Comparative and ancestral methods"]
+    histories["Ecology and phylogeography"]
     parsimony["Parsimony and topology search"]
     context["Simulation and datasets"]
     review["Validation · benchmarks<br/>reports · evidence"]
@@ -28,12 +29,14 @@ flowchart TB
     inputs --> foundations
     foundations --> likelihood
     foundations --> comparative
+    comparative --> histories
     foundations --> parsimony
     context --> likelihood
     context --> comparative
     context --> parsimony
     likelihood --> review
     comparative --> review
+    histories --> review
     parsimony --> review
 ```
 
@@ -46,9 +49,11 @@ flowchart TB
 | [Distance-based inference](inference/distance-based-inference.md) | pairwise distances, matrix assumptions, joining and least-squares objectives | inferred trees, residuals, influence ledgers, bootstrap support |
 | [Bayesian inference](inference/bayesian-inference.md) | likelihoods, priors, proposals, chains, clocks and topology distributions | run manifests, checkpoints, posterior samples, diagnostics and predictive summaries |
 | [Comparative and ancestral methods](evolutionary-analysis/comparative-and-ancestral-methods.md) | trait covariance, signal, regression, evolutionary modes, node states | coefficients, model comparisons, uncertainty and ancestral ledgers |
+| [Ecology and phylogeography](evolutionary-analysis/ecology-and-phylogeography.md) | host, niche, region and coordinate histories on trees | transition, movement, outlier, exclusion and map ledgers |
 | [Parsimony](inference/parsimony.md) | character costs, ancestral sets, topology moves, resampling | scores, reconstructions, consensus and support summaries |
 | [Simulation and datasets](scientific-assurance/simulation-and-datasets.md) | generative models, known truths, reference and stress corpora | simulated trees/traits/alignments, dataset manifests |
 | [Validation, benchmarks, and reporting](scientific-assurance/validation-benchmarks-and-reporting.md) | invariants, tolerances, metrics, provenance, publication contracts | diagnostics, benchmark reports, manifests, tables and figures |
+| [Diagnostics and sensitivity](scientific-assurance/diagnostics-and-sensitivity.md) | tree assumptions, temporal signal, alternative trees, models and policies | findings, stability rows, refusal reasons and decision records |
 
 ## Choose By Scientific Question
 

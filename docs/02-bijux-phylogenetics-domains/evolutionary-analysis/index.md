@@ -28,6 +28,26 @@ flowchart LR
 [Comparative And Ancestral Methods](comparative-and-ancestral-methods.md)
 covers PGLS, phylogenetic signal, continuous and discrete evolutionary modes,
 ancestral reconstruction, diversification summaries, and sensitivity review.
+[Ecology And Phylogeography](ecology-and-phylogeography.md) follows discrete
+host, niche, and region histories plus continuous coordinate movement into
+branch ledgers, clade summaries, exclusions, and maps.
+
+## From Reconstructed State To Historical Claim
+
+```mermaid
+flowchart LR
+    fit["Fitted evolutionary<br/>model"]
+    state["Node states or<br/>coordinates"]
+    history["Branch transitions<br/>or movement"]
+    stability["Tree and model<br/>sensitivity"]
+    claim["Bounded ecological or<br/>geographic conclusion"]
+
+    fit --> state --> history --> stability --> claim
+```
+
+A branch transition inherits uncertainty from the tree, state model, root
+treatment, and observations. An ecological or geographic interpretation must
+retain that chain rather than treating a rendered map as primary evidence.
 
 ## Match The Question To The Model Family
 
@@ -39,6 +59,8 @@ ancestral reconstruction, diversification summaries, and sensitivity review.
 | How do discrete states change? | Mk and transition-model comparison | state coding, root prior, forbidden transitions |
 | What values or states are supported at internal nodes? | continuous or discrete ancestral reconstruction | node identity, uncertainty, conditioning model |
 | Do conclusions survive tree or model uncertainty? | tree-set and sensitivity review | aggregation rule, failed members, instability |
+| Where are host, niche, or region changes reconstructed? | ecological and phylogeographic branch review | state certainty, transition constraints, branch identity, exclusions |
+| Which continuous movements are supported? | coordinate reconstruction and movement review | coordinate units, uncertainty, tree scale, outlier policy |
 
 Do not select a method by output shape. Several models produce coefficients,
 rates, node values, or information criteria with different conditioning
