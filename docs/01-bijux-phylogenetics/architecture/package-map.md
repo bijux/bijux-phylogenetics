@@ -93,6 +93,43 @@ primary concern. Do not install both expecting independent runtimes.
 The development package is not required for normal scientific use. Its
 commands protect repository integrity; they are not an alternate analysis API.
 
+## What Ships In Each Distribution
+
+| Distribution | Included contract | Deliberately outside the wheel |
+| --- | --- | --- |
+| `bijux-phylogenetics` | `bijux_phylogenetics` modules, public CLI, packaged datasets/resources, package README and changelog | repository tests, Evidence Book dossiers, MkDocs source, local artifacts, maintainer commands |
+| `phylogenetic` | `phylogenetic` facade, alias CLI, package README and changelog, dependency on the canonical runtime | duplicated scientific implementation, evidence tooling, a second copy of canonical datasets |
+| `bijux-phylogenetics-dev` | `bijux_phylogenetics_dev` documentation, evidence, API, package and release validators | scientific runtime facade, analysis commands, study outputs, generated site |
+
+This split prevents a repository checkout from becoming an undeclared runtime
+dependency. Installed-wheel examples must work with packaged resources; study
+validation and release governance intentionally require the repository.
+
+## Reconstruct Distribution Identity
+
+For a canonical run, retain the `bijux-phylogenetics` distribution version,
+`bijux_phylogenetics.__version__`, Python version, platform, and the command or
+import surface used. For an alias run, add the `phylogenetic` facade version.
+For an adapter run, add the external executable path and native version.
+
+```mermaid
+flowchart LR
+    environment["Python and platform"]
+    requested["Requested distribution<br/>and version"]
+    resolved["Canonical runtime<br/>and version"]
+    interface["Import or command"]
+    engine["External executable<br/>when used"]
+    result["Result identity"]
+
+    environment --> result
+    requested --> resolved --> interface --> result
+    engine --> result
+```
+
+This is more precise than recording `pip freeze` alone. An environment list
+can show installed packages without revealing which facade, command, model,
+resource, or external binary produced the result.
+
 ## Source Ownership
 
 The runtime implementation lives under
@@ -138,6 +175,21 @@ headline value is not an alias compatibility test.
 Always include the installed distribution name and version. For adapter
 failures, include the external executable version and captured diagnostic
 without removing the provenance needed to reproduce the failure.
+
+## Diagnose Boundary Failures
+
+| Observation | Establish first | Likely corrective boundary |
+| --- | --- | --- |
+| `phylogenetic` imports but an advertised attribute is absent | facade and canonical versions plus resolved module | alias forwarding or version constraint |
+| canonical command and alias command disagree | parser inventory, command result schema, both versions | compatibility command boundary |
+| packaged demo cannot locate a fixture | wheel contents and resource locator | canonical packaging contract |
+| repository evidence command is missing after runtime install | whether the dev distribution was intentionally installed | maintainer-tooling boundary, not runtime defect |
+| package metadata links disagree with the published site | built wheel metadata and release manifest | publication alignment |
+| local checkout works but installed wheel fails | undeclared repository path or omitted package data | build inclusion and installed-wheel verification |
+
+Repair the owner of the failed boundary. Do not copy canonical implementation
+into the alias or expose repository-only tooling through the runtime to make a
+single environment appear complete.
 
 ## Package Boundary Invariants
 

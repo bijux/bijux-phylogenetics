@@ -129,6 +129,9 @@ def test_foundation_and_architecture_define_owned_runtime_contracts() -> None:
     assert "Combining Proofs" in claims
     assert "Promotion Requirements" in evidence_boundary
     assert "Valid Boundary States" in evidence_boundary
+    assert "Evidence Record Anatomy" in evidence_boundary
+    assert "Do Not Promote By Proximity" in evidence_boundary
+    assert "Changes That Reopen A Claim" in evidence_boundary
     assert "Ownership Matrix" in ownership
     assert "How To Recognize A Supported Surface" in ownership
     assert "Preserve The Computation Owner" in ownership
@@ -140,6 +143,9 @@ def test_foundation_and_architecture_define_owned_runtime_contracts() -> None:
     assert "record both distribution versions" in package_map
     assert "Inspect Installed Identity" in package_map
     assert "Package Boundary Invariants" in package_map
+    assert "What Ships In Each Distribution" in package_map
+    assert "Reconstruct Distribution Identity" in package_map
+    assert "Diagnose Boundary Failures" in package_map
     assert "Failure Attribution" in system_map
     assert "State Retained Across Boundaries" in system_map
     assert "Partial And Refused Runs" in system_map
@@ -172,6 +178,12 @@ def test_product_handbook_routes_analysis_and_preserves_run_identity() -> None:
     assert "Changing presentation or omitting the failed check" in operations
     assert "env inspect --json" in operations
     assert "Follow The Operational State Machine" in operations
+
+    boundaries = _read(PRODUCT_ROOT / "operations" / "operational-boundaries.md")
+    assert "Classify Before Retrying" in boundaries
+    assert "Minimum Diagnostic Packet" in boundaries
+    assert "Stop Conditions" in boundaries
+    assert "widen tolerance after observing the result" in boundaries
 
 
 def test_public_interfaces_define_supported_python_and_handoff_contracts() -> None:

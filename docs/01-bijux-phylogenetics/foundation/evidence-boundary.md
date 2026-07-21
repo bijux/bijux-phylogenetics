@@ -61,6 +61,61 @@ Copying a report into the Evidence Book does not satisfy these requirements.
 Promotion requires a registered bundle whose machine-readable records connect
 the claim to the exact runtime or external computation.
 
+## Evidence Record Anatomy
+
+A governed bundle separates facts that are often collapsed into one narrative:
+
+| Record | Owns | Review question |
+| --- | --- | --- |
+| `manifest.json` | bundle identity, ownership, summary, limitations, freshness, and verdict | What is the current bounded conclusion? |
+| `claims.json` | stable claim identifiers, source fragments, tags, and claim verdicts | Which statement is being adjudicated? |
+| `inputs.manifest.json` | exact input files, objects, roles, and checksums | Which analytical population and tree were used? |
+| `provenance.json` | source origin, retrieval or derivation, and reference identity | Where did the comparison basis come from? |
+| `checks.json` | required artifacts, primary outputs, comparison mode, and validation rules | What must exist before the verdict is reviewable? |
+| `results/` | governed observations, tables, summaries, and their inventory | What values and structural facts were actually retained? |
+| `report.md` | human interpretation of the same bounded record | Does the prose preserve the machine-readable status and limitations? |
+
+No single file substitutes for the bundle. A result table without input
+identity is ambiguous; a claim without primary outputs is unsupported; a
+report whose wording exceeds the manifest verdict is inconsistent.
+
+## Do Not Promote By Proximity
+
+```mermaid
+flowchart TB
+    capability["Nearby runtime capability"]
+    execution["Study-specific execution"]
+    observations["Retained reference and<br/>Bijux observations"]
+    checks["Declared comparison<br/>and acceptance rule"]
+    verdict["Claim-scoped verdict"]
+
+    capability -. does not imply .-> verdict
+    capability --> execution --> observations --> checks --> verdict
+```
+
+An implemented PGLS surface does not close a PGLS lecture claim until the
+study-specific design matrix, taxa, covariance, outputs, and checks are
+retained. A BEAST parser does not close an `MCMCglmm` posterior claim. A parity
+case for one parameterization does not transfer to another model carrying the
+same family name.
+
+## Changes That Reopen A Claim
+
+A previously favorable verdict requires freshness review when a material
+dependency changes:
+
+- the scientific algorithm, model parameterization, optimizer, or sampler;
+- parsing, normalization, tolerance, or comparison semantics;
+- datasets, tree topology, branch lengths, exclusions, or source provenance;
+- result schemas, serialization, or governed primary-output paths;
+- the reference executable, package version, or external-engine contract;
+- claim wording broad enough to exceed the retained observations.
+
+Presentation-only edits need not invalidate numerical evidence, but they must
+still preserve exact values, verdict vocabulary, and limitations. Freshness is
+an explicit dependency decision, not an assumption based on a recent file
+timestamp.
+
 ## Valid Boundary States
 
 - A native method can be implemented and tested without a study bundle.
