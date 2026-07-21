@@ -1,37 +1,75 @@
 ---
-title: PCM1 Signal and Ancestral Results
+title: PCM1 Signal And Ancestral Results
 audience: public
 type: study-guide
-status: active
+status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-21
 ---
 
 # PCM1 Signal And Ancestral Results
 
-The second half of PCM1 asks whether R and Bijux tell the same comparative
-story on the prepared primate dataset.
+PCM1 evaluates Pagel's λ on simulated and primate traits, then compares
+continuous ancestral-state estimates on the governed primate tree. The summary
+bundle records both analytical comparisons as `matched_with_tolerance`.
 
-## What This Part Covers
+```mermaid
+flowchart LR
+    prepared["Reconciled tree<br/>and longevity traits"]
+    random["Random-trait<br/>λ fits"]
+    primate["Primate longevity<br/>λ fit"]
+    ancestral["Internal-node<br/>state estimates"]
+    compare["R ↔ Bijux values<br/>under governed tolerances"]
 
-- lambda-oriented signal behavior on random and primate data
-- ancestral-state agreement within bounded tolerances
-- explicit handling of visual outputs without treating plot-for-plot identity
-  as the main closure criterion
+    prepared --> random --> compare
+    prepared --> primate --> compare
+    prepared --> ancestral --> compare
+```
 
-## Why It Matters
+## Phylogenetic Signal
 
-PCM1 is the introductory trust study in the evidence book. It shows one full
-path from prepared study state to bounded signal and ancestral review.
+Pagel's λ scales off-diagonal phylogenetic covariance under the fitted model.
+Values near zero reduce that covariance; values near one retain the Brownian
+tree covariance. The estimate is conditional on the response, tree, branch
+lengths, model, bounds, and optimization convention.
 
-## Questions This Part Answers
+The study separates random-trait fits from the primate longevity fit. Random
+examples exercise expected low-signal behavior without becoming a null model
+for the observed biological data.
 
-- Do the core signal surfaces stay aligned on the governed primate study?
-- Do ancestral outputs stay within the study's bounded expectations?
-- Are visual surfaces kept secondary to the analytical claim?
+## Ancestral Reconstruction
 
-## What To Keep In Mind
+Internal-node estimates are conditional predictions, not observed historical
+measurements. Comparison requires matching node identity, rooted topology,
+branch lengths, tip values, and model convention. Node row number or plotting
+order is not a durable identifier.
 
-PCM1 is intentionally introductory. A good result here is meaningful, but it
-does not close later regression, Bayesian, or benchmark-heavy families by
-itself.
+The governed claim compares ancestral-state outputs numerically within the
+declared tolerance. Rendered node sizes, colors, and layouts are explicitly
+outside figure-for-figure parity.
+
+## Summary-Bundle Verdicts
+
+| Claim | Verdict |
+| --- | --- |
+| random-data λ fits | `matched_with_tolerance` |
+| primate λ inference | `matched_with_tolerance` |
+| ancestral-state outputs | `matched_with_tolerance` |
+| visual surface tracking | `not_comparable` |
+| artifact provenance tracking | `not_comparable` |
+
+`not_comparable` is intentional for governance or presentation records that do
+not define a numerical parity target.
+
+## Interpretation Limits
+
+- Signal does not identify a causal evolutionary mechanism.
+- A fitted λ does not prove Brownian motion is the best trait model.
+- Ancestral estimates inherit uncertainty from data, tree, and parameters.
+- Numerical parity on this dataset does not establish agreement for all trees
+  or traits.
+- Analytical agreement does not require pixel-identical plots.
+
+The primary record is
+[`evidence-001`](https://github.com/bijux/bijux-phylogenetics/tree/main/evidence-book/studies/primate-longevity-signal/evidence-001),
+including claims, checks, results, provenance, and reviewer summary.

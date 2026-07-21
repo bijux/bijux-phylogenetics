@@ -1,38 +1,79 @@
 ---
-title: PCM2 Model Comparisons and PGLS
+title: PCM2 Model Comparisons And PGLS
 audience: public
 type: study-guide
-status: active
+status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-21
 ---
 
 # PCM2 Model Comparisons And PGLS
 
-PCM2 moves beyond preparation and into comparative model behavior.
+PCM2 compares ordinary residual independence with phylogenetically structured
+covariance and evaluates continuous evolutionary modes on the same prepared
+primate data. Shared response, predictors, taxa, and transformation conventions
+make changes attributable to the covariance/model rather than data drift.
 
-## What This Part Covers
+```mermaid
+flowchart TB
+    data["Governed primate data"]
+    gls["Baseline GLS"]
+    lambda["Pagel-λ PGLS"]
+    transforms["Transformed trees"]
+    modes["Brownian · OU<br/>early burst"]
+    compare["Coefficients · likelihoods<br/>diagnostics · LRT"]
 
-- transformed-tree behavior
-- Brownian, OU, and early-burst model families
-- likelihood-ratio model comparisons
-- baseline GLS before phylogenetic correction
-- Pagel-lambda PGLS after phylogenetic correction
+    data --> gls --> compare
+    data --> lambda --> compare
+    data --> transforms --> modes --> compare
+```
 
-## Why This Matters
+## Baseline And Phylogenetic Regression
 
-This part tests whether the runtime can support serious comparative workflows
-without quietly drifting from the reference R path.
+Baseline GLS provides the non-phylogenetic residual model. PGLS changes the
+covariance matrix according to tree structure and its fitted transformation.
+Coefficient differences can arise from changed weighting and correlation even
+when the formula and observations are unchanged.
 
-## What This Part Answers
+The governed bundles record matched baseline GLS (`evidence-002`) and
+Pagel-λ regression (`evidence-003`) claims.
 
-- Do transformed-tree and comparative model-fit surfaces behave coherently on
-  the governed primate study?
-- Do baseline GLS and phylogenetically corrected PGLS stay readable as one
-  comparative narrative?
-- Can the public runtime story support serious comparative modeling without
-  hiding its dependence on governed reference review?
+## Tree Transformations And Evolutionary Modes
 
-## Read Next
+`evidence-006` covers transformed-tree behavior. `evidence-007` covers the
+continuous mode fits. Brownian, OU, and early-burst families encode different
+expectations about trait covariance or rate through time; their parameters and
+likelihoods are meaningful only under matching conventions.
 
-- [Signal diagnostics and open boundaries](signal-diagnostics-and-open-boundaries.md)
+## Likelihood-Ratio Comparison
+
+`evidence-008` records the likelihood-ratio parity surface. A valid comparison
+requires matching data, likelihood definition, optimization treatment, and a
+defensible nesting and degrees-of-freedom rule. Information criteria and
+likelihood-ratio tests answer related but different selection questions.
+
+## Comparison Ledger
+
+For each fitted model retain:
+
+- response transformation, predictor formula, and included taxa;
+- covariance or tree transformation and parameter bounds;
+- coefficient estimates and uncertainty;
+- log likelihood, parameter count, and optimization status;
+- residual diagnostics;
+- comparison statistic, degrees of freedom, and decision rule.
+
+This ledger prevents a change in taxa or transformation from being mistaken
+for a model effect.
+
+## Interpretation Limits
+
+- PGLS accounts for the declared covariance; it does not remove confounding or
+  establish causality.
+- Better fit does not prove the evolutionary process is literally true.
+- Boundary parameters can invalidate naive asymptotic test interpretations.
+- Parity establishes agreement under the study contract, not universal model
+  recovery.
+
+Continue with
+[signal diagnostics and open boundaries](signal-diagnostics-and-open-boundaries.md).
