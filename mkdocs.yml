@@ -138,6 +138,8 @@ nav:
       - Domain Map: 02-bijux-phylogenetics-domains/index.md
       - Trees, Alignments, And Taxa: 02-bijux-phylogenetics-domains/trees-alignments-and-taxa.md
       - Likelihood And Inference: 02-bijux-phylogenetics-domains/likelihood-and-inference.md
+      - Comparative And Ancestral Methods: 02-bijux-phylogenetics-domains/comparative-and-ancestral-methods.md
+      - Parsimony: 02-bijux-phylogenetics-domains/parsimony.md
   - Evidence Book:
       - Overview: 03-bijux-phylogenetics-evidence-book/index.md
       - PCM1:
