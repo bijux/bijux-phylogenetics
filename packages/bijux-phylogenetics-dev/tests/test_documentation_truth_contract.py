@@ -84,6 +84,9 @@ def test_root_readme_publishes_native_external_and_evidence_boundaries() -> None
     assert "Start from the scientific object and required result" in readme
     assert "Keep Reruns Scientifically Distinct" in readme
     assert "matching headline value is not\nidentity proof" in readme
+    assert "datasets and study inputs" in readme
+    assert "spatial and ecological evolution" in readme
+    assert "structured results needing publication views" in readme
 
 
 def test_site_landing_connects_first_run_to_scientific_review() -> None:
@@ -105,6 +108,9 @@ def test_site_landing_connects_first_run_to_scientific_review() -> None:
     assert "changing a caption\nor omitting a row cannot resolve" in landing
     assert "Choose The Durable Record First" in landing
     assert "the selection denominator" in landing
+    assert "Explore The Runtime By Scientific Object" in landing
+    assert "Several objects can participate in one study" in landing
+    assert "publication artifact review" in landing
 
 
 def test_foundation_and_architecture_define_owned_runtime_contracts() -> None:
@@ -189,6 +195,9 @@ def test_product_handbook_routes_analysis_and_preserves_run_identity() -> None:
     assert "Define Completion Before Running" in product
     assert "A partial or refused result can be a complete record" in product
     assert "Open or blocked\n  resolution work" in product
+    assert "packaged dataset or external study table" in product
+    assert "Spatial and ecological evolution" in product
+    assert "Publication review" in product
     assert "Establish The Run Identity First" in operations
     assert "Minimum Handoff Record" in operations
     assert "Changing presentation or omitting the failed check" in operations

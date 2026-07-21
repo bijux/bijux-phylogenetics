@@ -100,6 +100,24 @@ example into accuracy or biological evidence.
 | compare with established tools | [Parities and correspondence](04-bijux-phylogenetics-parities/index.md) | which APE, GEIGER, phytools, and external-engine relationships are governed |
 | maintain or release the repository | [Maintainer handbook](05-bijux-phylogenetics-maintain/index.md) | how code, docs, packages, and evidence stay synchronized |
 
+## Explore The Runtime By Scientific Object
+
+The scientific domain, not the interface name, determines the assumptions and
+review record:
+
+| Starting object or result | Owning guide | What remains attached |
+| --- | --- | --- |
+| packaged dataset or taxon-indexed study table | [Datasets and study inputs](02-bijux-phylogenetics-domains/data-and-structure/datasets-and-study-inputs.md) | provenance, schema, taxon linkage, transformations, exclusions and workflow identity |
+| Newick, Nexus, FASTA or tabular interchange | [Data interchange and identity](02-bijux-phylogenetics-domains/data-and-structure/data-interchange-and-identity.md) | source bytes, parsed semantics, derivations and round-trip loss |
+| discrete regions and migration events | [Biogeography and migration](02-bijux-phylogenetics-domains/evolutionary-analysis/biogeography-and-migration.md) | state model, constraints, chronology, tree-set stability and exclusions |
+| continuous coordinates and map geometry | [Continuous phylogeography and maps](02-bijux-phylogenetics-domains/evolutionary-analysis/continuous-phylogeography-and-maps.md) | node uncertainty, branch movement, outliers, marker/line ledgers and render identity |
+| host or niche state histories | [Host association and niche evolution](02-bijux-phylogenetics-domains/evolutionary-analysis/host-association-and-niche-evolution.md) | ancestral ambiguity, transition opportunity, unsupported claims and clade burden |
+| tables, figures, methods text or publication packages | [Reporting and rendering](02-bijux-phylogenetics-domains/scientific-assurance/reporting-and-rendering.md) and [publication artifact review](02-bijux-phylogenetics-domains/scientific-assurance/publication-artifact-review.md) | structured source, visual encoding, inventory, audit, comparison and revalidation |
+
+Several objects can participate in one study, but their records do not merge.
+A map line, host switch, dataset export, and Evidence Book claim retain separate
+owners even when they share a tree and taxon population.
+
 ## Choose The Durable Record First
 
 Begin with the decision another person must be able to review, then choose the
@@ -231,8 +249,15 @@ decision being made.
 The canonical `bijux-phylogenetics` package contains more than command wrappers.
 It owns tree and alignment semantics, native finite-state likelihood machinery,
 supported maximum-likelihood and Bayesian inference paths, comparative and
-ancestral analysis, parsimony, simulations, datasets, diagnostics, and
-review-oriented output contracts.
+ancestral analysis, parsimony, simulations, typed dataset families,
+biogeographic and ecological review, diagnostics, supplementary tables, tree
+and trait rendering, reproducibility manifests, and publication-package
+review contracts.
+
+This breadth has distinct evidence depths. A dataset loader, migration-event
+summary, rendered tree package, numerical benchmark, and Evidence Book verdict
+are each useful records, but none inherits the assurance vocabulary of the
+others.
 
 External programs still matter. MAFFT, trimAl, IQ-TREE2, FastTree, MrBayes, and
 BEAST are exposed through adapters where execution belongs to those engines.

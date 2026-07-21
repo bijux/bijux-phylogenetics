@@ -33,6 +33,9 @@ bundles. The distinction between those surfaces is part of the product.
 | ancestral values or histories | ancestral and discrete-evolution surfaces | state space, transition model, node identity, uncertainty |
 | character-cost or topology-search analysis | parsimony surfaces | coding, cost matrix, search coverage, equal-best trees |
 | controlled recovery or stress analysis | simulation and dataset workflows | known truth, independence, seed policy, acceptance rule |
+| packaged dataset or external study table | dataset catalog, loaders, exports, and study-input linkage | provenance, schema, taxon population, units, transformations, exclusions |
+| region, coordinate, host, or niche history | biogeography, phylogeography, and ecology surfaces | state/spatial model, nodes, branches, constraints, uncertainty, event denominator |
+| scientific result requiring tables, figures, or a review package | reports, rendering, and publication artifact surfaces | structured source, row/mark identity, manifest, inventory, audit and revalidation |
 | a claim that must be cited or released | Evidence Book review path | claim identifier, source, inputs, checks, freshness, verdict |
 
 The [scientific domain map](../02-bijux-phylogenetics-domains/index.md) defines
@@ -114,19 +117,21 @@ flowchart TB
     execution["Execution paths"]
     review["Review surfaces"]
 
-    foundations --> trees["Tree topology, branch lengths,<br/>taxa, alignments"]
+    foundations --> trees["Datasets, tree topology,<br/>taxa, alignments"]
     foundations --> models["Finite-state likelihood,<br/>distance, covariance"]
     trees --> analysis
     models --> analysis
     analysis --> inference["ML and Bayesian inference"]
-    analysis --> comparative["Comparative, ancestral,<br/>parsimony, biogeography"]
+    analysis --> comparative["Comparative, ancestral,<br/>parsimony"]
+    analysis --> spatial["Biogeography, phylogeography,<br/>host and niche evolution"]
     inference --> execution
     comparative --> execution
+    spatial --> execution
     execution --> native["Native Python runtime"]
     execution --> adapters["Governed external-engine adapters"]
     native --> review
     adapters --> review
-    review --> outputs["Typed results, diagnostics,<br/>reports, manifests, evidence"]
+    review --> outputs["Typed results, diagnostics,<br/>tables, figures, manifests, evidence"]
 ```
 
 This is not a maturity diagram: capability families have different validation
@@ -221,6 +226,18 @@ stale projection and preserve the disagreement until it is corrected.
 **Scientific capability:** [domain map](../02-bijux-phylogenetics-domains/index.md)
 → [trees, alignments, and taxa](../02-bijux-phylogenetics-domains/data-and-structure/trees-alignments-and-taxa.md)
 → [likelihood and inference](../02-bijux-phylogenetics-domains/inference/likelihood-and-inference.md).
+
+**Data and study inputs:** [datasets and study inputs](../02-bijux-phylogenetics-domains/data-and-structure/datasets-and-study-inputs.md)
+→ [data interchange and identity](../02-bijux-phylogenetics-domains/data-and-structure/data-interchange-and-identity.md)
+→ [simulation and datasets](../02-bijux-phylogenetics-domains/scientific-assurance/simulation-and-datasets.md).
+
+**Spatial and ecological evolution:** [biogeography and migration](../02-bijux-phylogenetics-domains/evolutionary-analysis/biogeography-and-migration.md)
+→ [continuous phylogeography and maps](../02-bijux-phylogenetics-domains/evolutionary-analysis/continuous-phylogeography-and-maps.md)
+→ [host association and niche evolution](../02-bijux-phylogenetics-domains/evolutionary-analysis/host-association-and-niche-evolution.md).
+
+**Publication review:** [reporting and rendering](../02-bijux-phylogenetics-domains/scientific-assurance/reporting-and-rendering.md)
+→ [publication artifact review](../02-bijux-phylogenetics-domains/scientific-assurance/publication-artifact-review.md)
+→ [artifact consumption](interfaces/artifact-consumption-guide.md).
 
 **Reference correspondence:** [parities and correspondence](../04-bijux-phylogenetics-parities/index.md)
 → [R ecosystem](../04-bijux-phylogenetics-parities/r-ecosystem/index.md)

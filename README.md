@@ -116,8 +116,9 @@ similarly named report exists elsewhere.
 | comparative methods | PGLS, Brownian and OU models, phylogenetic signal, discrete evolution, regression assessment, and model selection |
 | ancestral methods | continuous and discrete reconstruction, uncertainty ledgers, stochastic mapping, and tree-set review |
 | parsimony | Fitch, Wagner, Sankoff, Dollo, Camin–Sokal, ACCTRAN, DELTRAN, resampling, NNI, SPR, and ratchet-oriented search |
-| scientific context | datasets, simulations, benchmarks, biogeography, phylogeography, diversification, and ecology review surfaces |
-| publication | typed results, manifests, tables, figures, HTML reports, supplementary material, and evidence-linked bundles |
+| datasets and study inputs | typed biological, recovery, stress, pathogen, and phylogenomic families; catalog discovery, portable exports, workflows, provenance, and taxon-table admission |
+| spatial and ecological evolution | discrete biogeography, transition constraints, migration chronology, tree-set events, continuous phylogeography, host switching, niche evolution, and map ledgers |
+| scientific assurance and publication | simulations, diagnostics, benchmarks, typed results, supplementary tables, tree/trait figures, methods text, manifests, package comparison, and revalidation |
 
 MAFFT, trimAl, IQ-TREE2, FastTree, MrBayes, and BEAST remain external
 computational engines. Their adapters own input preparation, invocation,
@@ -136,7 +137,10 @@ name. The route determines which assumptions and artifacts must survive:
 | character matrix seeking a minimum-change explanation | native parsimony scoring and search | cost model, character scores, search trace, equal-best trees, support |
 | tree and continuous traits testing association | comparative covariance and PGLS | reconciled population, design matrix, covariance, coefficients, residual diagnostics |
 | tree and discrete states reconstructing history | Mk fitting, ancestral reconstruction, or stochastic mapping | rate model, node probabilities, branch events, uncertainty, exclusions |
+| packaged or external study inputs needing an admitted population | dataset catalog and study-input contracts | source identity, schema, taxon linkage, transformations, exclusions, derived dataset identity |
+| regions, coordinates, hosts, or niches reconstructing change | biogeography, phylogeography, or ecology review | state/coordinate model, nodes, branches, events, uncertainty, constraints, exclusions |
 | candidate trees or methods needing sensitivity review | tree-set, benchmark, parity, and diagnostic surfaces | complete comparison population, observation rules, failures, denominator |
+| structured results needing publication views | reporting, rendering, and publication-package review | row identity, visual encoding, manifest, inventory, audit and revalidation record |
 | external native files needing review | named engine parser and artifact contract | engine/file identity, parser state, structured observations, checksums |
 | result supporting a public scientific claim | governed Evidence Book bundle | claim identity, inputs, observations, checks, freshness, verdict |
 
@@ -346,6 +350,10 @@ the runtime distribution.
 - [Documentation home](https://bijux.io/bijux-phylogenetics/)
 - [Product handbook](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
 - [Scientific domains](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-domains/)
+- [Datasets and study inputs](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-domains/data-and-structure/datasets-and-study-inputs/)
+- [Biogeography and migration](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-domains/evolutionary-analysis/biogeography-and-migration/)
+- [Continuous phylogeography and maps](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-domains/evolutionary-analysis/continuous-phylogeography-and-maps/)
+- [Reporting and rendering](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-domains/scientific-assurance/reporting-and-rendering/)
 - [Parities and correspondence](https://bijux.io/bijux-phylogenetics/04-bijux-phylogenetics-parities/)
 - [Runtime architecture](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/architecture/)
 - [Surface selection](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/surface-selection/)
