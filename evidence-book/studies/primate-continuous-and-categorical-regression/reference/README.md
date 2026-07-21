@@ -53,6 +53,20 @@ Until those records exist, `not_comparable` is the correct bundle verdict.
 Running one nearby helper, copying a coefficient into a report, or linking a
 unit test would not satisfy the evidence contract.
 
+## Primary Output Contract
+
+| Bundle family | Required paired rows |
+| --- | --- |
+| source and baseline GLS | admitted population, design columns, coefficients, covariance, likelihood and execution state |
+| transformed and categorical models | transform constants, factor/contrast matrix, coefficients, hypotheses and diagnostics |
+| interaction and scaling models | reconstructed slopes, interaction columns, centering/scaling identity and uncertainty |
+| Martins covariance model | tree order, covariance parameters, fitted coefficients, likelihood and convergence |
+| post-correction review | residual rows, test identity/order, degrees of freedom and diagnostic scale |
+
+The R and Bijux paths must emit independently keyed primary records before a
+normalization or tolerance is applied. A manually transcribed lecture value is
+not an execution output, and a generated report is not a primary result.
+
 ## Required Rerun Record
 
 A future comparison must bind the lecture source and study-local input hashes,
@@ -61,3 +75,7 @@ factor/contrast state, tree and covariance identity, outputs and diagnostics,
 observation normalization, tolerance, exclusions, and terminal execution
 state. Every one of the eight bundle manifests must then be adjudicated at its
 own claim scope.
+
+The first successful rerun should preserve all eight requested terminal states,
+including refused or failed executions. Selecting only the model families that
+produce convenient coefficients would change the coverage denominator.

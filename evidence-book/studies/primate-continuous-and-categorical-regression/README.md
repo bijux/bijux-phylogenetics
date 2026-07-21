@@ -26,6 +26,19 @@ output paths.
 a numerical disagreement. There are no governed lecture/Bijux coefficient,
 likelihood, p-value, contrast, or diagnostic pairs to adjudicate.
 
+## Separate Readiness From Evidence
+
+| Available now | Still required | Claim consequence |
+| --- | --- | --- |
+| checked lecture source | registered R extraction with terminal state | lecture values are not yet governed observations |
+| study-local inputs and derivatives | exact admitted rows and transformations for both paths | data presence does not establish population alignment |
+| relevant Bijux comparative surfaces | claim-scoped Bijux execution outputs | implementation availability is not PCM3 execution evidence |
+| eight claim/check contracts | paired observation rows and comparison rules | contracts define closure but cannot produce a match alone |
+
+This distinction prevents “ready to compare” from being summarized as
+“compared.” The design records are valuable because they make the missing
+evidence exact and reviewable.
+
 ## Why Design Identity Comes First
 
 ```mermaid
@@ -76,6 +89,11 @@ comparison contract:
 Only then can a bundle distinguish `matched`, `matched_with_tolerance`,
 `mismatch_explained`, or `mismatch_unexplained`. Adding output paths without
 their provenance and identities would create files, not evidence.
+
+Closure must happen claim by claim. A complete baseline GLS comparison cannot
+promote an interaction, Martins covariance, or post-correction diagnostic
+bundle. Each bundle needs its own paired outputs and must retain failures even
+when adjacent models execute successfully.
 
 ## Reviewer Route
 
