@@ -131,6 +131,28 @@ Scope failure narrowly enough to preserve valid evidence, but never so narrowly
 that the failed observation disappears from the denominator of the claim it
 actually affects.
 
+## Resolve Cross-Lane Contradictions By Dependency
+
+Lane results are not votes. When two records disagree, follow the dependency
+that connects the public claim to its primary observations. A downstream pass
+can prove that its own mechanism ran while remaining unusable for a claim whose
+upstream premise failed.
+
+| Contradiction | Preserve | Public consequence |
+| --- | --- | --- |
+| structure passes, contract fails | interpretable input and failing interface observation | withdraw the interface claim; do not relabel the input invalid |
+| contract passes, numerical fails | callable behavior and numerical disagreement | retain execution evidence, reject the value-agreement claim |
+| integration passes, benchmark fails | complete workflow record and failed corpus observations | report operability without corpus performance or recovery language |
+| benchmark passes, evidence bundle is stale | historical benchmark and stale dependency state | no current study claim until freshness is re-established |
+| evidence passes, release fails | historical bounded verdict and release blocker | do not publish the revision as aligned |
+| summary passes, primary observation contradicts it | primary observation and projection defect | block the summary claim and regenerate from the owner |
+
+No lane can overwrite another lane's owned result. If a higher-level record
+has already consumed a failed or stale dependency, mark that conclusion
+invalidated or unresolved until it is recomputed. Preserve both timestamps and
+revision identities so a reader can distinguish a real contradiction from two
+records describing different executions.
+
 ## Release Lane
 
 Checks that distributions build, public metadata agrees, docs render, schemas

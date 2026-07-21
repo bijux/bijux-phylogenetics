@@ -50,6 +50,33 @@ verdict. The summary must account for mismatches, plot-only fragments,
 unsupported cases, and missing comparisons; it cannot report only the passing
 subset. Read the observation ledger before interpreting the bundle headline.
 
+## Keep The Observation Population Stable
+
+Define the population of required, optional, and explicitly excluded
+observations before comparison. Record selected, attempted, completed, failed,
+missing, unsupported, and excluded counts separately. Those categories may
+explain a result; they may not disappear from the audit trail.
+
+```mermaid
+flowchart LR
+    registered["Registered observation<br/>population"]
+    attempted["Attempted"]
+    completed["Completed"]
+    unresolved["Failed · missing<br/>unsupported"]
+    excluded["Excluded by declared<br/>pre-observation rule"]
+    verdict["Bundle verdict over the<br/>governed denominator"]
+
+    registered --> attempted --> completed --> verdict
+    attempted --> unresolved --> verdict
+    registered --> excluded --> verdict
+```
+
+A rerun may add new observations or resolve prior states, but it creates a new
+identified comparison record. Do not compare the headline success rate across
+runs until the registered population and category rules align. In particular,
+“matched 8 of 8 completed” is not equivalent to “matched 8 of 10 required”
+when two required observations failed or were never produced.
+
 ## Common Overclaims
 
 - **Parity** without naming compared outputs, conventions, and tolerance.

@@ -678,8 +678,12 @@ def test_quality_guides_separate_tests_benchmarks_and_release_evidence() -> None
     assert "mismatch_unexplained" in lanes
     assert "Trace One Native Inference Claim" in lanes
     assert "Propagate Failure To The Right Boundary" in lanes
+    assert "Resolve Cross-Lane Contradictions By Dependency" in lanes
+    assert "Lane results are not votes" in lanes
     assert "Governed Verdict Meanings" in honesty
     assert "Observation Status And Bundle Verdict" in honesty
+    assert "Keep The Observation Population Stable" in honesty
+    assert "matched 8 of 10 required" in honesty
     assert "Match Language To The Record" in honesty
     assert "Handle Contradictions Explicitly" in honesty
     assert "engine_contract" in test_strategy
@@ -688,6 +692,8 @@ def test_quality_guides_separate_tests_benchmarks_and_release_evidence() -> None
     assert "make package-verify" in test_strategy
     assert "Match The Lane To The Question" in test_strategy
     assert "Build Numerical Claims From Independent Checks" in test_strategy
+    assert "Protect Oracle Independence" in test_strategy
+    assert "the check establishes repeatability, not correctness" in test_strategy
     assert "Test Failure And Refusal Paths" in test_strategy
     assert "Read A Test Report Without Losing Scope" in test_strategy
     assert "native-bug" in benchmark

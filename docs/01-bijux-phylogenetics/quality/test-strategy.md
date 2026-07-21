@@ -91,6 +91,27 @@ recorded rationale. Decimal closeness alone is insufficient when topology,
 taxon reconciliation, state coding, root treatment, or likelihood
 parameterization differs.
 
+## Protect Oracle Independence
+
+A test is not independent merely because expected values are stored in a
+different file. Review how the oracle was produced and which implementation
+assumptions it shares with the code under test.
+
+| Oracle source | Independence risk | Required challenge |
+| --- | --- | --- |
+| literal known answer | transcription or convention error | derive it from a cited analytic case and assert units and parameterization |
+| second local implementation | shared helper, parser, or formula | remove shared computation from the comparison path |
+| external implementation | aligned bugs or mismatched defaults | register versions, conventions, inputs, and compared fields |
+| simulated truth | generator and estimator share the same defect | vary generators or use analytic and independently generated cases |
+| snapshot or golden file | accidental approval of a regression | review semantic fields and explain every governed regeneration |
+| broad invariant | defect preserves an invariant while changing the result | pair it with directional examples and reference observations |
+
+Challenge the test suite by deliberately perturbing sign, scale, order,
+rooting, taxon identity, status propagation, and boundary behavior in a
+controlled review. The relevant test should fail for the intended reason. If
+the same production function creates both the observed value and its expected
+value, the check establishes repeatability, not correctness.
+
 ## Separate External-Engine Proofs
 
 Controlled executables make rare states deterministic: missing files,
