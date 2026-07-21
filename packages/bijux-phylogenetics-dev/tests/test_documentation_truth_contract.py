@@ -164,6 +164,8 @@ def test_product_handbook_routes_analysis_and_preserves_run_identity() -> None:
     assert "Establish The Run Identity First" in operations
     assert "Minimum Handoff Record" in operations
     assert "Changing presentation or omitting the failed check" in operations
+    assert "env inspect --json" in operations
+    assert "Follow The Operational State Machine" in operations
 
 
 def test_public_interfaces_define_supported_python_and_handoff_contracts() -> None:
@@ -184,6 +186,24 @@ def test_public_interfaces_define_supported_python_and_handoff_contracts() -> No
     assert "Discover Without Guessing" in python
     assert "now also" not in python
     assert "bijux_phylogenetics.PhyloTree" not in python
+
+
+def test_common_workflows_are_goal_oriented_and_match_registered_commands() -> None:
+    operations = PRODUCT_ROOT / "operations"
+    installation = _read(operations / "installation-and-setup.md")
+    workflows = _read(operations / "common-workflows.md")
+
+    assert "Run The Installed-Wheel Proof" in installation
+    assert "phylo preflight" in installation
+    assert "Choose A Workflow" in workflows
+    assert "comparative pgls" in workflows
+    assert "ancestral continuous" in workflows
+    assert "phylo preflight" in workflows
+    assert "phylo run" in workflows
+    assert "Read Status Before Values" in workflows
+    assert "ancestral reconstruct" not in workflows
+    assert "env --json" not in workflows
+    assert len(workflows.splitlines()) < 400
 
 
 def test_programmatic_interfaces_name_curated_and_frozen_contracts() -> None:

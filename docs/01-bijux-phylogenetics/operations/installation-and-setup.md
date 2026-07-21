@@ -33,6 +33,25 @@ bijux-phylogenetics --help
 Verification separates three failures that are otherwise easy to confuse:
 distribution installation, Python import, and command discovery.
 
+## Run The Installed-Wheel Proof
+
+```bash
+bijux-phylogenetics env inspect --json
+bijux-phylogenetics demo run \
+  --out artifacts/capability-demo \
+  --manifest artifacts/capability-demo/manifest.json \
+  --json
+```
+
+The first command reports runtime dependencies and optional executable
+availability. The second uses resources shipped inside the wheel, copies them
+to a writable destination, and builds a linked report set. It does not depend
+on a source checkout or repository test fixtures.
+
+Inspect `manifest.json` for package, Python, input, command, and output
+identity. A successful demo proves the installation and packaged reporting
+path; it does not benchmark inference accuracy.
+
 ## Canonical And Alias Distributions
 
 ```bash
@@ -58,6 +77,17 @@ adapter workflow:
 
 The runtime should report missing executables as adapter-environment failures,
 not as native numerical failures.
+
+Use workflow-specific preflight when the analysis depends on an engine:
+
+```bash
+bijux-phylogenetics phylo preflight \
+  --workflow fasta-to-tree \
+  --manifest artifacts/phylo-preflight/manifest.json \
+  --json
+```
+
+Preflight records readiness; it does not execute the scientific workflow.
 
 ## Pinning For Reproducibility
 

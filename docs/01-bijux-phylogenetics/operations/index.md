@@ -39,7 +39,7 @@ the result:
 
 ```bash
 bijux-phylogenetics --version
-bijux-phylogenetics env --json
+bijux-phylogenetics env inspect --json
 bijux-phylogenetics inspect dataset/tree.nwk --json
 bijux-phylogenetics alignment validate-input dataset/alignment.fasta --json
 ```
@@ -48,6 +48,26 @@ The last two commands are independent intake checks; use only the objects
 present in the analysis. For trait work, validate the tree–table join and
 retain the reconciliation output before fitting a model. For external engines,
 capture executable discovery and version output before execution.
+
+## Follow The Operational State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> Intake
+    Intake --> Refused: invalid identity or assumptions
+    Intake --> Ready: validated inputs and configuration
+    Ready --> Running
+    Running --> Partial: some declared components unavailable
+    Running --> Failed: computation or infrastructure failure
+    Running --> Complete: required outputs and diagnostics present
+    Partial --> Review
+    Failed --> Review
+    Complete --> Review
+    Refused --> Review
+```
+
+`Review` does not mean success. It means that the terminal state, diagnostics,
+and output denominator are preserved well enough to understand what happened.
 
 ## The Operational Contract
 
