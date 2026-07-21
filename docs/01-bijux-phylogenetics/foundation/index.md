@@ -1,83 +1,98 @@
 ---
-title: Runtime Purpose and Scope
+title: Scientific Runtime Foundation
 audience: public
 type: explanation
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-21
 ---
 
-# What This Runtime Is For
+# Scientific Runtime Foundation
 
-`bijux-phylogenetics` is a reproducible runtime for phylogenetic inspection,
-comparison, annotation, comparative analysis, ancestral reconstruction,
-native likelihood and inference, and governed reporting.
+`bijux-phylogenetics` turns trees, alignments, traits, models, and analysis
+configuration into typed results and durable review artifacts. Its scientific
+foundation is a set of explicit contracts: taxon identity, topology,
+rootedness, branch length, character state, likelihood, covariance, and
+uncertainty retain consistent meanings across Python, CLI, and reporting
+surfaces.
 
-Its value is not that it replaces every upstream engine. Its value is that it
-makes important phylogenetic work inspectable, repeatable, and reviewable
-through one documented product surface.
+```mermaid
+flowchart TB
+    identity["Taxa and identifiers"]
+    structure["Trees and alignments"]
+    models["Likelihood and covariance"]
+    methods["Inference, comparative,<br/>ancestral, parsimony"]
+    review["Diagnostics and artifacts"]
 
-## What The Foundation Section Has To Protect
+    identity --> structure
+    structure --> models
+    models --> methods
+    methods --> review
+```
 
-The foundation pages exist so the public story stays accurate when the package
-keeps growing. They separate runtime ownership, wrapper orchestration,
-evidence closure, and release language instead of letting those concepts blur
-together.
+## Scientific Responsibilities
 
-## Core Responsibilities
+| Foundation | Responsibility |
+| --- | --- |
+| taxon identity | reconcile labels before tree, alignment, and trait data are combined |
+| tree semantics | preserve topology, rootedness, branch lengths, support, clades, and splits |
+| alignment semantics | validate alphabet, shape, coding assumptions, translation, trimming, and partitions |
+| model semantics | make state space, rate model, covariance, parameters, and transformations explicit |
+| result semantics | retain estimates, diagnostics, uncertainty, warnings, and method provenance |
+| artifact semantics | preserve run identity, configuration, outputs, and integrity relationships |
 
-- tree validation, rooting, comparison, rendering, and tree-set review
-- alignment diagnostics, trimming, coding checks, and translation
-- native finite-state likelihood, native maximum-likelihood inference, and
-  supported native Bayesian inference surfaces
-- comparative analysis and ancestral-state reconstruction
-- wrapper orchestration for selected external scientific tools
-- report, bundle, and artifact generation for downstream review
+## Analytical Reach
 
-## Why This Runtime Matters
+The runtime includes native finite-state likelihood, maximum-likelihood tree
+inference, supported Bayesian DNA inference, comparative regression,
+phylogenetic signal, Brownian and OU modeling, discrete-state evolution,
+ancestral reconstruction, explicit parsimony families, simulations, datasets,
+and publication-oriented reporting.
 
-The repository is useful because it combines three things that often stay
-split across separate projects:
+External engines extend this reach where a mature independent implementation
+is intentionally used. Adapters for MAFFT, trimAl, IQ-TREE2, FastTree,
+MrBayes, and BEAST preserve engine identity and captured outputs while
+normalizing execution into reviewable workflows.
 
-- owned runtime semantics for trees, alignments, and comparative workflows
-- practical workflow entry points for users who need end-to-end execution
-- reviewer-facing artifacts and evidence boundaries for readers who need to
-  inspect what happened
-
-## Claim Model
-
-| Claim type | What it means here | Where to read next |
-| --- | --- | --- |
-| Runtime claim | the package exposes a documented surface users can call | claim reading guide, product surface and ownership |
-| Native claim | the repository owns the implementation instead of only wrapping an engine | product surface and ownership, architecture |
-| Evidence claim | the repository has governed study or benchmark material that bounds interpretation | runtime and evidence boundary, evidence book |
-| Release claim | docs, metadata, tests, and reports still tell the same story | quality section, maintainer handbook |
-
-## What This Handbook Will Not Do
-
-- describe every external workflow as if it were a native implementation
-- imply that every documented feature is already evidence-closed
-- flatten scientific review into a single success label
-- substitute repository-health rules for user-facing runtime guidance
-
-## How To Read The Boundary
+## Three Separate Questions
 
 ```mermaid
 flowchart LR
-    A[Published runtime surface] --> B[Native ownership]
-    A --> C[Wrapper orchestration]
-    B --> D[Usage guidance]
-    C --> D
-    D --> E[Evidence review remains separate]
+    capability{"Can the runtime perform it?"}
+    suitability{"Is the method suitable<br/>for this dataset and question?"}
+    evidence{"Which bounded claims<br/>have governed evidence?"}
+
+    capability --> suitability --> evidence
 ```
 
-The runtime can be broader than the currently closed evidence surface. That is
-acceptable only when the documentation says so plainly and routes readers to
-the right trust surface.
+An implemented method answers the first question. Assumption checks, model
+criticism, and diagnostics address the second. Benchmarks and study bundles
+address parts of the third. No answer automatically supplies the next one.
 
-## Read This Section In Order
+## Determinism And Uncertainty
 
-1. [Claim reading guide](claim-reading-guide.md)
-2. [Repository scope and limits](repository-scope-and-limits.md)
-3. [Product surface and ownership](product-surface-and-ownership.md)
-4. [Runtime and evidence boundary](evidence-boundary.md)
+Deterministic parsing, validation, and serialization improve reproducibility.
+Optimization and sampling may require seeds, repetition, convergence review,
+or sensitivity analysis. Reproducing identical bytes is not the same as
+quantifying scientific uncertainty, and uncertainty is not an execution error
+to be hidden.
+
+## Product Boundaries
+
+- Public interfaces are documented imports, commands, schemas, and artifact
+  contracts—not every importable helper.
+- Native ownership applies only where this repository implements the
+  computation.
+- Adapter ownership covers orchestration and normalization, not the external
+  algorithm.
+- Evidence verdicts apply to named claims, inputs, versions, and tolerances.
+- Repository automation supports the product but is not part of the analysis
+  runtime.
+
+## Foundation References
+
+- [Repository scope and limits](repository-scope-and-limits.md)
+- [Product surface and ownership](product-surface-and-ownership.md)
+- [Runtime and evidence boundary](evidence-boundary.md)
+- [Claim reading guide](claim-reading-guide.md)
+- [Runtime architecture](../architecture/index.md)

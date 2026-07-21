@@ -1,56 +1,89 @@
 ---
-title: Repository Scope and Limits
+title: Repository Scope And Limits
 audience: public
 type: explanation
-status: active
+status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-21
 ---
 
-# Repository Scope and Limits
+# Repository Scope And Limits
 
-This repository owns a serious phylogenetics runtime, but it still has clear
-limits. Those limits matter because the public docs should explain what the
-repository can support today without borrowing credibility from future work.
-
-```mermaid
-flowchart LR
-    A[Repository scope] --> B[Owned runtime]
-    A --> C[Wrapper-backed workflows]
-    A --> D[Evidence-linked reporting]
-    A --> E[Explicit limits]
-```
+The repository owns a substantial runtime and the infrastructure required to
+publish and review it. Its boundaries distinguish computation from
+orchestration, reproducibility from scientific validity, and available methods
+from study-backed claims.
 
 ## In Scope
 
-- deterministic tree and alignment workflows
-- native finite-state likelihood and supported native inference contracts
-- comparative and ancestral analysis over governed inputs
-- adapter surfaces that orchestrate external engines honestly
-- evidence-linked reporting and publication-style artifact packaging
+```mermaid
+flowchart TD
+    repository["bijux-phylogenetics"]
+    runtime["Scientific runtime"]
+    adapters["External-engine adapters"]
+    artifacts["Reports and artifacts"]
+    evidence["Governed evidence records"]
+    publication["Package, schema, docs,<br/>and release verification"]
 
-## Out Of Scope
+    repository --> runtime
+    repository --> adapters
+    repository --> artifacts
+    repository --> evidence
+    repository --> publication
+```
 
-- claiming broader scientific validation than the evidence-book proves
-- treating every wrapper-backed workflow as if it had already been
-  reimplemented locally
-- describing narrow native inference ownership as if it already covered every
-  model family and every phylogenetic workflow in the repository
-- hiding unresolved runtime or evidence limits behind marketing language
+- tree, alignment, likelihood, comparative, ancestral, parsimony, simulation,
+  dataset, and reporting contracts;
+- owned maximum-likelihood and supported Bayesian inference entry points;
+- explicit orchestration of selected external scientific engines;
+- typed results, diagnostics, manifests, tables, figures, and reports;
+- benchmark corpora and governed evidence for named comparisons and studies;
+- compatibility distribution, API schema, packaging, documentation, and
+  release verification.
 
-## What The Limits Protect
+## Scientific Non-Goals
 
-These limits protect three parts of the public story:
+- Replacing every established phylogenetics program with a local implementation.
+- Recommending a model solely because the runtime implements it.
+- Treating a successful execution as evidence of convergence, fit, or valid
+  biological interpretation.
+- Generalizing a benchmark beyond its corpus, configuration, environment, and
+  metric.
+- Generalizing a study verdict beyond its registered claim and inputs.
+- Concealing unresolved posterior, reference, provenance, or coverage
+  dependencies.
 
-- users can still see substantial runtime depth without being misled about
-  closure
-- reviewers can tell which surfaces are owned, wrapped, benchmarked, or
-  study-backed
-- releases can stay credible because the docs avoid implying a larger
-  scientific claim than the evidence-book supports
+## Native And External Computation
 
-## Why This Matters
+Native methods are maintained and tested in this source tree. External-engine
+workflows delegate computation to a named executable while retaining local
+responsibility for preparation, invocation, capture, parsing, normalized
+results, and artifacts.
 
-Phylogenetics is a domain where people will naturally overread polished output.
-This repository has to resist that. Public documentation is part of the trust
-contract, not just an introduction layer.
+That distinction affects installation and failure diagnosis. A missing
+executable is an adapter-environment failure. A parser mismatch is an adapter
+compatibility failure. A convergence warning belongs to the method result. A
+taxon mismatch belongs to input validation.
+
+## Evidence Coverage
+
+The Evidence Book currently concentrates on five comparative teaching-study
+families. It is not a coverage map of every runtime module. Native likelihood,
+inference, parsimony, simulation, and other domains have their own tests and
+benchmarks; study evidence exists only where an explicit claim mapping and
+bundle record say so.
+
+## Operational Limits
+
+External engines must be installed independently. Computational cost depends
+on taxa, characters, model complexity, search, sampling, and hardware. Some
+methods are stochastic. Persist exact versions, input identities,
+configuration, seed policy, diagnostics, and output manifests for governed
+work.
+
+## Interpretation Limit
+
+The runtime can enforce contracts and expose diagnostics. It cannot choose a
+research design, establish causal meaning, eliminate sampling bias, or replace
+domain review. A polished report is a structured presentation of evidence—not
+an independent scientific verdict.

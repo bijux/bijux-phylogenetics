@@ -1,63 +1,80 @@
 ---
-title: Product Surface and Ownership
+title: Product Surface And Ownership
 audience: public
-type: explanation
-status: active
+type: reference
+status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-21
 ---
 
-# Product Surface and Ownership
+# Product Surface And Ownership
 
-The public runtime surface is intentionally narrower than the full repository.
+Public ownership is defined by a supported entry point and a documented
+contract. Source code may contain additional helpers, intermediate types, and
+repository automation that are intentionally outside that boundary.
 
 ```mermaid
 flowchart LR
-    A[Full repository] --> B[Public runtime surface]
-    A --> C[Maintainer-only machinery]
-    B --> D[Documented packages and interfaces]
-    B --> E[Named native and wrapper contracts]
+    user["Analyst or integrator"]
+    interfaces["Curated Python API<br/>CLI · versioned schema"]
+    runtime["Scientific runtime"]
+    adapters["External-engine adapters"]
+    outputs["Versioned artifacts"]
+
+    user --> interfaces --> runtime --> outputs
+    interfaces --> adapters --> outputs
 ```
 
-## Public Product Surface
+## Published Distributions
 
-- the canonical runtime package: `bijux-phylogenetics`
-- the compatibility alias package: `phylogenetic`
-- the documented CLI and Python entrypoints
-- the documented native likelihood, native inference, and benchmark contracts
-- reviewable artifacts emitted from governed workflows
+| Distribution | Public responsibility |
+| --- | --- |
+| `bijux-phylogenetics` | canonical runtime, Python API, CLI, package data, and scientific result contracts |
+| `phylogenetic` | compatibility names for the same runtime behavior |
+| `bijux-phylogenetics-dev` | maintainer and CI verification; not an analysis dependency |
 
-## Public Ownership Boundaries
+## Supported Interface Families
 
-- owned native tree, alignment, likelihood, comparative, and ancestral
-  runtime surfaces are part of the product when they are named in the public
-  docs and import surfaces
-- owned native maximum-likelihood and Bayesian surfaces are public when the
-  docs name their result contracts, limits, and evidence boundaries directly
-- wrapper orchestration is also part of the serious public product surface when
-  the repository intentionally exposes it as governed workflow execution rather
-  than pretending it is an implementation detail
+- curated workflow functions under `bijux_phylogenetics.api`;
+- documented domain entry points for native likelihood, inference, Bayesian,
+  comparative, ancestral, parsimony, benchmark, and report contracts;
+- `bijux-phylogenetics` and `phylogenetic` commands and their documented
+  arguments, exit behavior, and outputs;
+- the pinned OpenAPI schema under `apis/bijux-phylogenetics/v1/`;
+- declared JSON, TSV, manifest, figure, and report artifacts.
 
-## What Public Ownership Does Not Mean
+An internal module path is not stable merely because Python can import it.
+Human-readable report layout is not a machine contract when a structured
+artifact exists.
 
-- it does not mean every internal helper or report row is a stable public API
-- it does not mean every public workflow is native-first
-- it does not mean the evidence-book has already closed every owned surface
+## Ownership Matrix
 
-## Ownership Reading Rule
+| Surface | Repository owns | Separate owner or decision |
+| --- | --- | --- |
+| native method | algorithm, implementation, result, diagnostics | suitability for a particular study |
+| engine adapter | preparation, invocation, capture, parsing, normalization | external executable and algorithm |
+| workflow | composition, validation order, artifact production | user's scientific question and inputs |
+| benchmark | harness, corpus identity, metrics, threshold evaluation | inference beyond the measured scope |
+| evidence bundle | provenance, claims, checks, recorded verdict | claims not registered by the bundle |
+| report | faithful projection of results and limits | independent scientific interpretation |
 
-Treat a surface as part of the product when three things are true together:
+## Compatibility Commitments
 
-1. it is named in the public docs or package README surfaces
-2. it has a stable public route such as the CLI, workflow API, or documented
-   import path
-3. the docs explain its limits instead of implying a vague larger capability
+The alias distribution must preserve advertised imports, commands, runtime
+behavior, package data, version alignment, and documentation links. It is not
+an independent fork. Artifact compatibility depends on declared schema and
+semantic version rules rather than incidental formatting or key order.
 
-## Non-Public Ownership
+## Change Impact
 
-- maintainer automation in `bijux-phylogenetics-dev`
-- repository-only make, standards, and release wiring
-- evidence-book generation and validation machinery
+A public method change may affect its Python signature, CLI translation,
+schema, result serialization, report projection, examples, package README,
+benchmarks, and evidence freshness. These surfaces form one compatibility
+chain even though they have different owners in the source tree.
 
-That split keeps the runtime understandable. Users should not need maintainer
-tooling to understand what the runtime does.
+## Private And Maintainer Surfaces
+
+Repository make fragments, generation utilities, release checks, evidence
+index builders, and uncurated implementation helpers may change without the
+same user compatibility promise. They must still preserve governed outputs and
+must not silently alter a public scientific contract.
