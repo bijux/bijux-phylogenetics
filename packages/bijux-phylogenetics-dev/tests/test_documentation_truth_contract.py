@@ -269,6 +269,7 @@ def test_native_benchmark_review_exposes_executable_suite_and_dimensions() -> No
     benchmark = _read(PRODUCT_ROOT / "operations" / "native-benchmark-review.md")
 
     assert "benchmark native-maximum-likelihood-suite" in benchmark
+    assert "mkdir -p artifacts/native-benchmark" in benchmark
     assert "--manifest artifacts/native-benchmark/manifest.json" in benchmark
     assert "Read Suite Dimensions Separately" in benchmark
     assert "Minimum Publication Packet" in benchmark
@@ -394,6 +395,8 @@ def test_parity_handbook_separates_live_reference_and_adapter_boundaries() -> No
     assert "`skipped`:" in correspondence
     assert "--ape-shard load_tree" in correspondence
     assert "Three Records, Three Meanings" in parity_index
+    assert "Choose The Relationship From The Question" in parity_index
+    assert "selected cases" in parity_index
     assert "Matched · mismatched" not in parity_index
 
 
@@ -486,9 +489,13 @@ def test_correspondence_matrix_distinguishes_verified_and_open_surfaces() -> Non
     assert "no posterior parity claim" in matrix
     assert "External adapter" in matrix
     assert "Mode, Outcome, And Verdict" in matrix
+    assert "Verification Has Independent Axes" in matrix
+    assert "Revision Rule" in matrix
     assert "not_comparable` verdicts and open posterior follow-through" in matrix
     assert "--manifest artifacts/parity/checked-manifest.json" in reproduction
     assert "Reconstruct The Denominator" in reproduction
+    assert "Verify The Artifact Set As One Record" in reproduction
+    assert "Reproduction Completion" in reproduction
     assert (
         "Preserve mismatches, skips, warnings, and incomplete outputs" in reproduction
     )

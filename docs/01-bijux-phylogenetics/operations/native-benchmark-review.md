@@ -56,6 +56,7 @@ The unified CLI combines speed, peak-memory, simulated-truth accuracy, and
 cached wrapper-correspondence observations without collapsing their meanings:
 
 ```bash
+mkdir -p artifacts/native-benchmark
 bijux-phylogenetics benchmark native-maximum-likelihood-suite \
   --replicates 3 \
   --size-class compact --taxon-count 8 --site-count 200 \

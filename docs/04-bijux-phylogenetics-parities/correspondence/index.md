@@ -83,6 +83,40 @@ selected, executed, passed, failed, and skipped. Then identify the exact
 shards. A statement about “all cases” is invalid when it silently means only
 the subset that executed successfully.
 
+## Diagnose A Non-Pass Without Relabeling It
+
+```mermaid
+flowchart TD
+    selected["Selected registered case"] --> reference{"Reference environment<br/>available?"}
+    reference -- no --> skipped["skipped"]
+    reference -- yes --> execution{"Both surfaces<br/>executed?"}
+    execution -- no --> failed_execution["failed: execution"]
+    execution -- yes --> observations{"All required outputs<br/>present?"}
+    observations -- no --> failed_output["failed: missing output"]
+    observations -- yes --> rules{"Comparison rules<br/>satisfied?"}
+    rules -- no --> failed_comparison["failed: observation"]
+    rules -- yes --> passed["passed"]
+```
+
+The runtime case status describes what happened in the harness. Scientific
+review then decides whether a failed observation is an explained mismatch, an
+unexplained mismatch, or evidence that the proposed quantities were not
+comparable. Keep the original case status and failure artifact even after that
+review; the later verdict adds meaning rather than rewriting execution history.
+
+## Worked Claim Anatomy
+
+Suppose one `ape-live` `load_tree` case passes. The defensible statement names
+the selected case, APE and Bijux versions, tree fixture, rootedness and label
+normalization, compared topology fields, exact or structural rule, and
+`selected=1, passed=1, failed=0, skipped=0`. It does **not** establish parity
+for all 180 APE registry cases, other tree formats, tree inference, branch
+length semantics, or future versions.
+
+This scale discipline applies equally to stochastic cases. A distributional
+rule can pass without any individual simulated history matching exactly, but
+the within-case replication denominator and threshold must remain visible.
+
 ## Review Resources
 
 - [Verification matrix](verification-matrix.md) identifies the strongest

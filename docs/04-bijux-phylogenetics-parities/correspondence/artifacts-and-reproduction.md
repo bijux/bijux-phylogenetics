@@ -19,6 +19,7 @@ whole reproducibility package.
 The checked-fixture lane requires no R installation:
 
 ```bash
+mkdir -p artifacts/parity
 bijux-phylogenetics parity \
   --reference-source checked-fixture \
   --summary-out artifacts/parity/checked-summary.tsv \
@@ -36,6 +37,7 @@ recording that selection matters because the result set changes.
 Live execution is opt-in and tool-specific:
 
 ```bash
+mkdir -p artifacts/parity/geiger-failures
 RUN_LIVE_PARITY=1 bijux-phylogenetics parity \
   --reference-source geiger-live \
   --geiger-shard fit_continuous_bm \
@@ -63,6 +65,26 @@ command silently falls back to frozen data.
 Preserve mismatches, skips, warnings, and incomplete outputs. Removing them
 from an artifact directory changes the evidentiary meaning of the run even if
 the passing summary rows remain.
+
+## Verify The Artifact Set As One Record
+
+After execution, check these relationships rather than opening files in
+isolation:
+
+1. The manifest names the requested reference source and the exact selected
+   cases or shards.
+2. Summary counts reconcile to selected cases and agree with observation
+   statuses.
+3. Every required observation identifies its case, field, values, rule, and
+   outcome.
+4. Each failed or skipped case points to enough captured context to diagnose
+   execution or comparison failure.
+5. Tool and package versions match the environment that produced the files.
+6. No downstream report silently drops a non-pass or changes its status name.
+
+Hash or archive the complete directory when it crosses an environment or
+review boundary. Copying only the passing table destroys the denominator and
+prevents later reviewers from distinguishing absence from success.
 
 ## Reconstruct The Denominator
 
@@ -109,3 +131,11 @@ explicit checks, freshness records, and a verdict. Promotion does not discard
 the parity-level details: the Evidence Book should link or retain the exact
 observations that justify its claim. It also preserves the current evidence
 verdict and any separate open follow-through or named blocker.
+
+## Reproduction Completion
+
+A rerun is complete when it reconstructs selection, execution identity,
+observations, statuses, and failure records—not merely when the command exits
+successfully. Differences caused by a newer external package or executable are
+new observations. Preserve both revisions and adjudicate the change instead
+of overwriting the older run.

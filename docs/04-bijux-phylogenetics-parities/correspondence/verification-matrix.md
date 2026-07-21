@@ -39,6 +39,24 @@ study fixture is not a package-wide live parity surface.
 Do not translate a mode into an outcome or an outcome into a verdict. They
 answer different questions and may change on different schedules.
 
+## Verification Has Independent Axes
+
+Do not read the modes as one universal maturity ladder. Strength depends on at
+least four independent properties:
+
+| Axis | Weaker evidence | Stronger evidence |
+| --- | --- | --- |
+| execution freshness | frozen source or fixture | live execution under recorded versions |
+| comparison precision | provenance or structural compatibility | named observations with explicit tolerances |
+| scientific scope | one operation or adapter contract | claim-bound study evidence |
+| reproducibility | prose description | retained inputs, raw outputs, manifest, observations, and failures |
+
+A checked fixture can be more reproducible than an undocumented live run. A
+live run can be fresher while remaining scientifically narrower than a study
+bundle. An external adapter can have excellent execution evidence without any
+numerical correspondence claim. Report the axes that matter instead of
+assigning one undifferentiated strength label.
+
 ## What Each Mode Establishes
 
 ```mermaid
@@ -84,3 +102,11 @@ neither record can be used to conclude.
 A row may advance only when the stronger mode is implemented and governed.
 Documentation language alone cannot promote provenance to a checked fixture,
 an adapter to parity, or an analytical match to rendered-figure equivalence.
+
+## Revision Rule
+
+Registry sizes and strongest claims describe the checked-in revision. When a
+registry, normalization rule, reference version, tolerance, or governed
+fixture changes, regenerate its summary and reconsider the matrix claim. A
+larger case count is not automatically stronger evidence if new cases are
+skipped, incomparable, or governed by weaker observations.

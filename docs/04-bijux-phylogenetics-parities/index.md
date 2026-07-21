@@ -45,6 +45,20 @@ external program can participate in a governed Bijux workflow. Numerical or
 structural equivalence requires a separate comparison with aligned assumptions
 and explicit observation rules.
 
+## Choose The Relationship From The Question
+
+| Question | Required relationship | Minimum retained record |
+| --- | --- | --- |
+| Does one registered operation agree with APE, GEIGER, or phytools in this environment? | live R parity case | tool versions, case identity, both outputs, normalization, observations, tolerance, status |
+| Does Bijux reproduce a frozen reference result without R? | checked-fixture correspondence | fixture provenance, frozen output identity, Bijux output, comparison rule |
+| Can an external executable participate in a governed workflow? | external-engine adapter execution | executable version, invocation, streams, native files, parser result, workflow status |
+| Does one native result agree with an external engine? | explicit cross-engine comparison | aligned models, inputs, meanings, observations, tolerances, both denominators |
+| Does repository evidence support a bounded study claim? | Evidence Book bundle | claim ID, source, inputs, execution, checks, observations, verdict, freshness |
+
+One run can contribute to several records, but it does not merge their status
+names. Select the relationship before choosing a command or interpreting a
+green result.
+
 ## Three Records, Three Meanings
 
 | Record | Status owner | What it establishes |
@@ -77,3 +91,14 @@ Every parity claim names the external tool and version, Bijux surface, fixture,
 parameterization, compared fields, tolerance, execution mode, and case status.
 Unavailable R packages and unsupported reference cases remain visible as
 skips or out-of-scope boundaries rather than being counted as passes.
+
+A complete claim can be read as:
+
+> For **operation**, Bijux **version and surface** was compared with
+> **reference version and surface** on **fixture or corpus**, after
+> **normalization**, using **observations and rules**. Of **selected cases**,
+> **passed**, **failed**, and **skipped** counts were retained at **artifact
+> location**. The conclusion is limited to **named scope**.
+
+Omitting the denominator, reference identity, or comparison rule turns a
+reviewable correspondence statement into an unverifiable similarity claim.
