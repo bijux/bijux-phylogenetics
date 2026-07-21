@@ -100,17 +100,17 @@ own governed inputs, observations, diagnostics, and verdict.
 
 ## Evidence Decomposition
 
-| Bundle | Evaluated surface |
-| --- | --- |
-| `evidence-001` | workspace reload and repeated-measure data contract |
-| `evidence-002` | posterior phylogenetic signal for the Gaussian model |
-| `evidence-003` | ancestral-node posterior extraction and export |
-| `evidence-004` | tree-linked ancestral plotting contract |
-| `evidence-005` | Poisson phylogenetic parasite-count model |
-| `evidence-006` | infection model and logit-scale summaries |
-| `evidence-007` | intercept and slope transformation to probability scale |
-| `evidence-008` | repeated-measure `species + treetip` random effects |
-| `evidence-009` | phylogenetic, species, and residual variance partition |
+| Bundle | Evaluated surface | Manifest verdict |
+| --- | --- | --- |
+| `evidence-001` | workspace reload and repeated-measure data contract | `not_comparable` |
+| `evidence-002` | posterior phylogenetic signal for the Gaussian model | `not_comparable` |
+| `evidence-003` | ancestral-node posterior extraction and export | `not_comparable` |
+| `evidence-004` | tree-linked ancestral plotting contract | `not_comparable` |
+| `evidence-005` | Poisson phylogenetic parasite-count model | `not_comparable` |
+| `evidence-006` | infection model and logit-scale summaries | `not_comparable` |
+| `evidence-007` | intercept and slope transformation to probability scale | `not_comparable` |
+| `evidence-008` | repeated-measure `species + treetip` random effects | `not_comparable` |
+| `evidence-009` | phylogenetic, species, and residual variance partition | `not_comparable` |
 
 The nine claim records and bundle contracts are checked in, and all nine
 comparison verdicts are `not_comparable`. The repository's binary comparative
@@ -200,6 +200,20 @@ posteriors under matched priors and chain policy.
 This status also prevents an unsafe substitution: a phylogenetic logistic
 approximation, a Gaussian model, or a non-phylogenetic generalized model cannot
 inherit the PCM5 claim merely because it accepts similar columns.
+
+## Why The Logistic Surface Is Only Adjacent Capability
+
+`summarize_phylogenetic_logistic` owns a reviewer-facing phylogenetic logistic
+fit. PCM5's infection claims instead come from `MCMCglmm` `multinomial2`
+posteriors, latent-scale residual conventions, draw-wise probability
+transforms, and—in the repeated-observation model—both `species` and `treetip`
+random effects.
+
+The shared binary response vocabulary does not make these estimands equal. A
+governed comparison would first need to decide whether any quantity is
+scientifically correspondent, state the mapping and limitations, and retain
+both executions. Until then the logistic surface may inform design and
+diagnostics, but it supplies no PCM5 primary output and closes no bundle.
 
 ## Verdict And Follow-Through
 
