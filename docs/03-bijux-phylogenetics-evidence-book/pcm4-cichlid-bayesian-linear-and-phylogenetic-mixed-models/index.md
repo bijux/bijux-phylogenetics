@@ -59,6 +59,50 @@ align not only fixed-effect formulas but also covariance scaling, random-effect
 levels, priors on variance components, observation aggregation, and posterior
 summaries.
 
+## The Preserved Source Analysis
+
+The preserved Lund program is a connected analysis, not a collection of
+interchangeable model calls. These source objects define the handoffs that a
+reproduction must retain:
+
+| Source object | Computation | Evidence responsibility |
+| --- | --- | --- |
+| `fish` | observation-level `cichlid.csv` records | preserves repeated measurements before aggregation |
+| `fishtree` | `cichlidtree.nex`, pruned to represented taxa | fixes topology, branch lengths, and the eligible taxon set |
+| `fishSum` | records grouped by `treetip`, `species`, and `mating_system` | fixes the species-level population used by the Gaussian analyses |
+| `glsFish` | maximum-likelihood GLS for `log(parasite_abundance + 1) ~ gut_length` | supplies the non-phylogenetic Gaussian baseline |
+| `m1` | Gaussian `MCMCglmm` with the same fixed formula | introduces posterior estimation without a phylogenetic random effect |
+| `m1a`, `m1b`, `m1c` | independently invoked Gaussian chains | supply the between-chain diagnostic population |
+| `inv.fishphylo` | `inverseA(..., nodes = "TIPS", scale = TRUE)` | supplies the ordered, scaled inverse covariance |
+| `m2` | Gaussian `MCMCglmm` with random effect `treetip` | estimates fixed effects and phylogenetic and residual variance |
+| `pgls6` | Brownian GLS with `corBrownian(..., form = ~treetip)` | supplies a maximum-likelihood phylogenetic comparator |
+
+```mermaid
+flowchart LR
+    fish["fish<br/>observation records"]
+    tree["fishtree<br/>pruned tree"]
+    summary["fishSum<br/>species population"]
+    gls["glsFish<br/>Gaussian baseline"]
+    chains["m1 / m1a–m1c<br/>posterior and diagnostics"]
+    inverse["inv.fishphylo<br/>scaled inverse covariance"]
+    mixed["m2<br/>phylogenetic mixed model"]
+    pgls["pgls6<br/>Brownian GLS"]
+
+    fish --> summary
+    tree --> summary
+    summary --> gls
+    summary --> chains
+    tree --> inverse
+    summary --> mixed
+    inverse --> mixed
+    summary --> pgls
+    tree --> pgls
+```
+
+Matching only the final coefficient discards this structure. A governed
+comparison must show that each output was computed from the same analytical
+population and the same tree identity before it compares numerical values.
+
 ## Evidence Decomposition
 
 | Bundle | Evaluated surface |
@@ -131,6 +175,20 @@ reference and comparison surfaces, retain raw and normalized posterior
 observations, define tolerances or distributional rules, and account for every
 failed or excluded chain and parameter. Source reconstruction alone does not
 satisfy this contract.
+
+### Minimum Numerical Denominator
+
+Every governed run must report the number of initialized chains, completed
+chains, retained draws per chain, monitored parameters, and eligible comparison
+rows. The source schedule uses 110,000 iterations, a burn-in of 10,000, and
+thinning by 100, but those arguments do not prove how many rows were emitted
+or usable. The retained artifacts must establish the actual denominator and make
+failed chains, absent parameters, non-finite draws, and exclusions explicit.
+
+Posterior summaries then need a stable parameter key, chain identity, draw or
+summary identity, scale, interval convention, and source model. That record is
+what permits a reviewer to distinguish missing computation from numerical
+disagreement.
 
 ## Inputs And Provenance
 

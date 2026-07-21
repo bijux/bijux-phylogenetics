@@ -748,6 +748,9 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
     assert "What Can Be Cited Now" in pcm3_design
     assert "What Readers Should Watch Closely" not in pcm3_design
     assert "Model Components" in pcm4
+    assert "The Preserved Source Analysis" in pcm4
+    assert "m1a`, `m1b`, `m1c" in pcm4
+    assert "Minimum Numerical Denominator" in pcm4
     assert "All seven bundle manifests record `not_comparable`" in pcm4
     assert "Verdict And Follow-Through" in pcm4
     assert "What Would Make The Posterior Comparable" in pcm4
@@ -756,6 +759,9 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
     assert "bundle_contract_only" in pcm4
     assert "posterior parity verdicts\nremain open" not in pcm4
     assert "Preserve The Scale Of Every Quantity" in pcm5
+    assert "The Preserved Source Model Sequence" in pcm5
+    assert "m10PhyloSig" in pcm5
+    assert "Transform Draws Before Summarizing" in pcm5
     assert "All nine bundle manifests record `not_comparable`" in pcm5
     assert "Comparison Contract By Model Family" in pcm5
     assert "Do not use open follow-through as the bundle verdict" in pcm5
@@ -769,6 +775,8 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
         / "mixed-model-evidence-boundary.md"
     )
     assert "Claim Closure Matrix" in pcm4_boundary
+    assert "Closure Dependency Order" in pcm4_boundary
+    assert "Distinguish Structural And Numerical Checks" in pcm4_boundary
     assert "Required Observation Ledger" in pcm4_boundary
     assert (
         "No PCM4 bundle currently retains a governed primary scientific output"
@@ -780,6 +788,9 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
         / "generalized-mixed-model-evidence-boundary.md"
     )
     assert "Claim-Specific Closure Requirements" in pcm5_boundary
+    assert "Closure Dependency Graph" in pcm5_boundary
+    assert "Derived-Quantity Ledger" in pcm5_boundary
+    assert "What Execution Would Change The Verdict State" in pcm5_boundary
     assert "Observation And Diagnostic Ledger" in pcm5_boundary
     assert "zero governed primary\n  outputs" in pcm5_boundary
     assert _verdict_counts("primate-longevity-signal") == Counter(

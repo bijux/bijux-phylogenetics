@@ -51,6 +51,36 @@ flowchart LR
 | `evidence-008` | distinct species and phylogenetic random effects under matched covariance and priors |
 | `evidence-009` | draw-wise phylogenetic, species, residual, and family-specific variance partition |
 
+## Closure Dependency Graph
+
+The evidence records form a scientific dependency graph. Input identity feeds
+every model; posterior diagnostics qualify every derived quantity; tree and
+node identity connect ancestral values to their visualization:
+
+```mermaid
+flowchart LR
+    workspace["evidence-001<br/>workspace and population"]
+    signal["evidence-002<br/>Gaussian signal"]
+    ancestral["evidence-003<br/>ancestral effects"]
+    plot["evidence-004<br/>tree-linked plot"]
+    poisson["evidence-005<br/>Poisson model"]
+    infection["evidence-006<br/>infection model"]
+    transform["evidence-007<br/>probability transforms"]
+    repeated["evidence-008<br/>repeated effects"]
+    partition["evidence-009<br/>variance partition"]
+
+    workspace --> signal
+    workspace --> ancestral --> plot
+    workspace --> poisson
+    workspace --> infection --> transform
+    workspace --> repeated --> partition
+    infection --> repeated
+```
+
+Closing a downstream record requires immutable links to the exact upstream
+artifacts it consumed. Similar column names, the latest local file, or a shared
+execution directory are not sufficient provenance.
+
 ## Model-Family Identity
 
 A comparison record identifies the observation unit, response family, link,
@@ -76,6 +106,35 @@ Non-convergence and absent parameters remain visible. A missing comparable
 execution retains `not_comparable`; an unexplained observed disagreement can
 support `mismatch_unexplained`; agreement supports a matched verdict only after
 the full eligible observation set is adjudicated.
+
+## Derived-Quantity Ledger
+
+| Quantity | Draw-wise source expression | Identity that must be retained |
+| --- | --- | --- |
+| Gaussian phylogenetic signal | `treetip / (treetip + units)` | model, chain, draw, covariance scaling, and both variance columns |
+| infection phylogenetic signal | `treetip / (treetip + units + pi^2 / 3)` | `multinomial2` family, latent-scale convention, chain, draw, and variance columns |
+| response probability | `inverse_logit(intercept + slope * predictor)` | chain, draw, predictor value and units, coefficient keys, and category coding |
+| repeated phylogenetic share | `treetip / (species + treetip + units)` | repeated-record population and all three same-draw variance columns |
+| repeated species share | `species / (species + treetip + units)` | the same denominator and draw identity as the phylogenetic share |
+| ancestral response | intercept plus named tip or node effect | exact tree digest, node identity, chain, draw, and summary convention |
+
+The ledger is part of the comparison contract, not explanatory decoration. A
+governed artifact should retain the input columns or their content identities,
+the expression version, the output scale, and the resulting observation key.
+
+## What Execution Would Change The Verdict State
+
+A scientific execution changes a bundle only when it produces governed primary
+outputs and an observation ledger, not merely a successful process exit. The
+reference and Bijux lanes must declare the same analytical identity, preserve
+raw or losslessly normalized posterior records, publish chain diagnostics, and
+account for every expected parameter, node, transform, and exclusion.
+
+The comparison then applies claim-specific structural and numerical rules. If
+the comparable population is absent, the verdict remains `not_comparable`; if
+observed comparable values disagree without an accepted explanation, the
+record can become `mismatch_unexplained`; only complete adjudicated agreement
+can support a matched verdict.
 
 ## Safe Present-Tense Claims
 

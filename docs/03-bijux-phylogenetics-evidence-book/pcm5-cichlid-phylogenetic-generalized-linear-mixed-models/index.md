@@ -53,6 +53,51 @@ Posterior intervals should be transformed draw by draw when a response-scale
 summary is required. Transforming only posterior means can conceal asymmetry
 and does not preserve interval coverage.
 
+## The Preserved Source Model Sequence
+
+The preserved source moves from a Gaussian phylogenetic model into ancestral,
+count, infection, and repeated-observation questions. Each object changes a
+scientific assumption or derives a quantity from named posterior columns:
+
+| Source object | Model or derivation | Scientific role |
+| --- | --- | --- |
+| `m2` | Gaussian fixed effect plus phylogenetic `treetip` random effect | establishes the continuous-response phylogenetic model |
+| `m2PhyloSig` | `treetip / (treetip + units)` for every retained draw | derives Gaussian phylogenetic signal |
+| `m3` | intercept-only Gaussian model with `pr = TRUE` | retains tip and node effects for ancestral reconstruction |
+| `blupsm3` | intercept-plus-effect posterior modes and HPD intervals | maps posterior ancestral summaries to explicit effect identities |
+| `m5` | intercept-only Poisson phylogenetic model | models parasite counts on their declared family scale |
+| `m6` | intercept-only `multinomial2` model of `infected` and `not_infected` | models infection composition on the latent scale |
+| `m6PhyloSig` | `treetip / (treetip + units + pi^2 / 3)` per draw | applies the source binary-style residual convention |
+| `m7` | `multinomial2` model with `diet_breadth` | estimates intercept and slope probability effects |
+| `m10` | repeated records with `species + treetip` random effects | separates species heterogeneity from phylogenetic structure |
+| `m10PhyloSig` and `m10spSig` | draw-wise variance shares over `species + treetip + units` | partition repeated-observation variance |
+
+```mermaid
+flowchart TB
+    gaussian["m2<br/>Gaussian phylogenetic model"]
+    signal["m2PhyloSig<br/>Gaussian signal"]
+    ancestral["m3 → blupsm3<br/>ancestral effects"]
+    poisson["m5<br/>Poisson counts"]
+    infection["m6<br/>infection intercept"]
+    binarySignal["m6PhyloSig<br/>latent-scale signal"]
+    predictor["m7<br/>diet breadth"]
+    repeated["m10<br/>species + phylogeny"]
+    partition["m10PhyloSig / m10spSig<br/>variance shares"]
+
+    gaussian --> signal
+    gaussian --> ancestral
+    ancestral --> poisson
+    poisson --> infection
+    infection --> binarySignal
+    infection --> predictor
+    predictor --> repeated
+    repeated --> partition
+```
+
+The arrows describe the conceptual progression of the source analysis. They do
+not authorize inheritance of evidence: every derived quantity still needs its
+own governed inputs, observations, diagnostics, and verdict.
+
 ## Evidence Decomposition
 
 | Bundle | Evaluated surface |
@@ -148,6 +193,19 @@ When a denominator contains phylogenetic, species, residual, or
 distribution-specific variance, record every term and the scale on which it is
 defined. Two quantities labelled “phylogenetic signal” are not comparable if
 their denominators or latent-scale conventions differ.
+
+### Transform Draws Before Summarizing
+
+For `m7`, retain the paired intercept and slope draw identity, compute the
+linear predictor for each declared predictor value, apply the inverse-logit to
+each draw, and only then compute posterior modes, intervals, or contrasts. For
+`m2PhyloSig`, `m6PhyloSig`, `m10PhyloSig`, and `m10spSig`, calculate each ratio
+from variance components belonging to the same draw before summarizing.
+
+This rule preserves posterior dependence and asymmetry. Applying a nonlinear
+transform to marginal modes, interval endpoints, or independently summarized
+variance components constructs a different quantity and cannot be treated as
+the source result.
 
 ## Review Priorities
 

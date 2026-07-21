@@ -50,6 +50,38 @@ flowchart LR
 | `evidence-006` | phylogenetic and residual variance-component posteriors under matching parameterization |
 | `evidence-007` | Brownian PGLS and posterior-model quantities with an explicit comparison rationale |
 
+## Closure Dependency Order
+
+The claims do not close independently. Later numerical claims consume the
+population, chain, and covariance identities established by earlier records:
+
+```mermaid
+flowchart LR
+    population["evidence-001<br/>analysis population"]
+    baseline["evidence-002<br/>Gaussian baseline"]
+    chains["evidence-003<br/>chains and diagnostics"]
+    inverse["evidence-004<br/>inverse covariance"]
+    fixed["evidence-005<br/>fixed-effect posterior"]
+    variance["evidence-006<br/>variance posterior"]
+    comparator["evidence-007<br/>Brownian comparator"]
+
+    population --> baseline
+    population --> chains
+    population --> inverse
+    chains --> fixed
+    inverse --> fixed
+    chains --> variance
+    inverse --> variance
+    baseline --> comparator
+    inverse --> comparator
+    fixed --> comparator
+```
+
+A later bundle may retain its own verdict, but it cannot silently substitute a
+different species population, tree order, chain set, or covariance scaling.
+The dependency must be recorded by immutable artifact identities rather than
+assumed from execution order.
+
 ## Comparable Posterior Identity
 
 A comparable run fixes:
@@ -77,6 +109,21 @@ Missing execution produces `not_comparable`; it is not a numerical failure.
 Completed execution with unexplained disagreement may justify
 `mismatch_unexplained`. Agreement can justify `matched` or
 `matched_with_tolerance` only after all eligible observations are adjudicated.
+
+## Distinguish Structural And Numerical Checks
+
+| Check class | Examples | Failure meaning |
+| --- | --- | --- |
+| identity | source revision, dataset digest, tree digest, taxon order, formula, priors | the computations are not yet the same analytical claim |
+| structural | matrix dimensions, parameter keys, chain membership, draw counts, finite-value policy | the comparison population is malformed or incomplete |
+| diagnostic | effective sample size, autocorrelation, between-chain behavior | posterior summaries may not support scientific interpretation |
+| numerical | coefficient difference, interval overlap rule, posterior-distance rule | comparable observations agree or disagree under a declared criterion |
+| completeness | expected versus observed parameters, chains, and claim rows | the verdict denominator is complete or explicitly reduced |
+
+Identity and structural failures are not tolerance failures. They keep the
+affected observation `not_comparable` until the analytical objects align.
+Numerical adjudication begins only after those gates pass, and completeness is
+evaluated before a bundle-level matched verdict is allowed.
 
 ## Safe Present-Tense Claims
 
