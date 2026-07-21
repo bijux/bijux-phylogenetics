@@ -64,6 +64,21 @@ These are runtime entry points, not claims of study parity. Evidence Book
 bundles identify which source analyses and result fields have governed
 comparisons.
 
+## Choose The Method From The Estimand
+
+| Intended estimand | Required design choices | Common category error |
+| --- | --- | --- |
+| strength of phylogenetic signal | trait, null/reference rule, tree scale, fitted or fixed transformation | treating signal as evidence for a predictor or causal mechanism |
+| predictor effect conditional on phylogeny | response, design matrix, covariance family, taxon set | comparing coefficients from different reference levels or transformations |
+| evolutionary mode | candidate family, likelihood convention, parameter count, tree time scale | treating the lowest information criterion as proof of biological truth |
+| continuous ancestral value | evolutionary model, root treatment, node identity, uncertainty rule | reporting a conditional estimate as an observed historical value |
+| discrete ancestral state | state coding, transition constraints, root prior, ambiguity policy | comparing probabilities under different state spaces |
+| conclusion across plausible trees | tree-set identity, aggregation unit, between-tree summary | presenting one favored tree as though topology were fixed by the data |
+
+Begin with the estimand, then select the runtime surface. Beginning with an
+available function and searching afterward for a biological interpretation
+reverses the scientific decision order.
+
 ## Model Identity Before Values
 
 A comparative result is identified by more than its formula. Record the taxa
@@ -131,6 +146,29 @@ interpretation:
 - transition constraints and state ordering;
 - single-tree versus tree-set conclusions;
 - optimizer starts, boundary estimates, and reference implementations.
+
+## Publish A Comparative Result Packet
+
+A reviewable result keeps five layers together:
+
+1. **Population:** included taxa, exclusions, duplicate policy, and exact
+   tree–trait reconciliation.
+2. **Design:** formula, design columns, transformations, factor coding, and
+   missing-value policy.
+3. **Evolutionary model:** covariance or transition family, tree scale,
+   fitted parameters, and constraints.
+4. **Fit and uncertainty:** objective, estimates, intervals or probabilities,
+   optimizer state, diagnostics, and warnings.
+5. **Sensitivity:** alternative trees, codings, models, starts, and inclusion
+   rules that could change the conclusion.
+
+For ancestral reconstruction, add stable node identities and distinguish
+within-tree uncertainty from variation across trees. For regression, retain
+the coefficient-to-design-column mapping so a table remains interpretable
+without reconstructing the formula by hand.
+
+The result packet supports review of the computation. A separate Evidence Book
+bundle is required before claiming correspondence with a named study source.
 
 The [PCM1 signal and ancestral results](../../03-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/signal-and-ancestral-results.md)
 and [PCM2 model comparisons](../../03-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/model-comparisons-and-pgls.md)

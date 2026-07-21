@@ -41,6 +41,20 @@ flowchart LR
 runner is preferable when its model contract, retained state, and result type
 are needed directly.
 
+## Choose The Native Surface By State Space
+
+| Analysis design | Entry point | State whose mixing must be checked |
+| --- | --- | --- |
+| one DNA partition, fixed topology | `run_bayesian_inference` or `run_fixed_topology_dna_metropolis_hastings` | branches and supported substitution parameters |
+| linked or unlinked DNA partitions | `run_fixed_topology_partitioned_dna_metropolis_hastings` | shared and partition-specific parameters |
+| DNA with topology uncertainty | `run_bayesian_inference` or `run_joint_topology_dna_metropolis_hastings` | topology, branches, and substitution parameters |
+| discrete trait under Mk | `run_discrete_trait_mk_metropolis_hastings` | rates, root state, and any reconstructed states |
+| continuous Brownian or OU trait | specialized continuous-trait runner | ancestral values and family-specific evolutionary parameters |
+| calibrated or clock analysis | specialized strict, local, relaxed, or time-tree runner | rates, times, calibrations, tree prior, and topology where sampled |
+
+Do not choose a broader runner by name alone. Confirm that its result type
+retains every latent state and diagnostic needed by the scientific claim.
+
 ## Posterior Identity Begins Before Sampling
 
 A posterior is defined by more than the observed data. Its run identity
@@ -96,10 +110,41 @@ Posterior samples support more than a point estimate:
 - posterior predictive simulation and predictive p-values;
 - comparison with maximum-likelihood trees and independent Bayesian runs.
 
-`evaluate_bayesian_posterior` joins declared diagnostic thresholds to posterior
-review. `build_bayesian_evidence_package` and
-`write_bayesian_posterior_evaluation_artifacts` project the structured record
-into retained artifacts. A rendered report never upgrades a failed diagnostic.
+`evaluate_bayesian_posterior` evaluates the likelihood, prior components, and
+combined log posterior for one declared model state; it is an evaluation
+primitive, not a convergence verdict. `summarize_bayesian_posterior_decomposition`
+turns those components into a reviewable decomposition, while
+`write_bayesian_posterior_evaluation_artifacts` persists its machine- and
+human-readable projections. `build_bayesian_evidence_package` inventories
+identified inputs, configuration, trees, logs, diagnostics, and reports under
+one evidence root. It does not create missing diagnostics or convert them into
+a pass.
+
+Keep four records separate:
+
+| Record | Question answered |
+| --- | --- |
+| posterior evaluation | how likelihood and prior components combine for a model state |
+| chain diagnostics | whether retained samples adequately explore claimed quantities |
+| posterior summary | what the retained sample distribution says under the model |
+| evidence package | whether the files needed to reconstruct review are identified together |
+
+A rendered report never upgrades a failed diagnostic, and an evidence-package
+inventory never substitutes for a chain assessment.
+
+## Convergence Is Quantity-Specific
+
+A run-wide label is insufficient when one parameter mixes well and another
+does not. Build a conclusion table that maps each reported quantity to its
+trace, burn-in decision, effective sample size, autocorrelation, interval,
+between-chain comparison, and sensitivity result. For topology claims, add
+topology visitation and split-frequency behavior; a scalar ESS cannot certify
+tree-space exploration.
+
+Refuse interpretation when a claimed quantity has no diagnostic path. Qualify
+the conclusion when it changes materially under defensible burn-in, prior, or
+starting-state choices. Preserve failed chains in the denominator rather than
+reporting convergence only for survivors.
 
 ## Native And External Boundaries
 

@@ -321,10 +321,14 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "Bayesian Inference" in inference_domain
     assert "Layered Runtime Surfaces" in inference_domain
     assert "Comparison Admissibility" in inference_domain
+    assert "Enter At The Layer Your Question Requires" in inference_domain
+    assert "Trace A Reported Likelihood" in inference_domain
     assert "PGLS And Trait Covariance" in comparative_domain
     assert "Ancestral Reconstruction" in comparative_domain
     assert "Method And Record Locators" in comparative_domain
     assert "Model Identity Before Values" in comparative_domain
+    assert "Choose The Method From The Estimand" in comparative_domain
+    assert "Publish A Comparative Result Packet" in comparative_domain
     assert "Host-Switching Records" in ecology_domain
     assert "summarize_continuous_phylogeography" in ecology_domain
     assert "Presentation Is Downstream" in ecology_domain
@@ -336,6 +340,10 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "Posterior Identity Begins Before Sampling" in bayesian_domain
     assert "Resume is continuation, not an independent replicate" in bayesian_domain
     assert "Native And External Boundaries" in bayesian_domain
+    assert "Choose The Native Surface By State Space" in bayesian_domain
+    assert "Convergence Is Quantity-Specific" in bayesian_domain
+    assert "`evaluate_bayesian_posterior` evaluates" in bayesian_domain
+    assert "not a convergence verdict" in bayesian_domain
     assert "Native Simulation Families" in simulation_domain
     assert "Preventing Simulation Circularity" in simulation_domain
     assert "Benchmark Design" in assurance_domain

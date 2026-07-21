@@ -56,6 +56,22 @@ every state space. The documented end-to-end native tree-search result remains
 strongest for nucleotide models; protein, codon, and Mk likelihood surfaces
 must be described at the layer they actually implement.
 
+## Enter At The Layer Your Question Requires
+
+| Intended work | Begin with | Do not infer |
+| --- | --- | --- |
+| score one declared tree and parameter state | model-specific evaluator or compiled finite-state analysis | that the tree or parameters are optimal |
+| fit parameters on a fixed topology | optimizer surface with bounds and starts | that topology uncertainty was explored |
+| infer a nucleotide tree | `NucleotideMaximumLikelihoodResult` workflow | that other state spaces have the same search depth |
+| quantify split stability | named bootstrap or SH-like report | that support is model adequacy or posterior probability |
+| sample a supported posterior | native Bayesian model and matching proposal schedule | that chain completion establishes convergence |
+| invoke IQ-TREE2, FastTree, MrBayes, or BEAST | external-engine adapter | that Bijux owns the external numerical algorithm |
+
+Selecting a lower layer gives more control and more responsibility. Callers
+that assemble compile, evaluation, optimization, and search primitives must
+retain the same identity and diagnostic information that the unified result
+would otherwise preserve.
+
 ## Maximum-Likelihood Inference
 
 The documented native tree-inference result is strongest for nucleotide
@@ -99,6 +115,34 @@ likelihood, and sampling definitions.
 
 If those conditions are absent, retain both results as separate observations;
 do not manufacture a delta, ranking, or parity verdict.
+
+## Trace A Reported Likelihood
+
+Every published likelihood should be recoverable through this chain:
+
+```mermaid
+flowchart LR
+    input["alignment identity<br/>taxa and sites"]
+    state["tree · branches<br/>model parameters"]
+    convention["partitions · missingness<br/>root and scaling policy"]
+    evaluation["log-likelihood"]
+    selection["optimization or<br/>model comparison"]
+    claim["bounded conclusion"]
+
+    input --> evaluation
+    state --> evaluation
+    convention --> evaluation
+    evaluation --> selection --> claim
+```
+
+If the tree, parameter state, or numerical convention cannot be recovered,
+the likelihood is an orphaned scalar. It may be displayed, but it cannot
+support reproducible model comparison.
+
+For an optimized result, preserve both the final objective and the route that
+produced it: starting-state identity, bounds, termination condition, warnings,
+and search trace. For a posterior sample, preserve the corresponding prior and
+proposal identity as well.
 
 ## Numerical Failure Modes
 
