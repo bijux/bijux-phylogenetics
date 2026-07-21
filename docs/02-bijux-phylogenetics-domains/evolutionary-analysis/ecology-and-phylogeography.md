@@ -1,5 +1,5 @@
 ---
-title: Ecology And Phylogeography
+title: Cross-Domain Ecology And Geography
 audience: public
 type: explanation
 status: canonical
@@ -7,12 +7,20 @@ owner: bijux-phylogenetics-docs
 last_reviewed: 2026-07-21
 ---
 
-# Ecology And Phylogeography
+# Cross-Domain Ecology And Geography
 
 Bijux turns reconstructed host, niche, region, and coordinate histories into
 reviewable branch and clade records. The owned contract is an analytical
 ledger with explicit uncertainty and exclusions; a map or transition count is
 a projection of that ledger, not an independent historical fact.
+
+This guide owns the integration path. Use
+[Biogeography And Migration](biogeography-and-migration.md) for discrete region
+models and event chronology,
+[Continuous Phylogeography And Maps](continuous-phylogeography-and-maps.md) for
+coordinate reconstruction and map ledgers, and
+[Host Association And Niche Evolution](host-association-and-niche-evolution.md)
+for host and niche transitions.
 
 ```mermaid
 flowchart LR
@@ -98,6 +106,25 @@ Use descendant-taxon signatures or another explicit structural key. Every
 branch row should identify its parent and child against the exact tree used for
 reconstruction. Tree pruning, rerooting, or topology changes invalidate
 position-only joins.
+
+## Integrate Without Merging Event Meanings
+
+A host change, niche change, discrete region transition, and continuous
+coordinate movement can share a branch identity without being the same event.
+Join them through the exact tree and branch ledger, then retain separate model,
+support, exclusion, and uncertainty fields for each analysis.
+
+| Joined observation | Valid question | Invalid shortcut |
+| --- | --- | --- |
+| host switch and region transition on one branch | do independently reconstructed changes co-occur under declared support rules? | the host switch caused geographic spread |
+| niche transition and coordinate movement | are inferred shifts colocated in the retained tree? | movement proves adaptation |
+| discrete and continuous geography | do region-state and coordinate summaries tell a compatible bounded story? | region centroids are the inferred ancestral coordinates |
+| repeated branch events across a tree set | how stable is co-occurrence across admitted trees? | the preferred tree represents event certainty |
+
+An integrated report must preserve unmatched branches and failed component
+analyses. Requiring every component to succeed and then reporting only the
+surviving intersection changes the denominator and can manufacture apparent
+co-occurrence.
 
 ## Presentation Is Downstream
 

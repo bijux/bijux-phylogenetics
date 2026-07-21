@@ -28,9 +28,22 @@ flowchart LR
 [Comparative And Ancestral Methods](comparative-and-ancestral-methods.md)
 covers PGLS, phylogenetic signal, continuous and discrete evolutionary modes,
 ancestral reconstruction, diversification summaries, and sensitivity review.
-[Ecology And Phylogeography](ecology-and-phylogeography.md) follows discrete
-host, niche, and region histories plus continuous coordinate movement into
-branch ledgers, clade summaries, exclusions, and maps.
+[Cross-Domain Ecology And Geography](ecology-and-phylogeography.md) follows a
+result across host, niche, region, coordinate, and presentation boundaries.
+Use the dedicated guides for [Biogeography And Migration](biogeography-and-migration.md),
+[Continuous Phylogeography And Maps](continuous-phylogeography-and-maps.md),
+and [Host Association And Niche Evolution](host-association-and-niche-evolution.md)
+when one of those contracts owns the scientific question.
+
+## Choose The Evolutionary Object
+
+| Object being inferred | Owning guide | Primary uncertainty |
+| --- | --- | --- |
+| trait association, signal, mode, or ancestral state | [Comparative And Ancestral Methods](comparative-and-ancestral-methods.md) | covariance, tree, model, state, and parameter uncertainty |
+| region state, constrained transition, chronology, or migration event | [Biogeography And Migration](biogeography-and-migration.md) | state coding, root prior, transition policy, time bins, and tree set |
+| coordinate estimate, branch movement, outlier, or map ledger | [Continuous Phylogeography And Maps](continuous-phylogeography-and-maps.md) | spatial error, branch scale, node identity, and filter policy |
+| host switch, niche transition, or clade shift burden | [Host Association And Niche Evolution](host-association-and-niche-evolution.md) | ancestral-state ambiguity, transition constraints, opportunity, and sampling |
+| joined ecological and geographic narrative | [Cross-Domain Ecology And Geography](ecology-and-phylogeography.md) | whether every handoff preserves the same tree, taxa, states, and branch identities |
 
 ## Establish The Observation Population
 

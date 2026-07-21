@@ -380,6 +380,19 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     ecology_domain = _read(
         DOMAINS_ROOT / "evolutionary-analysis" / "ecology-and-phylogeography.md"
     )
+    biogeography_domain = _read(
+        DOMAINS_ROOT / "evolutionary-analysis" / "biogeography-and-migration.md"
+    )
+    phylogeography_domain = _read(
+        DOMAINS_ROOT
+        / "evolutionary-analysis"
+        / "continuous-phylogeography-and-maps.md"
+    )
+    ecology_detail_domain = _read(
+        DOMAINS_ROOT
+        / "evolutionary-analysis"
+        / "host-association-and-niche-evolution.md"
+    )
     parsimony_domain = _read(DOMAINS_ROOT / "inference" / "parsimony.md")
     distance_domain = _read(DOMAINS_ROOT / "inference" / "distance-based-inference.md")
     bayesian_domain = _read(DOMAINS_ROOT / "inference" / "bayesian-inference.md")
@@ -430,6 +443,18 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "Host-Switching Records" in ecology_domain
     assert "summarize_continuous_phylogeography" in ecology_domain
     assert "Presentation Is Downstream" in ecology_domain
+    assert "Integrate Without Merging Event Meanings" in ecology_domain
+    assert "surviving intersection changes the denominator" in ecology_domain
+    assert "Choose The Evolutionary Object" in evolution_index
+    assert "Choose The Biogeographic Contract" in biogeography_domain
+    assert "Separate Count, Rate, And Stability" in biogeography_domain
+    assert "summarize_geographic_migration_event_tree_set" in biogeography_domain
+    assert "Owned Review Surfaces" in phylogeography_domain
+    assert "Maps Are Review Projections" in phylogeography_domain
+    assert "CoordinateMovementBranchRow" in phylogeography_domain
+    assert "Select The Owning Contract" in ecology_detail_domain
+    assert "Preserve Opportunity And Repetition" in ecology_detail_domain
+    assert "UnsupportedHostSwitchClaimRow" in ecology_detail_domain
     assert "Searching Tree Space" in parsimony_domain
     assert "Support And Consensus" in parsimony_domain
     assert "Public Surface Map" in parsimony_domain
