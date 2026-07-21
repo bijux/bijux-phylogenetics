@@ -9,7 +9,8 @@ DOCS_ROOT = REPO_ROOT / "docs"
 PRODUCT_ROOT = DOCS_ROOT / "01-bijux-phylogenetics"
 DOMAINS_ROOT = DOCS_ROOT / "02-bijux-phylogenetics-domains"
 EVIDENCE_GUIDE_ROOT = DOCS_ROOT / "03-bijux-phylogenetics-evidence-book"
-MAINTAINER_ROOT = DOCS_ROOT / "04-bijux-phylogenetics-maintain"
+PARITIES_ROOT = DOCS_ROOT / "04-bijux-phylogenetics-parities"
+MAINTAINER_ROOT = DOCS_ROOT / "05-bijux-phylogenetics-maintain"
 
 
 def _read(path: Path) -> str:
@@ -25,9 +26,11 @@ def test_documentation_hierarchy_has_canonical_domain_and_redirect_paths() -> No
     assert PRODUCT_ROOT.is_dir()
     assert DOMAINS_ROOT.is_dir()
     assert EVIDENCE_GUIDE_ROOT.is_dir()
+    assert PARITIES_ROOT.is_dir()
     assert MAINTAINER_ROOT.is_dir()
     assert not (DOCS_ROOT / "02-bijux-phylogenetics-evidence-book").exists()
     assert not (DOCS_ROOT / "03-bijux-phylogenetics-maintain").exists()
+    assert not (DOCS_ROOT / "04-bijux-phylogenetics-maintain").exists()
 
     config = _read(REPO_ROOT / "mkdocs.yml")
     assert (
@@ -36,7 +39,11 @@ def test_documentation_hierarchy_has_canonical_domain_and_redirect_paths() -> No
     ) in config
     assert (
         "03-bijux-phylogenetics-maintain/index.md: "
-        "04-bijux-phylogenetics-maintain/index.md"
+        "05-bijux-phylogenetics-maintain/index.md"
+    ) in config
+    assert (
+        "04-bijux-phylogenetics-maintain/index.md: "
+        "05-bijux-phylogenetics-maintain/index.md"
     ) in config
 
 
@@ -108,12 +115,20 @@ def test_native_inference_guides_preserve_search_and_chain_diagnostics() -> None
 
 def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     domain_index = _read(DOMAINS_ROOT / "index.md")
-    tree_domain = _read(DOMAINS_ROOT / "trees-alignments-and-taxa.md")
-    inference_domain = _read(DOMAINS_ROOT / "likelihood-and-inference.md")
-    comparative_domain = _read(DOMAINS_ROOT / "comparative-and-ancestral-methods.md")
-    parsimony_domain = _read(DOMAINS_ROOT / "parsimony.md")
-    simulation_domain = _read(DOMAINS_ROOT / "simulation-and-datasets.md")
-    assurance_domain = _read(DOMAINS_ROOT / "validation-benchmarks-and-reporting.md")
+    tree_domain = _read(
+        DOMAINS_ROOT / "data-and-structure" / "trees-alignments-and-taxa.md"
+    )
+    inference_domain = _read(DOMAINS_ROOT / "inference" / "likelihood-and-inference.md")
+    comparative_domain = _read(
+        DOMAINS_ROOT / "evolutionary-analysis" / "comparative-and-ancestral-methods.md"
+    )
+    parsimony_domain = _read(DOMAINS_ROOT / "inference" / "parsimony.md")
+    simulation_domain = _read(
+        DOMAINS_ROOT / "scientific-assurance" / "simulation-and-datasets.md"
+    )
+    assurance_domain = _read(
+        DOMAINS_ROOT / "scientific-assurance" / "validation-benchmarks-and-reporting.md"
+    )
 
     for domain in (
         "Trees, alignments, and taxa",
@@ -136,6 +151,20 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "Preventing Simulation Circularity" in simulation_domain
     assert "Benchmark Design" in assurance_domain
     assert "From Benchmark To Evidence" in assurance_domain
+
+
+def test_parity_handbook_separates_live_reference_and_adapter_boundaries() -> None:
+    parity_index = _read(PARITIES_ROOT / "index.md")
+    r_ecosystem = _read(PARITIES_ROOT / "r-ecosystem" / "index.md")
+    engines = _read(PARITIES_ROOT / "external-engines" / "index.md")
+    correspondence = _read(PARITIES_ROOT / "correspondence" / "index.md")
+
+    for tool in ("APE", "GEIGER", "phytools", "MAFFT", "IQ-TREE2", "BEAST"):
+        assert tool in parity_index
+    assert "RUN_LIVE_PARITY=1" in r_ecosystem
+    assert "computational owners" in engines
+    assert "matched with tolerance" in correspondence
+    assert "--ape-shard load_tree" in correspondence
 
 
 def test_quality_guides_separate_tests_benchmarks_and_release_evidence() -> None:
@@ -201,7 +230,7 @@ def test_package_metadata_points_to_canonical_documentation_paths() -> None:
         "/03-bijux-phylogenetics-evidence-book/"
     )
     assert maintainer_urls["Documentation"].endswith(
-        "/04-bijux-phylogenetics-maintain/"
+        "/05-bijux-phylogenetics-maintain/"
     )
 
 

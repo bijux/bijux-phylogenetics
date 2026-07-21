@@ -83,6 +83,6 @@ rule.
 
 ## Related Operations
 
-- [Native maximum-likelihood inference](../01-bijux-phylogenetics/operations/native-maximum-likelihood-workflows.md)
-- [Native Bayesian inference](../01-bijux-phylogenetics/operations/native-bayesian-workflows.md)
-- [Native benchmark evidence](../01-bijux-phylogenetics/quality/native-benchmark-evidence.md)
+- [Native maximum-likelihood inference](../../01-bijux-phylogenetics/operations/native-maximum-likelihood-workflows.md)
+- [Native Bayesian inference](../../01-bijux-phylogenetics/operations/native-bayesian-workflows.md)
+- [Native benchmark evidence](../../01-bijux-phylogenetics/quality/native-benchmark-evidence.md)

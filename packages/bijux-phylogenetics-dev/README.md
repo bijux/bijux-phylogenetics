@@ -82,11 +82,11 @@ automation and may have narrower compatibility than the runtime API.
 
 ## Documentation
 
-- [Maintainer handbook](https://bijux.io/bijux-phylogenetics/04-bijux-phylogenetics-maintain/)
-- [Documentation ownership](https://bijux.io/bijux-phylogenetics/04-bijux-phylogenetics-maintain/documentation-system/documentation-ownership/)
-- [Cross-surface contract maintenance](https://bijux.io/bijux-phylogenetics/04-bijux-phylogenetics-maintain/trust-surfaces/public-trust-surface-maintenance/)
-- [Artifact hygiene](https://bijux.io/bijux-phylogenetics/04-bijux-phylogenetics-maintain/repository-operations/artifact-hygiene/)
-- [Release surface alignment](https://bijux.io/bijux-phylogenetics/04-bijux-phylogenetics-maintain/repository-operations/release-surface-alignment/)
+- [Maintainer handbook](https://bijux.io/bijux-phylogenetics/05-bijux-phylogenetics-maintain/)
+- [Documentation ownership](https://bijux.io/bijux-phylogenetics/05-bijux-phylogenetics-maintain/documentation-system/documentation-ownership/)
+- [Cross-surface contract maintenance](https://bijux.io/bijux-phylogenetics/05-bijux-phylogenetics-maintain/trust-surfaces/public-trust-surface-maintenance/)
+- [Artifact hygiene](https://bijux.io/bijux-phylogenetics/05-bijux-phylogenetics-maintain/repository-operations/artifact-hygiene/)
+- [Release surface alignment](https://bijux.io/bijux-phylogenetics/05-bijux-phylogenetics-maintain/repository-operations/release-surface-alignment/)
 - [Source](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics-dev)
 
 Apache License 2.0.

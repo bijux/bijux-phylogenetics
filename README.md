@@ -173,7 +173,7 @@ remain essential.
 | `packages/bijux-phylogenetics/` | canonical runtime distribution |
 | `packages/phylogenetic/` | compatibility distribution |
 | `packages/bijux-phylogenetics-dev/` | repository verification and publication tooling |
-| `docs/` | product, evidence, and maintainer website source |
+| `docs/` | product, domains, evidence, parity, and maintainer website source |
 | `evidence-book/` | governed study dossiers and review indexes |
 | `apis/` | versioned OpenAPI contract |
 | `configs/` and `makes/` | repository-owned automation configuration |
@@ -184,13 +184,14 @@ remain essential.
 - [Documentation home](https://bijux.io/bijux-phylogenetics/)
 - [Product handbook](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
 - [Scientific domains](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-domains/)
+- [Parities and correspondence](https://bijux.io/bijux-phylogenetics/04-bijux-phylogenetics-parities/)
 - [Runtime architecture](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/architecture/)
 - [Surface selection](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/surface-selection/)
 - [Native maximum-likelihood workflow](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/native-maximum-likelihood-workflows/)
 - [Native Bayesian workflow](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/native-bayesian-workflows/)
 - [Validation lanes](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/quality/validation-lanes/)
 - [Evidence Book](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-evidence-book/)
-- [Maintainer handbook](https://bijux.io/bijux-phylogenetics/04-bijux-phylogenetics-maintain/)
+- [Maintainer handbook](https://bijux.io/bijux-phylogenetics/05-bijux-phylogenetics-maintain/)
 
 ## Development
 

@@ -104,6 +104,6 @@ interpretation:
 - single-tree versus tree-set conclusions;
 - optimizer starts, boundary estimates, and reference implementations.
 
-The [PCM1 signal and ancestral results](../03-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/signal-and-ancestral-results.md)
-and [PCM2 model comparisons](../03-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/model-comparisons-and-pgls.md)
+The [PCM1 signal and ancestral results](../../03-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/signal-and-ancestral-results.md)
+and [PCM2 model comparisons](../../03-bijux-phylogenetics-evidence-book/pcm2-primate-pgls-and-signal/model-comparisons-and-pgls.md)
 show how these conditions become bounded evidence claims.

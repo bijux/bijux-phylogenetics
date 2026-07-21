@@ -97,8 +97,12 @@ reviewer.
 ## Recommended Reading Paths
 
 **Scientific capability:** [domain map](../02-bijux-phylogenetics-domains/index.md)
-→ [trees, alignments, and taxa](../02-bijux-phylogenetics-domains/trees-alignments-and-taxa.md)
-→ [likelihood and inference](../02-bijux-phylogenetics-domains/likelihood-and-inference.md).
+→ [trees, alignments, and taxa](../02-bijux-phylogenetics-domains/data-and-structure/trees-alignments-and-taxa.md)
+→ [likelihood and inference](../02-bijux-phylogenetics-domains/inference/likelihood-and-inference.md).
+
+**Reference correspondence:** [parities and correspondence](../04-bijux-phylogenetics-parities/index.md)
+→ [R ecosystem](../04-bijux-phylogenetics-parities/r-ecosystem/index.md)
+→ [interpreting correspondence](../04-bijux-phylogenetics-parities/correspondence/index.md).
 
 **First analysis:** [installation](operations/installation-and-setup.md) →
 [surface selection](interfaces/surface-selection.md) →

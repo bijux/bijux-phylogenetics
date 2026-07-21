@@ -109,8 +109,8 @@ upgrade a diagnostic into a scientific conclusion.
 
 Benchmark artifacts become evidence only when a governed claim maps them to
 identified sources, inputs, checks, acceptance rules, and a current verdict.
-The [Evidence Book](../03-bijux-phylogenetics-evidence-book/index.md) provides
-that stronger layer. The [validation lanes](../01-bijux-phylogenetics/quality/validation-lanes.md),
-[native benchmark evidence](../01-bijux-phylogenetics/quality/native-benchmark-evidence.md),
-and [artifact contracts](../01-bijux-phylogenetics/interfaces/artifact-contracts.md)
+The [Evidence Book](../../03-bijux-phylogenetics-evidence-book/index.md) provides
+that stronger layer. The [validation lanes](../../01-bijux-phylogenetics/quality/validation-lanes.md),
+[native benchmark evidence](../../01-bijux-phylogenetics/quality/native-benchmark-evidence.md),
+and [artifact contracts](../../01-bijux-phylogenetics/interfaces/artifact-contracts.md)
 describe the operational review paths behind it.
