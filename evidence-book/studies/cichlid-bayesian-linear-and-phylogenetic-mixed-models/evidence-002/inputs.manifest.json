@@ -62,7 +62,7 @@
       "label": "source-3",
       "locator": "evidence-book/studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/reference/README.md",
       "read_only": true,
-      "sha256": "f9944462b065670f7bb94bc090e6dd140faeb8ba7a84af52f1ace4f8d1f479f7"
+      "sha256": "dcb37d61d2548d6f5e1e53bbee98a39d3c681bc7662c05431c220ffe4a3219dc"
     }
   ],
   "study_id": "cichlid-bayesian-linear-and-phylogenetic-mixed-models"
