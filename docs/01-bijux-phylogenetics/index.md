@@ -40,6 +40,30 @@ the assumptions behind these routes. The [surface selection guide](interfaces/su
 then distinguishes Python composition, repeatable CLI execution, and durable
 artifact consumption.
 
+## Make Four Decisions Before Execution
+
+```mermaid
+flowchart LR
+    object["Scientific object<br/>and identity"]
+    model["Model, assumptions,<br/>and estimand"]
+    owner["Native runtime or<br/>external engine"]
+    record["Result, diagnostics,<br/>and artifact contract"]
+
+    object --> model --> owner --> record
+```
+
+1. **Object identity:** decide which trees, taxa, alignments, traits, states,
+   and partitions belong to the analysis.
+2. **Scientific contract:** name the model family, transformation, costs,
+   priors, search or sampler, and quantity to interpret.
+3. **Computation owner:** choose an owned native implementation or a named
+   external engine before selecting its interface.
+4. **Review contract:** decide which diagnostics, omissions, tables,
+   manifests, and visualizations must survive execution.
+
+This order prevents an available command from silently deciding the model or
+the evidence standard.
+
 ## Analytical Capability Map
 
 ```mermaid
@@ -182,5 +206,6 @@ stale projection and preserve the disagreement until it is corrected.
   execution assumptions.
 - Numerical agreement needs stated tolerances and comparable conventions.
 - External engines remain separate software with their own support constraints.
-- Open evidence verdicts are visible product information, not documentation
-  defects to be worded away.
+- `mismatch_unexplained` and `not_comparable` verdicts are visible product
+  information, not documentation defects to be worded away. Open or blocked
+  resolution work remains a separate operational record.

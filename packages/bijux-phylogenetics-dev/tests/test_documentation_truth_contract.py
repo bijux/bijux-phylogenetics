@@ -76,6 +76,8 @@ def test_root_readme_publishes_native_external_and_evidence_boundaries() -> None
     assert "Evidence Book bundle" in readme
     assert "Select An Execution Contract" in readme
     assert "the contract before choosing the command" in readme
+    assert "Read The Demo As A Connected Record" in readme
+    assert "phylo-inputs-report.json" in readme
 
 
 def test_site_landing_connects_first_run_to_scientific_review() -> None:
@@ -91,6 +93,8 @@ def test_site_landing_connects_first_run_to_scientific_review() -> None:
     assert (
         "Runtime parity and Evidence Book status use different vocabularies" in landing
     )
+    assert "Follow The Demo Records" in landing
+    assert "Choose The Evidence Needed For The Decision" in landing
 
 
 def test_foundation_and_architecture_define_owned_runtime_contracts() -> None:
@@ -144,6 +148,8 @@ def test_product_handbook_routes_analysis_and_preserves_run_identity() -> None:
     assert "Locate The Owning Contract" in product
     assert "parity registry, observation rows, and failure artifacts" in product
     assert "claim identifier, source, inputs, checks, freshness, verdict" in product
+    assert "Make Four Decisions Before Execution" in product
+    assert "Open or blocked\n  resolution work" in product
     assert "Establish The Run Identity First" in operations
     assert "Minimum Handoff Record" in operations
     assert "Changing presentation or omitting the failed check" in operations

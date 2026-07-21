@@ -1,6 +1,6 @@
 ---
 title: Bijux Phylogenetics
-audience: mixed
+audience: public
 type: landing
 status: canonical
 owner: bijux-phylogenetics-docs
@@ -70,6 +70,26 @@ identities needed to audit the run. The demo validates packaging, tree and
 table intake, comparison, and reporting; it is not a numerical inference
 benchmark.
 
+### Follow The Demo Records
+
+```mermaid
+flowchart LR
+    manifest["manifest.json<br/>identity and inventory"]
+    inputs["inputs/<br/>materialized package data"]
+    json["report JSON<br/>machine facts"]
+    html["report HTML<br/>human interpretation"]
+    limits["capability-summary.md<br/>scope and routes"]
+
+    manifest --> inputs
+    manifest --> json --> html
+    manifest --> limits
+```
+
+The manifest binds the run. The JSON reports preserve inspectable facts. The
+HTML reports are presentations of those facts. `capability-summary.md` tells
+you what the demonstration exercised, but it does not promote the synthetic
+example into accuracy or biological evidence.
+
 ## Explore The Project
 
 | Goal | Destination | Coverage |
@@ -132,6 +152,20 @@ A runtime method can be useful without a corresponding Evidence Book bundle.
 Conversely, a study can retain an external computation owner while Bijux
 governs its inputs, provenance, checks, and verdict. The links above keep those
 relationships explicit.
+
+## Choose The Evidence Needed For The Decision
+
+| Decision | Minimum useful record | Stronger record when the claim requires it |
+| --- | --- | --- |
+| can this input be parsed and validated? | typed result or structured command output | fixture-backed contract test |
+| did this analysis produce its declared artifacts? | manifest plus checksum-resolved inventory | reproducible replay under the recorded environment |
+| does a numerical method behave on a named corpus? | benchmark or known-answer record | governed reference comparison |
+| does Bijux agree with APE, GEIGER, or phytools for a selected case? | live registry observation with denominator and tool identity | Evidence Book claim when the study consumes that comparison |
+| can a scientific statement be published? | current claim verdict and provenance | release-readiness record confirming all public projections agree |
+
+Do not demand study evidence for a simple parser decision, and do not use a
+parser success to justify a scientific statement. Match the proof to the
+decision being made.
 
 ## What The Runtime Owns
 

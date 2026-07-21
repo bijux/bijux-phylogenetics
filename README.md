@@ -90,6 +90,21 @@ proves packaged-resource access, parsing, report construction, and artifact
 linkage. Its small synthetic inputs do not establish inference accuracy or
 biological validity.
 
+### Read The Demo As A Connected Record
+
+| Record | What to establish |
+| --- | --- |
+| `manifest.json` | exact command, runtime identity, input and output checksums, and declared output inventory |
+| `capability-summary.md` | which capabilities ran and where their review artifacts were written |
+| `reports/phylo-inputs-report.json` | whether tree, alignment, traits, and metadata form a coherent input set |
+| `reports/tree-report.json` | structural tree facts behind the rendered tree report |
+| `reports/dataset-report.json` | dataset linkage and coverage behind the rendered dataset report |
+| `reports/comparison-report.html` | human review of the supplied alternative topology |
+
+The JSON records own machine-readable facts; the HTML reports explain them.
+If the manifest omits an expected file, treat the file as missing even when a
+similarly named report exists elsewhere.
+
 ## What Is Implemented
 
 | Domain | Runtime depth |
@@ -122,6 +137,15 @@ external algorithms as native code.
 Choose the contract before choosing the command. A normalized adapter result
 does not become a native result, and a completed workflow does not become
 study evidence until a governed claim consumes it.
+
+```mermaid
+flowchart LR
+    question["Scientific question"] --> owner["Choose computation owner"]
+    owner --> execute["Execute a supported surface"]
+    execute --> result["Read diagnostics and omissions"]
+    result --> preserve["Preserve structured artifacts"]
+    preserve --> claim["Attach claim evidence<br/>only when governed"]
+```
 
 ## Read A Result At The Right Layer
 
