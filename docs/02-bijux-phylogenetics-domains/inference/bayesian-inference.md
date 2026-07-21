@@ -146,6 +146,32 @@ the conclusion when it changes materially under defensible burn-in, prior, or
 starting-state choices. Preserve failed chains in the denominator rather than
 reporting convergence only for survivors.
 
+## Convergence Does Not Establish Model Adequacy
+
+Convergence asks whether the sampler explored its declared posterior.
+Adequacy asks whether data generated under that model resemble the observed
+features relevant to the scientific question. A stable, high-ESS chain can
+faithfully estimate an inadequate model.
+
+Choose discrepancy statistics before inspecting predictive outcomes. They
+should target the structures that could invalidate interpretation: site or
+character pattern frequencies, compositional heterogeneity, tree imbalance,
+trait contrasts, residual phylogenetic structure, calibration behavior, or
+another question-specific feature. Then retain the observed statistic,
+replicate-level simulated statistics, tail definition, replicate denominator,
+failed simulations, and predictive decision rule.
+
+| Review outcome | Interpretation |
+| --- | --- |
+| diagnostics adequate, predictive checks acceptable | posterior summaries may be interpreted within the declared model and decision scope |
+| diagnostics adequate, predictive checks contradictory | sampling may be reliable, but the model-dependent scientific claim must be narrowed or rejected |
+| diagnostics inadequate, predictive checks apparently acceptable | no posterior claim; predictive appearance cannot repair uncertain sampling |
+| predictive checks absent | convergence may be reported for named quantities, but model adequacy remains unevaluated |
+
+Posterior predictive p-values are diagnostics under the fitted model, not
+frequentist proof that the model is true. Do not select only favorable
+statistics or successful replicates after seeing the result.
+
 ## Native And External Boundaries
 
 `prepare_mrbayes_analysis` and `prepare_beast_time_tree_analysis` create

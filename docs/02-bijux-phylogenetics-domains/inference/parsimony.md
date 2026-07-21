@@ -81,6 +81,36 @@ A trustworthy search record retains:
 Repeated discovery of the same best score strengthens search evidence but
 does not prove global optimality.
 
+## Separate Score, Topology, And History Equivalence
+
+Equal total scores establish only equality under the declared cost model.
+They do not establish that trees contain the same splits, that characters
+place changes on the same branches, or that the implied ancestral states are
+unique.
+
+```mermaid
+flowchart LR
+    score["Equal minimum score"]
+    trees["Distinct topology<br/>population"]
+    states["Alternative minimum<br/>ancestral states"]
+    histories["Alternative branch<br/>change histories"]
+    decision["Consensus and ambiguity<br/>carried into interpretation"]
+
+    score --> trees --> decision
+    score --> states --> histories --> decision
+```
+
+Define the candidate population before summarizing it: all exhaustively
+enumerated trees, all equal-best trees discovered by a named search policy, or
+a bounded retained sample. A strict consensus over discovered optima is a
+property of that discovered set, not proof that every global optimum was
+found. Likewise, ACCTRAN and DELTRAN select resolutions within a score class;
+neither converts a non-unique minimum history into an observed event sequence.
+
+Preserve a topology fingerprint, per-character score vector, reconstructed
+state ambiguity, and branch-change identity separately. Two results may agree
+on one of those projections and disagree on the others.
+
 ## Support And Consensus
 
 Strict or majority consensus describes agreement among a declared tree set.

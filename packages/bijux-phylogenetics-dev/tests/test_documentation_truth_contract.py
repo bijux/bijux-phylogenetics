@@ -421,16 +421,22 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "Support And Consensus" in parsimony_domain
     assert "Public Surface Map" in parsimony_domain
     assert "Minimum Parsimony Result Packet" in parsimony_domain
+    assert "Separate Score, Topology, And History Equivalence" in parsimony_domain
+    assert "property of that discovered set" in parsimony_domain
     assert "Establish Matrix Identity" in distance_domain
     assert "diagnose_distance_additivity" in distance_domain
     assert "write_distance_reproducibility_bundle" in distance_domain
     assert "Trace The Distance Result Lineage" in distance_domain
     assert "Refusal Boundaries" in distance_domain
+    assert "Account For Compression Loss" in distance_domain
+    assert "never coerce to a large finite value" in distance_domain
     assert "Posterior Identity Begins Before Sampling" in bayesian_domain
     assert "Resume is continuation, not an independent replicate" in bayesian_domain
     assert "Native And External Boundaries" in bayesian_domain
     assert "Choose The Native Surface By State Space" in bayesian_domain
     assert "Convergence Is Quantity-Specific" in bayesian_domain
+    assert "Convergence Does Not Establish Model Adequacy" in bayesian_domain
+    assert "predictive appearance cannot repair uncertain sampling" in bayesian_domain
     assert "`evaluate_bayesian_posterior` evaluates" in bayesian_domain
     assert "not a convergence verdict" in bayesian_domain
     assert "Native Simulation Families" in simulation_domain

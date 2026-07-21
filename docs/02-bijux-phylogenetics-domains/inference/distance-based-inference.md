@@ -70,6 +70,31 @@ ultrametric; an ultrametric matrix can still be dominated by missing pairs; a
 finite corrected distance can still be saturation-sensitive. Do not collapse
 them into one generic matrix-quality flag.
 
+## Account For Compression Loss
+
+Converting characters to pairwise distances is a lossy transformation. The
+matrix can preserve estimated path dissimilarity while discarding which sites
+support a split, whether incompatible patterns concentrate in one partition,
+and whether the same observed distance arose from different substitution
+histories. Tree construction cannot recover information omitted by that
+transformation.
+
+Classify problematic pairs before construction:
+
+| Pair state | Meaning | Required handling |
+| --- | --- | --- |
+| zero | no estimated divergence under the declared observation policy | retain comparable-site counts; do not infer sequence identity automatically |
+| missing | no admissible comparison under the missingness or deletion policy | refuse methods requiring a complete matrix or declare an imputation policy |
+| non-finite | the estimator is undefined for the observed components | retain the estimator failure; never coerce to a large finite value |
+| saturation-sensitive | multiple substitutions make corrected path length weakly identified | qualify or reject the pair under a registered threshold |
+| finite but non-tree-like | the matrix violates additivity beyond the declared tolerance | retain four-point residuals and avoid treating the selected tree as an exact representation |
+
+When the scientific claim depends on character-level support, partition
+conflict, or substitution histories, retain the alignment and use a
+character-based likelihood or parsimony contract alongside the distance
+analysis. A good tree fit to a compressed matrix is not evidence that the
+matrix retained every signal relevant to the question.
+
 ## Native Construction And Fitting
 
 | Public locator | Owned result |
