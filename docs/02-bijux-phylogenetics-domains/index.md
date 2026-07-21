@@ -48,6 +48,43 @@ flowchart TB
 | [Simulation and datasets](scientific-assurance/simulation-and-datasets.md) | generative models, known truths, reference and stress corpora | simulated trees/traits/alignments, dataset manifests |
 | [Validation, benchmarks, and reporting](scientific-assurance/validation-benchmarks-and-reporting.md) | invariants, tolerances, metrics, provenance, publication contracts | diagnostics, benchmark reports, manifests, tables and figures |
 
+## Choose By Scientific Question
+
+| Question | Begin in | Continue into |
+| --- | --- | --- |
+| Are the taxa, topology, lengths, states, and partitions coherent? | [data and structure](data-and-structure/index.md) | the method that consumes the validated objects |
+| Which topology or model parameters best explain observed characters? | [inference](inference/index.md) | support, sensitivity, and assurance review |
+| How do traits vary with ancestry, predictors, or internal nodes? | [evolutionary analysis](evolutionary-analysis/index.md) | model comparison and tree/model sensitivity |
+| Is an implementation recovering known truth or matching a reference? | [scientific assurance](scientific-assurance/index.md) | benchmark or Evidence Book artifacts |
+
+Scientific questions commonly cross domains, but ownership remains local. A
+taxon mismatch is resolved before model fitting; a convergence failure is not
+recast as a reporting concern; and a visually persuasive figure cannot replace
+an uncertainty or sensitivity record.
+
+## Domain Handoffs
+
+```mermaid
+flowchart LR
+    intake["Data and structure<br/>validated objects"]
+    inference["Inference<br/>trees and parameters"]
+    evolution["Evolutionary analysis<br/>traits and histories"]
+    assurance["Scientific assurance<br/>checks and evidence"]
+
+    intake --> inference
+    intake --> evolution
+    inference --> evolution
+    inference --> assurance
+    evolution --> assurance
+    assurance -. failures and limits .-> intake
+    assurance -. failures and limits .-> inference
+    assurance -. failures and limits .-> evolution
+```
+
+Each handoff carries identities and assumptions, not only values. Tree scale,
+rooting, taxon order, state encoding, model parameterization, search or sampler
+configuration, and software provenance remain attached to downstream results.
+
 ## Shared Scientific Invariants
 
 - Taxon identity must remain stable across every joined object.
@@ -75,3 +112,7 @@ Scientific-domain coverage describes what the runtime implements. The
 bounded study comparisons. A domain can be mature in code and tests without a
 course-study bundle; an evidence bundle can depend on an external engine
 without claiming native ownership.
+
+For cross-implementation questions, use the
+[verification matrix](../04-bijux-phylogenetics-parities/correspondence/verification-matrix.md)
+to distinguish live parity, checked fixtures, and governed external execution.

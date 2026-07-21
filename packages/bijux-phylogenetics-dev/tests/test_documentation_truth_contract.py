@@ -138,6 +138,10 @@ def test_native_inference_guides_preserve_search_and_chain_diagnostics() -> None
 
 def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     domain_index = _read(DOMAINS_ROOT / "index.md")
+    data_index = _read(DOMAINS_ROOT / "data-and-structure" / "index.md")
+    inference_index = _read(DOMAINS_ROOT / "inference" / "index.md")
+    evolution_index = _read(DOMAINS_ROOT / "evolutionary-analysis" / "index.md")
+    assurance_index = _read(DOMAINS_ROOT / "scientific-assurance" / "index.md")
     tree_domain = _read(
         DOMAINS_ROOT / "data-and-structure" / "trees-alignments-and-taxa.md"
     )
@@ -174,6 +178,15 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "Preventing Simulation Circularity" in simulation_domain
     assert "Benchmark Design" in assurance_domain
     assert "From Benchmark To Evidence" in assurance_domain
+    assert "Domain Handoffs" in domain_index
+    assert "Intake Contract" in data_index
+    assert "Refuse Ambiguous Inputs" in data_index
+    assert "Select The Inferential Contract" in inference_index
+    assert "Review The Search, Not Only The Winner" in inference_index
+    assert "Match The Question To The Model Family" in evolution_index
+    assert "Sensitivity Axes" in evolution_index
+    assert "Choose Evidence That Matches The Claim" in assurance_index
+    assert "Preserve Negative Evidence" in assurance_index
 
 
 def test_parity_handbook_separates_live_reference_and_adapter_boundaries() -> None:
