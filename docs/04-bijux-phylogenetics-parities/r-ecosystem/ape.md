@@ -32,6 +32,24 @@ interfaces expose comparable semantics. The `ace` registry separates
 continuous and discrete reconstruction because their outputs and root-prior
 boundaries differ.
 
+## Representative Function Correspondence
+
+| APE reference | Bijux registry surface | Compared identity |
+| --- | --- | --- |
+| `read.tree`, `write.tree` | `load_tree`, `write_newick`, tree-set load/write variants | taxa, rootedness, clades, lengths, tree count, round trip |
+| `root`, `unroot` | `root_tree_on_outgroup`, `unroot_tree` | outgroup, resulting rootedness, clades, length policy |
+| `drop.tip`, `keep.tip` | `drop_tree_taxa`, `prune_tree_to_requested_taxa` | requested, retained and excluded taxa, resulting topology |
+| `getMRCA`, `extract.clade`, `is.monophyletic` | `find_tree_mrca`, `extract_tree_clade_by_node_id`, `assess_tree_monophyly` | descendant-taxon identity rather than incidental node number |
+| `cophenetic.phylo`, `dist.topo` | `compute_tree_tip_distance_matrix`, `compare_topology_distance` | ordered taxa, path lengths, rooted/unrooted distance convention |
+| `vcv.phylo`, `pic` | `summarize_brownian_covariance`, `compute_phylogenetic_independent_contrasts` | covariance/contrast order, branch-length scale, numerical rule |
+| `dist.dna`, `nj` | `compute_pairwise_genetic_distance_matrix`, `build_tree_from_imported_distance_matrix` | alphabet and deletion policy, pair counts, distance model, clades |
+| `ace` | continuous and discrete ancestral reconstruction surfaces | model/state order, node keys, estimates or probabilities |
+| `rtree`, `rcoal` | `simulate_random_trees`, `simulate_coalescent_trees` | replication population and structural/distribution summaries |
+
+This table describes registered correspondence families, not every argument
+accepted by the R functions. The case registry is authoritative for fixtures,
+parameters, normalization, observations, and expected availability.
+
 ## How Correspondence Is Established
 
 1. A checked case selects a Bijux function, APE function, and shared fixture.
@@ -91,6 +109,18 @@ Quote the shard and case count with any result. “APE parity passed” is too b
 when the execution selected one of 35 shards or only a subset of its fixtures.
 Case status does not create an Evidence Book verdict unless a governed bundle
 later binds the observation to a scientific claim.
+
+## Read One Observation Row
+
+An observation row identifies the case and shard, APE and Bijux functions,
+fixture, compared field or structural key, reference and observed values,
+normalization, rule, tolerance where applicable, outcome, and mismatch reason.
+Matrix and vector rows also retain label identity; topology rows retain the
+taxon/rooting policy; stochastic rows retain the replication rule.
+
+The summary table is derived from these rows and terminal case states. If a
+summary total cannot be reconstructed from the selected cases and observations,
+stop at that integrity failure rather than quoting the total.
 
 ## Accept A Structural Comparison
 

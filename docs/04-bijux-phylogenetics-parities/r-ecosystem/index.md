@@ -24,6 +24,32 @@ drop-in-equivalence surface.
 | [`treeio`, `tidytree`, `ggtree`](study-references.md#treeio-tidytree-and-ggtree) | governed structural evidence or plot-only provenance | study-specific tree data and visualization surfaces |
 | [`MCMCglmm`](study-references.md#mcmcglmm) | external study boundary | Bayesian phylogenetic mixed models in PCM4 and PCM5 |
 
+## Choose The Reference From The Operation
+
+| Operation needing correspondence | Reference owner | Bijux surface represented in the registry |
+| --- | --- | --- |
+| tree parsing, clades, rooting, pruning, MRCA, tree distance | APE | topology, I/O, pruning, and comparison contracts |
+| DNA encoding, base frequencies, segregating sites, sequence distance | APE | alignment and native genetic-distance records |
+| covariance, contrasts, foundational ancestral reconstruction | APE | comparative and ancestral structured results |
+| BM, OU, early-burst, lambda, kappa, delta, or white-noise fits | GEIGER | continuous evolutionary-mode fitting and ranking |
+| ER, SYM, or ARD discrete fits and tree transforms | GEIGER | finite-state Mk fitting with explicit state/rate identity |
+| signal, specialized ancestral estimates, residuals, or phylogenetic ANOVA | phytools | signal, reconstruction, PGLS/residual, and group-summary records |
+| stochastic maps and continuous/discrete simulation | phytools | event/history and collection summaries under distribution rules |
+| study PGLS using APE covariance and `nlme::gls` | checked study fixture | claim-scoped coefficients, likelihoods, model comparisons, diagnostics |
+| cichlid phylogenetic mixed-model posterior | `MCMCglmm` source boundary | no substitute surface; PCM4/PCM5 remain `not_comparable` |
+
+The mapping is operation-specific. An APE tree case does not validate a
+GEIGER optimizer, and a phytools stochastic summary does not validate an
+`MCMCglmm` posterior. When several packages appear in one source workflow,
+retain which package owns each calculated quantity.
+
+## Correspondence Key
+
+Every observation joins `reference function + Bijux function + case + fixture
++ normalization + rule`. Function names alone are insufficient: defaults,
+state order, root treatment, likelihood convention, and missing-data behavior
+can change the quantity while leaving the printed method name unchanged.
+
 ## Registry Lifecycle
 
 ```mermaid

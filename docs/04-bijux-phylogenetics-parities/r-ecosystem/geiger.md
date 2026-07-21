@@ -30,6 +30,23 @@ is supported. State order and the mapping between rate-vector positions and
 transitions are recorded because a numerically similar vector with different
 labels is not parity.
 
+## Model Correspondence Key
+
+| GEIGER reference | Bijux registry surface | Identity required before comparison |
+| --- | --- | --- |
+| `fitContinuous(model='BM')` | `fit_continuous_evolutionary_mode` with BM | trait/tree population, root treatment, rate, ancestral mean, likelihood convention |
+| `fitContinuous(model='OU')` | the same surface with OU | optimum, attraction strength, rate, bounds, starting values, likelihood |
+| `fitContinuous(model='EB')` | the same surface with early burst | rate-change parameter sign/scale, boundary, likelihood and transformation |
+| `fitContinuous` lambda, kappa, delta, or white | the corresponding declared mode | tree transform, parameter bounds, free-parameter count and optimizer state |
+| `fitContinuous` model comparison | `compare_fitcontinuous_model_ranking` | identical candidate population, criterion, likelihood and parameter-count policy |
+| `fitDiscrete(model='ER'/'SYM'/'ARD')` | `fit_discrete_mk_model` | state order, transition labels, constrained rate structure and likelihood |
+| transformed `fitDiscrete` cases | `fit_discrete_mk_model` with declared tree transform | transform parameterization, bounds, rate mapping and optimized objective |
+
+Two successful fits are comparable only after this key resolves. A common
+model label with different root treatment, rate ordering, likelihood constant,
+or tree-transform convention is an identity mismatch before it is a numerical
+mismatch.
+
 | Review artifact | Question it answers |
 | --- | --- |
 | summary table | Which model shards passed, failed, or skipped? |
@@ -95,6 +112,19 @@ an expected assumption difference must remain visible even when a dedicated
 comparison policy accepts the case, and an unexplained harness mismatch needs
 claim-scoped review before it can be recorded as `mismatch_unexplained` in a
 scientific bundle.
+
+## Diagnose The Optimizer Before The Parameter
+
+Review execution success, finite objective, convergence state, boundary state,
+start population, accepted optimum, and alternative optima before comparing
+reported parameters. If the two surfaces reach materially different objective
+values, parameter distance is not yet the primary diagnosis. If objectives
+agree but parameters differ, inspect identifiability, boundaries, and
+equivalent parameterizations before applying a scalar tolerance.
+
+The optimizer-triage table preserves that ordering. It must not be used to
+excuse a difference automatically: every accepted assumption or boundary
+classification needs the registered policy and observation evidence.
 
 ## Denominator And Model Identity
 

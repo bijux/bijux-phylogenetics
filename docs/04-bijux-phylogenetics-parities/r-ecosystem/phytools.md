@@ -27,6 +27,24 @@ rules.
 | stochastic histories | `make.simmap`, `countSimmap`, `describe.simmap`, `densityMap`, `sim.history` | transition-count, dwell-time, state-density and history-summary envelopes |
 | comparative tests | `phylANOVA` | declared group and test summaries under governed fixtures |
 
+## Function Correspondence Key
+
+| phytools reference | Bijux registry surface | Observation family |
+| --- | --- | --- |
+| `phylosig(method='K')` | `compute_phylogenetic_signal_test` | statistic, permutation population, p-value and exclusions |
+| `phylosig(method='lambda')` | `estimate_pagels_lambda` | fitted lambda, likelihood/profile quantities and bounds |
+| `fitMk` with ER, SYM, ARD | `fit_discrete_mk_model` | labeled transition rates, likelihood and state order |
+| `fastAnc`, `anc.ML` | `reconstruct_continuous_ancestral_states` | structurally keyed node estimates and uncertainty |
+| `rerootingMethod` | `reconstruct_discrete_ancestral_states` | node/state probabilities under aligned root/model semantics |
+| `pgls.SEy`, `phyl.resid` | `run_pgls`, `summarize_phylogenetic_residuals` | coefficients, covariance/error identity and residual rows |
+| `fastBM`, `sim.corrs` | Brownian and correlated-trait collection simulators | replicate-level moments, variance and covariance summaries |
+| `make.simmap`, `countSimmap`, `describe.simmap`, `densityMap` | stochastic-map simulation, counting and summary surfaces | transitions, dwell time, state density and replication envelope |
+| `sim.history`, `phylANOVA` | discrete-history simulation and phylogenetic ANOVA summaries | history distribution or declared group/test observations |
+
+The registry binds each row to specific cases. It does not assert a drop-in API
+or coverage for unregistered arguments, plotting behavior, or default changes
+in future phytools versions.
+
 ## Deterministic And Stochastic Evidence
 
 For deterministic cases, the registry can compare named scalars, vectors,
@@ -47,6 +65,18 @@ every declared aggregate or distribution rule holds. It does not require the R
 and Bijux histories to contain the same random events. The record therefore
 retains replicate count, seed policy, summary definition, tolerance or envelope,
 failed replicates, and observed distributional quantities.
+
+## The Stochastic Observation Unit
+
+The comparison unit is a declared summary over a declared replicate population,
+not one simulated tree or history. Each observation retains the case, summary
+statistic, requested and completed replicates, invalid/excluded replicates,
+reference and Bijux distributions or aggregates, seed policy, comparison rule,
+threshold, and outcome.
+
+Changing the replicate count, exclusion policy, burn-in-like selection, or
+summary statistic changes the observation. It cannot reuse a previous pass even
+when the function, fixture, and headline mean remain the same.
 
 Do not remove non-finite, degenerate, or failed replicates before computing a
 headline summary unless the registry declares that exclusion. Selected,

@@ -501,12 +501,20 @@ def test_r_parity_guides_publish_registry_scope_and_non_claims() -> None:
     assert "Registry Lifecycle" in ecosystem
     assert "Execution Identity" in ecosystem
     assert "Programmatic Entry Points" in ecosystem
+    assert "Choose The Reference From The Operation" in ecosystem
+    assert "Correspondence Key" in ecosystem
     assert "Programmatic Surface" in ape
     assert "Accept A Structural Comparison" in ape
+    assert "Representative Function Correspondence" in ape
+    assert "Read One Observation Row" in ape
     assert "Programmatic Surface" in geiger
     assert "Model Parameter Record" in geiger
+    assert "Model Correspondence Key" in geiger
+    assert "Diagnose The Optimizer Before The Parameter" in geiger
     assert "Programmatic Surface" in phytools
     assert "Preserve Both Denominators" in phytools
+    assert "Function Correspondence Key" in phytools
+    assert "The Stochastic Observation Unit" in phytools
 
 
 def test_trust_guides_preserve_status_and_claim_ownership() -> None:
