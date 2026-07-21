@@ -339,6 +339,15 @@ def test_r_parity_guides_publish_registry_scope_and_non_claims() -> None:
     assert "They are not Evidence Book verdict names" in geiger
     assert "What A Passing Stochastic Case Means" in phytools
     assert "within-case replication denominators" in phytools
+    assert "Registry Lifecycle" in ecosystem
+    assert "Execution Identity" in ecosystem
+    assert "Programmatic Entry Points" in ecosystem
+    assert "Programmatic Surface" in ape
+    assert "Accept A Structural Comparison" in ape
+    assert "Programmatic Surface" in geiger
+    assert "Model Parameter Record" in geiger
+    assert "Programmatic Surface" in phytools
+    assert "Preserve Both Denominators" in phytools
 
 
 def test_engine_correspondence_guides_preserve_computational_ownership() -> None:
@@ -373,6 +382,8 @@ def test_correspondence_matrix_distinguishes_verified_and_open_surfaces() -> Non
     assert "no standalone live `nlme` registry" in study_references
     assert "tip count of 75" in study_references
     assert "plot-only" in study_references
+    assert "Record Origin Matrix" in study_references
+    assert "Promotion Into A Study Verdict" in study_references
     assert "no posterior parity claim" in matrix
     assert "External adapter" in matrix
     assert "Mode, Outcome, And Verdict" in matrix

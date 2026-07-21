@@ -68,6 +68,33 @@ RUN_LIVE_PARITY=1 bijux-phylogenetics parity \
 Use `--phytools-case` for an individual fixture. The live lane requires
 `Rscript`, phytools, and `RUN_LIVE_PARITY=1`.
 
+## Programmatic Surface
+
+| Public locator | Purpose |
+| --- | --- |
+| `bijux_phylogenetics.parity.phytools:list_phytools_parity_cases` | enumerate the 65 deterministic and stochastic contracts |
+| `bijux_phylogenetics.parity.phytools:list_phytools_parity_shards` | enumerate 21 operation-owned shards |
+| `bijux_phylogenetics.parity.phytools:run_phytools_parity_cases` | execute selected live cases under the opt-in boundary |
+| `bijux_phylogenetics.parity.phytools:write_phytools_parity_summary_table` | persist case and shard status totals |
+| `bijux_phylogenetics.parity.phytools:write_phytools_parity_observation_table` | persist scalar, row, distribution, and mismatch observations |
+
+Discovery defines the eligible case population before random draws occur. A
+stochastic case cannot be reselected after viewing its summaries.
+
+## Preserve Both Denominators
+
+A stochastic parity report has two denominators:
+
+1. selected registry cases, partitioned into executed, passed, failed, and
+   skipped cases;
+2. within each executed case, requested, completed, invalid, excluded, and
+   summarized replicates.
+
+A case can execute yet fail because too few valid replicates remain. It can
+pass a distribution rule while still retaining individual invalid draws. Do
+not substitute the replicate pass fraction for the registry case result, or
+the case pass fraction for the within-case sampling record.
+
 ## Boundaries That Remain Visible
 
 - ER and SYM rerooting cases are compared only where root-prior semantics can

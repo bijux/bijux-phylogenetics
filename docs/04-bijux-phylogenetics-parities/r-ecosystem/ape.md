@@ -65,6 +65,20 @@ owned surfaces. The live lane requires `Rscript`, APE, and
 failure record; it does not fall back to a checked fixture while retaining the
 `ape-live` label.
 
+## Programmatic Surface
+
+| Public locator | Purpose |
+| --- | --- |
+| `bijux_phylogenetics.parity.ape:list_ape_parity_cases` | enumerate the 180 eligible case contracts |
+| `bijux_phylogenetics.parity.ape:list_ape_parity_shards` | enumerate 35 function-owned case groups |
+| `bijux_phylogenetics.parity.ape:run_ape_parity_cases` | execute selected live cases and retain every terminal status |
+| `bijux_phylogenetics.parity.ape:write_ape_parity_summary_table` | persist shard and case totals |
+| `bijux_phylogenetics.parity.ape:write_ape_parity_observation_table` | persist field-, row-, topology-, and tolerance-level observations |
+
+Use discovery output to construct the requested denominator before execution.
+Case and shard filters that resolve to no eligible entries are selection
+errors, not empty successful runs.
+
 ## Interpret The Case Status
 
 An APE case passes only when the selected R and Bijux executions complete and
@@ -77,6 +91,17 @@ Quote the shard and case count with any result. “APE parity passed” is too b
 when the execution selected one of 35 shards or only a subset of its fixtures.
 Case status does not create an Evidence Book verdict unless a governed bundle
 later binds the observation to a scientific claim.
+
+## Accept A Structural Comparison
+
+Before accepting an APE case, confirm that the observation rule matches the
+scientific object. Taxon order may be normalized for a labelled matrix but not
+discarded from its identity. Child order may be irrelevant to a clade but root
+placement is not. Node numbers may be translated through descendant taxa but
+must still resolve one-to-one. A rejected input can correspond with APE only
+when the case explicitly classifies the behavioral difference.
+
+The observation table, not the final Newick rendering, owns these decisions.
 
 ## Deliberate Non-Claims
 

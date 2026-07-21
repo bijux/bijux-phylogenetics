@@ -23,6 +23,19 @@ turning package presence in an R script into a blanket compatibility claim.
 | `ggtree` | course-study visualization surface | source fragments and plot intent retained | figures are plot-only; no pixel or aesthetic parity verdict |
 | `MCMCglmm` | posterior computation in the cichlid mixed-model studies | source-backed external computation boundary | no governed reproduction of the PCM4 or PCM5 posterior core |
 
+## Record Origin Matrix
+
+| Origin | Execution identity | Permitted statement |
+| --- | --- | --- |
+| live R registry | current R process, package version, registered case and fixture | the selected cases passed, failed, or skipped under their observation rules |
+| checked reference fixture | frozen output identity, producing environment, input identity, and comparison code | the named fixture corresponds under its checked rules |
+| structural study record | source fragment, dataset, tree, and structural observations | the named join, node, or table contract was observed |
+| plot-only source | source code and intended figure semantics | the visualization provenance is known; analytical or pixel correspondence is not claimed |
+| external computation boundary | source and model identity without comparable execution | the intended method is located, but its numerical claim is `not_comparable` |
+
+These origins are not interchangeable. Re-running an adjacent native method
+does not turn an external boundary into a live registry result.
+
 ## APE Plus `nlme`
 
 The PGLS reference is a composition, not a claim about either package in
@@ -68,10 +81,21 @@ the unresolved computational owner. Closing that boundary would require an
 independent governed runner, aligned priors and parameterization, posterior
 summary rules, convergence criteria, and reproducible comparison artifacts.
 
-## From Reference Script To Parity Claim
+## Promotion Into A Study Verdict
 
 Mentioning or loading an R package is provenance, not verification. A
 study-specific result becomes a parity claim only when the repository can name
 the input, executed implementation, versions, compared observations,
 acceptance rule, artifacts, and verdict. Until then, the package remains a
 documented dependency or open boundary.
+
+Reference-package evidence enters an Evidence Book verdict only when a bundle
+binds it to a claim ID, exact inputs, source and runtime identities, checks,
+eligible observations, limitations, freshness dependencies, and one governed
+verdict. The bundle must account for failed, skipped, excluded, and absent
+outputs rather than copying only successful rows.
+
+A live harness case can remain passed while the study verdict is
+`not_comparable` because the study uses a different model, dataset, or claim.
+A checked fixture can support `matched_with_tolerance` without implying a live
+R execution on the reviewer's machine. State both records independently.

@@ -24,6 +24,28 @@ drop-in-equivalence surface.
 | [`treeio`, `tidytree`, `ggtree`](study-references.md#treeio-tidytree-and-ggtree) | governed structural evidence or plot-only provenance | study-specific tree data and visualization surfaces |
 | [`MCMCglmm`](study-references.md#mcmcglmm) | external study boundary | Bayesian phylogenetic mixed models in PCM4 and PCM5 |
 
+## Registry Lifecycle
+
+```mermaid
+flowchart LR
+    registry["Versioned cases<br/>and shards"]
+    selection["Reference source<br/>filters and denominator"]
+    reference["Independent R<br/>execution"]
+    bijux["Owned Bijux<br/>execution"]
+    observations["Exact · structural<br/>tolerance · distribution"]
+    report["Summary · observations<br/>failure artifacts"]
+
+    registry --> selection
+    selection --> reference
+    selection --> bijux
+    reference --> observations
+    bijux --> observations --> report
+```
+
+A registry entry is the unit of eligibility. A shard is a durable grouping by
+owned Python surface and reference operation. A run selects cases from that
+registry; it does not discover successful examples after execution.
+
 ## Execution Boundary
 
 Live parity is opt-in through `RUN_LIVE_PARITY=1` and requires `Rscript` plus
@@ -46,6 +68,32 @@ on the current machine.
 
 Report all four counts—selected, passed, failed, and skipped—with the selected
 shards. Do not describe only the successful subset as the registry result.
+
+## Execution Identity
+
+Retain the Bijux version, registry case and shard IDs, reference-source label,
+R executable identity, R version, package version, fixture hashes, filters,
+environment gate, command arguments, start and finish state, and output hashes.
+For stochastic cases, also retain the replicate population, seed policy,
+summary definition, and invalid-replicate count.
+
+The package version is observed from the live reference process. A current
+installation does not retroactively identify an older checked fixture, and a
+fixture cannot be relabelled as live because the corresponding package is now
+installed.
+
+## Programmatic Entry Points
+
+Each live registry exposes the same review shape from its public module:
+
+| Module | Discover | Execute | Persist |
+| --- | --- | --- | --- |
+| `bijux_phylogenetics.parity.ape` | `list_ape_parity_cases`, `list_ape_parity_shards` | `run_ape_parity_cases` | summary and observation table writers |
+| `bijux_phylogenetics.parity.geiger` | `list_geiger_parity_cases`, `list_geiger_parity_shards` | `run_geiger_parity_cases` | summary, observation, triage, policy, parameterization, and generated-report writers |
+| `bijux_phylogenetics.parity.phytools` | `list_phytools_parity_cases`, `list_phytools_parity_shards` | `run_phytools_parity_cases` | summary and observation table writers |
+
+The CLI composes these surfaces. Direct Python use does not weaken the same
+selection, environment, status, and artifact requirements.
 
 ## Why Several Reference Packages Matter
 
