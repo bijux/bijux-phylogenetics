@@ -14,6 +14,11 @@ inspectable inputs with biological or methodological context. Together they
 support examples, regression tests, recovery experiments, sensitivity studies,
 and benchmarks without pretending that one corpus can answer every question.
 
+For estimator evaluation, continue with
+[Simulation Recovery And Calibration](simulation-recovery-and-calibration.md),
+which defines replicate states, regime denominators, calibration metrics, and
+independence claims.
+
 ```mermaid
 flowchart LR
     question["Scientific or<br/>validation question"]
@@ -128,6 +133,10 @@ For topology, compare clades or distances as well as an exact-match indicator.
 For continuous parameters, retain signed error, absolute or relative error, and
 interval coverage where applicable. For discrete histories, distinguish tip
 state recovery, internal-state uncertainty, and branch-transition recovery.
+
+The [recovery and calibration guide](simulation-recovery-and-calibration.md)
+turns those comparisons into a complete review packet and keeps generation,
+analysis failure, and non-comparability in the requested denominator.
 
 ## Preventing Simulation Circularity
 

@@ -27,6 +27,9 @@ flowchart LR
 
 - [Simulation And Datasets](simulation-and-datasets.md) explains generators,
   known truth, catalog roles, bundle provenance, and circularity controls.
+- [Simulation Recovery And Calibration](simulation-recovery-and-calibration.md)
+  explains estimands, replicate states, regime coverage, calibration metrics,
+  and the independence basis for recovery claims.
 - [Validation, Benchmarks, And Reporting](validation-benchmarks-and-reporting.md)
   explains proof layers, experiment design, implementation comparison,
   artifacts, and promotion into evidence.

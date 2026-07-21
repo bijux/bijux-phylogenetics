@@ -183,6 +183,7 @@ nav:
       - Scientific Assurance:
           - Overview: 02-bijux-phylogenetics-domains/scientific-assurance/index.md
           - Simulation And Datasets: 02-bijux-phylogenetics-domains/scientific-assurance/simulation-and-datasets.md
+          - Simulation Recovery And Calibration: 02-bijux-phylogenetics-domains/scientific-assurance/simulation-recovery-and-calibration.md
           - Validation, Benchmarks, And Reporting: 02-bijux-phylogenetics-domains/scientific-assurance/validation-benchmarks-and-reporting.md
           - Diagnostics And Sensitivity: 02-bijux-phylogenetics-domains/scientific-assurance/diagnostics-and-sensitivity.md
           - Tree Uncertainty And Sensitivity: 02-bijux-phylogenetics-domains/scientific-assurance/tree-uncertainty-and-sensitivity.md
