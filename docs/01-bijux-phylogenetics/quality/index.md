@@ -74,6 +74,27 @@ configuration, comparison or invariant, tolerance or acceptance rule, and
 current verdict. “Validated” without those qualifiers forces the reader to
 invent a stronger meaning than the evidence may support.
 
+## Count Independent Proof Deliberately
+
+Several passing checks can be projections of the same underlying observation.
+A unit test, benchmark row, parity summary, and report generated from one
+fixture do not become four independent confirmations merely because they live
+in different files.
+
+| Shared dependency | What can still be claimed | What cannot be multiplied |
+| --- | --- | --- |
+| same input fixture and expected value | several contracts consumed one governed case correctly | independent data coverage |
+| same implementation path exposed by Python and CLI | both interfaces preserve the result contract | independent numerical implementations |
+| same external-engine output parsed into several tables | each projection is internally consistent | repeated external execution or algorithmic agreement |
+| same reference observation reused across parity and evidence | both records can cite the observation within their scopes | independent reference confirmation |
+| same random seed or simulated history across metrics | multiple properties of one replicate are inspectable | replicate count or stochastic robustness |
+| same release report summarized on several pages | public projections agree with one decision | additional release gates |
+
+Record the proof lineage and count independence at the level relevant to the
+claim: distinct inputs, implementations, executions, chains, replicates,
+references, or reviewers. Correlated proof can be valuable, but its shared
+parent must remain visible.
+
 ## Quality Decision Record
 
 | Field | Reviewer requirement |

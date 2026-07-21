@@ -94,6 +94,27 @@ Cross-layer convenience is acceptable only when ownership remains traceable.
 A workflow may call validation and rendering, but it cannot redefine a taxon,
 likelihood, support statistic, or verdict inside orchestration code.
 
+## Audit Every Representation Boundary
+
+The same scientific state can appear as an object, command payload, JSON
+record, table row, or report element. A boundary is correct only when the
+target representation either preserves every interpretation-critical field or
+declares what was omitted.
+
+| Boundary | State that must remain invariant | Typical semantic loss |
+| --- | --- | --- |
+| parser → domain object | source identity, ordering, units, missing values, exclusions, and repairs | normalized labels hide the original taxa or states |
+| domain object → method request | analytical population, model parameterization, transformations, and constraints | a workflow default silently chooses the method |
+| method → typed result | computation owner, status, objective/estimand, uncertainty, diagnostics, and absent components | a scalar return discards search or sampler state |
+| typed result → artifact | schema version, units, identifiers, warnings, denominator, and parent identity | serialization converts unknown or partial state to success |
+| artifact → presentation | structured value owner, display transform, omissions, and caption scope | figure labels imply a stronger method or verdict |
+| artifact → evidence | exact result identity, observation rule, scope, freshness, and claim identifier | proximity to a study substitutes for governed consumption |
+
+Representation equality is weaker than semantic preservation. Two JSON
+objects can have the same keys while using different units, status meanings,
+taxon orders, or denominators. Test and review those meanings at the boundary
+that performs the projection.
+
 ## Runtime Ownership Map
 
 | Responsibility | Owning runtime families | Boundary to preserve |

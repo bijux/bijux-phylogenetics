@@ -145,6 +145,8 @@ def test_foundation_and_architecture_define_owned_runtime_contracts() -> None:
     assert "Layer Contracts" in architecture
     assert "Scientific State Transformations" in architecture
     assert "Runtime Ownership Map" in architecture
+    assert "Audit Every Representation Boundary" in architecture
+    assert "Representation equality is weaker than semantic preservation" in architecture
     assert "Installed Identity Chain" in package_map
     assert "record both distribution versions" in package_map
     assert "Inspect Installed Identity" in package_map
@@ -186,6 +188,8 @@ def test_product_handbook_routes_analysis_and_preserves_run_identity() -> None:
     assert "Changing presentation or omitting the failed check" in operations
     assert "env inspect --json" in operations
     assert "Follow The Operational State Machine" in operations
+    assert "Select One Accepted Execution" in operations
+    assert "Deleting an\nunfavorable attempt changes the denominator" in operations
 
     boundaries = _read(PRODUCT_ROOT / "operations" / "operational-boundaries.md")
     assert "Classify Before Retrying" in boundaries
@@ -644,6 +648,8 @@ def test_quality_guides_separate_tests_benchmarks_and_release_evidence() -> None
     assert "Stronger Context Can Reveal New Failure" in quality_index
     assert "Evaluate One Result" in quality_index
     assert "Assemble A Trust Packet" in quality_index
+    assert "Count Independent Proof Deliberately" in quality_index
+    assert "do not become four independent confirmations" in quality_index
     assert "Select A Lane From The Claim" in lanes
     assert "mismatch_unexplained" in lanes
     assert "Trace One Native Inference Claim" in lanes

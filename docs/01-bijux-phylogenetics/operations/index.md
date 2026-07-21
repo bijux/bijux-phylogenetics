@@ -69,6 +69,35 @@ stateDiagram-v2
 `Review` does not mean success. It means that the terminal state, diagnostics,
 and output denominator are preserved well enough to understand what happened.
 
+## Select One Accepted Execution
+
+Retries, alternate models, and sensitivity runs form branches. They must not
+write into a shared result identity and later appear to be one uninterrupted
+successful execution.
+
+```mermaid
+flowchart LR
+    parent["Validated inputs<br/>and declared question"]
+    first["Execution A<br/>terminal record"]
+    retry["Execution B<br/>changed seed or recovery"]
+    alternate["Execution C<br/>changed model or data"]
+    decision["Acceptance decision<br/>selected scope and reason"]
+
+    parent --> first --> decision
+    parent --> retry --> decision
+    parent --> alternate --> decision
+```
+
+The acceptance decision identifies every candidate execution, the scientific
+differences among them, the selected record, the rule used to select it, and
+the conclusions excluded by failed or rejected candidates. A retry with
+identical identity may demonstrate recoverability; a changed seed, model,
+engine, tolerance, input, or incomplete-run policy is a new branch.
+
+Preserve non-selected branches when they affect failure rates, sensitivity,
+search coverage, or the credibility of the selection rule. Deleting an
+unfavorable attempt changes the denominator and is not operational cleanup.
+
 ## The Operational Contract
 
 A defensible run records:
