@@ -87,6 +87,30 @@ Treat the command exit status as the gate and the JSON record as the
 reconstruction evidence. A copied success message without its revision,
 configuration, and retained report is not a release decision record.
 
+## Read Report Dependencies
+
+```mermaid
+flowchart LR
+    evidence["evidence completeness<br/>and freshness"]
+    artifacts["artifact governance"]
+    boundaries["package boundaries<br/>and bundle audits"]
+    execution["execution-surface ownership"]
+    docs["strict documentation checks"]
+    packages["wheel and sdist proof"]
+    readiness["release-readiness decision"]
+
+    evidence --> readiness
+    artifacts --> readiness
+    boundaries --> readiness
+    execution --> readiness
+    docs --> readiness
+    packages --> readiness
+```
+
+The aggregate gate consumes owned reports; it does not replace them. When
+release readiness fails, inspect the named blocking report and its issue rows
+before changing code or generated output.
+
 ## What The Governed Commands Establish
 
 | Command | Evidence produced | It does not establish alone |
@@ -119,6 +143,28 @@ flowchart LR
 Run the narrow owning check while editing, then the aggregate gate that
 consumes its result. Do not repair a failing governed artifact by hand when a
 repository command owns its generation.
+
+## Handle A Failed Gate Without Bypassing It
+
+1. Preserve the command exit state and generated JSON report.
+2. Identify the exact issue row, owner, input, and expected invariant.
+3. Determine whether the owner is handwritten source, generated projection,
+   environment prerequisite, or an external engine.
+4. Change the owning source or satisfy the declared prerequisite.
+5. Regenerate governed projections through their repository command.
+6. Rerun the narrow gate, then every aggregate gate that consumes its report.
+
+Do not delete the report, weaken the rule, reclassify a mismatch, or hand-edit
+a generated success status. If an external prerequisite is unavailable, retain
+the blocked or skipped state at the lane that owns it and keep unrelated proof
+usable.
+
+## Verification Handoff Record
+
+A maintainable handoff names the repository revision, exact commands, exit
+states, report paths, issue counts, package versions, evidence verdict counts,
+and any lane that was not executed. “All checks passed” without the owning
+reports is not sufficient for release reconstruction.
 
 ## Publication Invariants
 

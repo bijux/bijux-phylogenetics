@@ -35,6 +35,26 @@ Python 3.11 or newer is required. External-engine workflows also require their
 named executable—such as MAFFT, trimAl, IQ-TREE2, FastTree, MrBayes, or
 BEAST—to be installed separately.
 
+## Confirm Package Identity
+
+Check the installed distribution and import before diagnosing scientific
+behavior:
+
+```python
+from importlib.metadata import version
+
+import bijux_phylogenetics
+
+print(version("bijux-phylogenetics"))
+print(bijux_phylogenetics.__version__)
+print(bijux_phylogenetics.__all__)
+```
+
+The distribution version identifies the installed artifact. The import version
+identifies the runtime loaded by Python. Investigate a disagreement before
+trusting results; editable installs, environment shadowing, and mixed
+environments can otherwise make a correct command execute the wrong code.
+
 ## Verify The Installed Artifact
 
 Run the packaged demonstration before connecting project data:
@@ -83,6 +103,21 @@ flowchart LR
 | parsimony | Fitch, Wagner, Sankoff, Dollo, Camin–Sokal, optimization, resampling, topology search |
 | context and review | datasets, simulation, benchmarks, biogeography, diversification, reports, evidence bundles |
 
+## What Installation Does And Does Not Supply
+
+| Surface | Included in the Python distribution | Separate requirement |
+| --- | --- | --- |
+| native tree, likelihood, comparative, ancestral, parsimony, simulation, and supported Bayesian methods | yes | scientifically appropriate inputs and analysis design |
+| packaged examples and demonstration inputs | yes | none for the installed-wheel proof |
+| external-engine adapters and parsers | yes | the named executable and its runtime dependencies |
+| R parity harness integration | Python-side contract | R, required packages, and explicit live-execution opt-in |
+| governed study evidence | checked in with the repository and published through the Evidence Book | do not infer that every installed method has study evidence |
+| HTML documentation and reports | generated presentation surfaces | structured artifacts for machine consumption |
+
+Installing an adapter does not install or reimplement its external engine.
+Installing the runtime does not convert Evidence Book boundaries into favorable
+verdicts.
+
 ## Select A Public Surface
 
 | Consumer | Use | Preserve |
@@ -109,6 +144,18 @@ result. Acceptance depends on the contract that produced it:
 The caller owns the final suitability decision. The runtime exposes the state
 needed to make it without treating warnings, skipped components, or partial
 output as success.
+
+## Publish A Reconstructable Result
+
+Before a result leaves the analysis environment, retain the input identities,
+runtime version, complete configuration, random seeds, typed or structured
+result, warnings and diagnostics, required output inventory, and the acceptance
+rule used for the scientific claim. For external execution, add executable
+version, invocation, captured streams, native files, and parser state.
+
+A Newick tree, coefficient table, or figure is a projection. Publish it beside
+the structured record that explains how it was produced and where its
+interpretation stops.
 
 ## Workflow API
 

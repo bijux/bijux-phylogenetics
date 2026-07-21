@@ -730,13 +730,22 @@ def test_package_readmes_define_installed_alias_and_governance_contracts() -> No
     assert "Select A Public Surface" in runtime
     assert "it is not an inference-accuracy result" in runtime
     assert "Accept Or Refuse A Result" in runtime
+    assert "Confirm Package Identity" in runtime
+    assert "What Installation Does And Does Not Supply" in runtime
+    assert "Publish A Reconstructable Result" in runtime
     assert "Verify The Alias End To End" in alias
     assert "Diagnose A Difference" in alias
+    assert "Resolve Both Distribution Identities" in alias
+    assert "Compatibility Failure Classes" in alias
+    assert "two scientific owners" in alias
     assert "It does not create a second implementation" in alias
     assert "What The Governed Commands Establish" in maintainer
     assert "Change-To-Check Map" in maintainer
     assert "make validate-evidence-book" in maintainer
     assert "Governed Report Map" in maintainer
+    assert "Read Report Dependencies" in maintainer
+    assert "Handle A Failed Gate Without Bypassing It" in maintainer
+    assert "Verification Handoff Record" in maintainer
     assert "blocked follow-through belongs to the resolution workflow" in maintainer
 
 

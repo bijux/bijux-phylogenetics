@@ -34,6 +34,28 @@ phylogenetic --help
 
 Python 3.11 or newer is required.
 
+## Resolve Both Distribution Identities
+
+The compatibility name and canonical runtime should be inspected together:
+
+```python
+from importlib.metadata import version
+
+import bijux_phylogenetics
+import phylogenetic
+
+print("requested distribution:", version("phylogenetic"))
+print("canonical distribution:", version("bijux-phylogenetics"))
+print("alias import:", phylogenetic.__version__)
+print("canonical import:", bijux_phylogenetics.__version__)
+print("shared API facade:", phylogenetic.api is bijux_phylogenetics.api)
+```
+
+Record all four versions when reporting an installation problem. Local dirty
+or editable builds can carry different local-version markers even when the
+alias resolves to the intended canonical API; compare the installed artifacts
+and runtime path before deciding whether the difference is a defect.
+
 ## Verify The Alias End To End
 
 The compatibility command can run the same packaged demonstration:
@@ -122,6 +144,21 @@ alignment. It does not create a second implementation, independent release
 line, or separate evidence base. External-engine availability and scientific
 limits remain identical under both names.
 
+## Compatibility Failure Classes
+
+| Failure | Meaning | Evidence to retain |
+| --- | --- | --- |
+| alias distribution missing | packaging or dependency resolution failed | installer output and environment package list |
+| `import phylogenetic` fails while canonical import succeeds | facade packaging or import contract failed | traceback and both distribution versions |
+| documented alias symbol is absent | public export correspondence failed | symbol path and canonical equivalent |
+| alias command differs in parsing or exit state | CLI facade contract failed | commands, streams, exit codes, and structured outputs |
+| packaged resource differs | distribution assembly contract failed | wheel hashes and resource inventories |
+| numerical result differs after identical dispatch | canonical-runtime identity or serialization path must be investigated | full configurations, manifests, results, and loaded module paths |
+
+Scientific disagreement is not an expected alias feature. The short name may
+change how the runtime is requested, never the model, algorithm, or evidence
+contract.
+
 ## Diagnose A Difference
 
 1. Capture `phylogenetic --version` and `bijux-phylogenetics --version`.
@@ -130,6 +167,10 @@ limits remain identical under both names.
 4. Compare structured outputs and manifests before comparing HTML rendering.
 5. Report divergent import, command, resource, metadata, or serialization
    behavior as an alias-contract defect.
+
+Do not repair a difference by copying source into the alias package. The alias
+must continue to delegate to the canonical implementation; duplicated runtime
+code would create two scientific owners and make future evidence ambiguous.
 
 ## Documentation
 
