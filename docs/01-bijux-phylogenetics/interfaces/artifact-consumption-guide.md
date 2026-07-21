@@ -4,66 +4,80 @@ audience: public
 type: how-to
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-21
 ---
 
 # Artifact Consumption Guide
 
-Use this guide when the repository has already produced files and the next
-question is how to consume them correctly.
+Consume a workflow bundle from its manifest outward. The manifest identifies
+the run and its declared files; structured results carry values and
+diagnostics; tables and figures provide purpose-specific projections.
 
-## Start By Artifact Kind
+```mermaid
+flowchart LR
+    manifest["Manifest"] --> identity["Run, inputs, versions,<br/>configuration"]
+    manifest --> structured["JSON and TSV"]
+    manifest --> presentation["HTML, Markdown,<br/>SVG and other figures"]
+    structured --> interpretation["Scientific review"]
+    presentation --> interpretation
+```
 
-- I need one reviewer-facing report or figure
-  Start with the HTML or SVG artifact and its paired manifest or JSON summary.
-- I need one machine-readable workflow result
-  Start with JSON and the matching manifest or stable TSV ledgers.
-- I need one downstream table for scripting or analysis
-  Start with the governed TSV families.
-- I need to know whether one file name or schema is stable enough to depend on
-  Start with [artifact contracts](artifact-contracts.md).
+## Review Sequence
 
-## Practical Reading Rules
+1. Open the manifest and verify workflow identity and schema version.
+2. Confirm input identities, taxon scope, configuration, and engine/runtime
+   versions match the analysis under review.
+3. Check declared status, warnings, convergence, support, uncertainty, and
+   excluded cases in the structured result.
+4. Reconcile every table and figure with a declared output.
+5. Verify integrity metadata when provided.
+6. Follow evidence links only when a claim-level verdict is required.
 
-- do not treat one HTML report alone as the whole contract when a manifest or
-  JSON companion exists
-- do not scrape terminal text when the workflow already emits JSON or TSV
-- prefer manifest-backed bundles when one report links multiple outputs
-- prefer the documented stable families instead of inferring stability from one
-  incidental example file
+## Artifact Roles
 
-## Common Stable Families
+| Artifact | Appropriate use | Unsafe shortcut |
+| --- | --- | --- |
+| manifest | identity, inventory, relationships, provenance | assuming every directory file belongs to the run |
+| JSON result | typed nested state, diagnostics, automation | depending on undocumented incidental fields |
+| TSV ledger | stable row-wise analysis and comparison | inferring context absent from the manifest |
+| HTML/Markdown report | integrated human interpretation | scraping values when structured output exists |
+| SVG or raster figure | visual topology, traits, support, uncertainty | treating pixels as the primary numerical record |
+| captured engine output | external execution diagnosis and provenance | treating engine text as normalized schema |
 
-The public artifact families most worth depending on are:
+## Linked Ledgers
 
-- workflow and report manifests such as `prefix.manifest.json`
-- model-selection tables such as `prefix.model.tsv`
-- support ledgers such as `prefix.support.tsv`
-- clade, branch, and event ledgers
-- comparative trait and comparative summary ledgers
-- benchmark and parity JSON or TSV summaries where the surface documents them
+Model-selection, branch, clade, event, support, trait, benchmark, and parity
+ledgers usually represent different grains. Join them only through documented
+identifiers. Row order, display labels, and filenames are not reliable foreign
+keys unless the contract declares them.
 
-## When To Use Bundle Outputs
+## Status Before Estimates
 
-Prefer bundle outputs when:
+A completed process can still produce a scientifically unusable result.
+Inspect parser warnings, taxon exclusions, optimizer state, chain diagnostics,
+effective sample size, topology support, uncertainty, and sensitivity before
+reading headline estimates.
 
-- one result includes multiple linked files
-- one review needs both human-readable and machine-readable outputs
-- one publication or audit trail needs stable provenance inside the same output
-  surface
+For external-engine runs, retain both the normalized result and original
+captured output. The first supports stable consumption; the second explains
+engine-specific failures and version behavior.
 
-That is the normal case for serious report and evidence-oriented workflows in
-this repository.
+## Compatibility
 
-## When To Escalate To Quality Or Evidence Docs
+Pin artifact schema versions in long-lived consumers. Accept documented
+additive fields, reject unknown incompatible versions, and do not depend on
+JSON object order, prose wording, HTML structure, or cosmetic filenames.
 
-Artifact shape is not the same thing as claim trust.
+When migrating a consumer, compare representative old and new bundles and test
+meaning—not merely parse success.
 
-If the next question becomes:
+## Evidence Bundles
 
-- can I trust this benchmark difference
-- does this release look publishable
-- does this study close a broader claim
+Evidence bundles add source provenance, claim IDs, checks, tolerances, and
+verdicts. Begin with `manifest.json`, `inputs.manifest.json`, `claims.json`, and
+`checks.json`, then inspect machine-readable results before reviewer summaries.
+A checksum proves byte identity; it does not prove scientific correctness.
 
-then stop reading interface docs alone and move to the quality or evidence
-surfaces.
+See [artifact contracts](artifact-contracts.md) for producer guarantees and
+the [Evidence Book](../../02-bijux-phylogenetics-evidence-book/index.md) for
+claim adjudication.

@@ -1,107 +1,115 @@
 ---
-title: API Surface
-audience: reader
+title: Programmatic API Surface
+audience: public
 type: reference
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-21
 ---
 
-# API Surface
+# Programmatic API Surface
 
-The stable public API of this repository is deliberately small. Most users
-should treat the CLI, Python import surface, and checked-in evidence files as
-the main public contract. The HTTP-facing surface is frozen as a checked-in
-OpenAPI bundle, not as a live server promise.
+Three programmatic contracts serve different integration boundaries: the
+curated Python workflow API, named native scientific modules, and a checked-in
+OpenAPI schema. The schema is a frozen compatibility contract; this repository
+does not promise a hosted HTTP service.
 
-Use this page when the question is about integration boundaries. Use the
-[surface selection guide](surface-selection.md) when the question is which
-public surface should own the work in the first place.
+```mermaid
+flowchart TD
+    caller["Integration"]
+    workflow["bijux_phylogenetics.api<br/>workflow composition"]
+    native["Named native modules<br/>scientific primitives"]
+    openapi["OpenAPI v1<br/>read-model contract"]
+    result["Typed result"]
+    payload["Versioned payload"]
 
-## The Main Public Surfaces
+    caller --> workflow --> result
+    caller --> native --> result
+    caller --> openapi --> payload
+```
 
-- the `bijux-phylogenetics` and `phylogenetic` console scripts
-- stable Python imports under `bijux_phylogenetics`
-- checked-in evidence studies under `evidence-book/studies/`
-- the frozen public API contract under `apis/bijux-phylogenetics/v1/`
+## Python Workflow Contract
 
-## Python Workflow Entry Points
+`bijux_phylogenetics.api` is the stable composition surface for notebooks,
+applications, and pipelines.
 
-For notebook, script, and pipeline use, the stable workflow-oriented Python
-surface lives under `bijux_phylogenetics.api`.
+| Workflow | Result |
+| --- | --- |
+| `run_fasta_validation_workflow` | `FastaValidationResult` |
+| `run_alignment_workflow` | `AlignmentWorkflowResult` |
+| `run_trimming_workflow` | `TrimmingWorkflowResult` |
+| `run_tree_inference_workflow` | `InferenceWorkflowResult` |
+| `run_support_workflow` | `SupportWorkflowResult` |
+| `run_sequence_to_tree_workflow` | `SequenceToTreeWorkflowResult` |
+| `run_tree_comparison_workflow` | `TreeComparisonWorkflowResult` |
+| `run_comparative_model_workflow` | `ComparativeModelWorkflowResult` |
+| `run_ancestral_reconstruction_workflow` | `AncestralReconstructionWorkflowResult` |
+| `render_report_workflow` | `ReportWorkflowResult` |
+| `run_configured_phylo_workflow` | `ConfiguredPhyloWorkflowResult` |
 
-The named entry points are:
+Results expose the underlying runtime report, support attribute access to its
+public state, and provide stable JSON serialization. Workflows with a meaningful
+tabular summary also provide TSV serialization.
 
-- `run_fasta_validation_workflow`
-- `run_alignment_workflow`
-- `run_trimming_workflow`
-- `run_tree_inference_workflow`
-- `run_support_workflow`
-- `run_sequence_to_tree_workflow`
-- `run_tree_comparison_workflow`
-- `run_comparative_model_workflow`
-- `run_ancestral_reconstruction_workflow`
-- `render_report_workflow`
-- `run_configured_phylo_workflow`
+```python
+from pathlib import Path
 
-These functions return typed workflow result objects:
+from bijux_phylogenetics.api import run_tree_comparison_workflow
 
-- `FastaValidationResult`
-- `AlignmentWorkflowResult`
-- `TrimmingWorkflowResult`
-- `InferenceWorkflowResult`
-- `SupportWorkflowResult`
-- `SequenceToTreeWorkflowResult`
-- `TreeComparisonWorkflowResult`
-- `ComparativeModelWorkflowResult`
-- `AncestralReconstructionWorkflowResult`
-- `ReportWorkflowResult`
-- `ConfiguredPhyloWorkflowResult`
+comparison = run_tree_comparison_workflow(
+    Path("results/reference.nwk"),
+    Path("results/candidate.nwk"),
+)
+comparison.write_json(Path("artifacts/tree-comparison.json"))
+comparison.write_tsv(Path("artifacts/tree-comparison.tsv"))
+```
 
-Each result object delegates the underlying CLI-grade runtime report through a
-`report` field and attribute passthrough, adds stable `write_json(...)`
-serialization, and provides `write_tsv(...)` for workflow summaries where a
-tabular export is meaningful.
+## Native Scientific Modules
 
-## Native Runtime Entry Points
+The public contract also includes named surfaces under:
 
-The public Python contract is no longer only workflow-shaped.
+- `bijux_phylogenetics.phylo.likelihood` for likelihood and native tree
+  inference;
+- `bijux_phylogenetics.bayesian` for supported native inference, priors,
+  proposals, diagnostics, and posterior contracts;
+- `bijux_phylogenetics.benchmark` for governed native inference measurements;
+- documented comparative, ancestral, parsimony, tree, dataset, and reporting
+  modules.
 
-The native runtime also exposes named import families for:
+Importing a private helper from a nested module does not create a compatibility
+promise. Prefer curated exports and documented result types.
 
-- likelihood and tree-inference surfaces under `bijux_phylogenetics.phylo.likelihood`
-- Bayesian priors, proposal schedules, diagnostics, and public inference entry
-  points under `bijux_phylogenetics.bayesian`
-- benchmark contracts under `bijux_phylogenetics.benchmark`
+## Native-Only Enforcement
 
-Those are still narrower than the full internal module tree. If you need the
-native public contract, stay with the named surfaces that the public docs call
-out directly rather than assuming every helper in those packages is stable.
+`NATIVE_MAXIMUM_LIKELIHOOD_ONLY_ENV_VAR`,
+`native_maximum_likelihood_only_mode`, and
+`is_native_maximum_likelihood_only_mode_enabled` allow tests and applications
+to reject fallback to wrapper-backed maximum-likelihood execution. This is an
+execution-policy guard, not a model-quality assertion.
 
-## Frozen HTTP Contract
+## Frozen OpenAPI Contract
 
-The checked-in OpenAPI bundle describes a future-compatible read surface for:
+The v1 bundle contains:
 
-- repository health and release identity
-- runtime package ownership summaries
-- evidence-study catalog access
-- evidence-study detail summaries for the governed PCM1 and PCM2 studies
+- `apis/bijux-phylogenetics/v1/schema.yaml` — authored OpenAPI 3.1 source;
+- `apis/bijux-phylogenetics/v1/pinned_openapi.json` — normalized pinned form;
+- `apis/bijux-phylogenetics/v1/schema.hash` — drift-detection identity.
 
-The freeze bundle lives here:
+The schema defines read models for health, runtime package ownership, evidence
+study listing, and study detail. Its current `EvidenceStudyId` enumeration
+covers the PCM1 and PCM2 primate studies. It must not be described as complete
+HTTP coverage of all five Evidence Book families.
 
-- `apis/bijux-phylogenetics/v1/schema.yaml`
-- `apis/bijux-phylogenetics/v1/pinned_openapi.json`
-- `apis/bijux-phylogenetics/v1/schema.hash`
+## Compatibility Rules
 
-## Practical Rule
+- Python compatibility follows curated names, signatures, result semantics,
+  and documented serialization.
+- OpenAPI compatibility follows schema version and field semantics.
+- Additive payload fields may be compatible; changed meaning or removed
+  required fields require an explicit version decision.
+- A schema hash mismatch is drift, not an invitation to update the hash alone.
+- HTTP transport, authentication, hosting, and availability are outside the
+  freeze-only schema promise.
 
-If you need an integration contract, start from the CLI, the named Python
-surface, or the frozen OpenAPI bundle. If an internal module or helper is not
-named in those surfaces, assume it can move.
-
-## Matching Practical Guides
-
-- [surface selection guide](surface-selection.md)
-- [native maximum-likelihood workflows](../operations/native-maximum-likelihood-workflows.md)
-- [native Bayesian workflows](../operations/native-bayesian-workflows.md)
-- [native benchmark review](../operations/native-benchmark-review.md)
+See [surface selection](surface-selection.md), [Python surface](python-surface.md),
+and [artifact contracts](artifact-contracts.md) for consumer-specific guidance.
