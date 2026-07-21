@@ -1,25 +1,45 @@
 ---
-title: Native Maximum-Likelihood Workflows
+title: Native Maximum-Likelihood Inference
 audience: public
 type: how-to
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-21
 ---
 
-# Native Maximum-Likelihood Workflows
+# Native Maximum-Likelihood Inference
 
-Use the native maximum-likelihood surface when you want one owned Bijux result
-object for nucleotide tree inference instead of one broader wrapper-oriented
-workflow bundle.
+Native nucleotide inference jointly exposes model choice, tree search,
+parameter fitting, support estimation, and search provenance through one
+`NucleotideMaximumLikelihoodResult`.
 
-This public surface is Python-first today. The stable entry point is
-`infer_nucleotide_maximum_likelihood_result_from_alignment(...)`, which builds
-one `NucleotideMaximumLikelihoodResult` with the selected model, fitted
-parameters, final tree, accepted search trace, optional support reports, and
-optional benchmark metadata.
+```mermaid
+flowchart LR
+    alignment["Validated nucleotide<br/>alignment"]
+    models["Fixed model or<br/>model selection"]
+    starts["Starting trees"]
+    search["Topology and parameter<br/>optimization"]
+    support["Bootstrap and<br/>SH-like support"]
+    result["Tree · likelihood · parameters<br/>trace · warnings"]
 
-## Start From One Alignment Path
+    alignment --> models --> search
+    starts --> search --> result
+    search --> support --> result
+```
+
+## Input Preconditions
+
+- The alignment must contain a compatible DNA alphabet and useful sites.
+- Taxon labels must be unique and stable across every downstream artifact.
+- Model selection and fixed-model runs answer different review questions.
+- Starting-tree count and seed are part of search configuration.
+- Support resampling needs its own replicate counts and seeds.
+
+Validate biological sampling, alignment homology, recombination assumptions,
+and model suitability outside the optimizer; a syntactically valid FASTA file
+does not establish them.
+
+## Run A Search
 
 ```python
 from pathlib import Path
@@ -38,109 +58,85 @@ result = infer_nucleotide_maximum_likelihood_result_from_alignment(
     start_tree_seed=17,
 )
 
-print(result.model_name)
-print(result.final_tree_newick)
-print(result.final_log_likelihood)
-
 write_nucleotide_maximum_likelihood_result_json(
     Path("artifacts/native-maximum-likelihood/result.json"),
     result,
 )
 ```
 
-Use `model_name="auto"` when the goal is governed model selection across the
-supported nucleotide family. Use one explicit model such as `jc69`, `k80`,
-`f81`, `hky85`, or `gtr` when the review question already fixes that choice.
+`model_name="auto"` performs governed selection across the supported
+nucleotide family. Use `jc69`, `k80`, `f81`, `hky85`, or `gtr` when the model
+is fixed by the analysis contract. Record the criterion when selection is
+enabled; AIC and other criteria are not interchangeable labels.
 
-## Add Support Evidence When It Matters
-
-Bootstrap and SH-like support remain optional because they are more expensive
-than the core tree search.
+## Add Branch Support
 
 ```python
-from pathlib import Path
-
-from bijux_phylogenetics.phylo.likelihood import (
-    infer_nucleotide_maximum_likelihood_result_from_alignment,
-)
-
 result = infer_nucleotide_maximum_likelihood_result_from_alignment(
     Path("dataset/alignment.fasta"),
     model_name="hky85",
     search_method="nni",
-    start_tree_count=3,
+    start_tree_count=4,
     start_tree_seed=17,
-    bootstrap_replicate_count=100,
+    bootstrap_replicate_count=200,
     bootstrap_seed=5,
-    sh_like_resampling_replicate_count=100,
+    sh_like_resampling_replicate_count=200,
     sh_like_resampling_seed=11,
 )
-
-assert result.support_reports.bootstrap is not None
-assert result.support_reports.sh_like is not None
 ```
 
-Use those support lanes when the output will be reviewed as one inferred tree,
-not just as one intermediate optimization result.
+Bootstrap and SH-like values have different resampling and interpretation
+contracts. Preserve method identity with every support value. Replicate count
+affects Monte Carlo stability; it should be justified rather than copied from
+an example.
 
-## Attach Wrapper-Comparison Metadata Deliberately
-
-The native ML result can also carry wrapper-correspondence benchmark metadata.
-That is useful when the output needs one attached trust summary, but it should
-not be confused with full evidence-book closure.
+## Inspect Before Reporting
 
 ```python
-from pathlib import Path
+print(result.model_name)
+print(result.final_log_likelihood)
+print(result.final_topology_fingerprint)
+print(result.parameter_values)
+print(result.warning_messages)
 
-from bijux_phylogenetics.phylo.likelihood import (
-    infer_nucleotide_maximum_likelihood_result_from_alignment,
-)
-
-result = infer_nucleotide_maximum_likelihood_result_from_alignment(
-    Path("dataset/alignment.fasta"),
-    model_name="jc69",
-    search_method="nni",
-    include_wrapper_correspondence_benchmark=True,
-)
-
-assert result.benchmark_metadata is not None
-print(result.benchmark_metadata.wrapper_correspondence_case_count)
+for run in result.run_summaries:
+    print(run)
 ```
 
-When the real question is the repository's current native benchmark posture,
-use the public evidence guide in
-[native benchmark evidence](../quality/native-benchmark-evidence.md) instead of
-inferring that answer from one attached result payload.
+Review all starting runs, not only the selected optimum. Repeated convergence
+to the same topology and likelihood provides stronger search evidence than one
+successful start. Inspect accepted moves and warnings for stagnation,
+degenerate branch lengths, or model-fit problems.
 
-## Read The Result As One Stable Contract
+## Stable Result State
 
-The main fields to treat as stable are:
+The public contract includes model and selection fields, final tree and
+topology fingerprint, log likelihood, fitted parameters, search method,
+multi-start summaries, accepted search trace rows, support reports, warnings,
+and optional benchmark metadata. It supports dictionary and JSON round trips.
 
-- `model_name`
-- `model_selection_strategy`
-- `model_selection_criterion`
-- `final_tree_newick`
-- `final_topology_fingerprint`
-- `final_log_likelihood`
-- `parameter_values`
-- `search_method`
-- `run_summaries`
-- `search_trace_rows`
-- `support_reports`
-- `warning_messages`
-- `benchmark_metadata`
+Persist the whole result. A Newick tree alone loses model, objective,
+parameters, search history, support method, warnings, and software identity.
 
-That result object also supports `to_dict()`, `from_dict(...)`,
-`write_json(...)`, and `load_json(...)` so one notebook or pipeline does not
-need to reverse-engineer ad hoc output.
+## Wrapper Correspondence
 
-## Current Boundaries
+`include_wrapper_correspondence_benchmark=True` attaches the configured
+wrapper-comparison summary. This is useful for a result-level comparison
+record, but it does not turn one run into corpus-wide benchmark evidence or a
+governed study verdict.
 
-- this public contract is strongest for native nucleotide maximum-likelihood
-  tree inference
-- this page does not claim that every lower-level likelihood helper has the
-  same stability or public review weight
-- this page does not turn wrapper-backed workflow orchestration into a native
-  ownership claim
-- this page does not replace the benchmark family when the review question is
-  speed, memory, recovery accuracy, or wrapper comparison
+## Interpretation Boundaries
+
+- Maximum likelihood identifies an optimum under the supplied data, model,
+  and search—not the uniquely true evolutionary history.
+- A higher likelihood is comparable only under compatible data and model
+  parameterization.
+- Branch support is not posterior probability and is not evidence that the
+  model fits.
+- Search agreement does not remove alignment, sampling, or model error.
+- The documented native inference contract is currently nucleotide-focused;
+  broader likelihood foundations do not imply matching inference maturity.
+
+Use [native benchmark review](native-benchmark-review.md) for corpus-level
+behavior and [artifact contracts](../interfaces/artifact-contracts.md) when
+publishing the result.
