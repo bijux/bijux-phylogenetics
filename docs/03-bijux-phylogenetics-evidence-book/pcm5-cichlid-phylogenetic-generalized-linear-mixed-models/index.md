@@ -118,6 +118,42 @@ utilities provide adjacent capability but do not reproduce the external
 generalized mixed-model posterior. No governed comparison execution or
 observation ledger currently closes that gap.
 
+## Preserve Dependencies Between Derived Claims
+
+Several PCM5 quantities are derived from the same posterior draws. Their
+dependency is part of the evidence contract: an ancestral export, transformed
+probability, or variance share cannot be admitted when its source draws,
+parameter keys, or chain diagnostics are absent.
+
+```mermaid
+flowchart LR
+    inputs["Admitted observations<br/>tree · model identity"]
+    draws["Chain-indexed posterior<br/>draws and diagnostics"]
+    nodes["Ancestral node<br/>draws"]
+    probabilities["Draw-wise inverse-link<br/>probabilities"]
+    variance["Draw-wise variance<br/>partitions"]
+    figures["Tables and figures<br/>with stable identities"]
+
+    inputs --> draws
+    draws --> nodes --> figures
+    draws --> probabilities --> figures
+    draws --> variance --> figures
+```
+
+| Derived claim | Material parent record | Required identity join |
+| --- | --- | --- |
+| ancestral-node posterior | model draws and exact tree | chain, draw, node descendant set, tree revision and parameter scale |
+| probability curve or contrast | paired intercept/slope draws | chain, draw, predictor value, link and inverse-link convention |
+| phylogenetic signal | phylogenetic and residual variance draws | chain, draw, component names, covariance scaling and family-specific denominator |
+| species-versus-phylogeny partition | species, phylogenetic and residual draws | chain, draw, random-effect levels and complete variance denominator |
+| plotted node or curve | governed derived rows | source-row key, rendering transform, exclusions and artifact identity |
+
+Passing a parent identity check would not automatically match every child
+quantity; each transformation still needs its own observation and rule.
+Conversely, a visually plausible derived figure cannot compensate for absent
+draws or diagnostics upstream. The current contract-only state stops before
+the posterior-draw node in this graph.
+
 ## Retained Record State
 
 | Record layer | Present in every bundle | What it establishes |

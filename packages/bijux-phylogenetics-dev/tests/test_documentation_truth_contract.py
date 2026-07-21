@@ -881,6 +881,8 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
     assert "Observation-Level Mismatch Disclosure" in evidence_index
     assert "12 mismatch_unexplained" in evidence_index
     assert "Non-Comparable Evidence Is First-Class" in evidence_index
+    assert "Read Contract-Only Evidence As A Design Record" in evidence_index
+    assert "It is not numerical\nevidence" in evidence_index
     assert "What The Evidence Supports At This Revision" in evidence_index
     assert "Cite The Record, Not This Summary" in evidence_index
     assert "Find The Record From The Statement" in evidence_index
@@ -918,6 +920,8 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
     assert "Verdict And Follow-Through" in pcm4
     assert "What Would Make The Posterior Comparable" in pcm4
     assert "Retained Record State" in pcm4
+    assert "Keep The Four Estimation Questions Separate" in pcm4
+    assert "PGLS covariance does not reproduce random-effect posterior draws" in pcm4
     assert "governed_primary_output_count: 0" in pcm4
     assert "bundle_contract_only" in pcm4
     assert "Verify The Present Record Without Inferring A Posterior" in pcm4
@@ -931,6 +935,8 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
     assert "Comparison Contract By Model Family" in pcm5
     assert "Do not use open follow-through as the bundle verdict" in pcm5
     assert "Retained Record State" in pcm5
+    assert "Preserve Dependencies Between Derived Claims" in pcm5
+    assert "current contract-only state stops before" in pcm5
     assert "governed_primary_output_count: 0" in pcm5
     assert "bundle_contract_only" in pcm5
     assert "Keep The Nested Denominators Separate" in pcm5

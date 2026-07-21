@@ -240,6 +240,42 @@ A bundle can be structurally complete and current while remaining
 larger claim unresolved. Report each axis rather than replacing the record
 with one unqualified word such as “validated.”
 
+## Read Contract-Only Evidence As A Design Record
+
+PCM3, PCM4, and PCM5 include bundles whose present value is design-level rather
+than numerical adjudication. Read these records by the layer they genuinely
+own:
+
+| Retained layer | What a reviewer gains | Claim still unavailable |
+| --- | --- | --- |
+| source provenance | exact lecture/source program and scientific context | that the source program was executed successfully in the governed lane |
+| governed datasets and input manifests | byte identity, schema, tree/table population and dependencies | that every model consumed the admitted inputs correctly |
+| claim decomposition | stable estimands and one bundle per bounded question | any favorable comparison verdict |
+| `reference.R` and `analysis.py` contract wrappers | executable statement of expected ownership, files and absent outputs | reference or Bijux scientific computation |
+| checks and result manifests | structural completeness, freshness and explicit zero-primary-output state | coefficient, posterior, diagnostic or topology agreement |
+| closure contract | exact executions, observations and acceptance rules still required | completion merely because the missing work is well specified |
+
+This is durable scientific infrastructure: it prevents later comparison from
+silently changing the question, inputs, or denominator. It is not numerical
+evidence. A future execution must create new governed primary outputs and
+observation records; it must not reinterpret the contract wrapper as an earlier
+run.
+
+```mermaid
+flowchart LR
+    design["Governed design<br/>source · inputs · claims"]
+    execute["Reference and Bijux<br/>scientific execution"]
+    observe["Aligned observations<br/>diagnostics · denominators"]
+    adjudicate["Acceptance rules<br/>and verdict"]
+    current["Current PCM3–PCM5<br/>contract-only boundary"]
+
+    design --> execute --> observe --> adjudicate
+    current -. owns .-> design
+```
+
+The dotted edge locates the present evidence. It does not imply partial credit
+for the unexecuted comparison stages.
+
 ## Non-Comparable Evidence Is First-Class
 
 PCM4 and PCM5 remain valuable precisely because their external posterior

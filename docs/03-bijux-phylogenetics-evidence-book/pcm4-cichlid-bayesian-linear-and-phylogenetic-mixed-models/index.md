@@ -121,6 +121,29 @@ adjudicates the claim-specific reference and Bijux computations. The locally
 available PGLS comparator is useful adjacent capability, but it is not a
 replacement posterior.
 
+## Keep The Four Estimation Questions Separate
+
+The source analysis contains four related estimators. Similar coefficient
+names do not make their likelihoods, uncertainty, or covariance structures
+interchangeable.
+
+| Estimator | Scientific role | Required comparison identity | Invalid substitution |
+| --- | --- | --- | --- |
+| `glsFish` | non-phylogenetic Gaussian maximum-likelihood baseline | species population, response transform, formula, variance and likelihood convention | a successful fit does not establish posterior behavior |
+| `m1` and independent chains | non-phylogenetic Gaussian posterior | priors, proposal/chain policy, monitored parameters, draw and diagnostic population | a baseline GLS standard error is not a credible interval |
+| `m2` | phylogenetic Gaussian mixed-model posterior | all `m1` identity plus inverse covariance, `treetip` levels, scaling and variance components | PGLS covariance does not reproduce random-effect posterior draws |
+| `pgls6` | Brownian maximum-likelihood phylogenetic comparator | tree, taxon order, Brownian covariance, response/formula and ML convention | agreement cannot promote `m2` fixed or variance posteriors |
+
+These questions can form a coherent triangulation only when each estimator has
+its own governed execution and result. A favorable baseline or PGLS result may
+diagnose a future posterior difference; it cannot inherit the missing
+`MCMCglmm` computation or verdict.
+
+For a cross-estimator conclusion, compare the estimand first: coefficient
+scale, conditional or marginal interpretation, covariance treatment, and
+uncertainty object. Then retain each result and diagnostic separately before
+asking whether their bounded conclusions agree.
+
 ## Retained Record State
 
 | Record layer | Present in every bundle | What it establishes |
