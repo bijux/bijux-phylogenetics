@@ -54,6 +54,25 @@ behavior, and serialize output. Python can preserve rich objects and let the
 caller choose persistence. An artifact is a frozen view of either path and
 must carry enough provenance to stand alone.
 
+## Interface Invariants
+
+```mermaid
+flowchart LR
+    python["Python"] --> contract["Shared scientific contract"]
+    cli["CLI"] --> contract
+    service["Service"] --> contract
+    contract --> artifact["Persisted artifacts"]
+```
+
+Across every supported surface, taxon ordering, model parameterization,
+computation owner, status, warnings, denominators, and units must retain the
+same meaning. Representation can change—typed object, command JSON, API
+response, or TSV row—but scientific semantics cannot.
+
+If two interfaces produce materially different defaults or omit different
+diagnostics, document and test that difference as an interface contract. Do
+not call the surfaces equivalent because their headline estimate matches.
+
 ## Contract Comparison
 
 | Concern | Python | CLI | Persisted artifact | Service schema |

@@ -67,6 +67,19 @@ That sequence is not mandatory. It illustrates that interfaces solve different
 parts of the lifecycle rather than competing to be the single universal entry
 point.
 
+## Worked Selections
+
+| Situation | Selection | Handoff record |
+| --- | --- | --- |
+| explore alternative comparative formulas in a notebook | workflow or comparative Python API | serialize chosen formula, reconciled taxa, result, and diagnostics |
+| execute the same configured inference on a scheduler | CLI or configured workflow entry point | command/config, exit state, engine identity, manifest, and native outputs |
+| review a completed posterior without recreating its environment | artifacts | chain identity, diagnostics, summaries, tree samples, model and seed provenance |
+| expose validation to another language | versioned service API | pinned schema, request identity, transport state, scientific result state |
+| publish a figure and supporting table | structured artifact plus renderer | source result, table schema, rendering parameters, and manifest linkage |
+
+The surface follows the consumer and failure-recovery contract. It does not
+change who owns the scientific computation.
+
 ## Python Is The Right Choice When
 
 You need custom composition, iterative model construction, in-memory tree or

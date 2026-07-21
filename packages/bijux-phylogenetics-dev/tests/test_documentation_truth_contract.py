@@ -166,6 +166,26 @@ def test_product_handbook_routes_analysis_and_preserves_run_identity() -> None:
     assert "Changing presentation or omitting the failed check" in operations
 
 
+def test_public_interfaces_define_supported_python_and_handoff_contracts() -> None:
+    interfaces = PRODUCT_ROOT / "interfaces"
+    index = _read(interfaces / "index.md")
+    selection = _read(interfaces / "surface-selection.md")
+    python = _read(interfaces / "python-surface.md")
+
+    assert "Interface Invariants" in index
+    assert "Worked Selections" in selection
+    assert "Supported Import Layers" in python
+    assert "Workflow API" in python
+    assert "Compose A Native Workflow" in python
+    assert "Compose An External-Engine Workflow" in python
+    assert "Direct Scientific Modules" in python
+    assert "Result Handling Contract" in python
+    assert "Alias Imports" in python
+    assert "Discover Without Guessing" in python
+    assert "now also" not in python
+    assert "bijux_phylogenetics.PhyloTree" not in python
+
+
 def test_programmatic_interfaces_name_curated_and_frozen_contracts() -> None:
     api_surface = _read(PRODUCT_ROOT / "interfaces" / "api-surface.md")
     native_surface = _read(

@@ -2,244 +2,216 @@
 title: Python Surface
 audience: public
 type: reference
-status: active
+status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-21
 ---
 
 # Python Surface
 
-The canonical Python import surface lives under `bijux_phylogenetics`.
+The canonical import namespace is `bijux_phylogenetics`. Its public Python
+surface has three layers: a small package gateway, workflow-shaped functions
+under `bijux_phylogenetics.api`, and documented scientific modules for direct
+method use.
 
-Use the canonical package name when you need the durable runtime API. The
-`phylogenetic` package exists as a compatibility alias, not as a second
-independent runtime.
+```mermaid
+flowchart TD
+    gateway["bijux_phylogenetics<br/>curated module gateway"]
+    workflow["bijux_phylogenetics.api<br/>workflow composition"]
+    domain["Documented scientific modules<br/>direct method contracts"]
+    result["Typed results and diagnostics"]
+    artifacts["JSON · TSV · reports<br/>and manifests"]
 
-Use this page when you already know Python is the right public surface. If you
-still need to choose between CLI, workflow Python, native Python, or evidence
-surfaces, start from the [surface selection guide](surface-selection.md).
+    gateway --> workflow --> result
+    gateway --> domain --> result
+    result --> artifacts
+```
 
-## Reading Rule
+Use the [surface selection guide](surface-selection.md) first when the main
+consumer is a shell scheduler, service, reviewer, or archival system.
 
-- use `bijux_phylogenetics.api` for workflow-shaped notebook and pipeline use
-- use named native import families when you need one owned runtime contract
-  directly
-- use the CLI when the main output should be one governed artifact or report
-  bundle rather than one in-memory Python object
+## Supported Import Layers
 
-The owned native tree API now lives on `bijux_phylogenetics.PhyloTree`,
-`bijux_phylogenetics.TreeNode`, and `bijux_phylogenetics.TaxonLabel`. That
-surface is the single in-memory tree contract for native traversal, topology
-transforms, branch-length review, comparative covariance, ancestral
-reconstruction, simulation, and canonical Newick conversion. Stable node IDs,
-parent-child links, node metadata, edge metadata, validation, deep-copy
-behavior, native Newick parsing and writing, multi-tree Newick loading, and
-location-aware Newick parse failures are part of that runtime promise.
-Outgroup rooting, unrooting, keep-tip pruning, drop-tip pruning, clade
-extraction, MRCA lookup, and monophyly review are also part of that same
-owned tree-manipulation core, so those surfaces no longer depend on an
-external tree object model for normal runtime behavior.
-The same native ownership boundary now covers canonical rooted-clade
-extraction, canonical unrooted-split extraction, Robinson-Foulds metrics, and
-clade-support matching, so tree distance, topology comparison, tree-set
-support, posterior clade frequencies, and live `ape::dist.topo` parity all
-read one shared split identity contract.
-The same owned runtime now also loads Newick tree sets directly into
-`PhyloTree` records for consensus building, clade-frequency summaries,
-reference-tree support mapping, topology clustering, and posterior tree-set
-comparison. Strict consensus and support surfaces validate one exact taxon set
-across the whole tree set, while tolerant inspection surfaces keep one
-explicit malformed-record counter instead of failing silently.
-The same native tree runtime now also owns direct baseline simulation entry
-points through `simulate_random_tree(...)` and `simulate_coalescent_tree(...)`
-when one caller needs one governed random or coalescent tree plus its summary
-record without going through one batch simulation wrapper.
+| Layer | Use it for | Stability rule |
+| --- | --- | --- |
+| `bijux_phylogenetics` | discover versioned public module families | only names in the package's curated `__all__` gateway |
+| `bijux_phylogenetics.api` | notebook, pipeline, and application workflows | exported workflow functions and result types |
+| documented domain modules | direct trees, inference, comparative, ancestral, parsimony, simulation, or reporting contracts | named exports documented for that scientific surface |
+| implementation submodules | repository internals | no public compatibility promise unless explicitly documented |
 
-The owned native DNA-alignment API now also lives on one
-`bijux_phylogenetics.DnaBinAlignment` runtime loaded through
-`bijux_phylogenetics.load_dna_bin_alignment(...)`. That matrix preserves taxon
-order and alignment length, normalizes case, keeps gaps, ambiguity codes, and
-explicit missing states literal, and rejects unsupported symbols explicitly.
-The same runtime object now feeds direct Python nucleotide review surfaces for
-literal-state composition, ape-style segregating-site detection, and
-nucleotide distances through
-`compute_alignment_base_frequency_report_from_dna_bin_alignment(...)`,
-`compute_alignment_segregating_site_report_from_dna_bin_alignment(...)`, and
-`compute_pairwise_genetic_distance_matrix_from_dna_bin_alignment(...)`. It now
-also feeds aligned coding diagnostics and aligned translation through
-`inspect_coding_alignment_from_dna_bin_alignment(...)` and
-`translate_coding_alignment_from_dna_bin_alignment(...)` instead of forcing
-those workflows to reparse FASTA independently.
-The same owned distance runtime now also exposes
-`build_distance_tree_from_genetic_distance_matrix(...)`, so one loaded
-`GeneticDistanceMatrix` can recover one governed NJ or UPGMA tree directly
-without restarting from path-based input loaders.
+The package gateway exports module families rather than thousands of symbols:
+`ancestral`, `api`, `bayesian`, `biogeography`, `comparative`, `datasets`,
+`distance`, `evidence`, `parsimony`, `parity`, `phylo`, and `trees`. Do not
+assume a class is a top-level import merely because it exists in one of those
+families.
 
-The owned comparative runtime now also exposes one direct Brownian covariance
-surface on an in-memory tree through
-`summarize_brownian_covariance_from_tree(...)` and one direct PIC surface on a
-loaded comparative dataset through
-`compute_phylogenetic_independent_contrasts_from_dataset(...)`. Once a caller
-already holds one `PhyloTree` or `ComparativeDataset`, covariance review and
-independent-contrast analysis no longer need to restart from path-based
-loading wrappers.
-The same comparative runtime now also exposes one direct discrete Mk fit
-surface on a loaded ancestral discrete dataset through
-`fit_discrete_mk_model_from_dataset(...)`, so ER, SYM, ARD, and native
-irreversible review no longer need to restart from tree and trait file paths
-once one `AncestralDiscreteDataset` already exists in memory. The same owned
-surface now treats `irreversible` as one first-class Mk contract with
-structurally forbidden reverse transitions instead of reusing one constrained
-ARD label. That same owned surface now underlies the governed live
-`phytools::fitMk(model='ER')` and
-`phytools::fitMk(model='SYM')` parity lanes for the validated ER and
-unordered-multistate SYM cases, and it now also underlies the governed live
-`phytools::fitMk(model='ARD')` lane for one rate-row-parity binary surface
-plus one summary-parity multistate surface when the optimizer flags weakly
-identified boundary rates.
-The same dataset-backed fit report now also makes Lewis ascertainment explicit
-rather than leaving it as one label alone. When callers pass
-`ascertainment_policy="lewis-variable-only"` for variable-only character
-matrices, the returned report keeps the conditioned `log_likelihood` alongside
-`uncorrected_log_likelihood`, `ascertainment_log_likelihood_delta`,
-`ascertainment_conditioning_log_probability`, and
-`invariant_pattern_log_probability`, so one downstream notebook or report can
-show exactly how the variable-only conditioning changed the fitted surface.
-The same owned comparative runtime also underlies the governed live
-`phytools::pgls.SEy` lane for fixed-lambda Brownian covariance regression over
-simple numeric, categorical, and interaction-coded fixtures. That governed
-claim is narrower than the full owned PGLS API on purpose: installed
-`phytools 2.5.2` does not export a general `phytools::pgls` surface, so live
-parity stays on `pgls.SEy` with `lambda = 1.0`, while estimated-lambda and
-broader exact regression parity remain covered by the checked-in `ape` plus
-`nlme` reference suite.
+## Workflow API
 
-The owned ancestral runtime now also exposes direct dataset-backed
-reconstruction surfaces through
-`reconstruct_continuous_ancestral_states_from_dataset(...)` and
-`reconstruct_discrete_ancestral_states_from_dataset(...)`. Once a caller
-already holds one `AncestralContinuousDataset` or `AncestralDiscreteDataset`,
-continuous and discrete ancestral reconstruction no longer need to restart
-from path-based loading wrappers. The discrete ancestral report now also carries
-one explicit `rerooting_method_compatibility` contract so Python callers can
-tell whether one ER or SYM reconstruction with the equal root prior is
-comparable to the governed live `phytools::rerootingMethod` lane. Fitch,
-ordered-state, ARD, empirical-root-prior, and fixed-root-prior runs are marked
-explicitly as non-comparable instead of being left to inference.
-The same owned discrete-evolution runtime now also exposes seeded stochastic
-character mapping through `simulate_discrete_stochastic_maps(...)` and
-`simulate_discrete_stochastic_maps_from_fit_report(...)` plus review-friendly
-writers for the resulting collection JSON, transition summary, flat
-branch-segment ledger, per-state time-in-state ledger, and per-branch
-state-occupancy ledger. That surface fits
-one discrete CTMC, carries one explicit fitted-model audit with model
-identity, parameter count, log-likelihood, AIC, AICc, baseline-model
-comparison, optimizer convergence, and weak-fit warnings, conditions one
-sampled history on the observed tip states, reports failed branch-history
-draws explicitly, and now underlies the governed live
-`phytools::make.simmap(model='ER')`, `phytools::make.simmap(model='SYM')`, and
-`phytools::make.simmap(model='ARD')` summary-parity lanes without claiming
-exact stochastic-history identity across languages. Governed multistate ARD
-cases stay on summary-envelope parity only when weakly identified boundary
-rates make row-level transition summaries unstable across optimizers.
-The same owned runtime also exposes
-`bijux_phylogenetics.count_discrete_stochastic_map_transitions(...)` plus
-writers for one per-replicate transition-count matrix, one aggregate
-transition matrix, one per-branch directional transition table, and one flat
-event ledger. That surface now underlies the governed live
-`phytools::countSimmap` lane, which compares total-transition envelopes and
-directional transition-count rows over selected seeded map collections,
-including zero diagonal state pairs, without claiming exact stochastic-history
-identity.
-The same owned stochastic-map runtime also exposes
-`bijux_phylogenetics.summarize_discrete_stochastic_map_density(...)`,
-`bijux_phylogenetics.render_stochastic_map_density_artifact(...)`, and writers
-for one branch-probability table, one branch-level density envelope, and one
-slice-level probability table. Binary collections can summarize one default
-focal state directly; multistate collections keep branch probability summaries
-for every state, and require one explicit focal state before generating
-density-slice rows or one report-ready artifact. That surface now underlies
-the governed live `phytools::densityMap` lane for selected binary ER
-collections, including one missing-value-pruned case, and compares
-branch-level posterior probability summaries plus branch uncertainty without
-claiming pixel-perfect plot parity.
-The same owned summary contract also underlies the governed live
-`phytools::describe.simmap` lane, which compares total-change summary,
-transition-count rows, time-in-state rows, and per-branch state-occupancy rows
-over selected seeded map collections.
-The same owned simulation surface also exposes
-`bijux_phylogenetics.simulate_brownian_trait_collection(...)` plus writers for
-one replicate trait ledger and one Brownian summary ledger over tip
-distributions and tip covariances. The one-trait Brownian entrypoint
-`bijux_phylogenetics.simulate_brownian_traits(...)` now accepts either
-`sigma` or explicit `sigma_squared`, keeps the resolved Brownian rate
-parameter in the returned report, and shares the same fixed-tree covariance
-contract as the collection surface. That runtime now underlies the governed
-live `phytools::fastBM` lane over selected low-variance, root-shift
-high-variance, and six-taxon fixed-tree cases, comparing distribution
-summaries and tip-covariance rows without claiming exact cross-language
-draw identity.
-The same owned simulation surface also exposes
-`bijux_phylogenetics.simulate_correlated_brownian_trait_collection(...)` plus
-writers for one long-form replicate tip-trait ledger and one multivariate
-summary ledger over root states, evolutionary covariance, tip distributions,
-and tip covariances. It accepts either one explicit covariance matrix or one
-correlation matrix plus per-trait standard deviations, rejects invalid
-non-positive-definite covariance inputs explicitly, and keeps the generating
-parameter matrix in the returned report. That runtime now underlies the
-governed live `phytools::sim.corrs` lane over selected low-correlation,
-negative-correlation root-shift, and three-trait fixed-tree cases, comparing
-distribution summaries, tip-covariance rows, and tip-correlation rows without
-claiming exact cross-language draw identity.
-The same owned simulation surface also exposes
-`bijux_phylogenetics.simulate_discrete_histories(...)` plus writers for one
-tip-state truth table, one node-state truth table, one branch-history truth
-table, one transition-event ledger, one branch-segment ledger, and one parity
-summary table. That surface simulates discrete histories on one fixed tree
-from an explicit rate matrix, supports binary and multistate states, supports
-fixed or probabilistic root states, and keeps one seeded truth surface for
-downstream recovery tests. It now underlies the governed live
-`phytools::sim.history` lane over selected no-change and high-rate fixed-tree
-cases, comparing total-transition summaries, transition-count rows,
-time-in-state rows, and tip-state-frequency rows without claiming exact
-cross-language history identity.
+`bijux_phylogenetics.api` is the narrowest composition surface for common
+path-oriented work.
 
-The owned native maximum-likelihood tree-inference contract now also exposes
-one unified result surface through
-`bijux_phylogenetics.phylo.likelihood.infer_nucleotide_maximum_likelihood_result(...)`
-plus the stable `NucleotideMaximumLikelihoodResult` payload and writer helpers.
-That result bundles the selected model, final tree Newick, topology
-fingerprint, final log likelihood, parameter values, multi-start run
-summaries, search trace rows, optional support evidence, warning messages, and
-optional wrapper-correspondence benchmark metadata in one reviewable contract.
-The same family also exposes
-`infer_nucleotide_maximum_likelihood_result_from_alignment(...)` when one
-caller already holds a loaded alignment rather than a path-like workflow
-entrypoint.
+| Function | Primary contract | Computation owner |
+| --- | --- | --- |
+| `run_fasta_validation_workflow` | validate FASTA shape and content | Bijux runtime |
+| `run_tree_comparison_workflow` | compare two tree files under an explicit overlap policy | Bijux runtime |
+| `run_comparative_model_workflow` | reconcile a tree and trait table and fit the selected comparative regression | Bijux runtime |
+| `run_ancestral_reconstruction_workflow` | reconstruct a named trait under an explicit state model | Bijux runtime |
+| `render_report_workflow` | render linked tree, alignment, trait, and metadata inputs | Bijux runtime; advisory presentation |
+| `run_alignment_workflow` | align sequences and retain execution artifacts | MAFFT through a Bijux adapter |
+| `run_trimming_workflow` | trim an alignment and retain execution artifacts | trimAl through a Bijux adapter |
+| `run_tree_inference_workflow` | run configured tree inference and normalize the result | IQ-TREE2 through a Bijux adapter |
+| `run_support_workflow` | run configured support estimation | IQ-TREE2 through a Bijux adapter |
+| `run_sequence_to_tree_workflow` | compose alignment, trimming, inference, and support | named external engines through Bijux adapters |
+| `run_configured_phylo_workflow` | execute a persisted workflow configuration | depends on the configured stages |
 
-The owned native Bayesian surface now also exposes
-`bijux_phylogenetics.bayesian.run_bayesian_inference(...)` as one stable public
-entry point for the currently supported DNA workflows. Today that public
-contract is intentionally narrower than the full Bayesian package breadth: the
-public dispatcher accepts one supported fixed-topology or joint-topology DNA
-model definition plus one matching proposal schedule and returns one matching
-native run report instead of routing through BEAST, MrBayes, or one wrapper
-import. The broader Bayesian package also exposes owned priors, proposal
-builders, checkpoints, independent-chain diagnostics, posterior summaries, and
-clock-model surfaces, but those should still be read through the documented
-family boundaries rather than as one blanket promise that every Bayesian
-submodule is equally mature.
+Function return types are serializable workflow results. They preserve richer
+state in process and provide `write_json(...)`; workflow results with tabular
+summaries also provide `write_tsv(...)`.
 
-For end-to-end external-engine orchestration, the public engine surface includes
-`bijux_phylogenetics.run_fasta_to_tree_workflow(...)`. That workflow owns the
-raw-FASTA to aligned matrix, trimmed matrix, selected-model table, supported
-tree, support-summary table, log, and manifest contract used by the CLI.
+## Compose A Native Workflow
 
-The public promise is ownership clarity: imports should resolve to one runtime
-family, not to competing public surfaces with different meanings.
+```python
+from pathlib import Path
+
+from bijux_phylogenetics.api import (
+    run_comparative_model_workflow,
+    run_tree_comparison_workflow,
+)
+
+comparison = run_tree_comparison_workflow(
+    Path("dataset/tree-a.nwk"),
+    Path("dataset/tree-b.nwk"),
+    rf_mode="rooted",
+    taxon_overlap_policy="prune-to-shared",
+)
+comparison.write_json(Path("artifacts/tree-comparison.json"))
+comparison.write_tsv(Path("artifacts/tree-comparison.tsv"))
+
+model = run_comparative_model_workflow(
+    Path("dataset/tree.nwk"),
+    Path("dataset/traits.tsv"),
+    response="response",
+    predictors=["body_mass", "habitat"],
+    lambda_value="estimate",
+)
+model.write_json(Path("artifacts/comparative-model.json"))
+model.write_tsv(Path("artifacts/comparative-model.tsv"))
+```
+
+The call site owns the destination and persistence policy. Before interpreting
+either result, inspect its status, reconciled taxa, method configuration,
+warnings, and diagnostic fields rather than treating serialization as proof of
+scientific adequacy.
+
+## Compose An External-Engine Workflow
+
+```python
+from pathlib import Path
+
+from bijux_phylogenetics.api import run_sequence_to_tree_workflow
+
+result = run_sequence_to_tree_workflow(
+    Path("dataset/sequences.fasta"),
+    out_dir=Path("artifacts/sequence-to-tree"),
+    sequence_type="dna",
+    mafft_executable="mafft",
+    trimal_executable="trimal",
+    iqtree_executable="iqtree2",
+    bootstrap_replicates=1000,
+    seed=17,
+    threads=4,
+)
+result.write_json(Path("artifacts/sequence-to-tree/workflow.json"))
+```
+
+This is Python composition, but MAFFT, trimAl, and IQ-TREE2 still own their
+scientific computation. Preserve executable versions, invocation, captured
+diagnostics, native output files, parser state, and normalized result identity.
+The Python package does not install those executables.
+
+## Direct Scientific Modules
+
+Use a domain module when the caller already owns validated in-memory state or
+needs a method contract more specific than a workflow.
+
+| Family | Representative responsibility | Review before use |
+| --- | --- | --- |
+| `bijux_phylogenetics.trees` | tree-set summaries, consensus, support, instability, branch and topology review | taxon-set policy, rooting, split identity, malformed records |
+| `bijux_phylogenetics.phylo.likelihood` | finite-state likelihood and native maximum-likelihood result contracts | model, parameters, search state, convergence, support |
+| `bijux_phylogenetics.bayesian` | supported native posterior models, priors, proposals, checkpoints, and diagnostics | model family, chain identity, convergence, effective sample size, resume lineage |
+| `bijux_phylogenetics.comparative` | PGLS, covariance, signal, trait evolution, regression, and model comparison | reconciliation, design matrix, covariance model, assumptions, exclusions |
+| `bijux_phylogenetics.ancestral` | continuous and discrete reconstruction and uncertainty summaries | state space, node identity, transition model, root prior, uncertainty |
+| `bijux_phylogenetics.parsimony` | Fitch, Wagner, Sankoff, Dollo, Camin–Sokal, search, and resampling | coding, costs, ordering, search coverage, equal-best trees |
+| `bijux_phylogenetics.simulation` | trees, alignments, continuous traits, discrete traits, and known histories | generating parameters, seed, truth ledger, replicate denominator |
+
+Representative owned inference locators are
+`bijux_phylogenetics.phylo.likelihood.infer_nucleotide_maximum_likelihood_result`
+and `bijux_phylogenetics.bayesian.run_bayesian_inference`. Their direct result
+contracts are appropriate when an application needs search or sampler state
+that a broader workflow would only serialize.
+
+## Result Handling Contract
+
+```mermaid
+flowchart LR
+    call["Python call"] --> result["Typed result"]
+    result --> inspect["Status · diagnostics<br/>warnings · omissions"]
+    inspect --> json["JSON identity and facts"]
+    inspect --> tsv["TSV review tables"]
+    inspect --> report["Human report"]
+    json --> manifest["Manifest and inventory"]
+    tsv --> manifest
+    report --> manifest
+```
+
+- Catch documented exceptions at the layer that can recover from them.
+- Inspect typed completion and diagnostic state before reading estimates.
+- Preserve absent, failed, and skipped components in the output denominator.
+- Serialize before the in-memory state is discarded when independent review is
+  required.
+- Treat HTML and figures as projections; retain the structured records that
+  own their values.
+- Record the runtime version and any external executable identities with the
+  artifacts.
+
+## Alias Imports
+
+The `phylogenetic` distribution provides a compatibility facade over the
+canonical runtime dependency. It forwards curated top-level attributes and
+compatible submodules, including `phylogenetic.api`. It is not a separate
+scientific implementation.
+
+For governed work through the alias, retain both distribution versions:
+
+```python
+from importlib.metadata import version
+
+print(version("phylogenetic"))
+print(version("bijux-phylogenetics"))
+```
+
+The first identifies the facade artifact; the second identifies the runtime
+that owns the computation.
+
+## Discover Without Guessing
+
+```python
+import bijux_phylogenetics
+from bijux_phylogenetics import api
+
+print(bijux_phylogenetics.__all__)
+print(api.__all__)
+```
+
+Use curated discovery, this handbook, and generated API references. Avoid
+copying imports from implementation files or tests: importability alone does
+not establish support, and a repository-relative fixture is not an
+installed-package resource.
 
 ## Matching Practical Guides
 
-- [surface selection guide](surface-selection.md)
-- [native maximum-likelihood workflows](../operations/native-maximum-likelihood-workflows.md)
-- [native Bayesian workflows](../operations/native-bayesian-workflows.md)
+- [Native maximum-likelihood workflows](../operations/native-maximum-likelihood-workflows.md)
+- [Native Bayesian workflows](../operations/native-bayesian-workflows.md)
+- [Common workflows](../operations/common-workflows.md)
+- [Artifact contracts](artifact-contracts.md)
+- [Native inference and benchmarks](native-inference-and-benchmarks.md)
