@@ -108,6 +108,28 @@ Self-generated fixtures are useful for invariants but weak evidence for an
 algorithm that shares the same assumptions or defect. Independence must be
 described, not inferred from a different file name or language.
 
+## Declare Selection And Stopping Before Observation
+
+The assurance contract records how cases enter the denominator and when
+execution stops before outcomes are inspected. Otherwise a flexible filter,
+tolerance, replicate count, or diagnostic threshold can make the result appear
+stronger after the fact.
+
+| Decision fixed in advance | Bias prevented |
+| --- | --- |
+| corpus revision and eligibility rule | retaining only easy, available, or favorable cases |
+| case, parameter, node, and model identifiers | changing the comparison population after failures |
+| exact, structural, numerical, or distributional rule | choosing the rule that best fits observed differences |
+| tolerance and its scientific rationale | widening acceptance after seeing the error |
+| replicate, chain, start, and bootstrap counts | stopping when a favorable summary first appears |
+| missing, failed, skipped, and non-comparable treatment | calculating success only over completed outputs |
+| sensitivity axes and conclusion classification | testing alternatives only after an unwanted result |
+
+An exploratory run may discover an appropriate rule. Preserve it as
+exploration, define a new governed evaluation, and apply the rule to a fresh or
+independently identified population. Do not retroactively describe the
+exploratory denominator as confirmatory evidence.
+
 ## Preserve Negative Evidence
 
 Mismatches, skips, non-convergence, incomplete engine output, unsupported

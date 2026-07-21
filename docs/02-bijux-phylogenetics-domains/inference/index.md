@@ -101,6 +101,25 @@ Select by the scientific model and assurance available for the intended claim.
 The same tree can be an input, a search state, a point estimate, or a sample
 from uncertainty. Preserve that role in result and artifact labels.
 
+## Preserve The Candidate Population
+
+Selection changes interpretation. A chosen model, topology, parameter start,
+consensus, or posterior summary must remain connected to the population and
+rule from which it was selected.
+
+| Selected result | Candidate population to retain | Selection-aware review |
+| --- | --- | --- |
+| best likelihood model | every eligible model, score, parameter count, failed fit, and criterion | ties, near-ties, candidate-set limits, and criterion sensitivity |
+| best topology | starting trees, proposed/evaluated candidates, objective values, and termination | repeated-start agreement, near-optima, and unexplored search space |
+| consensus tree | admitted trees, weights, burn-in or replicate policy, and excluded trees | split denominator, unresolved clades, and threshold sensitivity |
+| reported posterior interval | chains, retained draws, transform, parameter key, and missing/non-finite draws | ESS, chain agreement, tail stability, and selection of the reported quantity |
+| parsimonious reconstruction | all equal-best states or trees under the declared cost model | ambiguity, optimization rule, and alternative-history coverage |
+
+Reporting only the selected row makes selection failures and uncertainty
+unrecoverable. It also prevents a reviewer from distinguishing a dominant
+result from one that won by a negligible difference or because alternatives
+failed to execute.
+
 ## Review The Search, Not Only The Winner
 
 A final topology or score is insufficient when different starts, moves, or

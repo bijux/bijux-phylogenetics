@@ -443,6 +443,8 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "Domain Handoffs" in domain_index
     assert "Cross-Domain Handoff Record" in domain_index
     assert "Attribute Failure To The Deciding Domain" in domain_index
+    assert "Recognize When A Handoff Changes The Question" in domain_index
+    assert "selection-conditional result over a candidate set" in domain_index
     assert "Intake Contract" in data_index
     assert "Refuse Ambiguous Inputs" in data_index
     assert "The Identity Spine" in data_index
@@ -458,6 +460,8 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "Native And External Inference Paths" in inference_index
     assert "Search Evidence By Family" in inference_index
     assert "Completion is not a scientific verdict" in inference_index
+    assert "Preserve The Candidate Population" in inference_index
+    assert "won by a negligible difference" in inference_index
     assert "Match The Question To The Model Family" in evolution_index
     assert "From Reconstructed State To Historical Claim" in evolution_index
     assert "Sensitivity Axes" in evolution_index
@@ -470,6 +474,8 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "Assurance Requires Independence And Coverage" in assurance_index
     assert "Denominator Contract" in assurance_index
     assert "Read Sensitivity As A Result" in assurance_index
+    assert "Declare Selection And Stopping Before Observation" in assurance_index
+    assert "retroactively describe the\nexploratory denominator" in assurance_index
     assert "Ecology and phylogeography" in domain_index
     assert "Diagnostics and sensitivity" in domain_index
     assert "Status Namespaces" in assurance_domain

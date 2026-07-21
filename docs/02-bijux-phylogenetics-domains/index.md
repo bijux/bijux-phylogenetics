@@ -107,6 +107,26 @@ configuration, and software provenance remain attached to downstream results.
 A downstream method may add context, but it must not erase upstream identity or
 reinterpret an unresolved condition as an ordinary value.
 
+## Recognize When A Handoff Changes The Question
+
+Some transformations produce a new scientific object or estimand rather than
+merely preparing the old one. The downstream record must name that change so a
+result is not attributed to the original question unchanged.
+
+| Handoff decision | Original question | New question that must be declared |
+| --- | --- | --- |
+| prune to shared taxa | relationship on the declared taxa | relationship on the retained intersection |
+| trim sites or exclude sequences | inference from the admitted character matrix | inference from a selected matrix under a removal policy |
+| root, reroot, or rescale a tree | topology or process under the supplied tree identity | topology, direction, or rate under a transformed tree |
+| standardize, log, aggregate, or impute traits | effect on the observed response and population | effect on a transformed or reconstructed quantity |
+| select a model after screening candidates | fit of one predeclared model | selection-conditional result over a candidate set |
+| summarize across trees, chains, or replicates | result for one execution state | distribution or consensus over a declared population |
+| normalize outputs across implementations | engine- or method-specific quantity | correspondence under an explicit mapping rule |
+
+The transformation can be scientifically valid. The defect is allowing the
+new population, scale, conditioning event, or estimand to inherit the old
+label without a parent-child record and an interpretation update.
+
 ## Attribute Failure To The Deciding Domain
 
 Parsing and identity defects belong to data and structure. Undefined
