@@ -100,6 +100,7 @@ def test_foundation_and_architecture_define_owned_runtime_contracts() -> None:
     evidence_boundary = _read(PRODUCT_ROOT / "foundation" / "evidence-boundary.md")
     ownership = _read(PRODUCT_ROOT / "foundation" / "product-surface-and-ownership.md")
     architecture = _read(PRODUCT_ROOT / "architecture" / "index.md")
+    package_map = _read(PRODUCT_ROOT / "architecture" / "package-map.md")
     system_map = _read(PRODUCT_ROOT / "architecture" / "runtime-system-map.md")
     evidence_consumer = _read(
         PRODUCT_ROOT / "architecture" / "evidence-consumer-boundary.md"
@@ -120,12 +121,18 @@ def test_foundation_and_architecture_define_owned_runtime_contracts() -> None:
     assert "Dependency Direction" in architecture
     assert "Layer Contracts" in architecture
     assert "Scientific State Transformations" in architecture
+    assert "Installed Identity Chain" in package_map
+    assert "record both distribution versions" in package_map
     assert "Failure Attribution" in system_map
     assert "State Retained Across Boundaries" in system_map
     assert "Partial And Refused Runs" in system_map
+    assert "Artifact Acceptance Gates" in system_map
+    assert "only successful outputs remain in the denominator" in system_map
     assert "Dependency Rule" in evidence_consumer
     assert "Consumption Contract" in evidence_consumer
     assert "Material Changes And Freshness" in evidence_consumer
+    assert "Promotion Protocol" in evidence_consumer
+    assert "Missing comparison data\nproduces `not_comparable`" in evidence_consumer
 
 
 def test_product_handbook_routes_analysis_and_preserves_run_identity() -> None:

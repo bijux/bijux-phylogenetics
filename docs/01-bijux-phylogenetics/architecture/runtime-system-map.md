@@ -99,6 +99,22 @@ An evidence bundle adds claim identifiers, provenance, checks, and verdicts
 for a governed study. Ordinary runtime output does not become evidence merely
 because it was persisted.
 
+## Artifact Acceptance Gates
+
+| Gate | Accept when | Refuse when |
+| --- | --- | --- |
+| identity | operation, input, configuration, package, and computation owner are explicit | a result cannot be tied to the inputs or executable that produced it |
+| execution | completion state and required diagnostics are present | file presence is the only evidence that a process ran |
+| structure | required outputs parse under their declared formats or schemas | a stale or malformed output is found at an expected path |
+| inventory | expected, present, missing, failed, and skipped components reconcile | only successful outputs remain in the denominator |
+| interpretation | units, scales, model conventions, uncertainty, and warnings travel with values | normalized output hides a materially different engine or model convention |
+| integrity | governed hashes and source identities agree where required | a retained artifact has drifted from the manifest that names it |
+
+Passing an earlier gate cannot compensate for failing a later one. For
+example, a process can execute successfully while producing an incomplete
+bundle, and a structurally complete bundle can still contain a scientifically
+non-comparable result.
+
 ## Failure Attribution
 
 ```mermaid
@@ -125,6 +141,11 @@ For batched work, aggregate status retains denominators: selected cases,
 executed cases, successful cases, failed cases, skipped cases, and missing
 artifacts. Reporting only the successful subset changes the meaning of the
 run.
+
+A partial run can remain useful when its status and denominator are explicit:
+preflight diagnostics may explain a refusal, completed independent cases may
+remain valid, and native engine output may support parser diagnosis. Preserve
+that evidence without promoting the aggregate run to complete.
 
 ## Cross-Cutting Families
 

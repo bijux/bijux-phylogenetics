@@ -37,6 +37,30 @@ flowchart TD
 | `phylogenetic` | shorter compatibility installation and command story | users choosing the concise distribution name | same runtime behavior; no reduced feature tier |
 | `bijux-phylogenetics-dev` | repository checks and generation utilities | maintainers and CI | documentation, evidence, schema, packaging, and release truth |
 
+## Installed Identity Chain
+
+```mermaid
+flowchart LR
+    request["Requested distribution"]
+    metadata["Installed metadata<br/>and resolved version"]
+    import["Import namespace"]
+    command["Console command"]
+    runtime["Canonical runtime<br/>contract"]
+
+    request --> metadata --> import --> runtime
+    metadata --> command --> runtime
+```
+
+| Requested distribution | Import | Command | Runtime owner |
+| --- | --- | --- | --- |
+| `bijux-phylogenetics` | `bijux_phylogenetics` | `bijux-phylogenetics` | `bijux_phylogenetics` modules in the canonical wheel |
+| `phylogenetic` | `phylogenetic` facade, including `phylogenetic.api` | `phylogenetic` | the installed `bijux-phylogenetics` dependency reached through the facade |
+| `bijux-phylogenetics-dev` | `bijux_phylogenetics_dev` | repository Make targets and maintainer modules | repository verification and release policy, never scientific execution |
+
+For the alias, record both distribution versions. The requested
+`phylogenetic` version identifies the facade artifact; the resolved
+`bijux-phylogenetics` version identifies the computation it delegates to.
+
 ## Choice Rules
 
 Install `bijux-phylogenetics` when you want the canonical name in an
@@ -61,6 +85,11 @@ Compatibility requires more than both distributions installing successfully.
 Their advertised imports, commands, version story, metadata, package data, and
 documented behavior must remain aligned. Release checks should fail when the
 alias silently exposes a smaller or stale contract.
+
+Compatibility is evaluated at observable boundaries: import resolution,
+public attribute discovery, parser construction, command dispatch, resource
+access, structured serialization, and failure behavior. Matching a single
+headline value is not an alias compatibility test.
 
 ## Where To Report A Problem
 
