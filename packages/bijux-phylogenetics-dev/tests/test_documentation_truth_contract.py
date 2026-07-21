@@ -374,6 +374,22 @@ def test_package_metadata_points_to_canonical_documentation_paths() -> None:
     )
 
 
+def test_package_readmes_define_installed_alias_and_governance_contracts() -> None:
+    runtime = _read(REPO_ROOT / "packages" / "bijux-phylogenetics" / "README.md")
+    alias = _read(REPO_ROOT / "packages" / "phylogenetic" / "README.md")
+    maintainer = _read(REPO_ROOT / "packages" / "bijux-phylogenetics-dev" / "README.md")
+
+    assert "Verify The Installed Artifact" in runtime
+    assert "Select A Public Surface" in runtime
+    assert "it is not an inference-accuracy result" in runtime
+    assert "Verify The Alias End To End" in alias
+    assert "Diagnose A Difference" in alias
+    assert "It does not create a second implementation" in alias
+    assert "What The Governed Commands Establish" in maintainer
+    assert "Change-To-Check Map" in maintainer
+    assert "make validate-evidence-book" in maintainer
+
+
 def test_maintainer_handbook_defines_change_and_artifact_ownership() -> None:
     handbook = _read(MAINTAINER_ROOT / "index.md")
     ownership = _read(

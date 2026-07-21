@@ -70,6 +70,39 @@ These commands create transient environments and reports under `artifacts/`.
 Individual Python modules are implementation surfaces for repository
 automation and may have narrower compatibility than the runtime API.
 
+## What The Governed Commands Establish
+
+| Command | Evidence produced | It does not establish alone |
+| --- | --- | --- |
+| `make check` | repository contract, style, type, unit, and configured quality results | optional external-engine or full study execution |
+| `make docs-check` | synchronized assets, strict site construction, links, and documentation hygiene | scientific correctness of every documented model |
+| `make package-verify` | built wheel/sdist inspection plus clean-environment installation and resource smoke tests | publication or registry availability |
+| `make validate-evidence-book` | bundle structure, indexes, freshness, and issue inventory | passing verdicts for open or non-comparable claims |
+| `make check-release-readiness` | aggregate release-policy decision and retained governance reports | authority to weaken a failed or blocked gate |
+
+Read command output and its retained artifacts together. A zero exit status
+without the governed inputs or expected report set is not reconstructable
+release evidence.
+
+## Change-To-Check Map
+
+```mermaid
+flowchart LR
+    runtime["Runtime or API"] --> contracts["contract and package checks"]
+    docs["Handbook or examples"] --> docscheck["strict docs check"]
+    evidence["Evidence input or claim"] --> evidencecheck["validation and freshness"]
+    metadata["Package or release metadata"] --> packagecheck["build, install, release readiness"]
+
+    contracts --> release["release evidence"]
+    docscheck --> release
+    evidencecheck --> release
+    packagecheck --> release
+```
+
+Run the narrow owning check while editing, then the aggregate gate that
+consumes its result. Do not repair a failing governed artifact by hand when a
+repository command owns its generation.
+
 ## Publication Invariants
 
 - canonical and alias packages resolve to compatible runtime behavior;

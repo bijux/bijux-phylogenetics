@@ -34,6 +34,22 @@ phylogenetic --help
 
 Python 3.11 or newer is required.
 
+## Verify The Alias End To End
+
+The compatibility command can run the same packaged demonstration:
+
+```bash
+phylogenetic demo run \
+  --out artifacts/phylogenetic-capability-demo \
+  --manifest artifacts/phylogenetic-capability-demo/manifest.json \
+  --json
+```
+
+The command should report `status: ok` and write the same classes of input and
+report artifacts as the canonical command. Record the resolved canonical
+runtime version when reporting a defect; alias behavior is meaningful only in
+relation to that runtime.
+
 ## Name Mapping
 
 | Canonical | Compatibility name |
@@ -90,6 +106,30 @@ The alias is verified for import behavior, commands, version alignment,
 package resources, examples, and built-artifact installation. Report a defect
 when a documented canonical workflow cannot be expressed through the alias or
 when metadata implies different scientific capability.
+
+```mermaid
+flowchart LR
+    alias["phylogenetic<br/>distribution and command"]
+    facade["phylogenetic<br/>import facade"]
+    canonical["bijux-phylogenetics<br/>runtime"]
+    result["identical scientific<br/>contracts and artifacts"]
+
+    alias --> facade --> canonical --> result
+```
+
+Compatibility covers naming, imports, commands, resources, and version
+alignment. It does not create a second implementation, independent release
+line, or separate evidence base. External-engine availability and scientific
+limits remain identical under both names.
+
+## Diagnose A Difference
+
+1. Capture `phylogenetic --version` and `bijux-phylogenetics --version`.
+2. Compare the resolved installed distributions in the same environment.
+3. Run the smallest documented workflow through both command names.
+4. Compare structured outputs and manifests before comparing HTML rendering.
+5. Report divergent import, command, resource, metadata, or serialization
+   behavior as an alias-contract defect.
 
 ## Documentation
 

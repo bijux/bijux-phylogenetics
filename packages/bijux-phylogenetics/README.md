@@ -35,6 +35,24 @@ Python 3.11 or newer is required. External-engine workflows also require their
 named executable—such as MAFFT, trimAl, IQ-TREE2, FastTree, MrBayes, or
 BEAST—to be installed separately.
 
+## Verify The Installed Artifact
+
+Run the packaged demonstration before connecting project data:
+
+```bash
+bijux-phylogenetics demo run \
+  --out artifacts/capability-demo \
+  --manifest artifacts/capability-demo/manifest.json \
+  --json
+```
+
+This command reads examples from the installed distribution, copies them into
+a writable run directory, and produces tree, dataset, phylogenetic-input, and
+topology-comparison reports. Inspect the manifest and the four reports under
+`artifacts/capability-demo/reports/`. A successful run verifies package data,
+runtime imports, parsing, comparison, reporting, and artifact linkage in the
+current environment; it is not an inference-accuracy result.
+
 ## Runtime Map
 
 ```mermaid
@@ -64,6 +82,17 @@ flowchart LR
 | ancestral methods | continuous/discrete reconstruction, uncertainty, stochastic mapping, tree-set review |
 | parsimony | Fitch, Wagner, Sankoff, Dollo, Camin–Sokal, optimization, resampling, topology search |
 | context and review | datasets, simulation, benchmarks, biogeography, diversification, reports, evidence bundles |
+
+## Select A Public Surface
+
+| Consumer | Use | Preserve |
+| --- | --- | --- |
+| Python application or notebook | curated `bijux_phylogenetics.api` workflows and documented domain imports | typed result, configuration, warnings, serialized artifacts |
+| shell pipeline or scheduled execution | `bijux-phylogenetics` commands | command, exit status, JSON/TSV output, manifest, stderr |
+| reviewer or downstream tool | versioned JSON, TSV, manifests, and linked reports | schema/version identity and complete output inventory |
+
+Human-readable HTML is an inspection surface, not a stable data-exchange API.
+Use structured output when another program needs to consume the result.
 
 ## Workflow API
 
@@ -108,6 +137,10 @@ comparative_run.write_tsv(Path("artifacts/comparative-model.tsv"))
 Structured results retain information that console output cannot: diagnostics,
 warnings, output identities, and serialization methods. Persist those records
 with model configuration and input identity when a run must be reviewed.
+
+External-engine results must also retain the executable name and version,
+captured invocation, native output, and parser status. Normalization into a
+Bijux result never transfers ownership of the external algorithm.
 
 ## Native Inference Entry Points
 
