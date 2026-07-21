@@ -71,19 +71,37 @@ summaries.
 | `evidence-006` | phylogenetic variance-component posterior |
 | `evidence-007` | Brownian PGLS comparison |
 
-All seven bundles are governed review units. Their posterior parity verdicts
-are `not_comparable` because the central computation is still the external
-`MCMCglmm` workflow and no governed comparison lane reproduces it. The locally
-available PGLS comparator is useful evidence, but it is not a replacement
-posterior.
+All seven bundles are governed review units. Their comparison verdicts are
+`not_comparable` because no governed comparison lane currently executes and
+adjudicates the claim-specific reference and Bijux computations. The locally
+available PGLS comparator is useful adjacent capability, but it is not a
+replacement posterior.
+
+## Retained Record State
+
+| Record layer | Present in every bundle | What it establishes |
+| --- | --- | --- |
+| claim and manifest | yes | claim identity, direct-parity intent, source basis, ownership, limitation, and `not_comparable` verdict |
+| authored `reference.R` | yes | writes a reference-contract record pointing to the preserved Lund source; it does not execute `MCMCglmm` |
+| authored `analysis.py` | yes | writes a `bundle_contract_only` run record; `BUILD_SCRIPT` is `None` and `PRIMARY_OUTPUTS` is empty |
+| checks and provenance | yes | required files, source locators, expected verdict, and freshness dependencies |
+| reviewer summaries | yes | human and JSON projections of the manifest and claim record |
+| governed primary outputs | no | every results manifest records `governed_primary_output_count: 0` |
+| claim-level comparison observations | no | there are no aligned coefficients, posterior draws, diagnostics, tolerances, or adjudicated mismatch rows |
+
+The authored programs are real and executable contract wrappers, but they are
+not yet scientific reproductions. The results manifests name
+`reference-contract.json` and `analysis-run.json` as local rerun products; those
+ephemeral records are not governed primary outputs and are not retained in the
+checked-in results directories.
 
 ## Current Verdict
 
 All seven bundle manifests record `not_comparable`. This is the correct status
-for the present execution boundary: source and data provenance are governed,
-and nearby Gaussian and PGLS surfaces can be inspected, but no repository-owned
-lane currently executes the reference posterior and compares aligned samples
-or summaries.
+for the present record: source and data provenance are governed, and nearby
+Gaussian and PGLS surfaces can be inspected, but the bundles retain zero
+governed primary outputs and no repository-owned lane currently executes the
+reference posterior and compares aligned samples or summaries.
 
 The status must remain separate from data preparation quality. A verified
 tree–table join or Brownian PGLS coefficient can support its own bounded claim
@@ -95,7 +113,7 @@ the mixed model to match.
 | Axis | Current state | Consequence |
 | --- | --- | --- |
 | bundle verdict | all seven are `not_comparable` | no PCM4 bundle currently establishes posterior correspondence |
-| source and input identity | governed | reviewers can identify the lecture, data, tree, workspace objects, and intended analysis |
+| source and input identity | governed | reviewers can identify the lecture, data, tree, workspace objects, and intended analysis; this does not prove a successful analytical rerun |
 | local adjacent capability | Gaussian and Brownian PGLS surfaces exist | these methods can support their own claims but cannot inherit `MCMCglmm` posterior claims |
 | resolution work | open | a matched-prior, matched-parameterization posterior lane and adjudicated observations are still required |
 
@@ -105,7 +123,8 @@ exists; do not rewrite it as “open,” “pending,” or “partially matched.
 
 ## What Would Make The Posterior Comparable
 
-A comparison must identify the exact source formula, family, link, fixed and
+A comparison must first replace contract-only wrappers with governed reference
+and Bijux executions. It must identify the exact source formula, family, link, fixed and
 random terms, tree inverse, taxon order, covariance scaling, priors, chain
 policy, monitored quantities, and summary transformations. It must execute the
 reference and comparison surfaces, retain raw and normalized posterior

@@ -502,12 +502,26 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
     assert "All seven bundle manifests record `not_comparable`" in pcm4
     assert "Verdict And Follow-Through" in pcm4
     assert "What Would Make The Posterior Comparable" in pcm4
+    assert "Retained Record State" in pcm4
+    assert "governed_primary_output_count: 0" in pcm4
+    assert "bundle_contract_only" in pcm4
     assert "posterior parity verdicts\nremain open" not in pcm4
     assert "Preserve The Scale Of Every Quantity" in pcm5
     assert "All nine bundle manifests record `not_comparable`" in pcm5
     assert "Comparison Contract By Model Family" in pcm5
     assert "Do not use open follow-through as the bundle verdict" in pcm5
     assert "posterior parity verdicts remain open" not in pcm5
+    pcm4_boundary = _read(
+        EVIDENCE_GUIDE_ROOT
+        / "pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models"
+        / "mixed-model-evidence-boundary.md"
+    )
+    assert "Claim Closure Matrix" in pcm4_boundary
+    assert "Required Observation Ledger" in pcm4_boundary
+    assert (
+        "No PCM4 bundle currently retains a governed primary scientific output"
+        in pcm4_boundary
+    )
     assert _verdict_counts("primate-longevity-signal") == Counter(
         {"matched": 8, "matched_with_tolerance": 1}
     )
