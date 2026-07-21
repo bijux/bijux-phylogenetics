@@ -46,6 +46,29 @@ moves where supported, convergence and termination reasons, equal or near-equal
 solutions, support replicates, and warnings. These records distinguish a
 well-supported optimum from the best result found under a narrow search.
 
+## Interpret The Run State
+
+| State | Minimum retained information | Permitted interpretation |
+| --- | --- | --- |
+| complete | objective, configuration, termination, diagnostics, result, and artifacts | bounded result under the declared model and search or sampling policy |
+| partial | completed starts, moves, samples, replicates, outputs, and exact interruption | diagnostic evidence; no silent promotion to a complete estimate |
+| refused | validated input identity and the violated precondition | the runtime protected the contract before computation |
+| failed | execution context, exception or engine status, partial outputs, and denominator | failure of this execution; not automatic evidence against every method use |
+| unavailable | named external dependency and discovery/version evidence | no external computation occurred |
+
+Completion is not a scientific verdict. It says that the declared execution
+contract reached its terminal state; accuracy, reference correspondence, and
+study evidence require their own records.
+
+## Compare Inferential Results Safely
+
+Before comparing two fits or trees, align the data revision, taxon order,
+topology constraints, branch-length scale, state model, likelihood convention,
+parameter bounds, and search or sampling budget. Then compare structured
+quantities that share meaning. A better objective from a broader model, a
+different retained posterior, or a support value from another method is not an
+unqualified improvement on the original result.
+
 ## Shared Limits
 
 A reported optimum is conditional on the model and explored search space. A

@@ -81,8 +81,24 @@ A difference may be:
 - an optimization or sampling failure;
 - a model or feature that one side does not own.
 
-The correct verdict can therefore be matched, mismatched, not comparable, open,
-or blocked. Suppressing non-passing cases destroys the benchmark's value.
+Do not force these conditions into one status vocabulary. The record type
+determines the allowed states.
+
+## Status Namespaces
+
+| Record | Governed states | Interpretation |
+| --- | --- | --- |
+| live parity case | `passed`, `failed`, `skipped` | whether the selected harness case executed and satisfied its registered comparisons |
+| validation or benchmark observation | named metric plus pass/fail rule, warning, or exclusion | whether one declared acceptance rule held for one observation |
+| Evidence Book verdict | `matched`, `matched_with_tolerance`, `mismatch_explained`, `mismatch_unexplained`, `not_comparable` | claim-scoped comparison conclusion in a governed bundle |
+| resolution workflow | open follow-through, named blocker, or accepted bounded state | what action remains after the recorded evidence verdict |
+
+A skipped live reference case is not `not_comparable` evidence: no evidence
+verdict exists until a governed bundle establishes one. Likewise,
+`mismatch_unexplained` is not a generic process failure, and an open
+follow-through item must not replace the bundle's current verdict. Preserve
+every failed, skipped, excluded, mismatched, and non-comparable record in its
+own denominator and namespace.
 
 ## Reporting Contract
 

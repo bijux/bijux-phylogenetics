@@ -235,14 +235,22 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "Benchmark Design" in assurance_domain
     assert "From Benchmark To Evidence" in assurance_domain
     assert "Domain Handoffs" in domain_index
+    assert "Cross-Domain Handoff Record" in domain_index
+    assert "Attribute Failure To The Deciding Domain" in domain_index
     assert "Intake Contract" in data_index
     assert "Refuse Ambiguous Inputs" in data_index
     assert "Select The Inferential Contract" in inference_index
     assert "Review The Search, Not Only The Winner" in inference_index
+    assert "Interpret The Run State" in inference_index
+    assert "Completion is not a scientific verdict" in inference_index
     assert "Match The Question To The Model Family" in evolution_index
     assert "Sensitivity Axes" in evolution_index
     assert "Choose Evidence That Matches The Claim" in assurance_index
     assert "Preserve Negative Evidence" in assurance_index
+    assert "Status Namespaces" in assurance_domain
+    assert "live parity case" in assurance_domain
+    assert "resolution workflow" in assurance_domain
+    assert "matched, mismatched, not comparable, open" not in assurance_domain
 
 
 def test_parity_handbook_separates_live_reference_and_adapter_boundaries() -> None:

@@ -85,6 +85,30 @@ Each handoff carries identities and assumptions, not only values. Tree scale,
 rooting, taxon order, state encoding, model parameterization, search or sampler
 configuration, and software provenance remain attached to downstream results.
 
+## Cross-Domain Handoff Record
+
+| Field | Why the next domain needs it |
+| --- | --- |
+| object identity | prevents a tree, matrix, alignment, or dataset revision from being substituted silently |
+| taxon population and order | preserves joins, pruning decisions, matrix row meaning, and denominators |
+| units and scale | distinguishes time, substitutions, distance, rates, transformed traits, and probabilities |
+| model and state conventions | fixes alphabets, ambiguity, partitions, covariance, transition rules, and parameterization |
+| execution state | distinguishes complete, partial, refused, failed, and externally unavailable work |
+| diagnostics and exclusions | prevents downstream presentation from retaining only successful values |
+| provenance | identifies implementation or engine owner, version, configuration, and source inputs |
+
+A downstream method may add context, but it must not erase upstream identity or
+reinterpret an unresolved condition as an ordinary value.
+
+## Attribute Failure To The Deciding Domain
+
+Parsing and identity defects belong to data and structure. Undefined
+likelihoods, search exhaustion, or poor chain behavior belong to inference.
+Model sensitivity and unidentified covariance or transition assumptions belong
+to evolutionary analysis. Missing independent truth, reference incompatibility,
+or incomplete denominators belong to scientific assurance. Reports carry these
+states; they do not become their owner.
+
 ## Shared Scientific Invariants
 
 - Taxon identity must remain stable across every joined object.
