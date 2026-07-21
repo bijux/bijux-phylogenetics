@@ -270,6 +270,21 @@ def test_public_interfaces_define_supported_python_and_handoff_contracts() -> No
     assert len(cli.splitlines()) < 400
 
 
+def test_result_and_reproducibility_guides_preserve_failure_meaning() -> None:
+    interfaces = PRODUCT_ROOT / "interfaces"
+    result_semantics = _read(interfaces / "result-and-refusal-semantics.md")
+    reproducibility = _read(interfaces / "reproducibility-records.md")
+
+    assert "Read Two Layers Of State" in result_semantics
+    assert "Stable Python Failures" in result_semantics
+    assert "Complete” is not synonymous with “accepted" in result_semantics
+    assert "Silent loss of failure state" in result_semantics
+    assert "The Reproduction Chain" in reproducibility
+    assert "Distinguish Replay Outcomes" in reproducibility
+    assert "Retries and sensitivity runs are siblings" in reproducibility
+    assert "Reproducing a defect proves" in reproducibility
+
+
 def test_common_workflows_are_goal_oriented_and_match_registered_commands() -> None:
     operations = PRODUCT_ROOT / "operations"
     installation = _read(operations / "installation-and-setup.md")

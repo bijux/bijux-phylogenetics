@@ -132,6 +132,8 @@ nav:
           - API Surface: 01-bijux-phylogenetics/interfaces/api-surface.md
           - CLI Surface: 01-bijux-phylogenetics/interfaces/cli-surface.md
           - Python Surface: 01-bijux-phylogenetics/interfaces/python-surface.md
+          - Result And Refusal Semantics: 01-bijux-phylogenetics/interfaces/result-and-refusal-semantics.md
+          - Reproducibility Records: 01-bijux-phylogenetics/interfaces/reproducibility-records.md
           - Native Inference and Benchmarks: 01-bijux-phylogenetics/interfaces/native-inference-and-benchmarks.md
           - Artifact Consumption Guide: 01-bijux-phylogenetics/interfaces/artifact-consumption-guide.md
           - Artifact Contracts: 01-bijux-phylogenetics/interfaces/artifact-contracts.md

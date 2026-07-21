@@ -35,6 +35,8 @@ flowchart LR
 | shell pipeline, CI, or scheduled run | [CLI surface](cli-surface.md) | explicit arguments, exit status, captured output |
 | reviewer or downstream system | [Artifact contracts](artifact-contracts.md) | durable, language-independent inspection |
 | service integrator | [API surface](api-surface.md) | versioned schema and transport contract |
+| automation handling incomplete or refused work | [Result and refusal semantics](result-and-refusal-semantics.md) | stable failure meaning across interfaces |
+| collaborator reconstructing a run | [Reproducibility records](reproducibility-records.md) | linked input, environment, execution and acceptance identity |
 
 Use the [surface selection guide](surface-selection.md) when more than one
 route seems plausible.
@@ -160,3 +162,7 @@ accident rather than a public contract.
 - [Artifact consumption](artifact-consumption-guide.md): reviewer workflow.
 - [Native inference and benchmarks](native-inference-and-benchmarks.md): owned
   inference result and benchmark interfaces.
+- [Result and refusal semantics](result-and-refusal-semantics.md): scientific
+  states, structured failures, and consumer acceptance.
+- [Reproducibility records](reproducibility-records.md): manifests, replay
+  meanings, attempt denominators, and durable handoffs.
