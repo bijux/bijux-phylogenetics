@@ -39,6 +39,17 @@ flowchart LR
     data --> contracts --> methods --> results --> outputs
 ```
 
+## Choose A Starting Point
+
+| You need to… | Start with… |
+| --- | --- |
+| run a self-contained installed-package example | [the capability demo](#run-a-reviewable-example) |
+| compose an analysis in Python | [the workflow API](#python-workflow-api) |
+| find a model, assumption, or scientific output | [scientific domains](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-domains/) |
+| compare behavior with APE, GEIGER, phytools, or an external engine | [parities and correspondence](https://bijux.io/bijux-phylogenetics/04-bijux-phylogenetics-parities/) |
+| determine what evidence supports a claim | [the Evidence Book](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-evidence-book/) |
+| change or release the repository | [the maintainer handbook](https://bijux.io/bijux-phylogenetics/05-bijux-phylogenetics-maintain/) |
+
 ## Install
 
 The canonical distribution supports Python 3.11 and newer:
@@ -58,6 +69,26 @@ phylogenetic --help
 
 Use `bijux-phylogenetics` in environments, papers, and support requests when
 an unambiguous canonical name matters. The alias is not a reduced edition.
+
+## Run A Reviewable Example
+
+The installed wheel includes a four-taxon tree, an alternative topology, an
+alignment, traits, and metadata. The capability demo copies those inputs into
+a writable run directory and produces tree, dataset, input-coherence, and
+topology-comparison reports:
+
+```bash
+bijux-phylogenetics demo run \
+  --out artifacts/capability-demo \
+  --manifest artifacts/capability-demo/manifest.json \
+  --json
+```
+
+Start review with `artifacts/capability-demo/manifest.json`, then inspect the
+HTML files under `artifacts/capability-demo/reports/`. This demonstration
+proves packaged-resource access, parsing, report construction, and artifact
+linkage. Its small synthetic inputs do not establish inference accuracy or
+biological validity.
 
 ## What Is Implemented
 
@@ -178,6 +209,10 @@ remain essential.
 | `apis/` | versioned OpenAPI contract |
 | `configs/` and `makes/` | repository-owned automation configuration |
 | `artifacts/` | transient local outputs |
+
+The source tree is not required for the capability demo. Repository-only
+verification and evidence-governance commands are intentionally kept out of
+the runtime distribution.
 
 ## Documentation
 

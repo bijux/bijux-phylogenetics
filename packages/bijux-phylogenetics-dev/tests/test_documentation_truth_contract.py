@@ -57,6 +57,17 @@ def test_root_readme_publishes_native_external_and_evidence_boundaries() -> None
     assert "Scientific domains" in readme
     assert "Evidence Book" in readme
     assert "evidence-backed" in readme
+    assert "bijux-phylogenetics demo run" in readme
+    assert "artifacts/capability-demo/manifest.json" in readme
+
+
+def test_site_landing_connects_first_run_to_scientific_review() -> None:
+    landing = _read(DOCS_ROOT / "index.md")
+
+    assert "Run The Installed Runtime" in landing
+    assert "Read the\nmanifest before the reports" in landing
+    assert "Follow A Scientific Question" in landing
+    assert "it is not a numerical inference\nbenchmark" in landing
 
 
 def test_foundation_and_architecture_define_owned_runtime_contracts() -> None:

@@ -51,6 +51,25 @@ flowchart LR
     artifact -. selected workflows .-> evidence
 ```
 
+## Run The Installed Runtime
+
+The packaged capability demo is the shortest path from installation to a
+reviewable artifact set:
+
+```bash
+python -m pip install bijux-phylogenetics
+bijux-phylogenetics demo run \
+  --out artifacts/capability-demo \
+  --manifest artifacts/capability-demo/manifest.json \
+  --json
+```
+
+The run materializes packaged inputs and generates four HTML reports. Read the
+manifest before the reports: it records the command result and output
+identities needed to audit the run. The demo validates packaging, tree and
+table intake, comparison, and reporting; it is not a numerical inference
+benchmark.
+
 ## Explore The Project
 
 | Goal | Destination | Coverage |
@@ -60,6 +79,27 @@ flowchart LR
 | inspect a scientific claim | [Evidence book](03-bijux-phylogenetics-evidence-book/index.md) | which bundle, provenance record, and open boundary support it |
 | compare with established tools | [Parities and correspondence](04-bijux-phylogenetics-parities/index.md) | which APE, GEIGER, phytools, and external-engine relationships are governed |
 | maintain or release the repository | [Maintainer handbook](05-bijux-phylogenetics-maintain/index.md) | how code, docs, packages, and evidence stay synchronized |
+
+## Follow A Scientific Question
+
+```mermaid
+flowchart LR
+    question["Scientific question"]
+    domain["Domain assumptions<br/>and owned methods"]
+    interface["Python or CLI<br/>execution contract"]
+    artifact["Typed result and<br/>review artifacts"]
+    comparison["Reference comparison<br/>when available"]
+    claim["Evidence Book claim<br/>when governed"]
+
+    question --> domain --> interface --> artifact
+    artifact --> comparison
+    comparison -. bounded study .-> claim
+```
+
+A runtime method can be useful without a corresponding Evidence Book bundle.
+Conversely, a study can retain an external computation owner while Bijux
+governs its inputs, provenance, checks, and verdict. The links above keep those
+relationships explicit.
 
 ## What The Runtime Owns
 
