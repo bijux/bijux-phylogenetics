@@ -1,40 +1,63 @@
 # PCM3 Runtime Reference Mapping
 
-The repository already exposes several runtime surfaces that line up with the
-PCM3 lecture family, and the evidence book now checks in governed parity bundle
-IDs for each PCM3 evidence slice. What remains open is the lecture-specific
-parity verdict for those slices.
+PCM3 has a checked lecture source and relevant repository implementations, but
+it does not yet have governed paired primary outputs. This map distinguishes
+source definition, implementation capability, execution evidence, and verdict
+so that adjacent code is not mistaken for completed parity.
 
-Relevant owned surfaces include:
+## Source Boundary
 
-- `compare_comparative_regression_models(...)` for model ranking and shared
-  exclusion accounting
-- `summarize_pgls_categorical_contrasts(...)` for categorical encoding and
-  reference-level interpretation
-- `summarize_pgls_interaction_coefficients(...)` for explicit interaction-term
-  ledgers
-- `summarize_phylogenetic_residuals(...)` for reviewer-facing diagnostic
-  summaries
-- `summarize_ou_covariance_pgls(...)` and `summarize_brownian_covariance_pgls(...)`
-  for covariance-structure review around comparative regression fits
+`lund_pcm3_contcat_source.R` defines the lecture analyses: baseline GLS,
+response transformation, categorical parameterizations, interactions,
+predictor scaling, Martins covariance, and post-correction diagnostics. The
+study-local inputs under `../datasets/` preserve the associated primate
+workspace, tree, and governed derivatives.
 
-Existing tests that demonstrate nearby runtime support include:
+No extracted R result file is registered here, and the bundle manifests retain
+no governed primary output paths from either implementation.
 
-- `packages/bijux-phylogenetics/tests/test_pgls_interaction_coefficients.py`
-- `packages/bijux-phylogenetics/tests/test_reference_parity.py`
-- `packages/bijux-phylogenetics/tests/test_regression_model_selection.py`
-- `packages/bijux-phylogenetics/tests/test_comparative_cli.py`
+## Nearby Owned Runtime Surfaces
 
-The missing piece is not a total lack of runtime support. The missing piece is
-the lecture-specific coefficient, diagnostic, and hypothesis-test parity that
-would turn the deployed governed parity bundles into a closed PCM3 parity
-program.
+| Public operation | Owned module | Relevance |
+| --- | --- | --- |
+| `summarize_pgls_categorical_contrasts` | `comparative/pgls/categorical_contrasts.py` | factor levels, reference coding, and contrast summaries |
+| `summarize_pgls_interaction_coefficients` | `comparative/pgls/interaction_coefficients.py` | interaction terms and reconstructed conditional slopes |
+| `summarize_brownian_covariance_pgls` | `comparative/pgls/brownian_covariance.py` | Brownian covariance regression review |
+| `summarize_ou_covariance_pgls` | `comparative/pgls/ou_covariance.py` | OU covariance regression review |
+| `compare_comparative_regression_models` | `comparative/regression/model_selection.py` | shared-population model comparison and exclusion accounting |
+| `summarize_phylogenetic_residuals` | `comparative/regression/residuals.py` | reviewer-facing residual summaries |
 
-Checked-in study-local lecture source copies:
+These surfaces demonstrate that the runtime has relevant vocabulary and
+operations. They do not demonstrate the lecture's exact population, design
+matrix, covariance, coefficient names, hypotheses, or outputs.
 
-- `lund_pcm3_contcat_source.R`
-- `../datasets/primate_raw.xlsx`
-- `../datasets/primate.RData`
-- `../datasets/primatetree.nex`
-- `../datasets/reference_primate.csv`
-- `../datasets/reference_trimmed_primatetree.nwk`
+```mermaid
+flowchart LR
+    lecture["checked lecture source"] --> required["required PCM3<br/>observation contract"]
+    runtime["nearby owned runtime<br/>surfaces"] --> execution["future registered<br/>Bijux execution"]
+    lecture --> rexecution["future registered<br/>R extraction"]
+    rexecution --> comparison["paired observation<br/>comparison"]
+    execution --> comparison
+    required --> comparison
+    comparison --> verdict["claim-scoped verdict"]
+```
+
+## Earliest Open Boundary
+
+The earliest missing dependency is paired primary execution evidence. It is
+not broader API coverage. Before any coefficient can be compared, both paths
+must retain the same row population, transformations, factor coding, design
+columns, tree scale, covariance convention, and hypothesis definitions.
+
+Until those records exist, `not_comparable` is the correct bundle verdict.
+Running one nearby helper, copying a coefficient into a report, or linking a
+unit test would not satisfy the evidence contract.
+
+## Required Rerun Record
+
+A future comparison must bind the lecture source and study-local input hashes,
+R and package versions, Bijux revision, exact formulas and transformations,
+factor/contrast state, tree and covariance identity, outputs and diagnostics,
+observation normalization, tolerance, exclusions, and terminal execution
+state. Every one of the eight bundle manifests must then be adjudicated at its
+own claim scope.

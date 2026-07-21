@@ -59,16 +59,16 @@ before interpreting coefficient differences.
 
 ## Evidence Decomposition
 
-| Bundle | Evaluated surface |
-| --- | --- |
-| `evidence-001` | source intake, workspace reload, and shared data alignment |
-| `evidence-002` | baseline GLS with continuous and categorical predictors |
-| `evidence-003` | log response, residual diagnostics, marginal and sequential tests |
-| `evidence-004` | intercept-free group estimates |
-| `evidence-005` | continuous-by-categorical interaction |
-| `evidence-006` | predictor scaling and intercept semantics |
-| `evidence-007` | categorical phylogenetic regression with Martins covariance |
-| `evidence-008` | post-correction diagnostics and hypothesis tests |
+| Bundle | Evaluated surface | Manifest verdict |
+| --- | --- | --- |
+| `evidence-001` | source intake, workspace reload, and shared data alignment | `not_comparable` |
+| `evidence-002` | baseline GLS with continuous and categorical predictors | `not_comparable` |
+| `evidence-003` | log response, residual diagnostics, marginal and sequential tests | `not_comparable` |
+| `evidence-004` | intercept-free group estimates | `not_comparable` |
+| `evidence-005` | continuous-by-categorical interaction | `not_comparable` |
+| `evidence-006` | predictor scaling and intercept semantics | `not_comparable` |
+| `evidence-007` | categorical phylogenetic regression with Martins covariance | `not_comparable` |
+| `evidence-008` | post-correction diagnostics and hypothesis tests | `not_comparable` |
 
 All eight bundles have governed structure and review artifacts. Their
 bundle verdicts are `not_comparable`; the work to create lecture-specific
@@ -90,10 +90,23 @@ observation that can be presented as lecture parity. The checked-in reviewer
 summaries establish record completeness and expose the absent execution
 boundary; they are not primary scientific outputs.
 
-This distinction prevents a common documentation failure: listing rich runtime
-capabilities beside a sourced study and allowing proximity to imply that the
-study was reproduced. The runtime can express multivariable regression, but
-the Evidence Book has not adjudicated the eight PCM3 lecture claims.
+The runtime can express multivariable regression, but capability proximity is
+not evidence that the eight PCM3 lecture claims were executed or adjudicated.
+
+## Retained Record And Missing Evidence
+
+| Evidence component | Current state | Consequence |
+| --- | --- | --- |
+| lecture source and copied study inputs | retained with provenance | the intended study and source boundary can be inspected |
+| eight claim identities and bundle manifests | retained | the comparison denominator and required surfaces are explicit |
+| nearby comparative runtime implementations | identified by governed code paths | implementation relevance is traceable but does not prove execution |
+| governed primary R outputs | absent from every bundle | no reference coefficient, test, or diagnostic can enter comparison |
+| governed primary Bijux outputs | absent from every bundle | no repository observation can enter comparison |
+| aligned observation rules and tolerances | not instantiated with paired outputs | no numerical correspondence verdict can be calculated |
+
+All eight manifests currently have zero governed primary output paths. That is
+the earliest owning reason for `not_comparable`; reviewer summaries and rich
+runtime APIs cannot close it.
 
 ## Claim Closure Contract
 
@@ -185,9 +198,8 @@ for the multivariable lecture. It does not yet claim lecture-level numerical
 parity for any of the eight slices. The closure work is comparison and verdict
 adjudication, not inventing broader runtime capability by implication.
 
-The honest reader takeaway is useful but bounded: PCM3 defines the exact model
-semantics and evidence needed for a defensible comparison, while making no
-numerical correspondence claim at this revision.
+PCM3 defines the model semantics and evidence needed for a defensible
+comparison while making no numerical correspondence claim at this revision.
 
 See [model design and phylogenetic regression](model-design-and-phylogenetic-regression.md)
 for the detailed interpretation contract.

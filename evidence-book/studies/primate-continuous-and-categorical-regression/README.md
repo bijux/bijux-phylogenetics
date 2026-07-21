@@ -1,83 +1,92 @@
 # Primate Continuous And Categorical Regression
 
-This study captures PCM3, the Lund lecture on multivariable comparative
-regression with continuous predictors, categorical predictors, interactions,
-and phylogenetically corrected regression.
+This directory is the governed PCM3 design record for multivariable primate
+regression with continuous predictors, categorical contrasts, interactions,
+transformations, and phylogenetic covariance. It defines eight bounded claims
+and the evidence needed to compare the lecture workflow with Bijux.
 
-It is deployed here as a complete study dossier with governed parity
-evidence bundles for each lecture slice: source provenance, dataset registry,
-evidence decomposition, runtime-surface mapping, and bundle-local review
-artifacts are all checked in. What remains open is the lecture-specific parity
-verdict for each slice.
+It is not a numerical parity record. Every bundle manifest is
+`not_comparable`, and every bundle currently retains zero governed primary
+output paths.
 
-## Study Metadata
+## Current Evidence State
 
-- study id: `primate-continuous-and-categorical-regression`
-- lecture family: `PCM3_contcat`
-- deployment state: `governed_parity_bundle_program_deployed_with_open_verdicts`
-- governed evidence ids: `evidence-001` through `evidence-008`
-- current runtime posture:
-  `comparative_regression_surface_available_but_lecture_parity_not_yet_governed`
-- evidence rule: keep each lecture claim separate enough to show whether the
-  repository reproduces the data contract, the fitted coefficients, the
-  diagnostics, or only the surrounding workflow
-
-## Study Story
-
-PCM3 shifts from single-predictor examples into multivariable model design.
-The lecture asks whether primate longevity can be modeled with:
-
-- one continuous predictor
-- one categorical predictor
-- explicit interaction terms
-- standardized predictors that change the intercept interpretation
-- a phylogenetically corrected covariance structure through `corMartins`
-
-That makes PCM3 the bridge between the earlier primate signal studies and the
-later mixed-model lectures.
-
-## Evidence Map
-
-| Evidence ID | Focus | Current repository state |
+| Record | Required comparison surface | Verdict |
 | --- | --- | --- |
-| `primate-continuous-and-categorical-regression/evidence-001` | Source intake, primate workspace reload, and shared dataset alignment | Governed parity bundle deployed; verdict still open |
-| `primate-continuous-and-categorical-regression/evidence-002` | Baseline GLS with one continuous and one categorical predictor | Governed parity bundle deployed; verdict still open |
-| `primate-continuous-and-categorical-regression/evidence-003` | Log-response repair, residual diagnostics, and marginal versus sequential tests | Governed parity bundle deployed; verdict still open |
-| `primate-continuous-and-categorical-regression/evidence-004` | Intercept-free parameterization for group-specific estimates | Governed parity bundle deployed; verdict still open |
-| `primate-continuous-and-categorical-regression/evidence-005` | Continuous-by-categorical interaction coefficients and interpretation | Governed parity bundle deployed; verdict still open |
-| `primate-continuous-and-categorical-regression/evidence-006` | Predictor scaling and intercept semantics after standardization | Governed parity bundle deployed; verdict still open |
-| `primate-continuous-and-categorical-regression/evidence-007` | Phylogenetic regression with categorical predictors and `corMartins` covariance | Governed parity bundle deployed; verdict still open |
-| `primate-continuous-and-categorical-regression/evidence-008` | Post-correction diagnostics and hypothesis testing | Governed parity bundle deployed; verdict still open |
+| `evidence-001` | source intake, workspace reload, and population alignment | `not_comparable` |
+| `evidence-002` | baseline continuous-plus-categorical GLS | `not_comparable` |
+| `evidence-003` | transformed response, diagnostics, and model tests | `not_comparable` |
+| `evidence-004` | intercept-free group parameterization | `not_comparable` |
+| `evidence-005` | continuous-by-categorical interaction | `not_comparable` |
+| `evidence-006` | predictor scaling and intercept semantics | `not_comparable` |
+| `evidence-007` | Martins-covariance phylogenetic regression | `not_comparable` |
+| `evidence-008` | post-correction diagnostics and hypothesis tests | `not_comparable` |
 
-## Ideal Comparative Checks
+`not_comparable` records missing aligned observations, not a failed fit and not
+a numerical disagreement. There are no governed lecture/Bijux coefficient,
+likelihood, p-value, contrast, or diagnostic pairs to adjudicate.
 
-- Confirm that the shared primate inputs match the lecture workspace and the
-  earlier PCM1 and PCM2 governed derivatives.
-- Reproduce categorical encoding, reference-level handling, and interaction
-  expansion exactly enough to compare coefficients term by term.
-- Track the effect of the log transform and the scaled predictor on both
-  diagnostics and coefficient interpretation.
-- Verify that the phylogenetic correction changes the regression story for the
-  right reasons, not because taxa were silently excluded or columns were
-  encoded differently.
+## Why Design Identity Comes First
 
-## Elite Comparative Checks
+```mermaid
+flowchart LR
+    population["row and species<br/>population"] --> transform["response and predictor<br/>transformations"]
+    transform --> design["factor levels, contrasts,<br/>interaction columns"]
+    population --> covariance["independent or Martins<br/>covariance"]
+    design --> fit["coefficients and<br/>uncertainty"]
+    covariance --> fit
+    fit --> tests["marginal, sequential,<br/>and diagnostic tests"]
+    tests --> observation["paired governed<br/>observations"]
+    observation --> verdict["claim verdict"]
+```
 
-- Keep coefficient ledgers, categorical-contrast ledgers, and interaction
-  ledgers alongside the main parity report.
-- Compare baseline GLS, Pagel-lambda PGLS, and Martins-covariance PGLS as one
-  continuous model family instead of isolated runs.
-- Preserve the exact lecture distinction between workflow-level plots and
-  claim-worthy numeric surfaces.
-- Trace each evidence slice to the corresponding runtime surface so later
-  parity bundles can be implemented without rediscovering the study structure.
+Matching formula text does not prove matching design matrices. Factor order,
+reference level, centering, scaling, row exclusions, species order, covariance
+construction, likelihood convention, and test family all change the meaning
+of the reported values.
 
-## Checked-In Study Inputs
+## What Is Retained
 
-- [dataset catalog](./datasets/README.md)
-- [provenance guide](./provenance/README.md)
-- [runtime reference mapping](./reference/README.md)
-- governed parity bundles: `evidence-001` to `evidence-008`
-- checked-in lecture source copies:
-  `primate_raw.xlsx`, `primate.RData`, `primatetree.nex`,
-  `reference_primate.csv`, and `reference_trimmed_primatetree.nwk`
+| Path | Authority |
+| --- | --- |
+| `datasets/` | study-local source copies and governed primate derivatives |
+| `provenance/lund-course-sources.json` | source, derivative, and relevant runtime lineage |
+| `reference/lund_pcm3_contcat_source.R` | checked lecture source defining the intended analyses |
+| `evidence-*/manifest.json` | claim identity, limitations, freshness basis, and current verdict |
+| bundle claim and check records | required model semantics and closure conditions |
+
+The public runtime contains relevant PGLS contrast, interaction, covariance,
+model-selection, and residual-review surfaces. Those implementations are
+inputs to future comparison work; their existence is not a primary study
+output.
+
+## Evidence Required For Closure
+
+For each claim, retain both independently produced primary outputs plus a
+comparison contract:
+
+- exact included rows and species order;
+- response transform and predictor centering/scaling constants;
+- factor levels, reference level, contrast matrix, and design-column names;
+- tree identity, branch scale, covariance definition, and fitted parameters;
+- coefficient estimates, uncertainty, likelihood, and convergence state;
+- hypothesis identity, test ordering, degrees of freedom, and diagnostic scale;
+- observation keys, normalization rules, tolerances, and exclusions.
+
+Only then can a bundle distinguish `matched`, `matched_with_tolerance`,
+`mismatch_explained`, or `mismatch_unexplained`. Adding output paths without
+their provenance and identities would create files, not evidence.
+
+## Reviewer Route
+
+1. Read the source and dataset provenance to establish the intended lecture
+   population and models.
+2. Select one bundle and inspect its manifest, claim, checks, limitations, and
+   zero-primary-output state.
+3. Use `reference/README.md` to locate nearby runtime surfaces without
+   treating them as executed PCM3 observations.
+4. Preserve all eight bundles in coverage summaries; do not report only the
+   easiest model family.
+5. Continue with the public
+   [PCM3 guide](../../../docs/03-bijux-phylogenetics-evidence-book/pcm3-primate-continuous-and-categorical-regression/index.md)
+   for design-matrix interpretation and the claim closure matrix.
