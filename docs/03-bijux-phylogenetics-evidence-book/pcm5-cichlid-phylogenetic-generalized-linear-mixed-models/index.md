@@ -67,18 +67,35 @@ and does not preserve interval coverage.
 | `evidence-008` | repeated-measure `species + treetip` random effects |
 | `evidence-009` | phylogenetic, species, and residual variance partition |
 
-The bundle structure is deployed, and all nine posterior comparison verdicts
-are `not_comparable`. The repository's binary comparative utilities provide
-adjacent capability but do not reproduce the external generalized mixed-model
-posterior. The work to establish a governed posterior comparison remains open
-as a separate resolution state.
+The nine claim records and bundle contracts are checked in, and all nine
+comparison verdicts are `not_comparable`. The repository's binary comparative
+utilities provide adjacent capability but do not reproduce the external
+generalized mixed-model posterior. No governed comparison execution or
+observation ledger currently closes that gap.
+
+## Retained Record State
+
+| Record layer | Present in every bundle | What it establishes |
+| --- | --- | --- |
+| claim and manifest | yes | stable claim ID, direct-parity intent, source basis, limitation, and `not_comparable` verdict |
+| authored `reference.R` | yes | writes a contract naming `PCM5_PGLMM.R` and `PCM5_extra_code.R`; it does not execute their posterior models |
+| authored `analysis.py` | yes | writes a `bundle_contract_only` record with `BUILD_SCRIPT = None` and no primary outputs |
+| checks, provenance, and reviewer summaries | yes | source identity, required bundle structure, and readable current status |
+| governed primary outputs | no | all nine results manifests record `governed_primary_output_count: 0` |
+| claim-level observations | no | no aligned draws, coefficients, node summaries, transformed probabilities, diagnostics, or variance partitions are adjudicated |
+
+Contract wrappers make the missing work locatable; they are not implementations
+of the generalized posterior workflow. The results manifests describe possible
+local `reference-contract.json` and `analysis-run.json` rerun products, but
+those ephemeral files are not governed scientific outputs.
 
 ## Current Verdict
 
 All nine bundle manifests record `not_comparable`. The dossiers identify the
-source code, datasets, claim boundaries, and required outputs, but no governed
-lane currently reproduces the `MCMCglmm` Poisson, binary-style, ancestral, or
-multiple-random-effect posteriors under matched priors and chain policy.
+source code, datasets, claim boundaries, and required outputs, but their
+governed primary-output count is zero and no governed lane currently reproduces
+the `MCMCglmm` Poisson, multinomial, ancestral, or multiple-random-effect
+posteriors under matched priors and chain policy.
 
 This status also prevents an unsafe substitution: a phylogenetic logistic
 approximation, a Gaussian model, or a non-phylogenetic generalized model cannot
@@ -89,7 +106,7 @@ inherit the PCM5 claim merely because it accepts similar columns.
 | Axis | Current state | Consequence |
 | --- | --- | --- |
 | bundle verdict | all nine are `not_comparable` | no count, infection, ancestral, probability-scale, or variance-partition claim has posterior correspondence |
-| source and input identity | governed | scripts, datasets, tree, workspace objects, and claim decomposition are reviewable |
+| source and input identity | governed | scripts, datasets, tree, workspace objects, and claim decomposition are reviewable; analytical rerun success is not implied |
 | adjacent runtime capability | narrower binary and comparative methods exist | similar inputs or output columns do not make the model, link, priors, or random effects equivalent |
 | resolution work | open | matched `MCMCglmm` execution, posterior observations, diagnostics, and claim adjudication remain required |
 
@@ -107,7 +124,8 @@ so a numerical pass/fail conclusion is not yet available.
 | ancestral posterior | node identity, tree revision, state/parameter scale, retained draws, and summary rule |
 | variance partition | every numerator and denominator component, covariance scaling, family-specific residual convention, and draw-wise calculation |
 
-Only after those identities align should a governed lane compare posterior
+Only after those identities align, both computational surfaces execute, and
+the eligible denominator is complete should a governed lane compare posterior
 draws or summaries and assign an Evidence Book verdict.
 
 ## Inputs And Provenance
