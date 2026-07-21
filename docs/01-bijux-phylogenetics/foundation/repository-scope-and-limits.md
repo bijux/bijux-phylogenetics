@@ -53,6 +53,20 @@ flowchart TD
 - Concealing unresolved posterior, reference, provenance, or coverage
   dependencies.
 
+## Boundaries By Decision
+
+| Decision | Repository contribution | Decision that remains outside the runtime |
+| --- | --- | --- |
+| admit taxa and observations | reconciliation, validation, exclusions, and identity ledgers | whether the sampling design represents the target population |
+| choose a model | explicit supported model contracts and diagnostics | whether the model is biologically adequate for the research question |
+| choose a computation owner | native methods and governed external adapters | institutional or study preference among scientifically defensible tools |
+| accept a result | completion state, uncertainty, support, convergence, and artifact integrity | substantive interpretation and causal meaning |
+| compare implementations | registered fixtures, conventions, tolerances, and observations | interchangeability beyond the selected denominator |
+| publish a claim | governed evidence and release consistency checks | independent peer review or replication |
+
+The runtime can make a decision inspectable without making the decision on the
+analyst's behalf.
+
 ## Native And External Computation
 
 Native methods are maintained and tested in this source tree. External-engine
@@ -88,6 +102,13 @@ inference, parsimony, simulation, and other domains have their own tests and
 benchmarks; study evidence exists only where an explicit claim mapping and
 bundle record say so.
 
+The cichlid PCM4 and PCM5 collections currently preserve study structure,
+inputs, reference code, and claim boundaries without governed primary
+posterior outputs. Their `not_comparable` verdicts are therefore informative
+closure states for the current records, not evidence that the posterior
+quantities were reproduced. Stronger language requires retained model outputs,
+diagnostic identity, claim-level observations, and new adjudication.
+
 ## Capability And Assurance Are Independent Axes
 
 | State | Correct public interpretation |
@@ -110,6 +131,12 @@ on taxa, characters, model complexity, search, sampling, and hardware. Some
 methods are stochastic. Persist exact versions, input identities,
 configuration, seed policy, diagnostics, and output manifests for governed
 work.
+
+Resource feasibility is part of planning, not a hidden runtime guarantee.
+Taxon count alone does not determine cost: alignment length, state space,
+partition count, topology search, posterior sampling, replicate count, and
+artifact volume can dominate. Use named benchmark records to estimate a
+specific workload and preserve the hardware and configuration denominator.
 
 ## Interpretation Limit
 

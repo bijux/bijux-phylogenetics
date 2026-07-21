@@ -41,6 +41,28 @@ flowchart TB
 | result semantics | retain estimates, diagnostics, uncertainty, warnings, and method provenance |
 | artifact semantics | preserve run identity, configuration, outputs, and integrity relationships |
 
+## Establish Object Identity Before Modeling
+
+The same label can refer to a tip, sequence, trait row, geographic state, host,
+or partition member. Bijux therefore treats identity and ordering as model
+inputs rather than presentation details.
+
+```mermaid
+flowchart LR
+    sources["Tree · alignment<br/>traits · metadata"]
+    reconcile["Normalize and reconcile<br/>identities"]
+    admitted["Declared admitted set<br/>and exclusions"]
+    model["Model matrix, likelihood,<br/>or state space"]
+    result["Result with the same<br/>identity contract"]
+
+    sources --> reconcile --> admitted --> model --> result
+```
+
+Before computation, retain the original labels, normalization policy, admitted
+set, excluded records, order used by matrices, and any mapping to stable node
+or branch identifiers. A result is ambiguous when those decisions exist only
+in an in-memory preprocessing step.
+
 ## Contract Propagation
 
 | Upstream fact | Downstream dependency | Failure if lost |
@@ -83,6 +105,12 @@ flowchart LR
 An implemented method answers the first question. Assumption checks, model
 criticism, and diagnostics address the second. Benchmarks and study bundles
 address parts of the third. No answer automatically supplies the next one.
+
+| Question | Inspect | Stop when |
+| --- | --- | --- |
+| can the runtime execute this contract? | public function or command, validation result, typed output | the surface is private, unsupported, or refuses the input |
+| is the analysis interpretable for this question? | assumptions, taxon coverage, model identity, diagnostics, uncertainty | a required diagnostic is failed, missing, or scientifically inadequate |
+| what external or study evidence exists? | benchmark corpus, parity observation, governed claim record | the evidence denominator or claim scope does not include this use |
 
 ## Determinism And Uncertainty
 

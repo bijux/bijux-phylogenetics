@@ -47,6 +47,22 @@ An internal module path is not stable merely because Python can import it.
 Human-readable report layout is not a machine contract when a structured
 artifact exists.
 
+## How To Recognize A Supported Surface
+
+A public surface must be discoverable from an installed distribution and have
+an owned behavior contract. Use these signals together:
+
+| Signal | What it establishes | What it does not establish |
+| --- | --- | --- |
+| curated export or registered command | intended invocation path | scientific suitability |
+| documented arguments and return contract | supported input and result semantics | success for every valid-size input |
+| contract and failure tests | behavior under named fixtures | numerical parity outside those fixtures |
+| declared serialization or schema | machine-consumption boundary | stability of report layout |
+| deprecation and version policy | compatibility expectation | permanent support for private helpers |
+
+An import found by searching the source tree is not sufficient. Neither is a
+CLI example that depends on repository fixtures absent from the wheel.
+
 ## Ownership Matrix
 
 | Surface | Repository owns | Separate owner or decision |
@@ -58,12 +74,37 @@ artifact exists.
 | evidence bundle | provenance, claims, checks, recorded verdict | claims not registered by the bundle |
 | report | faithful projection of results and limits | independent scientific interpretation |
 
+## Preserve The Computation Owner
+
+```mermaid
+flowchart LR
+    caller["Python or CLI caller"]
+    native["Native Bijux method"]
+    adapter["Bijux adapter"]
+    engine["Named external executable"]
+    result["Typed or normalized result"]
+
+    caller --> native --> result
+    caller --> adapter --> engine --> adapter --> result
+```
+
+The two paths may produce similarly shaped results, but their provenance is
+different. A native record names the Bijux method and runtime version. An
+adapter record additionally names executable discovery, engine version,
+invocation, exit status, native engine files, and parser outcome. Normalization
+never transfers algorithm ownership from the engine to the adapter.
+
 ## Compatibility Commitments
 
 The alias distribution must preserve advertised imports, commands, runtime
 behavior, package data, version alignment, and documentation links. It is not
 an independent fork. Artifact compatibility depends on declared schema and
 semantic version rules rather than incidental formatting or key order.
+
+The alias must expose failures honestly as well as successes. If the facade
+cannot resolve the canonical dependency, dispatch its command, access package
+data, or preserve a documented result, that is a compatibility defect—not a
+smaller supported edition.
 
 ## Change Impact
 

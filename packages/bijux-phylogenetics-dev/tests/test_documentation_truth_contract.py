@@ -114,14 +114,20 @@ def test_foundation_and_architecture_define_owned_runtime_contracts() -> None:
     assert "supported Bayesian DNA inference" in foundation
     assert "Contract Propagation" in foundation
     assert "Refusal Is Part Of The Contract" in foundation
+    assert "Establish Object Identity Before Modeling" in foundation
+    assert "Stop when" in foundation
     assert "Native And External Computation" in scope
     assert "Responsibility At Failure Boundaries" in scope
     assert "Capability And Assurance Are Independent Axes" in scope
+    assert "Boundaries By Decision" in scope
+    assert "without governed primary\nposterior outputs" in scope
     assert "Qualifiers That Change Meaning" in claims
     assert "Combining Proofs" in claims
     assert "Promotion Requirements" in evidence_boundary
     assert "Valid Boundary States" in evidence_boundary
     assert "Ownership Matrix" in ownership
+    assert "How To Recognize A Supported Surface" in ownership
+    assert "Preserve The Computation Owner" in ownership
     assert "Dependency Direction" in architecture
     assert "Layer Contracts" in architecture
     assert "Scientific State Transformations" in architecture
