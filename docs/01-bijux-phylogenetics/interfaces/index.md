@@ -54,6 +54,21 @@ behavior, and serialize output. Python can preserve rich objects and let the
 caller choose persistence. An artifact is a frozen view of either path and
 must carry enough provenance to stand alone.
 
+## Contract Comparison
+
+| Concern | Python | CLI | Persisted artifact | Service schema |
+| --- | --- | --- | --- | --- |
+| input identity | paths and typed objects | explicit arguments and files | manifest references and hashes | request fields and referenced objects |
+| failure observation | exception and typed status | exit status, stderr, structured output | manifest/result status and missing inventory | transport status plus scientific result status |
+| diagnostics | richest in-process objects | serialized projection | durable JSON/TSV and linked reports | schema-defined projection |
+| compatibility owner | curated imports and result contracts | documented command taxonomy and options | schema/version contract | pinned OpenAPI contract |
+| review lifetime | process or caller persistence | terminal plus written outputs | independent of producer process | client must retain response and job artifacts |
+
+Transport success and scientific success remain separate. A service can return
+a valid response containing a refused analysis; a CLI can exit after writing
+diagnostic artifacts; Python can return a partial typed result when its public
+contract permits it. Consumers must inspect both layers.
+
 ## Boundary Rules
 
 - Do not scrape narrative reports when a JSON or TSV contract exists.
@@ -63,6 +78,17 @@ must carry enough provenance to stand alone.
 - Do not assume CLI defaults are appropriate scientific choices for every
   dataset.
 - Do not discard engine identity when a normalized adapter result is produced.
+- Do not convert warnings, exclusions, or incomplete components into success
+  while crossing an interface boundary.
+- Do not make HTML layout or console wording a machine dependency.
+
+## Compatibility Questions
+
+Before upgrading a producer or consumer, determine whether input semantics,
+defaults, result fields, status vocabulary, artifact schemas, and external
+engine expectations changed. Parse compatibility alone is insufficient when a
+field retains its name but changes units, ordering, denominator, or scientific
+meaning.
 
 ## Review Checklist
 

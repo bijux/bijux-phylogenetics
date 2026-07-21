@@ -55,12 +55,52 @@ versions, and integrity metadata without reverse-engineering directory names.
 Absence from a manifest is meaningful: an undeclared file should not silently
 participate in a verdict.
 
+## Completeness And Status
+
+A manifest must make the difference between expected, produced, missing,
+failed, skipped, and optional outputs reviewable. Directory presence and
+process completion are not completeness rules.
+
+```mermaid
+flowchart LR
+    expected["Expected inventory"]
+    execution["Execution status"]
+    produced["Produced files"]
+    verify["Schema and integrity<br/>verification"]
+    complete{"Bundle status"}
+
+    expected --> complete
+    execution --> complete
+    produced --> verify --> complete
+```
+
+For batched workflows, completeness also includes case denominators. A bundle
+with 95 passing cases and five unreported cases is not equivalent to a bundle
+with 95 selected cases.
+
 ## Compatibility
 
 Artifact compatibility is about meaning, not only valid JSON. Producers must
 version breaking structural or semantic changes. Consumers should reject
 unknown incompatible versions, tolerate documented additive fields, and avoid
 depending on object-key order or presentation formatting.
+
+Semantic changes require special care. Units, taxon ordering, state coding,
+support meaning, likelihood sign, missing-value conventions, or status
+vocabulary can break consumers even when JSON shape remains valid. Version or
+reject those changes according to the published compatibility policy.
+
+## Integrity Boundaries
+
+Checksums establish byte identity for the referenced file. They do not prove
+that the file came from the declared method, that the schema is understood, or
+that the science is correct. Integrity review combines inventory, path
+containment, schema validation, checksum verification, producer identity, and
+status consistency.
+
+Never allow an artifact path to escape its declared bundle root or overwrite
+an input silently. External-engine native files should be retained under
+unambiguous ownership rather than mixed with normalized outputs.
 
 ## Adapter Provenance
 
@@ -84,6 +124,8 @@ rules; copying output into an `evidence-*` directory is not promotion.
 4. Inspect diagnostics before headline estimates or figures.
 5. Verify integrity metadata when the contract provides it.
 6. Follow claim links only within the declared evidence scope.
+7. Reconcile expected, produced, missing, skipped, and failed outputs.
+8. Reject path, schema, checksum, or status contradictions.
 
 ## Invalid Assumptions
 

@@ -151,6 +151,22 @@ def test_programmatic_interfaces_name_curated_and_frozen_contracts() -> None:
     assert "Consume a workflow bundle from its manifest outward" in artifacts
 
 
+def test_interface_guides_preserve_failure_compatibility_and_completeness() -> None:
+    interface_index = _read(PRODUCT_ROOT / "interfaces" / "index.md")
+    selection = _read(PRODUCT_ROOT / "interfaces" / "surface-selection.md")
+    contracts = _read(PRODUCT_ROOT / "interfaces" / "artifact-contracts.md")
+    consumption = _read(PRODUCT_ROOT / "interfaces" / "artifact-consumption-guide.md")
+
+    assert "Contract Comparison" in interface_index
+    assert "Compatibility Questions" in interface_index
+    assert "Choose By Failure And Recovery" in selection
+    assert "Migration Test" in selection
+    assert "Completeness And Status" in contracts
+    assert "Integrity Boundaries" in contracts
+    assert "Establish Provenance Before Values" in consumption
+    assert "Handle Incomplete Bundles" in consumption
+
+
 def test_native_inference_guides_preserve_search_and_chain_diagnostics() -> None:
     maximum_likelihood = _read(
         PRODUCT_ROOT / "operations" / "native-maximum-likelihood-workflows.md"

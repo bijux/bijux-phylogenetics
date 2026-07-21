@@ -41,6 +41,19 @@ flowchart TD
 | long-lived review | create them | create them | best | capture needed |
 | language-independent exchange | serialize | serialize | best | best |
 
+## Choose By Failure And Recovery
+
+| Requirement | Preferred surface | Reason |
+| --- | --- | --- |
+| caller must catch and recover from domain-specific failures | Python | exceptions and typed diagnostic state remain in process |
+| scheduler must classify success, refusal, and infrastructure failure | CLI plus structured output | exit status and result status can be retained separately |
+| reviewer must inspect a completed or failed run later | artifact bundle | input, configuration, diagnostics, and output inventory survive execution |
+| remote consumer must poll long work or cross security boundaries | service API | transport, job lifecycle, and scientific state can be modelled explicitly |
+
+Do not choose a surface only because it can start the computation. Choose the
+surface that can preserve the failure modes and recovery decisions the
+consumer must own.
+
 ## Recommended Mixed Mode
 
 The strongest workflows commonly use more than one surface:
@@ -73,6 +86,10 @@ The consumer should not execute the analysis: reviewers, archival systems,
 publication pipelines, dashboards, and cross-language tools. Prefer manifest
 and structured outputs over scraping prose or filenames.
 
+Artifacts are also the required handoff when the producing environment will
+not remain available. Retain enough runtime and engine identity to distinguish
+a reproducible bundle from an orphaned output directory.
+
 ## API Is The Right Choice When
 
 A process boundary is part of the system design. Pin the schema version and
@@ -93,3 +110,11 @@ separately from scientific diagnostics.
 A defensible choice answers all of these: Who invokes it? Who reviews it? How
 are failures observed? Which compatibility promise applies? What survives
 after execution? Which versions and inputs can reconstruct the result?
+
+## Migration Test
+
+When changing surfaces—for example, moving a notebook workflow into scheduled
+CLI execution—compare the validated inputs, explicit defaults, method
+configuration, status handling, structured results, and artifact inventory.
+Matching headline estimates is insufficient if warnings, taxa, support,
+uncertainty, or ownership changed during translation.

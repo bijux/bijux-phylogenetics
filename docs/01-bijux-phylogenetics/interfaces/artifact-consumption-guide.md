@@ -33,6 +33,23 @@ flowchart LR
 5. Verify integrity metadata when provided.
 6. Follow evidence links only when a claim-level verdict is required.
 
+## Establish Provenance Before Values
+
+```mermaid
+flowchart LR
+    producer["Runtime and engine<br/>identity"]
+    inputs["Input identity and<br/>configuration"]
+    status["Execution and component<br/>status"]
+    values["Estimates, trees,<br/>histories, diagnostics"]
+    presentation["Tables, figures,<br/>reports"]
+
+    producer --> inputs --> status --> values --> presentation
+```
+
+Reading in the reverse direction invites false confidence: a polished figure
+can be generated from a partial result, and a plausible estimate can belong to
+different taxa or parameterization than expected.
+
 ## Artifact Roles
 
 | Artifact | Appropriate use | Unsafe shortcut |
@@ -62,6 +79,19 @@ For external-engine runs, retain both the normalized result and original
 captured output. The first supports stable consumption; the second explains
 engine-specific failures and version behavior.
 
+## Handle Incomplete Bundles
+
+1. Preserve the bundle unchanged before attempting recovery.
+2. Compare the declared inventory with present files and per-component status.
+3. Classify whether the failure belongs to input validation, computation,
+   external execution, parsing, or persistence.
+4. Decide whether the documented contract permits a partial result.
+5. Rerun only after retaining enough state to explain the original outcome.
+
+Do not copy successful files into a new directory and present them as the
+complete run. If partial outputs are scientifically usable, their manifest and
+consumer statement must identify the missing components and reduced scope.
+
 ## Compatibility
 
 Pin artifact schema versions in long-lived consumers. Accept documented
@@ -70,6 +100,10 @@ JSON object order, prose wording, HTML structure, or cosmetic filenames.
 
 When migrating a consumer, compare representative old and new bundles and test
 meaning—not merely parse success.
+
+For automated consumers, fixture the failure and partial-status cases as well
+as the happy path. A consumer that accepts every parseable bundle is not
+enforcing the artifact contract.
 
 ## Evidence Bundles
 
