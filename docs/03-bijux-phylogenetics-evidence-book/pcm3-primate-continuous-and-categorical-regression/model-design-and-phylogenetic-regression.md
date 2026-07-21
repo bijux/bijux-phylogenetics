@@ -1,93 +1,152 @@
 ---
-title: PCM3 Model Design and Phylogenetic Regression
+title: PCM3 Model Design And Phylogenetic Regression
 audience: public
 type: study-guide
-status: active
+status: canonical
 owner: bijux-phylogenetics-docs
 last_reviewed: 2026-07-21
 ---
 
 # PCM3 Model Design And Phylogenetic Regression
 
-PCM3 changes the design matrix, response scale, and covariance structure in a
-deliberate sequence. Each change alters the meaning of at least one
-coefficient. The repository governs eight claim bundles for that sequence, but
-none yet contains a comparable lecture execution; every current bundle verdict
+PCM3 follows one primate analysis through categorical coding, a log response,
+intercept removal, interactions, predictor standardization, and Martins
+phylogenetic covariance. Each operation changes either the estimand or its
+uncertainty. The Evidence Book has decomposed that path into eight governed
+claims, but no bundle yet retains comparable lecture and Bijux observations;
+every current bundle verdict
 is `not_comparable`.
 
 ```mermaid
 flowchart LR
-    source["Source intake and<br/>workspace identity"]
-    baseline["Baseline GLS and<br/>categorical coding"]
-    transform["Response transformation<br/>and model tests"]
-    groups["Intercept-free groups<br/>and interactions"]
-    scale["Predictor scaling and<br/>intercept semantics"]
-    phylogeny["Martins covariance<br/>and diagnostics"]
+    raw["longevity ~ group size<br/>+ dimorphism"]
+    log["log longevity<br/>same main effects"]
+    groups["no intercept<br/>group-specific levels"]
+    interaction["group-specific<br/>slopes"]
+    scaled["standardized group size<br/>recentered intercept"]
+    pgls["Martins covariance<br/>estimated on the tree"]
 
-    source --> baseline --> transform --> groups --> scale --> phylogeny
+    raw --> log --> groups --> interaction --> scaled --> pgls
 ```
+
+## The Source Model Sequence
+
+The checked-in source program names the intended statistical operations. Its
+formulas make the coefficient semantics concrete:
+
+| Source fit | Formula or operation | Scientific role |
+| --- | --- | --- |
+| `gls2` | `longevity ~ social_group_size + sex_dimorphism` | baseline continuous and categorical GLS |
+| `gls3` | `log(longevity) ~ social_group_size + sex_dimorphism` | response-scale repair and marginal/sequential tests |
+| `gls4` | `log(longevity) ~ sex_dimorphism - 1 + social_group_size` | group-specific intercept estimates |
+| `gls5` | main effects plus `social_group_size:sex_dimorphism` | conditional group slopes |
+| `gls6` | `sex_dimorphism + social_group_size:sex_dimorphism - 1` | explicit group intercepts and slopes |
+| `gls7` | interaction model using standardized group size | intercept at mean group size and slopes per standard deviation |
+| `pgls5` | scaled interaction model with estimated `corMartins` | same design under phylogenetic residual covariance |
+
+This table describes the source analysis, not verified Bijux results. No
+coefficient, p-value, likelihood, covariance parameter, or diagnostic from
+this sequence is currently a governed parity observation.
 
 ## Governed Claim Ledger
 
-| Bundle | Governed claim | Current verdict | Missing comparison |
+| Bundle | Governed claim | Current verdict | Observation gap |
 | --- | --- | --- | --- |
-| `evidence-001` | source intake and workspace alignment | `not_comparable` | lecture-specific object and input correspondence |
-| `evidence-002` | baseline GLS with a categorical predictor | `not_comparable` | coefficient, fit, coding, and residual observations |
-| `evidence-003` | transformed response and model tests | `not_comparable` | transformation identity and comparable test outputs |
-| `evidence-004` | intercept-free group parameterization | `not_comparable` | group-estimate design and coefficient correspondence |
-| `evidence-005` | interaction coefficient interpretation | `not_comparable` | aligned design columns and interaction estimates |
-| `evidence-006` | scaling and intercept semantics | `not_comparable` | scaling constants and recentered coefficient outputs |
-| `evidence-007` | Martins covariance phylogenetic regression | `not_comparable` | aligned covariance parameterization and fitted results |
-| `evidence-008` | post-correction diagnostics and tests | `not_comparable` | comparable diagnostic and hypothesis-test observations |
+| `evidence-001` | source intake and workspace alignment | `not_comparable` | aligned source objects, taxa, and row identity |
+| `evidence-002` | baseline GLS with a categorical predictor | `not_comparable` | design columns, coefficients, fit, and residuals |
+| `evidence-003` | transformed response and model tests | `not_comparable` | transformed rows plus marginal and sequential tests |
+| `evidence-004` | intercept-free group parameterization | `not_comparable` | group estimates under the same factor ordering |
+| `evidence-005` | interaction coefficient interpretation | `not_comparable` | aligned interaction columns and conditional slopes |
+| `evidence-006` | scaling and intercept semantics | `not_comparable` | center, scale, and projected coefficients |
+| `evidence-007` | Martins covariance phylogenetic regression | `not_comparable` | covariance identity, fitted parameter, and model outputs |
+| `evidence-008` | post-correction diagnostics and tests | `not_comparable` | comparable residual and hypothesis-test observations |
 
-The bundles are structurally reviewable: source mapping, code surfaces, input
-manifests, checks, provenance, and explicit verdicts exist. Structural
-completeness does not establish any lecture-equivalent numerical claim.
+Each bundle contains an explicit claim, source locators, required artifact
+inventory, limitations, and reviewer summary. Each `checks.json` currently has
+an empty `primary_output_paths` list. Those files make the absence auditable;
+they do not turn contract structure into scientific evidence.
 
 ## Read Coefficients From The Design Matrix
 
-| Model change | Coefficient meaning that changes |
-| --- | --- |
-| response transformation | all effects move to the transformed response scale; back-transformation is nonlinear |
-| categorical reference level | intercept and group contrasts are defined relative to the selected level |
-| intercept removal | group coefficients become group-specific intercepts rather than differences from one reference |
-| interaction term | main effects become conditional effects at the other variable's reference or zero value |
-| predictor standardization | the intercept moves to the mean predictor value and slopes change units |
-| phylogenetic covariance | coefficient names can remain unchanged while weighting, uncertainty, likelihood, and residual interpretation change |
+Let `x` be group size and `B` indicate one dimorphism category. With an
+intercept and interaction, the two fitted lines are:
 
-A future comparison must retain the exact formula and design columns, factor
-levels and contrasts, response transformation, centering/scaling constants,
-included taxa and order, covariance family and parameter, coefficient scale,
-likelihood convention, and diagnostic definitions.
+```text
+reference category:  beta_0 + beta_x * x
+category B:          (beta_0 + beta_B) + (beta_x + beta_x:B) * x
+```
+
+`beta_B` is a difference at `x = 0`, not an average group effect.
+`beta_x:B` is a difference between slopes, not the slope for category B. After
+standardization, zero denotes the recorded mean of group size and one unit
+denotes the recorded standard deviation. After removing the intercept, the
+category coefficients become category-specific intercepts rather than
+contrasts against a reference.
+
+Therefore, coefficient parity requires the design matrix—not merely the
+printed formula—to agree. Factor level order, contrast encoding, missing-value
+exclusions, centering, scaling, and term-column mapping are part of the result.
+
+## Marginal And Sequential Tests Are Different Questions
+
+The source requests both sequential and marginal ANOVA tables. A sequential
+test evaluates a term after terms entered before it; its result depends on
+term order. A marginal test evaluates a term conditional on the other retained
+terms under the tool’s declared hypothesis convention. Their labels, degrees
+of freedom, and test statistics cannot be interchanged.
+
+An executable comparison must retain the tested hypothesis matrix or an
+equivalent term-level definition. Matching p-values without matching the
+hypothesis is not parity.
+
+## Phylogenetic Covariance Changes The Fit, Not The Design
+
+The final source model keeps the scaled interaction design and adds a Martins
+covariance initialized at 0.5 and estimated on `primatetree`. The coefficient
+names can remain identical while estimates, uncertainty, likelihood, and
+residuals change because observations no longer receive independent weight.
+
+A comparable execution must align:
+
+- the  trait rows and exact species-to-tip ordering;
+- tree topology, branch lengths, rooting, and scale;
+- the Martins covariance definition, bounds, initialization, and fixed versus
+  estimated treatment;
+- maximum-likelihood convention and optimizer outcome;
+- normalized versus response-scale residual definitions.
+
+Runtime support for PGLS and interaction coefficients shows that these
+components exist. It does not establish that this lecture model was executed
+under the same identity.
 
 ## Comparable Execution Requirements
 
 ```mermaid
-flowchart LR
-    identity["Same source objects,<br/>taxa and design matrix"]
-    models["Same covariance,<br/>bounds and objective"]
-    outputs["Raw coefficients, tests,<br/>residual diagnostics"]
-    rules["Named normalization<br/>and tolerances"]
-    verdict["Claim-scoped<br/>bundle verdict"]
+flowchart TB
+    source["Retain source outputs<br/>and analysis population"]
+    bijux["Execute Bijux with<br/>the same model identity"]
+    normalize["Map terms, scales,<br/>tests and residual types"]
+    compare["Record observations<br/>and tolerances"]
+    adjudicate["Issue one verdict<br/>per governed claim"]
 
-    identity --> models --> outputs --> rules --> verdict
+    source --> normalize
+    bijux --> normalize --> compare --> adjudicate
 ```
 
-Nearby runtime surfaces for categorical contrasts, interaction ledgers,
-comparative model selection, PGLS, and residual review are relevant building
-blocks. They cannot inherit PCM3 verdicts. The current `not_comparable` state
-must remain until the lecture and Bijux executions share model identity and
-produce adjudicated observations for each bundle.
+For each bundle, closure requires primary reference and Bijux outputs, their
+input identities, a normalization rule where names or encodings differ, and
+machine-adjudicated observations. The evidence must include failures and
+missing values; a table of successful coefficients alone cannot establish the
+denominator.
 
-## Interpretation Boundaries
+## What Can Be Cited Now
 
-- Transformation can improve residual behavior without making a model
-  biologically adequate.
-- An interaction changes the meaning of its lower-order terms; it is not an
-  isolated extra coefficient.
-- Phylogenetic covariance addresses declared residual dependence, not omitted
-  variables, measurement error, or causal identification.
-- A diagnostic improvement is evidence about a named model check, not proof of
-  the biological interpretation.
-- Open work to construct the comparison is resolution state; the recorded
-  bundle verdict remains `not_comparable`.
+PCM3 can be cited as a governed decomposition of a multivariable comparative
+analysis and as an exact statement of the comparison work still required. It
+cannot be cited for numerical correspondence, recovered biological effects,
+or successful Martins-covariance reproduction.
+
+`not_comparable` is the evidence conclusion. It is neither a failed numerical
+comparison nor an informal promise that parity exists elsewhere. Keeping that
+boundary explicit protects future results from inheriting claims that have
+never been observed.

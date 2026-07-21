@@ -630,8 +630,16 @@ def test_primate_guides_publish_values_and_open_boundaries() -> None:
         "`evidence-008` | pairwise likelihood-ratio comparisons | `matched_with_tolerance`"
         in models
     )
+    assert "56-row scalar ledger" in models
+    assert "Focused Bundle Verdicts Do Not Erase Scalar Mismatches" in models
+    assert "10.6718757865625" in models
+    assert "15.170304341821" in models
+    assert "direction or sign convention" in models
     assert "intercept-mode likelihood sweep" in boundaries
     assert "boundary register" in boundaries
+    assert "0.095590314522858" in boundaries
+    assert "Residual Diagnostics Use Named Scales" in boundaries
+    assert "74 internal nodes" in boundaries
     pcm2_index = _read(pcm2 / "index.md")
     assert "Bundle And Scalar Verdicts" in pcm2_index
     assert "12 mismatch_unexplained" in pcm2_index
@@ -681,6 +689,10 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
     assert "Governed Claim Ledger" in pcm3_design
     assert "Comparable Execution Requirements" in pcm3_design
     assert "every current bundle verdict\nis `not_comparable`" in pcm3_design
+    assert "The Source Model Sequence" in pcm3_design
+    assert "empty `primary_output_paths` list" in pcm3_design
+    assert "Marginal And Sequential Tests Are Different Questions" in pcm3_design
+    assert "What Can Be Cited Now" in pcm3_design
     assert "What Readers Should Watch Closely" not in pcm3_design
     assert "Model Components" in pcm4
     assert "All seven bundle manifests record `not_comparable`" in pcm4

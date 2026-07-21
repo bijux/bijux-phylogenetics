@@ -9,56 +9,124 @@ last_reviewed: 2026-07-21
 
 # PCM2 Diagnostics And Open Boundaries
 
-PCM2 retains diagnostic, ancestral, and incomplete coverage as separate
-evidence units. Strong agreement in the main regression path therefore does
-not erase an unresolved comparison elsewhere in the lecture.
+Regression agreement is only one part of PCM2. Phylogenetic signal tests the
+response–tree relationship; residual diagnostics test the fitted model;
+ancestral reconstruction projects a process onto internal nodes; and the
+intercept-mode sweep remains uncovered. These surfaces answer different
+questions and retain separate verdicts.
+
+```mermaid
+flowchart TB
+    fit["Shared fitted model"]
+    signal["Signal<br/>tree–trait dependence"]
+    residuals["Residuals<br/>remaining model structure"]
+    ancestors["Ancestral states<br/>node-level projection"]
+    boundary["Intercept sweep<br/>not comparable"]
+    conclusion["Bounded scientific conclusion"]
+
+    fit --> signal --> conclusion
+    fit --> residuals --> conclusion
+    fit --> ancestors --> conclusion
+    boundary --> conclusion
+```
 
 ## Evidence State
 
-| Bundle | Surface | Verdict state |
+| Bundle | Surface | Manifest verdict |
 | --- | --- | --- |
-| `evidence-004` | phylogenetic signal | governed parity deployed |
-| `evidence-005` | residual diagnostics | governed parity deployed |
+| `evidence-004` | phylogenetic signal | `matched_with_tolerance` |
+| `evidence-005` | residual diagnostics | `matched_with_tolerance` |
 | `evidence-009` | Brownian and early-burst ancestral reconstruction | `matched_with_tolerance` |
 | `evidence-010` | intercept-mode likelihood sweep | `not_comparable`; boundary register |
 
-## Residual Diagnostics
+The first three manifest verdicts are favorable within their claim contracts.
+The aggregate scalar ledger nevertheless retains five unresolved observations
+across residual and ancestral outputs. Cite both levels when describing PCM2.
 
-Residual review qualifies coefficient and model-fit claims. Inspect residual
-shape, fitted-value relationships, influential taxa, variance behavior, and
-any remaining phylogenetic pattern under the same row exclusions and fitted
-covariance. Diagnostic agreement is not merely plot resemblance; it must be
-tied to comparable quantities and observations.
+## Phylogenetic Signal
 
-## Signal
+The longevity signal fit agrees closely across implementations:
 
-Signal estimates depend on response, taxa, tree, branch lengths, transformation
-bounds, and optimization. A signal result should be interpreted with the model
-comparison and residual record, not as an isolated certification that
-phylogenetic correction succeeded.
+| Quantity | R reference | Bijux observation |
+| --- | ---: | ---: |
+| estimated Pagel λ | 0.802734424042 | 0.802734483419 |
+| λ=0 likelihood-ratio statistic | 41.030418693040 | 41.030418692855 |
+| likelihood-ratio p-value | 1.498782717 × 10⁻¹⁰ | 1.498782717 × 10⁻¹⁰ |
 
-## Ancestral Modes
+This supports strong phylogenetic structure for the governed response, taxa,
+tree, bounds, and likelihood convention. It does not certify the downstream
+regression, establish a causal mechanism, or imply that every covariance
+family is adequate.
 
-`evidence-009` compares node-level ancestral estimates for Brownian and
-early-burst modes within governed tolerance. Rendered node-size equivalence is
-not claimed. Stable node identity, rather than display order, anchors the
-comparison.
+## Residual Diagnostics Use Named Scales
+
+The baseline fit agrees on the registered summaries: QQ correlation is about
+0.97495, absolute-residual–fitted correlation is about 0.02344, and both
+implementations identify five outliers under the governed rule.
+
+The estimated-λ diagnostics are not uniformly aligned:
+
+| Diagnostic | R reference | Bijux observation | Ledger state |
+| --- | ---: | ---: | --- |
+| QQ correlation | 0.980223544139 | 0.977685036394 | within 0.02 tolerance |
+| absolute residual–fitted correlation | 0.205562548326 | 0.109972233803 | `mismatch_unexplained` |
+| outlier count | 3 | 4 | within the registered count tolerance |
+
+The correlation difference is 0.095590314522858 against a 0.05 tolerance.
+The underlying residual magnitudes also reveal different scales: the R
+summary is near unit scale while the Bijux residual standard deviation is near
+112. This is consistent with normalized versus response-scale residuals, but
+the evidence record has not adjudicated that explanation. A reader must not
+interpret similar QQ correlations as proof of identical residual semantics.
+
+For any diagnostic comparison, preserve residual type, standardization,
+fitted-value scale, outlier rule, row exclusions, and covariance fit. A plot
+that looks similar is not a machine-verifiable observation contract.
+
+## Ancestral Reconstruction Is Node-Indexed
+
+`evidence-009` records 74 internal nodes for both Brownian and early-burst
+reconstruction. Node count agreement is necessary but insufficient. The
+aggregate ledger retains four `mismatch_unexplained` vector observations:
+Brownian and early-burst values at the first and most recent five node
+positions.
+
+The Brownian differences appear numerically small, but their registered rule
+requires exact agreement. The early-burst differences are substantive and
+track the unresolved mode parameterization seen in the transformed-tree and
+fit observations. The manifest’s `matched_with_tolerance` verdict is bounded
+to its named-node contract; it does not erase those aggregate vector rows.
+
+Node identity must be carried explicitly through comparison. Array position,
+plotting order, or visual node size is not a stable biological identifier.
 
 ## Intercept-Sweep Boundary
 
-`evidence-010` records the remaining `corBlomberg` intercept-mode likelihood
-sweep. Its verdict is intentionally `not_comparable`: the bundle identifies
-the uncovered lecture fragment and closure location but does not manufacture a
-parity result.
+`evidence-010` identifies `mode-linked-intercept-models`, the `corBlomberg`
+intercept-mode likelihood sweep from the source material. The current runtime
+mapping does not supply a comparable execution, so the verdict is
+`not_comparable`.
 
-Closing the boundary requires a comparable implementation or reference path,
-matching parameter and intercept conventions, recorded likelihood values,
-explicit tolerance, and adjudicated checks. Rewording the claim or borrowing a
-neighboring PGLS verdict would not close it.
+The boundary closes only when the record contains:
 
-## Supported Conclusion
+- a reference and Bijux implementation of the same intercept-mode sweep;
+- matching taxa, response, tree scaling, parameter direction, and intercept
+  convention;
+- retained likelihood observations and optimizer outcomes;
+- an explicit tolerance and adjudicated claim-scoped checks.
 
-PCM2 has governed agreement for baseline and λ PGLS, signal, diagnostics,
-transformed trees, mode fits, likelihood-ratio comparison, and bounded
-ancestral outputs. The intercept-mode sweep remains outside numerical parity.
-Both facts must accompany any summary of study coverage.
+Neighboring PGLS or continuous-mode results cannot be borrowed to fill this
+gap. The boundary register is the evidence: it names what is absent and what
+would make the comparison reviewable.
+
+## What PCM2 Supports
+
+PCM2 supports the baseline and Pagel-λ regression correspondence and the
+governed phylogenetic-signal observations. It also supplies reviewable
+diagnostic and ancestral contracts. It does **not** support uniform parity for
+early-burst behavior, every residual statistic, every ancestral vector, or the
+intercept-mode likelihood sweep.
+
+That mixed conclusion is stronger than an unqualified pass: readers can see
+which scientific statements are reproduced, which depend on tolerance, and
+which observations still require resolution.
