@@ -1,0 +1,116 @@
+---
+title: Validation, Benchmarks, And Reporting
+audience: public
+type: explanation
+status: canonical
+owner: bijux-phylogenetics-docs
+last_reviewed: 2026-07-21
+---
+
+# Validation, Benchmarks, And Reporting
+
+A scientific value becomes trustworthy through a chain of inspectable
+decisions: input validation, numerical checks, workflow diagnostics, benchmark
+comparisons, structured artifacts, and a report that preserves the limits of
+the underlying result. Bijux Phylogenetics treats that chain as part of the
+scientific surface.
+
+```mermaid
+flowchart LR
+    inputs["Governed inputs"]
+    run["Method execution"]
+    diagnostics["Invariants · warnings<br/>search or chain diagnostics"]
+    metrics["Recovery · parity<br/>scale and timing metrics"]
+    artifacts["Manifest · JSON · TSV<br/>captured engine output"]
+    report["Tables · figures<br/>methods · limitations"]
+    verdict["Bounded claim<br/>or release decision"]
+
+    inputs --> run
+    run --> diagnostics
+    diagnostics --> metrics
+    diagnostics --> artifacts
+    metrics --> artifacts
+    artifacts --> report
+    report --> verdict
+```
+
+## Validation Layers
+
+| Layer | Typical checks | Failure means |
+| --- | --- | --- |
+| input structure | schemas, dimensions, identifiers, taxa, finite values | the method cannot safely interpret the input |
+| mathematical invariants | probabilities, matrix properties, score decomposition, monotonic bounds | the computation violates its declared model contract |
+| known answers and properties | exact fixtures, symmetry, limiting cases, round trips | a bounded numerical or behavioral contract is broken |
+| workflow integration | adapters, composition, artifacts, error propagation | components do not preserve a coherent run record |
+| recovery and reference comparison | parameter/topology recovery, tolerance-based parity | the named fixture or reference acceptance rule is not met |
+| production scale | time, memory, convergence, practical-limit policy | the declared operating envelope is unsupported |
+| publication and release | schemas, freshness, docs, packages, evidence linkage | the result is not ready for its claimed distribution surface |
+
+These layers are cumulative only where a claim depends on them. Structural
+validity does not imply numerical correctness; reference agreement does not
+imply biological adequacy; a passing release gate does not expand the tested
+scope.
+
+## Benchmark Design
+
+A benchmark is an experiment, not a stopwatch. Its record should identify the
+question, corpus, comparison target, environment, warm-up and repetition
+policy, measured quantities, acceptance thresholds, exclusions, and raw
+observations. Accuracy, robustness, scalability, and throughput are separate
+dimensions.
+
+Native likelihood and topology inference benchmarks cover hand-checkable and
+simulated accuracy fixtures, wrapper/reference correspondence, and artifact
+production. Model-fitting and macroevolution benchmarks include GEIGER-aligned
+references and real-dataset review. Scalability suites expose growth behavior,
+stress conditions, and practical limits. A benchmark supports only its named
+method, corpus, configuration, platform envelope, and metric.
+
+## Comparing Implementations Honestly
+
+Before declaring parity, align state coding, topology, branch-length units,
+model parameterization, optimization target, random seed policy, missing-data
+treatment, and output convention. Then choose a tolerance with a scientific and
+numerical rationale.
+
+A difference may be:
+
+- a defect in either implementation;
+- an allowed numerical difference within the declared tolerance;
+- a convention mismatch that makes values not comparable;
+- an optimization or sampling failure;
+- a model or feature that one side does not own.
+
+The correct verdict can therefore be matched, mismatched, not comparable, open,
+or blocked. Suppressing non-passing cases destroys the benchmark's value.
+
+## Reporting Contract
+
+Structured results are canonical. Manifests link input identities,
+configuration, versions, outputs, diagnostics, and integrity metadata. JSON
+preserves typed run and result records; TSV supports tabular review; captured
+external-engine files preserve the original boundary. Markdown, HTML, figures,
+methods text, and supplementary tables are generated or assembled for human
+interpretation.
+
+A report should answer, without reconstructing the run:
+
+1. What question and method does this result address?
+2. Which exact data, tree, model, software, and configuration produced it?
+3. Which diagnostics qualify the headline result?
+4. Which values are estimates, comparisons, support measures, or verdicts?
+5. Which warnings, exclusions, and uncertainty remain material?
+6. Which machine-readable artifact supports every displayed value?
+
+Figures must not be the only location of a result, and prose must not silently
+upgrade a diagnostic into a scientific conclusion.
+
+## From Benchmark To Evidence
+
+Benchmark artifacts become evidence only when a governed claim maps them to
+identified sources, inputs, checks, acceptance rules, and a current verdict.
+The [Evidence Book](../03-bijux-phylogenetics-evidence-book/index.md) provides
+that stronger layer. The [validation lanes](../01-bijux-phylogenetics/quality/validation-lanes.md),
+[native benchmark evidence](../01-bijux-phylogenetics/quality/native-benchmark-evidence.md),
+and [artifact contracts](../01-bijux-phylogenetics/interfaces/artifact-contracts.md)
+describe the operational review paths behind it.

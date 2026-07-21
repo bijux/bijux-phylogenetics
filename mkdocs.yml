@@ -140,6 +140,8 @@ nav:
       - Likelihood And Inference: 02-bijux-phylogenetics-domains/likelihood-and-inference.md
       - Comparative And Ancestral Methods: 02-bijux-phylogenetics-domains/comparative-and-ancestral-methods.md
       - Parsimony: 02-bijux-phylogenetics-domains/parsimony.md
+      - Simulation And Datasets: 02-bijux-phylogenetics-domains/simulation-and-datasets.md
+      - Validation, Benchmarks, And Reporting: 02-bijux-phylogenetics-domains/validation-benchmarks-and-reporting.md
   - Evidence Book:
       - Overview: 03-bijux-phylogenetics-evidence-book/index.md
       - PCM1:

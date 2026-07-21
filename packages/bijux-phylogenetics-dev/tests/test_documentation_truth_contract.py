@@ -110,6 +110,10 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     domain_index = _read(DOMAINS_ROOT / "index.md")
     tree_domain = _read(DOMAINS_ROOT / "trees-alignments-and-taxa.md")
     inference_domain = _read(DOMAINS_ROOT / "likelihood-and-inference.md")
+    comparative_domain = _read(DOMAINS_ROOT / "comparative-and-ancestral-methods.md")
+    parsimony_domain = _read(DOMAINS_ROOT / "parsimony.md")
+    simulation_domain = _read(DOMAINS_ROOT / "simulation-and-datasets.md")
+    assurance_domain = _read(DOMAINS_ROOT / "validation-benchmarks-and-reporting.md")
 
     for domain in (
         "Trees, alignments, and taxa",
@@ -124,6 +128,14 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "Tree Sets And Uncertainty" in tree_domain
     assert "Finite-State Likelihood" in inference_domain
     assert "Bayesian Inference" in inference_domain
+    assert "PGLS And Trait Covariance" in comparative_domain
+    assert "Ancestral Reconstruction" in comparative_domain
+    assert "Searching Tree Space" in parsimony_domain
+    assert "Support And Consensus" in parsimony_domain
+    assert "Native Simulation Families" in simulation_domain
+    assert "Preventing Simulation Circularity" in simulation_domain
+    assert "Benchmark Design" in assurance_domain
+    assert "From Benchmark To Evidence" in assurance_domain
 
 
 def test_quality_guides_separate_tests_benchmarks_and_release_evidence() -> None:
@@ -199,13 +211,9 @@ def test_maintainer_handbook_defines_change_and_artifact_ownership() -> None:
         MAINTAINER_ROOT / "documentation-system" / "documentation-ownership.md"
     )
     contracts = _read(
-        MAINTAINER_ROOT
-        / "trust-surfaces"
-        / "public-trust-surface-maintenance.md"
+        MAINTAINER_ROOT / "trust-surfaces" / "public-trust-surface-maintenance.md"
     )
-    artifacts = _read(
-        MAINTAINER_ROOT / "repository-operations" / "artifact-hygiene.md"
-    )
+    artifacts = _read(MAINTAINER_ROOT / "repository-operations" / "artifact-hygiene.md")
 
     assert "Change Classification" in handbook
     assert "Maintained Invariants" in handbook
