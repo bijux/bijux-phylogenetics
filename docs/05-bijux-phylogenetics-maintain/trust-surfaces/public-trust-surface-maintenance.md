@@ -56,6 +56,35 @@ For each material change, record:
 5. evidence bundles made stale by code, input, or configuration changes;
 6. verification commands and observed outcomes.
 
+## Contract Change Classes
+
+| Change | Required review |
+| --- | --- |
+| additive public surface | discovery route, reference generation, package exposure, and bounded quality statement |
+| changed default or interpretation | examples, method guidance, result semantics, compatibility, and evidence freshness |
+| removed or renamed surface | deprecation path, alias behavior, migration guidance, generated references, and built-artifact smoke |
+| schema or artifact field change | versioning decision, producer/consumer compatibility, migration, and evidence consumers |
+| numerical implementation change | known-answer and invariant checks, benchmark comparison, affected bundle freshness |
+| ownership change | native/external attribution across code, docs, metadata, diagnostics, and reports |
+
+A textual correction can be contract-relevant when it changes what users are
+promised. Classify by semantic effect, not by file type or diff size.
+
+## Completeness Audit
+
+For the changed subject, search public imports, command registration, OpenAPI
+and artifact schemas, package metadata, README files, handbook guides,
+benchmarks, and evidence records. Record each occurrence as one of:
+
+- canonical owner;
+- generated projection;
+- maintained explanatory projection;
+- historical or obsolete reference requiring removal;
+- unaffected use with a documented reason.
+
+This inventory makes an omission reviewable. A list of files edited does not
+prove that every projection was found.
+
 ## Drift Patterns
 
 - A new native method exists but only an internal module path exposes it.
@@ -84,3 +113,9 @@ environment.
 
 An intentionally open scientific verdict can ship. An unacknowledged mismatch
 between runtime behavior and its published contracts cannot.
+
+Block publication when the canonical owner is unclear, compatibility is
+undeclared, a generated projection is stale, a public example cannot execute
+through the installed surface, warnings or missing cases vanish across a
+boundary, or an evidence claim no longer resolves to a current governed
+record.

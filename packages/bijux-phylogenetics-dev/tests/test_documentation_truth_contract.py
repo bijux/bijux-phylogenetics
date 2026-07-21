@@ -464,12 +464,23 @@ def test_maintainer_handbook_defines_change_and_artifact_ownership() -> None:
         MAINTAINER_ROOT / "trust-surfaces" / "public-trust-surface-maintenance.md"
     )
     artifacts = _read(MAINTAINER_ROOT / "repository-operations" / "artifact-hygiene.md")
+    release = _read(
+        MAINTAINER_ROOT / "repository-operations" / "release-surface-alignment.md"
+    )
 
     assert "Change Classification" in handbook
     assert "Maintained Invariants" in handbook
     assert "Canonicality Rules" in ownership
     assert "Change Impact Review" in contracts
-    assert "artifacts/" in artifacts
+    assert "Contract Change Classes" in contracts
+    assert "Completeness Audit" in contracts
+    assert "Classify Before Writing" in artifacts
+    assert "make check-artifact-governance" in artifacts
+    assert "Safe Cleanup" in artifacts
+    assert "Alignment Matrix" in release
+    assert "make check-release-readiness" in release
+    assert "Release Blockers" in release
+    assert "narrative alignment" not in release
 
 
 def test_maintainer_indexes_define_operational_decisions_without_meta_prose() -> None:
