@@ -274,6 +274,7 @@ def test_parity_handbook_separates_live_reference_and_adapter_boundaries() -> No
 
 
 def test_r_parity_guides_publish_registry_scope_and_non_claims() -> None:
+    ecosystem = _read(PARITIES_ROOT / "r-ecosystem" / "index.md")
     r_root = PARITIES_ROOT / "r-ecosystem"
     ape = _read(r_root / "ape.md")
     geiger = _read(r_root / "geiger.md")
@@ -286,6 +287,14 @@ def test_r_parity_guides_publish_registry_scope_and_non_claims() -> None:
     assert "optimizer triage" in geiger
     assert "65 cases across 21" in phytools
     assert "exact histories are not expected" in phytools
+    assert "Read A Harness Result" in ecosystem
+    assert "selected, passed, failed, and skipped" in ecosystem
+    assert "Interpret The Case Status" in ape
+    assert "case status and mismatch reason" in ape
+    assert "Denominator And Model Identity" in geiger
+    assert "They are not Evidence Book verdict names" in geiger
+    assert "What A Passing Stochastic Case Means" in phytools
+    assert "within-case replication denominators" in phytools
 
 
 def test_engine_correspondence_guides_preserve_computational_ownership() -> None:

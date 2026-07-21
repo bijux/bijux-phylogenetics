@@ -40,6 +40,19 @@ measurement-error PGLS surface; it is not presented as a general
 `phytools::pgls` correspondence claim. Broader coefficient comparisons use the
 checked APE plus `nlme` reference where that is the actual source.
 
+## What A Passing Stochastic Case Means
+
+A stochastic case passes when its registered replication policy completes and
+every declared aggregate or distribution rule holds. It does not require the R
+and Bijux histories to contain the same random events. The record therefore
+retains replicate count, seed policy, summary definition, tolerance or envelope,
+failed replicates, and observed distributional quantities.
+
+Do not remove non-finite, degenerate, or failed replicates before computing a
+headline summary unless the registry declares that exclusion. Selected,
+executed, passed, failed, and skipped case counts remain separate from
+within-case replication denominators.
+
 ## Run The Live Lane
 
 ```bash
@@ -66,3 +79,5 @@ Use `--phytools-case` for an individual fixture. The live lane requires
   underlying numerical ledgers, not pixel identity.
 - A passed shard validates its registered fixtures and versioned conventions;
   it does not certify all phytools arguments or future package behavior.
+- A passed harness case is not a `matched` Evidence Book verdict; scientific
+  promotion requires a governed claim, provenance, checks, and freshness.

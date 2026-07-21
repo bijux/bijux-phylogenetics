@@ -40,7 +40,7 @@ boundaries differ.
    normalized by case-specific rules.
 4. Exact, tolerance-based, or structural observations are evaluated.
 5. Summary rows, observation rows, and reproducible mismatch artifacts retain
-   the verdict.
+   the case status and mismatch reason.
 
 Newick strings are not compared as raw text when topology is the scientific
 object. Random trees are not expected to be identical across random-number
@@ -64,6 +64,19 @@ owned surfaces. The live lane requires `Rscript`, APE, and
 `RUN_LIVE_PARITY=1`. An unavailable reference produces a visible skip or
 failure record; it does not fall back to a checked fixture while retaining the
 `ape-live` label.
+
+## Interpret The Case Status
+
+An APE case passes only when the selected R and Bijux executions complete and
+every registered observation rule holds. A failed case retains the specific
+execution, field, row, topology, or tolerance mismatch. A skipped case records
+that the live reference could not execute; it is excluded from neither the
+selected denominator nor the report.
+
+Quote the shard and case count with any result. “APE parity passed” is too broad
+when the execution selected one of 35 shards or only a subset of its fixtures.
+Case status does not create an Evidence Book verdict unless a governed bundle
+later binds the observation to a scientific claim.
 
 ## Deliberate Non-Claims
 

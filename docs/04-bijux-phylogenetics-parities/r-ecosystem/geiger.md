@@ -33,7 +33,7 @@ labels is not parity.
 | Review artifact | Question it answers |
 | --- | --- |
 | summary table | Which model shards passed, failed, or skipped? |
-| observation table | Which value, tolerance, and verdict belong to each case? |
+| observation table | Which compared value, tolerance, outcome, and mismatch reason belong to each case? |
 | optimizer triage | Is disagreement associated with starts, convergence, or boundary estimates? |
 | boundary warnings | Which parameters lie on or near constrained boundaries? |
 | likelihood policy | Which sign, constant, and comparability rules apply? |
@@ -73,6 +73,20 @@ The generated GEIGER report keeps these cases separate:
 - optimizer-sensitive result requiring triage;
 - reference boundary or unsupported case;
 - unexplained mismatch requiring investigation.
+
+These are diagnostic and review categories around a `passed`, `failed`, or
+`skipped` harness case. They are not Evidence Book verdict names. In particular,
+an expected assumption difference must remain visible even when a dedicated
+comparison policy accepts the case, and an unexplained harness mismatch needs
+claim-scoped review before it can be recorded as `mismatch_unexplained` in a
+scientific bundle.
+
+## Denominator And Model Identity
+
+Report selected, executed, passed, failed, and skipped cases by model shard.
+For each fit, retain the model family, parameterization registry entry,
+likelihood policy, optimizer starts, bounds, and observed boundary state. Two
+rows labeled “OU” are not comparable when those identities differ.
 
 The registry does not claim universal GEIGER coverage or that agreement makes
 the fitted model appropriate for a biological study.
