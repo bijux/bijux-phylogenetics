@@ -477,24 +477,38 @@ def test_trust_guides_preserve_status_and_claim_ownership() -> None:
 
 def test_engine_correspondence_guides_preserve_computational_ownership() -> None:
     engine_root = PARITIES_ROOT / "external-engines"
+    index = _read(engine_root / "index.md")
     alignment = _read(engine_root / "alignment-and-trimming.md")
     inference = _read(engine_root / "tree-inference.md")
     bayesian = _read(engine_root / "bayesian-inference.md")
 
+    assert "Three Kinds Of Record" in index
+    assert "prepared analysis" in index
+    assert "parsed artifact" in index
+    assert "live workflow run" in index
+    assert "Know What Was Actually Run" in index
+    assert "Claim Ladder" in index
     assert "MAFFT owns" in alignment
     assert "numerical parity claim" in alignment
     assert "Stage Acceptance And Handoff" in alignment
     assert "`--resume` is reuse under an identity check" in alignment
+    assert "Codon-Aware Alignment Preserves The Translation Contract" in alignment
+    assert "`gappyout`, `strict`, `strictplus`" in alignment
     assert "incomplete bundles" in inference
     assert "remain different statistical" in inference
     assert "quantities and are labeled" in inference
     assert "Engine Result Identity" in inference
     assert "Comparison Denominator" in inference
+    assert "Choose The Command By Question" in inference
+    assert "Robinson–Foulds distance" in inference
+    assert "Reproducibility Has An Explicit Denominator" in inference
     assert "prepared-only analysis" in bayesian
     assert "does not dispatch through MrBayes or BEAST" in bayesian
     assert "Run Identity And Resume Safety" in bayesian
     assert "Resume therefore preserves execution lineage" in bayesian
     assert "Diagnostic Interpretation" in bayesian
+    assert "Preparation, Execution, And Review Are Separate" in bayesian
+    assert "Evidence Package Acceptance" in bayesian
 
 
 def test_correspondence_matrix_distinguishes_verified_and_open_surfaces() -> None:

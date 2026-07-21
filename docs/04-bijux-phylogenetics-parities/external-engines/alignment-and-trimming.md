@@ -10,77 +10,131 @@ last_reviewed: 2026-07-21
 # MAFFT And trimAl Correspondence
 
 MAFFT owns multiple-sequence alignment and trimAl owns external alignment
-trimming. Bijux owns the surrounding contract: input validation, executable
-resolution, argument construction, captured output, stage fingerprints,
-alignment validation, diagnostics, and workflow artifacts.
+trimming. Bijux owns the reproducible handoff around those computations: input
+validation, named strategy selection, executable identity, captured process
+state, output validation, checksums, diagnostics, and the manifest consumed by
+tree inference.
 
 ```mermaid
 flowchart LR
-    fasta["Unaligned FASTA"]
-    preflight["Sequence and taxon<br/>preflight"]
-    mafft["MAFFT"]
-    aligned["Validated alignment"]
-    trimal["trimAl"]
-    trimmed["Validated trimmed<br/>alignment"]
-    review["Occupancy · length · taxa<br/>manifest · logs"]
+    source["Unaligned FASTA<br/>unique identifiers"]
+    coding{"Coding-aware?"}
+    protein["Translate accepted CDS<br/>record exclusions"]
+    mafft["MAFFT<br/>named strategy"]
+    restore["Back-translate<br/>codon triplets"]
+    aligned["Equal-length FASTA<br/>validated taxa"]
+    trimal["trimAl<br/>named policy"]
+    handoff["Trimmed alignment<br/>site ledger and manifest"]
 
-    fasta --> preflight --> mafft --> aligned --> trimal --> trimmed --> review
+    source --> coding
+    coding -->|no| mafft
+    coding -->|yes| protein --> mafft --> restore --> aligned
+    mafft --> aligned --> trimal --> handoff
 ```
 
-## What Is Verified
+## Alignment Strategies Are Explicit
 
-| Boundary | Verified behavior |
-| --- | --- |
-| executable | resolved path, native version text, invocation and exit state are retained |
-| input | FASTA parsing, taxon identity, sequence type, non-empty content and coding checks where requested |
-| MAFFT output | a non-empty parseable alignment is produced with the expected taxon set |
-| trimAl output | a non-empty parseable alignment is produced and before/after dimensions remain reviewable |
-| workflow state | stage inputs, configuration, output paths, fingerprints and failures are recorded |
-| downstream handoff | the exact validated alignment used by inference is identified in the manifest |
+`adapter align` exposes five stable MAFFT strategy names. The manifest retains
+the selected name and resolved native arguments:
 
-Success does not mean the alignment is biologically optimal. Strategy choice,
-gap treatment, trimming threshold, coding frame, and downstream sensitivity
-remain study decisions.
+| Mode | Native argument shape | Intended distinction |
+| --- | --- | --- |
+| `auto` | `--auto` | let MAFFT select a strategy |
+| `linsi` | local-pair plus 1,000 refinement iterations | local homology emphasis |
+| `ginsi` | global-pair plus 1,000 refinement iterations | global homology emphasis |
+| `einsi` | generalized affine-gap pair plus 1,000 iterations | long-gap and conserved-domain structure |
+| `fast` | two guide-tree rebuilds and no iterative refinement | throughput-oriented alignment |
+
+The strategy is a scientific choice. Successful parsing does not establish
+that one strategy is optimal for a locus, taxon sample, or downstream model.
+
+## Codon-Aware Alignment Preserves The Translation Contract
+
+With `--codon-aware`, Bijux validates coding nucleotide sequences, resolves an
+NCBI genetic code, records excluded sequences and stop-codon behavior,
+translates accepted sequences, uses MAFFT on the amino-acid guide, and
+back-translates the aligned guide to nucleotide codon triplets.
+
+The accepted result must have equal-length records and a nucleotide alignment
+length divisible by three. The output set includes the nucleotide alignment,
+guide input, guide alignment, exclusion table, coding summary, and checksums.
+This verifies the mechanics of the translation/back-translation contract; it
+does not prove annotation correctness or absence of biological frameshifts.
+
+## Trimming Policies Are Not Interchangeable
+
+`adapter trim` supports `gap-threshold`, `gappyout`, `strict`, `strictplus`,
+and `automated1`. In `gap-threshold` mode, the configured fraction is converted
+to trimAl’s explicit `-gt` argument. The other names map to their corresponding
+native automatic policy.
+
+The accepted record retains input and trimmed sequence/site dimensions,
+retained and removed site counts, input and output gap percentages, mode, gap
+threshold, streams, checksums, and manifest. These measurements describe what
+the policy removed; they do not establish that removal improved inference.
 
 ## Stage Acceptance And Handoff
 
-| Stage | Accept when | Preserve for the next stage |
+| Stage | Accept when | Preserve for review and downstream use |
 | --- | --- | --- |
-| sequence preflight | identifiers are unique, declared type is coherent, and exclusions are explicit | input hash, accepted/excluded taxa, alphabet and coding diagnostics |
-| MAFFT execution | executable/version and command are known, exit state is accepted, and output parses | native streams, mode, output alignment, taxon and dimension checks |
-| codon-aware alignment | translation policy, genetic code, exclusions, guide alignment, and back-translation are coherent | sequence type, codon decisions, protein guide identity, final nucleotide alignment |
-| trimAl execution | input alignment identity matches the handoff and trimmed output parses | mode, threshold, before/after dimensions, removed-site summary |
-| inference handoff | selected post-alignment artifact is unambiguous and complete | exact alignment path/hash, partition/coding state, manifest lineage |
+| sequence intake | identifiers are unique, content is non-empty, and declared coding rules are coherent | source checksum, taxa, sequence type, exclusions, coding diagnostics |
+| MAFFT execution | executable/version and command are known, process state is accepted, and output is equal-length FASTA | alignment, streams, mode, dimensions, taxa, manifest |
+| codon restoration | guide taxa map back to accepted coding records and length is divisible by three | guide files, exclusion and coding tables, final nucleotide alignment |
+| trimAl execution | the input is the accepted alignment and trimmed output plus site ledger validate | policy, threshold, dimensions, removed sites, gap summaries, manifest |
+| inference handoff | exactly one alignment artifact and checksum are selected | alignment identity, sequence/codon state, partition identity, lineage |
 
-The input to inference is the accepted handoff artifact, not whichever FASTA
-file is newest in the output directory. A composed `fasta-to-tree` run must
-retain the same stage identities and failures as the separate commands.
+The inference input is the accepted handoff, not the newest FASTA in a
+directory. A `fasta-to-tree` workflow composes the same contracts and must
+retain the identities and failure states of every included stage.
 
-## Use The Adapters
+## Run The Workflow
 
 ```bash
 bijux-phylogenetics adapter align \
   dataset/sequences.fasta \
-  --out artifacts/engines/aligned.fasta
+  --mode linsi \
+  --out artifacts/engines/aligned.fasta \
+  --manifest artifacts/engines/alignment-command.json
 
 bijux-phylogenetics adapter trim \
   artifacts/engines/aligned.fasta \
-  --out artifacts/engines/trimmed.fasta
+  --mode gap-threshold \
+  --gap-threshold 0.1 \
+  --out artifacts/engines/trimmed.fasta \
+  --manifest artifacts/engines/trimming-command.json
 ```
 
-Use the command help for version-specific options and executable overrides.
-`adapter fasta-to-tree` composes alignment, optional trimming, and inference
-when one governed workflow bundle is preferable to separate stages.
+For coding sequence:
 
-`--resume` is reuse under an identity check, not permission to trust arbitrary
-existing output. Input, configuration, executable, manifest, and recorded
-outputs must still match. Incomplete output is rejected or cleaned according
-to the explicit incomplete-run policy; it is never silently promoted.
+```bash
+bijux-phylogenetics adapter align \
+  dataset/coding-sequences.fasta \
+  --codon-aware \
+  --sequence-type dna \
+  --genetic-code 1 \
+  --out artifacts/engines/codon-aligned.fasta
+```
+
+Use `--executable` when the binary is not on the default path,
+`--timeout-seconds` to bound execution, and `--incomplete-run-policy clean`
+only when removing an identified incomplete run is intentional.
+
+## Resume And Failure Semantics
+
+`--resume` is reuse under an identity check. The manifest, input checksum,
+resolved command, engine version, and output checksums must still match. It is
+not permission to accept an arbitrary existing alignment.
+
+The default incomplete-run policy is `reject`. Missing binaries, timeouts,
+non-zero exits, empty output, malformed FASTA, unequal aligned lengths, and
+missing required artifacts remain visible failures. They are not converted
+into warnings merely because an older output exists.
 
 ## Correspondence, Not Reimplementation
 
-Bijux does not reproduce MAFFT's alignment algorithm or trimAl's trimming
-algorithm and does not relabel their results as native. The correspondence
-claim is that a recorded engine run produced a validated artifact through a
-known adapter contract. A numerical parity claim would require an independent
-reference output and a separate acceptance rule.
+Bijux does not reproduce MAFFT's scoring/search algorithm or trimAl's site
+selection algorithm and does not relabel their outputs as native. The adapter
+claim is that the external engine created a structurally accepted artifact
+under a reconstructable contract. A numerical parity claim requires an
+independent reference, a declared comparison denominator, and a separate
+acceptance rule.
