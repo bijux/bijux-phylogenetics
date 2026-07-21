@@ -53,6 +53,24 @@ no study evidence if documentation says exactly that.
 
 Start from the statement being made, not the check that is easiest to run.
 
+## Trace One Native Inference Claim
+
+Consider the statement “the native maximum-likelihood workflow recovered the
+generating topology for the governed case.” Its proof crosses several lanes:
+
+| Lane | Required record | Failure consequence |
+| --- | --- | --- |
+| structural | valid alignment, unique taxa, interpretable states | inference never has an admissible input |
+| contract | typed result, complete fields, stable serialization | the runtime result cannot be consumed reliably |
+| numerical | finite likelihoods, valid parameters, topology-distance calculation | the reported recovery metric is not trustworthy |
+| integration | search, support, warnings, and artifact links agree | the workflow record is incomplete or contradictory |
+| benchmark | generating tree, simulation seed, recovered topology, declared status | no corpus-scoped recovery claim exists |
+| evidence | claim mapping if the result is used in a study dossier | no study-scoped conclusion exists |
+| release | aligned package and documentation revision | the public distribution may not contain the reviewed behavior |
+
+Passing the benchmark lane does not retroactively create study evidence, and
+passing the release lane does not repair a failed numerical observation.
+
 ## Structural Lane
 
 Checks formats, required fields, taxon uniqueness, manifest shape, and schema
@@ -98,6 +116,21 @@ Evidence Book verdicts use their governed comparison vocabulary:
 follow-through is recorded separately; do not substitute one namespace for the
 other.
 
+## Propagate Failure To The Right Boundary
+
+| Observed problem | Owning lane | What remains usable |
+| --- | --- | --- |
+| malformed manifest | structural | unrelated runtime calculations whose records are intact |
+| documented command returns the wrong shape | contract | direct lower-level methods proven independently |
+| reference value exceeds tolerance | numerical | serialization and execution evidence, not the agreement claim |
+| one corpus case times out | benchmark | completed cases with a denominator that includes the timeout |
+| study bundle is `not_comparable` | evidence | implemented runtime capability and other claim-scoped bundles |
+| documentation and wheel expose different versions | release | historical evidence tied to its identified revision |
+
+Scope failure narrowly enough to preserve valid evidence, but never so narrowly
+that the failed observation disappears from the denominator of the claim it
+actually affects.
+
 ## Release Lane
 
 Checks that distributions build, public metadata agrees, docs render, schemas
@@ -110,3 +143,7 @@ State: **subject + lane + scope + acceptance rule + verdict + revision**.
 For example: “The native inference result passed topology agreement tolerance
 T on corpus C under configuration K at revision R.” This is more useful than
 “native inference is validated.”
+
+For a non-pass, use the same template and state the consequence: **subject +
+lane + scope + failed or absent rule + retained status + resulting claim
+boundary + revision**. Negative evidence should be as reproducible as a pass.

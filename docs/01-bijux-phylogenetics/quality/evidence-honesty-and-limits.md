@@ -59,6 +59,23 @@ subset. Read the observation ledger before interpreting the bundle headline.
 - **Current** when the bundle predates material runtime or input changes.
 - **Scientifically correct** because an execution is deterministic.
 
+## Match Language To The Record
+
+| Available record | Defensible language | Language not yet supported |
+| --- | --- | --- |
+| exported function and contract tests | “implemented” or “supported by the documented interface” | “numerically validated” |
+| successful adapter bundle | “executed through the named external engine and parsed” | “native” or “equivalent” |
+| passing registered parity case | “the named observations passed for this case and version pair” | “full package parity” |
+| benchmark with acceptance rule | “met the named threshold on this corpus and environment” | “universally accurate” or “faster” |
+| `matched` evidence bundle | “the registered claim matched under its exact rules” | “the entire study was reproduced” |
+| `matched_with_tolerance` bundle | “the registered observations agreed within declared tolerances” | “identical output” |
+| `mismatch_unexplained` observation | “a required comparison remains unexplained” | any passing aggregate that omits the row |
+| `not_comparable` bundle | “the claim is documented but no valid aligned comparison exists” | “failed parity” or “open verdict” |
+
+Words such as *native*, *parity*, *reproduced*, and *validated* describe
+different ownership and evidence properties. Use them only when the owning
+record exists.
+
 ## External Boundaries
 
 When an engine, posterior workflow, source dataset, or lecture-specific
@@ -80,6 +97,22 @@ scientific record. Preserve the configuration and observed difference, explain
 whether the cause is understood, and define the next closure criterion. Do not
 delete a difficult case from an aggregate without a declared exclusion rule.
 
+## Handle Contradictions Explicitly
+
+A contradiction exists when records that should agree name different inputs,
+versions, counts, values, statuses, or verdicts. Resolve it in this order:
+
+1. identify which record owns each disputed field;
+2. confirm that both records describe the same claim and revision;
+3. inspect primary machine-readable observations before rendered summaries;
+4. retain the contradiction as a blocker for the affected public statement;
+5. regenerate projections from the corrected owner rather than editing each
+   summary independently.
+
+Do not average conflicting values, select the friendlier verdict, or demote the
+conflict to a prose caveat. Until ownership and freshness agree, the strongest
+safe conclusion is that the affected claim is unresolved.
+
 ## How To Write A Public Claim
 
 Prefer: “For the named PCM study bundle, the implementation agrees with the
@@ -95,3 +128,8 @@ Trace the claim ID to its bundle, source provenance, inputs, runtime versions,
 checks, and verdict. Confirm it is fresh. Then read exclusions and open
 boundaries before the headline result. If the chain cannot be followed, treat
 the statement as documentation, not evidence.
+
+The reviewer should be able to answer three questions without inference: what
+was observed, what rule produced the status, and exactly where the conclusion
+stops. If any answer depends on reputation or proximity to other passing work,
+the claim is too broad.

@@ -512,10 +512,16 @@ def test_quality_guides_separate_tests_benchmarks_and_release_evidence() -> None
 
     assert "Quality Decision Record" in quality_index
     assert "Stronger Context Can Reveal New Failure" in quality_index
+    assert "Evaluate One Result" in quality_index
+    assert "Assemble A Trust Packet" in quality_index
     assert "Select A Lane From The Claim" in lanes
     assert "mismatch_unexplained" in lanes
+    assert "Trace One Native Inference Claim" in lanes
+    assert "Propagate Failure To The Right Boundary" in lanes
     assert "Governed Verdict Meanings" in honesty
     assert "Observation Status And Bundle Verdict" in honesty
+    assert "Match Language To The Record" in honesty
+    assert "Handle Contradictions Explicitly" in honesty
     assert "engine_contract" in test_strategy
     assert "engine_real" in test_strategy
     assert "scientific_validation" in test_strategy

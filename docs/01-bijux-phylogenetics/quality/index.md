@@ -44,6 +44,29 @@ can have strong numerical tests without belonging to a published study.
 | What blocks publication? | [Release and publication gates](release-and-publication-gates.md) |
 | How should a release be reviewed? | [Release review workflow](release-review-workflow.md) |
 
+## Evaluate One Result
+
+Start with the artifact or value you intend to rely on, not the repository's
+largest green aggregate:
+
+```mermaid
+flowchart TD
+    result["Result or public claim"] --> identity{"Can inputs, method,<br/>configuration, and revision be identified?"}
+    identity -- no --> refuse["Do not rely on the result"]
+    identity -- yes --> contract{"Did the owning interface<br/>complete its contract?"}
+    contract -- no --> refuse
+    contract -- yes --> science{"Which numerical, benchmark,<br/>or evidence lane supports the claim?"}
+    science -- none --> capability["Describe implementation only"]
+    science -- found --> limits{"Are failures, denominators,<br/>and limits retained?"}
+    limits -- no --> refuse
+    limits -- yes --> cite["Cite the bounded result and proof"]
+```
+
+For example, a serialized maximum-likelihood result can pass its contract and
+round-trip tests while its starting trees disagree or its benchmark corpus
+reveals a recovery failure. The artifact is valid; the stronger scientific
+claim is not. Preserve both conclusions.
+
 ## Proof Must Name Its Scope
 
 A trustworthy claim identifies the subject, fixture or corpus, method and
@@ -85,6 +108,21 @@ Warnings, non-convergence, weak support, sensitivity, excluded cases, and open
 evidence verdicts must remain visible. A pipeline that converts all completed
 processes into success destroys information reviewers need.
 
+## Assemble A Trust Packet
+
+For any result used in a publication or downstream decision, retain:
+
+1. input identities and the exact analytical population;
+2. runtime, model, configuration, seeds, and external-owner versions;
+3. structured result plus warnings, diagnostics, and partial state;
+4. the closest numerical, benchmark, or evidence record;
+5. acceptance rule, denominator, verdict, and unresolved observations;
+6. the revision and freshness state under which the conclusion was reviewed.
+
+This packet is deliberately result-scoped. A repository release report can
+show that public surfaces align, but the result's own scientific evidence must
+still travel with it.
+
 ## Stronger Context Can Reveal New Failure
 
 A method may pass unit and known-answer tests yet fail integration because
@@ -100,3 +138,7 @@ inputs and acceptance rule, confirm freshness against the current runtime, and
 state limitations with the result. If the appropriate proof does not exist,
 describe the capability as implemented or experimental according to its actual
 contract—not as validated by association.
+
+When two proof surfaces disagree, use the weaker claim until the contradiction
+is resolved. A passing summary never erases a retained mismatch, and an old
+successful run never overrides a freshness failure at a newer revision.
