@@ -71,9 +71,9 @@ before interpreting coefficient differences.
 | `evidence-008` | post-correction diagnostics and hypothesis tests |
 
 All eight bundles have governed structure and review artifacts. Their
-lecture-specific parity verdicts remain open. Evidence infrastructure is
-complete enough to localize the missing comparisons; it is not a passing
-parity result.
+bundle verdicts are `not_comparable`; the work to create lecture-specific
+comparisons remains open. Evidence infrastructure is complete enough to
+localize the missing comparisons, but it is not a passing parity result.
 
 ## Current Verdict
 
@@ -88,6 +88,14 @@ The comparison must reconstruct the same design matrix, analysis population,
 coefficient names, test type, and phylogenetic covariance, then retain the
 reference and Bijux observations with an explicit tolerance or structural
 rule.
+
+## Verdict And Resolution State
+
+`not_comparable` is the current evidence conclusion, not a placeholder for
+`failed` and not a runtime skip. It records that aligned lecture-level
+observations do not yet exist for the proposed comparison. Open follow-through
+describes the work needed to create and adjudicate those observations. Keep
+both facts visible without calling the follow-through itself a verdict.
 
 ## Inputs And Provenance
 

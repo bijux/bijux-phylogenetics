@@ -394,6 +394,10 @@ def test_primate_guides_publish_values_and_open_boundaries() -> None:
     assert "likelihood-ratio" in models
     assert "intercept-mode likelihood sweep" in boundaries
     assert "boundary register" in boundaries
+    pcm2_index = _read(pcm2 / "index.md")
+    assert "Bundle And Scalar Verdicts" in pcm2_index
+    assert "12 mismatch_unexplained" in pcm2_index
+    assert "`evidence-009` | ancestral modes | `matched_with_tolerance`" in pcm2_index
 
 
 def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> None:
@@ -416,8 +420,13 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
 
     assert "Current Verdict Ledger" in evidence_index
     assert "Evidence Strength Is Multidimensional" in evidence_index
+    assert "Observation-Level Mismatch Disclosure" in evidence_index
+    assert "12 mismatch_unexplained" in evidence_index
+    assert "Non-Comparable Evidence Is First-Class" in evidence_index
     assert "Read Coefficients From The Design Matrix" in pcm3
     assert "All eight bundle manifests record `not_comparable`" in pcm3
+    assert "Verdict And Resolution State" in pcm3
+    assert "parity verdicts remain open" not in pcm3
     assert "Model Components" in pcm4
     assert "All seven bundle manifests record `not_comparable`" in pcm4
     assert "Preserve The Scale Of Every Quantity" in pcm5

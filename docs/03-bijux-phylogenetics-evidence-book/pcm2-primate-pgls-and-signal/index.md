@@ -54,11 +54,24 @@ the fitted relationship causal.
 | `evidence-006` | transformed tree | governed parity deployed |
 | `evidence-007` | evolutionary mode fits | governed parity deployed |
 | `evidence-008` | likelihood-ratio comparison | governed parity deployed |
-| `evidence-009` | ancestral modes | unresolved mismatches remain explicit |
-| `evidence-010` | intercept sweep | parity verdict remains open |
+| `evidence-009` | ancestral modes | `matched_with_tolerance` for named node identities |
+| `evidence-010` | intercept sweep | `not_comparable`; coverage follow-through remains open |
 
-The last two rows prevent a mostly aligned workflow from being summarized as
+The final row prevents a mostly aligned bundle ledger from being summarized as
 unqualified end-to-end parity.
+
+## Bundle And Scalar Verdicts
+
+The ten bundle manifests currently record `3 matched`,
+`6 matched_with_tolerance`, and `1 not_comparable`. The observation ledger is
+not uniformly passing: the generated scalar parity table associated with
+`evidence-001` retains `12 mismatch_unexplained` rows involving ancestral,
+early-burst, likelihood-ratio, transformed-tree, and residual quantities.
+
+Those rows are registered scientific debt even though `evidence-001` itself
+has a `matched` manifest verdict for the narrower workspace-reload contract.
+Therefore, quote the claim identifier and ledger level. Do not summarize PCM2
+as clean parity from the bundle counts alone.
 
 ## Inputs And Provenance
 
@@ -82,8 +95,10 @@ contract.
 - Inspect the covariance/tree transformation rather than only its fitted
   parameter.
 - Compare coefficients, likelihoods, and diagnostics together.
-- Keep ancestral mismatch details attached to `evidence-009`.
-- Keep the intercept-sweep verdict open until its closure criterion is met.
+- Preserve the scalar `mismatch_unexplained` rows in PCM2-wide summaries.
+- Keep `evidence-009` bounded to its named-node tolerance contract.
+- Keep the `evidence-010` verdict as `not_comparable` while its intercept-sweep
+  resolution work remains open.
 
 Detailed analysis is divided between
 [model comparisons and PGLS](model-comparisons-and-pgls.md) and
