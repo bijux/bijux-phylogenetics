@@ -211,6 +211,8 @@ def test_public_interfaces_define_supported_python_and_handoff_contracts() -> No
     assert "Result Handling Contract" in python
     assert "Alias Imports" in python
     assert "Discover Without Guessing" in python
+    assert "Snapshot A Reviewable Boundary" in python
+    assert "Object identity is not artifact identity" in python
     assert "now also" not in python
     assert "bijux_phylogenetics.PhyloTree" not in python
     assert "Start With Live Discovery" in cli
@@ -218,6 +220,8 @@ def test_public_interfaces_define_supported_python_and_handoff_contracts() -> No
     assert "Run An External Engine Without Erasing Ownership" in cli
     assert "Read Output Channels Deliberately" in cli
     assert "Keep Assurance Records Separate" in cli
+    assert "Chain Commands Through Accepted Artifacts" in cli
+    assert "later success erase the earlier failure denominator" in cli
     assert "commands --format json" in cli
     assert "comparative pgls" in cli
     assert "ancestral continuous" in cli
@@ -265,6 +269,8 @@ def test_programmatic_interfaces_name_curated_and_frozen_contracts() -> None:
     assert "Select The Contract From The Consumer" in api_surface
     assert "ConfiguredPhyloWorkflowResult` deliberately has no" in api_surface
     assert "Failure And Recovery Contract" in api_surface
+    assert "Cross Contracts By Meaning, Not Shape" in api_surface
+    assert "matching keys" in api_surface
     assert "benchmark_native_maximum_likelihood_suite" in native_surface
     assert "expected-assumption-difference" in native_surface
     assert "Stable Native Boundary At A Glance" in native_surface

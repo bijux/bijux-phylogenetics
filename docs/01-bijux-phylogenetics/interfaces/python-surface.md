@@ -174,6 +174,37 @@ flowchart LR
 - Record the runtime version and any external executable identities with the
   artifacts.
 
+## Snapshot A Reviewable Boundary
+
+An in-memory result can depend on objects and process state that disappear
+when Python exits. Create the durable snapshot only after inspecting status,
+but before mutating inputs, reusing output paths, or discarding the result.
+
+```mermaid
+flowchart LR
+    inputs["Validated input objects"]
+    call["Public Python call"]
+    result["Typed result<br/>status and diagnostics"]
+    accept{"Accepted for the<br/>intended use?"}
+    bundle["Structured artifacts<br/>and manifest"]
+    refusal["Retained refusal or<br/>partial record"]
+
+    inputs --> call --> result --> accept
+    accept -->|yes| bundle
+    accept -->|no| refusal
+```
+
+The snapshot should bind input identity, package and engine versions, public
+call configuration, result type, status, warnings, exclusions, diagnostic
+state, serialized files, and expected-but-absent outputs. If the caller
+transforms arrays, trees, tables, or labels before persistence, retain that
+transformation as a new child record rather than attributing it to the
+original result.
+
+Object identity is not artifact identity. Two objects with equal values may
+come from different inputs or executions, and rewriting a path does not make
+the new file the artifact recorded by an earlier manifest.
+
 ## Alias Imports
 
 The `phylogenetic` distribution provides a compatibility facade over the

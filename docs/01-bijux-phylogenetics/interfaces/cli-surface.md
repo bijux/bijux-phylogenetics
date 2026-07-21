@@ -230,6 +230,36 @@ flowchart TD
     claim --> decision
 ```
 
+## Chain Commands Through Accepted Artifacts
+
+Multi-command analyses need an explicit acceptance boundary between stages.
+Pass a downstream command the artifact selected by the upstream manifest, not
+the newest matching filename or a value scraped from console output.
+
+```mermaid
+flowchart LR
+    first["Stage command"]
+    result["Structured status<br/>and diagnostics"]
+    manifest["Manifest<br/>expected and present outputs"]
+    accept{"Stage accepted?"}
+    next["Selected artifact<br/>passed downstream"]
+    stop["Failure record retained<br/>pipeline stopped"]
+
+    first --> result --> accept
+    first --> manifest --> accept
+    accept -->|yes| next
+    accept -->|no| stop
+```
+
+For each handoff, record the upstream run identity, selected output role and
+checksum, downstream input role, and any transformation between them. A shell
+pipe may transport bytes, but it cannot by itself preserve taxon ordering,
+model identity, parser state, exclusions, or completeness.
+
+If a stage is retried, select one accepted execution explicitly. Do not merge
+files from separate attempts into a synthetic successful directory, and do
+not let a later success erase the earlier failure denominator.
+
 ## Treat Failure As Data
 
 Classify a failed or partial command before rerunning it:

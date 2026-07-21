@@ -43,6 +43,24 @@ Do not design against an implementation submodule merely because it can be
 imported. Support begins at a curated export or an explicitly documented
 scientific surface.
 
+## Cross Contracts By Meaning, Not Shape
+
+Moving data between Python, CLI, artifacts, and the OpenAPI read models is an
+explicit projection. Similar field names or JSON shapes do not establish that
+two contracts have the same status vocabulary, completeness rules, or
+scientific meaning.
+
+| Projection | Preserve | Re-establish at the target | Never infer |
+| --- | --- | --- | --- |
+| domain result → workflow result | computation owner, method state, typed status, diagnostics, warnings, and omissions | workflow input identity and serialization inventory | that every domain field has a stable workflow projection |
+| workflow result → artifact bundle | result type, field meanings, absent values, paths, and version | manifest links, checksums, expected outputs, and schema compatibility | completeness from a successful write call |
+| CLI JSON → application object | command and runtime identity, structured status, units, ordering, and denominator | consumer validation against the installed contract version | Python type equivalence from matching keys |
+| artifact bundle → read model | bundle and claim identity, current verdict, provenance, and explicit selected fields | read-model version and freshness at projection time | that the OpenAPI schema exposes the full runtime or evidence bundle |
+
+A consumer that needs information absent from the target contract must retain
+the owning record or refuse the projection. Adding an undocumented field in a
+local decoder is not a compatibility strategy.
+
 ## Curated Workflow API
 
 Import workflows and their result types from `bijux_phylogenetics.api`:
