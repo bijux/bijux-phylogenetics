@@ -404,10 +404,16 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "`evaluate_bayesian_posterior` evaluates" in bayesian_domain
     assert "not a convergence verdict" in bayesian_domain
     assert "Native Simulation Families" in simulation_domain
+    assert "Public Simulation And Truth Surfaces" in simulation_domain
+    assert "Keep Generative Truth Separate From Estimated Results" in simulation_domain
     assert "Preventing Simulation Circularity" in simulation_domain
     assert "Benchmark Design" in assurance_domain
+    assert "Route A Claim To The Required Proof" in assurance_domain
+    assert "Audit A Report From The Headline Backward" in assurance_domain
     assert "From Benchmark To Evidence" in assurance_domain
     assert "Tree Inspection, Validation, And Forensics" in diagnostics_domain
+    assert "Diagnostic Consequence Matrix" in diagnostics_domain
+    assert "Propagate Findings To Dependent Results" in diagnostics_domain
     assert "diagnose_tip_date_randomization" in diagnostics_domain
     assert "Conclusion Stability" in diagnostics_domain
     assert "Domain Handoffs" in domain_index

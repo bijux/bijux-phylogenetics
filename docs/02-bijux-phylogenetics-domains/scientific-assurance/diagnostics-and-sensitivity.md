@@ -55,6 +55,40 @@ observation, threshold or tolerance, severity, and consequence. A warning that
 is omitted from the rendered report still exists and still qualifies the
 result.
 
+## Diagnostic Consequence Matrix
+
+| Finding class | Example | Required action |
+| --- | --- | --- |
+| structural refusal | duplicate taxon identity, malformed tree, incoherent matrix | stop the dependent computation or create an explicit repaired object |
+| assumption violation | non-ultrametric input for a clock-dependent method | change the method, justify a declared transformation, or qualify the result |
+| numerical boundary | zero branch, constrained optimum, singular covariance | retain boundary state and assess whether inference remains interpretable |
+| execution deficiency | incomplete search, low effective sample size, failed replicate | keep the missing work in the denominator and withhold unsupported summaries |
+| sensitivity instability | conclusion changes across plausible trees, models, or policies | publish the instability and narrow the conclusion |
+| informational warning | unusual but accepted label, support scale, or metadata condition | retain the warning with the result and downstream projections |
+
+Severity is determined by the consumer contract. The same unknown branch-length
+unit may be informational for topology inspection and blocking for a dated-rate
+claim. Record both the finding and the decision that interprets it.
+
+## Propagate Findings To Dependent Results
+
+```mermaid
+flowchart LR
+    finding["Diagnostic finding"]
+    object["Affected object identity"]
+    consumers["Dependent fits, trees<br/>reports and claims"]
+    action["Accept · qualify<br/>refuse · investigate"]
+    projection["Structured status<br/>and visible explanation"]
+
+    finding --> object --> consumers --> action --> projection
+```
+
+A diagnostic is not closed when its own table is written. Every dependent
+result must either consume the accepted object, record the qualification, or
+refuse execution. If a repair changes labels, taxa, topology, branch lengths,
+dates, or observations, downstream artifacts become products of the repaired
+identity and prior evidence requires freshness review.
+
 ## Root-To-Tip And Temporal Signal
 
 `compute_root_to_tip_distances` produces per-tip path lengths.

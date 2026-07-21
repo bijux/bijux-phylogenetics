@@ -45,6 +45,43 @@ version, random-number algorithm, tree and model conventions, parameter values,
 and output schema must also be recorded. The realized dataset should be retained
 when exact byte-for-byte replay matters.
 
+## Public Simulation And Truth Surfaces
+
+| Generative question | Public surface | Truth that remains attached |
+| --- | --- | --- |
+| what tree population follows from a declared process? | `simulate_random_trees`, `simulate_birth_death_trees`, `simulate_coalescent_trees` | generator, parameters, seed stream, tree index, topology and time/length convention |
+| how does a gene tree relate to a species tree? | `simulate_multispecies_coalescent_gene_tree` | species branches, samples, lineage events, gene-tree identity |
+| what continuous traits follow from BM, OU, early burst, or speciational change? | `simulate_brownian_traits`, `simulate_ou_traits`, `simulate_early_burst_traits`, `simulate_speciational_traits` | tree, root state, rate/mode parameters, node and tip truth |
+| what covariance should correlated traits express? | `simulate_correlated_brownian_trait_collection` | requested covariance, replicate identity, realized trait pairs |
+| what states and transitions generated discrete tips? | `simulate_discrete_traits`, `simulate_discrete_histories` | rate matrix, state order, root state, branch segments and events |
+| what characters follow from a sequence model? | `simulate_dna_alignment`, `simulate_protein_alignment` | tree, alphabet/model, site count, parameters, seed and realized alignment |
+
+Collection surfaces are not merely convenience loops. They own the replicate
+population, seed allocation, failures, and summary denominator needed for
+recovery or distribution claims.
+
+## Keep Generative Truth Separate From Estimated Results
+
+```mermaid
+flowchart LR
+    contract["Generator contract<br/>model · parameters · seed"]
+    truth["Latent truth<br/>tree · states · events"]
+    realized["Realized dataset<br/>alignment · traits · tips"]
+    estimate["Estimated result<br/>fit · topology · reconstruction"]
+    recovery["Recovery observations<br/>error · coverage · failure"]
+
+    contract --> truth
+    contract --> realized
+    truth --> recovery
+    realized --> estimate --> recovery
+```
+
+The realized dataset is an observation from the generator, not the complete
+truth. The estimated result is an output of a separate method, not a corrected
+truth record. Join them only through stable simulation and replicate identity
+so failed estimation, invalid realizations, and excluded replicates remain in
+the recovery denominator.
+
 ## Dataset Roles
 
 Choose a dataset by the question it can adjudicate:

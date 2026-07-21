@@ -51,6 +51,22 @@ validity does not imply numerical correctness; reference agreement does not
 imply biological adequacy; a passing release gate does not expand the tested
 scope.
 
+## Route A Claim To The Required Proof
+
+| Intended statement | Minimum proof record | Missing proof that blocks the statement |
+| --- | --- | --- |
+| input is accepted | schema and semantic validation with input identity | unresolved identifiers, dimensions, states, or units |
+| native calculation is numerically correct on a bounded case | known-answer/property observation plus model and tolerance | no independent expected value or invariant |
+| search or sampler is adequate for this run | trace/chain diagnostics and complete attempt denominator | winner-only output, failed starts, or absent chain evidence |
+| behavior corresponds with a named implementation | aligned live or checked reference observations | version, parameterization, normalization, tolerance, or denominator absent |
+| method is robust over a declared range | recovery, stress, and sensitivity population | only successful or central cases retained |
+| scientific study claim is supported | current Evidence Book claim with governed inputs, observations, checks, and verdict | stale, neighboring, contract-only, or non-comparable evidence |
+| package is publishable | package, docs, schema, evidence, artifact, and readiness gates | any contradictory or missing governed release record |
+
+Use the narrowest row that actually contains the claim. Proof does not flow
+upward merely because a stronger-sounding lane exists elsewhere in the
+repository.
+
 ## Benchmark Design
 
 A benchmark is an experiment, not a stopwatch. Its record should identify the
@@ -120,6 +136,26 @@ A report should answer, without reconstructing the run:
 
 Figures must not be the only location of a result, and prose must not silently
 upgrade a diagnostic into a scientific conclusion.
+
+## Audit A Report From The Headline Backward
+
+```mermaid
+flowchart RL
+    headline["Headline, table<br/>or figure"]
+    projection["Rendered row<br/>and transformation"]
+    structured["JSON or TSV<br/>source observation"]
+    result["Typed result<br/>status and diagnostics"]
+    execution["Input, method, software<br/>and configuration identity"]
+
+    headline --> projection --> structured --> result --> execution
+```
+
+Every displayed estimate, count, support value, exclusion, and verdict must
+complete this trace. Aggregation must retain its eligible population and
+transformation; captions must retain method and scale; missing or failed rows
+must remain visible in structured status. If the trace stops at prose, a
+figure, or an unversioned intermediate file, the report is not an authoritative
+scientific record.
 
 ## From Benchmark To Evidence
 
