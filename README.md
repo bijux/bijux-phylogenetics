@@ -109,6 +109,21 @@ computational engines. Their adapters own input preparation, invocation,
 failure capture, output parsing, and normalization; they do not relabel the
 external algorithms as native code.
 
+## Read A Result At The Right Layer
+
+| Record | Question it answers | Question it cannot answer alone |
+| --- | --- | --- |
+| typed Python result | What did the method return, and which diagnostics qualify it? | Can another process reconstruct the run? |
+| manifest and linked artifacts | Which inputs, configuration, versions, and outputs belong to this run? | Is the method accurate beyond this execution? |
+| validation result | Did a named invariant or numerical rule hold? | Does the behavior generalize beyond the fixtures? |
+| benchmark report | How did the method behave on a named corpus and environment? | Is it suitable for an untested study? |
+| parity observation | Did Bijux and a named reference agree for the selected case? | Are the tools interchangeable outside the registry? |
+| Evidence Book bundle | What verdict is supported for an identified scientific claim? | Does the verdict extend to neighboring claims or methods? |
+
+Start from the most specific record that answers the question. Do not infer
+study evidence from a successful run, package-wide equivalence from one parity
+case, or biological adequacy from a numerical benchmark.
+
 ## Python Workflow API
 
 Curated workflow entry points live under `bijux_phylogenetics.api`:

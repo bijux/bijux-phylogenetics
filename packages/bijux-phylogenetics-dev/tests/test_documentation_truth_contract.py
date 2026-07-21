@@ -72,6 +72,8 @@ def test_root_readme_publishes_native_external_and_evidence_boundaries() -> None
     assert "evidence-backed" in readme
     assert "bijux-phylogenetics demo run" in readme
     assert "artifacts/capability-demo/manifest.json" in readme
+    assert "Read A Result At The Right Layer" in readme
+    assert "Evidence Book bundle" in readme
 
 
 def test_site_landing_connects_first_run_to_scientific_review() -> None:
@@ -81,6 +83,10 @@ def test_site_landing_connects_first_run_to_scientific_review() -> None:
     assert "Read the\nmanifest before the reports" in landing
     assert "Follow A Scientific Question" in landing
     assert "it is not a numerical inference\nbenchmark" in landing
+    assert "Locate The Authoritative Record" in landing
+    assert (
+        "Runtime parity and Evidence Book status use different vocabularies" in landing
+    )
 
 
 def test_foundation_and_architecture_define_owned_runtime_contracts() -> None:
@@ -124,6 +130,8 @@ def test_product_handbook_routes_analysis_and_preserves_run_identity() -> None:
 
     assert "Select An Analysis Route" in product
     assert "A Complete Result Is More Than An Estimate" in product
+    assert "Locate The Owning Contract" in product
+    assert "parity registry, observation rows, and failure artifacts" in product
     assert "claim identifier, source, inputs, checks, freshness, verdict" in product
     assert "Establish The Run Identity First" in operations
     assert "Minimum Handoff Record" in operations

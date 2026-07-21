@@ -80,6 +80,20 @@ benchmark.
 | compare with established tools | [Parities and correspondence](04-bijux-phylogenetics-parities/index.md) | which APE, GEIGER, phytools, and external-engine relationships are governed |
 | maintain or release the repository | [Maintainer handbook](05-bijux-phylogenetics-maintain/index.md) | how code, docs, packages, and evidence stay synchronized |
 
+## Locate The Authoritative Record
+
+| Reader question | Inspect first | Then verify |
+| --- | --- | --- |
+| What inputs and outputs belonged to a run? | workflow manifest | referenced files, checksums, diagnostics, and software identity |
+| What did a Python or CLI method return? | typed result or structured JSON | public contract, warnings, absence semantics, and persisted artifacts |
+| Did a reference implementation agree? | parity summary and observation rows | selected registry case, normalization, tolerances, and raw reference output |
+| What supports a scientific statement? | Evidence Book manifest and claim records | provenance, input manifest, checks, freshness, and current bundle verdict |
+| Is a release internally consistent? | release-readiness report | built distributions, strict docs, package boundaries, and evidence governance |
+
+HTML and figures are interpretation surfaces. When a value also exists in JSON,
+TSV, a schema-governed result, or a bundle manifest, the structured record owns
+its identity and status.
+
 ## Follow A Scientific Question
 
 ```mermaid
@@ -132,6 +146,13 @@ to interpret claims. A passing unit test proves a contract under its fixtures;
 it does not, by itself, prove parity with a reference analysis. An evidence
 bundle records a particular study execution; it does not certify every model,
 dataset, or scientific interpretation.
+
+Runtime parity and Evidence Book status use different vocabularies. Live APE,
+GEIGER, and phytools harnesses report cases as `passed`, `failed`, or `skipped`.
+Governed study bundles use `matched`, `matched_with_tolerance`,
+`mismatch_explained`, `mismatch_unexplained`, or `not_comparable`. A skipped
+runtime case is not an evidence verdict, and an open follow-through item is not
+a replacement for the recorded bundle verdict.
 
 ## Essential Workflows And Contracts
 

@@ -135,6 +135,22 @@ relationships remain inspectable.
 | evidence bundle | provenance and verdicts for named claims | validation beyond its study scope |
 | published handbook | supported behavior, assumptions, and navigation | proof without executable checks |
 
+## Locate The Owning Contract
+
+| Disputed subject | Canonical record | Reader-facing interpretation |
+| --- | --- | --- |
+| function, signature, or default | curated public source and contract tests | Python and API guides |
+| command, option, or exit behavior | command registry and CLI tests | generated CLI reference and workflow guides |
+| service request or response | pinned OpenAPI schema and server tests | API surface guide |
+| artifact field or omission | versioned result/manifest schema and producer tests | artifact contracts and consumption guide |
+| numerical or topological behavior | named validation or benchmark record | quality and domain guides |
+| parity case outcome | parity registry, observation rows, and failure artifacts | parity handbook |
+| scientific claim verdict | governed Evidence Book bundle and indexes | study guide |
+
+The public handbook explains these contracts but cannot override them. When a
+guide and a structured record disagree, use the owning contract to identify the
+stale projection and preserve the disagreement until it is corrected.
+
 ## Recommended Reading Paths
 
 **Scientific capability:** [domain map](../02-bijux-phylogenetics-domains/index.md)
