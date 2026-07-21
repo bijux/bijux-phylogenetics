@@ -1,122 +1,121 @@
 ---
-title: Product Guide
+title: Phylogenetics Product Handbook
 audience: public
 type: index
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-05
+last_reviewed: 2026-07-21
 ---
 
-# Bijux Phylogenetics Product Guide
+# Phylogenetics Product Handbook
 
-This handbook explains the public runtime in product terms: what the
-repository owns, how the capability families fit together, which interfaces
-are stable, how to operate them, and how to read their quality boundaries
-without flattening everything into one vague claim.
+`bijux-phylogenetics` is a Python runtime for building, running, and reviewing
+phylogenetic analyses. Its public contract includes native analytical code,
+explicit integrations with external engines, typed results, and durable output
+bundles. The distinction between those surfaces is part of the product.
 
-Use it when you want the product answer first without losing the source-tree
-depth behind that answer.
+## Find The Right Answer
 
-```mermaid
-flowchart TD
-    A[Start with a product question] --> B[What is this runtime for?]
-    A --> C[How is it organized?]
-    A --> D[Which interface should I use?]
-    A --> E[How do I run it?]
-    A --> F[How much should I trust a result?]
-    B --> G[Foundation]
-    C --> H[Architecture]
-    D --> I[Interfaces]
-    E --> J[Operations]
-    F --> K[Quality]
-```
-
-<div class="bijux-quicklinks">
-  <a class="md-button md-button--primary" href="../../index.md">Documentation home</a>
-  <a class="md-button" href="foundation/">Runtime purpose and scope</a>
-  <a class="md-button" href="architecture/">Architecture and package roles</a>
-  <a class="md-button" href="interfaces/">Public interfaces</a>
-  <a class="md-button" href="operations/">Installation and workflows</a>
-  <a class="md-button" href="quality/">Quality and release limits</a>
-</div>
-
-## What The Runtime Already Makes Possible
-
-The checked-in runtime already spans:
-
-- tree inspection, comparison, support handling, rootedness review, and
-  rendering
-- alignment validation, trimming, translation, and dataset preparation
-- native finite-state likelihood plus native maximum-likelihood and supported
-  native Bayesian public surfaces
-- comparative regression, phylogenetic signal, discrete evolution,
-  diversification, and ancestral reconstruction
-- explicit parsimony, simulation, datasets, benchmark corpora, and
-  review-facing report generation
-
-## Runtime Capability Atlas
-
-| Capability family | What this handbook should help a reader discover |
+| Question | Read |
 | --- | --- |
-| Tree and alignment runtime | owned semantics, validation paths, comparison surfaces, and reportable artifacts |
-| Native inference runtime | locally owned likelihood and inference contracts rather than only wrapped executables |
-| Comparative runtime | PGLS, signal, regression, ancestral, discrete-evolution, and diversification families |
-| Workflow runtime | CLI and typed Python routes that emit durable artifacts |
-| Trust runtime | benchmarks, validation lanes, evidence links, and release-facing quality reading |
+| What belongs to the runtime, and how does data move through it? | [Architecture](architecture/index.md) |
+| Should I use Python, the CLI, or an output bundle? | [Public interfaces](interfaces/index.md) |
+| How do I install, execute, and review a workflow? | [Runtime operations](operations/index.md) |
+| What does a passing check or evidence record establish? | [Quality and limits](quality/index.md) |
 
-## Why This Is Not A Small Wrapper Layer
+## Analytical Capability Map
 
 ```mermaid
-flowchart LR
-    A[Canonical runtime] --> B[Trees and alignments]
-    A --> C[Native likelihood and inference]
-    A --> D[Comparative and ancestral analysis]
-    A --> E[Reports, bundles, and artifacts]
-    A --> F[Benchmarks and validation]
+flowchart TB
+    foundations["Scientific foundations"]
+    analysis["Analytical methods"]
+    execution["Execution paths"]
+    review["Review surfaces"]
+
+    foundations --> trees["Tree topology, branch lengths,<br/>taxa, alignments"]
+    foundations --> models["Finite-state likelihood,<br/>distance, covariance"]
+    trees --> analysis
+    models --> analysis
+    analysis --> inference["ML and Bayesian inference"]
+    analysis --> comparative["Comparative, ancestral,<br/>parsimony, biogeography"]
+    inference --> execution
+    comparative --> execution
+    execution --> native["Native Python runtime"]
+    execution --> adapters["Governed external-engine adapters"]
+    native --> review
+    adapters --> review
+    review --> outputs["Typed results, diagnostics,<br/>reports, manifests, evidence"]
 ```
 
-The runtime is larger than a "FASTA to tree" wrapper story. It owns a real
-tree runtime, lower-level likelihood contracts, benchmark surfaces, typed
-workflow results, and substantial comparative-analysis families. This
-handbook keeps that depth visible while also keeping evidence limits visible.
+This is not a maturity diagram: capability families have different validation
+depth. Consult [validation lanes](quality/validation-lanes.md) before turning
+runtime breadth into a scientific assurance claim.
 
-## Read By Question
+## What Is Native
 
-- What is this repository trying to do, and what is it refusing to claim?
-  Start with [Foundation](foundation/index.md).
-- Which package or capability family owns a surface?
-  Start with [Architecture](architecture/index.md).
-- Which entry point should I use for my task?
-  Start with [Interfaces](interfaces/index.md).
-- How do I install the runtime and run practical workflows?
-  Start with [Operations](operations/index.md).
-- How do I judge trust, release posture, and limits?
-  Start with [Quality](quality/index.md).
+The repository owns the semantics and implementation of its tree runtime,
+alignment diagnostics, finite-state likelihood foundations, supported native
+maximum-likelihood and Bayesian paths, comparative models, ancestral methods,
+parsimony families, simulations, datasets, and output contracts.
 
-## Flagship Guides
+“Native” does not mean “universally preferred” or “validated for every
+dataset.” It identifies implementation ownership. Suitability is a separate
+question answered through model assumptions, diagnostics, benchmarks, and
+study evidence.
 
-- [Surface selection guide](interfaces/surface-selection.md)
-- [Native maximum-likelihood workflows](operations/native-maximum-likelihood-workflows.md)
-- [Native Bayesian workflows](operations/native-bayesian-workflows.md)
-- [Native benchmark review](operations/native-benchmark-review.md)
-- [Validation lanes](quality/validation-lanes.md)
-- [Claim reading guide](foundation/claim-reading-guide.md)
+## What Is Integrated
 
-## Read This Handbook Like A Map
+Adapters make established engines usable inside governed workflows. They own
+input preparation, invocation, failure reporting, output parsing, and artifact
+packaging. They do not own the scientific algorithms inside the external
+executable. This boundary matters for installation, reproducibility, licensing,
+and claim language.
 
-1. Start with [Foundation](foundation/index.md) to understand what the runtime
-   is claiming and refusing to claim.
-2. Continue to [Architecture](architecture/index.md) to understand which
-   package and capability family owns what.
-3. Use [Interfaces](interfaces/index.md) to choose the right public surface.
-4. Use [Operations](operations/index.md) to run the package in the right mode.
-5. Finish with [Quality](quality/index.md) to understand how strong the proof
-   surface really is.
+## A Typical Analysis
 
-## Related Reading
+1. Validate taxon identities, tree shape, alignment content, and model inputs.
+2. Select an owned native method or an explicit external-engine adapter.
+3. Execute through Python for composition or the CLI for repeatable operation.
+4. Inspect typed diagnostics before interpreting parameter estimates.
+5. Persist the report, manifest, tables, and figures needed for review.
+6. Use evidence records only when making claims covered by those records.
 
-- Use the [Evidence book](../02-bijux-phylogenetics-evidence-book/index.md) when the
-  question is study evidence, parity, freshness, or coverage gaps.
-- Use the [Maintainer handbook](../03-bijux-phylogenetics-maintain/index.md)
-  when the question is release stewardship, documentation alignment, or
-  repository health.
+The runtime is designed so that the scientific result is not the only output.
+Inputs, configuration, diagnostics, and provenance remain available to a
+reviewer.
+
+## Ownership Boundaries
+
+| Surface | Owns | Does not imply |
+| --- | --- | --- |
+| runtime method | computation and result contract | evidence closure for every use |
+| engine adapter | orchestration and normalized artifacts | native ownership of the engine |
+| benchmark | behavior on a named corpus and configuration | universal performance ranking |
+| evidence bundle | provenance and verdicts for named claims | validation beyond its study scope |
+| documentation | public contract and honest navigation | proof without executable checks |
+
+## Recommended Reading Paths
+
+**First analysis:** [installation](operations/installation-and-setup.md) →
+[surface selection](interfaces/surface-selection.md) →
+[common workflows](operations/common-workflows.md) →
+[artifact consumption](interfaces/artifact-consumption-guide.md).
+
+**Technical review:** [runtime system map](architecture/runtime-system-map.md) →
+[Python surface](interfaces/python-surface.md) →
+[artifact contracts](interfaces/artifact-contracts.md) →
+[test strategy](quality/test-strategy.md).
+
+**Scientific claim review:** [claim reading guide](foundation/claim-reading-guide.md)
+→ [evidence boundary](foundation/evidence-boundary.md) →
+[Evidence book](../02-bijux-phylogenetics-evidence-book/index.md).
+
+## Product Limits
+
+- The available command or function is not a recommendation to use its model.
+- A deterministic bundle is reproducible only with its declared inputs and
+  execution assumptions.
+- Numerical agreement needs stated tolerances and comparable conventions.
+- External engines remain separate software with their own support constraints.
+- Open evidence verdicts are visible product information, not documentation
+  defects to be worded away.

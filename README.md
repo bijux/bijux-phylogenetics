@@ -22,9 +22,11 @@
 [![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
 <!-- bijux-phylogenetics-badges:generated:end -->
 
-`bijux-phylogenetics` is the repository for the canonical Bijux phylogenetics
-runtime, its comparative-analysis evidence, and its release-grade public
-documentation.
+`bijux-phylogenetics` joins an executable scientific runtime to the evidence
+needed to review selected claims about it. The repository owns native tree,
+likelihood, inference, comparative, ancestral, parsimony, simulation, and
+reporting code; it also provides explicit adapters where established external
+engines remain the computational owner.
 
 The checked-in runtime already spans tree semantics, alignments, native
 likelihood, maximum-likelihood inference, supported Bayesian workflows,
@@ -33,13 +35,21 @@ benchmarks, and governed evidence.
 
 ```mermaid
 flowchart LR
-    A[Canonical runtime] --> B[Trees and alignments]
-    A --> C[Likelihood and inference]
-    A --> D[Comparative and ancestral analysis]
-    A --> E[Reports, bundles, and benchmarks]
-    F[Evidence book] --> G[Study-backed trust review]
-    H[Maintainer package] --> I[Docs, quality, and release governance]
+    inputs["Trees, alignments,<br/>traits, partitions"]
+    runtime["Native runtime or<br/>governed adapter"]
+    results["Typed results<br/>and diagnostics"]
+    artifacts["Reports, manifests,<br/>tables, figures"]
+    evidence["Study evidence<br/>for bounded claims"]
+
+    inputs --> runtime --> results --> artifacts
+    artifacts -. selected workflows .-> evidence
 ```
+
+The documentation uses four different words deliberately: **implemented**
+means code exists; **tested** means a stated contract passes its fixtures;
+**benchmarked** means behavior was measured on a named corpus; and
+**evidence-backed** means a governed study record supports a bounded claim.
+They are not interchangeable maturity labels.
 
 ## Start Here
 
