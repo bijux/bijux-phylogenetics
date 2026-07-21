@@ -920,13 +920,30 @@ def test_maintainer_handbook_defines_change_and_artifact_ownership() -> None:
 def test_maintainer_indexes_define_operational_decisions_without_meta_prose() -> None:
     documentation = _read(MAINTAINER_ROOT / "documentation-system" / "index.md")
     trust = _read(MAINTAINER_ROOT / "trust-surfaces" / "index.md")
+    public_interface = _read(
+        MAINTAINER_ROOT
+        / "trust-surfaces"
+        / "public-interface-and-artifact-maintenance.md"
+    )
     operations = _read(MAINTAINER_ROOT / "repository-operations" / "index.md")
 
     assert "Resolve Ownership Before Editing" in documentation
+    assert "Separate Reader And Maintainer Language" in documentation
+    assert "Propagate A Contract Change" in documentation
+    assert "Documentation Review Packet" in documentation
     assert "Completion Criteria" in documentation
     assert "Detect Cross-Surface Drift" in trust
     assert "Release Review Questions" in trust
+    assert "Contract Projection Matrix" in public_interface
+    assert "Maintain The Artifact Handoff" in public_interface
+    assert "Public Result Invariants" in public_interface
+    assert "Review A Material Interface Change" in public_interface
+    assert "Publication Decision" in public_interface
     assert "Classify Every Output" in operations
+    assert "Follow The Repository State Machine" in operations
+    assert "Decide Whether Generated Output Is Governed" in operations
+    assert "Inspect Each Handoff" in operations
+    assert "Repository Gate Routing" in operations
     assert "Operational Completion" in operations
     for page in (documentation, trust, operations):
         assert "Why This Section Matters" not in page

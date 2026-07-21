@@ -39,6 +39,71 @@ Root clutter, ad hoc caches, and output written into package source are
 operational failures even when ignored by Git. The run layout must make
 ownership and disposal unambiguous.
 
+## Follow The Repository State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> Classified: identify owner and output class
+    Classified --> Executed: run into declared destination
+    Executed --> Inspected: inspect exit, artifacts, and worktree
+    Inspected --> Validated: owning integrity checks pass
+    Inspected --> Blocked: output missing, stale, or contradictory
+    Validated --> Committed: governed source/output only
+    Blocked --> Diagnosed: retain failure and assign owner
+    Diagnosed --> Classified: corrective change
+    Committed --> [*]
+```
+
+The state transition is based on retained evidence, not terminal appearance.
+An exit code of zero does not establish output completeness, and an expected
+scientific limitation does not make a release failure when its governing
+record and publication language agree.
+
+## Decide Whether Generated Output Is Governed
+
+Before committing generated content, identify all four parts of its contract:
+
+| Contract part | Required answer |
+| --- | --- |
+| owner | which checked-in source, schema, registry, or evidence record determines the output? |
+| generator | which repository command reproduces it without undocumented local state? |
+| destination | which declared path is the authoritative checked-in projection? |
+| validator | which drift, schema, checksum, or integrity check rejects disagreement? |
+
+If any answer is missing, treat the output as a transient artifact until its
+governance is defined. Do not promote a local report merely because it is
+useful, and do not discard a governed projection merely because it can be
+regenerated.
+
+## Inspect Each Handoff
+
+For any repository command, review the input identity, command and environment
+identity, output inventory, status and warning channels, and resulting worktree
+state. A handoff is complete only when downstream consumers can distinguish:
+
+- no output was expected;
+- output was produced and accepted;
+- execution failed before output;
+- output was produced but rejected by validation;
+- output is scientifically bounded but operationally valid;
+- output is stale because an upstream identity changed.
+
+Collapsing these states into “pass” or “fail” hides the action a maintainer must
+take and can silently narrow the denominator of a published report.
+
+## Repository Gate Routing
+
+| Changed surface | Minimum repository gate |
+| --- | --- |
+| documentation source or navigation | `make docs` plus the documentation truth contract |
+| Evidence Book structure, bundle contract, or index | `make validate-evidence-book` |
+| command output paths or artifact lifecycle | `make check-artifact-governance` |
+| package, schema, evidence, or publication alignment | `make check-release-readiness` |
+
+These gates complement the owning unit and contract tests; they do not replace
+them. Run narrower checks while developing and the complete affected gate
+before declaring the repository state publishable.
+
 ## Maintained Guides
 
 - [Artifact hygiene](artifact-hygiene.md) explains canonical artifact paths,
