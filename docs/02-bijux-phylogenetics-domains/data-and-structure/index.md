@@ -42,6 +42,46 @@ Joining objects creates a new governed identity. Record retained taxa, excluded
 rows, renamed labels, reordered matrices, pruned branches, and any operation
 that changes the analytical population.
 
+## The Identity Spine
+
+```mermaid
+flowchart LR
+    source["Source bytes<br/>checksum and format"]
+    records["Parsed records<br/>labels and order"]
+    reconciled["Reconciled objects<br/>matches and exclusions"]
+    analytical["Analytical population<br/>tree · matrix · table"]
+    derived["Derived object<br/>transform · prune · subset"]
+    result["Method result<br/>input identity retained"]
+
+    source --> records --> reconciled --> analytical --> result
+    analytical --> derived --> result
+```
+
+Every arrow is observable. Parsing can normalize syntax without changing
+scientific identity; reconciliation and derivation can change the population
+and therefore require a new identity plus a ledger back to the source.
+
+## Handoff Requirements By Consumer
+
+| Consumer | Required structural handoff | Refuse when |
+| --- | --- | --- |
+| topology or branch analysis | validated tree, rooting state, tip order, branch units, support method | topology is malformed, required rooting is absent, or branch semantics are unknown |
+| sequence likelihood | equal-length alignment, alphabet, taxon order, partitions, gap/ambiguity policy | state space is incoherent, partitions overlap, or tree/alignment taxa cannot be reconciled |
+| comparative model | tree plus typed trait table, exact analytical population, response/predictor roles, units | duplicate taxa, unexplained exclusions, invalid design columns, or mismatched row order |
+| ancestral reconstruction | tree, observed states/traits, node identity policy, transition or covariance model | tips are unmapped, state coding is incomplete, or the method’s tree assumptions fail |
+| tree-set analysis | stable member identifiers, weights/frequencies, common taxon policy, failed-member ledger | members are silently discarded or summaries mix incompatible taxa/rooting |
+| publication artifact | result identity, source checksums, exclusions, transforms, diagnostics | a figure/table cannot be traced to one accepted analytical object |
+
+## Operations That Create A New Object
+
+Pruning, rerooting, resolving or collapsing nodes, rescaling branch lengths,
+filtering sites, trimming alignments, translating coding sequence, changing a
+partition scheme, aggregating traits, transforming a response, imputing values,
+or reordering to match another object creates a derived object. Preserve the
+operation, parameters, before/after dimensions, exclusions, and source
+checksum. A derived object can be valid while answering a different question
+from its source.
+
 ## Boundary Rules
 
 - Parsing preserves source meaning; it does not silently repair scientific

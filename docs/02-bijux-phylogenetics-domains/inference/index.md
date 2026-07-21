@@ -55,6 +55,39 @@ The families may share trees, states, and reports, but they do not share an
 objective or uncertainty interpretation. Preserve the method family in every
 result and artifact identity.
 
+## Separate Objective, Exploration, And Support
+
+```mermaid
+flowchart LR
+    objective["Objective<br/>likelihood · posterior · cost"]
+    exploration["Exploration<br/>optimization · sampling · search"]
+    estimate["Estimate or<br/>selected topology"]
+    support["Support and uncertainty<br/>resampling · posterior · alternatives"]
+    interpretation["Bounded inference"]
+
+    objective --> exploration --> estimate --> support --> interpretation
+```
+
+These layers fail independently. A correct likelihood can be paired with an
+inadequate topology search. A completed chain can target the wrong posterior.
+A best parsimony score can coexist with many equal-best trees. Support is not a
+generic confidence number added after selection; its producing procedure and
+denominator are part of the estimand.
+
+## Native And External Inference Paths
+
+| Path | Computation owner | Retained method state | Assurance boundary |
+| --- | --- | --- | --- |
+| native nucleotide maximum likelihood | Bijux finite-state likelihood and native search surfaces | model, objective, topology/search candidates, estimates, convergence and artifacts | supported contracts and benchmark corpora only |
+| native Bayesian DNA inference | Bijux Bayesian model, prior, proposal and sampler surfaces | initial state, priors, proposals, samples, acceptance, burn-in and diagnostics | supported DNA entry-point/model boundary |
+| native parsimony | Bijux scoring, reconstruction and topology-search surfaces | coding, cost matrix, moves, scores, equal-best trees and support | declared character and search contract |
+| IQ-TREE2 or FastTree | named external executable through Bijux adapters | executable/version, command, model, native files, parsed topology/support | adapter correspondence; external algorithm ownership retained |
+| MrBayes or BEAST | named external executable through Bayesian adapters | prepared analysis, execution identity, traces, trees, burn-in and diagnostics | parsed or live-run state must be distinguished |
+
+“Native” identifies implementation ownership, not universal superiority.
+“Adapter” identifies an execution and parsing contract, not weaker science.
+Select by the scientific model and assurance available for the intended claim.
+
 ## Select The Inferential Contract
 
 | If the question is… | Required declaration | Do not omit |
@@ -75,6 +108,15 @@ chains explored materially different regions. Retain accepted and rejected
 moves where supported, convergence and termination reasons, equal or near-equal
 solutions, support replicates, and warnings. These records distinguish a
 well-supported optimum from the best result found under a narrow search.
+
+### Search Evidence By Family
+
+| Family | Exploration record | Stability evidence | Warning that blocks a clean conclusion |
+| --- | --- | --- | --- |
+| maximum likelihood | starting topologies/parameters, evaluated moves, objective trace, termination | repeated starts, nearby solutions, parameter/profile sensitivity | non-finite objective, boundary estimate without treatment, inconsistent starts |
+| Bayesian | chain seed/state, proposal schedule, accepted/rejected moves, retained draws | ESS, drift, independent-chain agreement, posterior topology diversity | inadequate effective size, non-stationary trace, inconsistent chains |
+| parsimony | initial trees, move set, accepted scores, plateau/termination, equal-best set | repeated searches, consensus, resampling and move-set sensitivity | unexplored search space presented as exhaustive, discarded equal-best trees |
+| distance | input distances, correction, matrix diagnostics, construction order | resampling, residuals, influence and alternative correction | invalid/saturated distances or a matrix that violates method assumptions |
 
 ## Interpret The Run State
 

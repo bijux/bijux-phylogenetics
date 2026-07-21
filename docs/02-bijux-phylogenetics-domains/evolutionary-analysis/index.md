@@ -32,6 +32,21 @@ ancestral reconstruction, diversification summaries, and sensitivity review.
 host, niche, and region histories plus continuous coordinate movement into
 branch ledgers, clade summaries, exclusions, and maps.
 
+## Establish The Observation Population
+
+Before fitting an evolutionary model, identify what one row means. A species
+mean, an individual, a population, a branch event, and a spatial observation
+are different sampling units even when all carry the same taxon label.
+
+| Population decision | Record | Consequence when omitted |
+| --- | --- | --- |
+| unit of observation | species, individual, population, branch, locality, or aggregate | uncertainty and independence are misrepresented |
+| repeated measurements | subject/taxon grouping and within-group error model | pseudo-replication or discarded variation |
+| taxon reconciliation | retained, excluded, duplicated, aggregated, and reordered rows | model changes are confounded with population changes |
+| trait scale | units, transform, centering, standardization, factor coding | coefficients and reconstructed values lose meaning |
+| missingness | missing mechanism, exclusion/imputation rule, affected columns | fitted population and uncertainty become irreproducible |
+| tree uncertainty | selected tree or weighted tree set plus failed members | one topology is treated as known history |
+
 ## From Reconstructed State To Historical Claim
 
 ```mermaid
@@ -48,6 +63,18 @@ flowchart LR
 A branch transition inherits uncertainty from the tree, state model, root
 treatment, and observations. An ecological or geographic interpretation must
 retain that chain rather than treating a rendered map as primary evidence.
+
+## Keep Three Result Layers Separate
+
+| Layer | Examples | What it establishes | What it cannot establish alone |
+| --- | --- | --- | --- |
+| fitted model | covariance parameter, transition rates, regression coefficients, likelihood | behavior under the declared tree, data and model | literal truth of the evolutionary process |
+| reconstruction | node value/state, branch transition, stochastic history, coordinate path | conditional historical estimate or sample | observed history or certainty at an internal node |
+| interpretation | trait association, host shift, niche transition, geographic movement | bounded biological reading of the retained results | causation, completeness, or robustness outside sensitivity checks |
+
+Move forward only when identity and uncertainty survive the handoff. A map or
+annotated tree is a projection of reconstruction records; it must not become a
+new source of node states or branch events.
 
 ## Match The Question To The Model Family
 
@@ -73,6 +100,16 @@ rooting, trait transformation, factor coding, covariance or transition model,
 parameter bounds, and missing-data policy. A result that changes materially
 along one axis should report that dependence rather than hide it behind the
 preferred fit.
+
+## Refusal And Qualification Boundaries
+
+Refuse a clean evolutionary conclusion when the analytical population is
+ambiguous, the tree lacks required branch semantics, the design matrix is
+rank-deficient, an estimated covariance/transition parameter is unidentified,
+node identities cannot be reconciled, or plausible trees/models reverse the
+conclusion. Qualify rather than suppress boundary estimates, unstable clades,
+failed tree-set members, weakly supported transitions, and scale-dependent
+effects.
 
 ## Interpretation Boundary
 

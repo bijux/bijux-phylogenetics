@@ -51,6 +51,48 @@ The decision is reproducible only when the object, rule, denominator, and
 action remain linked. A passing scalar detached from that chain is not an
 assurance record.
 
+## Assurance Requires Independence And Coverage
+
+```mermaid
+quadrantChart
+    title Assurance strength depends on independence and coverage
+    x-axis Narrow coverage --> Broad coverage
+    y-axis Shared assumptions --> Independent basis
+    quadrant-1 Stronger bounded assurance
+    quadrant-2 Independent spot check
+    quadrant-3 Internal contract evidence
+    quadrant-4 Broad but potentially circular
+    "unit invariants": [0.25, 0.2]
+    "property tests": [0.55, 0.35]
+    "independent known answers": [0.45, 0.85]
+    "live reference registry": [0.75, 0.8]
+    "governed study": [0.7, 0.9]
+```
+
+Coverage counts the declared population, including failures and exclusions.
+Independence asks whether the expected result comes from a genuinely separate
+derivation, implementation, dataset, or observation. Many self-consistent
+cases can still share one defect; one independent case can still be too narrow
+for a broad claim.
+
+## Denominator Contract
+
+Every assurance summary records:
+
+| Count | Meaning |
+| --- | --- |
+| declared | cases, datasets, runs, parameters, nodes, or claims in scope |
+| selected | records chosen by an explicit filter |
+| executed | selected records for which computation actually ran |
+| comparable | executed records with aligned identities and estimands |
+| passed or matched | comparable records satisfying the registered rule |
+| failed or mismatched | comparable records violating the rule |
+| skipped, unavailable, or not comparable | selected records outside numerical adjudication, with cause |
+
+The denominator used in a percentage must be named. Reporting only successful
+rows converts execution gaps and scientific boundaries into invisible
+selection.
+
 ## Choose Evidence That Matches The Claim
 
 | Claim | Appropriate starting corpus | Required comparison |
@@ -72,6 +114,22 @@ Mismatches, skips, non-convergence, incomplete engine output, unsupported
 parameterizations, and not-comparable cases belong in the result set. Report
 their denominators and causes. Removing them turns a bounded experiment into a
 selection-biased summary.
+
+## Read Sensitivity As A Result
+
+Sensitivity is not a ceremonial list of alternative settings. Predeclare the
+axes, execute their cross-product or an explicit design, retain failures, and
+classify the conclusion:
+
+- **stable:** the claim and material interpretation survive the declared
+  alternatives;
+- **qualified:** the direction survives but magnitude, uncertainty, topology,
+  or selected model changes materially;
+- **unstable:** plausible alternatives reverse or erase the conclusion;
+- **not assessable:** required executions or comparable outputs are missing.
+
+The preferred configuration does not erase the other cells. A stability label
+is meaningful only with the tested axes and completed denominator.
 
 ## Assurance Rule
 

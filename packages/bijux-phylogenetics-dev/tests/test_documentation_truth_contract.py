@@ -398,19 +398,31 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "Attribute Failure To The Deciding Domain" in domain_index
     assert "Intake Contract" in data_index
     assert "Refuse Ambiguous Inputs" in data_index
+    assert "The Identity Spine" in data_index
+    assert "Handoff Requirements By Consumer" in data_index
+    assert "Operations That Create A New Object" in data_index
     assert "Select The Inferential Contract" in inference_index
     assert "Review The Search, Not Only The Winner" in inference_index
     assert "Method Ownership Map" in inference_index
     assert "Distance-based inference" in domain_index
     assert "Bayesian inference" in domain_index
     assert "Interpret The Run State" in inference_index
+    assert "Separate Objective, Exploration, And Support" in inference_index
+    assert "Native And External Inference Paths" in inference_index
+    assert "Search Evidence By Family" in inference_index
     assert "Completion is not a scientific verdict" in inference_index
     assert "Match The Question To The Model Family" in evolution_index
     assert "From Reconstructed State To Historical Claim" in evolution_index
     assert "Sensitivity Axes" in evolution_index
+    assert "Establish The Observation Population" in evolution_index
+    assert "Keep Three Result Layers Separate" in evolution_index
+    assert "Refusal And Qualification Boundaries" in evolution_index
     assert "Choose Evidence That Matches The Claim" in assurance_index
     assert "Assurance Is A Decision Chain" in assurance_index
     assert "Preserve Negative Evidence" in assurance_index
+    assert "Assurance Requires Independence And Coverage" in assurance_index
+    assert "Denominator Contract" in assurance_index
+    assert "Read Sensitivity As A Result" in assurance_index
     assert "Ecology and phylogeography" in domain_index
     assert "Diagnostics and sensitivity" in domain_index
     assert "Status Namespaces" in assurance_domain
