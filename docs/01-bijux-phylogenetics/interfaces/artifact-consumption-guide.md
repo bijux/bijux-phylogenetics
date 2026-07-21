@@ -9,109 +9,205 @@ last_reviewed: 2026-07-21
 
 # Artifact Consumption Guide
 
-Consume a workflow bundle from its manifest outward. The manifest identifies
-the run and its declared files; structured results carry values and
-diagnostics; tables and figures provide purpose-specific projections.
+Consume a workflow bundle from its manifest outward. The manifest establishes
+which run the files belong to; structured results preserve values and status;
+tables, figures, and reports project selected parts for a purpose. Opening the
+most polished figure first reverses the trust order.
 
 ```mermaid
 flowchart LR
-    manifest["Manifest"] --> identity["Run, inputs, versions,<br/>configuration"]
-    manifest --> structured["JSON and TSV"]
-    manifest --> presentation["HTML, Markdown,<br/>SVG and other figures"]
-    structured --> interpretation["Scientific review"]
-    presentation --> interpretation
+    manifest["Manifest<br/>identity and inventory"]
+    provenance["Inputs · configuration<br/>runtime and engines"]
+    status["Completion · warnings<br/>diagnostics and omissions"]
+    values["Estimates · trees<br/>histories and support"]
+    views["Tables · figures<br/>human reports"]
+    decision["Bounded review decision"]
+
+    manifest --> provenance --> status --> values --> views --> decision
 ```
-
-## Review Sequence
-
-1. Open the manifest and verify workflow identity and schema version.
-2. Confirm input identities, taxon scope, configuration, and engine/runtime
-   versions match the analysis under review.
-3. Check declared status, warnings, convergence, support, uncertainty, and
-   excluded cases in the structured result.
-4. Reconcile every table and figure with a declared output.
-5. Verify integrity metadata when provided.
-6. Follow evidence links only when a claim-level verdict is required.
 
 ## Establish Provenance Before Values
 
-```mermaid
-flowchart LR
-    producer["Runtime and engine<br/>identity"]
-    inputs["Input identity and<br/>configuration"]
-    status["Execution and component<br/>status"]
-    values["Estimates, trees,<br/>histories, diagnostics"]
-    presentation["Tables, figures,<br/>reports"]
+Use this order for every retained run:
 
-    producer --> inputs --> status --> values --> presentation
+1. identify the bundle root and open its manifest;
+2. verify workflow, run, schema, input, configuration, runtime, and engine
+   identity;
+3. reconcile the declared inventory with the files actually present;
+4. inspect completion state, warnings, convergence, support, uncertainty,
+   exclusions, and skipped components;
+5. verify checksums and path containment where the contract provides them;
+6. read machine-readable estimates and ledgers;
+7. use figures and reports to interpret the same declared record;
+8. follow claim links only when the decision requires Evidence Book support.
+
+Stop at the first contradiction. A schema-valid result paired with the wrong
+input checksum is not the run under review. A complete directory with a failed
+manifest status is not successful. A favorable summary cannot override a
+failed observation ledger.
+
+## Identify The Bundle
+
+Record at least:
+
+| Identity field | Review question |
+| --- | --- |
+| workflow or report kind | Which contract produced this bundle? |
+| run or evidence identifier | Can every linked file be traced to the same record? |
+| schema version | Does the consumer understand this structure and meaning? |
+| runtime distribution and version | Which Bijux implementation produced the normalized result? |
+| external executable and version | Which program owned external computation? |
+| input paths and digests | Are these the intended tree, alignment, tables, and configuration? |
+| seed and resource settings | Can stochastic and parallel behavior be interpreted? |
+| expected and produced outputs | Are missing, failed, skipped, and optional files explicit? |
+
+Paths help a human navigate; digests establish byte identity. Neither proves
+that the chosen input or model answers the scientific question.
+
+## Interpret Artifact Roles
+
+| Artifact | Read it for | Do not use it as |
+| --- | --- | --- |
+| manifest | identity, inventory, relationships, configuration, provenance | proof that every declared operation succeeded |
+| JSON result | typed nested state, diagnostics, automation, missing values | an invitation to depend on undocumented fields |
+| TSV or CSV ledger | stable row-grain comparison and supplementary review | a context-free record joined by row order |
+| HTML or Markdown report | integrated human interpretation | the only owner of a scientific value |
+| SVG or raster figure | topology, traits, support, uncertainty, and presentation | primary numerical data extracted from pixels |
+| external native file | engine-owned detail and diagnosis | a normalized cross-engine contract |
+| captured standard output/error | command diagnosis and version behavior | a stable schema for scraping |
+
+Retain both native engine files and normalized records. Normalization makes
+consumption consistent; it does not transfer computational ownership or
+guarantee that every native detail was represented.
+
+## Reconstruct The Denominator
+
+For a batch, parity registry, bootstrap, simulation, benchmark, or evidence
+collection, the denominator is part of the result. Reconcile:
+
+```text
+selected = successful + failed + skipped + not_evaluable
 ```
 
-Reading in the reverse direction invites false confidence: a polished figure
-can be generated from a partial result, and a plausible estimate can belong to
-different taxa or parameterization than expected.
+Use the vocabulary declared by that record; the equation illustrates
+accounting, not universal status names. Confirm case IDs and component IDs,
+not only counts. A report of 95 successful cases is uninterpretable until the
+five other selected cases are accounted for.
 
-## Artifact Roles
+Missing records must remain visible. Do not calculate agreement only over
+successful outputs unless the method explicitly defines that denominator and
+reports the exclusions.
 
-| Artifact | Appropriate use | Unsafe shortcut |
-| --- | --- | --- |
-| manifest | identity, inventory, relationships, provenance | assuming every directory file belongs to the run |
-| JSON result | typed nested state, diagnostics, automation | depending on undocumented incidental fields |
-| TSV ledger | stable row-wise analysis and comparison | inferring context absent from the manifest |
-| HTML/Markdown report | integrated human interpretation | scraping values when structured output exists |
-| SVG or raster figure | visual topology, traits, support, uncertainty | treating pixels as the primary numerical record |
-| captured engine output | external execution diagnosis and provenance | treating engine text as normalized schema |
+## Join Ledgers By Declared Identity
 
-## Linked Ledgers
+Model-selection, coefficient, branch, clade, support, ancestral-state,
+transition, event, benchmark, parity, and claim ledgers have different grains.
+Join only through documented identifiers such as run ID, case ID, model ID,
+tree identity, node or split identity, taxon ID, and claim ID.
 
-Model-selection, branch, clade, event, support, trait, benchmark, and parity
-ledgers usually represent different grains. Join them only through documented
-identifiers. Row order, display labels, and filenames are not reliable foreign
-keys unless the contract declares them.
+Unsafe joins include:
 
-## Status Before Estimates
+- assuming two row orders describe the same taxa;
+- equating display labels with stable node or clade identity;
+- joining models only by a shortened formula label;
+- assuming matching filenames imply matching inputs;
+- attaching a figure to the nearest manifest by directory proximity.
 
-A completed process can still produce a scientifically unusable result.
-Inspect parser warnings, taxon exclusions, optimizer state, chain diagnostics,
-effective sample size, topology support, uncertainty, and sensitivity before
-reading headline estimates.
+When no stable join exists, report the records separately. An invented join
+creates stronger apparent evidence than either source supplies.
 
-For external-engine runs, retain both the normalized result and original
-captured output. The first supports stable consumption; the second explains
-engine-specific failures and version behavior.
+## Read Status Before Estimates
+
+A process can exit successfully while returning a scientifically unusable
+result. Review the status appropriate to the method:
+
+- input acceptance, repaired or excluded records, and reconciled taxa;
+- optimizer termination, boundary estimates, search coverage, and competing
+  optima;
+- chain convergence, effective sample size, drift, burn-in, and replicate
+  agreement;
+- bootstrap or posterior support and the number of contributing replicates;
+- warning, partial, missing, skipped, and not-evaluable components;
+- sensitivity to model, tree, pruning, coding, root prior, and parameterization.
+
+Do not collapse these into one boolean. Completion, interpretability,
+correspondence, and claim support are independent decisions.
 
 ## Handle Incomplete Bundles
 
 1. Preserve the bundle unchanged before attempting recovery.
-2. Compare the declared inventory with present files and per-component status.
-3. Classify whether the failure belongs to input validation, computation,
-   external execution, parsing, or persistence.
-4. Decide whether the documented contract permits a partial result.
+2. Compare expected inventory, produced files, component status, and checksum
+   state.
+3. Attribute failure to input validation, computation, external execution,
+   parsing, normalization, or persistence.
+4. Determine whether the contract permits a scientifically usable partial
+   result and which claims it excludes.
 5. Rerun only after retaining enough state to explain the original outcome.
 
-Do not copy successful files into a new directory and present them as the
-complete run. If partial outputs are scientifically usable, their manifest and
-consumer statement must identify the missing components and reduced scope.
+Do not copy successful files into a new directory and present them as a
+complete run. If partial outputs are used, their manifest, downstream report,
+and decision record must identify missing components and reduced scope.
 
-## Compatibility
+## Verify Integrity Without Overclaiming
 
-Pin artifact schema versions in long-lived consumers. Accept documented
-additive fields, reject unknown incompatible versions, and do not depend on
-JSON object order, prose wording, HTML structure, or cosmetic filenames.
+For every checksum entry:
 
-When migrating a consumer, compare representative old and new bundles and test
-meaning—not merely parse success.
+1. resolve the path beneath the declared bundle root;
+2. reject absolute paths or traversal outside that root unless the contract
+   explicitly governs external references;
+3. recompute the digest from the retained bytes;
+4. verify size and role where available;
+5. reconcile the file with the expected inventory and status.
 
-For automated consumers, fixture the failure and partial-status cases as well
-as the happy path. A consumer that accepts every parseable bundle is not
-enforcing the artifact contract.
+A matching checksum proves byte identity for a referenced file. It does not
+prove provenance, schema understanding, method appropriateness, numerical
+correctness, or claim support.
 
-## Evidence Bundles
+## Consume Compatible Versions
 
-Evidence bundles add source provenance, claim IDs, checks, tolerances, and
-verdicts. Begin with `manifest.json`, `inputs.manifest.json`, `claims.json`, and
-`checks.json`, then inspect machine-readable results before reviewer summaries.
-A checksum proves byte identity; it does not prove scientific correctness.
+Pin schema versions in long-lived consumers. Accept documented additive
+fields, reject unknown incompatible versions, and ignore JSON key order, prose
+wording, HTML structure, and cosmetic filenames.
 
-See [artifact contracts](artifact-contracts.md) for producer guarantees and
+Migration tests should include:
+
+- one complete successful bundle;
+- one refused input;
+- one partial or failed external run;
+- one warning-bearing or boundary result;
+- one bundle with unknown additive fields;
+- one deliberately incompatible schema version;
+- one checksum or inventory contradiction.
+
+Parsing every case successfully is not the goal. The consumer must preserve or
+reject each case according to its semantics.
+
+## Read Evidence Bundles As Claim Records
+
+Evidence bundles strengthen the contract with source provenance, claim IDs,
+checks, tolerances, observation status, and bundle verdict. Begin with
+`manifest.json`, `inputs.manifest.json`, `claims.json`, `checks.json`, and
+`provenance.json`; then inspect machine-readable results before the reviewer
+summary.
+
+Keep runtime case status separate from bundle verdict. A skipped parity case
+is an execution observation. `not_comparable` is a governed evidence verdict.
+An open resolution item describes follow-through. None can silently replace
+another.
+
+## Produce A Review Handoff
+
+A defensible handoff names:
+
+- bundle and manifest path;
+- runtime and external-engine identities;
+- input and configuration identities;
+- selected denominator and component-status counts;
+- key diagnostics, warnings, exclusions, and sensitivity results;
+- integrity verification performed;
+- the precise conclusion supported and important conclusions not supported;
+- claim and evidence IDs when a governed verdict is cited.
+
+See [artifact contracts](artifact-contracts.md) for producer obligations and
 the [Evidence Book](../../03-bijux-phylogenetics-evidence-book/index.md) for
 claim adjudication.

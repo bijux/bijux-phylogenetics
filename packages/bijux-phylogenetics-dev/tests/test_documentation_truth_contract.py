@@ -173,6 +173,7 @@ def test_public_interfaces_define_supported_python_and_handoff_contracts() -> No
     index = _read(interfaces / "index.md")
     selection = _read(interfaces / "surface-selection.md")
     python = _read(interfaces / "python-surface.md")
+    cli = _read(interfaces / "cli-surface.md")
 
     assert "Interface Invariants" in index
     assert "Worked Selections" in selection
@@ -186,6 +187,19 @@ def test_public_interfaces_define_supported_python_and_handoff_contracts() -> No
     assert "Discover Without Guessing" in python
     assert "now also" not in python
     assert "bijux_phylogenetics.PhyloTree" not in python
+    assert "Start With Live Discovery" in cli
+    assert "Choose The Owning Family" in cli
+    assert "Run An External Engine Without Erasing Ownership" in cli
+    assert "Read Output Channels Deliberately" in cli
+    assert "Keep Assurance Records Separate" in cli
+    assert "commands --format json" in cli
+    assert "comparative pgls" in cli
+    assert "ancestral continuous" in cli
+    assert "phylo run" in cli
+    assert "adapter align" in cli
+    assert "now lives" not in cli
+    assert "now also" not in cli
+    assert len(cli.splitlines()) < 400
 
 
 def test_common_workflows_are_goal_oriented_and_match_registered_commands() -> None:
@@ -222,6 +236,9 @@ def test_programmatic_interfaces_name_curated_and_frozen_contracts() -> None:
         assert name in api_surface
     assert "freeze-only schema promise" in api_surface
     assert "NATIVE_MAXIMUM_LIKELIHOOD_ONLY_ENV_VAR" in api_surface
+    assert "Select The Contract From The Consumer" in api_surface
+    assert "ConfiguredPhyloWorkflowResult` deliberately has no" in api_surface
+    assert "Failure And Recovery Contract" in api_surface
     assert "benchmark_native_maximum_likelihood_suite" in native_surface
     assert "expected-assumption-difference" in native_surface
     assert "Consume a workflow bundle from its manifest outward" in artifacts
@@ -239,8 +256,14 @@ def test_interface_guides_preserve_failure_compatibility_and_completeness() -> N
     assert "Migration Test" in selection
     assert "Completeness And Status" in contracts
     assert "Integrity Boundaries" in contracts
+    assert "Semantic Compatibility" in contracts
+    assert "External-Engine Provenance" in contracts
+    assert "Producer Acceptance Criteria" in contracts
     assert "Establish Provenance Before Values" in consumption
     assert "Handle Incomplete Bundles" in consumption
+    assert "Reconstruct The Denominator" in consumption
+    assert "Join Ledgers By Declared Identity" in consumption
+    assert "Produce A Review Handoff" in consumption
 
 
 def test_native_inference_guides_preserve_search_and_chain_diagnostics() -> None:
