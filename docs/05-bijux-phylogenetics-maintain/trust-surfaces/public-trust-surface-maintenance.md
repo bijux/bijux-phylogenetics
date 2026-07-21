@@ -85,6 +85,40 @@ benchmarks, and evidence records. Record each occurrence as one of:
 This inventory makes an omission reviewable. A list of files edited does not
 prove that every projection was found.
 
+## Close The Projection Dependency Record
+
+For each public statement, retain a dependency record from the canonical owner
+to every material projection and proof. Each edge names the consumer, meaning
+carried across the edge, source revision or digest, freshness rule, and review
+state.
+
+```mermaid
+flowchart LR
+    owner["Canonical contract<br/>and revision"]
+    interface["Installed interface"]
+    artifact["Artifact and schema"]
+    guide["Reader guidance"]
+    proof["Test · benchmark<br/>evidence"]
+    release["Release decision"]
+
+    owner --> interface --> artifact
+    owner --> guide
+    owner --> proof
+    artifact --> proof
+    guide --> release
+    proof --> release
+```
+
+Classify every expected edge as current, unaffected with a reason, stale,
+blocked, or not executed. Missing edges are not implicitly unaffected. A
+projection is current only when its material inputs resolve to the reviewed
+owner; matching wording or nearby timestamps do not establish freshness.
+
+Close the record from both directions: every material consumer must name its
+owner, and every changed owner must account for its consumers. This catches
+orphaned schemas, examples, summaries, and evidence dependencies that a
+source-only search cannot discover.
+
 ## Drift Patterns
 
 - A new native method exists but only an internal module path exposes it.

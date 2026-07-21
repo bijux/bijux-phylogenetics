@@ -67,6 +67,37 @@ make docs
 Record built artifact digests, clean-install imports and commands, strict docs
 result, schema hash, and exact selected test/engine/benchmark/evidence records.
 
+## Freeze The Candidate Before Verification
+
+Admit one commit, version, dependency lock, schema set, evidence state, and
+optional-engine denominator before the release review begins. Build the wheel,
+source distribution, documentation, reports, and checks from that admitted
+identity, then record their digests in the decision packet.
+
+Do not rebuild a failed artifact in place and keep the earlier successful
+checks. Any source change, lock resolution, generated schema, evidence refresh,
+artifact rebuild, or selected-engine change creates a different candidate and
+invalidates every decision edge that consumed the previous identity. Historical
+records remain valid for their own candidate; they cannot be combined with the
+new packet.
+
+```mermaid
+flowchart LR
+    admit["Admit candidate<br/>identity"]
+    build["Build once and<br/>record digests"]
+    verify["Verify those exact<br/>artifacts and records"]
+    decide["Sign one immutable<br/>decision packet"]
+    changed{"Identity changed?"}
+
+    admit --> build --> verify --> changed
+    changed -->|no| decide
+    changed -->|yes| admit
+```
+
+Verification results must identify their input artifacts, not only the source
+commit. Two builds from the same commit can differ when the environment,
+dependency resolution, generated inputs, or external tools differ.
+
 ## Compare Identity Across Surfaces
 
 Verify all of the following resolve to the candidate:

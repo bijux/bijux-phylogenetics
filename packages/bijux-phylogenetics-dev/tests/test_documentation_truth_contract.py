@@ -1031,6 +1031,8 @@ def test_maintainer_handbook_defines_change_and_artifact_ownership() -> None:
     assert "Change Impact Review" in contracts
     assert "Contract Change Classes" in contracts
     assert "Completeness Audit" in contracts
+    assert "Close The Projection Dependency Record" in contracts
+    assert "Missing edges are not implicitly unaffected" in contracts
     assert "Classify Before Writing" in artifacts
     assert "Artifact Lifecycle Record" in artifacts
     assert "make check-artifact-governance" in artifacts
@@ -1044,6 +1046,8 @@ def test_maintainer_handbook_defines_change_and_artifact_ownership() -> None:
     assert "Limitation Versus Contradiction" in release
     assert "Build The Alignment Packet" in release
     assert "Compare Meaning Across Surfaces" in release
+    assert "Freeze The Candidate Before Verification" in release
+    assert "cannot be combined with the\nnew packet" in release
     assert "There is no single" in release
     assert "`release-readiness.json`" in release
     assert (
@@ -1075,6 +1079,8 @@ def test_maintainer_indexes_define_operational_decisions_without_meta_prose() ->
     assert "Timestamp proximity is not identity" in trust
     assert "Contract Projection Matrix" in public_interface
     assert "Maintain The Artifact Handoff" in public_interface
+    assert "Evolve Schemas Without Erasing Failure State" in public_interface
+    assert "old-producer/new-consumer" in public_interface
     assert "Public Result Invariants" in public_interface
     assert "Review A Material Interface Change" in public_interface
     assert "Publication Decision" in public_interface

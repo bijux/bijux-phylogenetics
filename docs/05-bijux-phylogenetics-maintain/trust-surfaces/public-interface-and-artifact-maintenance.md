@@ -66,6 +66,26 @@ Schema-valid data can still be semantically incompatible. A field whose unit,
 denominator, provenance, or omission behavior changed requires a compatibility
 decision even when its JSON type did not.
 
+## Evolve Schemas Without Erasing Failure State
+
+Classify an artifact change as additive, behaviorally changed, deprecated, or
+breaking before changing producers. Version the semantic contract whenever an
+existing consumer could interpret the same bytes differently, even if the
+schema remains structurally valid.
+
+| Evolution case | Producer obligation | Consumer obligation |
+| --- | --- | --- |
+| additive optional field | define absence semantics and deterministic default behavior | preserve unknown fields where round-trip matters and do not infer new success state |
+| renamed or split field | retain an explicit mapping and deprecation boundary | reject ambiguity rather than choosing one source silently |
+| unit, denominator, or status change | publish a new semantic version with provenance | require the matching version before interpretation |
+| partial or failed output | serialize terminal status, produced inventory, missing inventory, warnings, and cause | surface the incomplete state before reading values |
+| breaking inventory or relationship | provide a migration or a hard compatibility refusal | never fabricate missing links from file names or directory layout |
+
+Exercise old-producer/new-consumer, new-producer/old-consumer, and current
+producer/current-consumer combinations where the compatibility policy claims
+support. A migration is successful only when status, provenance, exclusions,
+and missing outputs survive—not merely when the document parses.
+
 ## Public Result Invariants
 
 Across Python, CLI, service, and artifact forms, preserve these meanings:
