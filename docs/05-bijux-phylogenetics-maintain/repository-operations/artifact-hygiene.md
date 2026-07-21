@@ -37,6 +37,23 @@ flowchart LR
 Location follows ownership, not filename extension. A JSON report from a local
 audit is transient; a JSON schema or evidence manifest can be governed source.
 
+## Artifact Lifecycle Record
+
+For any report retained beyond the command that produced it, record:
+
+| Field | Why it is required |
+| --- | --- |
+| producer | identifies the owning command and package rather than inferring ownership from the path |
+| revision and configuration | ties the report to the source and policy it evaluated |
+| inputs | distinguishes a fresh run from reuse of an unrelated prior artifact |
+| completion state | separates complete reports from diagnostic partial output |
+| output inventory | makes expected, present, missing, failed, and skipped records reviewable |
+| integrity | carries hashes or equivalent identity when another gate consumes the report |
+| retention purpose | states which active review or release decision still depends on it |
+
+A report without revision and producer identity is useful as local diagnostic
+output but cannot serve as reconstructable release evidence.
+
 ## Canonical Paths
 
 Prefer the canonical artifact-owned paths directly when a maintainer command needs a concrete executable or output root:
@@ -49,6 +66,11 @@ Prefer the canonical artifact-owned paths directly when a maintainer command nee
 
 Those are the durable contract paths. Root aliases exist only as disposable
 compatibility conveniences.
+
+Commands may replace transient reports at canonical paths. A reviewer who
+needs to retain one decision must copy or archive the complete report packet
+through a governed process, including its revision and input identities; a
+screenshot or isolated JSON fragment is not sufficient.
 
 ## Disposable Root Aliases
 
@@ -106,3 +128,8 @@ output outside the owned artifact tree, cleanup that can reach checked-in
 records, an untraceable release report, or a command that relies on stale
 prior output as an operational defect. Do not hide the defect with ignore
 rules; correct the producer, alias, or cleanup boundary.
+
+Also treat cross-run contamination as a defect: a command must not accept a
+prior output merely because it occupies the expected path. Resume or reuse
+requires the producer's identity checks over inputs, configuration, executable
+where relevant, completion state, and recorded output inventory.

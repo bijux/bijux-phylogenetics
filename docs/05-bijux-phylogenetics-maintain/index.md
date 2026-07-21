@@ -42,6 +42,21 @@ flowchart LR
 | generated files remain generated | synchronized or indexed output is hand-edited |
 | local execution leaves a clean source tree | caches, sites, logs, or reports appear outside `artifacts/` |
 
+## Keep Status In Its Owning Record
+
+| Record | Governed status | Maintenance rule |
+| --- | --- | --- |
+| runtime or command execution | complete, partial, refused, failed, skipped as defined by that surface | preserve the produced/missing inventory and failure owner |
+| live parity case | `passed`, `failed`, `skipped` | retain the selected denominator, raw reference output, and mismatch reason |
+| Evidence Book claim | `matched`, `matched_with_tolerance`, `mismatch_explained`, `mismatch_unexplained`, `not_comparable` | change only through governed observations and adjudication |
+| evidence resolution work | open or blocked follow-through | keep separate from the bundle verdict and name the missing record or decision |
+| repository release gate | ready or blocked by the readiness policy | do not infer scientific equivalence from publication eligibility |
+
+These statuses answer different questions. Copying one into another record
+creates a contradiction even when the words sound favorable. In particular,
+an open comparison effort does not create an “open” evidence verdict, and a
+ready release can still publish explicit `not_comparable` boundaries.
+
 ## Change Classification
 
 | Change | Minimum affected surfaces |
@@ -84,6 +99,13 @@ install results, documentation build, API/schema validation, evidence
 freshness, and any intentionally open scientific boundaries. “CI passed” is
 not a sufficient reconstruction record when multiple workflows and optional
 engines are involved.
+
+Retain a release packet containing the commit, resolved version, selected
+distributions, build artifact hashes, clean-install results, strict docs/API
+checks, evidence and artifact-governance reports, optional-engine coverage,
+known bounded limitations, final readiness output, and decision owner. The
+packet must make skipped optional lanes visible rather than allowing a green
+aggregate to imply they ran.
 
 ## Escalation Boundaries
 

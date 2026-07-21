@@ -57,6 +57,24 @@ evidence governance, execution ownership, package boundaries, package bundles,
 and publish readiness. It does not replace `make docs-check`, installed-package
 smoke tests, or human comparison of scientific wording with bounded evidence.
 
+## Release Decision Record
+
+| Field | Required evidence |
+| --- | --- |
+| identity | commit, resolved version, distributions, Python/platform, governed configuration |
+| build | wheel and sdist filenames, hashes, metadata inspection, package inventory |
+| installed behavior | clean-environment imports, canonical/alias commands, packaged resources, representative structured output |
+| public contracts | API/schema hashes, strict documentation result, examples and command references |
+| scientific assurance | exact test/benchmark/evidence lanes, denominators, verdict distributions, freshness, known non-comparable boundaries |
+| external coverage | selected engines, executable versions, executed/skipped/failed cases, retained manifests |
+| governance | artifact, package-boundary, execution-surface, evidence, publish-readiness, and release-readiness reports |
+| decision | ready/blocked outcome, blocker list, bounded limitations, reviewer and timestamp |
+
+The decision record is append-only evidence for that release candidate. A new
+commit, rebuilt distribution, changed dependency resolution, refreshed
+evidence bundle, or rerun with different optional-engine coverage creates a
+new candidate and requires a new aligned packet.
+
 ## Contradiction Review
 
 Before publication, answer from retained evidence:
@@ -82,3 +100,16 @@ stronger than its retained proof.
 
 An explicit bounded limitation can be published. A gate weakened to make a
 contradiction disappear cannot.
+
+### Limitation Versus Contradiction
+
+| Condition | Release treatment |
+| --- | --- |
+| claim is explicitly `not_comparable`, fresh, and described within that boundary | publishable limitation when readiness policy permits it |
+| optional engine is unavailable and the selected denominator records `skipped` | visible coverage limitation, not a fabricated pass |
+| public prose says matched while the governed bundle says `not_comparable` | blocker: cross-surface contradiction |
+| report is green but its input revision, expected outputs, or skipped cases cannot be reconstructed | blocker: missing release evidence |
+| package installs but canonical and alias behavior diverge | blocker: distribution contract failure |
+
+Readiness means the release claims are supported and contradictions are absent.
+It does not mean every scientific comparison has a favorable verdict.

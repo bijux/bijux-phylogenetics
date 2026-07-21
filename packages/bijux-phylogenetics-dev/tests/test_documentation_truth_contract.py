@@ -564,16 +564,27 @@ def test_maintainer_handbook_defines_change_and_artifact_ownership() -> None:
 
     assert "Change Classification" in handbook
     assert "Maintained Invariants" in handbook
+    assert "Keep Status In Its Owning Record" in handbook
+    assert (
+        "ready release can still publish explicit `not_comparable` boundaries"
+        in handbook
+    )
     assert "Canonicality Rules" in ownership
     assert "Change Impact Review" in contracts
     assert "Contract Change Classes" in contracts
     assert "Completeness Audit" in contracts
     assert "Classify Before Writing" in artifacts
+    assert "Artifact Lifecycle Record" in artifacts
     assert "make check-artifact-governance" in artifacts
     assert "Safe Cleanup" in artifacts
     assert "Alignment Matrix" in release
+    assert "Release Decision Record" in release
     assert "make check-release-readiness" in release
     assert "Release Blockers" in release
+    assert "Limitation Versus Contradiction" in release
+    assert (
+        "does not mean every scientific comparison has a favorable verdict" in release
+    )
     assert "narrative alignment" not in release
 
 
