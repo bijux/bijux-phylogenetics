@@ -73,6 +73,48 @@ has a `matched` manifest verdict for the narrower workspace-reload contract.
 Therefore, quote the claim identifier and ledger level. Do not summarize PCM2
 as clean parity from the bundle counts alone.
 
+## Governed Findings
+
+The claim-scoped result files expose the scientific changes that the bundle
+headlines summarize:
+
+| Fit or test | Bijux observation | Reference relationship |
+| --- | ---: | --- |
+| baseline GLS social-group-size slope | 3.591156 | agrees with the registered R baseline within numerical precision |
+| baseline GLS R² | 0.257170 | agrees with the registered R baseline |
+| baseline GLS log likelihood | −456.310147 | agrees under the registered likelihood convention |
+| Pagel-λ PGLS estimated λ | 0.768657 | agrees with the R estimate to less than 10⁻⁶ |
+| Pagel-λ PGLS social-group-size slope | 1.662147 | agrees with the registered R coefficient within tolerance |
+| Pagel-λ PGLS log likelihood | −444.069148 | agrees with the registered R result within tolerance |
+| longevity signal λ | 0.802734 | agrees with the registered R signal fit |
+| λ=0 likelihood-ratio statistic | 41.030419 | agrees with the registered R test |
+
+The slope change from 3.591156 in baseline GLS to 1.662147 under the fitted
+phylogenetic covariance is the substantive comparison. It shows why model
+identity must accompany a coefficient; it does not, by itself, establish that
+either model is causal or biologically sufficient.
+
+## Unexplained Observation Inventory
+
+The aggregate scalar ledger retains all 12 non-matches:
+
+| Surface | Rows | Recorded discrepancy |
+| --- | ---: | --- |
+| transformed trees | 4 | exact branch-length totals disagree, including reversed early- and late-burst totals |
+| early-burst fit | 2 | rate change differs by 10.6718757865625; log likelihood differs by 15.170304341821 |
+| Brownian versus early-burst LRT | 1 | statistic differs by 30.340684573422 |
+| ancestral reconstruction | 4 | Brownian and early-burst estimate vectors fail the registered exact rule |
+| estimated-λ residual diagnostic | 1 | absolute residual–fitted correlation differs by 0.095590314522858 |
+
+These observations remain `mismatch_unexplained` even where a neighboring
+bundle has a favorable verdict for a narrower claim. The early-burst mismatch,
+for example, prevents the continuous-mode material from being cited as uniform
+numerical correspondence despite aligned Brownian and OU observations.
+
+Inspect the
+[`scalar-parity-table.json`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/evidence-001/results/scalar-parity-table.json)
+for row identifiers, values, tolerances, and comparison kinds.
+
 ## Inputs And Provenance
 
 The dossier contains the source workspace and tree plus governed
@@ -88,6 +130,11 @@ declared degrees-of-freedom convention. Information-criterion comparisons
 answer a different question. Residual diagnostics qualify both baseline and
 phylogenetic fits; a better scalar score does not excuse a broken residual
 contract.
+
+The baseline and Pagel-λ residual summaries use different residual scales in
+some fields across implementations. The aggregate ledger therefore preserves
+the residual diagnostic mismatch instead of treating matching coefficients
+and likelihoods as proof that every diagnostic definition is equivalent.
 
 ## Review Priorities
 

@@ -72,6 +72,20 @@ The complete governed verdict vocabulary is `matched`,
 `not_comparable`. Open follow-through and named blockers belong to the separate
 resolution workflow.
 
+## What The Evidence Supports At This Revision
+
+| Study | Safe use | Required qualification |
+| --- | --- | --- |
+| PCM1 | cite the governed 75-taxon preparation, tree–trait alignment, signal fit, and named ancestral observations | numerical conclusions are conditional on the prepared primate data, tree, and declared model; figure equivalence is outside the analytical verdict |
+| PCM2 | cite matched baseline GLS, Pagel-λ, signal, and other claim-scoped bundles | retain the 12 unexplained scalar mismatches; do not describe the study as uniformly matching |
+| PCM3 | inspect the design-matrix and claim decomposition needed for multivariable comparison | all eight claims are `not_comparable`; no lecture-level coefficient parity is established |
+| PCM4 | inspect source, data, model intent, and missing posterior contract | all seven claims are `not_comparable`; no governed primary posterior output exists |
+| PCM5 | inspect generalized mixed-model estimands and closure requirements | all nine claims are `not_comparable`; no governed primary posterior output exists |
+
+This table is a decision aid, not a replacement for the manifests. A paper,
+notebook, or release statement must cite the exact claim and bundle whose scope
+contains the assertion.
+
 ## Observation-Level Mismatch Disclosure
 
 The generated parity dashboard currently retains `12 mismatch_unexplained`
@@ -85,6 +99,12 @@ while a scalar table can aggregate observations with broader scientific debt.
 The location and scope of those observations still require scrutiny; a
 matched bundle headline must never be used as proof that every attached scalar
 comparison matched.
+
+The 12 PCM2 rows are not an abstract warning. They cover four transformed-tree
+branch-length observations, two early-burst fit observations, one
+Brownian-versus-early-burst likelihood-ratio observation, four ancestral
+estimate vectors, and one residual diagnostic. The PCM2 guide names the
+observed deltas and separates them from the claim-scoped bundle verdicts.
 
 ## Review A Claim In This Order
 
@@ -100,6 +120,17 @@ comparison matched.
 The order matters. A reviewer summary is a projection of structured records;
 it should not be used to bypass the manifest, check definitions, or
 observation-level results.
+
+## Cite The Record, Not This Summary
+
+Use the public study guide to orient the scientific question. For an auditable
+claim, cite the bundle manifest and the machine-readable result that contains
+the observation. If a value appears only in narrative prose, it is not a new
+evidence source; it must trace to a governed result file.
+
+When a generated index and a bundle disagree, stop at the contradiction. Do
+not choose the more favorable status. Rebuild or investigate the owning record
+before using the claim.
 
 ## Study Atlas
 

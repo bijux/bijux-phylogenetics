@@ -551,6 +551,7 @@ def test_maintainer_docs_define_ownership_and_native_publication() -> None:
 def test_primate_guides_publish_values_and_open_boundaries() -> None:
     pcm1 = EVIDENCE_GUIDE_ROOT / "pcm1-primate-longevity-signal"
     pcm2 = EVIDENCE_GUIDE_ROOT / "pcm2-primate-pgls-and-signal"
+    pcm1_index = _read(pcm1 / "index.md")
     preparation = _read(pcm1 / "data-and-tree-preparation.md")
     signal = _read(pcm1 / "signal-and-ancestral-results.md")
     models = _read(pcm2 / "model-comparisons-and-pgls.md")
@@ -564,6 +565,11 @@ def test_primate_guides_publish_values_and_open_boundaries() -> None:
     )
     assert "matched_with_tolerance" in signal
     assert "not_comparable" in signal
+    assert "Governed Observations" in pcm1_index
+    assert "| estimated Pagel λ | 0.803 |" in pcm1_index
+    assert "41.030408" in pcm1_index
+    assert "520.078423" in pcm1_index
+    assert "16 `matched` and 15" in pcm1_index
     assert "Pagel-λ PGLS" in models
     assert "likelihood-ratio" in models
     assert "Model Evidence Ledger" in models
@@ -577,6 +583,10 @@ def test_primate_guides_publish_values_and_open_boundaries() -> None:
     assert "Bundle And Scalar Verdicts" in pcm2_index
     assert "12 mismatch_unexplained" in pcm2_index
     assert "`evidence-009` | ancestral modes | `matched_with_tolerance`" in pcm2_index
+    assert "Governed Findings" in pcm2_index
+    assert "Unexplained Observation Inventory" in pcm2_index
+    assert "10.6718757865625" in pcm2_index
+    assert "15.170304341821" in pcm2_index
 
 
 def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> None:
@@ -602,9 +612,13 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
     assert "Observation-Level Mismatch Disclosure" in evidence_index
     assert "12 mismatch_unexplained" in evidence_index
     assert "Non-Comparable Evidence Is First-Class" in evidence_index
+    assert "What The Evidence Supports At This Revision" in evidence_index
+    assert "Cite The Record, Not This Summary" in evidence_index
     assert "Read Coefficients From The Design Matrix" in pcm3
     assert "All eight bundle manifests record `not_comparable`" in pcm3
     assert "Verdict And Resolution State" in pcm3
+    assert "No Numerical Headline Is Supported" in pcm3
+    assert "Claim Closure Contract" in pcm3
     assert "parity verdicts remain open" not in pcm3
     pcm3_design = _read(
         EVIDENCE_GUIDE_ROOT

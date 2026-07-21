@@ -83,6 +83,34 @@ checks, and review locations, but it does not yet have governed
 observation-level lecture outputs under aligned factor coding, transformations,
 covariance, and hypothesis-test semantics.
 
+## No Numerical Headline Is Supported
+
+PCM3 has no governed coefficient, p-value, likelihood, or model-comparison
+observation that can be presented as lecture parity. The checked-in reviewer
+summaries establish record completeness and expose the absent execution
+boundary; they are not primary scientific outputs.
+
+This distinction prevents a common documentation failure: listing rich runtime
+capabilities beside a sourced study and allowing proximity to imply that the
+study was reproduced. The runtime can express multivariable regression, but
+the Evidence Book has not adjudicated the eight PCM3 lecture claims.
+
+## Claim Closure Contract
+
+| Claim family | Reference record required | Bijux record required | Comparison identity |
+| --- | --- | --- | --- |
+| baseline continuous and categorical GLS | fitted population, design columns, coefficients, uncertainty, likelihood | same fields under the same row exclusions | factor levels, reference group, formula, test convention |
+| transformed response and model tests | transform, fitted models, marginal and sequential tables | matching transformed response and hypotheses | response scale, degrees of freedom, test ordering |
+| intercept-free group estimates | group-specific parameterization and uncertainty | same design columns and covariance | no-intercept coding and group order |
+| interaction model | conditional slopes and contrasts | main and interaction terms plus reconstructed slopes | centering, reference group, term mapping |
+| predictor scaling | center, scale, and transformed coefficients | same scaling constants and coefficient projection | numerical transform and intercept meaning |
+| phylogenetic regression | tree, Martins covariance, fitted parameters, coefficient table | identical taxa, tree scale, covariance, and design | covariance convention and likelihood scale |
+| post-correction diagnostics | residual definition and hypothesis tests | corresponding diagnostics and tests | residual scale, leverage, test family |
+
+Each bundle remains `not_comparable` until its row has both primary outputs and
+a declared observation rule. Structural completeness alone cannot satisfy a
+scientific comparison.
+
 Closing a bundle requires more than executing a neighboring regression API.
 The comparison must reconstruct the same design matrix, analysis population,
 coefficient names, test type, and phylogenetic covariance, then retain the
@@ -126,6 +154,10 @@ PCM3 supplies a complete claim decomposition and executable review locations
 for the multivariable lecture. It does not yet claim lecture-level numerical
 parity for any of the eight slices. The closure work is comparison and verdict
 adjudication, not inventing broader runtime capability by implication.
+
+The honest reader takeaway is useful but bounded: PCM3 defines the exact model
+semantics and evidence needed for a defensible comparison, while making no
+numerical correspondence claim at this revision.
 
 See [model design and phylogenetic regression](model-design-and-phylogenetic-regression.md)
 for the detailed interpretation contract.

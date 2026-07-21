@@ -63,6 +63,29 @@ The dossier reports `analytical_alignment_complete` with the plotting boundary
 kept separate. Bundle deployment does not turn presentation parity into a
 numerical claim.
 
+## Governed Observations
+
+The aggregate result for the prepared 75-taxon analysis records these values:
+
+| Observation | Bijux result | Interpretation boundary |
+| --- | ---: | --- |
+| longevity range | 103.0–657.6 | values use the prepared source trait and its recorded units |
+| mean longevity | 317.362133 | descriptive value for the reconciled taxa |
+| estimated Pagel λ | 0.803 | fitted signal at the precision retained by the PCM1 aggregate record |
+| λ=0 likelihood-ratio statistic | 41.030408 | comparison with the registered zero-signal model |
+| λ=0 p-value | 1.4988 × 10⁻¹⁰ | model-based evidence against that registered null, not a causal result |
+| named MRCA ancestral estimate | 520.078423 | conditional estimate for the five-taxon descendant signature retained in the result |
+| branches with positive reconstructed change | 72 | count under the declared ancestral reconstruction |
+| branches with reconstructed increase greater than 12 | 55 | thresholded model output, not 55 observed evolutionary events |
+
+The source values live in
+[`bijux_reference_results.json`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-longevity-signal/evidence-001/results/bijux_reference_results.json).
+The aggregate scalar table contains 31 comparisons: 16 `matched` and 15
+`matched_with_tolerance`. The focused preparation bundles separate workbook
+loading, type repair, missingness, duplicate aggregation, tree import,
+diagnostics, correspondence, and export so a passing headline cannot hide
+which transformation produced the analytical population.
+
 ## Interpreting The Analysis
 
 Phylogenetic signal asks whether observed trait similarity is structured by
