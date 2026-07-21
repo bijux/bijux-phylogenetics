@@ -131,12 +131,17 @@ def test_foundation_and_architecture_define_owned_runtime_contracts() -> None:
     assert "Dependency Direction" in architecture
     assert "Layer Contracts" in architecture
     assert "Scientific State Transformations" in architecture
+    assert "Runtime Ownership Map" in architecture
     assert "Installed Identity Chain" in package_map
     assert "record both distribution versions" in package_map
+    assert "Inspect Installed Identity" in package_map
+    assert "Package Boundary Invariants" in package_map
     assert "Failure Attribution" in system_map
     assert "State Retained Across Boundaries" in system_map
     assert "Partial And Refused Runs" in system_map
     assert "Artifact Acceptance Gates" in system_map
+    assert "The Identity Spine" in system_map
+    assert "Consumer Precedence" in system_map
     assert "only successful outputs remain in the denominator" in system_map
     assert "Dependency Rule" in evidence_consumer
     assert "Consumption Contract" in evidence_consumer

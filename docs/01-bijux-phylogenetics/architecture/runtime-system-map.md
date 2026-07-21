@@ -83,6 +83,27 @@ A dash means the layer does not own that state, not that the state is
 irrelevant. Evidence review still depends on input and computation identity
 created upstream.
 
+## The Identity Spine
+
+Every durable result should allow a reviewer to traverse the same identity
+chain in both directions:
+
+```mermaid
+flowchart LR
+    inputs["Input paths<br/>and checksums"]
+    request["Resolved model<br/>and configuration"]
+    execution["Runtime or engine<br/>identity"]
+    result["Result identity<br/>and diagnostics"]
+    inventory["Artifact inventory<br/>and checksums"]
+
+    inputs --> request --> execution --> result --> inventory
+```
+
+Forward traversal explains how the result was produced. Reverse traversal
+starts from a report, table, or figure and finds the exact result, execution,
+configuration, and inputs behind it. A review surface is broken when either
+direction ends in an undocumented filename, default, or in-memory object.
+
 ## Review Boundary
 
 Persisted outputs make a run inspectable after process memory is gone:
@@ -98,6 +119,19 @@ Persisted outputs make a run inspectable after process memory is gone:
 An evidence bundle adds claim identifiers, provenance, checks, and verdicts
 for a governed study. Ordinary runtime output does not become evidence merely
 because it was persisted.
+
+### Consumer Precedence
+
+When several representations disagree, inspect them in ownership order:
+
+1. typed result and method diagnostics for computation state;
+2. schema-governed JSON or TSV for persisted machine facts;
+3. manifest for run identity, inventory, and integrity;
+4. HTML, Markdown, or figures for human interpretation;
+5. Evidence Book records for claim adjudication over identified observations.
+
+A downstream representation may add explanation, but it may not silently
+replace an upstream value, warning, omission, or owner.
 
 ## Artifact Acceptance Gates
 

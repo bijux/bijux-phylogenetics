@@ -1,6 +1,6 @@
 ---
 title: Distribution And Package Map
-audience: mixed
+audience: public
 type: reference
 status: canonical
 owner: bijux-phylogenetics-docs
@@ -61,6 +61,28 @@ For the alias, record both distribution versions. The requested
 `phylogenetic` version identifies the facade artifact; the resolved
 `bijux-phylogenetics` version identifies the computation it delegates to.
 
+## Inspect Installed Identity
+
+Canonical installation:
+
+```bash
+python -c "from importlib.metadata import version; print(version('bijux-phylogenetics'))"
+python -c "import bijux_phylogenetics as p; print(p.__version__, p.__name__)"
+bijux-phylogenetics --version
+```
+
+Compatibility installation:
+
+```bash
+python -c "from importlib.metadata import version; print(version('phylogenetic')); print(version('bijux-phylogenetics'))"
+python -c "import phylogenetic as p; print(p.__version__, p.__name__)"
+phylogenetic --version
+```
+
+The two metadata values in the alias environment answer different questions:
+which facade was requested and which canonical runtime performed the work.
+Retain both in a reproducibility record.
+
 ## Choice Rules
 
 Install `bijux-phylogenetics` when you want the canonical name in an
@@ -78,6 +100,19 @@ The runtime implementation lives under
 distribution boundary around the canonical runtime contract. The development
 package lives under `packages/bijux-phylogenetics-dev/` and may inspect runtime
 metadata or artifacts without becoming their scientific owner.
+
+```mermaid
+flowchart LR
+    alias_code["phylogenetic facade"] -->|declared dependency| runtime_dist["bijux-phylogenetics distribution"]
+    runtime_dist --> runtime_code["bijux_phylogenetics runtime"]
+    dev_code["bijux_phylogenetics_dev"] -. inspects and validates .-> runtime_dist
+    dev_code -. does not execute analyses .-> runtime_code
+```
+
+The facade forwards curated top-level attributes and resolves compatible
+submodules to the canonical runtime. Its local code owns alias import and
+command behavior only; scientific modules remain owned by
+`bijux_phylogenetics`.
 
 ## Compatibility Meaning
 
@@ -103,3 +138,14 @@ headline value is not an alias compatibility test.
 Always include the installed distribution name and version. For adapter
 failures, include the external executable version and captured diagnostic
 without removing the provenance needed to reproduce the failure.
+
+## Package Boundary Invariants
+
+- scientific runtime modules do not depend on the maintainer package;
+- the alias depends on and delegates to the canonical runtime;
+- the maintainer package may validate public runtime locators without
+  exporting repository-only evidence helpers through the runtime;
+- wheels and source distributions contain their declared package data and do
+  not absorb repository docs, tests, evidence records, or local artifacts;
+- package versions, command identity, and public links remain consistent at
+  release time.

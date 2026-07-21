@@ -94,6 +94,23 @@ Cross-layer convenience is acceptable only when ownership remains traceable.
 A workflow may call validation and rendering, but it cannot redefine a taxon,
 likelihood, support statistic, or verdict inside orchestration code.
 
+## Runtime Ownership Map
+
+| Responsibility | Owning runtime families | Boundary to preserve |
+| --- | --- | --- |
+| trees and topology | `trees`, `phylo`, `compare`, `distance` | stable taxon, node, clade, split, rooting, and branch-length meaning |
+| sequence and character intake | `io`, `validation`, `datasets` | alphabet, alignment shape, partition, missing-state, and exclusion identity |
+| numerical methods | `phylo`, `bayesian`, `comparative`, `ancestral`, `parsimony` | model parameterization, estimator, search or sampler, and diagnostics |
+| ecological history | `biogeography`, `phylogeography`, `ecology` | geography, host, niche, transition, and tree identity |
+| controlled evaluation | `simulation`, `benchmark`, `parity` | truth or reference owner, denominator, seed, tolerance, and outcome |
+| external execution | `engines` | executable discovery, invocation, native files, parser state, and provenance |
+| user composition | `api`, `command_line` | translation and orchestration without duplicate scientific semantics |
+| review output | `reports`, `render`, `evidence` | structured values before presentation and claim-scoped promotion |
+
+These are ownership families, not a promise that every symbol beneath a module
+is public. Curated exports, registered commands, and documented artifact
+contracts define the installed surface.
+
 ## Scientific State Transformations
 
 ```mermaid
@@ -135,3 +152,9 @@ such as `phylo`, `comparative`, `ancestral`, `parsimony`, `simulation`, and
 translation. `engines` owns common execution and artifact concerns.
 `evidence` connects runtime outputs to governed study records without making
 those records prerequisites for ordinary analysis.
+
+When tracing a defect, begin at the layer that first owns the incorrect state.
+A wrong likelihood value belongs below rendering; a missing output path belongs
+at persistence; an overstated scientific conclusion belongs in evidence or
+documentation. Correcting only the visible downstream projection preserves the
+underlying contradiction.
