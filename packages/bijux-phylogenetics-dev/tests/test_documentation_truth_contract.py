@@ -791,6 +791,8 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
     assert "Verdict And Resolution State" in pcm3
     assert "No Numerical Headline Is Supported" in pcm3
     assert "Claim Closure Contract" in pcm3
+    assert "Close Dependencies Before Coefficients" in pcm3
+    assert "Failed fits, missing terms, aliased columns" in pcm3
     assert "parity verdicts remain open" not in pcm3
     pcm3_design = _read(
         EVIDENCE_GUIDE_ROOT
@@ -804,6 +806,8 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
     assert "empty `primary_output_paths` list" in pcm3_design
     assert "Marginal And Sequential Tests Are Different Questions" in pcm3_design
     assert "What Can Be Cited Now" in pcm3_design
+    assert "Key Every Comparable Observation" in pcm3_design
+    assert "Printed term labels are display\ntext" in pcm3_design
     assert "What Readers Should Watch Closely" not in pcm3_design
     assert "Model Components" in pcm4
     assert "The Preserved Source Analysis" in pcm4
@@ -836,6 +840,8 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
     assert "Closure Dependency Order" in pcm4_boundary
     assert "Distinguish Structural And Numerical Checks" in pcm4_boundary
     assert "Required Observation Ledger" in pcm4_boundary
+    assert "Promote Primary Outputs By Provenance" in pcm4_boundary
+    assert "Adding a path to `primary_output_paths` is the last step" in pcm4_boundary
     assert (
         "No PCM4 bundle currently retains a governed primary scientific output"
         in pcm4_boundary
@@ -850,6 +856,8 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
     assert "Derived-Quantity Ledger" in pcm5_boundary
     assert "What Execution Would Change The Verdict State" in pcm5_boundary
     assert "Observation And Diagnostic Ledger" in pcm5_boundary
+    assert "Adjudicate Each Scale Separately" in pcm5_boundary
+    assert "Summarizing\nonly transformable draws" in pcm5_boundary
     assert "zero governed primary\n  outputs" in pcm5_boundary
     assert _verdict_counts("primate-longevity-signal") == Counter(
         {"matched": 8, "matched_with_tolerance": 1}

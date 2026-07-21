@@ -111,6 +111,36 @@ Each bundle remains `not_comparable` until its row has both primary outputs and
 a declared observation rule. Structural completeness alone cannot satisfy a
 scientific comparison.
 
+## Close Dependencies Before Coefficients
+
+PCM3 coefficients are downstream observations. They cannot close while the
+analysis population, design, covariance, or hypothesis identity remains open.
+
+```mermaid
+flowchart LR
+    population["Species and row<br/>population"]
+    transform["Response and predictor<br/>transformations"]
+    design["Factor levels, contrasts<br/>and design columns"]
+    covariance["Independent or Martins<br/>covariance identity"]
+    fit["Coefficients, uncertainty<br/>and likelihood"]
+    tests["Marginal, sequential<br/>and diagnostic tests"]
+    claim["Claim observation<br/>and verdict"]
+
+    population --> transform --> design --> fit
+    population --> covariance --> fit
+    fit --> tests --> claim
+```
+
+An observation row must point to the immutable parent records it consumed.
+Reusing the same formula text does not establish the same design; reusing the
+same species names does not establish the same ordered population; and a
+matching coefficient cannot close a claim whose tested hypothesis differs.
+
+The bundle denominator remains all claims and all eligible observations
+selected before execution. Failed fits, missing terms, aliased columns, and
+non-comparable tests remain in that denominator rather than disappearing from
+the successful coefficient table.
+
 Closing a bundle requires more than executing a neighboring regression API.
 The comparison must reconstruct the same design matrix, analysis population,
 coefficient names, test type, and phylogenetic covariance, then retain the

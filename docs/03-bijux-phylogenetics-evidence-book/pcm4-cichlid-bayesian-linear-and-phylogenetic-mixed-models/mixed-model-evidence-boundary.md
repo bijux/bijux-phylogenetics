@@ -125,6 +125,27 @@ affected observation `not_comparable` until the analytical objects align.
 Numerical adjudication begins only after those gates pass, and completeness is
 evaluated before a bundle-level matched verdict is allowed.
 
+## Promote Primary Outputs By Provenance
+
+Adding a path to `primary_output_paths` is the last step of evidence capture,
+not the act that makes a file primary. Each promoted output must be generated
+or losslessly normalized by a governed execution and remain linked to the
+inputs, model, posterior selection, and diagnostics that determine its
+meaning.
+
+| Candidate output | Promotion requirement | Reject promotion when |
+| --- | --- | --- |
+| fixed-effect summary | parameter keys, transforms, retained chains/draws, interval rule, and parent trace resolve | only a copied or manually transcribed table exists |
+| variance-component summary | component parameterization, covariance scale, same-draw denominator, and posterior samples resolve | labels align but scales or random effects do not |
+| chain diagnostic table | chain identities, selected window, estimator, threshold, and failed-chain denominator resolve | diagnostics were recomputed from an unidentified subset |
+| inverse covariance | tree digest, ordered taxa, construction rule, scaling, and numerical representation resolve | dimensions match but taxon order or scaling is unknown |
+| Brownian comparator | fitted population, model and likelihood conventions, outputs, and comparison rationale resolve | a neighboring PGLS run is attached without analytical identity |
+
+Promotion also requires inventory and checksum coverage plus an observation
+ledger that uses the output. A complete unused file is retained supporting
+material; it does not silently increase the scientific denominator or change
+the bundle verdict.
+
 ## Safe Present-Tense Claims
 
 - PCM4 source material, datasets, claim decomposition, and provenance are

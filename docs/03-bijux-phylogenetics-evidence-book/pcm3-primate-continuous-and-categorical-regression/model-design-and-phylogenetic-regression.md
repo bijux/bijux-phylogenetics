@@ -139,6 +139,25 @@ machine-adjudicated observations. The evidence must include failures and
 missing values; a table of successful coefficients alone cannot establish the
 denominator.
 
+## Key Every Comparable Observation
+
+A coefficient or test becomes comparable only after its observation key
+resolves the analytical object on both sides. Printed term labels are display
+text and are insufficient as join keys.
+
+| Key component | Coefficient observation | Hypothesis-test observation |
+| --- | --- | --- |
+| population | ordered included species and excluded-row ledger | the same fitted population for every tested model |
+| response | source column, transform, units, and missing policy | response and transform shared by null and alternative fits |
+| design | formula, contrast matrix, factor levels, column vector identity | tested column set or explicit hypothesis matrix |
+| covariance | independence or tree/covariance digest, scale, and fitted parameter state | covariance convention held fixed across compared fits |
+| fit | likelihood convention, optimizer state, coefficient key, and uncertainty definition | model pair or term-order identity, statistic, degrees of freedom, and tail rule |
+| projection | source-to-Bijux term mapping and any scale transformation | source-to-Bijux test mapping without relabeling marginal as sequential |
+
+If one key component cannot be aligned, retain both outputs as separate
+observations and keep the claim `not_comparable`. Do not tune a tolerance for
+values that have not first been shown to estimate or test the same quantity.
+
 ## What Can Be Cited Now
 
 PCM3 can be cited as a governed decomposition of a multivariable comparative

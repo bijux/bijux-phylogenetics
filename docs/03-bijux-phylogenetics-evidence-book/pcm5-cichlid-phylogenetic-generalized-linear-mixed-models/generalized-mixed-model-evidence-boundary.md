@@ -122,6 +122,35 @@ The ledger is part of the comparison contract, not explanatory decoration. A
 governed artifact should retain the input columns or their content identities,
 the expression version, the output scale, and the resulting observation key.
 
+## Adjudicate Each Scale Separately
+
+PCM5 derived quantities cross latent, variance, probability, count, and tree
+display scales. Agreement on one scale cannot be projected onto another
+without retaining the draw-wise transformation and its denominator.
+
+```mermaid
+flowchart LR
+    draws["Governed posterior draws<br/>chain and state identity"]
+    latent["Latent-scale parameters<br/>and variance components"]
+    transform["Declared draw-wise<br/>transformation"]
+    response["Probability, count, signal,<br/>or ancestral quantity"]
+    presentation["Summary table,<br/>interval or tree display"]
+
+    draws --> latent --> transform --> response --> presentation
+```
+
+Create a distinct observation for the latent parameter, transformed draw,
+posterior summary, and rendered projection when a claim traverses those
+layers. The bundle can match at one layer and remain `not_comparable` or
+disagree at another. A matching posterior mean cannot repair a different
+category baseline, link, residual convention, tree-node identity, or
+same-draw variance denominator.
+
+Transformation failures, non-finite draws, absent categories or nodes, and
+discarded chains remain counted at the layer where they occur. Summarizing
+only transformable draws without publishing that reduced denominator is not a
+complete comparison.
+
 ## What Execution Would Change The Verdict State
 
 A scientific execution changes a bundle only when it produces governed primary
