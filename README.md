@@ -22,235 +22,187 @@
 [![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
 <!-- bijux-phylogenetics-badges:generated:end -->
 
-`bijux-phylogenetics` joins an executable scientific runtime to the evidence
-needed to review selected claims about it. The repository owns native tree,
-likelihood, inference, comparative, ancestral, parsimony, simulation, and
-reporting code; it also provides explicit adapters where established external
-engines remain the computational owner.
-
-The checked-in runtime already spans tree semantics, alignments, native
-likelihood, maximum-likelihood inference, supported Bayesian workflows,
-comparative and ancestral analysis, explicit parsimony, datasets, reporting,
-benchmarks, and governed evidence.
+`bijux-phylogenetics` is a Python runtime for phylogenetic inference,
+comparative analysis, ancestral reconstruction, parsimony, simulation, and
+reviewable scientific reporting. It combines owned numerical methods with
+explicit adapters for established external engines and preserves the inputs,
+diagnostics, and provenance needed to audit a run.
 
 ```mermaid
 flowchart LR
-    inputs["Trees, alignments,<br/>traits, partitions"]
-    runtime["Native runtime or<br/>governed adapter"]
+    data["Trees · alignments<br/>traits · partitions"]
+    contracts["Validated scientific<br/>contracts"]
+    methods["Native methods or<br/>governed engine adapters"]
     results["Typed results<br/>and diagnostics"]
-    artifacts["Reports, manifests,<br/>tables, figures"]
-    evidence["Study evidence<br/>for bounded claims"]
+    outputs["Manifests · JSON · TSV<br/>figures · HTML reports"]
 
-    inputs --> runtime --> results --> artifacts
-    artifacts -. selected workflows .-> evidence
+    data --> contracts --> methods --> results --> outputs
 ```
 
-The documentation uses four different words deliberately: **implemented**
-means code exists; **tested** means a stated contract passes its fixtures;
-**benchmarked** means behavior was measured on a named corpus; and
-**evidence-backed** means a governed study record supports a bounded claim.
-They are not interchangeable maturity labels.
+## Install
 
-## Start Here
+The canonical distribution supports Python 3.11 and newer:
 
-- [Documentation home](https://bijux.io/bijux-phylogenetics/)
-- [Phylogenetics product guide](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
-- [Runtime architecture](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/architecture/)
-- [Surface selection guide](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/surface-selection/)
-- [Artifact consumption guide](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/artifact-consumption-guide/)
-- [Validation lanes](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/quality/validation-lanes/)
-- [Claim reading guide](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/foundation/claim-reading-guide/)
-- [Native maximum-likelihood workflows](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/native-maximum-likelihood-workflows/)
-- [Native Bayesian workflows](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/native-bayesian-workflows/)
-- [Native benchmark review](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/native-benchmark-review/)
-- [Evidence Book](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-evidence-book/)
-- [Maintainer handbook](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-maintain/)
+```bash
+python -m pip install bijux-phylogenetics
+bijux-phylogenetics --help
+```
 
-## What This Repository Publishes
+The `phylogenetic` distribution provides shorter installation, import, and
+command names for the same runtime:
 
-| Surface | Role |
+```bash
+python -m pip install phylogenetic
+phylogenetic --help
+```
+
+Use `bijux-phylogenetics` in environments, papers, and support requests when
+an unambiguous canonical name matters. The alias is not a reduced edition.
+
+## What Is Implemented
+
+| Domain | Runtime depth |
 | --- | --- |
-| `bijux-phylogenetics` | Canonical runtime package and CLI |
-| `phylogenetic` | Compatibility alias package with the same runtime story |
-| `bijux-phylogenetics-dev` | Repository-owned maintainer tooling for docs, release, quality, and publication checks |
-| `docs/` | Public handbook, evidence-book guide, and maintainer handbook |
-| `evidence-book/` | Checked-in study dossiers, freshness reports, integrity reports, and governed bundle records |
+| trees | owned `PhyloTree` semantics; validation, rootedness, clades, MRCA, support normalization, topology comparison, tree sets, and rendering |
+| alignments | FASTA validation, trimming, translation, coding diagnostics, identity review, and partition-aware inputs |
+| likelihood | finite-state nucleotide, protein, codon, and discrete Mk foundations |
+| inference | native maximum-likelihood result and search surfaces; supported native Bayesian DNA entry points |
+| comparative methods | PGLS, Brownian and OU models, phylogenetic signal, discrete evolution, regression assessment, and model selection |
+| ancestral methods | continuous and discrete reconstruction, uncertainty ledgers, stochastic mapping, and tree-set review |
+| parsimony | Fitch, Wagner, Sankoff, Dollo, Camin–Sokal, ACCTRAN, DELTRAN, resampling, NNI, SPR, and ratchet-oriented search |
+| scientific context | datasets, simulations, benchmarks, biogeography, phylogeography, diversification, and ecology review surfaces |
+| publication | typed results, manifests, tables, figures, HTML reports, supplementary material, and evidence-linked bundles |
 
-## Runtime Depth At A Glance
+MAFFT, trimAl, IQ-TREE2, FastTree, MrBayes, and BEAST remain external
+computational engines. Their adapters own input preparation, invocation,
+failure capture, output parsing, and normalization; they do not relabel the
+external algorithms as native code.
 
-The repository already covers the following capability families:
+## Python Workflow API
 
-| Capability family | What is already here |
+Curated workflow entry points live under `bijux_phylogenetics.api`:
+
+```python
+from pathlib import Path
+
+from bijux_phylogenetics.api import (
+    render_report_workflow,
+    run_comparative_model_workflow,
+    run_sequence_to_tree_workflow,
+)
+
+run = run_sequence_to_tree_workflow(
+    Path("dataset/sequences.fasta"),
+    out_dir=Path("artifacts/sequence-to-tree"),
+    sequence_type="dna",
+)
+
+model = run_comparative_model_workflow(
+    Path("dataset/tree.nwk"),
+    Path("dataset/traits.tsv"),
+    response="response",
+    predictors=["predictor"],
+    lambda_value=1.0,
+)
+
+render_report_workflow(
+    tree_path=run.output_paths["tree"],
+    alignment_path=run.output_paths["trimmed_alignment"],
+    traits_path=Path("dataset/traits.tsv"),
+    metadata_path=Path("dataset/metadata.tsv"),
+    out_path=Path("artifacts/sequence-to-tree/report.html"),
+)
+
+run.write_json(Path("artifacts/sequence-to-tree/workflow.json"))
+model.write_tsv(Path("artifacts/comparative-model.tsv"))
+```
+
+Use Python for in-process composition and rich typed diagnostics. Use the CLI
+for repeatable shell execution. Preserve machine-readable artifacts when the
+result must outlive the process or be reviewed independently.
+
+## Native Inference
+
+Representative owned entry points include:
+
+- `bijux_phylogenetics.phylo.likelihood.infer_nucleotide_maximum_likelihood_result(...)`
+- `bijux_phylogenetics.phylo.likelihood.infer_nucleotide_maximum_likelihood_result_from_alignment(...)`
+- `bijux_phylogenetics.phylo.likelihood.NucleotideMaximumLikelihoodResult`
+- `bijux_phylogenetics.bayesian.run_bayesian_inference(...)`
+- `bijux_phylogenetics.benchmark.benchmark_native_maximum_likelihood_suite(...)`
+
+Native ownership identifies where the algorithm is implemented. It does not
+claim that every model, dataset, or biological interpretation has equivalent
+evidence. Numerical tests, benchmark corpora, and governed study records state
+their own scope.
+
+## Evidence Book
+
+The checked-in [`evidence-book/`](evidence-book/README.md) contains five
+course-derived comparative study families and their governed bundles:
+
+- primate longevity, phylogenetic signal, and ancestral reconstruction;
+- primate GLS, PGLS, tree transformation, and signal diagnostics;
+- primate continuous and categorical comparative regression;
+- cichlid Bayesian linear and phylogenetic mixed models;
+- cichlid phylogenetic generalized linear mixed models.
+
+Each bundle connects claim identifiers to source provenance, input manifests,
+analysis code, checks, results, and reviewer verdicts. The cichlid posterior
+workflows retain their external `MCMCglmm` boundary; nearby runtime capability
+is not presented as a substitute.
+
+## Trust Vocabulary
+
+| Term | Meaning |
 | --- | --- |
-| Trees | validation, rootedness review, comparison, clade extraction, MRCA lookup, support normalization, tree-set inspection, rendering, and an owned `PhyloTree` runtime |
-| Alignments | FASTA validation, trimming, coding checks, translation, partition-aware inputs, and packaged example resources |
-| Native likelihood | finite-state likelihood foundations across nucleotide, protein, codon, and discrete Mk families |
-| Native inference | native maximum-likelihood tree inference results, support summaries, search traces, and native Bayesian public inference entry points |
-| Comparative analysis | PGLS, Brownian and OU modeling, phylogenetic signal, discrete-state evolution, regression review, and model-selection ledgers |
-| Ancestral analysis | continuous and discrete ancestral reconstruction, uncertainty ledgers, state-transition review, and reviewer-facing output bundles |
-| Parsimony | Fitch, Wagner, Sankoff, Dollo, Camin-Sokal, ACCTRAN, DELTRAN, bootstrap, jackknife, NNI, SPR, and ratchet-oriented owned scoring surfaces |
-| Simulation and datasets | packaged example inputs, study datasets, benchmark corpora, and simulation families used by tests and review workflows |
-| External-engine workflows | MAFFT, trimAl, IQ-TREE2, FastTree, MrBayes, and BEAST orchestration where wrapper ownership remains the honest product boundary |
-| Reports and bundles | HTML reports, TSV and JSON artifacts, manifests, evidence-linked bundles, benchmark outputs, and release-truth surfaces |
+| implemented | executable code owns the stated behavior |
+| tested | a named contract passes its fixtures |
+| benchmarked | metrics were measured on a named corpus and configuration |
+| evidence-backed | a governed bundle supports a bounded claim |
+| released | packages, documentation, schemas, and declared evidence passed publication gates at a revision |
 
-## Why This Is A Real Runtime
+These terms are deliberately narrower than “scientifically appropriate for
+every use.” Model choice, study design, diagnostics, and independent review
+remain essential.
 
-This repository owns runtime behavior rather than only shell orchestration:
+## Repository Map
 
-- the repository owns a real tree runtime with explicit topology, support,
-  rootedness, split, and distance semantics
-- the workflow layer writes typed results and reviewable artifacts instead of
-  burying scientific state in notebooks or shell output
-- native maximum-likelihood and Bayesian surfaces now sit in the documented
-  public contract alongside broader workflow entry points
-- the evidence-book and maintainer package make release claims traceable rather
-  than leaving them as marketing text
-
-## Flagship Runtime Surfaces
-
-Start here when you want the clearest view of the most substantial owned work:
-
-- tree, topology, and support review on the owned `PhyloTree` runtime
-- native finite-state likelihood across nucleotide, protein, codon, and
-  discrete Mk families
-- native maximum-likelihood tree inference results with governed benchmark
-  review
-- native Bayesian public inference entry points for supported DNA workflows
-- comparative and ancestral workflows that emit reviewer-facing artifacts
-- evidence-book study families that keep course-derived comparative work
-  inspectable and bounded
-
-## What Exists Today
-
-The runtime already supports all of the following broad capability groups:
-
-- tree validation, inspection, comparison, rooting, rendering, and tree-set
-  review
-- alignment diagnostics, filtering, trimming, coding-sequence validation, and
-  translation
-- native finite-state likelihood foundations across nucleotide, protein,
-  codon, and discrete Mk families
-- native maximum-likelihood tree inference results with support evidence,
-  benchmark metadata, and governed comparison surfaces
-- native Bayesian public inference entry points for fixed-topology and
-  joint-topology DNA workflows
-- comparative trait analysis, ancestral-state workflows, discrete-state
-  evolution analysis, diversification review, and simulation surfaces
-- explicit parsimony scoring, ancestral reconstruction, and search families
-- packaged datasets, benchmark corpora, and simulation surfaces that support
-  both runtime examples and review workflows
-- governed adapter surfaces for external tools such as MAFFT, trimAl,
-  IQ-TREE2, FastTree, MrBayes, and BEAST
-- evidence bundle creation, publication review, and artifact packaging
-
-Native maximum-likelihood tree inference results and native Bayesian public
-inference entry points are part of the runtime today. That does not mean every
-inference workflow in the repository is equally mature or fully
-evidence-closed.
-
-## How To Read The Breadth Honestly
-
-This repository owns three related but different public stories:
-
-- a runtime story about what users can run
-- an evidence story about what has been checked on governed studies
-- a release story about whether documentation, metadata, builds, and evidence
-  still agree
-
-That distinction matters because the code surface is broader than the currently
-closed evidence surface. The public trust model lives in:
-
-- [Validation lanes](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/quality/validation-lanes/)
-- [Evidence honesty and limits](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/quality/evidence-honesty-and-limits/)
-- [Evidence Book](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-evidence-book/)
-- [Maintainer handbook](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-maintain/)
-
-## Reader Entry Points
-
-- Choose the [runtime package README](packages/bijux-phylogenetics/README.md)
-  when you want install, workflow, and API guidance.
-- Choose the [alias package README](packages/phylogenetic/README.md) when you
-  want the shorter distribution name without a smaller runtime.
-- Choose the [maintainer package README](packages/bijux-phylogenetics-dev/README.md)
-  when the question is documentation alignment, release truth, or repository
-  health.
-- Choose the [product guide](docs/01-bijux-phylogenetics/index.md) when you want a
-  structured handbook rather than a repository overview.
-
-## Package Map
-
-The `2` publishable runtime packages are:
-
-| Package | Role | Links |
-| --- | --- | --- |
-| `bijux-phylogenetics` | Canonical runtime package for the full public Python and CLI surface | <a href="https://pypi.org/project/bijux-phylogenetics/"><img alt="PyPI" src="https://img.shields.io/badge/pypi-3775A9?logo=pypi&logoColor=white" height="18"></a> <a href="https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/"><img alt="Docs" src="https://img.shields.io/badge/docs-2563EB?logo=materialformkdocs&logoColor=white" height="18"></a> <a href="https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fbijux-phylogenetics"><img alt="GHCR" src="https://img.shields.io/badge/ghcr-181717?logo=github&logoColor=white" height="18"></a> |
-| `phylogenetic` | Compatibility alias package for the same runtime behavior, benchmark, workflow, and reporting surfaces | <a href="https://pypi.org/project/phylogenetic/"><img alt="PyPI" src="https://img.shields.io/badge/pypi-3775A9?logo=pypi&logoColor=white" height="18"></a> <a href="https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/"><img alt="Docs" src="https://img.shields.io/badge/docs-2563EB?logo=materialformkdocs&logoColor=white" height="18"></a> <a href="https://github.com/bijux/bijux-phylogenetics/pkgs/container/bijux-phylogenetics%2Fphylogenetic"><img alt="GHCR" src="https://img.shields.io/badge/ghcr-181717?logo=github&logoColor=white" height="18"></a> |
-
-Repository-owned developer tooling lives in the
-[maintainer package](packages/bijux-phylogenetics-dev/README.md).
-
-## Common Commands
-
-- `make help`
-  List repository automation targets.
-- `make install`
-  Sync the editable environment from the tracked `uv.lock`.
-- `make check`
-  Run the main verification pass across lock checks, lint, tests, docs, and
-  distribution verification.
-- `make package-verify`
-  Build wheels and sdists, validate them, install them into clean
-  environments, and smoke-test packaged examples through the public runtime.
-- `make docs-serve`
-  Serve the docs locally at `http://127.0.0.1:8000/`.
-- `make sync-badges`
-  Render the shared badge catalog into managed `README` surfaces.
-
-## Local Artifact Contract
-
-- transient local outputs belong under `artifacts/`, not as ad hoc root-level
-  cache or build directories
-- curated checked-in comparative trust studies belong under `evidence-book/`
-- the shared root environment lives at `artifacts/root/check-venv/`
-- maintainer commands should prefer `artifacts/root/check-venv/` directly over
-  depending on a root alias path
-- root `.venv`, `.tox`, `.hypothesis`, and `.benchmarks` are disposable
-  compatibility aliases into `artifacts/root/`; `make setup` may recreate them
-  and `make clean-root-artifacts` may remove them
-- the MkDocs site builds to `artifacts/root/docs/site/`
-
-## Repository Layout
-
-- `configs/`
-  Repository-owned tool configuration.
-- `docs/`
-  The public handbook, evidence-book guide, and maintainer handbook.
-- `makes/`
-  Automation, orchestration, and governed execution surfaces.
-- `evidence-book/`
-  Checked-in comparative-study evidence and repository-wide trust reports.
-- `packages/`
-  Publishable package boundaries and maintainer tooling.
-- `artifacts/`
-  Transient local outputs such as built docs, package bundles, and test
-  products.
+| Path | Responsibility |
+| --- | --- |
+| `packages/bijux-phylogenetics/` | canonical runtime distribution |
+| `packages/phylogenetic/` | compatibility distribution |
+| `packages/bijux-phylogenetics-dev/` | repository verification and publication tooling |
+| `docs/` | product, evidence, and maintainer website source |
+| `evidence-book/` | governed study dossiers and review indexes |
+| `apis/` | versioned OpenAPI contract |
+| `configs/` and `makes/` | repository-owned automation configuration |
+| `artifacts/` | transient local outputs |
 
 ## Documentation
 
-Useful entry points:
+- [Documentation home](https://bijux.io/bijux-phylogenetics/)
+- [Product handbook](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
+- [Runtime architecture](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/architecture/)
+- [Surface selection](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/surface-selection/)
+- [Native maximum-likelihood workflow](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/native-maximum-likelihood-workflows/)
+- [Native Bayesian workflow](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/native-bayesian-workflows/)
+- [Validation lanes](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/quality/validation-lanes/)
+- [Evidence Book](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-evidence-book/)
+- [Maintainer handbook](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-maintain/)
 
-- [Documentation home](docs/index.md)
-- [Public phylogenetics guide](docs/01-bijux-phylogenetics/index.md)
-- [Surface selection guide](docs/01-bijux-phylogenetics/interfaces/surface-selection.md)
-- [Artifact consumption guide](docs/01-bijux-phylogenetics/interfaces/artifact-consumption-guide.md)
-- [Validation lanes](docs/01-bijux-phylogenetics/quality/validation-lanes.md)
-- [Claim reading guide](docs/01-bijux-phylogenetics/foundation/claim-reading-guide.md)
-- [Evidence Book guide](docs/02-bijux-phylogenetics-evidence-book/index.md)
-- [Maintainer handbook](docs/03-bijux-phylogenetics-maintain/index.md)
-- [Runtime package README](packages/bijux-phylogenetics/README.md)
-- [Alias package README](packages/phylogenetic/README.md)
+## Development
+
+```bash
+make install
+make check
+make docs-serve
+make package-verify
+```
+
+Local generated output belongs under `artifacts/`; the MkDocs site is built
+under `artifacts/root/docs/`.
 
 ## License
 
-This repository is licensed under the Apache License 2.0. See
-[`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).
+Apache License 2.0. See [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).

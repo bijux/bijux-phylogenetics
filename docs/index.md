@@ -13,9 +13,9 @@ One repository connects three things that scientific software too often keeps
 apart: an executable phylogenetics runtime, study-level evidence for selected
 comparative claims, and the controls that keep releases aligned with both.
 
-The runtime is broad. The proof is deliberately narrower. These docs make that
-difference visible so that a reader can distinguish *implemented*, *tested*,
-*benchmarked*, and *supported by a governed study*.
+The runtime is broad; the available evidence is deliberately claim-specific.
+Implementation, contract tests, benchmarks, and governed studies therefore
+carry separate status instead of collapsing into a single maturity label.
 
 ```mermaid
 flowchart LR
@@ -29,9 +29,9 @@ flowchart LR
     artifact -. selected workflows .-> evidence
 ```
 
-## Choose Your Route
+## Explore The Project
 
-| You need to… | Start here | You will learn… |
+| Goal | Destination | Coverage |
 | --- | --- | --- |
 | run an analysis | [Product handbook](01-bijux-phylogenetics/index.md) | which Python, CLI, or artifact surface fits the work |
 | inspect a scientific claim | [Evidence book](02-bijux-phylogenetics-evidence-book/index.md) | which bundle, provenance record, and open boundary support it |
@@ -69,7 +69,7 @@ it does not, by itself, prove parity with a reference analysis. An evidence
 bundle records a particular study execution; it does not certify every model,
 dataset, or scientific interpretation.
 
-## High-Value Starting Points
+## Essential Workflows And Contracts
 
 - [Runtime system map](01-bijux-phylogenetics/architecture/runtime-system-map.md)
   — follow data from input contracts to reviewable artifacts.

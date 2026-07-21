@@ -14,9 +14,9 @@ phylogenetic analyses. Its public contract includes native analytical code,
 explicit integrations with external engines, typed results, and durable output
 bundles. The distinction between those surfaces is part of the product.
 
-## Find The Right Answer
+## Product Areas
 
-| Question | Read |
+| Area | Coverage |
 | --- | --- |
 | What belongs to the runtime, and how does data move through it? | [Architecture](architecture/index.md) |
 | Should I use Python, the CLI, or an output bundle? | [Public interfaces](interfaces/index.md) |
