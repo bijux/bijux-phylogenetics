@@ -33,6 +33,11 @@ checked-in [`evidence-book/`](https://github.com/bijux/bijux-phylogenetics/tree/
 for primary bundle records, registries, sources, and repository-wide review
 reports. The narrative explains; the checked-in record adjudicates.
 
+For a first review, follow [Reading an evidence bundle](reading-an-evidence-bundle.md)
+from identity through machine observations and freshness. Use [Claim verdicts
+and resolution](claim-verdicts-and-resolution.md) to distinguish observation,
+claim, bundle, repository, and follow-through statuses.
+
 ## At A Glance
 
 - studies: `5`

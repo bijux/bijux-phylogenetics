@@ -186,6 +186,8 @@ nav:
           - Publication Artifact Review: 02-bijux-phylogenetics-domains/scientific-assurance/publication-artifact-review.md
   - Evidence Book:
       - Overview: 03-bijux-phylogenetics-evidence-book/index.md
+      - Reading An Evidence Bundle: 03-bijux-phylogenetics-evidence-book/reading-an-evidence-bundle.md
+      - Claim Verdicts And Resolution: 03-bijux-phylogenetics-evidence-book/claim-verdicts-and-resolution.md
       - PCM1:
           - Overview: 03-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/index.md
           - Data and Tree Preparation: 03-bijux-phylogenetics-evidence-book/pcm1-primate-longevity-signal/data-and-tree-preparation.md

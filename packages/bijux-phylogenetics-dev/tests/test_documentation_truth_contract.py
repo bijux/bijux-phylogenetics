@@ -1028,6 +1028,20 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
     ) == Counter({"not_comparable": 9})
 
 
+def test_evidence_reader_guides_trace_records_without_flattening_status() -> None:
+    reading = _read(EVIDENCE_GUIDE_ROOT / "reading-an-evidence-bundle.md")
+    verdicts = _read(EVIDENCE_GUIDE_ROOT / "claim-verdicts-and-resolution.md")
+
+    assert "Follow The Bundle In Dependency Order" in reading
+    assert "Their presence does not prove they ran" in reading
+    assert "Inspect Machine Results Before The Report" in reading
+    assert "These records are related but not interchangeable" in reading
+    assert "Locate The Status Level" in verdicts
+    assert "not a polite match" in verdicts
+    assert "Resolve By Earliest Owning Cause" in verdicts
+    assert "Record Resolution Without Rewriting History" in verdicts
+
+
 def test_package_metadata_points_to_canonical_documentation_paths() -> None:
     runtime = cast(
         dict[str, object],
