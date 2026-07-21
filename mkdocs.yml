@@ -139,6 +139,10 @@ nav:
           - Overview: 01-bijux-phylogenetics/operations/index.md
           - Installation and Setup: 01-bijux-phylogenetics/operations/installation-and-setup.md
           - Common Workflows: 01-bijux-phylogenetics/operations/common-workflows.md
+          - Sequence-To-Tree Study: 01-bijux-phylogenetics/operations/sequence-to-tree-study.md
+          - Comparative And Ancestral Study: 01-bijux-phylogenetics/operations/comparative-and-ancestral-study.md
+          - Topology Comparison Study: 01-bijux-phylogenetics/operations/topology-comparison-study.md
+          - Analysis Report Handoff: 01-bijux-phylogenetics/operations/analysis-report-handoff.md
           - Native Maximum-Likelihood Workflows: 01-bijux-phylogenetics/operations/native-maximum-likelihood-workflows.md
           - Native Bayesian Workflows: 01-bijux-phylogenetics/operations/native-bayesian-workflows.md
           - Native Benchmark Review: 01-bijux-phylogenetics/operations/native-benchmark-review.md

@@ -27,6 +27,10 @@ flowchart LR
 | --- | --- |
 | create a reliable environment | [Installation and setup](installation-and-setup.md) |
 | move from input data to a reviewable result | [Common workflows](common-workflows.md) |
+| run raw sequences through alignment, trimming, inference and support | [Sequence-to-tree study](sequence-to-tree-study.md) |
+| fit comparative regression and reconstruct discrete history | [Comparative and ancestral study](comparative-and-ancestral-study.md) |
+| compare two tree topologies under an explicit population | [Topology comparison study](topology-comparison-study.md) |
+| hand structured analysis into a linked human review view | [Analysis report handoff](analysis-report-handoff.md) |
 | run owned maximum-likelihood inference | [Native maximum-likelihood workflows](native-maximum-likelihood-workflows.md) |
 | run a supported Bayesian DNA path | [Native Bayesian workflows](native-bayesian-workflows.md) |
 | interpret benchmark records | [Native benchmark review](native-benchmark-review.md) |

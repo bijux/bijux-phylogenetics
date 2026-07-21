@@ -213,6 +213,23 @@ def test_product_handbook_routes_analysis_and_preserves_run_identity() -> None:
     assert "widen tolerance after observing the result" in boundaries
 
 
+def test_scientific_workflow_guides_preserve_stage_and_claim_ownership() -> None:
+    operations_root = PRODUCT_ROOT / "operations"
+    sequence = (operations_root / "sequence-to-tree-study.md").read_text()
+    comparative = (operations_root / "comparative-and-ancestral-study.md").read_text()
+    topology = (operations_root / "topology-comparison-study.md").read_text()
+    handoff = (operations_root / "analysis-report-handoff.md").read_text()
+
+    assert "A sequence-to-tree run is a chain" in sequence
+    assert "Treat Preflight Refusal As A Result" in sequence
+    assert "without sharing an estimand" in comparative
+    assert "Keep Claims Separate" in comparative
+    assert "zero distance after pruning" in topology
+    assert "Separate Support From Topology" in topology
+    assert "Preserve Ownership Through Projection" in handoff
+    assert "stop if a displayed value exists only in HTML or prose" in handoff
+
+
 def test_public_interfaces_define_supported_python_and_handoff_contracts() -> None:
     interfaces = PRODUCT_ROOT / "interfaces"
     index = _read(interfaces / "index.md")
