@@ -40,6 +40,22 @@ Partial-likelihood pruning, transition probabilities, equilibrium frequencies,
 rate parameters, and scaling behavior belong to the computation contract.
 Underflow protection must preserve the reported log-likelihood meaning.
 
+## Layered Runtime Surfaces
+
+| Layer | Representative locator | Scientific question |
+| --- | --- | --- |
+| compile | `compile_finite_state_likelihood_analysis` and model-specific compilers | Which state space, transition process, observations, partitions, and caches define the calculation? |
+| evaluate | `evaluate_compiled_finite_state_likelihood_analysis` and named model evaluators | What likelihood is assigned to this fixed tree and parameter state? |
+| optimize | branch-length, frequency, substitution, and joint-optimization reports | Which parameters moved, under what bounds and restart policy, and where did optimization stop? |
+| search | NNI, SPR, TBR, annealing, ratchet, multi-start, and starting-tree reports | Which topologies were considered, accepted, refused, or left unexplored? |
+| support | bootstrap, SH-like, site-likelihood, and topology-test reports | How stable is a split or topology under the named resampling/comparison rule? |
+| result | `NucleotideMaximumLikelihoodResult` | Which model, final topology, fitted state, search evidence, support, warnings, and artifacts belong together? |
+
+The broad finite-state foundation does not imply equal inference depth for
+every state space. The documented end-to-end native tree-search result remains
+strongest for nucleotide models; protein, codon, and Mk likelihood surfaces
+must be described at the layer they actually implement.
+
 ## Maximum-Likelihood Inference
 
 The documented native tree-inference result is strongest for nucleotide
@@ -70,6 +86,19 @@ AIC-like criteria, likelihood-ratio tests, posterior summaries, and benchmark
 correspondence answer different questions. Always retain the compared models,
 parameter counts, nesting assumptions, objective convention, and decision
 rule.
+
+### Comparison Admissibility
+
+Two likelihoods are directly comparable only when they use the same observed
+sites and taxon set, tree interpretation, conditioning convention, partition
+accounting, state/missingness policy, root treatment, and log-likelihood scale.
+A likelihood-ratio test additionally requires a declared nested pair and valid
+degrees-of-freedom rule. Information criteria require consistent parameter
+counting. Posterior summaries require the same estimand and compatible prior,
+likelihood, and sampling definitions.
+
+If those conditions are absent, retain both results as separate observations;
+do not manufacture a delta, ranking, or parity verdict.
 
 ## Numerical Failure Modes
 

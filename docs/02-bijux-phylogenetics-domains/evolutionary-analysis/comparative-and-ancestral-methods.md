@@ -50,6 +50,34 @@ the traits are retained.
 | What states are supported at internal nodes? | continuous and discrete reconstruction, tree-set aggregation | node estimates or probabilities, intervals, ambiguity, tree sensitivity |
 | How do lineages accumulate or partition diversity? | lineage, clade, trait-linked and sampling-aware diversification summaries | rate assumptions, sampling treatment, clade definitions, uncertainty |
 
+## Method And Record Locators
+
+| Analysis | Public locator | Record to inspect first |
+| --- | --- | --- |
+| phylogenetic regression | `bijux_phylogenetics.comparative.run_pgls` | `PGLSResult`, design/covariance diagnostics, coefficient tables |
+| phylogenetic signal | `bijux_phylogenetics.comparative.summarize_phylogenetic_signal` and `estimate_pagels_lambda` | statistic, fitted lambda, permutation/profile evidence, exclusions |
+| continuous mode fitting | `fit_brownian_motion_model` and `fit_ornstein_uhlenbeck_model` | likelihood, parameters, optimizer and identifiability diagnostics |
+| continuous ancestors | `bijux_phylogenetics.ancestral.reconstruct_continuous_ancestral_states` | node estimates, uncertainty, branch changes, exclusions |
+| discrete ancestors | `bijux_phylogenetics.ancestral.reconstruct_discrete_ancestral_states` | state probabilities, transition model, optimizer state, exclusions |
+
+These are runtime entry points, not claims of study parity. Evidence Book
+bundles identify which source analyses and result fields have governed
+comparisons.
+
+## Model Identity Before Values
+
+A comparative result is identified by more than its formula. Record the taxa
+and order, tree and branch-length scale, response and predictor transforms,
+design-matrix columns and reference levels, covariance family and fitted
+parameters, missing-data policy, optimizer objective, bounds, and convergence
+state. An ancestral result additionally needs state coding, root treatment,
+transition constraints, and the node-identity convention.
+
+Compare coefficients, likelihoods, or ancestral states only after this identity
+matches. Otherwise a small numerical difference can conceal a different model,
+and a large difference can be the expected consequence of a declared
+parameterization change.
+
 ## PGLS And Trait Covariance
 
 Phylogenetic generalized least squares replaces the independence assumption

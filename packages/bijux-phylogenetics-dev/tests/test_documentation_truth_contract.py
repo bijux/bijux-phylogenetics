@@ -235,10 +235,16 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
         assert domain in domain_index
     assert "Taxon Reconciliation" in tree_domain
     assert "Tree Sets And Uncertainty" in tree_domain
+    assert "Runtime Locator Map" in tree_domain
+    assert "reconciliation handoff" in tree_domain
     assert "Finite-State Likelihood" in inference_domain
     assert "Bayesian Inference" in inference_domain
+    assert "Layered Runtime Surfaces" in inference_domain
+    assert "Comparison Admissibility" in inference_domain
     assert "PGLS And Trait Covariance" in comparative_domain
     assert "Ancestral Reconstruction" in comparative_domain
+    assert "Method And Record Locators" in comparative_domain
+    assert "Model Identity Before Values" in comparative_domain
     assert "Searching Tree Space" in parsimony_domain
     assert "Support And Consensus" in parsimony_domain
     assert "Native Simulation Families" in simulation_domain

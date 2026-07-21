@@ -43,6 +43,22 @@ partition-aware input. Equal row length is necessary but not sufficient:
 homology, reading frame, stop codons, ambiguity, missingness, and partition
 meaning affect downstream models.
 
+## Runtime Locator Map
+
+| Responsibility | Public locator | Retained state |
+| --- | --- | --- |
+| tree object and topology semantics | `bijux_phylogenetics.phylo.topology.PhyloTree` | nodes, tips, rootedness, branch lengths, support, topology identity |
+| pruning and tree/alignment agreement | `bijux_phylogenetics.phylo.pruning` | requested taxa, retained taxa, exclusions, pruned object |
+| taxon workflow and synonym review | `bijux_phylogenetics.phylo.taxa` | source labels, mappings, collisions, accepted identity |
+| alignment and partition validation | `bijux_phylogenetics.phylo.alignment` | alphabet, dimensions, partitions, missing and ambiguous observations |
+| topology comparison | `bijux_phylogenetics.compare.topology` | reconciled taxa, rooting policy, clade/split agreement, distances |
+| tree-set inventory and uncertainty | `bijux_phylogenetics.trees.tree_sets` and `.uncertainty` | tree identity, frequency, topology diversity, support and sensitivity |
+
+The locators expose different contracts; none is a general “tree utility”
+bucket. Use topology comparison for relationships between trees, taxon
+reconciliation for identity, and tree-set surfaces when the analysis unit is a
+distribution rather than one selected tree.
+
 ## Taxon Reconciliation
 
 Use set differences before reordering. Record duplicate labels, normalization,
@@ -57,6 +73,11 @@ vector.
 | data-only taxon | observation is silently discarded | report exclusion or supply tree placement |
 | normalized collision | distinct source names become identical | reject ambiguous normalization |
 | order mismatch | values attach to the wrong species | reorder by explicit identity |
+
+The reconciliation handoff must identify the normalization policy, original
+sets, accepted one-to-one mapping, exclusions with reasons, and final order.
+Hashing only the final matrix is insufficient because two different exclusion
+or collision decisions can produce arrays with the same shape.
 
 ## Tree Sets And Uncertainty
 
@@ -78,3 +99,8 @@ Prefer structured tree, taxon, support, and alignment diagnostics alongside
 Newick, FASTA, SVG, or HTML presentation. A rendered tree without its topology,
 branch-length, support, and provenance records is not a complete analytical
 artifact.
+
+For downstream inference, retain the exact Newick or structured topology,
+ordered taxa, branch-length interpretation, support method and scale,
+alignment/trait checksum, reconciliation ledger, and any pruning or rooting
+operation. These fields define the scientific state handed to the model.
