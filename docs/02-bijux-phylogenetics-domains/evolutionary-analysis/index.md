@@ -28,6 +28,9 @@ flowchart LR
 [Comparative And Ancestral Methods](comparative-and-ancestral-methods.md)
 covers PGLS, phylogenetic signal, continuous and discrete evolutionary modes,
 ancestral reconstruction, diversification summaries, and sensitivity review.
+[Discrete Ancestral States And Transitions](discrete-ancestral-states-and-transitions.md)
+follows state identity, Mk-family fitting, node probabilities, branch
+transition ledgers, opportunity denominators, and tree-set sensitivity.
 [Cross-Domain Ecology And Geography](ecology-and-phylogeography.md) follows a
 result across host, niche, region, coordinate, and presentation boundaries.
 Use the dedicated guides for [Biogeography And Migration](biogeography-and-migration.md),
@@ -40,6 +43,7 @@ when one of those contracts owns the scientific question.
 | Object being inferred | Owning guide | Primary uncertainty |
 | --- | --- | --- |
 | trait association, signal, mode, or ancestral state | [Comparative And Ancestral Methods](comparative-and-ancestral-methods.md) | covariance, tree, model, state, and parameter uncertainty |
+| discrete node state or branch transition | [Discrete Ancestral States And Transitions](discrete-ancestral-states-and-transitions.md) | state order, root prior, transition constraints, node identity, opportunity, and tree-set stability |
 | region state, constrained transition, chronology, or migration event | [Biogeography And Migration](biogeography-and-migration.md) | state coding, root prior, transition policy, time bins, and tree set |
 | coordinate estimate, branch movement, outlier, or map ledger | [Continuous Phylogeography And Maps](continuous-phylogeography-and-maps.md) | spatial error, branch scale, node identity, and filter policy |
 | host switch, niche transition, or clade shift burden | [Host Association And Niche Evolution](host-association-and-niche-evolution.md) | ancestral-state ambiguity, transition constraints, opportunity, and sampling |

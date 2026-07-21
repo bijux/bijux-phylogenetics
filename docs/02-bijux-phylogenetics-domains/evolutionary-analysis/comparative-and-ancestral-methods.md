@@ -134,6 +134,11 @@ the results. This separates conditional uncertainty on one tree from
 topological uncertainty across trees. Neither should be summarized by a
 single favored-node value when the distribution is broad or multimodal.
 
+For discrete models, continue with
+[Discrete Ancestral States And Transitions](discrete-ancestral-states-and-transitions.md).
+It separates fitted rates, full node-state probabilities, derived branch
+transitions, opportunity denominators, and stability across a tree set.
+
 ## Sensitivity Is Part Of The Result
 
 Review the fitted analysis across the assumptions that could change its

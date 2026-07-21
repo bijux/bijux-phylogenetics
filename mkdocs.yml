@@ -176,6 +176,7 @@ nav:
       - Evolutionary Analysis:
           - Overview: 02-bijux-phylogenetics-domains/evolutionary-analysis/index.md
           - Comparative And Ancestral Methods: 02-bijux-phylogenetics-domains/evolutionary-analysis/comparative-and-ancestral-methods.md
+          - Discrete Ancestral States And Transitions: 02-bijux-phylogenetics-domains/evolutionary-analysis/discrete-ancestral-states-and-transitions.md
           - Biogeography And Migration: 02-bijux-phylogenetics-domains/evolutionary-analysis/biogeography-and-migration.md
           - Continuous Phylogeography And Maps: 02-bijux-phylogenetics-domains/evolutionary-analysis/continuous-phylogeography-and-maps.md
           - Host Association And Niche Evolution: 02-bijux-phylogenetics-domains/evolutionary-analysis/host-association-and-niche-evolution.md
