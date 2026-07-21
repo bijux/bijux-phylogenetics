@@ -1,82 +1,103 @@
 # Cichlid Bayesian Linear And Phylogenetic Mixed Models
 
-This study captures PCM4, the Lund lecture that moves from non-phylogenetic
-Gaussian regression into Bayesian linear mixed models and then into a
-phylogenetic random-effect formulation on cichlid parasite data.
+This directory is the governed PCM4 design record for the transition from a
+species-level Gaussian baseline to Bayesian regression and a phylogenetic
+mixed model on cichlid parasite observations. It preserves the lecture source,
+data and tree identity, seven claim boundaries, and the records required for a
+future posterior comparison.
 
-The repository now carries a complete study dossier for this lecture family
-with governed parity evidence bundles for each lecture slice: dataset
-registry, source provenance, evidence decomposition, explicit runtime
-boundaries, and bundle-local review artifacts are all checked in. What it does
-not claim is full governed parity with the `MCMCglmm` posterior workflow.
+It does not contain governed posterior evidence. All seven manifests are
+`not_comparable`, and every results manifest records
+`governed_primary_output_count: 0`.
 
-## Study Metadata
+## Current Evidence State
 
-- study id: `cichlid-bayesian-linear-and-phylogenetic-mixed-models`
-- lecture family: `PCM4_PLMM`
-- deployment state: `governed_parity_bundle_program_deployed_with_external_posterior_boundary`
-- governed evidence ids: `evidence-001` through `evidence-007`
-- current runtime posture:
-  `bayesian_mixed_model_parity_open_with_pgls_comparator_surface_only`
-- evidence rule: separate data-tree alignment, Gaussian baseline fits,
-  posterior diagnostics, phylogenetic variance components, and comparator
-  models into distinct evidence slices
-
-## Study Story
-
-PCM4 introduces a new biological system and a new modeling logic:
-
-- raw cichlid observations must be aligned to the tree
-- repeated observations are summarized to one species-level table
-- a standard Gaussian regression provides the baseline
-- `MCMCglmm` adds posterior sampling and random-effect uncertainty
-- a phylogenetic random effect is introduced through the inverse covariance
-  matrix of the tree
-- the resulting Bayesian fit is compared back to a Brownian PGLS baseline
-
-That lecture is central because it is the first place where the evidence book
-must distinguish between a workflow the repository can already reproduce and a
-workflow whose main scientific claim still lives in an external engine.
-
-## Evidence Map
-
-| Evidence ID | Focus | Current repository state |
+| Record | Intended comparison | Verdict |
 | --- | --- | --- |
-| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-001` | Cichlid data-tree alignment and species-level summarization | Governed parity bundle deployed; posterior verdict still open |
-| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-002` | Non-phylogenetic Gaussian baseline fit | Governed parity bundle deployed; posterior verdict still open |
-| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-003` | Bayesian Gaussian regression chain diagnostics and posterior summaries | Governed parity bundle deployed; posterior verdict still open |
-| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-004` | Tree inverse construction and phylogenetic random-effect setup | Governed parity bundle deployed; posterior verdict still open |
-| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-005` | Bayesian phylogenetic mixed-model fixed-effect posteriors | Governed parity bundle deployed; posterior verdict still open |
-| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-006` | Phylogenetic variance-component posteriors | Governed parity bundle deployed; posterior verdict still open |
-| `cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-007` | Comparison back to Brownian PGLS | Governed parity bundle deployed; posterior verdict still open |
+| `evidence-001` | data–tree alignment and species aggregation | `not_comparable` |
+| `evidence-002` | non-phylogenetic Gaussian maximum-likelihood baseline | `not_comparable` |
+| `evidence-003` | Bayesian Gaussian summaries and chain diagnostics | `not_comparable` |
+| `evidence-004` | scaled inverse covariance and random-effect setup | `not_comparable` |
+| `evidence-005` | phylogenetic mixed-model fixed effects | `not_comparable` |
+| `evidence-006` | phylogenetic and residual variance components | `not_comparable` |
+| `evidence-007` | Brownian PGLS comparator | `not_comparable` |
 
-## Ideal Comparative Checks
+The authored `reference.R` and `analysis.py` files are executable contract
+wrappers. They produce local contract/run records; they do not execute
+`MCMCglmm`, produce a Bijux mixed-model posterior, or retain governed primary
+scientific outputs.
 
-- Verify that cichlid species names match the tree before any summarization or
-  posterior run is accepted.
-- Keep the non-phylogenetic Gaussian baseline separate from the Bayesian
-  posterior workflow so disagreements remain interpretable.
-- Record priors, chain settings, convergence checks, and credible intervals as
-  first-class study outputs rather than prose summaries.
-- Compare the phylogenetic mixed model against the Brownian PGLS baseline on
-  shared response and predictor definitions.
+## Model Dependency Chain
 
-## Elite Comparative Checks
+```mermaid
+flowchart LR
+    records["observation-level<br/>cichlid records"] --> species["species-level<br/>analysis table"]
+    tree["pruned and ordered<br/>cichlid tree"] --> inverse["scaled inverse<br/>covariance"]
+    species --> baseline["Gaussian ML<br/>baseline"]
+    species --> bayes["Bayesian Gaussian<br/>fit and chains"]
+    species --> mixed["phylogenetic<br/>mixed model"]
+    inverse --> mixed
+    species --> pgls["Brownian PGLS<br/>comparator"]
+    tree --> pgls
+```
 
-- Preserve posterior summaries and variance-component ledgers in a format that
-  can be re-audited without rerunning the lecture from scratch.
-- Track the construction of the inverse phylogenetic covariance as its own
-  evidence slice rather than letting it disappear inside one MCMC run.
-- Distinguish repository-owned comparator surfaces from external-engine
-  posterior surfaces so the study never over-claims native support.
-- Add later parity bundles only when the repository can explain posterior
-  diagnostics and uncertainty as clearly as the lecture does.
+The four estimator families answer related but non-identical questions. A GLS
+standard error is not a posterior interval, PGLS covariance is not a random
+effect, and matching a fixed-effect point estimate does not establish matching
+variance components or chain behavior.
 
-## Checked-In Study Inputs
+## Record Authority
 
-- [dataset catalog](./datasets/README.md)
-- [provenance guide](./provenance/README.md)
-- [runtime reference mapping](./reference/README.md)
-- governed parity bundles: `evidence-001` to `evidence-007`
-- checked-in lecture source copies:
-  `cichlid.csv`, `cichlidtree.nex`, and `fishdata.RData`
+| Path | What it establishes |
+| --- | --- |
+| `datasets/` | study-local observations, tree, and lecture workspace |
+| `provenance/lund-course-sources.json` | source origin and study boundary |
+| `reference/lund_pcm4_mixed_model_source.R` | formulas, objects, priors, chains, inverse covariance, and comparator intended by PCM4 |
+| bundle manifests and claims | bounded comparison identities and current verdicts |
+| bundle checks and results manifests | required files and explicit zero-primary-output state |
+| public PCM4 guide | model interpretation and closure requirements |
+
+Reviewer summaries project this state. They do not supply coefficients,
+posterior draws, intervals, variance partitions, effective sample sizes, or
+convergence evidence.
+
+## Earliest Missing Evidence
+
+The first missing dependency is governed execution on both sides of each
+claim. A comparable lane must retain:
+
+- the observation-to-species aggregation and exact included taxa;
+- fixed and random formulas, family, link, and parameter names;
+- tree identity, tip/random-effect order, inverse construction, and scaling;
+- priors, initialization, seeds, chain count, iterations, burn-in, thinning,
+  monitored quantities, and failures;
+- raw or losslessly reviewable posterior draws plus normalized summaries;
+- effective sample size, autocorrelation, and between-chain diagnostics;
+- parameter-level observation keys and distributional/tolerance rules;
+- the Brownian PGLS result as its own maximum-likelihood comparator.
+
+The denominator includes initialized and failed chains, absent parameters,
+non-finite draws, and excluded observations. A favorable summary over only
+successful parameters is incomplete evidence.
+
+## Capability Boundary
+
+Bijux has native Bayesian and comparative components near this problem, but no
+governed PCM4-equivalent hierarchical mixed-model posterior is retained here.
+Native DNA or trait posteriors, generic sampler diagnostics, and PGLS results
+cannot inherit the `MCMCglmm` estimand. They become evidence only through a
+claim-specific execution and comparison contract.
+
+## Reviewer Route
+
+1. Establish the cichlid population and tree identity from datasets and
+   provenance.
+2. Read the lecture source to recover the exact estimator, random-effect,
+   inverse-covariance, prior, and chain contracts.
+3. Inspect each bundle's manifest, authored wrappers, checks, and zero-primary-
+   output results manifest.
+4. Preserve `not_comparable` for all seven claims until paired scientific
+   outputs and adjudicated observations exist.
+5. Continue with the public
+   [PCM4 guide](../../../docs/03-bijux-phylogenetics-evidence-book/pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md)
+   for the full posterior closure contract.

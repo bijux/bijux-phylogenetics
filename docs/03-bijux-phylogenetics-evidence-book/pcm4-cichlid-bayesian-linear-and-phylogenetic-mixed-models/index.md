@@ -105,15 +105,15 @@ population and the same tree identity before it compares numerical values.
 
 ## Evidence Decomposition
 
-| Bundle | Evaluated surface |
-| --- | --- |
-| `evidence-001` | data–tree alignment and species-level summarization |
-| `evidence-002` | non-phylogenetic Gaussian baseline |
-| `evidence-003` | Bayesian Gaussian chain diagnostics and summaries |
-| `evidence-004` | inverse-tree construction and random-effect setup |
-| `evidence-005` | phylogenetic mixed-model fixed-effect posterior |
-| `evidence-006` | phylogenetic variance-component posterior |
-| `evidence-007` | Brownian PGLS comparison |
+| Bundle | Evaluated surface | Manifest verdict |
+| --- | --- | --- |
+| `evidence-001` | data–tree alignment and species-level summarization | `not_comparable` |
+| `evidence-002` | non-phylogenetic Gaussian baseline | `not_comparable` |
+| `evidence-003` | Bayesian Gaussian chain diagnostics and summaries | `not_comparable` |
+| `evidence-004` | inverse-tree construction and random-effect setup | `not_comparable` |
+| `evidence-005` | phylogenetic mixed-model fixed-effect posterior | `not_comparable` |
+| `evidence-006` | phylogenetic variance-component posterior | `not_comparable` |
+| `evidence-007` | Brownian PGLS comparison | `not_comparable` |
 
 All seven bundles are governed review units. Their comparison verdicts are
 `not_comparable` because no governed comparison lane currently executes and
@@ -195,6 +195,21 @@ The status must remain separate from data preparation quality. A verified
 tree–table join or Brownian PGLS coefficient can support its own bounded claim
 without causing fixed-effect, variance-component, or convergence claims from
 the mixed model to match.
+
+## Why Native Bayesian Capability Does Not Close PCM4
+
+The runtime owns native Bayesian surfaces for several DNA, clock, continuous
+trait, discrete trait, posterior-diagnostic, and posterior-predictive
+contracts. PCM4 asks a different question: a Gaussian hierarchical model with
+the lecture's fixed formula, a `treetip` random effect, the scaled inverse
+phylogenetic covariance, `MCMCglmm` priors, and comparable fixed-effect and
+variance-component posteriors.
+
+Reusing a sampler, effective-sample-size calculation, Brownian trait model, or
+PGLS covariance does not create that hierarchical estimand. A PCM4 comparison
+needs an explicitly owned mixed-model state and execution contract or a
+governed adapter that preserves the external computation. Until then, nearby
+Bayesian code is relevant engineering context, not PCM4 primary evidence.
 
 ## Verdict And Follow-Through
 
