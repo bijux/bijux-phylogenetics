@@ -19,7 +19,7 @@ results inspectable.
 flowchart TB
     inputs["Taxa · trees · alignments<br/>traits · partitions"]
     foundations["Topology · branch lengths<br/>state spaces · covariance"]
-    likelihood["Likelihood and inference"]
+    likelihood["Likelihood, distance<br/>and Bayesian inference"]
     comparative["Comparative and ancestral methods"]
     parsimony["Parsimony and topology search"]
     context["Simulation and datasets"]
@@ -43,6 +43,8 @@ flowchart TB
 | --- | --- | --- |
 | [Trees, alignments, and taxa](data-and-structure/trees-alignments-and-taxa.md) | topology, rootedness, branch lengths, support, sequences, partitions, identifiers | validated trees, reconciled alignments, topology and support ledgers |
 | [Likelihood and inference](inference/likelihood-and-inference.md) | state spaces, rate matrices, likelihoods, priors, search and sampling | fitted models, inferred trees, search traces, posterior samples |
+| [Distance-based inference](inference/distance-based-inference.md) | pairwise distances, matrix assumptions, joining and least-squares objectives | inferred trees, residuals, influence ledgers, bootstrap support |
+| [Bayesian inference](inference/bayesian-inference.md) | likelihoods, priors, proposals, chains, clocks and topology distributions | run manifests, checkpoints, posterior samples, diagnostics and predictive summaries |
 | [Comparative and ancestral methods](evolutionary-analysis/comparative-and-ancestral-methods.md) | trait covariance, signal, regression, evolutionary modes, node states | coefficients, model comparisons, uncertainty and ancestral ledgers |
 | [Parsimony](inference/parsimony.md) | character costs, ancestral sets, topology moves, resampling | scores, reconstructions, consensus and support summaries |
 | [Simulation and datasets](scientific-assurance/simulation-and-datasets.md) | generative models, known truths, reference and stress corpora | simulated trees/traits/alignments, dataset manifests |

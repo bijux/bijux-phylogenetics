@@ -217,6 +217,8 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
         DOMAINS_ROOT / "evolutionary-analysis" / "comparative-and-ancestral-methods.md"
     )
     parsimony_domain = _read(DOMAINS_ROOT / "inference" / "parsimony.md")
+    distance_domain = _read(DOMAINS_ROOT / "inference" / "distance-based-inference.md")
+    bayesian_domain = _read(DOMAINS_ROOT / "inference" / "bayesian-inference.md")
     simulation_domain = _read(
         DOMAINS_ROOT / "scientific-assurance" / "simulation-and-datasets.md"
     )
@@ -247,6 +249,12 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "Model Identity Before Values" in comparative_domain
     assert "Searching Tree Space" in parsimony_domain
     assert "Support And Consensus" in parsimony_domain
+    assert "Establish Matrix Identity" in distance_domain
+    assert "diagnose_distance_additivity" in distance_domain
+    assert "write_distance_reproducibility_bundle" in distance_domain
+    assert "Posterior Identity Begins Before Sampling" in bayesian_domain
+    assert "Resume is continuation, not an independent replicate" in bayesian_domain
+    assert "Native And External Boundaries" in bayesian_domain
     assert "Native Simulation Families" in simulation_domain
     assert "Preventing Simulation Circularity" in simulation_domain
     assert "Benchmark Design" in assurance_domain
@@ -258,6 +266,9 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "Refuse Ambiguous Inputs" in data_index
     assert "Select The Inferential Contract" in inference_index
     assert "Review The Search, Not Only The Winner" in inference_index
+    assert "Method Ownership Map" in inference_index
+    assert "Distance-based inference" in domain_index
+    assert "Bayesian inference" in domain_index
     assert "Interpret The Run State" in inference_index
     assert "Completion is not a scientific verdict" in inference_index
     assert "Match The Question To The Model Family" in evolution_index

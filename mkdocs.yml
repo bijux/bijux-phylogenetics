@@ -159,6 +159,8 @@ nav:
       - Inference:
           - Overview: 02-bijux-phylogenetics-domains/inference/index.md
           - Likelihood And Inference: 02-bijux-phylogenetics-domains/inference/likelihood-and-inference.md
+          - Distance-Based Inference: 02-bijux-phylogenetics-domains/inference/distance-based-inference.md
+          - Bayesian Inference: 02-bijux-phylogenetics-domains/inference/bayesian-inference.md
           - Parsimony: 02-bijux-phylogenetics-domains/inference/parsimony.md
       - Evolutionary Analysis:
           - Overview: 02-bijux-phylogenetics-domains/evolutionary-analysis/index.md

@@ -20,10 +20,40 @@ interpret either one.
 | Bayesian inference | characterize a posterior under likelihood and priors | proposals, acceptance, burn-in, ESS, chains, topology distribution |
 | parsimony | minimize declared character-change cost | state/cost model, search trace, equal-best trees, consensus, support |
 
-Read [Likelihood And Inference](likelihood-and-inference.md) for finite-state
-likelihood, optimization, model comparison, and posterior sampling. Read
-[Parsimony](parsimony.md) for Fitch, Wagner, Sankoff, Dollo, Camin–Sokal,
-topology search, reconstruction, and support.
+Continue by method family:
+
+- [Likelihood And Inference](likelihood-and-inference.md) defines finite-state
+  likelihood, optimization, model comparison, and the shared probabilistic
+  layers.
+- [Distance-Based Inference](distance-based-inference.md) covers distance
+  estimation, assumption diagnostics, tree construction, residuals,
+  influence, and resampling.
+- [Bayesian Inference](bayesian-inference.md) covers native models, priors,
+  proposals, checkpoints, chain diagnostics, posterior summaries, and the
+  external-engine boundary.
+- [Parsimony](parsimony.md) covers Fitch, Wagner, Sankoff, Dollo, Camin–Sokal,
+  topology search, reconstruction, and support.
+
+## Method Ownership Map
+
+```mermaid
+flowchart TB
+    observations["Sequences · characters<br/>traits · distances"]
+    distance["Distance objective<br/>and matrix assumptions"]
+    likelihood["Likelihood objective<br/>and parameter search"]
+    bayesian["Posterior objective<br/>priors and sampling"]
+    parsimony["Character-cost objective<br/>and topology search"]
+    review["Diagnostics · alternatives<br/>support and uncertainty"]
+
+    observations --> distance --> review
+    observations --> likelihood --> review
+    observations --> bayesian --> review
+    observations --> parsimony --> review
+```
+
+The families may share trees, states, and reports, but they do not share an
+objective or uncertainty interpretation. Preserve the method family in every
+result and artifact identity.
 
 ## Select The Inferential Contract
 

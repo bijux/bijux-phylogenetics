@@ -1,0 +1,131 @@
+---
+title: Distance-Based Inference
+audience: public
+type: explanation
+status: canonical
+owner: bijux-phylogenetics-docs
+last_reviewed: 2026-07-21
+---
+
+# Distance-Based Inference
+
+Distance methods compress character observations into pairwise dissimilarities,
+then infer or fit a tree under assumptions about those distances. Bijux exposes
+the complete path: distance estimation, matrix diagnostics, tree construction,
+fit residuals, topology comparison, resampling, and reproducibility artifacts.
+
+```mermaid
+flowchart LR
+    records["Sequences or an<br/>imported matrix"]
+    distance["Pairwise distances<br/>and component counts"]
+    diagnostics["Saturation · missingness<br/>additivity · ultrametricity"]
+    method["NJ · BioNJ · UPGMA<br/>ME · Fitch–Margoliash"]
+    review["Residuals · influence<br/>support · topology comparison"]
+    artifacts["Matrix · trace · support<br/>manifest and report"]
+
+    records --> distance --> diagnostics --> method --> review --> artifacts
+```
+
+## Choose The Scientific Contract
+
+| Question | Suitable family | Assumption that controls interpretation |
+| --- | --- | --- |
+| Which agglomerative topology follows from an approximately additive matrix? | neighbor joining or BioNJ | distances estimate path length and the taxon set is complete |
+| Which rooted hierarchy is implied by clock-like distances? | UPGMA or WPGMA | ultrametricity is scientifically defensible, not merely numerically close |
+| Which tree minimizes total branch length? | minimum evolution or balanced minimum evolution | candidate topology search and branch-length policy are declared |
+| Which branch lengths best fit a fixed topology? | ordinary, nonnegative, or weighted least squares | residual weights and nonnegativity constraints match the claim |
+| How stable is the inferred topology? | taxon influence, jackknife, or bootstrap | perturbation unit, replicate denominator, and failed draws remain visible |
+
+Single- and complete-linkage trees are also available as explicit clustering
+contracts. They are not silently presented as evolutionary tree estimators.
+
+## Establish Matrix Identity
+
+A distance value is inseparable from its model and observation policy. Retain:
+
+- taxon labels and matrix order;
+- alphabet, ambiguity, gap, deletion, and missing-pair policy;
+- the distance model and every estimated or fixed parameter;
+- comparable-site and component counts behind each pair;
+- finite-value, symmetry, diagonal, saturation, and completeness diagnostics;
+- the source alignment or imported-matrix identity.
+
+`compute_pairwise_genetic_distance_matrix` and
+`compute_pairwise_genetic_distance_matrix_from_records` create native matrix
+records. `validate_imported_distance_matrix` and
+`inspect_imported_distance_matrix_quality` protect the boundary when distances
+come from another system.
+
+## Diagnose Before Building
+
+`diagnose_distance_saturation` identifies pairs for which observed divergence
+and corrected distance no longer support an uncomplicated reading.
+`diagnose_distance_additivity` evaluates four-point violations.
+`diagnose_distance_ultrametricity` evaluates clock-like path equality.
+`assess_distance_method_assumptions` joins those conditions to the selected
+method policy.
+
+These diagnostics answer different questions. An additive matrix need not be
+ultrametric; an ultrametric matrix can still be dominated by missing pairs; a
+finite corrected distance can still be saturation-sensitive. Do not collapse
+them into one generic matrix-quality flag.
+
+## Native Construction And Fitting
+
+| Public locator | Owned result |
+| --- | --- |
+| `bijux_phylogenetics.distance:build_distance_tree` | policy-selected native distance tree |
+| `bijux_phylogenetics.distance:build_bionj_tree` | BioNJ tree with variance-aware joining |
+| `bijux_phylogenetics.distance:build_upgma_tree` | rooted ultrametric clustering tree |
+| `bijux_phylogenetics.distance:build_tree_from_imported_distance_matrix` | tree from a validated external matrix |
+| `bijux_phylogenetics.distance:fit_minimum_evolution_tree` | minimum-evolution fit record |
+| `bijux_phylogenetics.distance:fit_fitch_margoliash_tree` | weighted least-squares fit record |
+| `bijux_phylogenetics.distance:fit_nonnegative_least_squares_tree` | fit with nonnegative branch-length constraints |
+| `bijux_phylogenetics.distance:search_balanced_minimum_evolution_nni` | NNI search trace and selected balanced-ME tree |
+
+Method names do not make outputs interchangeable. UPGMA owns a rooted,
+clock-like interpretation; neighbor joining does not. Weighted and ordinary
+least squares optimize different objectives. A constrained fit that lands on
+zero-length branches needs its boundary state retained.
+
+## Review The Fit And Search
+
+`compute_patristic_residual_diagnostics` compares observed distances with tree
+path lengths. `analyze_distance_taxon_influence_from_imported_distance_matrix`
+and `analyze_distance_taxon_jackknife_from_imported_distance_matrix` expose
+taxa whose inclusion controls the result. `compare_distance_tree_methods_from_imported_distance_matrix`
+keeps competing methods in one aligned record, while
+`compare_distance_tree_topologies` separates topology disagreement from matrix
+fit.
+
+For any selected tree, retain the objective, starting state, accepted search
+moves, termination reason, branch-length constraints, residual distribution,
+excluded pairs, and alternative or equal solutions. A final Newick file alone
+cannot establish that the search or fit was adequate.
+
+## Resampling And Reference Correspondence
+
+`bootstrap_distance_trees` records replicate-level outcomes and
+`summarize_distance_bootstrap_support` derives support from the governed
+denominator. Failed or unusable replicates remain part of that denominator.
+`compare_distance_tree_to_reference_tree` compares a bounded tree result;
+`validate_distance_reference_examples` validates named reference fixtures.
+
+APE live correspondence covers registered `dist.dna`, `nj`, tree-distance,
+and related cases. That evidence applies to the selected cases and conventions,
+not to every distance method or every biological dataset.
+
+## Acceptance Record
+
+Before using a distance tree downstream, record:
+
+1. matrix identity and observation policy;
+2. diagnostic outcomes and every exclusion;
+3. construction or fitting objective and search coverage;
+4. residual, influence, and support evidence appropriate to the claim;
+5. structured outputs and reproducibility-bundle identity;
+6. the precise limitation when assumptions are violated or untested.
+
+`build_distance_method_report` and `write_distance_reproducibility_bundle`
+assemble reviewer-facing projections. Their contents remain subordinate to the
+structured matrix, diagnostics, search, and support records.
