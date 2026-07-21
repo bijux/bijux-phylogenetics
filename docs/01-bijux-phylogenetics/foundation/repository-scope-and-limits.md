@@ -65,6 +65,21 @@ executable is an adapter-environment failure. A parser mismatch is an adapter
 compatibility failure. A convergence warning belongs to the method result. A
 taxon mismatch belongs to input validation.
 
+## Responsibility At Failure Boundaries
+
+| Failure | Responsible surface | Required retained state |
+| --- | --- | --- |
+| invalid or ambiguous tree, alignment, trait, or partition | input contract | offending identity, validation rule, exclusion or refusal status |
+| native numerical termination or instability | owned method | configuration, diagnostic state, termination reason, partial result policy |
+| missing executable or non-zero engine exit | adapter execution | discovery result, command, version when known, stdout, stderr, exit status |
+| unexpected external output | adapter parser | raw files, expected contract, parser error, engine identity |
+| incomplete manifest or unwritable destination | artifact producer | declared inventory, successful writes, missing or failed outputs |
+| stale or unsupported scientific claim | Evidence Book governance | claim ID, material dependency, freshness or verdict boundary |
+
+Responsibility identifies where the failure is diagnosed and repaired. It does
+not imply that downstream surfaces may suppress it. Reports, manifests, and
+release records must preserve the status that the owning surface produced.
+
 ## Evidence Coverage
 
 The Evidence Book currently concentrates on five comparative teaching-study
@@ -72,6 +87,21 @@ families. It is not a coverage map of every runtime module. Native likelihood,
 inference, parsimony, simulation, and other domains have their own tests and
 benchmarks; study evidence exists only where an explicit claim mapping and
 bundle record say so.
+
+## Capability And Assurance Are Independent Axes
+
+| State | Correct public interpretation |
+| --- | --- |
+| implemented, contract-tested, no reference comparison | executable capability with bounded interface evidence |
+| implemented and numerically checked on known answers | bounded numerical assurance, not study-wide validity |
+| adapter integration tested | governed execution of an external owner, not native implementation |
+| parity matched for registered cases | agreement for named operations, inputs, conventions, and tolerances |
+| study bundle current but `not_comparable` | governed scope and provenance with an unresolved comparison boundary |
+| release gates passed | packages and declared public surfaces align at one revision |
+
+No row is a hidden synonym for another. A broad runtime can legitimately have
+narrow study evidence, and a well-governed study can truthfully remain
+non-comparable.
 
 ## Operational Limits
 

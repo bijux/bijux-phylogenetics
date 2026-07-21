@@ -85,15 +85,24 @@ def test_site_landing_connects_first_run_to_scientific_review() -> None:
 
 def test_foundation_and_architecture_define_owned_runtime_contracts() -> None:
     foundation = _read(PRODUCT_ROOT / "foundation" / "index.md")
+    scope = _read(PRODUCT_ROOT / "foundation" / "repository-scope-and-limits.md")
+    claims = _read(PRODUCT_ROOT / "foundation" / "claim-reading-guide.md")
+    evidence_boundary = _read(PRODUCT_ROOT / "foundation" / "evidence-boundary.md")
     ownership = _read(PRODUCT_ROOT / "foundation" / "product-surface-and-ownership.md")
     architecture = _read(PRODUCT_ROOT / "architecture" / "index.md")
     system_map = _read(PRODUCT_ROOT / "architecture" / "runtime-system-map.md")
 
     assert "finite-state likelihood" in foundation
     assert "supported Bayesian DNA inference" in foundation
-    assert "Native And External Computation" in _read(
-        PRODUCT_ROOT / "foundation" / "repository-scope-and-limits.md"
-    )
+    assert "Contract Propagation" in foundation
+    assert "Refusal Is Part Of The Contract" in foundation
+    assert "Native And External Computation" in scope
+    assert "Responsibility At Failure Boundaries" in scope
+    assert "Capability And Assurance Are Independent Axes" in scope
+    assert "Qualifiers That Change Meaning" in claims
+    assert "Combining Proofs" in claims
+    assert "Promotion Requirements" in evidence_boundary
+    assert "Valid Boundary States" in evidence_boundary
     assert "Ownership Matrix" in ownership
     assert "Dependency Direction" in architecture
     assert "Failure Attribution" in system_map

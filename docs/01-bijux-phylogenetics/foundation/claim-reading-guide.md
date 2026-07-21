@@ -45,6 +45,22 @@ flowchart LR
 5. Check the verdict and whether the record remains fresh.
 6. Carry exclusions and limitations into your own use of the claim.
 
+## Qualifiers That Change Meaning
+
+| Qualifier | Question it must answer |
+| --- | --- |
+| native | Which repository-owned implementation performs the computation? |
+| external or adapter-backed | Which executable owns the algorithm, and what does Bijux orchestrate? |
+| checked fixture | Which frozen reference values and versions were retained? |
+| live parity | Were both implementations executed in the governed run? |
+| matched with tolerance | Which observations, absolute/relative rules, and boundary conventions matched? |
+| current | Which material dependencies were checked for freshness? |
+| complete | Which required cases and artifacts were included, and how were failures counted? |
+
+Adjectives cannot carry scope by themselves. “Current parity” remains
+incomplete without the named reference, registered cases, compared fields,
+tolerances, and freshness basis.
+
 ## Example
 
 “Native maximum-likelihood inference is benchmarked” is incomplete. A usable
@@ -62,6 +78,21 @@ explicit.
 - A successful workflow does not resolve weak convergence or model fit.
 - A study-family summary does not make every bundle pass.
 
+## Combining Proofs
+
+Proofs can support one claim together only when their subjects and assumptions
+align. A parser contract, numerical known answer, workflow integration test,
+and study comparison may form a strong chain for one method and configuration.
+They cannot be combined by counting unrelated green checks.
+
+When combining records, preserve:
+
+- the narrowest shared method and input scope;
+- every material configuration difference;
+- the weakest current verdict or missing link;
+- separate ownership for native and external computation;
+- the revision or version to which the chain applies.
+
 ## Strongest Available Proof
 
 Use source and API contracts to verify ownership. Use tests for interface and
@@ -76,6 +107,10 @@ Downgrade the wording, not the standard. Say “implemented,” “available,”
 “not yet evaluated under this study contract” according to the facts. Record
 the missing comparison or closure criterion. Absence of evidence is not a
 failure to market aggressively; it is a boundary a reader deserves to see.
+
+If a claim cannot be traced, do not infer its proof from repository size,
+coverage percentage, publication status, or neighboring examples. Treat it as
+an undocumented or unsupported claim until the owning record is identified.
 
 Continue with [validation lanes](../quality/validation-lanes.md) and the
 [Evidence Book](../../03-bijux-phylogenetics-evidence-book/index.md).
