@@ -125,6 +125,32 @@ pass a distribution rule while still retaining individual invalid draws. Do
 not substitute the replicate pass fraction for the registry case result, or
 the case pass fraction for the within-case sampling record.
 
+## Separate Monte Carlo Error From Correspondence Error
+
+A difference between stochastic summaries can arise from finite replication
+even when both implementations sample the intended distribution. Predeclare a
+replicate budget, summary estimator, uncertainty estimate, and decision rule
+that distinguish expected Monte Carlo variation from a material distributional
+difference.
+
+Use independent random streams within and across implementations. Matching
+integer seed labels do not imply matching draws across R and Python, and paired
+event-by-event comparison is not valid unless the case owns a shared random
+number contract. Repeat the complete batch with independent seeds when the
+registered rule requires stability; do not keep the most favorable batch.
+
+| Observed pattern | Correct response |
+| --- | --- |
+| summaries agree within the predeclared uncertainty rule | retain the pass with both replicate populations and uncertainty estimates |
+| result changes materially across independent batches | report unstable evidence and increase or redesign the registered replication policy |
+| disagreement persists as Monte Carlo error shrinks | retain a correspondence failure and inspect model, state, and summary semantics |
+| invalid draws differ systematically by implementation | compare the failure-generating population before any filtered summary |
+| agreement appears only after an observed-data exclusion | register a new observation; do not rewrite the original case |
+
+Increasing replication after seeing a disagreement is diagnostic work, not a
+retroactive change to the original acceptance rule. Preserve the original
+batch and identify any larger follow-up comparison separately.
+
 ## Boundaries That Remain Visible
 
 - ER and SYM rerooting cases are compared only where root-prior semantics can

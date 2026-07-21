@@ -126,6 +126,40 @@ The optimizer-triage table preserves that ordering. It must not be used to
 excuse a difference automatically: every accepted assumption or boundary
 classification needs the registered policy and observation evidence.
 
+## Admit Likelihoods Before Ranking Models
+
+Model rankings are comparable only when every candidate contributes the same
+kind of maximized likelihood over the same observation population. Before
+comparing AIC, AICc, likelihood-ratio quantities, or model weights, establish:
+
+- identical taxa and trait observations after missing-data handling;
+- the same transformed data and tree, including any Jacobian contribution;
+- aligned likelihood density, root, variance, and constant-term conventions;
+- equivalent parameter constraints and free-parameter counts;
+- admissible optimization states under the registered convergence policy;
+- the same candidate-model population and criterion definition.
+
+```mermaid
+flowchart LR
+    fits["GEIGER and Bijux<br/>fit records"]
+    identity{"Observation and likelihood<br/>identity aligned?"}
+    optimum{"Admissible maxima under<br/>registered policy?"}
+    ranking["Compare criterion and<br/>candidate ranking"]
+    bounded["Compare only aligned<br/>parameters or predictions"]
+
+    fits --> identity
+    identity -->|yes| optimum
+    identity -->|no| bounded
+    optimum -->|yes| ranking
+    optimum -->|no| bounded
+```
+
+An additive likelihood constant can leave within-implementation ranking
+unchanged while making cross-implementation likelihood values and information
+criteria non-comparable. Likewise, similar objective values at boundary or
+non-identifiable optima may support a bounded fit correspondence without
+supporting parameter equality.
+
 ## Denominator And Model Identity
 
 Report selected, executed, passed, failed, and skipped cases by model shard.

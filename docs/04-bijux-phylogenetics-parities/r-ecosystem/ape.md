@@ -133,6 +133,26 @@ when the case explicitly classifies the behavioral difference.
 
 The observation table, not the final Newick rendering, owns these decisions.
 
+## Audit Representation Loss At Tree Boundaries
+
+Tree exchange is a semantic comparison before it is a serialization check.
+Newick, Nexus, and in-memory tree objects do not necessarily preserve the same
+root marker, edge annotations, support convention, comments, tree-set names,
+or zero/missing branch-length distinction.
+
+| Boundary | Identity that must survive | Loss that invalidates an unqualified round-trip claim |
+| --- | --- | --- |
+| text to tree | taxon labels, tree count, topology, rooting policy, lengths and annotations required by the case | a parser silently drops or reinterprets a required field |
+| tree to text | the declared precision, support encoding, root representation and tree-set cardinality | output can be reread but no longer represents the same governed object |
+| APE node to Bijux node | descendant-tip set plus root and unary-node context | incidental node numbering is treated as scientific identity |
+| topology normalization | only ordering or representation declared irrelevant by the case | root placement, multifurcation, duplicate labels or branch identity is erased |
+
+A successful self-round-trip on each side is insufficient: both
+implementations can preserve different projections of the source object. For
+cross-system correspondence, compare the admitted semantic fields before and
+after each boundary and retain any unsupported annotation as an explicit loss,
+not an invisible normalization.
+
 ## Deliberate Non-Claims
 
 - A matching case does not make Bijux a drop-in replacement for all of APE.
