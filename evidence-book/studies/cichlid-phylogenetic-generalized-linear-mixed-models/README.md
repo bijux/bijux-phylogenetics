@@ -64,6 +64,19 @@ PCM5 requires explicit accounting at several levels:
 Large draw counts cannot compensate for a missing chain, species, variance
 component, node identity, or eligible comparison row.
 
+## Preserve Parent And Derived Draws
+
+| Derived record | Required same-draw parents | Failure if only summaries remain |
+| --- | --- | --- |
+| phylogenetic signal ratio | phylogenetic and residual variance components | ratio of marginal means differs from mean of draw-wise ratios |
+| species/phylogeny/residual shares | every component in the complete denominator | omitted or unmatched components silently change the partition |
+| infection probability curve | paired coefficient draws and declared predictor values | inverse-link of mean coefficients understates transformation uncertainty |
+| ancestral-node interval | node-effect draws keyed to one tree and parameter | node identity and posterior dependence cannot be recovered |
+
+Primary posterior draws and derived rows are both required. Derived quantities
+cannot substitute for the parent chain, and parent draws do not prove that the
+declared transformation was applied correctly.
+
 ## Model-Family Boundaries
 
 | Family | Identity required before comparison |
@@ -87,6 +100,11 @@ and provenance own source identity. Bundle manifests own claim status and
 freshness. Checks and results manifests expose the zero-primary-output state.
 The public guide explains interpretation and closure but does not own a
 scientific value.
+
+The two source scripts have different roles: `PCM5_PGLMM.R` defines the main
+model sequence, while `PCM5_extra_code.R` defines additional back-transforms
+and mixed-model variations. A result derived from the supplementary script
+must retain that source identity rather than inheriting the main-script label.
 
 ## Reviewer Route
 

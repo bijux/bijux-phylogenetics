@@ -51,6 +51,22 @@ tree/node identity. Apply nonlinear transforms and variance ratios within the
 same draw before summarizing; transforming marginal summaries constructs a
 different quantity.
 
+## Observation Keys By Model Family
+
+| Family | Required key beyond the parameter name |
+| --- | --- |
+| Gaussian signal | chain, draw, phylogenetic/residual component pair and ratio definition |
+| ancestral effects | exact tree, descendant-tip node key, chain, draw and effect scale |
+| Poisson counts | response, offset/exposure, link, parameter, random-effect level and draw |
+| infection outcomes | category coding, latent/logit scale, residual convention, parameter and draw |
+| probability curves | paired coefficient draw, predictor value and inverse-link definition |
+| repeated effects | observation/species unit, species and treetip component identities |
+| variance shares | same-draw complete component set and family-specific residual term |
+
+Sorting by a display label is not enough. Every paired observation must resolve
+the same estimand, component and draw identity on both sides before a
+distributional or tolerance rule is evaluated.
+
 ## Execution Identity
 
 A governed comparison must bind source-script and dataset hashes, R and
@@ -59,3 +75,7 @@ random-effect and tree order, chain policy, seeds, failures, raw draws,
 diagnostics, derived-row keys, normalization, exclusions, and adjudication
 rules. Until those records exist, wrapper execution is integrity evidence, not
 posterior correspondence.
+
+Retain source-script identity per observation. Main-model rows and
+supplementary back-transform rows may consume the same fitted object while
+having different derivation contracts.
