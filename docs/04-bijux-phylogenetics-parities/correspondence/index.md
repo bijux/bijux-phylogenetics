@@ -40,6 +40,24 @@ Retain separate selected, passed, failed, and skipped counts. “Passed” is a
 runtime harness outcome, not the `matched` verdict stored in a scientific
 evidence bundle.
 
+## Audit Normalization Before Tolerance
+
+Normalization is admissible only when it aligns representation without
+silently changing the scientific quantity. Review it before applying a
+numerical or structural acceptance rule.
+
+| Normalization | Required audit record | Refuse comparison when |
+| --- | --- | --- |
+| taxon, node, clade, or state labels | original identifiers, mapping, collisions, omissions, and ordering | the mapping is ambiguous or many-to-one without a declared aggregation |
+| rooted or unrooted topology | rooting policy, shared taxon set, split/clade definition | the compared topology objects answer different questions |
+| likelihood, rate, distance, or support scale | source convention, units, sign/scale transform, and inverse interpretation | the transform cannot recover each source estimand |
+| factor, matrix, or parameter ordering | source order, target order, key mapping, and absent keys | row position is the only join identity |
+| stochastic or posterior summary | replicate/draw population, estimator, transform, and invalid-value policy | denominators or summary estimands differ |
+
+Retain raw and normalized observations side by side. A transformation chosen
+after observing the difference belongs to a new comparison rule; it cannot be
+used to rewrite the original failure as a pass.
+
 ## Promotion To An Evidence Verdict
 
 An Evidence Book bundle may interpret retained parity observations only after

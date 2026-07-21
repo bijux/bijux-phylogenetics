@@ -499,9 +499,13 @@ def test_parity_handbook_separates_live_reference_and_adapter_boundaries() -> No
     assert "`passed`:" in correspondence
     assert "`failed`:" in correspondence
     assert "`skipped`:" in correspondence
+    assert "Audit Normalization Before Tolerance" in correspondence
+    assert "Retain raw and normalized observations side by side" in correspondence
     assert "--ape-shard load_tree" in correspondence
     assert "Three Records, Three Meanings" in parity_index
     assert "Choose The Relationship From The Question" in parity_index
+    assert "Correspondence Is Not Substitutability" in parity_index
+    assert "does not authorize replacing\nAPE" in parity_index
     assert "selected cases" in parity_index
     assert "Matched · mismatched" not in parity_index
 
@@ -531,6 +535,8 @@ def test_r_parity_guides_publish_registry_scope_and_non_claims() -> None:
     assert "Registry Lifecycle" in ecosystem
     assert "Execution Identity" in ecosystem
     assert "Programmatic Entry Points" in ecosystem
+    assert "Treat Reference Drift As A New Observation" in ecosystem
+    assert "refreshing a\nfixture without live execution" in ecosystem
     assert "Choose The Reference From The Operation" in ecosystem
     assert "Correspondence Key" in ecosystem
     assert "Programmatic Surface" in ape

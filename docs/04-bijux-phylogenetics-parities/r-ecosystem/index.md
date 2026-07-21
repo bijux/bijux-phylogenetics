@@ -108,6 +108,25 @@ installation does not retroactively identify an older checked fixture, and a
 fixture cannot be relabelled as live because the corresponding package is now
 installed.
 
+## Treat Reference Drift As A New Observation
+
+An R, package, dependency, or platform change can alter defaults, object
+representation, optimizer behavior, warnings, and numerical output. Registry
+case identity remains stable, but its execution observation is versioned.
+
+| Detected change | Required response |
+| --- | --- |
+| reference package or R version | execute the selected cases again and retain the prior observation |
+| default, warning, or return structure | inspect the native R output before changing normalization or parsers |
+| optimizer or stochastic behavior | keep seeds, starts, replicate population, convergence, and failure counts comparable |
+| fixture or registry case | create a new case/input identity; do not overwrite the old denominator |
+| tolerance or distributional rule | record a new rule revision and rationale before adjudicating new output |
+| indirect dependency or platform | retain environment identity and qualify differences that cannot be isolated |
+
+A prior passing observation remains evidence for its recorded environment. It
+does not automatically fail or pass the new environment, and refreshing a
+fixture without live execution does not establish current correspondence.
+
 ## Programmatic Entry Points
 
 Each live registry exposes the same review shape from its public module:

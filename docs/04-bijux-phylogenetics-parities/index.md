@@ -59,6 +59,25 @@ One run can contribute to several records, but it does not merge their status
 names. Select the relationship before choosing a command or interpreting a
 green result.
 
+## Correspondence Is Not Substitutability
+
+Two surfaces can agree on selected observations while remaining unsuitable as
+drop-in replacements. A substitution claim needs a broader contract than a
+numerical parity claim.
+
+| Dimension | Correspondence asks | Substitution additionally requires |
+| --- | --- | --- |
+| input | were the selected scientific objects aligned? | accepted formats, validation, defaults, missing-data policy, and refusal behavior align for intended users |
+| method | were the compared estimands and parameterizations aligned? | the replacement exposes every required model, constraint, and configuration |
+| result | did registered observations satisfy their rules? | result fields, ordering, units, uncertainty, omissions, and status semantics remain usable |
+| operation | did the selected case execute? | failure, retry, resource, concurrency, and artifact behavior satisfy the consuming workflow |
+| assurance | is the named case supported? | coverage and independent evidence match the full intended substitution scope |
+
+The repository publishes operation-scoped correspondence. Unless a specific
+consumer contract says otherwise, a passing case does not authorize replacing
+APE, GEIGER, phytools, MAFFT, IQ-TREE2, BEAST, or another owner across an
+analysis pipeline.
+
 ## Three Records, Three Meanings
 
 | Record | Status owner | What it establishes |
