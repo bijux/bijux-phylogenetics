@@ -50,6 +50,21 @@ flowchart LR
 | determine what evidence supports a claim | [the Evidence Book](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-evidence-book/) |
 | change or release the repository | [the maintainer handbook](https://bijux.io/bijux-phylogenetics/05-bijux-phylogenetics-maintain/) |
 
+## Follow A Complete Study Guide
+
+| Scientific journey | Guide | Boundary made explicit |
+| --- | --- | --- |
+| raw sequences to supported tree | [Sequence-to-tree study](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/sequence-to-tree-study/) | Bijux orchestration versus MAFFT, trimAl, and IQ-TREE2 computation |
+| tree and traits to regression and ancestral results | [Comparative and ancestral study](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/comparative-and-ancestral-study/) | shared data lineage versus separate estimands and claims |
+| two trees to a bounded structural comparison | [Topology comparison study](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/topology-comparison-study/) | shared-taxon denominator, rooting, splits, and support separation |
+| structured results to a human review view | [Analysis report handoff](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/analysis-report-handoff/) | analytical owner versus report projection |
+| failed or incomplete work to a safe consumer decision | [Result and refusal semantics](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/result-and-refusal-semantics/) | interface outcome versus scientific state |
+| evidence bundle to a citable statement | [Reading an evidence bundle](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-evidence-book/reading-an-evidence-bundle/) | bundle summary versus claim and observation records |
+
+These guides begin with a scientific object and end with the record another
+person needs to review. Use the command reference only after choosing the
+study contract; command availability must not choose the scientific question.
+
 ## Install
 
 The canonical distribution supports Python 3.11 and newer:

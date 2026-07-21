@@ -100,6 +100,25 @@ example into accuracy or biological evidence.
 | compare with established tools | [Parities and correspondence](04-bijux-phylogenetics-parities/index.md) | which APE, GEIGER, phytools, and external-engine relationships are governed |
 | maintain or release the repository | [Maintainer handbook](05-bijux-phylogenetics-maintain/index.md) | how code, docs, packages, and evidence stay synchronized |
 
+## Follow A Complete Reader Journey
+
+The shortest trustworthy route is a connected study guide, not an exhaustive
+API or command inventory:
+
+| You are holding… | Continue with… | Finish by reviewing… |
+| --- | --- | --- |
+| raw sequence records | [Sequence-to-tree study](01-bijux-phylogenetics/operations/sequence-to-tree-study.md) | stage outputs, engine identities, manifest and acceptance rule |
+| a tree and trait table | [Comparative and ancestral study](01-bijux-phylogenetics/operations/comparative-and-ancestral-study.md) | admitted taxa, model-specific diagnostics and separate claims |
+| two candidate topologies | [Topology comparison study](01-bijux-phylogenetics/operations/topology-comparison-study.md) | shared-taxon denominator, rooting and split observations |
+| structured results needing review | [Analysis report handoff](01-bijux-phylogenetics/operations/analysis-report-handoff.md) | backward trace from every displayed value to its owner |
+| an exception, partial result or failed command | [Result and refusal semantics](01-bijux-phylogenetics/interfaces/result-and-refusal-semantics.md) | scientific state, stable code, details and consumer decision |
+| a run that another person must reconstruct | [Reproducibility records](01-bijux-phylogenetics/interfaces/reproducibility-records.md) | inputs, environment, configuration, attempts, inventory and acceptance |
+| a claim that needs citation | [Reading an evidence bundle](03-bijux-phylogenetics-evidence-book/reading-an-evidence-bundle.md) | claim observations, checks, verdict, limitations and freshness |
+
+If the journey stops early, preserve the stopping state. A refused input,
+missing engine, partial output, non-comparable claim, or stale bundle can still
+be a complete review record without being a successful scientific conclusion.
+
 ## Explore The Runtime By Scientific Object
 
 The scientific domain, not the interface name, determines the assumptions and

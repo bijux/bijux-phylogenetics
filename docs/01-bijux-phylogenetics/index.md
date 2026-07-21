@@ -43,6 +43,37 @@ the assumptions behind these routes. The [surface selection guide](interfaces/su
 then distinguishes Python composition, repeatable CLI execution, and durable
 artifact consumption.
 
+## Move From Question To Citation
+
+```mermaid
+flowchart LR
+    question["Bounded scientific<br/>question"] --> study["Complete study<br/>guide"]
+    study --> result["Typed result,<br/>diagnostics and refusal state"]
+    result --> handoff["Manifest, structured<br/>artifacts and report"]
+    handoff --> evidence["Claim observations,<br/>checks and freshness"]
+    evidence --> citation["Qualified statement"]
+```
+
+Use the route that matches the work:
+
+- [sequence-to-tree study](operations/sequence-to-tree-study.md) for admitted
+  FASTA through external alignment, trimming, inference, and support;
+- [comparative and ancestral study](operations/comparative-and-ancestral-study.md)
+  for a shared tree–trait population with separate model claims;
+- [topology comparison study](operations/topology-comparison-study.md) for
+  rooted or unrooted split correspondence under an explicit taxon denominator;
+- [analysis report handoff](operations/analysis-report-handoff.md) for linked
+  machine and human review artifacts;
+- [result and refusal semantics](interfaces/result-and-refusal-semantics.md)
+  when execution does not reach an accepted scientific state;
+- [reading an evidence bundle](../03-bijux-phylogenetics-evidence-book/reading-an-evidence-bundle.md)
+  when a result is used to support a public statement.
+
+Evidence is not an automatic final stage for every analysis. Stop at the
+structured result when no governed claim consumes it, and describe that scope
+honestly. When a claim does consume the result, the bundle—not proximity to a
+study guide—owns its verdict.
+
 ## Define Completion Before Running
 
 An analysis route is ready only when its completion condition names both the
