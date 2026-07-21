@@ -33,6 +33,9 @@ Continue by method family:
   external-engine boundary.
 - [Parsimony](parsimony.md) covers Fitch, Wagner, Sankoff, Dollo, Camin–Sokal,
   topology search, reconstruction, and support.
+- [Search, Model Selection, And Support](search-model-selection-and-support.md)
+  connects eligible candidates, exploration records, comparison
+  admissibility, ties, and method-specific support across inference families.
 
 ## Method Ownership Map
 
@@ -119,6 +122,9 @@ Reporting only the selected row makes selection failures and uncertainty
 unrecoverable. It also prevents a reviewer from distinguishing a dominant
 result from one that won by a negligible difference or because alternatives
 failed to execute.
+
+Use [Search, Model Selection, And Support](search-model-selection-and-support.md)
+for the common review packet and method-specific denominator rules.
 
 ## Review The Search, Not Only The Winner
 

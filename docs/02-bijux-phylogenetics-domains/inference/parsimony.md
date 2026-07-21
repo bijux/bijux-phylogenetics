@@ -81,6 +81,11 @@ A trustworthy search record retains:
 Repeated discovery of the same best score strengthens search evidence but
 does not prove global optimality.
 
+The cross-method [Search, Model Selection, And Support](search-model-selection-and-support.md)
+guide defines the candidate populations and tie discipline that a parsimony
+search shares with likelihood and Bayesian workflows without conflating their
+objectives.
+
 ## Separate Score, Topology, And History Equivalence
 
 Equal total scores establish only equality under the declared cost model.

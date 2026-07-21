@@ -172,6 +172,7 @@ nav:
           - Distance-Based Inference: 02-bijux-phylogenetics-domains/inference/distance-based-inference.md
           - Bayesian Inference: 02-bijux-phylogenetics-domains/inference/bayesian-inference.md
           - Parsimony: 02-bijux-phylogenetics-domains/inference/parsimony.md
+          - Search, Model Selection, And Support: 02-bijux-phylogenetics-domains/inference/search-model-selection-and-support.md
       - Evolutionary Analysis:
           - Overview: 02-bijux-phylogenetics-domains/evolutionary-analysis/index.md
           - Comparative And Ancestral Methods: 02-bijux-phylogenetics-domains/evolutionary-analysis/comparative-and-ancestral-methods.md

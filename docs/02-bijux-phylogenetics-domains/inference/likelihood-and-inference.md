@@ -103,6 +103,10 @@ correspondence answer different questions. Always retain the compared models,
 parameter counts, nesting assumptions, objective convention, and decision
 rule.
 
+[Search, Model Selection, And Support](search-model-selection-and-support.md)
+defines the shared eligible/attempted/evaluated/selected populations and the
+record required for ties, failed candidates, and support denominators.
+
 ### Comparison Admissibility
 
 Two likelihoods are directly comparable only when they use the same observed
