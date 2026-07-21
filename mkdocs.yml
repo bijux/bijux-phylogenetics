@@ -164,6 +164,7 @@ nav:
           - Datasets And Study Inputs: 02-bijux-phylogenetics-domains/data-and-structure/datasets-and-study-inputs.md
           - Data Interchange And Identity: 02-bijux-phylogenetics-domains/data-and-structure/data-interchange-and-identity.md
           - Trees, Alignments, And Taxa: 02-bijux-phylogenetics-domains/data-and-structure/trees-alignments-and-taxa.md
+          - Tree Operations And Identity: 02-bijux-phylogenetics-domains/data-and-structure/tree-operations-and-identity.md
       - Inference:
           - Overview: 02-bijux-phylogenetics-domains/inference/index.md
           - Likelihood And Inference: 02-bijux-phylogenetics-domains/inference/likelihood-and-inference.md

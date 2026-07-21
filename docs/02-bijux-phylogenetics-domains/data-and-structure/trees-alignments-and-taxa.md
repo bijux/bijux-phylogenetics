@@ -35,6 +35,11 @@ represent expected substitutions, time, or another distance; algorithms must
 not infer their units from file format alone. Support labels require an
 explicit method and scale.
 
+Use [Tree Operations And Identity](tree-operations-and-identity.md) when a
+workflow changes a tree. It defines structural node and branch keys, operation
+invariants, and the derivation ledger required for rerooting, pruning, clade
+extraction, branch rescaling, and support normalization.
+
 ## Alignment Contracts
 
 Alignment handling covers FASTA loading and validation, alphabet review,
@@ -120,6 +125,10 @@ A single consensus or best tree can hide topology uncertainty. Tree-set
 surfaces retain split frequencies, topology diversity, support, and influence
 across candidate trees. Comparative and ancestral results should state whether
 they are conditional on one tree or summarized across a set.
+
+Single-tree transformation and tree-set summarization have different units of
+analysis. The former must explain how one identified tree changed; the latter
+must retain the selected member population and failed-member denominator.
 
 ## External Preparation
 

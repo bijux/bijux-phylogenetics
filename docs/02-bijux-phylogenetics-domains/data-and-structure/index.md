@@ -25,9 +25,10 @@ flowchart LR
     files --> parse --> identity --> validate --> objects
 ```
 
-Start with [Trees, Alignments, And Taxa](trees-alignments-and-taxa.md) for
-rootedness, branch-length meaning, tree sets, alignment partitions, support
-labels, and taxon reconciliation.
+Start with [Trees, Alignments, And Taxa](trees-alignments-and-taxa.md) for the
+shared object contracts. Continue with
+[Tree Operations And Identity](tree-operations-and-identity.md) before
+rerooting, pruning, extracting, rescaling, or comparing trees.
 
 ## Choose The Data Contract
 
@@ -36,6 +37,7 @@ labels, and taxon reconciliation.
 | packaged biological or validation dataset | [Datasets And Study Inputs](datasets-and-study-inputs.md) | dataset role, provenance, schema, analytical population, and export identity |
 | Newick, Nexus, FASTA, or tabular files | [Data Interchange And Identity](data-interchange-and-identity.md) | which semantics survive parsing, normalization, and serialization |
 | trees, alignments, partitions, or tree sets already in memory | [Trees, Alignments, And Taxa](trees-alignments-and-taxa.md) | rootedness, branch meaning, state coding, support, and taxon reconciliation |
+| a tree that must be transformed or structurally compared | [Tree Operations And Identity](tree-operations-and-identity.md) | preserved invariants, structural node/branch identity, derivation ledger, and comparison boundary |
 
 These routes meet at the admitted analytical object. A packaged dataset is not
 automatically analysis-ready, and a successfully parsed file is not
@@ -93,6 +95,11 @@ or reordering to match another object creates a derived object. Preserve the
 operation, parameters, before/after dimensions, exclusions, and source
 checksum. A derived object can be valid while answering a different question
 from its source.
+
+[Tree Operations And Identity](tree-operations-and-identity.md) gives the
+operation-specific acceptance rules. It separates a transformation record
+from any later comparison so that taxon pruning or rerooting cannot disappear
+inside a distance or support result.
 
 ## Boundary Rules
 
