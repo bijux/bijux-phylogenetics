@@ -42,7 +42,21 @@ The important ownership distinction is:
   diagnostics;
 - the R path owns its independently executed reference observations;
 - the evidence bundle owns normalization, tolerance, comparison, and verdict;
-- this README owns none of those values.
+
+## Observation Contract
+
+| Observation family | Identity required before comparison | Comparison form |
+| --- | --- | --- |
+| prepared population | admitted taxa, excluded rows and ordering | exact structural comparison |
+| tree structure | tip population, rootedness and descendant-taxon signatures | exact or structural comparison |
+| Pagel lambda | trait, tree, likelihood convention and parameter bounds | tolerance-bounded scalar comparison |
+| lambda-zero test | null/alternative identities and likelihood convention | tolerance-bounded likelihood and test comparison |
+| continuous ancestors | tree, node signature, trait scale and model | node-keyed tolerance comparison |
+| branch changes | structurally keyed parent/child clades and sign convention | row-keyed tolerance comparison |
+
+Every scalar and row needs its observation key even when display order matches.
+The comparison table is the join between the independently executed paths;
+neither result JSON is allowed to redefine the other path's values.
 
 ## Identity Requirements
 
@@ -63,3 +77,8 @@ the registered preparation, tree, signal, and ancestral observations. They do
 not claim plot-for-plot identity for lecture graphics. Plot-only payloads are
 retained to show coverage and lineage while remaining outside the numerical
 parity denominator.
+
+When a registered observation is unavailable or not comparable, preserve that
+terminal state in the block payload and aggregate counts. Do not replace it
+with a nearby statistic, a plot inspection, or a value from a different
+preparation population.

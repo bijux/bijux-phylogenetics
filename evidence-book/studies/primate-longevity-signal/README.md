@@ -25,6 +25,21 @@ not a claim that every lecture block is numerically comparable: its manifest
 separately counts verified, tolerance-matched, plot-only, artifact-only,
 seeded-input-only, and workflow-only blocks.
 
+## Read The Evidence In Dependency Order
+
+| Decision | Owning record | Why it precedes the next decision |
+| --- | --- | --- |
+| Which source files entered the study? | `provenance/lund-course-sources.json` and `datasets/registry.json` | source and derivative identities must be fixed before transformations are compared |
+| Which rows and types survived intake? | `evidence-002` through `evidence-005` | type repair, missingness and duplicate aggregation define the trait population |
+| Which tree survived preparation? | `evidence-006` and `evidence-007` | import, trimming, rooting and node-label interpretation define the structural object |
+| Which taxa joined one-to-one? | `evidence-008` | signal and ancestral calculations depend on the reconciled 75-taxon population |
+| Which governed derivatives were emitted? | `evidence-009` | downstream execution must identify the exact table and tree bytes it consumed |
+| Which analytical observations correspond? | `evidence-001` | only the aggregate bundle compares the registered signal and ancestral outputs |
+
+Do not begin with the lambda estimate or ancestral table and infer that the
+preparation chain matched. The focused bundles are independent prerequisites,
+not supplementary detail.
+
 ## Scientific Dependency Chain
 
 ```mermaid
@@ -64,6 +79,12 @@ continuous ancestral estimates, branch-change summaries, and the R/Bijux
 comparison rule for each scalar. The checked result inventory also retains
 block-level classifications so rendering and workflow coverage cannot be
 mistaken for numerical equivalence.
+
+The aggregate result has two denominators: registered lecture blocks and
+numerically comparable observations within those blocks. Plot-only and
+workflow-only coverage remains visible in the first denominator but does not
+enter the second. Any percentage or summary must identify which denominator it
+uses.
 
 Use the descendant-taxon signature to identify an internal node. A lecture
 node label is not durable enough on its own because parsing, pruning, or
