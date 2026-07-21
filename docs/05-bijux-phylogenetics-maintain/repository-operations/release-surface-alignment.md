@@ -9,97 +9,153 @@ last_reviewed: 2026-07-21
 
 # Release Surface Alignment
 
-Release surfaces are aligned when one identified revision exposes the same
-package identity, public contracts, computational ownership, artifact
-semantics, evidence boundaries, and maturity status everywhere a consumer can
-encounter them. Green checks are necessary; retained reports and direct
-cross-surface comparison establish that they describe the same release.
+Release surfaces are aligned when one identified candidate exposes the same
+package identity, public contracts, computational ownership, artifact meaning,
+scientific boundaries, and maturity state everywhere a consumer can encounter
+them. Alignment is demonstrated by direct comparison of retained records, not
+by assuming that independently green workflows describe the same candidate.
 
 ```mermaid
-flowchart LR
-    source["Owned code, schemas,<br/>metadata, evidence"]
-    builds["Built distributions<br/>and service artifacts"]
-    prose["README and<br/>public handbook"]
-    reports["Readiness and<br/>governance reports"]
-    decision{"Consistent<br/>release?"}
+flowchart TD
+    candidate["Commit · version · lock<br/>schemas · evidence state"]
+    source["Owned runtime and<br/>governance sources"]
+    builds["Wheel · sdist · installed<br/>commands and resources"]
+    public["README · package metadata<br/>site · examples"]
+    assurance["Tests · engines · benchmarks<br/>parity · Evidence Book"]
+    reports["Boundary · artifact · package<br/>publish-readiness reports"]
+    decision{"Same identity and meaning?"}
 
-    source --> builds --> decision
-    source --> prose --> decision
-    source --> reports --> decision
+    candidate --> source --> decision
+    candidate --> builds --> decision
+    candidate --> public --> decision
+    candidate --> assurance --> decision
+    candidate --> reports --> decision
 ```
 
 ## Alignment Matrix
 
 | Contract | Surfaces that must agree | Evidence to retain |
 | --- | --- | --- |
-| identity and version | root/package README, package metadata, installed module, CLI, wheel and sdist | built filenames, inspected metadata, installed version output |
-| canonical and alias behavior | distributions, imports, commands, resources, compatibility guide | clean-install and alias contract results |
-| public interface | runtime source, generated API/CLI/OpenAPI reference, examples | contract tests, schema hash, strict docs build |
-| computational ownership | native implementation, adapter/subprocess boundary, diagnostics, method guides | execution-surface and package-boundary reports |
-| artifact semantics | producers, versioned schemas, consumers, workflow guides | schema and producer/consumer compatibility results |
-| scientific assurance | validation lanes, benchmark records, Evidence Book bundles, public claims | current provenance, checks, verdicts, freshness and coverage reports |
-| maturity and publication | classifiers, repository status, readiness policy, public wording | publish- and release-readiness reports |
+| candidate identity | commit, version, lock, schemas, evidence inputs, optional-engine denominator | identity record and digests before and after review |
+| distribution roles | runtime, compatibility alias, maintainer package, wheel and sdist metadata | package-boundary report, built inventories, clean-install results |
+| installed interface | source exports/parser, installed imports/commands, API/CLI docs and examples | focused contracts, installed help, OpenAPI hash, strict docs build |
+| computational ownership | native implementation, adapter/subprocess, result provenance, method guides | execution-surface report, manifests, controlled/real-engine records |
+| artifact semantics | producer, schema/version, consumer, replay, reports and evidence dependencies | compatibility tests, checksums, inventory, replay classification |
+| scientific assurance | tests, benchmark rows, parity observations, bundle claims and public statements | selected denominators, tolerances, statuses, freshness, limitations |
+| maturity and publication | classifiers, package metadata, readiness policy, release notes | publish scorecard, closure criteria, blocker register, decision packet |
 
-## Review Sequence
+## Build The Alignment Packet
 
-1. identify the commit, governed configuration, and intended distributions;
-2. generate reports with `make report-release-readiness` and inspect warnings,
-   exclusions, and open boundaries;
-3. build and inspect distributions rather than relying on source-tree imports;
-4. run strict documentation and semantic contract validation;
-5. compare public statements with package, execution, artifact, benchmark, and
-   evidence owners;
-6. enforce the complete gate with `make check-release-readiness`;
-7. retain report paths and exact outcomes with the release decision.
+Generate governance records before enforcing them:
 
-`check-release-readiness` enforces configuration single-source-of-truth,
-evidence governance, execution ownership, package boundaries, package bundles,
-and publish readiness. It does not replace `make docs-check`, installed-package
-smoke tests, or human comparison of scientific wording with bounded evidence.
+```bash
+make report-release-readiness
+```
+
+This composes configuration, Evidence Book, artifact, execution, package, and
+publish-readiness report surfaces under `artifacts/root/`. Review each record's
+input identity, issue count, status, and limitations. There is no single
+`release-readiness.json`; the report set is intentionally decomposed by owner.
+
+Then collect distribution and public-surface evidence:
+
+```bash
+make package-verify
+make docs
+```
+
+Record built artifact digests, clean-install imports and commands, strict docs
+result, schema hash, and exact selected test/engine/benchmark/evidence records.
+
+## Compare Identity Across Surfaces
+
+Verify all of the following resolve to the candidate:
+
+- root and package metadata version;
+- wheel and sdist filenames and embedded metadata;
+- `importlib.metadata.version(...)` for canonical runtime, alias, and
+  maintainer distributions in clean environments;
+- `bijux-phylogenetics --version`;
+- OpenAPI schema hash and artifact schema versions;
+- documentation version links and examples;
+- Evidence Book input manifests, output checksums, and freshness dependencies;
+- benchmark, parity, and real-engine executable/runtime identities.
+
+If two surfaces cannot be joined by exact identity, they cannot jointly support
+the release decision.
+
+## Compare Meaning Across Surfaces
+
+Identity equality is necessary but insufficient. Review semantic joins:
+
+| Public statement | Owning record |
+| --- | --- |
+| method is native | runtime implementation plus native-only enforcement and numerical assurance |
+| result uses MAFFT, IQ-TREE2, MrBayes, or BEAST | external manifest with executable and adapter identity |
+| command or Python example is supported | installed parser or curated export and contract test |
+| result is reproducible | manifest/replay comparison with exact meaning named |
+| numerical behavior agrees | parity or benchmark observation with case, quantity, policy, and denominator |
+| study claim is supported | exact Evidence Book claim, check, observation, bundle verdict, and freshness |
+| candidate is publishable | publish-readiness blocker register and composed release checks |
+
+Do not let a shared adjective—“ready,” “matched,” “validated,” or
+“reproducible”—join records that use different definitions.
+
+## Review Status Denominators
+
+For each test, engine, benchmark, parity, and evidence surface, retain selected
+case IDs and counts for every status. Verify public summaries do not exclude
+failed, skipped, unsupported, mismatched, or non-comparable records.
+
+The Evidence Book currently contains 43 bundles across five study families.
+Release statements about the complete book must resolve to all 43 current
+manifests, not only the matched PCM1 and PCM2 subsets.
 
 ## Release Decision Record
 
 | Field | Required evidence |
 | --- | --- |
-| identity | commit, resolved version, distributions, Python/platform, governed configuration |
-| build | wheel and sdist filenames, hashes, metadata inspection, package inventory |
-| installed behavior | clean-environment imports, canonical/alias commands, packaged resources, representative structured output |
-| public contracts | API/schema hashes, strict documentation result, examples and command references |
-| scientific assurance | exact test/benchmark/evidence lanes, denominators, verdict distributions, freshness, known non-comparable boundaries |
-| external coverage | selected engines, executable versions, executed/skipped/failed cases, retained manifests |
-| governance | artifact, package-boundary, execution-surface, evidence, publish-readiness, and release-readiness reports |
-| decision | ready/blocked outcome, blocker list, bounded limitations, reviewer and timestamp |
+| identity | commit, resolved version, distributions, lock, schemas, Python/platform, governed configuration |
+| build | wheel/sdist names, hashes, metadata, licenses, package inventory |
+| installed behavior | clean imports, canonical/alias commands, resources, representative structured output |
+| public contracts | API/schema hash, CLI discovery, strict docs and semantic tests, examples |
+| scientific assurance | exact test/benchmark/parity/evidence lanes, denominators, tolerances, verdicts, freshness |
+| external coverage | selected engines, executable versions, executed/skipped/failed cases, manifests |
+| governance | config, artifact, execution, package, evidence, publish-readiness report paths and outcomes |
+| decision | ready/blocked, blockers, bounded limitations, reviewer, timestamp, artifact destination |
 
-The decision record is append-only evidence for that release candidate. A new
-commit, rebuilt distribution, changed dependency resolution, refreshed
-evidence bundle, or rerun with different optional-engine coverage creates a
-new candidate and requires a new aligned packet.
+The record is append-only for that candidate. A changed commit, rebuilt
+distribution, dependency resolution, evidence bundle, or optional-engine
+selection requires a new packet.
 
-## Contradiction Review
+## Enforce After Review
 
-Before publication, answer from retained evidence:
+```bash
+make check-publish-readiness
+make check-release-readiness
+```
 
-- Do source metadata and both built distribution formats identify the same
-  version and package roles?
-- Can canonical and alias installations execute their documented commands?
-- Do generated references and examples match current signatures, defaults, and
-  failure behavior?
-- Are native and external computational owners attributed consistently?
-- Do artifact schemas match producers, consumers, and evidence dependencies?
-- Does each assurance statement resolve to the correct lane, corpus,
-  tolerance, verdict, and freshness state?
-- Are unsupported, skipped, mismatched, and non-comparable cases visible?
+`check-release-readiness` enforces configuration source-of-truth, evidence and
+artifact governance, execution ownership, package boundaries, package bundles,
+and publish readiness. It does not replace source tests, strict docs, package
+verification, optional real-engine lanes, benchmark/parity review, or the
+human semantic comparison.
 
 ## Release Blockers
 
-Block release for identity or version divergence, clean-install failure,
-canonical/alias contract drift, stale generated references, undeclared schema
-or artifact incompatibility, ambiguous computational ownership, missing
-readiness output, evidence-integrity or freshness failure, or a public claim
-stronger than its retained proof.
+Block release for:
 
-An explicit bounded limitation can be published. A gate weakened to make a
-contradiction disappear cannot.
+- candidate, version, distribution, lock, schema, or evidence identity drift;
+- wheel/sdist metadata, inventory, license, or clean-install failure;
+- canonical and alias behavior or ownership divergence;
+- stale generated references or unsupported documented syntax;
+- unresolved schema or artifact compatibility;
+- ambiguous native versus external computational ownership;
+- missing expected outputs, denominators, diagnostics, or readiness records;
+- evidence integrity/freshness failure or a public claim stronger than its
+  retained proof;
+- a changed tolerance, excluded case, or weakened gate used to make a
+  contradiction disappear.
 
 ### Limitation Versus Contradiction
 
@@ -107,8 +163,10 @@ contradiction disappear cannot.
 | --- | --- |
 | claim is explicitly `not_comparable`, fresh, and described within that boundary | publishable limitation when readiness policy permits it |
 | optional engine is unavailable and the selected denominator records `skipped` | visible coverage limitation, not a fabricated pass |
-| public prose says matched while the governed bundle says `not_comparable` | blocker: cross-surface contradiction |
-| report is green but its input revision, expected outputs, or skipped cases cannot be reconstructed | blocker: missing release evidence |
+| FastTree comparison records an expected model-assumption difference | bounded correspondence limitation; do not call it likelihood parity |
+| RAxML comparison is `unsupported-case` | explicit coverage gap; exclude from favorable aggregate claims |
+| public prose says matched while the bundle says `not_comparable` | blocker: semantic contradiction |
+| report is green but candidate identity or skipped cases cannot be reconstructed | blocker: missing decision evidence |
 | package installs but canonical and alias behavior diverge | blocker: distribution contract failure |
 
 Readiness means the release claims are supported and contradictions are absent.

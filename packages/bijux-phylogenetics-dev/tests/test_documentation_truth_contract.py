@@ -562,10 +562,16 @@ def test_quality_guides_separate_tests_benchmarks_and_release_evidence() -> None
     assert "make check-release-readiness" in release
     assert "Non-Comparable Claims And Open Follow-Through" in release
     assert "may not rewrite the bundle verdict as “open,”" in release
+    assert "Define Candidate Identity Before The Gate" in release
+    assert "Read The Publish Scorecard" in release
+    assert "publish-readiness.json" in release
     assert "Open Scientific Verdicts" not in release
     assert "Required Evidence Set" in review
     assert "Review Procedure" in review
     assert "Release Blockers" in review
+    assert "Generate Reviewable Reports First" in review
+    assert "Invalidate Stale Evidence" in review
+    assert "Complete The Decision Packet" in review
 
 
 def test_maintainer_docs_define_ownership_and_native_publication() -> None:
@@ -796,6 +802,8 @@ def test_maintainer_handbook_defines_change_and_artifact_ownership() -> None:
     assert "Change Classification" in handbook
     assert "Maintained Invariants" in handbook
     assert "Keep Status In Its Owning Record" in handbook
+    assert "Resolve Canonical Ownership" in handbook
+    assert "Change-To-Check Routing" in handbook
     assert (
         "ready release can still publish explicit `not_comparable` boundaries"
         in handbook
@@ -813,6 +821,10 @@ def test_maintainer_handbook_defines_change_and_artifact_ownership() -> None:
     assert "make check-release-readiness" in release
     assert "Release Blockers" in release
     assert "Limitation Versus Contradiction" in release
+    assert "Build The Alignment Packet" in release
+    assert "Compare Meaning Across Surfaces" in release
+    assert "There is no single" in release
+    assert "`release-readiness.json`" in release
     assert (
         "does not mean every scientific comparison has a favorable verdict" in release
     )

@@ -9,84 +9,179 @@ last_reviewed: 2026-07-21
 
 # Release And Publication Gates
 
-A release joins independently versioned and reviewable surfaces: source,
-runtime and alias distributions, containers, OpenAPI schema, documentation,
-artifacts, benchmarks, and evidence. Publication requires agreement across the
-surfaces affected by the release.
+A release is one identified revision expressed through source, three Python
+distributions, command and API contracts, documentation, artifacts,
+benchmarks, and 43 Evidence Book bundles. Publication is safe only when those
+surfaces agree about identity, ownership, capability, limitations, and
+scientific status.
 
 ```mermaid
 flowchart TD
-    revision["Release revision"]
-    source["Source, lock, tests,<br/>security, SBOM"]
-    packages["Wheel, sdist,<br/>alias, containers"]
-    contracts["Python, CLI,<br/>OpenAPI, artifacts"]
-    docs["README and site"]
-    evidence["Benchmarks, evidence,<br/>freshness and gaps"]
-    decision["Publication decision"]
+    candidate["Release candidate<br/>commit · version · lock"]
+    repository["Repository<br/>tests · quality · security"]
+    distributions["Distributions<br/>wheel · sdist · clean install"]
+    contracts["Contracts<br/>Python · CLI · OpenAPI · artifacts"]
+    docs["Public surfaces<br/>README · site · package metadata"]
+    science["Assurance<br/>benchmarks · parity · Evidence Book"]
+    governance["Governance reports<br/>boundaries · inventory · freshness"]
+    decision{"Publish this candidate?"}
 
-    revision --> source --> decision
-    revision --> packages --> decision
-    revision --> contracts --> decision
-    revision --> docs --> decision
-    revision --> evidence --> decision
+    candidate --> repository --> decision
+    candidate --> distributions --> decision
+    candidate --> contracts --> decision
+    candidate --> docs --> decision
+    candidate --> science --> decision
+    candidate --> governance --> decision
 ```
+
+Green checks are necessary but not self-interpreting. The decision packet must
+show which revision, packages, engines, cases, schemas, and evidence records
+were actually reviewed.
+
+## Define Candidate Identity Before The Gate
+
+The candidate identity includes:
+
+- commit and resolved version;
+- dependency lock and governed configuration;
+- wheel and source-distribution filenames and digests;
+- canonical runtime, compatibility alias, and maintainer package versions;
+- OpenAPI schema hash and artifact schema versions;
+- selected optional engines and executable versions;
+- evidence input and output identities;
+- exact verification commands and environment.
+
+A new commit, rebuilt artifact, changed lock, refreshed evidence bundle, or
+different optional-engine denominator creates a different candidate. Previous
+reports remain historical context; they cannot be relabeled as evidence for
+the new identity.
 
 ## Gate Matrix
 
-| Gate | Required evidence |
+| Gate | Evidence required | Representative blocker |
+| --- | --- | --- |
+| repository | lock consistency, configuration source of truth, boundaries, tests, lint, quality, security, SBOM | failing or omitted owned check |
+| distribution | wheel/sdist build, metadata inspection, Twine validation, clean install, public command and resource smoke | repository source path hides a missing packaged resource |
+| identity | runtime, alias, maintainer package roles and versions agree across metadata and installed behavior | alias ships divergent scientific ownership |
+| interface | curated Python, CLI, OpenAPI hash, artifact producer/consumer contract | public example uses a private or removed surface |
+| documentation | managed assets, strict site build, semantic truth tests, executable syntax, valid links | prose claims external computation is native |
+| scientific assurance | selected benchmark/parity denominators, evidence integrity, freshness, coverage, verdicts, resolution state | failed observation or unsupported case disappears from summary |
+| publication | tag/version agreement, licenses, artifact inventory, trusted workflow and registry target | artifact is published outside the governed candidate identity |
+
+Passing a software release gate does not assert that every scientific
+comparison matched. It asserts that published capability and limitation claims
+are supported, contradictions are absent, and bounded gaps remain visible.
+
+## Governed Gate Composition
+
+```bash
+make check
+make package-verify
+make report-release-readiness
+make check-release-readiness
+```
+
+The commands answer different questions:
+
+| Command | Decision surface |
 | --- | --- |
-| repository | clean lock, source-of-truth configuration, boundaries, tests, lint, security, SBOM |
-| package | wheel/sdist build, Twine validation, clean installation, public command and resource smoke tests |
-| compatibility | canonical and alias imports, commands, versions, metadata, and package data align |
-| contract | curated Python behavior, CLI reference, OpenAPI schema/hash, artifact compatibility |
-| documentation | strict site build, managed asset integrity, executable examples, current links and claims |
-| scientific | benchmark scope, evidence integrity, freshness, gaps, non-comparable claims, and unresolved follow-through are visible |
-| publication | trusted workflow identity, version/tag consistency, license assets, target registry metadata |
+| `make check` | routine source, test, quality, security, documentation, build, and SBOM composition |
+| `make package-verify` | wheel/sdist metadata, validation, clean installation, CLI, and packaged-resource proof |
+| `make report-publish-readiness` | non-enforcing publish scorecard at `artifacts/root/publish-readiness.json` |
+| `make check-publish-readiness` | hard enforcement of the scorecard blocker register |
+| `make report-release-readiness` | report-mode composition of evidence, artifact, execution, package, and publish surfaces |
+| `make check-release-readiness` | enforcing composition of those governance surfaces |
 
-## Governed Commands
+`report-release-readiness` produces a packet of governed JSON records rather
+than one opaque release file. Its current outputs include configuration,
+Evidence Book validation and completeness, artifact governance, execution
+surfaces, package boundaries, package bundles, and publish readiness under
+`artifacts/root/`.
 
-- `make check` composes the routine repository gate.
-- `make package-verify` validates wheel and source-distribution installation.
-- `make check-publish-readiness` evaluates publication policy.
-- `make check-release-readiness` composes release evidence and governance.
-- `bijux-phylogenetics report release-truth ...` emits a runtime-facing release
-  truth report where applicable.
+Report mode exposes findings for review. Check mode must fail on governed
+blockers. Neither substitutes for `make package-verify`, the complete test lane
+appropriate to the candidate, or the final cross-surface review.
 
-Generated reports belong under `artifacts/` and should record the reviewed
-revision. A report from another revision is context, not current gate evidence.
+## Read The Publish Scorecard
 
-## Blocking Conditions
+`publish-readiness.json` contains four decision areas:
 
-- built distributions omit declared code, data, examples, licenses, or metadata;
-- canonical and alias behavior or versions diverge;
-- schema content and pinned identity disagree;
-- public examples depend on private imports or repository-only files;
-- documentation attributes external computation to the native runtime;
-- evidence indexes disagree with bundles or material dependencies are stale;
-- a failing benchmark/evidence case is hidden, excluded without policy, or
-  rewritten as passing;
-- publication credentials or registry targets bypass governed workflows.
+- `summary.overall_status` and blocker count;
+- `blocker_register` with issue codes, ownership, and remediation context;
+- `closure_criteria` for runtime publishability, evidence-program
+  publishability, and repository-standards alignment;
+- the detailed inventories and audits from which the decision is derived.
+
+Inspect the issue records, not only `overall_status`. A ready score describes
+the current policy inputs. It is not a substitute for the package, docs, test,
+engine, benchmark, or human scientific-language evidence outside that report.
+
+## Preserve Status Ownership
+
+| Record | Status question |
+| --- | --- |
+| command or workflow | Did this execution complete, refuse, fail, skip, or return partial state? |
+| parity case | Did the selected live or fixture comparison pass, fail, or skip? |
+| benchmark observation | Is this dimension a native advantage, native bug, expected assumption difference, or unsupported case? |
+| Evidence Book bundle | Is the governed claim matched, matched with tolerance, mismatched, or not comparable? |
+| resolution register | Which missing execution, observation, adjudication, or external decision is open or blocked? |
+| publish readiness | Is this software candidate ready under repository policy? |
+
+Release prose may quote these statuses but may not translate one namespace
+into another. A ready release can carry an explicit `not_comparable` evidence
+boundary. A passed parity case is not automatically a matched Evidence Book
+claim.
 
 ## Non-Comparable Claims And Open Follow-Through
 
 An Evidence Book claim recorded as `not_comparable` does not automatically
-block a software release. Its provenance and structural contract must remain
-current, public language must preserve the non-comparable boundary, and no
-stronger claim may depend on absent comparison evidence.
+block a software release. The bundle must remain structurally valid and fresh,
+its provenance and missing comparison state must remain visible, and no public
+claim may imply numerical agreement.
 
 Open or blocked follow-through belongs to the resolution workflow rather than
-the verdict vocabulary. It identifies the missing execution, observation,
-adjudication, or external decision. A release may carry that bounded work when
-readiness policy permits it; it may not rewrite the bundle verdict as “open,”
+the verdict vocabulary. It names the missing execution, primary output,
+observation, adjudication, or external decision. A release may carry that
+bounded work when policy permits it; it may not rewrite the bundle verdict as “open,”
 “pending,” or passing.
 
-Structural corruption, missing provenance, stale status, concealed
-observation mismatch, or contradictory publication language remains a release
-defect regardless of whether the intended scientific conclusion is favorable.
+Structural corruption, missing provenance, stale inputs, concealed mismatch,
+or contradictory public language remains a blocker even when the intended
+scientific conclusion would have been favorable.
 
-## Release Record
+## Release Blockers
 
-Retain the revision, version, build identities, executed commands, relevant
-reports, package hashes, schema hash, documentation result, evidence freshness,
-accepted bounded limitations, and open follow-through. This makes the
-publication decision auditable after transient CI logs expire.
+Block publication when any of the following applies:
+
+- revision, version, lock, schema, or built-artifact identity cannot be
+  reconstructed;
+- wheel or sdist contents, metadata, license assets, or clean installation
+  fail;
+- canonical and alias imports, commands, resources, or ownership diverge;
+- OpenAPI or artifact compatibility is unresolved;
+- docs or examples contradict supported runtime behavior;
+- external computation is attributed to Bijux native code;
+- expected outputs, selected cases, skips, failures, warnings, or limitations
+  disappear from retained records;
+- evidence provenance, integrity, freshness, or claim mapping fails;
+- a tolerance, denominator, gate, or report is weakened to manufacture a pass;
+- publication target, credentials, or artifact inventory bypasses the governed
+  workflow.
+
+## Release Decision Record
+
+Retain an append-only packet for the exact candidate:
+
+1. candidate identity and intended artifact inventory;
+2. executed commands, timestamps, environment, and selected optional lanes;
+3. source/test/quality/security/SBOM results;
+4. distribution filenames, hashes, metadata, and clean-install proofs;
+5. schema hash, strict documentation result, and interface compatibility;
+6. governance reports with blocker registers and closure criteria;
+7. benchmark, parity, and evidence denominators, verdicts, freshness, and open
+   boundaries;
+8. final ready or blocked decision, bounded limitations, and reviewer.
+
+This packet is the durable release argument after transient CI logs expire.
+Continue with the [release review workflow](release-review-workflow.md) for the
+execution sequence.
