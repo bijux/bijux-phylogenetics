@@ -125,14 +125,20 @@ def test_foundation_and_architecture_define_owned_runtime_contracts() -> None:
     assert "Contract Propagation" in foundation
     assert "Refusal Is Part Of The Contract" in foundation
     assert "Establish Object Identity Before Modeling" in foundation
+    assert "Define The Decision Target Before The Method" in foundation
+    assert "estimand contract travels with the run identity" in foundation
     assert "Stop when" in foundation
     assert "Native And External Computation" in scope
     assert "Responsibility At Failure Boundaries" in scope
     assert "Capability And Assurance Are Independent Axes" in scope
     assert "Boundaries By Decision" in scope
     assert "without governed primary\nposterior outputs" in scope
+    assert "Supported Parts Do Not Imply A Supported Composition" in scope
+    assert "Sharing Python types, serializers,\nor a command group" in scope
     assert "Qualifiers That Change Meaning" in claims
     assert "Combining Proofs" in claims
+    assert "Apply The Counterevidence Test" in claims
+    assert "widening tolerance after observation" in claims
     assert "Promotion Requirements" in evidence_boundary
     assert "Valid Boundary States" in evidence_boundary
     assert "Evidence Record Anatomy" in evidence_boundary

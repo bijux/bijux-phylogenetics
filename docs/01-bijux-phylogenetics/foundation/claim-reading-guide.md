@@ -101,6 +101,27 @@ Evidence Book for study claims. Use release gates for current publication
 alignment. Do not cite a broader but weaker surface when a narrower primary
 record exists.
 
+## Apply The Counterevidence Test
+
+A trustworthy claim states what observation would weaken it. Before accepting
+the wording, identify the failure record, contradictory result, dependency
+change, or excluded case that would force the claim to be narrowed.
+
+| Claim form | Counterevidence that must change the claim |
+| --- | --- |
+| implementation contract | a supported input violates the documented result or refusal invariant |
+| numerical result | an independent known answer falls outside the registered tolerance |
+| parity | any required case is missing, not executed, differently parameterized, or outside tolerance |
+| benchmark | the registered environment or workload no longer satisfies the acceptance rule |
+| evidence-backed study claim | a material dependency is stale, provenance breaks, or a required observation is contradictory |
+| released surface | package, schema, docs, or artifact identity does not resolve to the admitted revision |
+
+Do not repair a contradicted claim by deleting the case, changing the
+denominator, widening tolerance after observation, or replacing the primary
+record with summary prose. Register a new claim or comparison when the subject
+or acceptance rule genuinely changes; preserve the earlier verdict as part of
+the evidence history.
+
 ## When Evidence Is Missing
 
 Downgrade the wording, not the standard. Say “implemented,” “available,” or

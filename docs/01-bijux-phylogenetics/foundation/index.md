@@ -63,6 +63,27 @@ set, excluded records, order used by matrices, and any mapping to stable node
 or branch identifiers. A result is ambiguous when those decisions exist only
 in an in-memory preprocessing step.
 
+## Define The Decision Target Before The Method
+
+A method name is not a scientific question. Before selecting an inference or
+comparative surface, write down the biological population, admitted
+observations, target quantity, conditioning assumptions, and decision that the
+result will inform. This declaration is the estimand contract: it says what a
+numerical answer is intended to mean before computation makes the answer look
+authoritative.
+
+| Decision element | Required declaration | Refuse or narrow when |
+| --- | --- | --- |
+| population | organisms, taxa, lineages, sites, or characters to which the result refers | observed sampling cannot support that population |
+| admitted set | exact included and excluded records, with reconciliation rules | exclusions are unknown or depend on the observed result |
+| target quantity | topology, branch length, rate, ancestral state, effect, signal, or predictive distribution | the selected method estimates a different quantity |
+| conditioning set | tree, model, calibration, covariates, partitions, and fixed parameters | a supposedly fixed input is uncertain but treated as known |
+| decision rule | how estimates, uncertainty, and diagnostics affect the downstream decision | no result could change the intended conclusion |
+
+The estimand contract travels with the run identity. Changing the admitted
+taxa, conditioning tree, transformation, or target quantity creates a new
+scientific question even when the same command and output schema are reused.
+
 ## Contract Propagation
 
 | Upstream fact | Downstream dependency | Failure if lost |

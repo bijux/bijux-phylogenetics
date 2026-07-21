@@ -124,6 +124,26 @@ No row is a hidden synonym for another. A broad runtime can legitimately have
 narrow study evidence, and a well-governed study can truthfully remain
 non-comparable.
 
+## Supported Parts Do Not Imply A Supported Composition
+
+Two individually supported operations do not automatically form a supported
+workflow. Their boundary must preserve identity, units, rooting, branch-length
+meaning, state space, uncertainty, and failure status. Composition is
+supported only when the handoff contract is documented and exercised as a
+whole.
+
+| Composition claim | What must exist | Otherwise |
+| --- | --- | --- |
+| parser output feeds inference | an admitted-object contract with preserved order and exclusions | validate and transform explicitly; do not imply workflow support |
+| inferred tree feeds comparative analysis | a declared policy for topology and branch-length uncertainty | report the analysis as conditional on the selected tree |
+| adapter output feeds a native method | a semantic mapping for fields, units, missing values, and status | retain the external artifact without promoting it to a native input |
+| simulation validates inference | a registered parameter-recovery design with independent truth | call it an example or execution check, not validation |
+| parity result supports a study claim | an explicit material dependency in the governed evidence bundle | keep runtime parity and study evidence separate |
+
+This rule also applies within one package. Sharing Python types, serializers,
+or a command group demonstrates mechanical compatibility; it does not prove
+that the combined scientific assumptions are coherent.
+
 ## Operational Limits
 
 External engines must be installed independently. Computational cost depends
