@@ -19,117 +19,86 @@
 [![bijux-phylogenetics docs](https://img.shields.io/badge/docs-bijux--phylogenetics-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
 <!-- bijux-phylogenetics-badges:generated:end -->
 
-Compatibility alias package for `bijux-phylogenetics`.
+`phylogenetic` is the short-name compatibility distribution for the complete
+Bijux phylogenetics runtime. It depends on `bijux-phylogenetics` and exposes
+the same workflow contract through `phylogenetic` import and command names.
 
-This distribution installs the canonical phylogenetics runtime under the
-shorter `phylogenetic` package and CLI names. It is not a reduced runtime and
-it is not a fork. It points at the same benchmark, workflow, and reporting
-surfaces that the canonical package publishes.
+It is not a fork, legacy edition, or reduced feature set.
 
-## Alias Structure At A Glance
-
-- shorter install name
-- shorter CLI name
-- same canonical runtime behavior
-
-## Install
-
-`phylogenetic` supports Python 3.11 and newer.
+## Installation
 
 ```bash
-python3.11 -m pip install phylogenetic
+python -m pip install phylogenetic
 phylogenetic --help
 ```
 
-## What You Still Get
+Python 3.11 or newer is required.
 
-Installing the alias package still gives you access to the same documented
-runtime depth:
+## Name Mapping
 
-| Capability family | What carries through the alias |
+| Canonical | Compatibility name |
 | --- | --- |
-| Trees and alignments | inspection, validation, comparison, and preparation workflows |
-| Native runtime | native likelihood and native inference surfaces |
-| Comparative analysis | comparative and ancestral workflows |
-| Reporting | benchmark, workflow, and reporting surfaces |
-| External engines | governed wrapper-backed external-engine workflows |
+| distribution `bijux-phylogenetics` | distribution `phylogenetic` |
+| `import bijux_phylogenetics` | `import phylogenetic` |
+| `from bijux_phylogenetics.api import …` | `from phylogenetic.api import …` |
+| command `bijux-phylogenetics` | command `phylogenetic` |
 
-## What The Alias Does Not Change
+The scientific runtime, external-engine requirements, artifact semantics,
+quality boundaries, and Evidence Book are shared.
 
-- it does not remove native inference surfaces
-- it does not remove comparative, ancestral, or parsimony families
-- it does not change the evidence-book or quality reading model
-- it does not publish a smaller scientific contract than the canonical package
-
-Choose this package when you want the shorter install and command names while
-keeping the same public runtime contract.
-
-Choose the canonical `bijux-phylogenetics` package instead when you want the
-most explicit package name for notebooks, papers, release notes, or downstream
-documentation.
-
-## Shorter Python Workflow Surface
-
-The alias keeps the same workflow API surface under the shorter
-`phylogenetic.api` import path.
+## Workflow Example
 
 ```python
 from pathlib import Path
 
 from phylogenetic.api import (
-    render_report_workflow,
     run_comparative_model_workflow,
     run_sequence_to_tree_workflow,
 )
 
-workflow = run_sequence_to_tree_workflow(
+sequence_run = run_sequence_to_tree_workflow(
     Path("dataset/sequences.fasta"),
     out_dir=Path("artifacts/sequence-to-tree"),
     sequence_type="dna",
 )
 
-comparative = run_comparative_model_workflow(
+comparative_run = run_comparative_model_workflow(
     Path("dataset/tree.nwk"),
     Path("dataset/traits.tsv"),
     response="response",
-    predictors=["predictor_one"],
+    predictors=["predictor"],
     lambda_value=1.0,
 )
 
-report = render_report_workflow(
-    tree_path=workflow.output_paths["tree"],
-    alignment_path=workflow.output_paths["trimmed_alignment"],
-    traits_path=Path("dataset/traits.tsv"),
-    metadata_path=Path("dataset/metadata.tsv"),
-    out_path=Path("artifacts/sequence-to-tree/report.html"),
-)
-
-workflow.write_json(Path("artifacts/sequence-to-tree/workflow.json"))
-workflow.write_tsv(Path("artifacts/sequence-to-tree/workflow.tsv"))
-comparative.write_tsv(Path("artifacts/comparative-model.tsv"))
+sequence_run.write_json(Path("artifacts/sequence-to-tree/workflow.json"))
+comparative_run.write_tsv(Path("artifacts/comparative-model.tsv"))
 ```
 
-Use the alias when you want the shorter import and command surface:
+## Choosing A Distribution Name
 
-- `from phylogenetic.api import ...`
-- `phylogenetic --help`
+Use `phylogenetic` when concise commands and imports are valuable. Use the
+canonical `bijux-phylogenetics` name in publications, environment manifests,
+release notes, and support reports when package identity should be explicit.
 
-Use the canonical runtime name when you want the most explicit package name in
-public artifacts, papers, release notes, or downstream documentation:
+Installing both does not create independent runtimes. When diagnosing an
+environment, record both the requested compatibility distribution and the
+resolved canonical runtime version.
 
-- `from bijux_phylogenetics.api import ...`
-- `bijux-phylogenetics --help`
+## Compatibility Contract
 
-## Read This Next
+The alias is verified for import behavior, commands, version alignment,
+package resources, examples, and built-artifact installation. Report a defect
+when a documented canonical workflow cannot be expressed through the alias or
+when metadata implies different scientific capability.
 
-- [Runtime product guide](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
-- [Runtime architecture](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/architecture/)
-- [Surface selection guide](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/surface-selection/)
-- [Artifact consumption guide](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/artifact-consumption-guide/)
-- [Native Inference And Benchmark Surfaces](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/native-inference-and-benchmarks/)
-- [Native maximum-likelihood workflows](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/native-maximum-likelihood-workflows/)
-- [Native Bayesian workflows](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/native-bayesian-workflows/)
-- [Native benchmark review](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/native-benchmark-review/)
-- [Release review workflow](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/quality/release-review-workflow/)
-- [Evidence-book guide](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-evidence-book/)
-- [Canonical runtime package on GitHub](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics)
+## Documentation
+
+- [Product handbook](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
+- [Distribution map](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/architecture/package-map/)
+- [Surface selection](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/surface-selection/)
+- [Workflow operations](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/)
+- [Artifact contracts](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/artifact-contracts/)
+- [Evidence Book](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-evidence-book/)
+- [Canonical package source](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics)
+
+Apache License 2.0.
