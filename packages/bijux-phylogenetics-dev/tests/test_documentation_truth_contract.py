@@ -405,10 +405,19 @@ def test_primate_guides_publish_values_and_open_boundaries() -> None:
 
     assert "tree–trait join" in preparation
     assert "evidence-009" in preparation
+    assert "All eight focused preparation bundles" in preparation
+    assert (
+        "aggregate `evidence-001` manifest is `matched_with_tolerance`" in preparation
+    )
     assert "matched_with_tolerance" in signal
     assert "not_comparable" in signal
     assert "Pagel-λ PGLS" in models
     assert "likelihood-ratio" in models
+    assert "Model Evidence Ledger" in models
+    assert (
+        "`evidence-008` | pairwise likelihood-ratio comparisons | `matched_with_tolerance`"
+        in models
+    )
     assert "intercept-mode likelihood sweep" in boundaries
     assert "boundary register" in boundaries
     pcm2_index = _read(pcm2 / "index.md")
@@ -444,6 +453,15 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
     assert "All eight bundle manifests record `not_comparable`" in pcm3
     assert "Verdict And Resolution State" in pcm3
     assert "parity verdicts remain open" not in pcm3
+    pcm3_design = _read(
+        EVIDENCE_GUIDE_ROOT
+        / "pcm3-primate-continuous-and-categorical-regression"
+        / "model-design-and-phylogenetic-regression.md"
+    )
+    assert "Governed Claim Ledger" in pcm3_design
+    assert "Comparable Execution Requirements" in pcm3_design
+    assert "every current bundle verdict\nis `not_comparable`" in pcm3_design
+    assert "What Readers Should Watch Closely" not in pcm3_design
     assert "Model Components" in pcm4
     assert "All seven bundle manifests record `not_comparable`" in pcm4
     assert "Verdict And Follow-Through" in pcm4
