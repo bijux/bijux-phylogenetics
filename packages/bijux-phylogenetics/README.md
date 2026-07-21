@@ -50,14 +50,13 @@ shortest command. Native methods are computed by this distribution. Adapter
 workflows retain Bijux orchestration while naming the external executable that
 owns alignment, trimming, or inference.
 
-```mermaid
-flowchart LR
-    object["Scientific object"] --> admission["Admission and identity"]
-    admission --> method["Named method owner"]
-    method --> result["Typed result and diagnostics"]
-    result --> artifact["Structured artifacts and manifest"]
-    artifact --> claim["Consumer acceptance for one claim"]
-```
+| Decision boundary | Record that must survive |
+| --- | --- |
+| scientific object | admitted input identity and exclusions |
+| method owner | native implementation or named external executable |
+| computation | typed result, status, warnings, and diagnostics |
+| persistence | structured outputs and complete manifest inventory |
+| consumption | explicit acceptance or refusal for one bounded claim |
 
 Do not skip admission because an example runs successfully. Packaged examples
 prove installation and resource wiring; they do not approve a project dataset
@@ -103,39 +102,27 @@ current environment; it is not an inference-accuracy result.
 
 ## Runtime Map
 
-```mermaid
-flowchart LR
-    input["Trees · alignments<br/>traits · models"]
-    api["bijux_phylogenetics.api"]
-    native["Native numerical<br/>methods"]
-    adapters["External-engine<br/>adapters"]
-    result["Typed results and<br/>diagnostics"]
-    artifact["JSON · TSV · manifests<br/>figures · reports"]
-
-    input --> api
-    api --> native --> result
-    api --> adapters --> result
-    result --> artifact
-```
+| Layer | Responsibility |
+| --- | --- |
+| trees, alignments, traits, and models | validated scientific inputs |
+| `bijux_phylogenetics.api` | curated workflow composition |
+| native methods | Bijux-owned numerical computation |
+| external-engine adapters | invocation, capture, parsing, and normalized results while preserving engine ownership |
+| typed results | scientific fields, status, diagnostics, warnings, and refusal state |
+| JSON, TSV, manifests, figures, and reports | persistent machine and review projections |
 
 ## Trace The Installed Result Lineage
 
 A runtime result should remain traceable after the Python process exits:
 
-```mermaid
-flowchart LR
-    distribution["Installed distribution<br/>and import identity"]
-    inputs["Input files<br/>and content hashes"]
-    configuration["Model · method<br/>seed · policy"]
-    result["Typed result<br/>status · diagnostics"]
-    inventory["Manifest and<br/>output inventory"]
-    projections["JSON · TSV · tree<br/>figure · report"]
-
-    distribution --> result
-    inputs --> result
-    configuration --> result
-    result --> inventory --> projections
-```
+| Lineage component | Required identity |
+| --- | --- |
+| runtime | installed distribution version, import version, and implementation owner |
+| inputs | paths, content hashes, schemas, taxon/partition identity, and exclusions |
+| configuration | model, method, transforms, seed policy, and execution settings |
+| result | type/schema, status, diagnostics, warnings, and scientific fields |
+| inventory | manifest identity and every accepted output checksum |
+| projections | source result and transform behind each JSON, TSV, tree, figure, or report |
 
 The manifest identifies the accepted projections; the typed result owns status,
 warnings, and scientific fields. A projection that cannot be linked back to

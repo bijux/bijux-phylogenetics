@@ -89,18 +89,12 @@ relation to that runtime.
 
 Alias correspondence is an identity chain:
 
-```mermaid
-flowchart LR
-    requested["phylogenetic<br/>requested distribution"]
-    dependency["bijux-phylogenetics<br/>resolved dependency"]
-    facade["phylogenetic<br/>import and command facade"]
-    runtime["bijux_phylogenetics<br/>scientific owner"]
-    result["One result contract<br/>and artifact semantics"]
-
-    requested --> dependency
-    requested --> facade --> runtime --> result
-    dependency --> runtime
-```
+| Link | Required correspondence |
+| --- | --- |
+| requested distribution | `phylogenetic` resolves the declared `bijux-phylogenetics` dependency |
+| import and command facade | short names delegate to canonical public surfaces |
+| canonical runtime | `bijux_phylogenetics` remains the scientific implementation owner |
+| result | schemas, diagnostics, artifacts, resources, and refusal semantics remain canonical |
 
 Verification therefore checks more than similar output values. It establishes
 that the compatibility distribution resolves the intended canonical artifact,
@@ -202,15 +196,13 @@ package resources, examples, and built-artifact installation. Report a defect
 when a documented canonical workflow cannot be expressed through the alias or
 when metadata implies different scientific capability.
 
-```mermaid
-flowchart LR
-    alias["phylogenetic<br/>distribution and command"]
-    facade["phylogenetic<br/>import facade"]
-    canonical["bijux-phylogenetics<br/>runtime"]
-    result["identical scientific<br/>contracts and artifacts"]
-
-    alias --> facade --> canonical --> result
-```
+| Compatibility layer | Contract |
+| --- | --- |
+| distribution | installs the intended canonical runtime version |
+| import facade | exports the supported canonical public API |
+| command facade | preserves parsing, exit status, streams, and structured output |
+| packaged resources | resolve from the canonical runtime without copied scientific ownership |
+| result contract | preserves model identity, diagnostics, serialization, and artifact meaning |
 
 Compatibility covers naming, imports, commands, resources, and version
 alignment. It does not create a second implementation, independent release

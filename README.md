@@ -387,8 +387,15 @@ make docs-serve
 make package-verify
 ```
 
-Local generated output belongs under `artifacts/`; the MkDocs site is built
-under `artifacts/root/docs/`.
+Repository execution follows one storage rule. All transient local outputs belong under `artifacts/`.
+The root verification environment lives at `artifacts/root/check-venv/`.
+The root `.venv`, `.tox`, `.hypothesis`, and `.benchmarks` paths are governed
+aliases into the corresponding artifact locations.
+The MkDocs site is built under `artifacts/root/docs/site/`.
+
+Use `make clean-root-artifacts` to remove repository-level run products. This
+command does not replace source-control review and must not be used to conceal
+an output that was written to the wrong owner path.
 
 ## License
 
