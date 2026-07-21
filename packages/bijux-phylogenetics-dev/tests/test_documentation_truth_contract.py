@@ -694,6 +694,8 @@ def test_primate_guides_publish_values_and_open_boundaries() -> None:
     assert "Branch-Wise Increase Counts" in signal
     assert "What The Evidence Supports" in signal
     assert "Governed Observations" in pcm1_index
+    assert "Analytical Population Dependency Graph" in pcm1_index
+    assert "Citation Packet For PCM1" in pcm1_index
     assert "| estimated Pagel λ | 0.803 |" in pcm1_index
     assert "41.030408" in pcm1_index
     assert "520.078423" in pcm1_index
@@ -721,6 +723,8 @@ def test_primate_guides_publish_values_and_open_boundaries() -> None:
     assert "`evidence-009` | ancestral modes | `matched_with_tolerance`" in pcm2_index
     assert "Governed Findings" in pcm2_index
     assert "Unexplained Observation Inventory" in pcm2_index
+    assert "Comparison Dependency Graph" in pcm2_index
+    assert "Cite PCM2 Without Flattening It" in pcm2_index
     assert "10.6718757865625" in pcm2_index
     assert "15.170304341821" in pcm2_index
 
@@ -750,6 +754,8 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
     assert "Non-Comparable Evidence Is First-Class" in evidence_index
     assert "What The Evidence Supports At This Revision" in evidence_index
     assert "Cite The Record, Not This Summary" in evidence_index
+    assert "Find The Record From The Statement" in evidence_index
+    assert "Resolve A Value Through The Record Graph" in evidence_index
     assert "Read Coefficients From The Design Matrix" in pcm3
     assert "All eight bundle manifests record `not_comparable`" in pcm3
     assert "Verdict And Resolution State" in pcm3

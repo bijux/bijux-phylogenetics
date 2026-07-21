@@ -49,6 +49,40 @@ These values describe the checked-in revision reviewed on 2026-07-21. The
 [freshness report](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/freshness-report.md)
 is authoritative when the generated state changes.
 
+## Find The Record From The Statement
+
+| Statement you want to make | First record to open | Continue only when |
+| --- | --- | --- |
+| an input table or tree was prepared correctly | preparation claim and its input/result manifests | transformations, exclusions, taxa, checksums, and verdict cover that exact object |
+| a coefficient or likelihood corresponds with a reference | claim-level scalar/row observations and check | model identity, compared field, tolerance, and full eligible denominator are present |
+| a topology or ancestral value corresponds | structurally keyed observation ledger | taxa, rooting, node/clade identity, model, and tree revision align |
+| a posterior quantity corresponds | governed draws or summaries plus chain diagnostics | priors, parameterization, chains, transformations, exclusions, and verdict are governed |
+| a figure is supported | machine-readable analytical rows and rendering provenance | every displayed value resolves to the analytical result; plot-only limits remain explicit |
+| a study conclusion can be cited | exact claim manifest, current indexes, and freshness record | the statement stays inside the claim population, method, observation, and verdict |
+
+Begin with the statement, not the most favorable dashboard row. If no record
+owns the exact quantity and population, the statement is unsupported even when
+a neighboring bundle is matched.
+
+## Resolve A Value Through The Record Graph
+
+```mermaid
+flowchart RL
+    citation["Paper, report<br/>or release statement"]
+    guide["Public study guide<br/>and bounded interpretation"]
+    verdict["Claim manifest<br/>verdict and freshness"]
+    observation["Machine result<br/>observation and check"]
+    execution["Reference and Bijux<br/>execution identity"]
+    inputs["Source, datasets<br/>and input manifest"]
+
+    citation --> guide --> verdict --> observation --> execution --> inputs
+```
+
+The trace must remain one-to-one at the claim boundary. A study guide can
+summarize several bundles, but a cited number must resolve to the observation
+that owns it, and that observation must resolve to the exact computation and
+inputs. When any edge is absent or stale, stop before the missing edge.
+
 ## Current Verdict Ledger
 
 This table counts bundle-manifest verdicts. It does not replace

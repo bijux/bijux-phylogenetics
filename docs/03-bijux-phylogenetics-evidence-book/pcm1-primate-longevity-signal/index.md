@@ -63,6 +63,31 @@ The dossier reports `analytical_alignment_complete` with the plotting boundary
 kept separate. Bundle deployment does not turn presentation parity into a
 numerical claim.
 
+## Analytical Population Dependency Graph
+
+```mermaid
+flowchart LR
+    workbook["evidence-002<br/>workbook load"]
+    types["evidence-003<br/>type repair"]
+    missing["evidence-004<br/>missingness"]
+    duplicates["evidence-005<br/>species aggregation"]
+    tree["evidence-006<br/>tree import"]
+    diagnostics["evidence-007<br/>tree diagnostics"]
+    alignment["evidence-008<br/>tree–trait alignment"]
+    exports["evidence-009<br/>governed derivatives"]
+    aggregate["evidence-001<br/>signal and ancestral result"]
+
+    workbook --> types --> missing --> duplicates --> alignment
+    tree --> diagnostics --> alignment
+    alignment --> exports --> aggregate
+```
+
+The graph is the analysis population contract. A change in coercion,
+missingness, duplicate aggregation, tree identity, pruning, or label mapping
+changes the downstream population and reopens signal and ancestral evidence.
+The aggregate result cannot be detached from the preparation chain merely
+because its final taxa count remains 75.
+
 ## Governed Observations
 
 The aggregate result for the prepared 75-taxon analysis records these values:
@@ -85,6 +110,20 @@ The aggregate scalar table contains 31 comparisons: 16 `matched` and 15
 loading, type repair, missingness, duplicate aggregation, tree import,
 diagnostics, correspondence, and export so a passing headline cannot hide
 which transformation produced the analytical population.
+
+## Citation Packet For PCM1
+
+A citation of the signal or ancestral result should retain the PCM1 claim and
+bundle identifier, source and prepared input identities, 75-taxon analytical
+population, tree and trait derivative checksums, model and software identity,
+the exact result row, comparison rule and tolerance, bundle verdict, freshness,
+and the plotting limitation. For a branch count, also retain the eligible
+branch population and threshold definition; for an ancestral value, retain the
+descendant-taxon node key.
+
+Do not cite the 0.803 lambda estimate from this guide alone. The guide is the
+interpretation route; the governed JSON observation and its manifests are the
+auditable record.
 
 ## Interpreting The Analysis
 

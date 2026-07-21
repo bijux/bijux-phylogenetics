@@ -60,6 +60,34 @@ the fitted relationship causal.
 The final row prevents a mostly aligned bundle ledger from being summarized as
 unqualified end-to-end parity.
 
+## Comparison Dependency Graph
+
+```mermaid
+flowchart LR
+    population["evidence-001<br/>shared workspace population"]
+    gls["evidence-002<br/>baseline GLS"]
+    lambda["evidence-003<br/>Pagel-λ PGLS"]
+    signal["evidence-004<br/>signal"]
+    residuals["evidence-005<br/>residual diagnostics"]
+    transforms["evidence-006<br/>tree transforms"]
+    modes["evidence-007<br/>mode fits"]
+    lrt["evidence-008<br/>likelihood ratios"]
+    ancestral["evidence-009<br/>ancestral modes"]
+    sweep["evidence-010<br/>intercept sweep"]
+
+    population --> gls --> lambda
+    population --> signal
+    lambda --> residuals
+    population --> transforms --> modes --> lrt
+    modes --> ancestral
+    modes --> sweep
+```
+
+Each downstream claim must retain the exact upstream artifact identities it
+consumed. A favorable baseline or PGLS bundle does not repair a transformed-tree
+or early-burst mismatch, and a named-node ancestral tolerance does not close the
+non-comparable intercept sweep.
+
 ## Bundle And Scalar Verdicts
 
 The ten bundle manifests currently record `3 matched`,
@@ -114,6 +142,20 @@ numerical correspondence despite aligned Brownian and OU observations.
 Inspect the
 [`scalar-parity-table.json`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/evidence-001/results/scalar-parity-table.json)
 for row identifiers, values, tolerances, and comparison kinds.
+
+## Cite PCM2 Without Flattening It
+
+| Statement | Records that must travel together |
+| --- | --- |
+| baseline versus Pagel-λ slope change | `evidence-002` and `evidence-003` model identities, coefficients, covariance, diagnostics, verdicts |
+| signal result | `evidence-004` statistic, null rule, reference observation, tolerance, verdict |
+| evolutionary-mode comparison | `evidence-006` through `evidence-008` plus the unresolved transformed-tree, early-burst, and LRT rows |
+| ancestral estimate | `evidence-009` named-node identity, model, interval/tolerance, and tree revision |
+| PCM2-wide conclusion | all ten bundle verdicts plus the 12 `mismatch_unexplained` scalar rows and open intercept-sweep boundary |
+
+The first four statements can be narrower than the whole study. The last one
+cannot be constructed by counting favorable bundle manifests while omitting
+the scalar mismatch ledger or `evidence-010`.
 
 ## Inputs And Provenance
 
