@@ -23,19 +23,35 @@ objectives, or will agree for every dataset.
 | normalization | How were taxa, states, units, roots, likelihood signs, and support scales aligned? |
 | observations | Which exact scalar, vector, matrix, topology, or distribution summaries were compared? |
 | tolerance | What absolute, relative, structural, or distribution rule decides agreement? |
-| verdict | Did the case match, mismatch, skip, or remain not comparable? |
+| case status | Did the registered run pass, fail, or skip? |
+| mismatch reason | Which execution, normalization, field, row, tolerance, or availability condition explains a non-pass? |
 | artifacts | Where are inputs, raw outputs, observations, warnings, and failure details retained? |
 
-## Verdict Semantics
+## Runtime Case Status
 
-- **matched**: every declared observation satisfies its acceptance rule.
-- **matched with tolerance**: bounded numerical differences satisfy a stated
-  tolerance; this is not exact identity.
-- **mismatched**: at least one comparable observation violates the rule.
-- **not comparable**: assumptions, outputs, or ownership do not support the
-  proposed comparison.
-- **skipped**: the live reference could not run or the governed case was not
-  selected; a skip is never counted as a pass.
+- `passed`: the selected case executed and every registered observation rule
+  held, including declared tolerances where applicable;
+- `failed`: Bijux or reference execution failed, required output was missing,
+  or at least one registered comparison rule was violated;
+- `skipped`: the live reference environment was unavailable or the case was
+  not executable under the selected lane.
+
+Retain separate selected, passed, failed, and skipped counts. “Passed” is a
+runtime harness outcome, not the `matched` verdict stored in a scientific
+evidence bundle.
+
+## Promotion To An Evidence Verdict
+
+An Evidence Book bundle may interpret retained parity observations only after
+it binds them to a claim, source, governed inputs, explicit checks, provenance,
+and freshness. Its allowed verdicts are `matched`, `matched_with_tolerance`,
+`mismatch_explained`, `mismatch_unexplained`, and `not_comparable`.
+
+Promotion is not a spelling conversion. A failed case needs scientific review
+before it can become an explained or unexplained mismatch. A skipped case may
+leave evidence unavailable, but does not automatically establish
+`not_comparable`. Resolution state—such as open follow-through or a named
+blocker—remains a separate axis.
 
 ## Reproducing A Comparison
 
@@ -59,6 +75,13 @@ RUN_LIVE_PARITY=1 bijux-phylogenetics parity \
 Use the tool-specific registry rather than assuming an R function name has a
 Bijux equivalent. Unsupported operations should fail with a named boundary,
 not fall through to a neighboring approximation.
+
+## Denominator Check
+
+Before quoting correspondence, record how many cases were registered,
+selected, executed, passed, failed, and skipped. Then identify the exact
+shards. A statement about “all cases” is invalid when it silently means only
+the subset that executed successfully.
 
 ## Review Resources
 

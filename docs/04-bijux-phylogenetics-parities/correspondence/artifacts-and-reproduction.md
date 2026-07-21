@@ -54,7 +54,7 @@ command silently falls back to frozen data.
 
 | Artifact | Review use |
 | --- | --- |
-| summary table | one row per case with reference source, selection, status, and high-level verdict |
+| summary table | one row per case with reference source, selection, runtime status, and counts |
 | observation table | exact values, differences, tolerances, and per-observation outcomes |
 | reproducibility manifest | command context, selected lane, environment and linked outputs |
 | failure root | case inputs, external output, diagnostics, and exception context needed to reproduce a mismatch or skip |
@@ -63,6 +63,30 @@ command silently falls back to frozen data.
 Preserve mismatches, skips, warnings, and incomplete outputs. Removing them
 from an artifact directory changes the evidentiary meaning of the run even if
 the passing summary rows remain.
+
+## Reconstruct The Denominator
+
+Review registry identity and selection before reading success counts:
+
+```mermaid
+flowchart LR
+    registered["Registered cases"]
+    selected["Selected shards<br/>and cases"]
+    executed["Executed cases"]
+    passed["Passed"]
+    failed["Failed"]
+    skipped["Skipped"]
+
+    registered --> selected
+    selected --> executed
+    selected --> skipped
+    executed --> passed
+    executed --> failed
+```
+
+The manifest and summary must make each transition countable. Failure roots
+explain non-passing cases; they must not be removed before an aggregate is
+reported.
 
 ## External Engine Bundles
 
@@ -83,5 +107,5 @@ Parity artifacts become scientific evidence only when a dossier also binds
 them to stable claim identifiers, source references, governed datasets,
 explicit checks, freshness records, and a verdict. Promotion does not discard
 the parity-level details: the Evidence Book should link or retain the exact
-observations that justify its claim and preserve every open or not-comparable
-boundary.
+observations that justify its claim. It also preserves the current evidence
+verdict and any separate open follow-through or named blocker.

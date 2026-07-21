@@ -25,7 +25,19 @@ study fixture is not a package-wide live parity surface.
 | MAFFT + trimAl | external execution adapters | validated invocation, captured configuration and output, parsed alignment diagnostics | [alignment and trimming](../external-engines/alignment-and-trimming.md) |
 | IQ-TREE2 + FastTree | external execution adapters and cross-engine workflow | complete run bundles and comparable topology/likelihood fields where meanings align | [tree inference](../external-engines/tree-inference.md) |
 | MrBayes + BEAST | external execution and parser adapters | prepared or executed analyses with trace/tree diagnostics and explicit engine ownership | [Bayesian inference](../external-engines/bayesian-inference.md) |
-| `MCMCglmm` | source-backed study boundary | governed open scope for PCM4 and PCM5; no posterior parity claim | [study-specific R references](../r-ecosystem/study-references.md) |
+| `MCMCglmm` | source-backed study boundary | PCM4 and PCM5 bundles retain `not_comparable` verdicts and open posterior follow-through; no posterior parity claim | [study-specific R references](../r-ecosystem/study-references.md) |
+
+## Mode, Outcome, And Verdict
+
+| Term | Applies to | Read from |
+| --- | --- | --- |
+| verification mode | strength and ownership of the comparison relationship | this matrix and the tool-specific guide |
+| case outcome | `passed`, `failed`, or `skipped` execution of a registered parity case | parity summary, observations, and failure artifacts |
+| evidence verdict | governed scientific conclusion for identified claims | Evidence Book manifest and indexes |
+| resolution state | open follow-through, blocker, or accepted bounded state | verdict workflow and study boundary records |
+
+Do not translate a mode into an outcome or an outcome into a verdict. They
+answer different questions and may change on different schedules.
 
 ## What Each Mode Establishes
 
@@ -65,8 +77,9 @@ flowchart TD
 Start with the verification mode, then inspect the named operation and
 compared fields. Confirm parameterization, taxon order, state encoding,
 rooting, units, likelihood convention, and support meaning before interpreting
-a match. Finally, read the non-claims: they define what the verdict cannot be
-used to conclude.
+a passing case. If a scientific claim cites the run, continue to the Evidence
+Book verdict and its freshness. Finally, read the non-claims: they define what
+neither record can be used to conclude.
 
 A row may advance only when the stronger mode is implemented and governed.
 Documentation language alone cannot promote provenance to a checked fixture,

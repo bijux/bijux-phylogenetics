@@ -263,8 +263,14 @@ def test_parity_handbook_separates_live_reference_and_adapter_boundaries() -> No
         assert tool in parity_index
     assert "RUN_LIVE_PARITY=1" in r_ecosystem
     assert "computational owners" in engines
-    assert "matched with tolerance" in correspondence
+    assert "Runtime Case Status" in correspondence
+    assert "Promotion To An Evidence Verdict" in correspondence
+    assert "`passed`:" in correspondence
+    assert "`failed`:" in correspondence
+    assert "`skipped`:" in correspondence
     assert "--ape-shard load_tree" in correspondence
+    assert "Three Records, Three Meanings" in parity_index
+    assert "Matched · mismatched" not in parity_index
 
 
 def test_r_parity_guides_publish_registry_scope_and_non_claims() -> None:
@@ -309,7 +315,10 @@ def test_correspondence_matrix_distinguishes_verified_and_open_surfaces() -> Non
     assert "plot-only" in study_references
     assert "no posterior parity claim" in matrix
     assert "External adapter" in matrix
+    assert "Mode, Outcome, And Verdict" in matrix
+    assert "not_comparable` verdicts and open posterior follow-through" in matrix
     assert "--manifest artifacts/parity/checked-manifest.json" in reproduction
+    assert "Reconstruct The Denominator" in reproduction
     assert (
         "Preserve mismatches, skips, warnings, and incomplete outputs" in reproduction
     )

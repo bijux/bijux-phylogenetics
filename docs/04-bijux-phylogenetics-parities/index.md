@@ -22,13 +22,13 @@ flowchart LR
     reference["Live tool or<br/>checked fixture"]
     normalize["Aligned inputs,<br/>units and conventions"]
     compare["Declared fields<br/>and tolerances"]
-    verdict["Matched · mismatched<br/>not comparable · skipped"]
+    outcome["Passed · failed<br/>or skipped case"]
 
     question --> bijux
     question --> reference
     bijux --> normalize
     reference --> normalize
-    normalize --> compare --> verdict
+    normalize --> compare --> outcome
 ```
 
 ## Reference Landscape
@@ -43,7 +43,20 @@ flowchart LR
 An adapter is not automatically a parity proof. It establishes that the
 external program can participate in a governed Bijux workflow. Numerical or
 structural equivalence requires a separate comparison with aligned assumptions
-and an explicit verdict.
+and explicit observation rules.
+
+## Three Records, Three Meanings
+
+| Record | Status owner | What it establishes |
+| --- | --- | --- |
+| parity harness case | live or checked-fixture runner: `passed`, `failed`, `skipped` | whether one registered case executed and satisfied its comparisons |
+| external-engine bundle | adapter and workflow result state | whether a named external computation was prepared, executed, parsed, or refused |
+| Evidence Book bundle | governed verdict vocabulary | whether identified scientific claims matched, mismatched, or remained non-comparable |
+
+These records may be linked but are not interchangeable. A skipped R case has
+no Evidence Book verdict. A successful adapter run is not a parity case. An
+open follow-through item describes remaining resolution work; it does not
+replace a bundle's recorded verdict.
 
 ## Reading Paths
 
@@ -52,7 +65,7 @@ and an explicit verdict.
 - [External engines](external-engines/index.md) describes correspondence with
   executables that remain computational owners.
 - [Interpreting correspondence](correspondence/index.md) explains case
-  selection, normalization, verdicts, artifacts, and claim limits.
+  selection, normalization, outcomes, artifacts, and claim limits.
 - [Verification matrix](correspondence/verification-matrix.md) distinguishes
   live parity, checked fixtures, external execution, and study provenance.
 - [Artifacts and reproduction](correspondence/artifacts-and-reproduction.md)
@@ -61,6 +74,6 @@ and an explicit verdict.
 ## The Public Contract
 
 Every parity claim names the external tool and version, Bijux surface, fixture,
-parameterization, compared fields, tolerance, execution mode, and verdict.
+parameterization, compared fields, tolerance, execution mode, and case status.
 Unavailable R packages and unsupported reference cases remain visible as
 skips or out-of-scope boundaries rather than being counted as passes.
