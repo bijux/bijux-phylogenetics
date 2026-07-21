@@ -47,21 +47,24 @@ and [provenance record](https://github.com/bijux/bijux-phylogenetics/blob/main/e
 
 ## Evidence Decomposition
 
-| Bundle | Evaluated surface |
-| --- | --- |
-| `evidence-001` | end-to-end study summary |
-| `evidence-002` | workbook loading |
-| `evidence-003` | type repair |
-| `evidence-004` | missing-data accounting |
-| `evidence-005` | duplicate-species aggregation |
-| `evidence-006` | tree import |
-| `evidence-007` | tree diagnostics |
-| `evidence-008` | tree–data correspondence |
-| `evidence-009` | processed exports |
+| Bundle | Evaluated surface | Manifest verdict |
+| --- | --- | --- |
+| `evidence-001` | end-to-end study summary | `matched_with_tolerance` |
+| `evidence-002` | workbook loading | `matched` |
+| `evidence-003` | type repair | `matched` |
+| `evidence-004` | missing-data accounting | `matched` |
+| `evidence-005` | duplicate-species aggregation | `matched` |
+| `evidence-006` | tree import | `matched` |
+| `evidence-007` | tree diagnostics | `matched` |
+| `evidence-008` | tree–data correspondence | `matched` |
+| `evidence-009` | processed exports | `matched` |
 
-The dossier reports `analytical_alignment_complete` with the plotting boundary
-kept separate. Bundle deployment does not turn presentation parity into a
-numerical claim.
+The manifest ledger is the status authority: eight focused contracts match
+directly, while the aggregate comparison matches under its declared numerical
+tolerances. Plot-only blocks remain observations about coverage, not numerical
+parity claims. Read the aggregate status together with its `status_counts` and
+limitations; `matched_with_tolerance` does not flatten those block-level
+distinctions.
 
 ## Analytical Population Dependency Graph
 
@@ -110,6 +113,28 @@ The aggregate scalar table contains 31 comparisons: 16 `matched` and 15
 loading, type repair, missingness, duplicate aggregation, tree import,
 diagnostics, correspondence, and export so a passing headline cannot hide
 which transformation produced the analytical population.
+
+## Reconstruct The Verdict
+
+Review PCM1 from dependencies to conclusion:
+
+1. Open `evidence-001/manifest.json` and confirm the study, claim IDs, source
+   locators, freshness basis, and `matched_with_tolerance` verdict.
+2. Use `inputs.manifest.json` and the focused preparation bundles to establish
+   the workbook, tree, repaired types, exclusions, aggregation, and joined
+   taxon population.
+3. Compare `r_reference_results.json` with `bijux_reference_results.json`, then
+   inspect `scalar-parity-table.json` for the rule and tolerance applied to
+   each scalar.
+4. Read the block payloads and `status_counts` so plot-only, artifact-only,
+   seeded-input-only, and workflow-only blocks remain outside analytical
+   equivalence.
+5. Use `reviewer-summary.json` and `scientific_debt_register.json` last; they
+   summarize the retained records but do not replace them.
+
+This order prevents the favorable aggregate verdict from hiding a changed
+input population or promoting a presentation-only block into a scientific
+comparison.
 
 ## Citation Packet For PCM1
 
