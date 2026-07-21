@@ -45,24 +45,34 @@ flowchart TB
 | Domain | Core scientific objects | Representative outputs |
 | --- | --- | --- |
 | [Trees, alignments, and taxa](data-and-structure/trees-alignments-and-taxa.md) | topology, rootedness, branch lengths, support, sequences, partitions, identifiers | validated trees, reconciled alignments, topology and support ledgers |
+| [Tree operations and identity](data-and-structure/tree-operations-and-identity.md) | rerooting, pruning, clade/branch identity, derivation and comparison | derived trees, population-change ledgers and invariant checks |
+| [Tree sets, consensus, and support](data-and-structure/tree-sets-consensus-and-support.md) | bootstrap, posterior, gene, candidate and sensitivity tree populations | inventories, consensus, representative trees, clade/split/quartet support |
 | [Likelihood and inference](inference/likelihood-and-inference.md) | state spaces, rate matrices, likelihoods, priors, search and sampling | fitted models, inferred trees, search traces, posterior samples |
 | [Distance-based inference](inference/distance-based-inference.md) | pairwise distances, matrix assumptions, joining and least-squares objectives | inferred trees, residuals, influence ledgers, bootstrap support |
 | [Bayesian inference](inference/bayesian-inference.md) | likelihoods, priors, proposals, chains, clocks and topology distributions | run manifests, checkpoints, posterior samples, diagnostics and predictive summaries |
 | [Comparative and ancestral methods](evolutionary-analysis/comparative-and-ancestral-methods.md) | trait covariance, signal, regression, evolutionary modes, node states | coefficients, model comparisons, uncertainty and ancestral ledgers |
 | [Ecology and phylogeography](evolutionary-analysis/ecology-and-phylogeography.md) | host, niche, region and coordinate histories on trees | transition, movement, outlier, exclusion and map ledgers |
 | [Parsimony](inference/parsimony.md) | character costs, ancestral sets, topology moves, resampling | scores, reconstructions, consensus and support summaries |
+| [Search, model selection, and support](inference/search-model-selection-and-support.md) | candidate populations, objectives, search state, selection rules and ties | traces, candidate ledgers, selected results and method-specific support |
+| [Discrete ancestral states and transitions](evolutionary-analysis/discrete-ancestral-states-and-transitions.md) | state order, Mk rates, root priors, node probabilities and branch opportunities | fit, node-state, transition, exclusion and tree-set stability ledgers |
 | [Simulation and datasets](scientific-assurance/simulation-and-datasets.md) | generative models, known truths, reference and stress corpora | simulated trees/traits/alignments, dataset manifests |
+| [Simulation recovery and calibration](scientific-assurance/simulation-recovery-and-calibration.md) | generator/estimator contracts, replicate states, regimes, metrics and independence | recovery rows, calibration summaries, failures and bounded conclusions |
 | [Validation, benchmarks, and reporting](scientific-assurance/validation-benchmarks-and-reporting.md) | invariants, tolerances, metrics, provenance, publication contracts | diagnostics, benchmark reports, manifests, tables and figures |
 | [Diagnostics and sensitivity](scientific-assurance/diagnostics-and-sensitivity.md) | tree assumptions, temporal signal, alternative trees, models and policies | findings, stability rows, refusal reasons and decision records |
+| [Tree uncertainty and sensitivity](scientific-assurance/tree-uncertainty-and-sensitivity.md) | topology modes, unstable clades/taxa, run comparison and tree-population policies | conflict, instability, sensitivity and consequence records |
 
 ## Choose By Scientific Question
 
 | Question | Begin in | Continue into |
 | --- | --- | --- |
 | Are the taxa, topology, lengths, states, and partitions coherent? | [data and structure](data-and-structure/index.md) | the method that consumes the validated objects |
+| What changes when a tree is transformed or a tree population is summarized? | [tree operations](data-and-structure/tree-operations-and-identity.md) | [tree sets, consensus and support](data-and-structure/tree-sets-consensus-and-support.md) |
 | Which topology or model parameters best explain observed characters? | [inference](inference/index.md) | support, sensitivity, and assurance review |
+| Was selection reviewable across every candidate, failure and tie? | [search, model selection and support](inference/search-model-selection-and-support.md) | method-specific diagnostics and benchmark evidence |
 | How do traits vary with ancestry, predictors, or internal nodes? | [evolutionary analysis](evolutionary-analysis/index.md) | model comparison and tree/model sensitivity |
+| Which discrete states or transitions remain supported across trees and models? | [discrete ancestral states and transitions](evolutionary-analysis/discrete-ancestral-states-and-transitions.md) | [tree uncertainty and sensitivity](scientific-assurance/tree-uncertainty-and-sensitivity.md) |
 | Is an implementation recovering known truth or matching a reference? | [scientific assurance](scientific-assurance/index.md) | benchmark or Evidence Book artifacts |
+| Is simulated recovery calibrated over the declared regimes and failures? | [simulation recovery and calibration](scientific-assurance/simulation-recovery-and-calibration.md) | validation and evidence promotion |
 
 Scientific questions commonly cross domains, but ownership remains local. A
 taxon mismatch is resolved before model fitting; a convergence failure is not

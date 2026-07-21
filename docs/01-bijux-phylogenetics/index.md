@@ -256,11 +256,28 @@ stale projection and preserve the disagreement until it is corrected.
 
 **Scientific capability:** [domain map](../02-bijux-phylogenetics-domains/index.md)
 → [trees, alignments, and taxa](../02-bijux-phylogenetics-domains/data-and-structure/trees-alignments-and-taxa.md)
+→ [tree operations and identity](../02-bijux-phylogenetics-domains/data-and-structure/tree-operations-and-identity.md)
 → [likelihood and inference](../02-bijux-phylogenetics-domains/inference/likelihood-and-inference.md).
+
+**Tree-set review:** [tree sets, consensus and support](../02-bijux-phylogenetics-domains/data-and-structure/tree-sets-consensus-and-support.md)
+→ [tree uncertainty and sensitivity](../02-bijux-phylogenetics-domains/scientific-assurance/tree-uncertainty-and-sensitivity.md)
+→ [diagnostics and sensitivity](../02-bijux-phylogenetics-domains/scientific-assurance/diagnostics-and-sensitivity.md).
+
+**Selection and support:** [inference overview](../02-bijux-phylogenetics-domains/inference/index.md)
+→ [search, model selection and support](../02-bijux-phylogenetics-domains/inference/search-model-selection-and-support.md)
+→ [native benchmark evidence](quality/native-benchmark-evidence.md).
 
 **Data and study inputs:** [datasets and study inputs](../02-bijux-phylogenetics-domains/data-and-structure/datasets-and-study-inputs.md)
 → [data interchange and identity](../02-bijux-phylogenetics-domains/data-and-structure/data-interchange-and-identity.md)
 → [simulation and datasets](../02-bijux-phylogenetics-domains/scientific-assurance/simulation-and-datasets.md).
+
+**Simulation recovery:** [simulation and datasets](../02-bijux-phylogenetics-domains/scientific-assurance/simulation-and-datasets.md)
+→ [simulation recovery and calibration](../02-bijux-phylogenetics-domains/scientific-assurance/simulation-recovery-and-calibration.md)
+→ [validation, benchmarks and reporting](../02-bijux-phylogenetics-domains/scientific-assurance/validation-benchmarks-and-reporting.md).
+
+**Discrete histories:** [comparative and ancestral methods](../02-bijux-phylogenetics-domains/evolutionary-analysis/comparative-and-ancestral-methods.md)
+→ [discrete ancestral states and transitions](../02-bijux-phylogenetics-domains/evolutionary-analysis/discrete-ancestral-states-and-transitions.md)
+→ [tree uncertainty and sensitivity](../02-bijux-phylogenetics-domains/scientific-assurance/tree-uncertainty-and-sensitivity.md).
 
 **Spatial and ecological evolution:** [biogeography and migration](../02-bijux-phylogenetics-domains/evolutionary-analysis/biogeography-and-migration.md)
 → [continuous phylogeography and maps](../02-bijux-phylogenetics-domains/evolutionary-analysis/continuous-phylogeography-and-maps.md)
