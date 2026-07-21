@@ -42,6 +42,43 @@ A passing test does not create a parity verdict. A live parity case does not
 create an Evidence Book verdict. A ready release does not turn an explicit
 `not_comparable` boundary into equivalence.
 
+## Trace A Claim Across Surfaces
+
+| Claim element | Owning record | Cross-surface acceptance gate |
+| --- | --- | --- |
+| method ownership | native implementation or named external engine invocation | every interface, artifact, and guide attributes the same owner |
+| invocation | curated export, registered command, or service schema | installed package can execute the documented path with declared defaults |
+| result meaning | typed result and versioned serialization contract | status, units, omissions, warnings, and diagnostics survive projection |
+| validation scope | test, benchmark, live parity, or recovery population | selected, executed, failed, skipped, and excluded denominators are visible |
+| scientific conclusion | current claim-scoped Evidence Book bundle | observations, checks, verdict, limitation, and freshness support the exact statement |
+| publication language | release decision consuming the above records | no weaker or contradictory upstream record is hidden |
+
+Acceptance at one row does not skip the next. A report can serialize correctly
+while carrying an unsupported claim; a claim can be scientifically bounded
+while an example invokes the wrong installed surface.
+
+## Failure Ownership Flow
+
+```mermaid
+flowchart LR
+    symptom["Public symptom"]
+    projection["README · guide<br/>report · metadata"]
+    record["Typed result · schema<br/>manifest · evidence"]
+    execution["Runtime or external<br/>execution"]
+    input["Input and configuration<br/>identity"]
+    owner["Earliest failing owner"]
+
+    symptom --> projection --> record --> execution --> input
+    projection --> owner
+    record --> owner
+    execution --> owner
+    input --> owner
+```
+
+Diagnose backward until the earliest contradictory or missing owner is found.
+Correcting a later projection may make the symptom disappear while leaving the
+scientific or compatibility defect intact.
+
 ## Detect Cross-Surface Drift
 
 | Drift | Detection question | Required correction |

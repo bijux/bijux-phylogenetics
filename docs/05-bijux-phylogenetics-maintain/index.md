@@ -72,6 +72,42 @@ A passed live parity case does not promote itself into Evidence Book evidence.
 
 If one change fits several rows, take the union of their dependent review.
 
+## Scale Review By Semantic Risk
+
+Diff size does not determine review depth. Use the strongest applicable risk:
+
+| Semantic risk | Examples | Required review depth |
+| --- | --- | --- |
+| local explanatory | wording that preserves contract meaning | strict docs, links, truth assertions, neighboring consistency |
+| public invocation | import, command, option, default, example | contract tests, generated references, installed-artifact execution, compatibility |
+| artifact compatibility | field, schema, status, unit, omission, manifest relationship | producer/consumer matrix, versioning decision, replay, migration behavior |
+| scientific behavior | model, likelihood, optimizer, sampler, reconstruction, tolerance | numerical properties, known answers, diagnostics, benchmarks, parity, evidence freshness |
+| claim or publication | verdict, evidence population, limitation, release statement | governed observations, indexes, contradiction audit, readiness packet and decision owner |
+
+A one-line default or unit change may require every row beneath it. A large
+generated reference diff may require only local explanatory review when the
+canonical contract and semantics are unchanged.
+
+## Resolve Contradictions Before Completion
+
+```mermaid
+flowchart TD
+    conflict["Two surfaces disagree"]
+    classify["Classify behavior, artifact,<br/>evidence or publication conflict"]
+    owners["Resolve canonical owner<br/>and dependency direction"]
+    evidence["Inspect structured records<br/>and failure artifacts"]
+    correct["Correct earliest owning source"]
+    derive["Regenerate projections<br/>and dependent records"]
+    verify["Re-run narrow and<br/>composed gates"]
+
+    conflict --> classify --> owners --> evidence --> correct --> derive --> verify
+```
+
+Do not choose the more favorable surface, average conflicting values, or call
+the discrepancy a documentation issue before ownership is known. A limitation
+is an agreed bounded contract; a contradiction is unresolved state and blocks
+the affected claim or publication surface.
+
 ## Resolve Canonical Ownership
 
 Before editing, follow the value or rule to its source:

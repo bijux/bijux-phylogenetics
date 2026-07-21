@@ -92,6 +92,44 @@ should identify the claim, method family, governed output, current verdict,
 and the exact condition for stronger language. Keep narrative interpretation
 downstream of that table so prose cannot outrun the record.
 
+## Reader-Facing Claim Anatomy
+
+A public study statement should contain, directly or through an adjacent claim
+table:
+
+| Element | Required content |
+| --- | --- |
+| population | taxa, observations, dataset revision, and material exclusions |
+| computation | model, parameterization, implementation owner, version, and configuration |
+| quantity | exact estimand, units/scale, node/parameter identity, and transformation |
+| comparison | reference owner, normalization, observation rule, tolerance, and denominator |
+| conclusion | current claim verdict expressed in bounded scientific language |
+| limitation | missing outputs, mismatches, non-comparable boundary, or untested scope |
+| audit route | bundle, machine result, check, provenance, and freshness record |
+
+This is scientific content, not page-planning commentary. The reader should be
+able to tell what was observed, under which model, and where the conclusion
+stops without learning the repository's internal delivery history.
+
+## Reconcile Conflicting Evidence Projections
+
+When a guide, manifest, generated index, result table, or release statement
+disagrees:
+
+1. freeze the affected public claim at the narrowest non-contradictory state;
+2. identify each record's canonical owner and generation path;
+3. compare claim identity, input hashes, result rows, checks, verdict, and
+   freshness rather than visible wording alone;
+4. correct the earliest wrong owner or regenerate the stale projection;
+5. retain the contradiction and failed validation until all dependent surfaces
+   agree;
+6. rerun exact-bundle validation, evidence indexes, documentation truth, and
+   release consumers before restoring stronger language.
+
+Never resolve the conflict by selecting the matched row, deleting the mismatch,
+or weakening the truth assertion. Until ownership is reconciled, the affected
+statement remains blocked.
+
 ## Freshness Triggers
 
 Re-evaluate every dependent claim when any of these changes:

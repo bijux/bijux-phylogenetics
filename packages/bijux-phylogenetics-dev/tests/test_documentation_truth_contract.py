@@ -525,11 +525,15 @@ def test_trust_guides_preserve_status_and_claim_ownership() -> None:
 
     assert "Questions Owned By Each Surface" in trust_index
     assert "Trust Decision Packet" in trust_index
+    assert "Trace A Claim Across Surfaces" in trust_index
+    assert "Failure Ownership Flow" in trust_index
     assert "Status Ownership" in cross_surface
     assert "Release Language Decision" in cross_surface
     assert "Keep Status Namespaces Separate" in claim_maintenance
     assert "Claim Dependency Record" in claim_maintenance
     assert "Promote A Result Into A Public Claim" in claim_maintenance
+    assert "Reader-Facing Claim Anatomy" in claim_maintenance
+    assert "Reconcile Conflicting Evidence Projections" in claim_maintenance
     assert "Handle Non-Comparable Claims" in claim_maintenance
     assert "contract-only wrapper" in claim_maintenance
     assert "intentionally open scientific verdict" not in cross_surface
@@ -917,6 +921,8 @@ def test_maintainer_handbook_defines_change_and_artifact_ownership() -> None:
     )
 
     assert "Change Classification" in handbook
+    assert "Scale Review By Semantic Risk" in handbook
+    assert "Resolve Contradictions Before Completion" in handbook
     assert "Maintained Invariants" in handbook
     assert "Keep Status In Its Owning Record" in handbook
     assert "Resolve Canonical Ownership" in handbook
