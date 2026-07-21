@@ -67,6 +67,22 @@ warnings, and links to intermediate artifacts.
 Code that needs only the computation consumes the typed result. Reports and
 bundles are projections of that result for humans and downstream systems.
 
+## State Retained Across Boundaries
+
+| State | Validation | Computation | Persistence | Evidence review |
+| --- | :---: | :---: | :---: | :---: |
+| input identity and taxon reconciliation | creates | consumes | retains | verifies |
+| model, partition, search, sampler, and seed configuration | validates | consumes | retains | checks scope |
+| native or external computation owner | identifies | executes | retains | qualifies claim |
+| estimate, topology, history, or comparison | — | creates | retains | observes |
+| warnings, convergence, support, uncertainty, exclusions | may create | creates | retains | applies acceptance rule |
+| artifact schema, checksums, and inventory | — | declares outputs | creates | verifies |
+| source provenance, claim ID, tolerance, verdict, freshness | — | — | may link | creates and governs |
+
+A dash means the layer does not own that state, not that the state is
+irrelevant. Evidence review still depends on input and computation identity
+created upstream.
+
 ## Review Boundary
 
 Persisted outputs make a run inspectable after process memory is gone:
@@ -97,6 +113,19 @@ flowchart TD
 These categories should remain distinct. Retrying an unwritable destination is
 reasonable; treating a convergence warning as an I/O problem is not.
 
+## Partial And Refused Runs
+
+A workflow can emit diagnostic artifacts without producing a usable
+scientific estimate. Its manifest should distinguish complete, partial,
+refused, failed, and skipped components and record the expected versus present
+output inventory. Consumers must evaluate status before assuming that a path
+listed in a directory is valid output.
+
+For batched work, aggregate status retains denominators: selected cases,
+executed cases, successful cases, failed cases, skipped cases, and missing
+artifacts. Reporting only the successful subset changes the meaning of the
+run.
+
 ## Cross-Cutting Families
 
 Datasets and simulation provide controlled inputs. Benchmarking observes
@@ -113,3 +142,7 @@ Before trusting a run, ask:
 3. Which diagnostics qualify the headline result?
 4. Can the persisted artifacts reconstruct inputs and configuration?
 5. Does any broader claim stay within its benchmark or evidence scope?
+
+If any answer cannot be reconstructed from typed state and declared artifacts,
+the run is incomplete as a reviewable system output even when the process
+returned zero.

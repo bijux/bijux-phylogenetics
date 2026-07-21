@@ -79,6 +79,41 @@ outside the runtime execution path.
 This direction keeps a numerical method usable without the CLI and prevents a
 report format from becoming the hidden owner of scientific state.
 
+## Layer Contracts
+
+| Layer | Accepts | Produces | Must not own |
+| --- | --- | --- | --- |
+| scientific foundations | files, identifiers, explicit scientific definitions | validated trees, alignments, tables, models, datasets | CLI policy or report layout |
+| analytical methods | validated domain objects and method configuration | typed estimates, trees, histories, diagnostics | filesystem presentation or study verdicts |
+| workflows | method requests, execution policy, output destination | coordinated results and artifact inventory | new scientific semantics hidden from methods |
+| interfaces | user/application input | validated workflow requests and serialized responses | duplicate numerical implementations |
+| presentation | typed results and linked ledgers | tables, figures, HTML, Markdown | values absent from structured results |
+| evidence governance | persisted results, sources, claims, checks | claim-scoped verdicts and indexes | runtime success or method implementation |
+
+Cross-layer convenience is acceptable only when ownership remains traceable.
+A workflow may call validation and rendering, but it cannot redefine a taxon,
+likelihood, support statistic, or verdict inside orchestration code.
+
+## Scientific State Transformations
+
+```mermaid
+flowchart LR
+    raw["Raw input"]
+    validated["Validated domain<br/>objects"]
+    computed["Typed scientific<br/>result"]
+    persisted["Versioned artifact<br/>bundle"]
+    adjudicated["Claim-scoped<br/>evidence verdict"]
+
+    raw -->|parse, reconcile, validate| validated
+    validated -->|infer, compare, reconstruct| computed
+    computed -->|serialize, render, manifest| persisted
+    persisted -->|map, check, review| adjudicated
+```
+
+Each transformation adds context; none may silently discard upstream identity.
+The evidence verdict refers back to the exact persisted result, which refers
+back to method configuration and validated inputs.
+
 ## Architectural Risks
 
 | Risk | Warning sign | Required response |
@@ -88,6 +123,8 @@ report format from becoming the hidden owner of scientific state.
 | wrapper ambiguity | docs call an external computation native | name the adapter and engine explicitly |
 | result flattening | only a scalar estimate survives | retain diagnostics and structured results |
 | evidence coupling | runtime success depends on a study dossier | keep evidence as a downstream reviewer |
+| hidden mutation | taxon order or model configuration changes inside presentation | make transformations explicit and retain the before/after identity |
+| partial success flattening | incomplete support or failed replicates become `ok` | preserve component status and denominator in the result |
 
 ## Code Navigation
 

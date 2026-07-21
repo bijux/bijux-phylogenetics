@@ -91,6 +91,9 @@ def test_foundation_and_architecture_define_owned_runtime_contracts() -> None:
     ownership = _read(PRODUCT_ROOT / "foundation" / "product-surface-and-ownership.md")
     architecture = _read(PRODUCT_ROOT / "architecture" / "index.md")
     system_map = _read(PRODUCT_ROOT / "architecture" / "runtime-system-map.md")
+    evidence_consumer = _read(
+        PRODUCT_ROOT / "architecture" / "evidence-consumer-boundary.md"
+    )
 
     assert "finite-state likelihood" in foundation
     assert "supported Bayesian DNA inference" in foundation
@@ -105,7 +108,14 @@ def test_foundation_and_architecture_define_owned_runtime_contracts() -> None:
     assert "Valid Boundary States" in evidence_boundary
     assert "Ownership Matrix" in ownership
     assert "Dependency Direction" in architecture
+    assert "Layer Contracts" in architecture
+    assert "Scientific State Transformations" in architecture
     assert "Failure Attribution" in system_map
+    assert "State Retained Across Boundaries" in system_map
+    assert "Partial And Refused Runs" in system_map
+    assert "Dependency Rule" in evidence_consumer
+    assert "Consumption Contract" in evidence_consumer
+    assert "Material Changes And Freshness" in evidence_consumer
 
 
 def test_product_handbook_routes_analysis_and_preserves_run_identity() -> None:
