@@ -429,8 +429,14 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
     assert "parity verdicts remain open" not in pcm3
     assert "Model Components" in pcm4
     assert "All seven bundle manifests record `not_comparable`" in pcm4
+    assert "Verdict And Follow-Through" in pcm4
+    assert "What Would Make The Posterior Comparable" in pcm4
+    assert "posterior parity verdicts\nremain open" not in pcm4
     assert "Preserve The Scale Of Every Quantity" in pcm5
     assert "All nine bundle manifests record `not_comparable`" in pcm5
+    assert "Comparison Contract By Model Family" in pcm5
+    assert "Do not use open follow-through as the bundle verdict" in pcm5
+    assert "posterior parity verdicts remain open" not in pcm5
     assert _verdict_counts("primate-longevity-signal") == Counter(
         {"matched": 8, "matched_with_tolerance": 1}
     )

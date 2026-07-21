@@ -72,9 +72,10 @@ summaries.
 | `evidence-007` | Brownian PGLS comparison |
 
 All seven bundles are governed review units. Their posterior parity verdicts
-remain open because the central computation is still the external `MCMCglmm`
-workflow. The locally available PGLS comparator is useful evidence, but it is
-not a replacement posterior.
+are `not_comparable` because the central computation is still the external
+`MCMCglmm` workflow and no governed comparison lane reproduces it. The locally
+available PGLS comparator is useful evidence, but it is not a replacement
+posterior.
 
 ## Current Verdict
 
@@ -87,7 +88,30 @@ or summaries.
 The status must remain separate from data preparation quality. A verified
 tree–table join or Brownian PGLS coefficient can support its own bounded claim
 without causing fixed-effect, variance-component, or convergence claims from
-the mixed model to pass.
+the mixed model to match.
+
+## Verdict And Follow-Through
+
+| Axis | Current state | Consequence |
+| --- | --- | --- |
+| bundle verdict | all seven are `not_comparable` | no PCM4 bundle currently establishes posterior correspondence |
+| source and input identity | governed | reviewers can identify the lecture, data, tree, workspace objects, and intended analysis |
+| local adjacent capability | Gaussian and Brownian PGLS surfaces exist | these methods can support their own claims but cannot inherit `MCMCglmm` posterior claims |
+| resolution work | open | a matched-prior, matched-parameterization posterior lane and adjudicated observations are still required |
+
+The open item is a workflow state, not a sixth verdict value. Retain the
+`not_comparable` verdict until the missing execution and comparison record
+exists; do not rewrite it as “open,” “pending,” or “partially matched.”
+
+## What Would Make The Posterior Comparable
+
+A comparison must identify the exact source formula, family, link, fixed and
+random terms, tree inverse, taxon order, covariance scaling, priors, chain
+policy, monitored quantities, and summary transformations. It must execute the
+reference and comparison surfaces, retain raw and normalized posterior
+observations, define tolerances or distributional rules, and account for every
+failed or excluded chain and parameter. Source reconstruction alone does not
+satisfy this contract.
 
 ## Inputs And Provenance
 

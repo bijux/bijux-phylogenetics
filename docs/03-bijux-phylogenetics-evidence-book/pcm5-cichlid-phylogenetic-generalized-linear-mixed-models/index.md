@@ -67,9 +67,11 @@ and does not preserve interval coverage.
 | `evidence-008` | repeated-measure `species + treetip` random effects |
 | `evidence-009` | phylogenetic, species, and residual variance partition |
 
-The bundle structure is deployed; posterior parity verdicts remain open. The
-repository's binary comparative utilities provide adjacent capability but do
-not reproduce the external generalized mixed-model posterior.
+The bundle structure is deployed, and all nine posterior comparison verdicts
+are `not_comparable`. The repository's binary comparative utilities provide
+adjacent capability but do not reproduce the external generalized mixed-model
+posterior. The work to establish a governed posterior comparison remains open
+as a separate resolution state.
 
 ## Current Verdict
 
@@ -81,6 +83,32 @@ multiple-random-effect posteriors under matched priors and chain policy.
 This status also prevents an unsafe substitution: a phylogenetic logistic
 approximation, a Gaussian model, or a non-phylogenetic generalized model cannot
 inherit the PCM5 claim merely because it accepts similar columns.
+
+## Verdict And Follow-Through
+
+| Axis | Current state | Consequence |
+| --- | --- | --- |
+| bundle verdict | all nine are `not_comparable` | no count, infection, ancestral, probability-scale, or variance-partition claim has posterior correspondence |
+| source and input identity | governed | scripts, datasets, tree, workspace objects, and claim decomposition are reviewable |
+| adjacent runtime capability | narrower binary and comparative methods exist | similar inputs or output columns do not make the model, link, priors, or random effects equivalent |
+| resolution work | open | matched `MCMCglmm` execution, posterior observations, diagnostics, and claim adjudication remain required |
+
+Do not use open follow-through as the bundle verdict. Do not interpret
+`not_comparable` as a failed chain: the required comparable execution is absent,
+so a numerical pass/fail conclusion is not yet available.
+
+## Comparison Contract By Model Family
+
+| Family | Identity that must match before values are compared |
+| --- | --- |
+| Poisson count | link, exposure or offset, overdispersion treatment, priors, random effects, and count scale |
+| binary-style infection | source family, latent or link scale, residual convention, threshold or category coding, and probability transform |
+| repeated measures | observation unit, species identity, phylogenetic effect, residual structure, and covariance among repeated records |
+| ancestral posterior | node identity, tree revision, state/parameter scale, retained draws, and summary rule |
+| variance partition | every numerator and denominator component, covariance scaling, family-specific residual convention, and draw-wise calculation |
+
+Only after those identities align should a governed lane compare posterior
+draws or summaries and assign an Evidence Book verdict.
 
 ## Inputs And Provenance
 
