@@ -32,6 +32,23 @@ flowchart LR
 | interpret benchmark records | [Native benchmark review](native-benchmark-review.md) |
 | understand what automation cannot decide | [Operational boundaries](operational-boundaries.md) |
 
+## Establish The Run Identity First
+
+Before selecting a model, record the input set and the runtime that will own
+the result:
+
+```bash
+bijux-phylogenetics --version
+bijux-phylogenetics env --json
+bijux-phylogenetics inspect dataset/tree.nwk --json
+bijux-phylogenetics alignment validate-input dataset/alignment.fasta --json
+```
+
+The last two commands are independent intake checks; use only the objects
+present in the analysis. For trait work, validate the tree–table join and
+retain the reconciliation output before fitting a model. For external engines,
+capture executable discovery and version output before execution.
+
 ## The Operational Contract
 
 A defensible run records:
@@ -71,6 +88,24 @@ Review validation warnings, optimizer or sampler diagnostics, support and
 uncertainty, missing-data behavior, taxon coverage, and sensitivity to material
 choices. A result object existing is an execution fact; it is not an automatic
 scientific verdict.
+
+Use a refusal or incomplete status as information. A taxon mismatch, missing
+engine, unconverged optimizer, low effective sample size, incomplete support
+replicates, or absent required artifact should stop the corresponding claim.
+Changing presentation or omitting the failed check does not make the run
+complete.
+
+## Minimum Handoff Record
+
+Preserve enough state for a second person to answer these questions without
+terminal history:
+
+- Which exact inputs and taxa were analyzed?
+- Which runtime and external-engine versions executed?
+- Which model, partitions, transformations, priors, costs, and seeds applied?
+- Which diagnostics passed, warned, failed, or remained unavailable?
+- Which files are canonical machine output and which are presentations?
+- Which comparison or Evidence Book claim, if any, supports interpretation?
 
 ## Generated References
 

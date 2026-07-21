@@ -23,6 +23,23 @@ bundles. The distinction between those surfaces is part of the product.
 | How do I install, execute, and review a workflow? | [Runtime operations](operations/index.md) |
 | What does a passing check or evidence record establish? | [Quality and limits](quality/index.md) |
 
+## Select An Analysis Route
+
+| Starting material and question | Primary route | First review checkpoint |
+| --- | --- | --- |
+| a tree that needs structural or branch-length review | `inspect`, `validate`, `diagnose`, or the tree Python surface | rootedness, branch lengths, tip identity, support scale |
+| sequences that need alignment, trimming, and tree inference | sequence-to-tree workflow or explicit alignment and engine commands | sequence type, retained sites, model, engine ownership |
+| a tree plus continuous or categorical traits | comparative workflow and domain-specific model commands | taxon reconciliation, design matrix, covariance model |
+| ancestral values or histories | ancestral and discrete-evolution surfaces | state space, transition model, node identity, uncertainty |
+| character-cost or topology-search analysis | parsimony surfaces | coding, cost matrix, search coverage, equal-best trees |
+| controlled recovery or stress analysis | simulation and dataset workflows | known truth, independence, seed policy, acceptance rule |
+| a claim that must be cited or released | Evidence Book review path | claim identifier, source, inputs, checks, freshness, verdict |
+
+The [scientific domain map](../02-bijux-phylogenetics-domains/index.md) defines
+the assumptions behind these routes. The [surface selection guide](interfaces/surface-selection.md)
+then distinguishes Python composition, repeatable CLI execution, and durable
+artifact consumption.
+
 ## Analytical Capability Map
 
 ```mermaid
@@ -84,6 +101,30 @@ The runtime is designed so that the scientific result is not the only output.
 Inputs, configuration, diagnostics, and provenance remain available to a
 reviewer.
 
+## A Complete Result Is More Than An Estimate
+
+```mermaid
+flowchart LR
+    identity["Input identity"]
+    assumptions["Model and<br/>method assumptions"]
+    execution["Versioned execution"]
+    estimate["Estimate, topology,<br/>or reconstruction"]
+    diagnostics["Convergence, support,<br/>uncertainty, sensitivity"]
+    bundle["Manifest and linked<br/>review artifacts"]
+
+    identity --> execution
+    assumptions --> execution
+    execution --> estimate
+    execution --> diagnostics
+    estimate --> bundle
+    diagnostics --> bundle
+```
+
+An estimate without input identity cannot be reproduced. An estimate without
+diagnostics cannot be interpreted safely. A report without structured results
+cannot be consumed reliably. The workflow is complete when all three
+relationships remain inspectable.
+
 ## Ownership Boundaries
 
 | Surface | Owns | Does not imply |
@@ -92,7 +133,7 @@ reviewer.
 | engine adapter | orchestration and normalized artifacts | native ownership of the engine |
 | benchmark | behavior on a named corpus and configuration | universal performance ranking |
 | evidence bundle | provenance and verdicts for named claims | validation beyond its study scope |
-| documentation | public contract and honest navigation | proof without executable checks |
+| published handbook | supported behavior, assumptions, and navigation | proof without executable checks |
 
 ## Recommended Reading Paths
 

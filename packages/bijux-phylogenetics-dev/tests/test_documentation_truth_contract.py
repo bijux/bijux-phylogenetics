@@ -86,6 +86,18 @@ def test_foundation_and_architecture_define_owned_runtime_contracts() -> None:
     assert "Failure Attribution" in system_map
 
 
+def test_product_handbook_routes_analysis_and_preserves_run_identity() -> None:
+    product = _read(PRODUCT_ROOT / "index.md")
+    operations = _read(PRODUCT_ROOT / "operations" / "index.md")
+
+    assert "Select An Analysis Route" in product
+    assert "A Complete Result Is More Than An Estimate" in product
+    assert "claim identifier, source, inputs, checks, freshness, verdict" in product
+    assert "Establish The Run Identity First" in operations
+    assert "Minimum Handoff Record" in operations
+    assert "Changing presentation or omitting the failed check" in operations
+
+
 def test_programmatic_interfaces_name_curated_and_frozen_contracts() -> None:
     api_surface = _read(PRODUCT_ROOT / "interfaces" / "api-surface.md")
     native_surface = _read(
