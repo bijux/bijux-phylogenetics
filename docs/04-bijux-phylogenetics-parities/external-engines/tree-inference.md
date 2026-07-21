@@ -114,6 +114,25 @@ Report:
 
 A stable filename or one matching consensus is not a reproducibility result.
 
+## Retain Selection And Search Context
+
+The accepted tree must remain connected to the search or approximation that
+selected it. That connection is different for each command, but it always
+prevents the final Newick file from becoming the entire scientific record.
+
+| Result | Context that must remain attached | Unsupported shortcut |
+| --- | --- | --- |
+| selected IQ-TREE2 model | candidate set, criterion, score table, ties, and model-selection command | treating the chosen model name as unconditional truth |
+| IQ-TREE2 ML tree | starting/search controls, selected model, likelihood, seed, threads, report, and log | comparing only the rendered topology |
+| bootstrap or SH-aLRT tree | replicate/test configuration, accepted replicate denominator, method label, native sidecars | reading unlabeled node numbers as generic confidence |
+| FastTree result | sequence mode, native command, streams, runtime state, and SH-like scale | describing an approximate search as the IQ-TREE2 procedure |
+| cross-engine comparison | both complete parent records plus reconciliation and comparison rules | retaining a merged table without its two engine parents |
+| repeated-run summary | every requested run, completion state, topology identity, and pairwise comparison | reporting only the modal or most favorable run |
+
+A comparison artifact is accepted only while both parent records remain
+resolvable. If one parent becomes stale or incomplete, preserve the surviving
+engine result but withdraw the paired conclusion.
+
 ## Comparison Denominator
 
 For a cross-engine statement, retain the selected engines, engines available,

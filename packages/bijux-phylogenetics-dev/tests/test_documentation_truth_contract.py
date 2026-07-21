@@ -559,12 +559,16 @@ def test_engine_correspondence_guides_preserve_computational_ownership() -> None
     assert "live workflow run" in index
     assert "Know What Was Actually Run" in index
     assert "Claim Ladder" in index
+    assert "Preserve The Artifact Lineage" in index
+    assert "an explicit parent identity" in index
     assert "MAFFT owns" in alignment
     assert "numerical parity claim" in alignment
     assert "Stage Acceptance And Handoff" in alignment
     assert "`--resume` is reuse under an identity check" in alignment
     assert "Codon-Aware Alignment Preserves The Translation Contract" in alignment
     assert "`gappyout`, `strict`, `strictplus`" in alignment
+    assert "Preserve Sequence And Site Coordinates" in alignment
+    assert "MAFFT column → trimAl result" in alignment
     assert "incomplete bundles" in inference
     assert "remain different statistical" in inference
     assert "quantities and are labeled" in inference
@@ -573,6 +577,8 @@ def test_engine_correspondence_guides_preserve_computational_ownership() -> None
     assert "Choose The Command By Question" in inference
     assert "Robinson–Foulds distance" in inference
     assert "Reproducibility Has An Explicit Denominator" in inference
+    assert "Retain Selection And Search Context" in inference
+    assert "withdraw the paired conclusion" in inference
     assert "prepared-only analysis" in bayesian
     assert "does not dispatch through MrBayes or BEAST" in bayesian
     assert "Run Identity And Resume Safety" in bayesian
@@ -580,6 +586,8 @@ def test_engine_correspondence_guides_preserve_computational_ownership() -> None
     assert "Diagnostic Interpretation" in bayesian
     assert "Preparation, Execution, And Review Are Separate" in bayesian
     assert "Evidence Package Acceptance" in bayesian
+    assert "Preserve Posterior Sample Lineage" in bayesian
+    assert "resumed segments are not miscounted" in bayesian
 
 
 def test_correspondence_matrix_distinguishes_verified_and_open_surfaces() -> None:

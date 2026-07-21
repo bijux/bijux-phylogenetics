@@ -152,6 +152,34 @@ parameterization, chain/state selection, transformations, and estimands before
 values are adjudicated. Otherwise the posteriors remain separate governed
 observations.
 
+## Preserve Posterior Sample Lineage
+
+Every reported posterior quantity must resolve to the exact retained samples
+that contributed to it. A summary detached from chain and state identity is
+not repairable from its mean, interval, or consensus tree.
+
+```text
+reported posterior quantity
+  = engine run
+  + chain or state series
+  + burn-in rule
+  + thinning or subsampling rule
+  + transformation
+  + estimand
+```
+
+| Projection | Required parent record | Completeness condition |
+| --- | --- | --- |
+| parameter summary | native trace, chain/state column, selected window, transform, and missing/non-finite handling | retained and excluded sample counts reconcile |
+| ESS or drift diagnostic | exact series, estimator/rule, threshold, and selected window | diagnostic denominator matches the reported series |
+| clade frequency or consensus | posterior tree set, generation/state identity, burn-in and subsampling | accepted trees and discarded trees are both counted |
+| independent-chain comparison | distinct run identities, aligned estimand, and per-chain diagnostics | resumed segments are not miscounted as independent chains |
+| evidence package result | all parent records plus inventory and checksums | every table or figure resolves to its selected native inputs |
+
+Changing burn-in, subsampling, topology filtering, or parameter transformation
+creates a new projection. Preserve it alongside its rule; do not overwrite the
+prior summary and keep the old interpretation.
+
 ## Evidence Package Acceptance
 
 `adapter bayesian-evidence` requires explicit input, configuration, tree, log,

@@ -58,6 +58,32 @@ Every result must identify which record was created:
 File presence alone cannot promote a prepared or parsed record into a live-run
 claim. Conversely, a live exit code of zero does not replace output validation.
 
+## Preserve The Artifact Lineage
+
+A normalized result is a child of native engine output, not a replacement for
+it. The accepted record must make every transformation traversable in both
+directions: a reviewer can move from a reported value to the native file and
+run that produced it, and from a declared run to every accepted projection.
+
+```mermaid
+flowchart LR
+    source["Source input<br/>checksum"]
+    prepared["Prepared engine input<br/>checksum"]
+    run["Engine execution<br/>identity"]
+    native["Native output<br/>inventory"]
+    parsed["Parsed observations<br/>and diagnostics"]
+    normalized["Normalized result<br/>and downstream handoff"]
+
+    source --> prepared --> run --> native --> parsed --> normalized
+```
+
+Each edge needs an explicit parent identity and transformation description.
+For alignment workflows that includes translation, back-translation, and site
+selection. For inference it includes model/search selection and tree parsing.
+For posterior workflows it includes chain or state selection, burn-in, and
+subsampling. If a link is absent, only the independently identifiable segment
+can be reviewed; the end-to-end run is incomplete.
+
 ## The Accepted Run Identity
 
 A reviewable external-engine record joins four identities:

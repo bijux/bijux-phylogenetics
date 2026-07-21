@@ -87,6 +87,26 @@ The inference input is the accepted handoff, not the newest FASTA in a
 directory. A `fasta-to-tree` workflow composes the same contracts and must
 retain the identities and failure states of every included stage.
 
+## Preserve Sequence And Site Coordinates
+
+Alignment changes two identities that downstream analyses often treat as
+fixed: a sequence residue acquires an alignment column, and trimming maps an
+alignment column into either a retained output column or an explicit removal.
+The handoff must therefore retain more than the final matrix dimensions.
+
+| Mapping | Required identity | Failure that blocks the handoff |
+| --- | --- | --- |
+| source record → accepted record | original identifier, source checksum, exclusion or acceptance reason | duplicate or renamed taxa without a declared mapping |
+| coding nucleotide → amino-acid guide | genetic code, codon index, translated residue, stop/ambiguity decision | an accepted codon cannot be reconstructed from the guide record |
+| guide alignment → codon alignment | guide column and corresponding nucleotide triplet | back-translation changes order, frame, or accepted taxa |
+| MAFFT column → trimAl result | original column index and retained/removed disposition | only a final site count survives |
+| trimmed matrix → inference input | artifact checksum, taxon order, sequence type, codon state, and partitions | inference consumes a different or unidentifiable matrix |
+
+This lineage lets a reviewer trace a surprising inferred site or codon back to
+the source record. It does not assert that homology or trimming was
+biologically correct; those remain scientific judgments outside structural
+acceptance.
+
 ## Run The Workflow
 
 ```bash
