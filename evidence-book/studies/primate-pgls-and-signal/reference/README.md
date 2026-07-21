@@ -58,6 +58,21 @@ visible beside the focused verdicts.
 not reinterpret that absence as a failed numerical comparison or as an implied
 match.
 
+## Admit A Comparison
+
+| Surface | Identity required before values are compared |
+| --- | --- |
+| baseline GLS and PGLS | response, design columns, admitted rows, residual covariance and likelihood convention |
+| Pagel lambda and signal | tree/trait population, parameter bounds, null rule and optimization state |
+| tree transformations | source tree, transformation definition, parameter and branch-length summary rule |
+| BM, OU and early/late-burst fits | candidate model, parameterization, tree scale, starts, bounds and likelihood convention |
+| likelihood-ratio tests | named nested pair, comparable observation population and degrees-of-freedom rule |
+| ancestral observations | model, trait scale, structurally keyed node and uncertainty definition |
+
+If identity does not align, do not construct a delta or tolerance outcome. The
+record is `not_comparable` when a required observation contract is absent; it
+is a mismatch only after comparable observations exist and violate their rule.
+
 ## Rerun Identity
 
 Preserve the lecture source, study-local datasets, reference script and result
@@ -65,3 +80,7 @@ bytes, Bijux revision, dependency versions, model parameterization, node
 identity convention, observation registry, and tolerance policy. A change to
 any of them requires fresh outputs and re-adjudication at every dependent
 bundle and aggregate ledger.
+
+The checked `reference_results.json` is a registered observation source, not a
+timeless expected answer. Its script, dependency, dataset, parameterization and
+observation-registry identities travel with every consumed value.

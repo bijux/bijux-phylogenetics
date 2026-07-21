@@ -31,6 +31,18 @@ early-burst fitting, one likelihood-ratio comparison, ancestral vectors, and
 one residual diagnostic. Those rows remain scientific debt; favorable focused
 bundle verdicts do not remove them.
 
+## Keep The Two Ledgers Separate
+
+| Ledger | Unit | Status vocabulary | Appropriate use |
+| --- | --- | --- | --- |
+| focused bundle manifests | one registered claim contract | `matched`, `matched_with_tolerance`, `not_comparable` | decide whether that bounded claim is supportable |
+| aggregate scalar parity table | one named cross-implementation observation | row-level outcome and mismatch reason | inspect broader correspondence and unresolved numerical debt |
+
+A bundle can match while a neighboring scalar row remains unexplained because
+the two records can have different observation keys, scopes, or comparison
+contracts. Quote the focused verdict only with its claim identity; quote a
+study-wide mismatch count only with the complete scalar denominator.
+
 ## Decision Structure
 
 ```mermaid
@@ -47,6 +59,10 @@ flowchart LR
 The baseline and phylogenetic models share response and taxon identity but do
 not share residual covariance. A coefficient is therefore meaningful only
 with its model, population, transform, and diagnostic record.
+
+The dependency direction matters: tree transformations feed covariance and
+mode fits; fitted models feed likelihood-ratio and ancestral comparisons.
+Later matches cannot validate an earlier unexplained transformation row.
 
 ## Record Authority
 
@@ -74,6 +90,11 @@ A PCM2-wide parity claim is not supported. The intercept sweep lacks a
 registered comparable observation, and the scalar ledger retains unexplained
 disagreements. These are different failure classes: absence of a comparison
 contract is not a numerical mismatch.
+
+For regression claims, retain the response, design columns, factor coding,
+admitted taxa, covariance/transform identity, fitted lambda or mode parameters,
+likelihood convention, and residual diagnostics. Similar coefficient labels
+without this identity are not comparable PCM2 observations.
 
 ## Reviewer Route
 
