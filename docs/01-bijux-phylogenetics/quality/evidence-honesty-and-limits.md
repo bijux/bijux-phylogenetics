@@ -1,48 +1,86 @@
 ---
-title: Evidence Honesty and Limits
+title: Evidence Honesty And Limits
 audience: public
 type: explanation
-status: active
+status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-21
 ---
 
 # Evidence Honesty And Limits
 
-The public docs should make the repository look serious without making it look
-broader, more closed, or more validated than it really is.
+Evidence earns trust when readers can see both what it supports and where it
+stops. The project therefore treats an open, failed, or externally blocked
+verdict as useful information rather than a wording problem.
+
+## Claim Anatomy
 
 ```mermaid
 flowchart LR
-    A[Published runtime surface] --> B[Usage guidance]
-    A --> C[Benchmark review]
-    A --> D[Study evidence]
-    B --> E[Usable]
-    C --> F[Performance posture]
-    D --> G[Trust boundary]
+    claim["Bounded claim"] --> source["Source and rationale"]
+    source --> inputs["Identified inputs"]
+    inputs --> execution["Recorded method and versions"]
+    execution --> checks["Explicit checks and tolerances"]
+    checks --> verdict["Pass · fail · open · blocked"]
 ```
 
-## What Honest Documentation Looks Like
+If a link is absent, say so. A narrative that leaps from source material to a
+passing verdict without inputs and checks is not a complete evidence chain.
 
-- the runtime handbook explains what the product surface does today
-- the runtime handbook distinguishes native ownership from wrapper-backed
-  workflow ownership
-- benchmark reports separate native advantage, native bug,
-  expected-assumption-difference, and unsupported-case outcomes instead of
-  flattening them into one score
-- the evidence-book explains study-grounded parity, freshness, and bounded
-  trust
-- unresolved gaps stay visible instead of being rounded away in summary prose
+## Verdict Meanings
 
-## What Readers Should Not Infer
+| Verdict | Meaning |
+| --- | --- |
+| pass | the declared checks satisfy the declared acceptance rule |
+| fail | execution completed or was reviewed, and a required rule was not met |
+| open | the claim is defined but evidence is incomplete or inconclusive |
+| blocked | a named dependency prevents the required execution or review |
 
-- a documented feature is not automatically evidence-closed
-- one green validation lane is not blanket scientific validation
-- one benchmark win is not proof that all nearby methods are stronger
-- one study family is not proof for unrelated datasets or model families
+These verdicts apply to the claim, not to an entire package or study by
+contagion. A study family may contain all four.
 
-## Why This Matters
+## Common Overclaims
 
-Phylogenetics readers will naturally overread polished documentation. This
-page exists so the repository resists that pressure deliberately. The result is
-less flashy than a blanket maturity claim, but much more credible.
+- **Parity** without naming compared outputs, conventions, and tolerance.
+- **Reproduced** when only the Python-side preparation ran.
+- **Native** for a workflow whose computation is owned by an external engine.
+- **Validated** because nearby methods have evidence.
+- **Current** when the bundle predates material runtime or input changes.
+- **Scientifically correct** because an execution is deterministic.
+
+## External Boundaries
+
+When an engine, posterior workflow, source dataset, or lecture-specific
+interpretation remains external, record that boundary in the claim and bundle.
+An adapter can be fully implemented and tested while the end-to-end study
+verdict stays blocked or open. Those are compatible facts.
+
+## Freshness
+
+Evidence is tied to code, configuration, inputs, and sources. A change to any
+material dependency can make a prior verdict stale without making it
+historically false. Freshness reports should identify that state; documentation
+should not keep presenting an old verdict as current.
+
+## Negative Results
+
+Failed comparisons, fragile examples, and sensitivity are part of the
+scientific record. Preserve the configuration and observed difference, explain
+whether the cause is understood, and define the next closure criterion. Do not
+delete a difficult case from an aggregate without a declared exclusion rule.
+
+## How To Write A Public Claim
+
+Prefer: “For the named PCM study bundle, the implementation agrees with the
+reference output within the declared tolerance; the posterior extension remains
+external.” Avoid: “The comparative workflow has full parity.”
+
+The first statement lets a reader verify strength and limitation. The second
+borrows confidence from unspecified work.
+
+## Reviewer Standard
+
+Trace the claim ID to its bundle, source provenance, inputs, runtime versions,
+checks, and verdict. Confirm it is fresh. Then read exclusions and open
+boundaries before the headline result. If the chain cannot be followed, treat
+the statement as documentation, not evidence.
