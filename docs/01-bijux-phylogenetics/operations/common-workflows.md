@@ -40,6 +40,25 @@ flowchart LR
 | evaluate registered reference cases | `parity` | selected, passed, failed, and skipped denominators |
 | run owned native inference directly | documented Python result contract | model/search or sampler state and typed diagnostics |
 
+## Put An Acceptance Gate Between Stages
+
+For a composed analysis, define each gate before execution. A stage advances
+only when its own result and output contract are accepted; downstream success
+cannot repair an upstream contradiction.
+
+| Gate | Accept only when | Stop and retain |
+| --- | --- | --- |
+| environment → input validation | required runtime and engines are admitted for the named workflow | version, executable, platform, and compatibility blockers |
+| input validation → computation | identities, formats, state spaces, partitions, and method preconditions resolve | every refused or excluded record and its reason |
+| computation → normalization | native or external execution reaches an allowed terminal state and required native outputs exist | partial search/chain state, streams, diagnostics, and missing outputs |
+| normalization → interpretation | parser, schema, units, ordering, denominator, warnings, and omissions are understood | native files and parsing or semantic contradiction |
+| interpretation → publication | result scope matches the statement and any required parity or Evidence Book dependency is current | narrower supported conclusion plus unresolved dependency |
+
+Record the accepted artifact role and checksum at every advancing gate. This
+makes retries and alternate models separate branches with explicit parents,
+instead of allowing files from different attempts to accumulate into one
+apparently linear workflow.
+
 ## Verify The Installed Environment
 
 ```bash

@@ -89,6 +89,26 @@ bijux-phylogenetics phylo preflight \
 
 Preflight records readiness; it does not execute the scientific workflow.
 
+## Admit The Environment Deliberately
+
+Availability is only the first environment decision. Before a governed run,
+record whether the discovered runtime and engines are admissible for the
+specific workflow and whether any limitation narrows the intended result.
+
+| Environment finding | Operational decision | Scientific consequence |
+| --- | --- | --- |
+| required distribution and command match the pinned version | admit the runtime identity | documented installed contracts can be selected |
+| engine is found but its version is unknown or unsupported | refuse or create an explicitly bounded exception record | external computation cannot inherit the expected compatibility claim |
+| optional engine is absent | omit only a stage declared optional before execution | absence stays in the selected-stage denominator |
+| platform, architecture, thread, or numerical dependency differs | record the difference and apply the workflow reproducibility rule | byte identity or numerical equivalence may no longer be expected |
+| packaged demo succeeds but workflow preflight fails | retain both records and resolve the workflow-specific blocker | installation health does not establish analysis readiness |
+| preflight succeeds but input validation fails | keep the environment admitted and refuse the input | environment and scientific input failures remain separate |
+
+The admission record should identify the intended workflow, runtime and
+engine versions, resolved executable paths, platform, compatibility findings,
+blocking and optional components, and the decision. Re-run admission when any
+of those identities change.
+
 ## Pinning For Reproducibility
 
 Exploration can use a compatible release range. A governed analysis should

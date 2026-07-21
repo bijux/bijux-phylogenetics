@@ -182,6 +182,32 @@ Migration tests should include:
 Parsing every case successfully is not the goal. The consumer must preserve or
 reject each case according to its semantics.
 
+## Record The Consumer Acceptance Decision
+
+Integrity verification and schema parsing are inputs to acceptance, not the
+acceptance decision itself. A downstream consumer should emit a small record
+that binds the bundle it reviewed to the purpose for which it was admitted.
+
+| Acceptance field | Meaning |
+| --- | --- |
+| consumer and contract version | which implementation made the decision |
+| bundle, manifest, and checksum identity | which exact producer record was reviewed |
+| intended use | the computation, comparison, report, or claim that will consume it |
+| checks performed | schema, inventory, integrity, status, semantic, and freshness checks actually run |
+| accepted scope | outputs and interpretations admitted for that use |
+| exclusions and unresolved findings | present data deliberately kept outside the decision |
+| decision and reason | accepted, accepted with a narrower scope, or rejected |
+| selected downstream identity | the child run, analysis, or review record receiving the artifact |
+
+Acceptance is purpose-specific. A complete tree bundle may be accepted for
+visual review and rejected for a clock analysis because its branch-length
+units are unresolved. A parsed external result may be accepted for parser
+testing and rejected as proof of a current live execution.
+
+Do not edit the producer manifest to record consumer acceptance. Retain a
+child decision record so the original claim, later uses, and contradictory
+consumer decisions remain independently inspectable.
+
 ## Read Evidence Bundles As Claim Records
 
 Evidence bundles strengthen the contract with source provenance, claim IDs,

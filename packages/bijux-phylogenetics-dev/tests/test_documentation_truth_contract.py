@@ -239,12 +239,16 @@ def test_common_workflows_are_goal_oriented_and_match_registered_commands() -> N
 
     assert "Run The Installed-Wheel Proof" in installation
     assert "phylo preflight" in installation
+    assert "Admit The Environment Deliberately" in installation
+    assert "installation health does not establish analysis readiness" in installation
     assert "Choose A Workflow" in workflows
     assert "comparative pgls" in workflows
     assert "ancestral continuous" in workflows
     assert "phylo preflight" in workflows
     assert "phylo run" in workflows
     assert "Read Status Before Values" in workflows
+    assert "Put An Acceptance Gate Between Stages" in workflows
+    assert "downstream success\ncannot repair an upstream contradiction" in workflows
     assert "ancestral reconstruct" not in workflows
     assert "env --json" not in workflows
     assert len(workflows.splitlines()) < 400
@@ -296,6 +300,8 @@ def test_interface_guides_preserve_failure_compatibility_and_completeness() -> N
     assert "Producer Acceptance Criteria" in contracts
     assert "Establish Provenance Before Values" in consumption
     assert "Handle Incomplete Bundles" in consumption
+    assert "Record The Consumer Acceptance Decision" in consumption
+    assert "Do not edit the producer manifest" in consumption
     assert "Reconstruct The Denominator" in consumption
     assert "Join Ledgers By Declared Identity" in consumption
     assert "Produce A Review Handoff" in consumption
