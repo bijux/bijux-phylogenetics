@@ -1,78 +1,92 @@
 ---
-title: PCM2 Primate PGLS and Signal
+title: PCM2 Primate PGLS And Signal
 audience: public
 type: study-guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-21
 ---
 
 # PCM2: Primate PGLS And Signal
 
-PCM2 is the deeper primate comparative study. It covers transformed trees,
-comparative model fitting, likelihood-ratio comparisons, baseline GLS,
-Pagel-lambda regression, and signal diagnostics on the same lecture family.
+PCM2 evaluates how phylogenetic covariance changes regression, model
+comparison, signal diagnostics, and ancestral inference on the prepared
+primate data. Baseline GLS and phylogenetically corrected models remain in one
+comparison chain so changes in coefficients and fit can be attributed.
 
 ```mermaid
 flowchart LR
-    A[Baseline GLS] --> B[Tree transformation]
-    B --> C[PGLS]
-    C --> D[Signal diagnostics]
+    data["Shared primate<br/>traits and taxa"]
+    gls["Baseline GLS"]
+    transformed["Transformed-tree<br/>covariance"]
+    pgls["Pagel-λ PGLS"]
+    modes["Evolutionary<br/>mode fits"]
+    diagnostics["Residual, signal,<br/>ancestral diagnostics"]
+
+    data --> gls
+    data --> transformed --> pgls
+    pgls --> modes --> diagnostics
+    gls --> diagnostics
 ```
 
-## Why PCM2 Matters
+## Scientific Questions
 
-PCM1 establishes the prepared study inputs. PCM2 asks whether more demanding
-comparative methods still behave coherently once phylogenetic correction and
-model comparison enter the picture.
+- How do coefficient estimates and residual structure change after
+  phylogenetic covariance is introduced?
+- Does estimating or transforming the covariance improve fit under a declared
+  comparison rule?
+- Are signal, evolutionary-mode, and ancestral results mutually consistent
+  for the same taxa and response definition?
 
-## Read PCM2 In Order
+PGLS changes the residual covariance model. It does not simply add a
+“phylogenetic correction” flag to ordinary regression, and it does not make
+the fitted relationship causal.
 
-1. [Model comparisons and PGLS](model-comparisons-and-pgls.md)
-2. [Signal diagnostics and open boundaries](signal-diagnostics-and-open-boundaries.md)
+## Evidence Decomposition
 
-## Checked-In Study Dossier
+| Bundle | Evaluated surface | Current boundary |
+| --- | --- | --- |
+| `evidence-001` | reload semantics | governed parity deployed |
+| `evidence-002` | baseline GLS | governed parity deployed |
+| `evidence-003` | Pagel-λ regression | governed parity deployed |
+| `evidence-004` | phylogenetic signal | governed parity deployed |
+| `evidence-005` | residual diagnostics | governed parity deployed |
+| `evidence-006` | transformed tree | governed parity deployed |
+| `evidence-007` | evolutionary mode fits | governed parity deployed |
+| `evidence-008` | likelihood-ratio comparison | governed parity deployed |
+| `evidence-009` | ancestral modes | unresolved mismatches remain explicit |
+| `evidence-010` | intercept sweep | parity verdict remains open |
 
-The full checked-in record lives under
-[`evidence-book/studies/primate-pgls-and-signal/`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/README.md).
+The last two rows prevent a mostly aligned workflow from being summarized as
+unqualified end-to-end parity.
 
-## Inputs And Evidence Map
+## Inputs And Provenance
 
-- lecture source copies:
-  `primate_raw.xlsx`, `primate.RData`, and `primatetree.nex`
-- governed derivatives:
-  `reference_primate.csv` and `reference_trimmed_primatetree.nwk`
-- catalogs:
-  [dataset catalog](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/datasets/README.md)
-  and
-  [provenance guide](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/provenance/README.md)
-- evidence bundles:
-  `evidence-001` through `evidence-010`
+The dossier contains the source workspace and tree plus governed
+`reference_primate.csv` and `reference_trimmed_primatetree.nwk` derivatives.
+See the [dataset catalog](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/datasets/README.md),
+[provenance record](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/provenance/README.md),
+and [runtime mapping](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/reference/README.md).
 
-## What To Take From PCM2
+## Model Comparison Discipline
 
-- baseline GLS and phylogenetically corrected PGLS can be read as one
-  comparative sequence
-- transformed trees and model comparisons belong in the same analytical story,
-  not in separate islands
-- open boundaries can improve credibility when they remain visible
+Likelihood-ratio conclusions require nested, comparably fitted models and a
+declared degrees-of-freedom convention. Information-criterion comparisons
+answer a different question. Residual diagnostics qualify both baseline and
+phylogenetic fits; a better scalar score does not excuse a broken residual
+contract.
 
-## What Readers Should Watch Closely
+## Review Priorities
 
-- whether the transformed-tree step changes only fit quality or also the
-  comparative interpretation
-- whether model-comparison results are being read alongside the signal story
-  instead of in isolation
-- whether the remaining open boundaries are made explicit rather than hidden
-  under one generic "PGLS complete" claim
+- Verify shared taxa and response transformation across every fit.
+- Inspect the covariance/tree transformation rather than only its fitted
+  parameter.
+- Compare coefficients, likelihoods, and diagnostics together.
+- Keep ancestral mismatch details attached to `evidence-009`.
+- Keep the intercept-sweep verdict open until its closure criterion is met.
 
-## What PCM2 Does Not Prove
-
-- PCM2 does not close every comparative model in the repository.
-- It does not erase the remaining open boundaries named inside the study.
-- It does not substitute for release review or broader evidence-book coverage
-  reports.
-
-## Read Next
-
-- [PCM3: primate continuous and categorical regression](../pcm3-primate-continuous-and-categorical-regression/index.md)
+Detailed analysis is divided between
+[model comparisons and PGLS](model-comparisons-and-pgls.md) and
+[signal diagnostics and open boundaries](signal-diagnostics-and-open-boundaries.md).
+Continue to [PCM3](../pcm3-primate-continuous-and-categorical-regression/index.md)
+for categorical predictors and interactions.

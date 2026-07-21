@@ -1,74 +1,88 @@
 ---
-title: PCM3 Primate Continuous and Categorical Regression
+title: PCM3 Primate Continuous And Categorical Regression
 audience: public
 type: study-guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-21
 ---
 
 # PCM3: Primate Continuous And Categorical Regression
 
-PCM3 is the multivariable regression study in the evidence book. It stays with
-the primate dataset, but the main question changes: how should readers
-interpret models once continuous predictors, categorical predictors,
-interactions, and phylogenetic correction all appear together?
+PCM3 moves from single-predictor comparative models to multivariable design.
+Continuous predictors, categorical contrasts, interactions, transformations,
+and phylogenetic covariance are evaluated as separate sources of meaning
+rather than compressed into one PGLS label.
 
 ```mermaid
-flowchart LR
-    A[Continuous predictor] --> B[Categorical predictor]
-    B --> C[Interaction term]
-    C --> D[Phylogenetic regression]
+flowchart TB
+    response["Longevity response"]
+    continuous["Continuous predictor"]
+    category["Categorical predictor<br/>and reference level"]
+    interaction["Continuous × category"]
+    covariance["Martins phylogenetic<br/>covariance"]
+    interpretation["Conditional slopes,<br/>contrasts, diagnostics"]
+
+    response --> interpretation
+    continuous --> interaction --> interpretation
+    category --> interaction
+    covariance --> interpretation
 ```
 
-## Why PCM3 Matters
+## Scientific Questions
 
-PCM3 is where the evidence book stops sounding like "PGLS" as a single broad
-label and starts showing how interpretation really changes when coding,
-standardization, interaction terms, and phylogenetic correction all matter at
-once.
+- How does categorical coding change the intercept and reported contrasts?
+- How should group-specific slopes be recovered from an interaction model?
+- What changes when the response is transformed or the predictor standardized?
+- Which differences remain after residual covariance follows the phylogeny?
 
-## What PCM3 Helps You Read
+An interaction coefficient is not an isolated effect. It modifies a
+conditional slope under a specific reference coding. Standardization changes
+the location represented by the intercept. Those semantics must match before
+coefficients from different implementations can be compared.
 
-- how the intercept changes meaning after standardization or transformation
-- how categorical predictors depend on a clear coding choice
-- how interactions should be read as joint effects rather than isolated slopes
-- how the regression story changes again after phylogenetic correction
+## Evidence Decomposition
 
-## Checked-In Study Dossier
+| Bundle | Evaluated surface |
+| --- | --- |
+| `evidence-001` | source intake, workspace reload, and shared data alignment |
+| `evidence-002` | baseline GLS with continuous and categorical predictors |
+| `evidence-003` | log response, residual diagnostics, marginal and sequential tests |
+| `evidence-004` | intercept-free group estimates |
+| `evidence-005` | continuous-by-categorical interaction |
+| `evidence-006` | predictor scaling and intercept semantics |
+| `evidence-007` | categorical phylogenetic regression with Martins covariance |
+| `evidence-008` | post-correction diagnostics and hypothesis tests |
 
-The full checked-in record lives under
-[`evidence-book/studies/primate-continuous-and-categorical-regression/`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-continuous-and-categorical-regression/README.md).
+All eight bundles have governed structure and review artifacts. Their
+lecture-specific parity verdicts remain open. Evidence infrastructure is
+complete enough to localize the missing comparisons; it is not a passing
+parity result.
 
-## Inputs And Evidence Map
+## Inputs And Provenance
 
-- lecture source copies:
-  `primate_raw.xlsx`, `primate.RData`, and `primatetree.nex`
-- governed derivatives:
-  `reference_primate.csv` and `reference_trimmed_primatetree.nwk`
-- catalogs:
-  [dataset catalog](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-continuous-and-categorical-regression/datasets/README.md)
-  and
-  [provenance guide](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-continuous-and-categorical-regression/provenance/README.md)
-- evidence bundles:
-  `evidence-001` through `evidence-008`
+PCM3 reuses the primate source workspace and governed tree/trait derivatives
+while carrying its own dataset registry and provenance. See the
+[dataset catalog](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-continuous-and-categorical-regression/datasets/README.md),
+[provenance record](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-continuous-and-categorical-regression/provenance/README.md),
+and [runtime mapping](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-continuous-and-categorical-regression/reference/README.md).
 
-## Read PCM3 In Order
+## Review Priorities
 
-1. [Model design and phylogenetic regression](model-design-and-phylogenetic-regression.md)
+- Match factor levels, reference category, design matrix, and missing-value
+  exclusions before comparing coefficients.
+- Compare transformed response and standardized predictor conventions exactly.
+- Reconstruct conditional group slopes from main and interaction terms.
+- Distinguish marginal from sequential hypothesis tests.
+- Confirm that the phylogenetic fit uses the same taxa and response as the
+  non-phylogenetic comparator.
 
-## What To Take From PCM3
+## Current Scope
 
-- the repository now exposes a structured regression study rather than a single
-  undifferentiated "PGLS" claim
-- interaction and coding choices are part of the scientific interpretation,
-  not merely model syntax
-- deployed bundles improve reviewability even when lecture-specific verdicts
-  remain narrower than PCM1 or PCM2
+PCM3 supplies a complete claim decomposition and executable review locations
+for the multivariable lecture. It does not yet claim lecture-level numerical
+parity for any of the eight slices. The closure work is comparison and verdict
+adjudication, not inventing broader runtime capability by implication.
 
-## What Not To Overread
-
-- bundle deployment is not a blanket claim of full numerical parity
-- PCM3 does not replace the need to inspect the checked-in source record when
-  provenance matters
-- the study remains narrower than a full closed lecture-equivalent suite
+See [model design and phylogenetic regression](model-design-and-phylogenetic-regression.md)
+for the detailed interpretation contract.
