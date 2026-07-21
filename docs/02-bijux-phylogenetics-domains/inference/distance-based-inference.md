@@ -88,6 +88,42 @@ clock-like interpretation; neighbor joining does not. Weighted and ordinary
 least squares optimize different objectives. A constrained fit that lands on
 zero-length branches needs its boundary state retained.
 
+## Trace The Distance Result Lineage
+
+```mermaid
+flowchart LR
+    observations["Alignment or imported<br/>matrix identity"]
+    matrix["Distances · comparable sites<br/>missing-pair policy"]
+    assumptions["Finite · symmetric<br/>additive · ultrametric"]
+    construction["Construction, fit<br/>or topology search"]
+    fit["Residuals · boundaries<br/>influence · alternatives"]
+    support["Resampling and<br/>reference observations"]
+    packet["Tree · matrix · trace<br/>manifest · report"]
+
+    observations --> matrix --> assumptions --> construction --> fit --> packet
+    construction --> support --> packet
+```
+
+Each arrow changes the scientific object. An alignment-derived matrix must
+retain pairwise observation counts; an imported matrix must retain its source
+and validation; a fitted tree must retain the objective and constraints; a
+supported tree must retain the replicate population. Reusing only the final
+tree severs the information needed to decide whether a disagreement came from
+distance estimation, assumptions, construction, search, or resampling.
+
+## Refusal Boundaries
+
+Do not produce an unqualified distance tree when required pairs are non-finite,
+taxa are duplicated, symmetry or diagonal rules fail, the selected method's
+clock/additivity precondition is violated without an explicit policy, or a fit
+cannot account for its residual denominator. When policy permits a partial or
+qualified result, preserve every missing pair, rejected taxon, zero-boundary
+branch, failed replicate, and warning in structured output.
+
+A fallback from one distance model or construction method to another is a new
+analysis route. Record the reason and both identities; never present the
+fallback as though it were the requested computation.
+
 ## Review The Fit And Search
 
 `compute_patristic_residual_diagnostics` compares observed distances with tree

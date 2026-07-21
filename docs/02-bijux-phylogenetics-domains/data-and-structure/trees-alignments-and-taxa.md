@@ -79,6 +79,41 @@ sets, accepted one-to-one mapping, exclusions with reasons, and final order.
 Hashing only the final matrix is insufficient because two different exclusion
 or collision decisions can produce arrays with the same shape.
 
+## Downstream Handoff Contracts
+
+The same tree may enter several analyses, but each consumer requires a
+different accepted state:
+
+| Consumer | Required handoff | Refuse or qualify when |
+| --- | --- | --- |
+| sequence inference | equal-length alignment, alphabet and partition identity, unique ordered taxa | records differ in length, coding frame is unresolved, or partitions overlap unexpectedly |
+| comparative regression | tree, ordered trait population, branch-length interpretation, formula variables | taxa are silently dropped, covariance order is implicit, or response units are unknown |
+| ancestral reconstruction | rooted tree where required, tip states, model/state ordering, stable node keys | root treatment is absent, states are coerced, or node rows rely on incidental numbering |
+| tree-set sensitivity | inventory of trees, common or reconciled taxa, per-tree identity and weights | failed trees vanish, taxa differ without policy, or one consensus replaces the population |
+| visualization | structured topology and analytical rows with provenance links | a figure contains values or labels that cannot resolve to the accepted result |
+
+```mermaid
+flowchart TD
+    inputs["Tree · alignment · traits"]
+    labels{"One-to-one taxon<br/>identity?"}
+    semantics{"Root · lengths · states<br/>and partitions declared?"}
+    order["Create consumer-specific<br/>ordered state"]
+    ledger["Retain mapping, exclusions<br/>and content identities"]
+    accept["Accepted analytical handoff"]
+    refuse["Refuse or require<br/>explicit repair policy"]
+
+    inputs --> labels
+    labels -- no --> refuse
+    labels -- yes --> semantics
+    semantics -- no --> refuse
+    semantics -- yes --> order --> ledger --> accept
+```
+
+Repair creates a new governed object. The repaired labels, pruned tree,
+filtered table, or translated alignment must receive its own identity and link
+back to the source plus the decision ledger; it must not overwrite the evidence
+of what was rejected.
+
 ## Tree Sets And Uncertainty
 
 A single consensus or best tree can hide topology uncertainty. Tree-set

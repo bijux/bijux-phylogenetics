@@ -370,6 +370,8 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "Tree Sets And Uncertainty" in tree_domain
     assert "Runtime Locator Map" in tree_domain
     assert "reconciliation handoff" in tree_domain
+    assert "Downstream Handoff Contracts" in tree_domain
+    assert "Repair creates a new governed object" in tree_domain
     assert "Finite-State Likelihood" in inference_domain
     assert "Bayesian Inference" in inference_domain
     assert "Layered Runtime Surfaces" in inference_domain
@@ -387,9 +389,13 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "Presentation Is Downstream" in ecology_domain
     assert "Searching Tree Space" in parsimony_domain
     assert "Support And Consensus" in parsimony_domain
+    assert "Public Surface Map" in parsimony_domain
+    assert "Minimum Parsimony Result Packet" in parsimony_domain
     assert "Establish Matrix Identity" in distance_domain
     assert "diagnose_distance_additivity" in distance_domain
     assert "write_distance_reproducibility_bundle" in distance_domain
+    assert "Trace The Distance Result Lineage" in distance_domain
+    assert "Refusal Boundaries" in distance_domain
     assert "Posterior Identity Begins Before Sampling" in bayesian_domain
     assert "Resume is continuation, not an independent replicate" in bayesian_domain
     assert "Native And External Boundaries" in bayesian_domain

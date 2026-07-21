@@ -93,6 +93,37 @@ Support does not establish model adequacy, absence of bias, or historical
 certainty. Report the resampling scheme, replicate count, search policy within
 each replicate, clade identity rule, and unresolved consensus structure.
 
+## Public Surface Map
+
+| Decision | Public surface | Structured evidence |
+| --- | --- | --- |
+| load characters and weights | `load_parsimony_character_matrix`, `load_parsimony_character_weights` | taxa, character/state coding, ambiguity, weights, exclusions |
+| score unordered or custom-cost changes | `score_fitch`, `score_sankoff` | per-character scores, node state sets or costs, total score |
+| score ordered or irreversible changes | `score_wagner`, `score_dollo`, `score_camin_sokal` | declared transition policy, branch changes, character totals |
+| reconstruct one minimum history | `reconstruct_acctran`, `reconstruct_deltran` | node states, branch changes, ambiguity-resolution policy |
+| find lower-scoring topologies | `build_parsimony_stepwise_addition_tree`, `search_parsimony_nni`, `search_parsimony_spr`, `run_parsimony_ratchet` | starts, moves, score trajectory, termination, equal optima |
+| assess homoplasy | `consistency_index`, `retention_index`, `rescaled_consistency_index` | character-level numerator, denominator, undefined cases, aggregate |
+| assess clade stability | `bootstrap_parsimony`, `jackknife_parsimony`, `compute_parsimony_bremer_support` | replicate or score-decay population, failures, clade support |
+| summarize equal optima | `summarize_equal_best_parsimony_trees` | topology identities, score equality, consensus and unresolved clades |
+
+These functions expose separate scientific contracts. A search report is not a
+score report, a reconstruction is not proof of a unique history, and a support
+table cannot recover characters or replicates that were omitted upstream.
+
+## Minimum Parsimony Result Packet
+
+Publish the source matrix and taxon order, state vocabulary and ambiguity
+policy, weights or cost matrix, scoring model, per-character decomposition,
+search configuration and trace, all equal-best topology identities,
+reconstruction policy where used, support denominator, warnings and failed
+replicates, plus structured run and artifact inventories. Link every consensus,
+tree, branch-change table, and figure back to that packet.
+
+Refuse a global-optimum claim from heuristic search unless exhaustive coverage
+is established. Refuse an unqualified ancestral history when multiple
+minimum-cost states remain. Qualify aggregate support whenever incomplete
+replicates or unresolved equal-best trees affect its denominator.
+
 ## Review Checklist
 
 Before interpreting a parsimony result, confirm that:
