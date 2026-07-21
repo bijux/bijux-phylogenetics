@@ -1,84 +1,100 @@
 ---
 title: Runtime Architecture
 audience: public
-type: explanation
+type: architecture
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-21
 ---
 
 # Runtime Architecture
 
-This section explains how the runtime is organized so capability claims stay
-readable and package ownership stays explicit.
-
-It should help a reader understand that the repository is not one flat module
-tree. It contains distinct scientific and runtime families with separate
-responsibilities, packaging roles, and trust relationships.
-
-## Design Priorities
-
-- one canonical runtime package
-- one thin compatibility distribution
-- a clear split between runtime, evidence, and maintainer tooling
-- capability families grouped by durable responsibility rather than by delivery
-  history
-- governed artifacts instead of ad hoc local output layouts
+The architecture separates scientific meaning, analytical methods, execution,
+and presentation. A workflow may cross all four, but no layer should silently
+redefine the contracts owned below it.
 
 ```mermaid
-flowchart TD
-    A[Canonical runtime package] --> B[CLI and workflow API]
-    A --> C[Native runtime contracts]
-    A --> D[Comparative and ancestral families]
-    A --> E[Datasets, reports, and bundles]
-    E --> F[Evidence consumers]
-    G[Maintainer package] --> H[Docs, quality, release tooling]
-    I[Compatibility alias] --> A
+flowchart TB
+    interface["Python API · CLI · HTTP schema"]
+    workflow["Workflow orchestration"]
+    method["Inference · comparative · ancestral · parsimony"]
+    foundation["Trees · alignments · taxa · likelihood · datasets"]
+    output["Typed results · diagnostics · reports · bundles"]
+
+    interface --> workflow --> method --> foundation
+    method --> output
+    workflow --> output
 ```
 
-## Architectural Promise
+## Architectural Commitments
 
-The architecture is organized so public capability claims remain traceable:
+- **One scientific meaning.** Tree, taxon, alignment, and model semantics do
+  not change according to entry point.
+- **Explicit computation ownership.** Native methods and external-engine
+  adapters remain distinguishable in code, diagnostics, and documentation.
+- **Results before presentation.** Computation returns structured state;
+  renderers and report writers consume it.
+- **Review is designed in.** Important workflows preserve configuration,
+  provenance, diagnostics, and manifests, not only headline estimates.
+- **Failure stays attributable.** Input validation, runtime computation,
+  external process execution, parsing, and artifact writing have different
+  failure meanings.
 
-- package roles stay explicit instead of hiding runtime, evidence, and
-  maintainer concerns in one surface
-- capability families group by durable scientific responsibility rather than
-  by temporary delivery history
-- evidence consumers read governed outputs from the runtime without turning the
-  evidence-book into a shadow runtime layer
+## Read This Section By Need
 
-## Runtime Shape At A Glance
-
-| Runtime area | Representative families that already exist |
+| Need | Page |
 | --- | --- |
-| Core tree runtime | `phylo`, `trees`, `compare`, `distance`, `render` |
-| Native inference runtime | `phylo.likelihood`, `bayesian`, `benchmark.likelihood_tree_inference` |
-| Comparative runtime | `comparative`, `ancestral`, `parsimony`, `simulation` |
-| Workflow and command surfaces | `api`, `command_line`, `engines`, `reports` |
-| Data and evidence surfaces | `datasets`, `resources`, `evidence`, `benchmark`, `validation` |
+| understand the end-to-end execution and review path | [Runtime system map](runtime-system-map.md) |
+| decide which installed distribution owns a concern | [Package map](package-map.md) |
+| understand why evidence is a consumer, not runtime state | [Evidence consumer boundary](evidence-consumer-boundary.md) |
 
-## Why This Matters Publicly
+## Native And Adapter Paths
 
-If the docs flatten these areas into one generic "workflow toolkit" story,
-readers miss the actual product shape:
+```mermaid
+flowchart LR
+    request["Validated request"]
+    native["Owned algorithm"]
+    adapter["Owned adapter"]
+    engine["External executable"]
+    normalized["Normalized result contract"]
+    review["Diagnostics and artifacts"]
 
-- the runtime package owns lower-level scientific contracts
-- the alias package is only a naming bridge, not a second implementation
-- the maintainer package owns truth-preserving infrastructure, not runtime
-  semantics
-- the evidence book consumes outputs from the runtime but does not replace the
-  runtime as the user-facing product
+    request --> native --> normalized
+    request --> adapter --> engine --> adapter --> normalized
+    normalized --> review
+```
 
-## Questions This Section Answers
+Normalization gives consumers a coherent review surface. It does not erase
+provenance: adapter results must still identify the external engine,
+configuration, and captured outputs needed to explain the run.
 
-- which package should I install or depend on
-- which runtime family owns a capability
-- where native ownership ends and wrapper orchestration begins
-- how the evidence book consumes runtime outputs without becoming the runtime
-  itself
+## Dependency Direction
 
-## Read Next
+Scientific foundations should not import command-line policy or report
+templates. Methods consume foundation contracts. Workflows compose methods.
+Interfaces translate user intent into workflow calls. Presentation consumes
+results. Evidence tooling consumes persisted artifacts and source records
+outside the runtime execution path.
 
-- [Runtime system map](runtime-system-map.md)
-- [Package map](package-map.md)
-- [Evidence consumer boundary](evidence-consumer-boundary.md)
+This direction keeps a numerical method usable without the CLI and prevents a
+report format from becoming the hidden owner of scientific state.
+
+## Architectural Risks
+
+| Risk | Warning sign | Required response |
+| --- | --- | --- |
+| interface leakage | a method needs CLI option objects | move translation to the interface boundary |
+| provenance loss | a report cannot identify inputs or engine | preserve configuration and source records |
+| wrapper ambiguity | docs call an external computation native | name the adapter and engine explicitly |
+| result flattening | only a scalar estimate survives | retain diagnostics and structured results |
+| evidence coupling | runtime success depends on a study dossier | keep evidence as a downstream reviewer |
+
+## Code Navigation
+
+The canonical source root is
+`packages/bijux-phylogenetics/src/bijux_phylogenetics/`. Domain directories
+such as `phylo`, `comparative`, `ancestral`, `parsimony`, `simulation`, and
+`reports` carry enduring scientific ownership. `command_line` owns CLI
+translation. `engines` owns common execution and artifact concerns.
+`evidence` connects runtime outputs to governed study records without making
+those records prerequisites for ordinary analysis.
