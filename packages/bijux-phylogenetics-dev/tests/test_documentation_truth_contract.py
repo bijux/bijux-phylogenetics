@@ -549,8 +549,16 @@ def test_quality_guides_separate_tests_benchmarks_and_release_evidence() -> None
     assert "engine_real" in test_strategy
     assert "scientific_validation" in test_strategy
     assert "make package-verify" in test_strategy
+    assert "Match The Lane To The Question" in test_strategy
+    assert "Build Numerical Claims From Independent Checks" in test_strategy
+    assert "Test Failure And Refusal Paths" in test_strategy
+    assert "Read A Test Report Without Losing Scope" in test_strategy
     assert "native-bug" in benchmark
     assert "Missing And Failed Cases" in benchmark
+    assert "Interpret The Six Dimensions" in benchmark
+    assert "Respect Measurement Boundaries" in benchmark
+    assert "Understand Current Wrapper Scope" in benchmark
+    assert "Minimum Publication Packet" in benchmark
     assert "make check-release-readiness" in release
     assert "Non-Comparable Claims And Open Follow-Through" in release
     assert "may not rewrite the bundle verdict as “open,”" in release
