@@ -55,6 +55,38 @@ Do not enable support or model selection merely to make the result look more
 complete. Each additional lane changes the computational question and must be
 interpreted under its own assumptions.
 
+## Understand The Search Pipeline
+
+```mermaid
+flowchart LR
+    records["DNA records"]
+    models["Fixed model or<br/>candidate model rows"]
+    starts["Starting-tree pool<br/>and source labels"]
+    local["NNI · SPR · TBR<br/>local search"]
+    reopt["Branch and substitution<br/>parameter reoptimization"]
+    choose["Best completed run"]
+    support["Optional bootstrap<br/>and SH-like support"]
+    result["Unified typed result"]
+
+    records --> models --> starts --> local --> reopt --> choose --> result
+    choose --> support --> result
+```
+
+Model selection, starting-tree selection, local topology search, parameter
+optimization, and branch support are separately inspectable. The best run is
+selected from completed run summaries; its trace does not represent moves from
+the losing starts. Preserve all run summaries to retain the search
+denominator.
+
+| Search method | Neighborhood meaning | Evidence to retain |
+| --- | --- | --- |
+| `nni` | nearest-neighbor interchange around internal edges | candidate/move trace, accepted improvements, topology fingerprints |
+| `spr` | subtree pruning and regrafting over a broader neighborhood | evaluation budget where used, regraft trace, reoptimization policy |
+| `tbr` | tree bisection and reconnection neighborhood | candidate trace, termination, computational budget and accepted topology changes |
+
+A broader move family is not automatically a better analysis. Search budget,
+reoptimization, starting pool, and termination must make the comparison fair.
+
 ## Run A Search
 
 ```python
@@ -119,10 +151,32 @@ for run in result.run_summaries:
     print(run)
 ```
 
+## Read The Result Hierarchy
+
+| Result field | Scientific role | Review rule |
+| --- | --- | --- |
+| `inference_report` | complete model-selection, starting-run and best-search state | use when reconstructing how the winner was selected |
+| `final_tree_newick` | portable selected topology and branch lengths | never report without model/search identity |
+| `final_topology_fingerprint` | stable topology identity for comparison | compare only after taxon/rooting reconciliation |
+| `final_log_likelihood` | objective for the selected fitted model | compare only under the same data and likelihood convention |
+| `parameter_values` | fitted substitution/model parameters | inspect units, bounds and warning rows |
+| `run_summaries` | every retained start and terminal outcome | denominator for multi-start stability |
+| `search_trace_rows` | moves for the selected best search | inspect improvements, boundaries and termination; not all starts |
+| `support_reports` | optional bootstrap and SH-like observations | preserve method and replicate identity |
+| `warning_messages` | model, parameter, search and support qualifications | resolve or publish; never discard during serialization |
+| `benchmark_metadata` | optional condensed wrapper correspondence | not a substitute for the full benchmark report |
+
 Review all starting runs, not only the selected optimum. Repeated convergence
 to the same topology and likelihood provides stronger search evidence than one
 successful start. Inspect accepted moves and warnings for stagnation,
 degenerate branch lengths, or model-fit problems.
+
+### Compare Search Outcomes, Not Just Scores
+
+Two starts can have nearly equal likelihoods and different topologies, or the
+same topology and materially different boundary parameters. Review topology
+fingerprints, objectives, fitted parameters, warnings, and termination
+together. A single scalar tolerance cannot establish search equivalence.
 
 Use an acceptance record that names the intended claim. At minimum, record:
 

@@ -259,6 +259,9 @@ def test_programmatic_interfaces_name_curated_and_frozen_contracts() -> None:
     assert "Failure And Recovery Contract" in api_surface
     assert "benchmark_native_maximum_likelihood_suite" in native_surface
     assert "expected-assumption-difference" in native_surface
+    assert "Stable Native Boundary At A Glance" in native_surface
+    assert "A Native Result Preserves The Decision Path" in native_surface
+    assert "Choose The Narrowest Honest Claim" in native_surface
     assert "Consume a workflow bundle from its manifest outward" in artifacts
 
 
@@ -297,11 +300,17 @@ def test_native_inference_guides_preserve_search_and_chain_diagnostics() -> None
     assert "Choose The Inference Contract" in maximum_likelihood
     assert "load_nucleotide_maximum_likelihood_result_json" in maximum_likelihood
     assert "acceptance record" in maximum_likelihood
+    assert "Understand The Search Pipeline" in maximum_likelihood
+    assert "Read The Result Hierarchy" in maximum_likelihood
+    assert "Compare Search Outcomes, Not Just Scores" in maximum_likelihood
     assert "run_bayesian_inference" in bayesian
     assert "effective sample size" in bayesian
     assert "distinct_topology_count" in bayesian
     assert "Read The Returned Record" in bayesian
     assert "Decide Whether The Run Is Interpretable" in bayesian
+    assert "Observation Policy Changes The Likelihood" in bayesian
+    assert "Read One Posterior Row" in bayesian
+    assert "The Chain Report Owns Execution State" in bayesian
     assert "Failure Handling" in boundaries
     assert "Publication Threshold" in boundaries
 

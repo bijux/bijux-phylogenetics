@@ -46,6 +46,39 @@ The stable result family is narrower than every helper in
 documented native inference boundary even though lower-level likelihood
 foundations also cover protein, codon, and discrete Mk state spaces.
 
+## Stable Native Boundary At A Glance
+
+| Surface | Stable entry or result | Owned depth | Explicit boundary |
+| --- | --- | --- | --- |
+| nucleotide ML | `infer_nucleotide_maximum_likelihood_result(...)` | JC69, K80, F81, HKY85 and GTR selection/fitting; NNI, SPR or TBR search; multi-start state | documented unified inference result is nucleotide-focused |
+| ML from FASTA | `infer_nucleotide_maximum_likelihood_result_from_alignment(...)` | alignment intake plus the same model/search/support result | biological alignment quality remains a caller decision |
+| ML persistence | `NucleotideMaximumLikelihoodResult.write_json(...)` and `load_json(...)` | typed round trip for inference, traces, support, warnings and optional benchmark metadata | loading does not rerun or refresh a result |
+| native Bayesian DNA | `run_bayesian_inference(...)` | fixed- or joint-topology DNA posterior under matched model/proposal definitions | K80, HKY85 and GTR builder boundary; unsupported pairings refuse |
+| ML benchmark suite | `benchmark_native_maximum_likelihood_suite(...)` | scalability, accuracy/recovery, support and wrapper-correspondence dimensions | corpus conclusions remain corpus-specific |
+
+Lower-level protein, codon, discrete-state, clock, prior, proposal, posterior,
+and search modules are meaningful runtime foundations. Their existence does
+not silently expand the stable unified entry points listed here.
+
+## A Native Result Preserves The Decision Path
+
+```mermaid
+flowchart LR
+    inputs["Validated records<br/>and model choices"]
+    exploration["Starts · search moves<br/>or sampler proposals"]
+    estimates["Tree · parameters<br/>or posterior rows"]
+    diagnostics["Warnings · support<br/>acceptance · stability"]
+    persistence["Typed result<br/>and governed JSON"]
+    assurance["Benchmark or evidence<br/>when separately governed"]
+
+    inputs --> exploration --> estimates --> diagnostics --> persistence
+    persistence -. selected result .-> assurance
+```
+
+Native ownership covers the computation through persistence. Assurance still
+depends on an independent fixture, benchmark corpus, parity case, or study
+bundle with its own acceptance rule.
+
 ## Bayesian Contract
 
 `bijux_phylogenetics.bayesian.run_bayesian_inference(...)` dispatches supported
@@ -91,6 +124,16 @@ Use native result objects when composing methods or inspecting rich state. Use
 workflow results when orchestration and artifact writing are the main concern.
 Use benchmark reports when evaluating a named implementation question. Use an
 Evidence Book bundle only for claims registered by that study record.
+
+## Choose The Narrowest Honest Claim
+
+| Available record | Supported wording | Unsupported leap |
+| --- | --- | --- |
+| completed native result | the named implementation returned this estimate under the retained model and controls | the estimate is biologically correct |
+| repeated starts or chains | the selected summaries were stable under those repeated executions | all search/sampling uncertainty is resolved |
+| known-answer or recovery benchmark | the method met the rule on the named corpus | equivalent performance on untested data |
+| wrapper correspondence row | the aligned native and wrapper observations met that row’s rule | the implementations are interchangeable |
+| Evidence Book verdict | the identified scientific claim has the recorded current status | neighboring claims inherit the verdict |
 
 Operational examples are in
 [native maximum-likelihood workflows](../operations/native-maximum-likelihood-workflows.md),

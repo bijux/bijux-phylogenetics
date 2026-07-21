@@ -98,6 +98,22 @@ report = run_bayesian_inference(
 The documented parameterized substitution families are `K80`, `HKY85`, and
 `GTR`; `JC69` is not accepted by this builder contract.
 
+## Observation Policy Changes The Likelihood
+
+`observation_policy` is part of the model identity, not an input-cleaning
+convenience:
+
+| Policy | Treatment | Interpretation boundary |
+| --- | --- | --- |
+| `reject` | refuse gaps, ambiguity, or explicit missing states outside the strict DNA contract | strongest refusal semantics; preprocessing must be separately recorded |
+| `treat-as-missing` | allow supported non-base observations to contribute as missing | discards state-specific information at affected cells |
+| `ambiguity-vector` | map supported IUPAC ambiguity symbols to compatible base-state vectors | likelihood integrates the declared ambiguity set |
+| `fifth-state` | treat gap as an additional modeled state under supported contracts | changes the state space and compatible root/model assumptions |
+
+Runs with different observation policies target different likelihoods even
+when the tree, alignment file, and substitution-model label match. Preserve
+the policy in every posterior comparison and predictive check.
+
 ## Joint-Topology DNA
 
 Joint inference adds a topology prior and topology moves to the sequence-model
@@ -162,6 +178,42 @@ if hasattr(report, "distinct_topology_count"):
 Preserve the model and schedule with posterior rows. A table of sampled values
 without the priors, proposal kernels, iteration policy, seed, and observation
 policy is not a reconstructable posterior record.
+
+## Read One Posterior Row
+
+Each retained row records `sample_index`, `iteration_index`, `topology_id`,
+substitution model, total log prior, log likelihood, posterior log score,
+prior-component contributions, branch lengths, scalar parameters, and vector
+parameters. These fields form one coherent state; joining values from different
+rows creates a state the chain never visited.
+
+```text
+posterior log score = total log prior + log likelihood
+```
+
+Check the retained identity before summarizing:
+
+- `sample_index` identifies order in the retained sample, while
+  `iteration_index` identifies the chain iteration that produced it;
+- `topology_id` is constant for fixed-topology runs and varies only when a
+  joint-topology chain accepts topology moves;
+- prior-component rows explain the total prior contribution and should remain
+  aligned with the model definition;
+- scalar/vector parameter names and branch identities must be consistent
+  across rows before computing summaries.
+
+## The Chain Report Owns Execution State
+
+`chain_report` retains iteration count, sampling interval, seed, accepted and
+rejected counts, aggregate acceptance rate, initial and final state, sampled
+states, and iteration-level proposal rows. The proposal rows expose changed
+fields, validity, Hastings ratio, acceptance decision, and posterior scores.
+
+Aggregate acceptance can hide a frozen parameter family. Review movement and
+validity by proposal target, then assess autocorrelation and effective sample
+size on every quantity used in the conclusion. Independent chains are
+separate executions with separate seeds and initial states; concatenating one
+chain’s segments does not create an independent-chain denominator.
 
 ## Posterior Review
 
