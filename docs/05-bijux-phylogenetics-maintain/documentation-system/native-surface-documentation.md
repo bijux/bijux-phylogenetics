@@ -84,6 +84,35 @@ projection:
 This pattern is a documentation shape, not proof that the two families share
 the same assurance status. Read each linked quality record independently.
 
+## Reassess Or Demote A Published Surface
+
+Publication is not permanent. Reassess the surface when its owner, import,
+command, default, result semantics, artifact schema, validation corpus,
+benchmark environment, or evidence dependency changes.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Candidate
+    Candidate --> Published: all declared contracts resolve
+    Published --> Reassess: owner or proof changes
+    Reassess --> Published: contracts revalidated
+    Reassess --> Narrowed: supported scope is smaller
+    Reassess --> Withdrawn: executable or truthful contract is absent
+    Narrowed --> Reassess: affected contract changes
+```
+
+| Decision | Required action |
+| --- | --- |
+| revalidate | rerun the owning contract and quality checks; refresh generated and explanatory projections |
+| narrow | state the exact supported models, inputs, outputs, diagnostics, and proof lane at every discovery surface |
+| withdraw | remove unsupported entry routes and examples while retaining migration or historical records where consumers need them |
+| restore | treat restoration as a new publication decision against current contracts, not as a wording reversal |
+
+A failing benchmark does not necessarily withdraw an implementation, and an
+open Evidence Book verdict does not necessarily withdraw a runtime method.
+Demotion follows the contract that failed: interface, workflow, result,
+diagnostics, quality, or discoverability.
+
 ## Change Obligations
 
 When a native surface changes, review all affected projections:

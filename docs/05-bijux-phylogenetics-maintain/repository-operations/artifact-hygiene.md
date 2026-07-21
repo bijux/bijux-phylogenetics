@@ -54,6 +54,30 @@ For any report retained beyond the command that produced it, record:
 A report without revision and producer identity is useful as local diagnostic
 output but cannot serve as reconstructable release evidence.
 
+## Promote, Retain, And Expire Deliberately
+
+An artifact changes class only through an owning workflow. Copying a transient
+report into a governed directory does not give it provenance, and leaving a
+file under `artifacts/` does not make it eligible for indefinite reuse.
+
+| Lifecycle decision | Required record | Filesystem action |
+| --- | --- | --- |
+| retain for an active review | producer, revision, inputs, completion, inventory, integrity, consumer, and review purpose | keep an immutable review packet under its run identity |
+| promote into governed output | destination owner, schema, generator, provenance, validation, freshness, and replacement policy | write through the governing producer, then inspect and commit the declared destination |
+| supersede a retained report | old and new identities, reason, consumers, and whether conclusions changed | preserve the old packet until dependent decisions move or expire |
+| expire transient output | verified absence of active consumers and governed references | remove only the explicit artifact-owned path |
+| reject contaminated output | conflicting parent identities, stale files, or incomplete inventory | preserve diagnostic evidence if needed, then recreate in a clean run root |
+
+Retention is consumer-aware. A release-readiness report cannot be deleted
+while it is the cited basis of an active decision, and it cannot be reused for
+a later revision because the filename is stable. A governed evidence artifact
+is changed through its dossier workflow, never through transient cleanup.
+
+Before deletion, resolve symlinks and parent identities, enumerate active
+consumers, and verify that no manifest or decision record points to the target.
+After promotion or expiration, run the owner-specific integrity check and
+confirm the worktree exposes every intended governed change.
+
 ## Canonical Paths
 
 Prefer the canonical artifact-owned paths directly when a maintainer command needs a concrete executable or output root:

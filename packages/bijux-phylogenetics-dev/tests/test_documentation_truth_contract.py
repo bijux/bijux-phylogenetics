@@ -690,9 +690,13 @@ def test_maintainer_docs_define_ownership_and_native_publication() -> None:
 
     assert "Resolve A Statement To Its Owner" in ownership
     assert "Duplication And Projection" in ownership
+    assert "Review A Statement As A Connected Record" in ownership
+    assert "Leaving old prose in place is a claim\ndecision" in ownership
     assert "Native Surface Publication Contract" in native
     assert "Keep Capability And Assurance Separate" in native
     assert "Publication Blockers" in native
+    assert "Reassess Or Demote A Published Surface" in native
+    assert "restoration as a new publication decision" in native
     assert "release story" not in native
 
 
@@ -973,6 +977,8 @@ def test_maintainer_handbook_defines_change_and_artifact_ownership() -> None:
     assert "Artifact Lifecycle Record" in artifacts
     assert "make check-artifact-governance" in artifacts
     assert "Safe Cleanup" in artifacts
+    assert "Promote, Retain, And Expire Deliberately" in artifacts
+    assert "Retention is consumer-aware" in artifacts
     assert "Alignment Matrix" in release
     assert "Release Decision Record" in release
     assert "make check-release-readiness" in release

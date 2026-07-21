@@ -55,6 +55,26 @@ Before editing a claim, identify the object that can prove or falsify it.
 If no canonical owner exists, the statement is not ready to be copied across
 public surfaces. Establish the contract or narrow the statement first.
 
+## Review A Statement As A Connected Record
+
+A material public statement should be reviewable as one connected packet. The
+packet makes ownership and projection visible without turning prose into a
+second contract.
+
+| Packet component | Required content | Review failure |
+| --- | --- | --- |
+| statement identity | exact capability, behavior, value, status, or limitation being asserted | the sentence can expand or contract during review |
+| canonical owner | source, schema, generated inventory, benchmark, or evidence record that decides the statement | proof is inferred from nearby implementation or prose |
+| scope | versions, methods, corpora, models, datasets, and excluded cases | a bounded result is written as repository-wide truth |
+| public projections | every README, guide, generated reference, or index carrying the statement | one reader surface can remain contradictory |
+| freshness trigger | owner changes that require revalidation or removal | the projection has no defined invalidation event |
+| verification | commands and review evidence appropriate to the owner | rendering success is used as semantic validation |
+
+When the owner changes, review the packet before editing wording. Either
+re-establish the statement, narrow it, mark the owning status honestly, or
+remove the unsupported projection. Leaving old prose in place is a claim
+decision, not a neutral documentation omission.
+
 ## Duplication And Projection
 
 Repeated prose is acceptable only when each copy serves a distinct reader
