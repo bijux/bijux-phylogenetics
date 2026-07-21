@@ -124,6 +124,27 @@ computational engines. Their adapters own input preparation, invocation,
 failure capture, output parsing, and normalization; they do not relabel the
 external algorithms as native code.
 
+## Choose A Scientific Route
+
+Start from the scientific object and required result, not from a familiar tool
+name. The route determines which assumptions and artifacts must survive:
+
+| Starting object and question | Owning route | Result that carries the decision |
+| --- | --- | --- |
+| sequences needing a reviewable tree | alignment contract, then native or external inference | accepted alignment identity, model/search result, tree, diagnostics, manifest |
+| fixed topology needing a likelihood | native finite-state likelihood | model, state order, branch parameters, site/component likelihoods, warnings |
+| character matrix seeking a minimum-change explanation | native parsimony scoring and search | cost model, character scores, search trace, equal-best trees, support |
+| tree and continuous traits testing association | comparative covariance and PGLS | reconciled population, design matrix, covariance, coefficients, residual diagnostics |
+| tree and discrete states reconstructing history | Mk fitting, ancestral reconstruction, or stochastic mapping | rate model, node probabilities, branch events, uncertainty, exclusions |
+| candidate trees or methods needing sensitivity review | tree-set, benchmark, parity, and diagnostic surfaces | complete comparison population, observation rules, failures, denominator |
+| external native files needing review | named engine parser and artifact contract | engine/file identity, parser state, structured observations, checksums |
+| result supporting a public scientific claim | governed Evidence Book bundle | claim identity, inputs, observations, checks, freshness, verdict |
+
+Several routes may use the same tree or table without producing equivalent
+evidence. Preserve the result owned by each route and link them through content
+identity; do not substitute the final Newick, figure, or headline scalar for
+the analytical record.
+
 ## Follow One Analysis From Data To Claim
 
 The runtime, an external engine, and the Evidence Book can participate in one

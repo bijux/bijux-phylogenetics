@@ -87,6 +87,23 @@ Treat the command exit status as the gate and the JSON record as the
 reconstruction evidence. A copied success message without its revision,
 configuration, and retained report is not a release decision record.
 
+## Gate Failure Ownership
+
+| Failed record | First owner to inspect | Do not substitute |
+| --- | --- | --- |
+| evidence completeness | missing bundle field, input manifest, or declared artifact | a favorable study-guide sentence |
+| artifact governance | command destination, cache policy, alias target, or output inventory | an ignore rule that hides the path |
+| package boundaries | distribution dependency, import ownership, or archive content | a source-checkout import that bypasses the wheel |
+| execution surfaces | Make, tox, workflow, or command ownership policy | an unrelated command that happens to pass |
+| documentation truth | canonical runtime, schema, evidence record, or public projection | deletion of the assertion without resolving the contradiction |
+| release readiness | the named blocking report and its issue rows | a manually edited aggregate status |
+
+The aggregate release report should make failure attribution narrower, not
+flatter. Preserve the blocking report, correct its earliest owning source,
+regenerate any governed projection, and rerun the consumers of that report.
+An unavailable optional engine remains unavailable in its own denominator; it
+must not be erased to make the aggregate presentation green.
+
 ## Read Report Dependencies
 
 ```mermaid

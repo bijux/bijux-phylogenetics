@@ -72,6 +72,34 @@ report artifacts as the canonical command. Record the resolved canonical
 runtime version when reporting a defect; alias behavior is meaningful only in
 relation to that runtime.
 
+## Prove Delegation, Not Similarity
+
+Alias correspondence is an identity chain:
+
+```mermaid
+flowchart LR
+    requested["phylogenetic<br/>requested distribution"]
+    dependency["bijux-phylogenetics<br/>resolved dependency"]
+    facade["phylogenetic<br/>import and command facade"]
+    runtime["bijux_phylogenetics<br/>scientific owner"]
+    result["One result contract<br/>and artifact semantics"]
+
+    requested --> dependency
+    requested --> facade --> runtime --> result
+    dependency --> runtime
+```
+
+Verification therefore checks more than similar output values. It establishes
+that the compatibility distribution resolves the intended canonical artifact,
+the facade delegates to canonical public surfaces, packaged resources come
+from the canonical runtime, commands preserve exit and stream behavior, and
+serialized results retain the same schema and ownership.
+
+If two commands produce similar trees while loading different canonical
+artifacts, alias identity has failed. If they load the same runtime but differ
+only in the invoked command name, there is one scientific execution, not two
+independent confirmations.
+
 ## Name Mapping
 
 | Canonical | Compatibility name |

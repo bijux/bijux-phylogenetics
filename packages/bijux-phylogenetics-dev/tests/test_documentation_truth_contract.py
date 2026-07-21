@@ -80,6 +80,8 @@ def test_root_readme_publishes_native_external_and_evidence_boundaries() -> None
     assert "phylo-inputs-report.json" in readme
     assert "Follow One Analysis From Data To Claim" in readme
     assert "capability proximity is not inherited evidence" in readme
+    assert "Choose A Scientific Route" in readme
+    assert "Start from the scientific object and required result" in readme
 
 
 def test_site_landing_connects_first_run_to_scientific_review() -> None:
@@ -856,12 +858,14 @@ def test_package_readmes_define_installed_alias_and_governance_contracts() -> No
     assert "Confirm Package Identity" in runtime
     assert "What Installation Does And Does Not Supply" in runtime
     assert "Publish A Reconstructable Result" in runtime
+    assert "Trace The Installed Result Lineage" in runtime
     assert "Verify The Alias End To End" in alias
     assert "Diagnose A Difference" in alias
     assert "Resolve Both Distribution Identities" in alias
     assert "Compatibility Failure Classes" in alias
     assert "two scientific owners" in alias
     assert "It does not create a second implementation" in alias
+    assert "Prove Delegation, Not Similarity" in alias
     assert "What The Governed Commands Establish" in maintainer
     assert "Change-To-Check Map" in maintainer
     assert "make validate-evidence-book" in maintainer
@@ -869,6 +873,7 @@ def test_package_readmes_define_installed_alias_and_governance_contracts() -> No
     assert "Read Report Dependencies" in maintainer
     assert "Handle A Failed Gate Without Bypassing It" in maintainer
     assert "Verification Handoff Record" in maintainer
+    assert "Gate Failure Ownership" in maintainer
     assert "blocked follow-through belongs to the resolution workflow" in maintainer
 
 

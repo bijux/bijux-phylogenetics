@@ -90,6 +90,35 @@ flowchart LR
     result --> artifact
 ```
 
+## Trace The Installed Result Lineage
+
+A runtime result should remain traceable after the Python process exits:
+
+```mermaid
+flowchart LR
+    distribution["Installed distribution<br/>and import identity"]
+    inputs["Input files<br/>and content hashes"]
+    configuration["Model · method<br/>seed · policy"]
+    result["Typed result<br/>status · diagnostics"]
+    inventory["Manifest and<br/>output inventory"]
+    projections["JSON · TSV · tree<br/>figure · report"]
+
+    distribution --> result
+    inputs --> result
+    configuration --> result
+    result --> inventory --> projections
+```
+
+The manifest identifies the accepted projections; the typed result owns status,
+warnings, and scientific fields. A projection that cannot be linked back to
+the installed distribution, input identity, configuration, and typed result is
+not a reconstructable runtime result.
+
+For an external-engine route, insert executable path and version, invocation,
+captured streams, native files, and parser state between configuration and the
+normalized result. Normalization preserves ownership; it does not make the
+external computation native.
+
 ## Capability Families
 
 | Family | Examples |
