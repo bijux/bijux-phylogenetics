@@ -1,63 +1,82 @@
 ---
-title: Release and Publication Gates
+title: Release And Publication Gates
 audience: public
 type: explanation
-status: active
+status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-21
 ---
 
 # Release And Publication Gates
 
-Release readiness is earned, not assumed.
-
-Before this project claims a clean release state, it checks package metadata,
-shared-standards sync, build proof, evidence-governance rules, and
-publication-readiness reports together.
+A release joins independently versioned and reviewable surfaces: source,
+runtime and alias distributions, containers, OpenAPI schema, documentation,
+artifacts, benchmarks, and evidence. Publication requires agreement across the
+surfaces affected by the release.
 
 ```mermaid
 flowchart TD
-    A[Release candidate] --> B[Package metadata]
-    A --> C[Public docs and READMEs]
-    A --> D[Build and smoke proof]
-    A --> E[Evidence and quality reports]
-    B --> F[Release decision]
-    C --> F
-    D --> F
-    E --> F
+    revision["Release revision"]
+    source["Source, lock, tests,<br/>security, SBOM"]
+    packages["Wheel, sdist,<br/>alias, containers"]
+    contracts["Python, CLI,<br/>OpenAPI, artifacts"]
+    docs["README and site"]
+    evidence["Benchmarks, evidence,<br/>freshness and gaps"]
+    decision["Publication decision"]
+
+    revision --> source --> decision
+    revision --> packages --> decision
+    revision --> contracts --> decision
+    revision --> docs --> decision
+    revision --> evidence --> decision
 ```
 
-## Questions A Serious Release Must Answer
+## Gate Matrix
 
-- Do the documented packages, READMEs, and handbook pages describe the runtime
-  truthfully?
-- Do package metadata, release descriptions, and public docs describe the same
-  product surface?
-- Do native inference and benchmark claims stay bounded by explicit runtime
-  contracts?
-- Do wrapper-backed workflows remain clearly labeled as wrapper orchestration
-  when that is still the honest boundary?
-- Do publication-readiness and evidence-governance reports stay green on the
-  repository state being released?
+| Gate | Required evidence |
+| --- | --- |
+| repository | clean lock, source-of-truth configuration, boundaries, tests, lint, security, SBOM |
+| package | wheel/sdist build, Twine validation, clean installation, public command and resource smoke tests |
+| compatibility | canonical and alias imports, commands, versions, metadata, and package data align |
+| contract | curated Python behavior, CLI reference, OpenAPI schema/hash, artifact compatibility |
+| documentation | strict site build, managed asset integrity, executable examples, current links and claims |
+| scientific | benchmark scope, evidence integrity, freshness, gaps, and open verdicts are visible |
+| publication | trusted workflow identity, version/tag consistency, license assets, target registry metadata |
 
-## Governed Release Surfaces
+## Governed Commands
 
-- `make report-publish-readiness`
-- `make check-publish-readiness`
-- `make report-release-readiness`
-- `make check-release-readiness`
-- `bijux-phylogenetics report release-truth ...`
+- `make check` composes the routine repository gate.
+- `make package-verify` validates wheel and source-distribution installation.
+- `make check-publish-readiness` evaluates publication policy.
+- `make check-release-readiness` composes release evidence and governance.
+- `bijux-phylogenetics report release-truth ...` emits a runtime-facing release
+  truth report where applicable.
 
-Use the [release review workflow](release-review-workflow.md) when you need the
-practical reading order.
+Generated reports belong under `artifacts/` and should record the reviewed
+revision. A report from another revision is context, not current gate evidence.
 
-## Failure Patterns To Reject
+## Blocking Conditions
 
-Treat a release as weak, even when some checks are green, if any of these are
-still true:
+- built distributions omit declared code, data, examples, licenses, or metadata;
+- canonical and alias behavior or versions diverge;
+- schema content and pinned identity disagree;
+- public examples depend on private imports or repository-only files;
+- documentation attributes external computation to the native runtime;
+- evidence indexes disagree with bundles or material dependencies are stale;
+- a failing benchmark/evidence case is hidden, excluded without policy, or
+  rewritten as passing;
+- publication credentials or registry targets bypass governed workflows.
 
-- docs say more than metadata
-- metadata says more than evidence
-- benchmark or native claims are broader than the documented runtime contract
-- wrapper-backed surfaces are described as if they were native ownership
-- freshness or coverage gaps are hidden behind generic release wording
+## Open Scientific Verdicts
+
+An open or blocked study verdict does not automatically block a software
+release. It must be accurately represented, current, and excluded from claims
+that require closure. Structural corruption, missing provenance, stale status,
+or contradictory publication language is a release defect.
+
+## Release Record
+
+Retain the revision, version, build identities, executed commands, relevant
+reports, package hashes, schema hash, documentation result, evidence freshness,
+and accepted open boundaries. This makes the publication decision auditable
+after transient CI logs expire.

@@ -1,71 +1,87 @@
 ---
-title: Native Benchmark Evidence
+title: Native Maximum-Likelihood Benchmark Evidence
 audience: public
 type: explanation
-status: active
+status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-21
 ---
 
-# Native Benchmark Evidence
+# Native Maximum-Likelihood Benchmark Evidence
 
-The repository now keeps native benchmark evidence as one public trust surface,
-not as one hidden maintainer-only utility.
+The native benchmark family measures four distinct properties: scaling,
+memory, recovery accuracy, and correspondence with wrapper-backed reference
+lanes. The unified suite preserves those dimensions rather than reducing them
+to one performance score.
 
-For the practical command workflow, start with
-[native benchmark review](../operations/native-benchmark-review.md). This page
-explains how to interpret the benchmark family once those reports exist.
+```mermaid
+flowchart LR
+    corpus["Named datasets and<br/>truth cases"]
+    native["Native inference"]
+    reference["Cached or executed<br/>reference lane"]
+    metrics["Runtime · memory<br/>likelihood · topology · support"]
+    status["Case-level status<br/>and explanation"]
 
-## What The Benchmark Family Covers
+    corpus --> native --> metrics
+    corpus --> reference --> metrics
+    metrics --> status
+```
 
-The native maximum-likelihood benchmark family covers:
+## Benchmark Commands
 
-- runtime scaling
-- peak memory behavior
-- topology and likelihood recovery on governed truth cases
-- wrapper comparison against cached external reference lanes
-- one unified suite that combines those dimensions into one review surface
+- `benchmark native-maximum-likelihood-speed`;
+- `benchmark native-maximum-likelihood-memory`;
+- `benchmark native-maximum-likelihood-accuracy`;
+- `benchmark native-maximum-likelihood-suite`;
+- `benchmark maximum-likelihood-wrapper-comparison`.
 
-The public CLI family is:
+The suite is the integrated review surface. Individual commands remain useful
+when diagnosing one metric or execution lane.
 
-- `benchmark native-maximum-likelihood-speed`
-- `benchmark native-maximum-likelihood-memory`
-- `benchmark native-maximum-likelihood-accuracy`
-- `benchmark native-maximum-likelihood-suite`
-- `benchmark maximum-likelihood-wrapper-comparison`
+## Required Experimental Context
 
-## Why This Exists
+Every conclusion depends on corpus identity, taxon and site counts, model,
+search configuration, starting trees, seeds, support settings, runtime and
+reference versions, hardware, concurrency, repetitions, metric, and acceptance
+threshold. Without those fields, a number is an observation without a
+reconstructable experiment.
 
-Parity alone is not enough for a serious native runtime story.
+## Status Semantics
 
-The repository needs to show:
+| Status | Required interpretation |
+| --- | --- |
+| `native-advantage` | native behavior is favorable for the declared metric and comparable configuration |
+| `native-bug` | native behavior violates a correctness expectation or acceptance rule |
+| `expected-assumption-difference` | a documented model, convention, or execution difference explains non-agreement |
+| `unsupported-case` | the native or comparison contract does not cover the case |
 
-- where native code is stronger
-- where native code is slower but still behaving as expected
-- where model assumptions explain a difference honestly
-- where one difference is a real native bug
-- where one case remains unsupported instead of being silently rounded into a
-  pass
+Statuses are case-specific. One advantage does not make the implementation
+universally faster; one unsupported case does not invalidate supported cases.
 
-## How To Read The Unified Suite
+## Metric Boundaries
 
-`benchmark native-maximum-likelihood-suite` is the main public summary lane.
+- Runtime needs comparable hardware, concurrency, warm-up, and workload.
+- Peak memory needs the same measurement boundary and process accounting.
+- Likelihood needs identical data, model meaning, and parameter conventions.
+- Topology needs reconciled taxa and compatible rootedness semantics.
+- Support needs the same resampling method and comparable replicate policy.
+- Truth recovery on simulation establishes behavior under the simulation
+  assumptions, not natural-data correctness.
 
-Its governed status classes are:
+## Missing And Failed Cases
 
-- `native-advantage`
-- `native-bug`
-- `expected-assumption-difference`
-- `unsupported-case`
+Timeouts, crashes, parser failures, unavailable reference engines, excluded
+datasets, and non-converged searches belong in the result inventory. Aggregate
+summaries must expose their counts and reasons. Removing a difficult case after
+measurement changes the benchmark contract.
 
-Those categories are intentional. The suite is a review surface, not one
-generic performance score.
+## Evidence Boundary
 
-## What This Does Not Claim
+Benchmark evidence supports implementation claims on its named corpora. It
+does not validate a biological interpretation, confer parity on unmeasured
+models, or replace Evidence Book bundles. Attached wrapper-correspondence
+metadata on one inference result is narrower than the governed suite.
 
-- it does not claim that one green suite closes every scientific question
-- it does not claim that wrapper tools are irrelevant once native ownership
-  exists
-- it does not claim that a slower native result is automatically incorrect
-- it does not claim that every model family and every benchmark lane are at
-  the same maturity level
+See [native benchmark review](../operations/native-benchmark-review.md) for the
+review procedure and [native inference contracts](../interfaces/native-inference-and-benchmarks.md)
+for result fields.

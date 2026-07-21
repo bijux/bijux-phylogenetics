@@ -2,74 +2,98 @@
 title: Test Strategy
 audience: public
 type: explanation
-status: active
+status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-21
 ---
 
 # Test Strategy
 
-The repository does not rely on one test family.
+Tests are organized by the kind of failure they can detect. Fast contract
+tests defend deterministic behavior; real-engine and scientific-validation
+lanes exercise integrations; stress and evaluation lanes probe behavior that
+is too costly for every routine run.
 
-It uses:
+```mermaid
+flowchart TB
+    unit["Unit and property tests"]
+    contract["Public contract tests"]
+    integration["Workflow and artifact tests"]
+    fake["Engine contract tests<br/>controlled executables"]
+    real["Real local engines"]
+    science["Scientific validation"]
+    stress["Evaluation and stress"]
 
-- runtime tests for behavior and packaging
-- governance tests for repository contracts
-- standards checks for shared sync integrity
-- evidence-book checks for governed trust surfaces
-- external-engine contract tests for adapter and parser expectations
-- real local engine execution lanes for MAFFT, trimAl, IQ-TREE2, FastTree,
-  MrBayes, and BEAST when those executables are present
-- governed scientific-validation lanes that rerun checked real workflows
-  against stored reviewer-facing outputs
-- governed stress tiers that measure runtime, memory, and output size across
-  large owned workload families
+    unit --> integration
+    contract --> integration
+    fake --> real
+    integration --> science
+    real --> science
+    science --> stress
+```
 
-That layered strategy matters because a green runtime test suite alone does not
-prove the public repository is honest or publishable.
+## Test Families
 
-For the public reading model behind those separate lanes, start with
-[validation lanes](validation-lanes.md). This page focuses on the repository's
-testing strategy and the concrete lane boundaries it maintains.
+| Family | Detects | Does not establish |
+| --- | --- | --- |
+| unit/property | local invariants, edge cases, numerical properties | assembled workflow correctness |
+| public contract | imports, signatures, errors, CLI behavior, serialization | scientific reference agreement |
+| integration | component composition and artifact completeness | real executable compatibility unless invoked |
+| package | wheel/sdist contents, clean installation, packaged resources | scientific validity |
+| engine contract | invocation and parsing through controlled executable behavior | compatibility with an installed scientific binary |
+| real engine | discovery, invocation, output parsing against actual binaries | every platform/version or study claim |
+| scientific validation | governed workflow outputs against reference records | generalization beyond declared cases |
+| evaluation/stress | accuracy, scale, runtime, memory, and output pressure | routine support for every measured extreme |
 
-## External Engine Lanes
+## External-Engine Separation
 
-The repository keeps three distinct boundaries for external tools.
+`engine_contract` tests use controlled executables to cover command formation,
+failure propagation, and parser behavior deterministically. `engine_real` tests
+under `packages/bijux-phylogenetics/tests/real_local/` run available MAFFT,
+trimAl, IQ-TREE2, FastTree, MrBayes, and BEAST binaries on compact inputs.
+`scientific_validation` tests compare governed workflow outputs with stored
+review records.
 
-- `engine_contract` tests exercise fake-executable and parser contracts. They
-  prove the owned Python surfaces call the engines and parse their artifacts the
-  way the repository expects, without requiring local scientific binaries.
-- `engine_real` tests under `packages/bijux-phylogenetics/tests/real_local/`
-  execute the real binaries on compact inputs. They prove MAFFT alignment,
-  trimAl trimming, IQ-TREE2 inference and bootstrap support, FastTree
-  approximate inference, MrBayes acceptance, and BEAST parsing against the
-  actual executables.
-- `scientific_validation` tests rerun governed reference workflows and compare
-  the stored reviewer-facing outputs. They exist to catch silent drift in the
-  durable public contract, not just API regressions.
+A passing parser test cannot replace a real-engine run. A successful
+real-engine run cannot replace reference-output comparison. A reference match
+does not establish suitability for an unrelated study.
 
-Those boundaries are intentional. A fake-engine unit test should not be treated
-as proof that the scientific binary still works locally, and a real-engine
-rerun should not be treated as proof that every stored reference artifact still
-matches the governed contract.
+## Numerical Tests
 
-## Local Commands
+Numerical assertions must name scale, tolerance, convention, and expected
+failure behavior. Known-answer fixtures protect exact scenarios; property
+tests cover invariants across generated inputs; reference comparisons detect
+implementation drift. Loose tolerances require scientific or numerical
+justification rather than convenience.
 
-Use the repository make surfaces when you want the separated lanes explicitly.
+## Package Tests
 
-- `make test-external-engines` runs the real executable integration lane and the
-  non-slow scientific-validation lane.
-- `make test-all` is the exhaustive local gate. It is the maintainer-owned
-  entry point for slow, evaluation, stress, and real-local tests, and it
-  overrides the repository timeout budget to zero so governed long-running
-  workloads can finish.
-- `make test-all-plus-run-time` runs the same exhaustive local gate and adds
-  per-test duration reporting.
-- `make test-scientific-validation-slow`, `make test-stress-small`, and
-  `make test-stress-heavy` are intentionally blocked as standalone commands.
-  Those slow surfaces are reserved for the explicit `test-all*` gates so CI,
-  GitHub Actions, and tox never trigger them accidentally.
+Built-artifact checks install wheels and source distributions into clean
+environments, import public modules, invoke commands, and exercise packaged
+examples and datasets. This prevents editable source paths from hiding missing
+files or undeclared dependencies.
 
-That split keeps the routine local engine check reviewable while preserving a
-durable place for slower golden-workflow validation and heavier resource
-pressure checks.
+## Execution Gates
+
+| Command | Intended coverage |
+| --- | --- |
+| `make test` | routine repository test suite |
+| `make test-external-engines` | real executables plus non-slow scientific validation |
+| `make package-verify` | wheel/sdist validation and clean-install smoke proofs |
+| `make test-all` | slow, evaluation, stress, and real-local tests without the routine timeout budget |
+| `make test-all-plus-run-time` | exhaustive suite with per-test duration reporting |
+| `make check` | lock, boundaries, lint, tests, quality, security, docs, build, and SBOM |
+
+Slow scientific-validation and stress targets are intentionally guarded from
+standalone accidental execution; their owned entry point is the exhaustive
+`test-all*` lane.
+
+## Failure Reporting
+
+Preserve the failing seed, fixture, executable version, command, captured
+output, measured tolerance, and generated artifact paths. Quarantining,
+weakening, or excluding a failure requires an explicit governed rule; it must
+not happen merely to recover a green aggregate.
+
+See [validation lanes](validation-lanes.md) for claim vocabulary and
+[release gates](release-and-publication-gates.md) for publication composition.
