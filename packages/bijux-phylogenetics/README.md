@@ -35,6 +35,34 @@ Python 3.11 or newer is required. External-engine workflows also require their
 named executable—such as MAFFT, trimAl, IQ-TREE2, FastTree, MrBayes, or
 BEAST—to be installed separately.
 
+## Choose The First Scientific Route
+
+| Starting material | Public route | First durable record |
+| --- | --- | --- |
+| unaligned FASTA | sequence-to-tree workflow | admitted-sequence report and stage-linked workflow result |
+| tree plus continuous predictors | comparative model workflow | reconciled population, model specification and coefficient result |
+| tree plus discrete trait | ancestral reconstruction workflow | state model, node identities and uncertainty-aware estimates |
+| two candidate trees | topology comparison workflow | shared-taxon population, comparison mode and split observations |
+| existing tree, alignment, traits or metadata | report workflow | machine manifest linked to the source scientific records |
+
+The route is selected by the scientific object and intended result, not by the
+shortest command. Native methods are computed by this distribution. Adapter
+workflows retain Bijux orchestration while naming the external executable that
+owns alignment, trimming, or inference.
+
+```mermaid
+flowchart LR
+    object["Scientific object"] --> admission["Admission and identity"]
+    admission --> method["Named method owner"]
+    method --> result["Typed result and diagnostics"]
+    result --> artifact["Structured artifacts and manifest"]
+    artifact --> claim["Consumer acceptance for one claim"]
+```
+
+Do not skip admission because an example runs successfully. Packaged examples
+prove installation and resource wiring; they do not approve a project dataset
+or analysis design.
+
 ## Confirm Package Identity
 
 Check the installed distribution and import before diagnosing scientific
@@ -278,6 +306,10 @@ distributions, not only from the repository checkout.
 - [Product handbook](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
 - [Scientific domains](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-domains/)
 - [Python surface](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/python-surface/)
+- [Sequence-to-tree study](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/sequence-to-tree-study/)
+- [Comparative and ancestral study](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/comparative-and-ancestral-study/)
+- [Result and refusal semantics](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/result-and-refusal-semantics/)
+- [Reproducibility records](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/reproducibility-records/)
 - [CLI reference](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/cli-surface/)
 - [Native maximum-likelihood workflow](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/native-maximum-likelihood-workflows/)
 - [Native Bayesian workflow](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/native-bayesian-workflows/)

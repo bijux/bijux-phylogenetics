@@ -34,6 +34,19 @@ phylogenetic --help
 
 Python 3.11 or newer is required.
 
+## Choose The Compatibility Name Intentionally
+
+| Situation | Recommended name | Reason |
+| --- | --- | --- |
+| new environment, publication or long-lived manifest | `bijux-phylogenetics` | names the scientific owner directly |
+| existing code already imports `phylogenetic` | `phylogenetic` | preserves a supported consumer-facing route |
+| concise interactive use | either | both resolve the same canonical runtime contract |
+| independent implementation or evidence confirmation | neither interpretation | the alias is delegation, not independent corroboration |
+
+Do not install both names to obtain two votes on a result. The compatibility
+distribution depends on the canonical distribution and delegates scientific
+work to it.
+
 ## Resolve Both Distribution Identities
 
 The compatibility name and canonical runtime should be inspected together:
@@ -132,6 +145,18 @@ alias invocation from an operational record. The first would invent a second
 scientific owner; the second would hide the route whose compatibility is under
 review.
 
+## Hand Off Across Names Without Forking Identity
+
+A downstream consumer may load a result through either import name. Preserve
+the original invoked name, both distribution versions, canonical module owner,
+result or schema version, and artifact checksums. Do not regenerate a result
+solely to replace `phylogenetic` with `bijux_phylogenetics` in presentation.
+
+When moving source code to the canonical import, compare structured results
+and manifests under the same environment and inputs. A successful name change
+establishes interface compatibility; it is not a new scientific execution and
+must not enlarge the evidence denominator.
+
 ## Workflow Example
 
 ```python
@@ -227,6 +252,8 @@ code would create two scientific owners and make future evidence ambiguous.
 - [Distribution map](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/architecture/package-map/)
 - [Surface selection](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/surface-selection/)
 - [Workflow operations](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/)
+- [Result and refusal semantics](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/result-and-refusal-semantics/)
+- [Reproducibility records](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/reproducibility-records/)
 - [Artifact contracts](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/artifact-contracts/)
 - [Evidence Book](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-evidence-book/)
 - [Canonical package source](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics)

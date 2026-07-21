@@ -14,6 +14,24 @@ Repository verification and publication tooling for `bijux-phylogenetics`.
 This package is used by maintainers and CI; it is not part of the scientific
 runtime and is not required to run an analysis.
 
+## Install It For Repository Decisions
+
+Use `bijux-phylogenetics-dev` when the question concerns repository integrity,
+evidence governance, built distributions, documentation publication, or
+release eligibility. Use `bijux-phylogenetics` when the question concerns a
+scientific analysis.
+
+| Question | Correct owner | Incorrect substitute |
+| --- | --- | --- |
+| can this tree or model be analyzed? | runtime validation and method contract | a passing repository release gate |
+| does a governed bundle support this claim? | Evidence Book claim and observation records | package installation success |
+| does the wheel contain required runtime resources? | package bundle and installed-artifact checks | an editable source import |
+| can this repository revision be published? | aggregate release-readiness decision | one favorable child report |
+
+The maintainer package consumes scientific and repository records; it does not
+manufacture a favorable scientific verdict. Its strongest behavior is refusal
+when required evidence, package content, or policy alignment is absent.
+
 ```mermaid
 flowchart LR
     source["Runtime, evidence,<br/>docs, metadata"]
@@ -195,6 +213,22 @@ a generated success status. If an external prerequisite is unavailable, retain
 the blocked or skipped state at the lane that owns it and keep unrelated proof
 usable.
 
+## Trace One Failure To Closure
+
+```mermaid
+flowchart LR
+    aggregate["Aggregate blocker"] --> child["Owning child report<br/>and issue row"]
+    child --> source["Handwritten source,<br/>policy or governed input"]
+    source --> regeneration["Owned regeneration<br/>or verification command"]
+    regeneration --> child2["New child report"]
+    child2 --> aggregate2["New aggregate decision"]
+```
+
+Closure requires a new child report and a new aggregate decision from the same
+repository state. A corrected source beside an old failure report is still an
+unverified repair. A favorable aggregate assembled from child reports produced
+at different revisions is not a valid publication record.
+
 ## Verification Handoff Record
 
 A maintainable handoff names the repository revision, exact commands, exit
@@ -219,6 +253,8 @@ reports is not sufficient for release reconstruction.
 - [Cross-surface contract maintenance](https://bijux.io/bijux-phylogenetics/05-bijux-phylogenetics-maintain/trust-surfaces/public-trust-surface-maintenance/)
 - [Artifact hygiene](https://bijux.io/bijux-phylogenetics/05-bijux-phylogenetics-maintain/repository-operations/artifact-hygiene/)
 - [Release surface alignment](https://bijux.io/bijux-phylogenetics/05-bijux-phylogenetics-maintain/repository-operations/release-surface-alignment/)
+- [Reading an evidence bundle](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-evidence-book/reading-an-evidence-bundle/)
+- [Claim verdicts and resolution](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-evidence-book/claim-verdicts-and-resolution/)
 - [Source](https://github.com/bijux/bijux-phylogenetics/tree/main/packages/bijux-phylogenetics-dev)
 
 Apache License 2.0.

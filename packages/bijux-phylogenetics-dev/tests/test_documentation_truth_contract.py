@@ -1091,6 +1091,8 @@ def test_package_readmes_define_installed_alias_and_governance_contracts() -> No
     assert "Trace The Installed Result Lineage" in runtime
     assert "Separate Reuse From Reinterpretation" in runtime
     assert "refuse the reuse or rerun from the identified inputs" in runtime
+    assert "Choose The First Scientific Route" in runtime
+    assert "Packaged examples\nprove installation" in runtime
     assert "Verify The Alias End To End" in alias
     assert "Diagnose A Difference" in alias
     assert "Resolve Both Distribution Identities" in alias
@@ -1100,6 +1102,9 @@ def test_package_readmes_define_installed_alias_and_governance_contracts() -> No
     assert "Prove Delegation, Not Similarity" in alias
     assert "Preserve Alias Identity In Artifacts" in alias
     assert "one scientific owner and two\nrelevant distribution identities" in alias
+    assert "Choose The Compatibility Name Intentionally" in alias
+    assert "Hand Off Across Names Without Forking Identity" in alias
+    assert "not a new scientific execution" in alias
     assert "What The Governed Commands Establish" in maintainer
     assert "Change-To-Check Map" in maintainer
     assert "make validate-evidence-book" in maintainer
@@ -1111,6 +1116,9 @@ def test_package_readmes_define_installed_alias_and_governance_contracts() -> No
     assert "Preserve Aggregate Decision Inputs" in maintainer
     assert "no single repository state produced" in maintainer
     assert "blocked follow-through belongs to the resolution workflow" in maintainer
+    assert "Install It For Repository Decisions" in maintainer
+    assert "Trace One Failure To Closure" in maintainer
+    assert "same\nrepository state" in maintainer
 
 
 def test_maintainer_handbook_defines_change_and_artifact_ownership() -> None:
