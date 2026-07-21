@@ -182,6 +182,21 @@ def test_r_parity_guides_publish_registry_scope_and_non_claims() -> None:
     assert "exact histories are not expected" in phytools
 
 
+def test_engine_correspondence_guides_preserve_computational_ownership() -> None:
+    engine_root = PARITIES_ROOT / "external-engines"
+    alignment = _read(engine_root / "alignment-and-trimming.md")
+    inference = _read(engine_root / "tree-inference.md")
+    bayesian = _read(engine_root / "bayesian-inference.md")
+
+    assert "MAFFT owns" in alignment
+    assert "numerical parity claim" in alignment
+    assert "incomplete bundles" in inference
+    assert "remain different statistical" in inference
+    assert "quantities and are labeled" in inference
+    assert "prepared-only analysis" in bayesian
+    assert "does not dispatch through MrBayes or BEAST" in bayesian
+
+
 def test_quality_guides_separate_tests_benchmarks_and_release_evidence() -> None:
     test_strategy = _read(PRODUCT_ROOT / "quality" / "test-strategy.md")
     benchmark = _read(PRODUCT_ROOT / "quality" / "native-benchmark-evidence.md")
