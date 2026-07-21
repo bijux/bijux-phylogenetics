@@ -139,6 +139,27 @@ not yet scientific reproductions. The results manifests name
 ephemeral records are not governed primary outputs and are not retained in the
 checked-in results directories.
 
+## Verify The Present Record Without Inferring A Posterior
+
+A reader can audit PCM4 today without pretending that the missing posterior
+comparison ran. Read each bundle in this order:
+
+1. use the manifest and claim record to identify the bounded statement and
+   current `not_comparable` verdict;
+2. use the input manifest, dataset registry, and provenance to establish which
+   source program, cichlid records, tree, and workspace objects are named;
+3. inspect `reference.R` and `analysis.py` to confirm that they emit contract
+   records rather than `MCMCglmm` and Bijux scientific outputs;
+4. inspect `checks.json` and the results manifest to confirm that governed
+   primary-output count is zero;
+5. use the closure contract to identify the missing execution, posterior,
+   diagnostic, and observation records.
+
+This traversal supports a precise present-tense statement: PCM4 preserves the
+source, input identities, model decomposition, and review contract. It does
+not support a coefficient, credible interval, variance component, convergence
+finding, or Brownian-comparator correspondence result.
+
 ## Current Verdict
 
 All seven bundle manifests record `not_comparable`. This is the correct status

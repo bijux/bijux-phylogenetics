@@ -106,6 +106,25 @@ The complete governed verdict vocabulary is `matched`,
 `not_comparable`. Open follow-through and named blockers belong to the separate
 resolution workflow.
 
+## Distinguish The Kinds Of Absence
+
+An absent value or comparison has an owning layer. Preserve that layer instead
+of translating every gap into `not_comparable`, `failed`, or “open.”
+
+| Observed absence | Owning record | Defensible conclusion |
+| --- | --- | --- |
+| source or governed input is missing | provenance or input manifest | the proposed claim cannot be reconstructed from the dossier |
+| reference or Bijux execution did not occur | execution record | no observation exists for that computation lane |
+| process ran but required output is missing or malformed | execution and output inventory | this execution failed or is incomplete |
+| both outputs exist but estimands or identities do not align | comparison observation | the proposed quantities are not currently comparable |
+| comparable values violate the registered rule | comparison observation | a numerical or structural mismatch was observed |
+| comparison exists but no claim consumes it | claim dependency record | the observation is not yet evidence for the public statement |
+| claim record exists but a material dependency changed | freshness record | the prior verdict cannot be cited as current |
+
+Only the governed bundle assigns the claim verdict. A reader may encounter
+several absence types in one study; report each one at its owner rather than
+choosing a single favorable or pessimistic label for the whole dossier.
+
 ## What The Evidence Supports At This Revision
 
 | Study | Safe use | Required qualification |

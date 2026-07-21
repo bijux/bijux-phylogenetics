@@ -810,6 +810,8 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
     assert "Cite The Record, Not This Summary" in evidence_index
     assert "Find The Record From The Statement" in evidence_index
     assert "Resolve A Value Through The Record Graph" in evidence_index
+    assert "Distinguish The Kinds Of Absence" in evidence_index
+    assert "Only the governed bundle assigns the claim verdict" in evidence_index
     assert "Read Coefficients From The Design Matrix" in pcm3
     assert "All eight bundle manifests record `not_comparable`" in pcm3
     assert "Verdict And Resolution State" in pcm3
@@ -843,6 +845,8 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
     assert "Retained Record State" in pcm4
     assert "governed_primary_output_count: 0" in pcm4
     assert "bundle_contract_only" in pcm4
+    assert "Verify The Present Record Without Inferring A Posterior" in pcm4
+    assert "does\nnot support a coefficient, credible interval" in pcm4
     assert "posterior parity verdicts\nremain open" not in pcm4
     assert "Preserve The Scale Of Every Quantity" in pcm5
     assert "The Preserved Source Model Sequence" in pcm5
@@ -854,6 +858,8 @@ def test_evidence_guides_publish_verdict_distribution_and_model_semantics() -> N
     assert "Retained Record State" in pcm5
     assert "governed_primary_output_count: 0" in pcm5
     assert "bundle_contract_only" in pcm5
+    assert "Keep The Nested Denominators Separate" in pcm5
+    assert "Ten thousand retained draws\ncannot compensate" in pcm5
     assert "posterior parity verdicts remain open" not in pcm5
     pcm4_boundary = _read(
         EVIDENCE_GUIDE_ROOT

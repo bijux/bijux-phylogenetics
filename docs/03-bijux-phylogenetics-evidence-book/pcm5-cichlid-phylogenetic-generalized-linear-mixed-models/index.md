@@ -134,6 +134,25 @@ of the generalized posterior workflow. The results manifests describe possible
 local `reference-contract.json` and `analysis-run.json` rerun products, but
 those ephemeral files are not governed scientific outputs.
 
+## Keep The Nested Denominators Separate
+
+PCM5 conclusions can depend on several populations at once. Each denominator
+must reconcile before a derived posterior comparison can be complete.
+
+| Population | Required accounting | Consequence of loss |
+| --- | --- | --- |
+| source observations | declared, admitted, excluded, repeated, and missing records | response and repeated-measure population becomes ambiguous |
+| represented species and tree tips | source species, matched tips, pruned tips, duplicates, and ordering | phylogenetic covariance and ancestral identities cannot be reconstructed |
+| model executions and chains | initialized, completed, failed, excluded, and retained chains | convergence and independent-chain claims are not interpretable |
+| posterior draws | generated, burn-in, thinned, non-finite, transformed, and retained draws per chain | intervals and variance shares acquire an unknown population |
+| parameters, categories, nodes, and variance components | expected, present, absent, aliased, and comparable keys | successful rows hide missing scientific quantities |
+| claim observations | selected, comparable, matched, mismatched, and not comparable rows | the bundle verdict lacks a complete eligible denominator |
+
+These counts are linked but not interchangeable. Ten thousand retained draws
+cannot compensate for one chain, missing species, an absent variance
+component, or an unidentifiable node. Report the denominator that owns each
+conclusion instead of citing the largest available count.
+
 ## Current Verdict
 
 All nine bundle manifests record `not_comparable`. The dossiers identify the
