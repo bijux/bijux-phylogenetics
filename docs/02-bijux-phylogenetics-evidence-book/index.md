@@ -2,103 +2,82 @@
 title: Evidence Book
 audience: public
 type: evidence-navigation
-status: active
+status: canonical
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-05
+last_reviewed: 2026-07-21
 ---
 
 # Evidence Book
 
-This section explains the comparative study record behind the public
-phylogenetics runtime.
-
-The repository currently exposes five study families and forty-three governed
-evidence bundles. Together they cover primate signal and regression studies,
-plus the cichlid mixed-model sequence. Some study families already carry
-stronger numerical parity records, while others still keep verdicts open
-because the scientific workflow depends on an external engine or on a
-lecture-specific boundary that has not been closed yet.
+The Evidence Book is the review layer between scientific source material and
+public claims. It records what was run, with which inputs and versions, which
+checks were applied, and whether each bounded claim passes, fails, remains
+open, or is blocked.
 
 ```mermaid
 flowchart LR
-    A[Source lecture] --> B[Public study guide]
-    B --> C[Checked-in evidence dossier]
-    C --> D[Freshness and integrity reports]
-    C --> E[Study-specific evidence bundles]
+    source["Course or scientific<br/>source"] --> study["Study dossier"]
+    study --> bundle["Evidence bundle"]
+    bundle --> checks["Declared checks<br/>and tolerances"]
+    checks --> verdict["Claim verdict"]
+    verdict --> indexes["Freshness, integrity,<br/>coverage, parity indexes"]
+    indexes --> docs["Bounded public claim"]
 ```
 
-## Start Here
+## Two Reading Layers
 
-- checked-in study dossiers:
-  [`evidence-book/README.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/README.md)
-- repository-wide review reports:
-  [`evidence-book/index/`](https://github.com/bijux/bijux-phylogenetics/tree/main/evidence-book/index)
+Use these public pages to understand study questions and limitations. Use the
+checked-in [`evidence-book/`](https://github.com/bijux/bijux-phylogenetics/tree/main/evidence-book)
+for primary bundle records, registries, sources, and repository-wide review
+reports. The narrative explains; the checked-in record adjudicates.
 
-Treat those checked-in reports as the current source of truth when you need
-live repository status rather than the stable narrative on this page.
+## Review A Claim In This Order
 
-## Evidence Program Snapshot
-
-- Five study families are published today: PCM1 through PCM5.
-- Every study family now has governed parity bundle IDs.
-- PCM1 and PCM2 currently provide the strongest end-to-end primate examples.
-- PCM3 keeps its lecture-specific interpretation boundaries explicit.
-- PCM4 and PCM5 remain scientifically useful, but they still rely on external
-  posterior tooling for the largest open boundary.
-- Repository-wide freshness, integrity, and coverage-gap status lives in the
-  checked-in review reports rather than in a manually maintained summary on
-  this page.
-
-## Core Reading Order
-
-1. `overview`
-2. `PCM1`
-3. `PCM2`
-4. `PCM3`
-5. `PCM4`
-6. `PCM5`
-
-That sequence mirrors the course progression. It starts with data and tree
-preparation, moves through comparative regression, and ends with the
-cichlid mixed-model studies where external posterior tooling remains the
-largest open boundary.
+1. Find the study and claim identifier.
+2. Open the bundle manifest and input manifest.
+3. Inspect source provenance and runtime or engine versions.
+4. Read the declared checks and acceptance criteria.
+5. Inspect machine-readable results before the reviewer summary.
+6. Confirm the verdict in the current indexes and freshness report.
+7. Carry exclusions and open boundaries into any downstream statement.
 
 ## Study Atlas
 
-| Study | Main question | Evidence IDs | Current repository state |
-| --- | --- | --- | --- |
-| [Cichlid Bayesian Linear And Phylogenetic Mixed Models](./pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md) | Where does the cichlid workflow move from standard regression into Bayesian mixed models with a phylogenetic effect? | `evidence-001` to `evidence-007` (7 bundles) | Governed parity bundles deployed; posterior workflow still external |
-| [Cichlid Phylogenetic Generalized Linear Mixed Models](./pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md) | How do count models, binary-style models, repeated measures, and posterior signal estimates fit together in one study family? | `evidence-001` to `evidence-009` (9 bundles) | Governed parity bundles deployed; posterior workflow still external |
-| [Primate Continuous And Categorical Regression](./pcm3-primate-continuous-and-categorical-regression/index.md) | How should continuous predictors, categorical predictors, and interactions be interpreted together in comparative regression? | `evidence-001` to `evidence-008` (8 bundles) | Governed parity bundles deployed; lecture-specific verdicts remain open |
-| [Primate Longevity Signal](./pcm1-primate-longevity-signal/index.md) | How do primate traits and tree preparation become a usable signal and ancestral-state workflow? | `evidence-001` to `evidence-009` (9 bundles) | Governed parity bundles deployed; plotting boundary remains explicit |
-| [Primate PGLS And Signal](./pcm2-primate-pgls-and-signal/index.md) | How do baseline GLS, PGLS, transformed trees, and signal tests behave on the same primate dataset? | `evidence-001` to `evidence-010` (10 bundles) | Governed parity bundles deployed; one coverage boundary remains explicit |
+| Study family | Scientific focus | Governed bundles | Material boundary |
+| --- | --- | ---: | --- |
+| [PCM1: primate longevity signal](pcm1-primate-longevity-signal/index.md) | preparation, signal, ancestral reconstruction | 9 | plotting boundary remains explicit |
+| [PCM2: primate PGLS and signal](pcm2-primate-pgls-and-signal/index.md) | GLS/PGLS, transformed trees, signal tests | 10 | one coverage boundary remains explicit |
+| [PCM3: continuous and categorical regression](pcm3-primate-continuous-and-categorical-regression/index.md) | predictors, interactions, comparative regression | 8 | lecture-specific verdicts remain open |
+| [PCM4: cichlid mixed models](pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md) | Bayesian linear and phylogenetic mixed models | 7 | posterior computation remains external |
+| [PCM5: cichlid generalized mixed models](pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md) | count, binary, repeated-measure models | 9 | posterior computation remains external |
 
-## When To Use These Pages
+The bundle count describes inventory, not number of passing claims. Consult
+the live indexes for verdicts.
 
-- Start with PCM1 if you want the full preparation path from raw primate traits and tree files to signal estimation and ancestral reconstruction.
-- Continue to PCM2 when you want to compare baseline GLS, PGLS, transformed trees, and signal testing on the same primate study.
-- Read PCM3 when the main question is how continuous predictors, categorical predictors, and interactions should be interpreted together.
-- Read PCM4 and PCM5 together when the main question is the cichlid mixed-model sequence, because they share the same dataset family and the same external posterior boundary.
+## Repository-Wide Control Reports
 
-- Use the public study guides when you want the scientific story in plain language.
-- Use the checked-in evidence-book when you need provenance, registries, or bundle-level proof.
-- Use the index reports when you need freshness, integrity, or repository-wide gap tracking.
+| Report | Question it answers |
+| --- | --- |
+| [evidence index](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/evidence-index.json) | which bundles and claims exist? |
+| [integrity report](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/integrity-report.md) | are declared records structurally coherent? |
+| [freshness report](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/freshness-report.md) | do records still match their material dependencies? |
+| [parity dashboard](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/parity-dashboard.md) | which declared parity comparisons pass or remain open? |
+| [coverage gaps](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/coverage-gaps.md) | where are claim or workflow proofs incomplete? |
+| [false-confidence audit](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/false-confidence-audit.md) | where could presentation overstate evidence strength? |
+| [scientific debt register](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/scientific-debt-register.md) | which unresolved boundaries require durable follow-through? |
 
-## Reading Boundaries
+## What A Bundle Proves
 
-- These pages do not claim that every lecture has already been reproduced end to end inside the repository.
-- They do not hide external-tool dependencies just because nearby Python surfaces exist.
-- They do keep those limits visible, especially for PCM4 and PCM5.
+A bundle proves only that its declared checks and acceptance rules produce its
+recorded verdict for identified inputs, sources, versions, and configuration.
+It may support a larger claim only when the claim mapping says so. It does not
+certify untested datasets, models, external-engine versions, or biological
+interpretations.
 
-## Review Reports
+## Open Evidence Is First-Class
 
-- teaching and migration index: [`evidence-book/index/teaching-and-migration.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/teaching-and-migration.md)
-- parity dashboard: [`evidence-book/index/parity-dashboard.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/parity-dashboard.md)
-- freshness report: [`evidence-book/index/freshness-report.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/freshness-report.md)
-- integrity report: [`evidence-book/index/integrity-report.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/integrity-report.md)
-- coverage gaps: [`evidence-book/index/coverage-gaps.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/coverage-gaps.md)
-- claim re-audit: [`evidence-book/index/claim-reaudit.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/claim-reaudit.md)
-- closure criteria: [`evidence-book/index/closure-criteria.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/closure-criteria.md)
-
-The study record is useful because it keeps strong results visible without
-pretending that every workflow is fully reproduced inside the repository.
+PCM4 and PCM5 remain valuable precisely because their external posterior
+boundary is visible. An open or blocked verdict identifies the missing work
+more honestly than a polished narrative that implies completion. Use
+[evidence honesty and limits](../01-bijux-phylogenetics/quality/evidence-honesty-and-limits.md)
+when translating these records into public language.
