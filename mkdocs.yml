@@ -176,6 +176,8 @@ nav:
           - Simulation And Datasets: 02-bijux-phylogenetics-domains/scientific-assurance/simulation-and-datasets.md
           - Validation, Benchmarks, And Reporting: 02-bijux-phylogenetics-domains/scientific-assurance/validation-benchmarks-and-reporting.md
           - Diagnostics And Sensitivity: 02-bijux-phylogenetics-domains/scientific-assurance/diagnostics-and-sensitivity.md
+          - Reporting And Rendering: 02-bijux-phylogenetics-domains/scientific-assurance/reporting-and-rendering.md
+          - Publication Artifact Review: 02-bijux-phylogenetics-domains/scientific-assurance/publication-artifact-review.md
   - Evidence Book:
       - Overview: 03-bijux-phylogenetics-evidence-book/index.md
       - PCM1:

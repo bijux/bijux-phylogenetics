@@ -405,6 +405,12 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     diagnostics_domain = _read(
         DOMAINS_ROOT / "scientific-assurance" / "diagnostics-and-sensitivity.md"
     )
+    reporting_domain = _read(
+        DOMAINS_ROOT / "scientific-assurance" / "reporting-and-rendering.md"
+    )
+    publication_domain = _read(
+        DOMAINS_ROOT / "scientific-assurance" / "publication-artifact-review.md"
+    )
 
     for domain in (
         "Trees, alignments, and taxa",
@@ -487,6 +493,13 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
     assert "From Benchmark To Evidence" in assurance_domain
     assert "Tree Inspection, Validation, And Forensics" in diagnostics_domain
     assert "Diagnostic Consequence Matrix" in diagnostics_domain
+    assert "Choose The Assurance Output" in assurance_index
+    assert "Public Reporting Families" in reporting_domain
+    assert "Encode Visual Meaning Explicitly" in reporting_domain
+    assert "build_figure_reproducibility_manifest" in reporting_domain
+    assert "Review In Dependency Order" in publication_domain
+    assert "Compare Publication Packages" in publication_domain
+    assert "Revalidate Without Rewriting History" in publication_domain
     assert "Propagate Findings To Dependent Results" in diagnostics_domain
     assert "diagnose_tip_date_randomization" in diagnostics_domain
     assert "Conclusion Stability" in diagnostics_domain

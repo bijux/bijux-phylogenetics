@@ -33,6 +33,24 @@ flowchart LR
 - [Diagnostics And Sensitivity](diagnostics-and-sensitivity.md) explains tree
   validation, assumption findings, temporal-signal diagnostics, conclusion
   stability, and failure-aware sensitivity matrices.
+- [Reporting And Rendering](reporting-and-rendering.md) explains how structured
+  results become methods text, supplementary tables, tree figures, annotated
+  trait trees, and reproducibility manifests.
+- [Publication Artifact Review](publication-artifact-review.md) explains how to
+  admit a report package, trace displayed claims, compare packages, and retain
+  revalidation outcomes.
+
+## Choose The Assurance Output
+
+| Decision | Primary record | Human projection |
+| --- | --- | --- |
+| did an input or method contract hold? | validation observation and diagnostics | validation report |
+| how did a method behave over a declared population? | benchmark or sensitivity ledger | summary table or figure |
+| what values and uncertainty belong to one result? | typed result plus machine-readable tables | methods text, tree figure, annotated report |
+| is a publication package complete and internally aligned? | manifest, inventory, checks, comparison and revalidation rows | reviewer checklist and publication report |
+| does a bounded scientific claim have governed support? | Evidence Book claim, checks, observations, verdict and freshness | study guide and citation text |
+
+The projection never replaces the primary record named in the same row.
 
 ## Assurance Is A Decision Chain
 
