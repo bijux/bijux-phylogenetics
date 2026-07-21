@@ -56,3 +56,21 @@ normalization, posterior comparison rules, exclusions, and verdicts.
 
 Until that boundary is crossed, contract wrapper execution is useful integrity
 evidence but not scientific posterior evidence.
+
+## Compare Posterior Records At Their Own Level
+
+| Comparison | Minimum retained observations |
+| --- | --- |
+| fixed effects | parameter key, scale, draws or lossless summaries, interval rule and chain denominator |
+| variance components | random/residual component identity, prior, boundary behavior and posterior draws |
+| chain behavior | per-chain trace identity, retained iterations, ESS, autocorrelation and between-chain diagnostics |
+| covariance construction | tree/tip order, inverse entries, scaling and random-effect level mapping |
+| PGLS comparator | its own likelihood, coefficients, uncertainty, covariance and optimizer state |
+
+The Gaussian baseline, Bayesian Gaussian model, phylogenetic mixed model, and
+PGLS comparator must not share a generic coefficient row. Equal parameter
+labels can refer to different conditional or marginal estimands.
+
+A posterior comparison rule must also state whether it evaluates means,
+quantiles, intervals, draws, distributional distance, or diagnostic thresholds.
+Agreement on one projection does not establish agreement on the others.

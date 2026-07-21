@@ -27,6 +27,19 @@ wrappers. They produce local contract/run records; they do not execute
 `MCMCglmm`, produce a Bijux mixed-model posterior, or retain governed primary
 scientific outputs.
 
+## Do Not Collapse Execution Layers
+
+| Layer | Required record | Why the next layer depends on it |
+| --- | --- | --- |
+| population | observation rows, species aggregation, exclusions and taxon order | every estimator must consume the same declared species population |
+| covariance | pruned tree, tip/random-effect order, inverse construction and scaling | the phylogenetic random effect is identified by this matrix contract |
+| model | formula, family/link, fixed/random terms, priors and parameter names | posterior rows are meaningless without their estimands |
+| sampling | initialized chains, seeds, iterations, burn-in, thinning, acceptance and failures | summaries depend on the retained draw population |
+| comparison | paired draws/summaries, normalization, tolerances and diagnostics | a verdict requires independently produced comparable observations |
+
+Contract-wrapper completion establishes only that the record shape can be
+produced. It does not advance the model or sampling layers.
+
 ## Model Dependency Chain
 
 ```mermaid
@@ -87,6 +100,11 @@ governed PCM4-equivalent hierarchical mixed-model posterior is retained here.
 Native DNA or trait posteriors, generic sampler diagnostics, and PGLS results
 cannot inherit the `MCMCglmm` estimand. They become evidence only through a
 claim-specific execution and comparison contract.
+
+Posterior evidence is also parameter-specific. A fixed-effect comparison
+cannot promote variance components, and matching marginal summaries cannot
+promote chain mixing or joint dependence. Preserve all seven claim scopes even
+when one execution eventually supplies several of them.
 
 ## Reviewer Route
 
