@@ -350,6 +350,25 @@ def test_r_parity_guides_publish_registry_scope_and_non_claims() -> None:
     assert "Preserve Both Denominators" in phytools
 
 
+def test_trust_guides_preserve_status_and_claim_ownership() -> None:
+    trust_root = DOCS_ROOT / "05-bijux-phylogenetics-maintain" / "trust-surfaces"
+    trust_index = _read(trust_root / "index.md")
+    cross_surface = _read(trust_root / "public-trust-surface-maintenance.md")
+    claim_maintenance = _read(trust_root / "trust-lane-and-study-guide-maintenance.md")
+
+    assert "Questions Owned By Each Surface" in trust_index
+    assert "Trust Decision Packet" in trust_index
+    assert "Status Ownership" in cross_surface
+    assert "Release Language Decision" in cross_surface
+    assert "Keep Status Namespaces Separate" in claim_maintenance
+    assert "Claim Dependency Record" in claim_maintenance
+    assert "Promote A Result Into A Public Claim" in claim_maintenance
+    assert "Handle Non-Comparable Claims" in claim_maintenance
+    assert "contract-only wrapper" in claim_maintenance
+    assert "intentionally open scientific verdict" not in cross_surface
+    assert "public trust story" not in claim_maintenance
+
+
 def test_engine_correspondence_guides_preserve_computational_ownership() -> None:
     engine_root = PARITIES_ROOT / "external-engines"
     alignment = _read(engine_root / "alignment-and-trimming.md")

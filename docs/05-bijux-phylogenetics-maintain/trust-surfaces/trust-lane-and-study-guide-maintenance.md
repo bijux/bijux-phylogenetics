@@ -1,56 +1,142 @@
 ---
-title: Trust Lane And Study Guide Maintenance
+title: Evidence Claim And Study-Guide Maintenance
 audience: maintainer
 type: handbook
-status: active
+status: canonical
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-21
 ---
 
-# Trust Lane And Study Guide Maintenance
+# Evidence Claim And Study-Guide Maintenance
 
-The public trust story depends on more than general docs and release guides. It also depends on quality pages that explain validation lanes, foundation pages that explain claim types, and PCM study guides that explain bounded analytical scope.
+A study guide is a public projection of governed evidence, not an independent
+place to decide what the software proved. Maintain the claim from its inputs
+through its verdict first; then make the guide state that result, its boundary,
+and the record needed to reproduce it.
 
 ```mermaid
-flowchart TD
-    A[Trust question] --> B[Validation lanes]
-    A --> C[Claim vocabulary]
-    A --> D[PCM study guides]
-    B --> E[What was tested]
-    C --> F[What kind of claim this is]
-    D --> G[Where the study boundary sits]
+flowchart LR
+    question["Scientific question"] --> claim["Claim identity"]
+    claim --> inputs["Pinned inputs and method"]
+    inputs --> observations["Governed observations"]
+    observations --> checks["Claim-scoped checks"]
+    checks --> verdict["Evidence verdict"]
+    verdict --> guide["Study-guide language"]
+    verdict --> resolution["Separate resolution work"]
+
+    change["Code · data · configuration<br/>reference · tolerance"] --> stale["Freshness review"]
+    stale --> inputs
 ```
 
-## Review These Together
+## Keep Status Namespaces Separate
 
-- `docs/01-bijux-phylogenetics/quality/`
-- `docs/01-bijux-phylogenetics/foundation/`
-- `docs/03-bijux-phylogenetics-evidence-book/`
-- root and package README pointers into those sections
+| Record | Valid status language | What it establishes |
+| --- | --- | --- |
+| runtime execution | states defined by that command or result contract | whether work ran and what it produced |
+| live parity case | `passed`, `failed`, `skipped` | outcome among selected registry cases |
+| Evidence Book claim | `matched`, `matched_with_tolerance`, `mismatch_explained`, `mismatch_unexplained`, `not_comparable` | adjudication of governed observations |
+| resolution work | open or blocked follow-through | whether a mismatch or comparison boundary has an owned next action |
+| release readiness | ready or blocked | whether repository publication policy is satisfied |
 
-## Questions To Ask
+Never invent an “open” evidence verdict. Never translate `not_comparable` into
+failed execution. Never use release readiness as evidence of numerical or
+scientific equivalence.
 
-- Does the quality section still explain what each validation lane proves and
-  does not prove?
-- Does the foundation section still separate runtime, native, wrapper,
-  evidence, and release claims clearly?
-- Do the PCM study guides still describe their analytical sequence and bounded
-  scope honestly?
-- Do entry-point pages still route readers toward the strongest trust-reading
-  surfaces?
+## Claim Dependency Record
 
-## Failure Pattern
+Every public evidence statement must resolve to one governed claim with:
 
-The failure here is trust compression:
+- stable study, evidence, and claim identifiers;
+- source citation and acquisition provenance;
+- input hashes and the exact taxa or observations admitted to the analysis;
+- executable owner, package or external-tool version, configuration, and seed;
+- model family, parameterization, units, missing-data policy, and denominator;
+- raw observations for both sides of a comparison;
+- named check, tolerance rationale, and observed difference;
+- claim-level verdict, explanation where required, and freshness state;
+- artifact paths needed to reconstruct the statement.
 
-- many different proof surfaces exist
-- the docs stop distinguishing them clearly
-- readers start overreading one lane or one study as broader closure than it is
+Bundle-level metadata cannot substitute for absent claim-level observations.
+A contract-only wrapper with no governed primary output can document intended
+ownership and required artifacts; it cannot support a numerical-result claim.
 
-These guides exist to keep those boundaries readable.
+## Promote A Result Into A Public Claim
 
-## Maintenance Rule
+1. Name the scientific quantity and the exact comparison being adjudicated.
+2. Pin the inputs, method identity, model parameterization, and computation
+   owner before interpreting output.
+3. Preserve raw observations and missing outputs; do not begin from rendered
+   prose or a plot.
+4. Apply a claim-scoped check whose tolerance is justified independently of
+   the observed difference.
+5. Assign exactly one Evidence Book verdict from the governed vocabulary.
+6. Record explanation and resolution work separately when the verdict requires
+   follow-through.
+7. Regenerate indexes and verify that the claim map, parity dashboard,
+   mismatch archive, study index, and guide agree.
+8. Publish the narrowest statement supported by the current record.
 
-Every trust-oriented page should answer one distinct question clearly. If two
-pages start collapsing into the same vague "confidence" story, the site loses
-the precision that makes the evidence-book valuable.
+## Write A Study Guide From Evidence
+
+A study guide must let a reader answer five questions without reading
+repository internals:
+
+1. What biological or methodological question is being examined?
+2. Which data, taxa, model, and computation owner define the analysis?
+3. Which outputs actually exist, and which expected outputs are absent?
+4. What does each governed claim conclude under its recorded tolerance?
+5. What remains unsupported, non-comparable, or unresolved?
+
+Use a claim table when a study contains multiple evidence bundles. Each row
+should identify the claim, method family, governed output, current verdict,
+and the exact condition for stronger language. Keep narrative interpretation
+downstream of that table so prose cannot outrun the record.
+
+## Freshness Triggers
+
+Re-evaluate every dependent claim when any of these changes:
+
+- source data, filtering, taxon reconciliation, or missing-data handling;
+- tree topology, rooting, branch lengths, labels, or node identity;
+- numerical implementation, dependency, default, optimizer, or random seed;
+- model family, formula, contrast, transform, prior, or parameter bounds;
+- reference implementation, external-engine version, or invocation mode;
+- result schema, artifact inventory, tolerance, or adjudication rule;
+- prose that broadens the population, method, metric, or confidence level.
+
+A timestamp alone does not establish freshness. The bundle must bind the
+material dependency identities used to produce its observations.
+
+## Handle Non-Comparable Claims
+
+`not_comparable` is a complete evidence verdict when the governed comparison
+cannot be made. The guide must name why: missing primary output, unsupported
+model family, incompatible parameterization, unavailable reference record, or
+another explicit boundary. It must also distinguish what was verified—such as
+input identity or wrapper contract—from the scientific result that was not.
+
+Create resolution work only when there is a concrete owner and closure record.
+For example, require a retained posterior table with model, chain, seed, and
+diagnostic identity rather than the vague instruction to “add parity.” The
+resolution state remains separate from the verdict until governed observations
+justify a new adjudication.
+
+## Drift Signals
+
+Treat these as blocking review findings:
+
+- a guide says “validated” without naming the validation lane;
+- a bundle verdict differs from its claim row or public study summary;
+- a rendered table contains values absent from governed structured output;
+- matched language appears while the claim is `not_comparable` or stale;
+- selected, executed, and successfully compared denominators are collapsed;
+- an external engine or R package is described as native computation;
+- missing outputs, skipped cases, warnings, or tolerance changes disappear;
+- one successful claim is generalized to a model family or study.
+
+## Completion Criteria
+
+Claim maintenance is complete only when canonical bundle records validate,
+generated evidence indexes are current, affected public guides use the same
+scope and verdict, separate resolution work remains visible, artifact paths
+resolve, and release language stays within the strongest current evidence.

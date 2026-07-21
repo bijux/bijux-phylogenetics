@@ -103,16 +103,45 @@ only with the scope defined by the corresponding contract. Avoid umbrella
 labels such as “validated” when the actual proof is one unit test or one study
 bundle.
 
+## Status Ownership
+
+Status values are part of their record contracts, not interchangeable
+sentiment labels.
+
+| Record | Status namespace | Forbidden inference |
+| --- | --- | --- |
+| live parity case | `passed`, `failed`, `skipped` | a pass is not an Evidence Book match |
+| Evidence Book claim | `matched`, `matched_with_tolerance`, `mismatch_explained`, `mismatch_unexplained`, `not_comparable` | `not_comparable` is not a failed runtime execution |
+| resolution record | open or blocked follow-through | open work is not an “open” verdict |
+| release readiness | ready or blocked | ready does not imply scientific equivalence |
+
+When a status crosses a surface, carry the source record and translate its
+meaning explicitly. Do not copy the word into a different namespace.
+
+## Release Language Decision
+
+Derive publication language from the narrowest current record:
+
+1. identify the exact capability or scientific claim;
+2. confirm that its computational owner and installed invocation are current;
+3. trace reported values to structured output and retained inputs;
+4. read the claim-level verdict and any separate resolution work;
+5. state only the supported scope, denominator, tolerance, and limitation;
+6. block publication if any required projection contradicts that record.
+
+A declared `not_comparable` verdict may be published as a bounded limitation
+when readiness policy permits it. It must not be rewritten as a match, a
+failure, or unfinished execution.
+
 ## Publication Gate
 
 A change is ready for publication when canonical sources and projections
 agree, compatibility effects are explicit, generated outputs have been
 regenerated rather than hand-edited, evidence freshness has been evaluated,
 and the repository's package and documentation checks pass from a clean
-environment.
-
-An intentionally open scientific verdict can ship. An unacknowledged mismatch
-between runtime behavior and its published contracts cannot.
+environment. Open or blocked resolution work may coexist with a release only
+when its governing verdict and limitation remain explicit. An unacknowledged
+mismatch between runtime behavior and its published contracts cannot.
 
 Block publication when the canonical owner is unclear, compatibility is
 undeclared, a generated projection is stale, a public example cannot execute
