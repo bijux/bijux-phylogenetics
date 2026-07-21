@@ -31,6 +31,19 @@ flowchart LR
 The supplied topology remains fixed while branch lengths and supported
 substitution parameters are sampled.
 
+Before sampling, write down the estimand and the state allowed to move:
+
+| Contract choice | Fixed-topology run | Joint-topology run |
+| --- | --- | --- |
+| topology | conditioned on the supplied tree | sampled under the declared topology prior |
+| branch lengths | sampled under the branch-length prior | sampled together with topology |
+| substitution parameters | sampled when supported by the chosen model | sampled through the embedded sequence model |
+| topology proposals | none | at least one positive NNI, SPR, or TBR move weight |
+| topology uncertainty | outside the run | represented by sampled topology identities |
+
+These are different posterior models. A fixed-topology chain cannot be
+reinterpreted as topology-marginal inference after it has run.
+
 ```python
 from bijux_phylogenetics.bayesian import (
     build_dirichlet_simplex_substitution_parameter_prior,
@@ -130,6 +143,26 @@ The dispatcher rejects unknown definitions and schedules, fixed-topology
 models paired with joint schedules, and joint-topology models paired with fixed
 schedules. It never routes these calls through BEAST or MrBayes.
 
+## Read The Returned Record
+
+Both dispatcher paths return the model definition, proposal schedule,
+observation policy, underlying `chain_report`, and retained `posterior_rows`.
+Joint-topology reports additionally expose `distinct_topology_ids` and
+`distinct_topology_count`.
+
+```python
+print(report.observation_policy)
+print(len(report.posterior_rows))
+print(report.chain_report)
+
+if hasattr(report, "distinct_topology_count"):
+    print(report.distinct_topology_count)
+```
+
+Preserve the model and schedule with posterior rows. A table of sampled values
+without the priors, proposal kernels, iteration policy, seed, and observation
+policy is not a reconstructable posterior record.
+
 ## Posterior Review
 
 Inspect `model_definition`, `proposal_schedule`, `observation_policy`,
@@ -144,6 +177,32 @@ Inspect `model_definition`, `proposal_schedule`, `observation_policy`,
 
 Iteration count in an example is not a convergence guarantee. Extend or tune a
 chain based on diagnostics, then preserve the diagnostics with summaries.
+
+## Decide Whether The Run Is Interpretable
+
+```mermaid
+flowchart TD
+    complete{"Did the chain finish<br/>under the declared contract?"}
+    movement{"Did every claimed quantity<br/>mix adequately?"}
+    replicate{"Do independent chains<br/>support the same summary?"}
+    sensitivity{"Is the conclusion stable<br/>to material prior choices?"}
+    accept["Interpret the bounded posterior"]
+    refuse["Retain diagnostics; do not interpret"]
+    qualify["Report the sensitivity boundary"]
+
+    complete -- no --> refuse
+    complete -- yes --> movement
+    movement -- no --> refuse
+    movement -- yes --> replicate
+    replicate -- no --> refuse
+    replicate -- yes --> sensitivity
+    sensitivity -- no --> qualify
+    sensitivity -- yes --> accept
+```
+
+Run completion and sample count are necessary bookkeeping, not convergence
+evidence. Apply diagnostics to every quantity used by the conclusion; topology
+mixing cannot be inferred from a well-mixed substitution parameter.
 
 ## Scope
 

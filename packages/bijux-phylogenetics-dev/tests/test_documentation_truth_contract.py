@@ -253,11 +253,26 @@ def test_native_inference_guides_preserve_search_and_chain_diagnostics() -> None
     assert "start_tree_count" in maximum_likelihood
     assert "accepted search trace" in maximum_likelihood
     assert "bootstrap_replicate_count" in maximum_likelihood
+    assert "Choose The Inference Contract" in maximum_likelihood
+    assert "load_nucleotide_maximum_likelihood_result_json" in maximum_likelihood
+    assert "acceptance record" in maximum_likelihood
     assert "run_bayesian_inference" in bayesian
     assert "effective sample size" in bayesian
     assert "distinct_topology_count" in bayesian
+    assert "Read The Returned Record" in bayesian
+    assert "Decide Whether The Run Is Interpretable" in bayesian
     assert "Failure Handling" in boundaries
     assert "Publication Threshold" in boundaries
+
+
+def test_native_benchmark_review_exposes_executable_suite_and_dimensions() -> None:
+    benchmark = _read(PRODUCT_ROOT / "operations" / "native-benchmark-review.md")
+
+    assert "benchmark native-maximum-likelihood-suite" in benchmark
+    assert "--manifest artifacts/native-benchmark/manifest.json" in benchmark
+    assert "Read Suite Dimensions Separately" in benchmark
+    assert "Minimum Publication Packet" in benchmark
+    assert "native-bug" in benchmark
 
 
 def test_domain_map_covers_scientific_ownership_and_invariants() -> None:

@@ -39,6 +39,22 @@ Validate biological sampling, alignment homology, recombination assumptions,
 and model suitability outside the optimizer; a syntactically valid FASTA file
 does not establish them.
 
+## Choose The Inference Contract
+
+Decide which uncertainty belongs in the run before choosing arguments:
+
+| Decision | Use | Retained evidence |
+| --- | --- | --- |
+| substitution model is fixed by the study | `model_name="jc69"`, `"k80"`, `"f81"`, `"hky85"`, or `"gtr"` | fitted parameters and the fixed model identity |
+| model choice is part of inference | `model_name="auto"` plus an explicit selection criterion | every model-selection row, selected model, criterion, and warnings |
+| topology search may depend on initialization | multiple starting trees with a recorded seed | one run summary per start and the winning source label |
+| split stability matters | bootstrap, SH-like support, or both | method-specific reports with replicate counts and seeds |
+| a result will be reviewed later | serialize `NucleotideMaximumLikelihoodResult` | tree, objective, parameters, traces, support, warnings, and optional benchmark metadata |
+
+Do not enable support or model selection merely to make the result look more
+complete. Each additional lane changes the computational question and must be
+interpreted under its own assumptions.
+
 ## Run A Search
 
 ```python
@@ -108,6 +124,19 @@ to the same topology and likelihood provides stronger search evidence than one
 successful start. Inspect accepted moves and warnings for stagnation,
 degenerate branch lengths, or model-fit problems.
 
+Use an acceptance record that names the intended claim. At minimum, record:
+
+| Review dimension | Evidence in the result | Refuse or qualify when |
+| --- | --- | --- |
+| model choice | selection rows, criterion, selected model | candidates failed, warnings are material, or parameter counting is incompatible with the claimed comparison |
+| search behavior | run summaries, topology fingerprints, accepted search trace | starts settle on materially different optima or the chosen search did not explore the required neighborhood |
+| parameter fit | fitted values and boundary warnings | estimates sit on bounds, are non-finite, or have no interpretable scale |
+| branch support | method-specific support report | replicate policy is too weak, support semantics are mixed, or required splits are unstable |
+| reproducibility | seeds, search policy, complete JSON record | configuration or the serialized result is missing |
+
+Acceptance is claim-specific. A tree may be adequate for illustrating an API
+while remaining unsuitable for a biological conclusion.
+
 ## Stable Result State
 
 The public contract includes model and selection fields, final tree and
@@ -117,6 +146,26 @@ and optional benchmark metadata. It supports dictionary and JSON round trips.
 
 Persist the whole result. A Newick tree alone loses model, objective,
 parameters, search history, support method, warnings, and software identity.
+
+Reload the record through the typed contract rather than treating its JSON as
+an undocumented dictionary:
+
+```python
+from pathlib import Path
+
+from bijux_phylogenetics.phylo.likelihood import (
+    load_nucleotide_maximum_likelihood_result_json,
+)
+
+restored = load_nucleotide_maximum_likelihood_result_json(
+    Path("artifacts/native-maximum-likelihood/result.json")
+)
+assert restored.final_topology_fingerprint == result.final_topology_fingerprint
+```
+
+The round trip checks schema reconstruction. It does not rerun the optimizer
+or establish that a stored result remains suitable after the input, model, or
+software revision changes.
 
 ## Wrapper Correspondence
 

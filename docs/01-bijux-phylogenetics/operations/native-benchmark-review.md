@@ -50,6 +50,49 @@ answers all of them.
    after seeing the result.
 7. State the benchmark scope alongside any conclusion.
 
+## Run The Governed Maximum-Likelihood Suite
+
+The unified CLI combines speed, peak-memory, simulated-truth accuracy, and
+cached wrapper-correspondence observations without collapsing their meanings:
+
+```bash
+bijux-phylogenetics benchmark native-maximum-likelihood-suite \
+  --replicates 3 \
+  --size-class compact --taxon-count 8 --site-count 200 \
+  --size-class extended --taxon-count 16 --site-count 400 \
+  --scaling-model hky85 --scaling-search-method nni \
+  --accuracy-model hky85 --accuracy-search-method nni \
+  --start-tree-count 4 --start-tree-seed 17 \
+  --manifest artifacts/native-benchmark/manifest.json \
+  --json > artifacts/native-benchmark/report.json
+```
+
+Repeated size-class, taxon-count, and site-count arguments are positional
+partners. Keep them in the same order. The manifest preserves invocation
+identity; the JSON report preserves the measured observations and suite
+summary. Shell redirection is explicit because `--json` writes the report to
+standard output.
+
+For accuracy-only review, use
+`benchmark native-maximum-likelihood-accuracy`. That lane compares inferred
+topology, parameters, and likelihood quality with governed simulated truth;
+it is not a timing benchmark.
+
+## Read Suite Dimensions Separately
+
+| Dimension | Primary observation | Safe conclusion |
+| --- | --- | --- |
+| speed | runtime by size class, fixed model, search method, and replicate policy | measured runtime behavior for the named lanes |
+| memory | peak bytes and growth status under the benchmark measurement boundary | measured memory behavior for the named lanes |
+| simulated truth | topology recovery, Robinson–Foulds distance, parameter deltas, likelihood shortfall | recovery behavior for the generating cases |
+| wrapper correspondence | native and cached-wrapper values under a named comparison policy | relationship for supported wrapper cases |
+
+The suite retains statuses such as native advantage, native bug, expected
+assumption difference, and unsupported case. Only the first is a performance
+result; only `native-bug` is an implementation-failure classification. Never
+convert an unsupported comparison into a pass by excluding it from the
+denominator.
+
 ## Metric Interpretation
 
 Likelihood differences require comparable model parameterization and numerical
@@ -66,6 +109,17 @@ Benchmark records characterize implementation behavior on named corpora.
 Evidence bundles connect bounded study claims to provenance, checks, and
 verdicts. A benchmark may contribute to evidence, but it does not automatically
 establish a biological interpretation or study parity.
+
+## Minimum Publication Packet
+
+Publish the benchmark question, command or API configuration, input corpus or
+simulation policy, runtime and hardware identity, raw observations, aggregate
+summary, all limitations, and the acceptance rule. Preserve the selected,
+executed, failed, unsupported, and omitted denominators.
+
+A chart without the observation table cannot be audited. A table without the
+configuration cannot be reproduced. A summary without limitations cannot be
+generalized safely.
 
 ## Honest Claim Patterns
 
