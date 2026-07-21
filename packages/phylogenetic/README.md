@@ -112,6 +112,26 @@ independent confirmations.
 The scientific runtime, external-engine requirements, artifact semantics,
 quality boundaries, and Evidence Book are shared.
 
+## Preserve Alias Identity In Artifacts
+
+An artifact created through `phylogenetic` has one scientific owner and two
+relevant distribution identities. Retain the invoked compatibility name for
+reproduction and the resolved `bijux-phylogenetics` version for computation
+ownership.
+
+| Artifact fact | Why it matters |
+| --- | --- |
+| requested distribution and version | reconstructs how the environment was installed |
+| invoked import or command name | reproduces the consumer-facing route |
+| resolved canonical distribution and module path | identifies the implementation that executed |
+| result and schema version | establishes the shared serialization contract |
+| packaged-resource identity | proves the alias consumed canonical resources rather than a local copy |
+
+Do not rewrite canonical owner fields to the alias name, and do not drop the
+alias invocation from an operational record. The first would invent a second
+scientific owner; the second would hide the route whose compatibility is under
+review.
+
 ## Workflow Example
 
 ```python

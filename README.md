@@ -216,6 +216,26 @@ Start from the most specific record that answers the question. Do not infer
 study evidence from a successful run, package-wide equivalence from one parity
 case, or biological adequacy from a numerical benchmark.
 
+## Keep Reruns Scientifically Distinct
+
+A rerun is the same analytical attempt only when every identity that can
+change the result remains fixed and the owning contract explicitly permits
+reuse. Otherwise it is a related execution with a new record.
+
+| Change between executions | Required treatment |
+| --- | --- |
+| output directory or presentation format only | preserve the original result identity and record the new projection |
+| runtime or external-engine version | create a new execution identity and compare results explicitly |
+| input bytes, taxon population, alignment, tree, or partition | create a new analysis identity; do not describe the output as a replay |
+| model, prior, transform, tolerance, search, sampler, seed policy, or thread policy | create a new method/configuration identity |
+| parser or normalization code | retain the native parent output and create a new parsed projection |
+| failed attempt followed by a successful attempt | retain both attempts and select the accepted one without erasing the failure denominator |
+
+`resume` is narrower than rerun: it continues or reuses state only after the
+producer verifies its parent inputs, configuration, executable, completion
+state, and output inventory. A stable path or matching headline value is not
+identity proof.
+
 ## Python Workflow API
 
 Curated workflow entry points live under `bijux_phylogenetics.api`:

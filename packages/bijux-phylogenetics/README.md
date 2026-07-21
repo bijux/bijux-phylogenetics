@@ -186,6 +186,20 @@ A Newick tree, coefficient table, or figure is a projection. Publish it beside
 the structured record that explains how it was produced and where its
 interpretation stops.
 
+## Separate Reuse From Reinterpretation
+
+Reusing a valid result does not permit changing its scientific meaning. A
+consumer may create a new table, figure, or report when the projection remains
+linked to the original status, model, units, ordering, exclusions, and
+diagnostics. A changed transform, denominator, node mapping, factor reference,
+or support interpretation creates a new analytical projection and must record
+that rule.
+
+When the original typed state is unavailable, consume the manifest and
+versioned structured artifacts. Do not reconstruct a result from HTML, console
+text, filenames, or row position. If the retained contract cannot express the
+needed interpretation, refuse the reuse or rerun from the identified inputs.
+
 ## Workflow API
 
 Use the curated `bijux_phylogenetics.api` namespace for application and

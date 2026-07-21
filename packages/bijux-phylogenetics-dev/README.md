@@ -128,6 +128,25 @@ The aggregate gate consumes owned reports; it does not replace them. When
 release readiness fails, inspect the named blocking report and its issue rows
 before changing code or generated output.
 
+## Preserve Aggregate Decision Inputs
+
+An aggregate `ready` status is valid only for the exact child reports,
+repository revision, policy files, and package artifacts it evaluated. Retain
+those identities in the handoff instead of copying the aggregate JSON alone.
+
+| Aggregate input | Contradiction that invalidates reuse |
+| --- | --- |
+| evidence completeness and freshness | a bundle, input manifest, checksum, or verdict changed |
+| documentation truth and site build | a public projection or generated reference changed |
+| package boundaries and bundles | dependency policy, archive inventory, metadata, or built artifact changed |
+| execution and artifact governance | command ownership, output path, cache, or alias policy changed |
+| publication policy | required packages, closure criteria, or blocking codes changed |
+
+If any child identity changes, regenerate the owning report and then the
+aggregate decision. Do not reuse favorable child status from another revision
+or replace a failed child with a newer report while retaining older siblings;
+that creates a release packet that no single repository state produced.
+
 ## What The Governed Commands Establish
 
 | Command | Evidence produced | It does not establish alone |
