@@ -1,0 +1,73 @@
+---
+title: Verification Matrix
+audience: public
+type: reference
+status: canonical
+owner: bijux-phylogenetics-docs
+last_reviewed: 2026-07-21
+---
+
+# Verification Matrix
+
+The matrix below names the strongest relationship the repository currently
+supports for each external reference. A stronger row must not be inferred from
+a weaker one: successful execution is not numerical agreement, and a checked
+study fixture is not a package-wide live parity surface.
+
+| Reference | Verification mode | Strongest current claim | Primary record |
+| --- | --- | --- | --- |
+| APE | live R registry; checked study fixtures | 180 governed cases across 35 function shards, plus named study comparisons | [APE correspondence](../r-ecosystem/ape.md) |
+| GEIGER | live R registry | 48 governed cases across 17 model shards with optimizer and parameterization review | [GEIGER correspondence](../r-ecosystem/geiger.md) |
+| phytools | live R registry | 65 governed cases across 21 function shards, with distribution rules for stochastic outputs | [phytools correspondence](../r-ecosystem/phytools.md) |
+| APE + `nlme` | checked R-derived fixtures | PGLS coefficients, likelihoods, model comparisons, and selected diagnostics for named fixtures | [study-specific R references](../r-ecosystem/study-references.md) |
+| `treeio` + `tidytree` | governed study evidence | structural node mapping and tree–trait join observations for the primate longevity fixture | [study-specific R references](../r-ecosystem/study-references.md) |
+| `ggtree` | source and plot-intent provenance | plot-only study fragments | [study-specific R references](../r-ecosystem/study-references.md) |
+| MAFFT + trimAl | external execution adapters | validated invocation, captured configuration and output, parsed alignment diagnostics | [alignment and trimming](../external-engines/alignment-and-trimming.md) |
+| IQ-TREE2 + FastTree | external execution adapters and cross-engine workflow | complete run bundles and comparable topology/likelihood fields where meanings align | [tree inference](../external-engines/tree-inference.md) |
+| MrBayes + BEAST | external execution and parser adapters | prepared or executed analyses with trace/tree diagnostics and explicit engine ownership | [Bayesian inference](../external-engines/bayesian-inference.md) |
+| `MCMCglmm` | source-backed study boundary | governed open scope for PCM4 and PCM5; no posterior parity claim | [study-specific R references](../r-ecosystem/study-references.md) |
+
+## What Each Mode Establishes
+
+```mermaid
+flowchart TD
+    provenance["Source provenance"] --> fixture["Checked fixture"]
+    fixture --> live["Live reference case"]
+    adapter["External adapter"] --> execution["Governed execution"]
+    live --> evidence["Evidence Book claim"]
+    execution --> evidence
+    fixture --> evidence
+
+    provenance_note["Names the original owner"]
+    fixture_note["Replays frozen observations"]
+    live_note["Executes both implementations now"]
+    execution_note["Captures an external engine run"]
+    evidence_note["Adds sources, checks, artifacts, and verdict"]
+
+    provenance --- provenance_note
+    fixture --- fixture_note
+    live --- live_note
+    execution --- execution_note
+    evidence --- evidence_note
+```
+
+- **Source provenance** identifies where an operation or study originated.
+- **Checked fixture** compares Bijux with frozen, versioned reference outputs.
+- **Live reference case** executes the named external package and Bijux in the
+  same governed run.
+- **External adapter** prepares, invokes, captures, and parses a program that
+  remains the computational owner.
+- **Evidence Book claim** binds a scientific statement to inputs, sources,
+  checks, results, freshness, and a reviewable verdict.
+
+## Reading A Claim Safely
+
+Start with the verification mode, then inspect the named operation and
+compared fields. Confirm parameterization, taxon order, state encoding,
+rooting, units, likelihood convention, and support meaning before interpreting
+a match. Finally, read the non-claims: they define what the verdict cannot be
+used to conclude.
+
+A row may advance only when the stronger mode is implemented and governed.
+Documentation language alone cannot promote provenance to a checked fixture,
+an adapter to parity, or an analytical match to rendered-figure equivalence.

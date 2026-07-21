@@ -193,12 +193,16 @@ nav:
           - APE: 04-bijux-phylogenetics-parities/r-ecosystem/ape.md
           - GEIGER: 04-bijux-phylogenetics-parities/r-ecosystem/geiger.md
           - phytools: 04-bijux-phylogenetics-parities/r-ecosystem/phytools.md
+          - Study-Specific References: 04-bijux-phylogenetics-parities/r-ecosystem/study-references.md
       - External Engines:
           - Overview: 04-bijux-phylogenetics-parities/external-engines/index.md
           - MAFFT And trimAl: 04-bijux-phylogenetics-parities/external-engines/alignment-and-trimming.md
           - IQ-TREE2 And FastTree: 04-bijux-phylogenetics-parities/external-engines/tree-inference.md
           - MrBayes And BEAST: 04-bijux-phylogenetics-parities/external-engines/bayesian-inference.md
-      - Interpreting Correspondence: 04-bijux-phylogenetics-parities/correspondence/index.md
+      - Correspondence:
+          - Interpreting Correspondence: 04-bijux-phylogenetics-parities/correspondence/index.md
+          - Verification Matrix: 04-bijux-phylogenetics-parities/correspondence/verification-matrix.md
+          - Artifacts And Reproduction: 04-bijux-phylogenetics-parities/correspondence/artifacts-and-reproduction.md
   - Maintainer:
       - Maintainer Handbook: 05-bijux-phylogenetics-maintain/index.md
       - Documentation System:

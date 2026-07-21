@@ -53,6 +53,10 @@ and an explicit verdict.
   executables that remain computational owners.
 - [Interpreting correspondence](correspondence/index.md) explains case
   selection, normalization, verdicts, artifacts, and claim limits.
+- [Verification matrix](correspondence/verification-matrix.md) distinguishes
+  live parity, checked fixtures, external execution, and study provenance.
+- [Artifacts and reproduction](correspondence/artifacts-and-reproduction.md)
+  shows how a comparison remains inspectable after execution.
 
 ## The Public Contract
 

@@ -20,8 +20,9 @@ drop-in-equivalence surface.
 | [APE](ape.md) | live case registry plus checked fixtures | trees, topology, distances, DNA utilities, covariance, contrasts, ancestral states |
 | [GEIGER](geiger.md) | live model registry plus generated review report | continuous and discrete evolutionary-model fitting |
 | [phytools](phytools.md) | live case registry plus stochastic-summary policies | signal, Mk models, simulation, stochastic maps, ancestral estimates |
-| `nlme` | checked reference outputs with APE covariance | GLS/PGLS coefficients and model comparison |
-| `MCMCglmm` | external study boundary | Bayesian phylogenetic mixed models in PCM4 and PCM5 |
+| [`nlme`](study-references.md#ape-plus-nlme) | checked reference outputs with APE covariance | GLS/PGLS coefficients and model comparison |
+| [`treeio`, `tidytree`, `ggtree`](study-references.md#treeio-tidytree-and-ggtree) | governed structural evidence or plot-only provenance | study-specific tree data and visualization surfaces |
+| [`MCMCglmm`](study-references.md#mcmcglmm) | external study boundary | Bayesian phylogenetic mixed models in PCM4 and PCM5 |
 
 ## Execution Boundary
 
@@ -37,3 +38,7 @@ No single R package owns every convention used in phylogenetics. APE is the
 structural baseline, GEIGER is a model-fitting reference, and phytools provides
 specialized comparative and stochastic-history behavior. Agreement with one
 does not silently grant agreement with another.
+
+[Study-specific R references](study-references.md) explains the narrower
+relationships that enter through Evidence Book workflows rather than a live
+package registry.

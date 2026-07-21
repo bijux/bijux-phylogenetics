@@ -59,3 +59,10 @@ RUN_LIVE_PARITY=1 bijux-phylogenetics parity \
 Use the tool-specific registry rather than assuming an R function name has a
 Bijux equivalent. Unsupported operations should fail with a named boundary,
 not fall through to a neighboring approximation.
+
+## Review Resources
+
+- [Verification matrix](verification-matrix.md) identifies the strongest
+  current claim for each external reference.
+- [Artifacts and reproduction](artifacts-and-reproduction.md) explains how to
+  retain selections, observations, manifests, and failures.

@@ -197,6 +197,24 @@ def test_engine_correspondence_guides_preserve_computational_ownership() -> None
     assert "does not dispatch through MrBayes or BEAST" in bayesian
 
 
+def test_correspondence_matrix_distinguishes_verified_and_open_surfaces() -> None:
+    study_references = _read(PARITIES_ROOT / "r-ecosystem" / "study-references.md")
+    matrix = _read(PARITIES_ROOT / "correspondence" / "verification-matrix.md")
+    reproduction = _read(
+        PARITIES_ROOT / "correspondence" / "artifacts-and-reproduction.md"
+    )
+
+    assert "no standalone live `nlme` registry" in study_references
+    assert "tip count of 75" in study_references
+    assert "plot-only" in study_references
+    assert "no posterior parity claim" in matrix
+    assert "External adapter" in matrix
+    assert "--manifest artifacts/parity/checked-manifest.json" in reproduction
+    assert (
+        "Preserve mismatches, skips, warnings, and incomplete outputs" in reproduction
+    )
+
+
 def test_quality_guides_separate_tests_benchmarks_and_release_evidence() -> None:
     test_strategy = _read(PRODUCT_ROOT / "quality" / "test-strategy.md")
     benchmark = _read(PRODUCT_ROOT / "quality" / "native-benchmark-evidence.md")
