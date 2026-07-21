@@ -9,80 +9,159 @@ last_reviewed: 2026-07-21
 
 # PCM1 Data And Tree Preparation
 
-PCM1 turns heterogeneous lecture inputs into a single comparative-analysis
-state. Every repair is observable because type conversion, missingness,
-duplicate aggregation, tree pruning, and taxon reconciliation can change the
-sample used by later models.
+PCM1 converts a 76-row workbook and a 77-tip primate tree into a reconciled
+75-species comparative state. That contraction is scientifically material:
+one duplicated species record is aggregated and two tree tips absent from the
+trait table are removed. Eight focused evidence bundles make every boundary
+reviewable before signal or ancestral inference begins.
 
 ```mermaid
 flowchart LR
-    workbook["Raw primate<br/>workbook"] --> types["Typed trait rows"]
-    types --> missing["Missing-data<br/>accounting"]
-    missing --> duplicates["Species-level<br/>aggregation"]
-    tree["Source primate tree"] --> prune["Imported and<br/>pruned tree"]
-    duplicates --> join["Exact taxon<br/>correspondence"]
-    prune --> join
-    join --> derivatives["Governed trait table<br/>and Newick tree"]
+    workbook["Raw workbook<br/>76 rows"]
+    typing["Type contract<br/>5 numeric columns"]
+    missing["Missingness<br/>0 retained missing values"]
+    aggregate["Species aggregation<br/>75 unique rows"]
+    source_tree["Source tree<br/>77 tips"]
+    trim["Prune 2 absent tips<br/>75-tip rooted tree"]
+    join["Exact set and order<br/>75 tree–trait rows"]
+    derivatives["Governed CSV + Newick<br/>checksum-addressed handoff"]
+
+    workbook --> typing --> missing --> aggregate --> join
+    source_tree --> trim --> join --> derivatives
 ```
 
-## Preparation Contracts
+## Governed Input And Handoff Records
 
-| Operation | Evidence requirement | Primary bundle | Current verdict |
+| Role | Repository record | Identity carried forward |
+| --- | --- | --- |
+| raw observations | `datasets/primate_raw.xlsx` | original 76-row workbook boundary |
+| processed reference | `datasets/reference_primate.csv` | 75 rows, 75 species, nine-column order and repaired types |
+| source phylogeny | `datasets/primatetree.nex` | 77 tips with branch lengths |
+| trimmed analysis tree | `datasets/reference_trimmed_primatetree.nwk` | 75 tips with the governed set and order |
+| dataset registry | `datasets/registry.json` | source role, locator, schema summary, and SHA-256 identity |
+
+The checked-in workbook supports auditability, but the focused Python review
+starts from the governed processed reference rather than claiming to replay the
+external workbook import. This is an explicit limitation in `evidence-002`,
+not an invisible substitution.
+
+## Preparation Evidence Ledger
+
+| Bundle | Claim boundary | Governed observation | Current verdict |
 | --- | --- | --- | --- |
-| workbook loading | source sheet and row interpretation remain attributable | `evidence-002` | `matched` |
-| type repair | converted fields and invalid values are enumerated | `evidence-003` | `matched` |
-| missingness | included, excluded, and incomplete observations are counted | `evidence-004` | `matched` |
-| duplicate aggregation | grouping key and aggregation rule are explicit | `evidence-005` | `matched` |
-| tree import | format and imported tip identities agree | `evidence-006` | `matched` |
-| tree diagnostics | rootedness, tips, branches, and structural checks are recorded | `evidence-007` | `matched` |
-| tree–trait join | missing and extra taxa are resolved explicitly | `evidence-008` | `matched` |
-| processed export | governed derivatives match the reviewed state | `evidence-009` | `matched` |
+| `evidence-002` | workbook loading | 76 raw rows contract to the checked-in 75-row processed reference | `matched` |
+| `evidence-003` | type repair | five numeric columns parse without failures; factor/text roles are explicit | `matched` |
+| `evidence-004` | missing-data accounting | 75 post-repair rows; no missing values in the governed processed table | `matched` |
+| `evidence-005` | duplicate aggregation | one duplicate-species contraction; zero duplicates remain | `matched` |
+| `evidence-006` | tree import | R and Bijux both report 77 original and 75 trimmed tips with branch lengths | `matched` |
+| `evidence-007` | tree diagnostics | rooted, binary, ultrametric, with an explicit node-label correspondence | `matched` |
+| `evidence-008` | tree–trait join | two named missing tips removed; final set, order, and example node IDs agree | `matched` |
+| `evidence-009` | processed export | checked-in CSV and Newick identities match the governed handoff | `matched` |
 
-All eight focused preparation bundles therefore support their bounded claims.
-The aggregate `evidence-001` manifest is `matched_with_tolerance` because it
-also covers numerical and non-comparable surfaces outside preparation. Its
-aggregate verdict must not weaken or broaden the focused preparation verdicts.
+All eight focused preparation bundles support their bounded claims. The
+aggregate `evidence-001` manifest is `matched_with_tolerance` because it also
+contains signal and ancestral comparisons plus plot-only and artifact-only
+surfaces. Its aggregate status neither weakens the eight exact preparation
+verdicts nor promotes later claims.
 
-## Taxon Reconciliation
+## Read The Type Contract
 
-Tree tips and trait species must be compared after the same normalization
-policy. A successful inner join is insufficient because it can silently drop
-unmatched taxa. Record both set differences, duplicate labels, pruning
-decisions, final order, and the reason for every exclusion.
+The processed table uses this reviewed interpretation:
 
-Ordering matters when values are converted to vectors or matrices. The final
-trait vector must be aligned explicitly to tree-tip identity rather than
-assuming source row order.
+| Role | Columns or states |
+| --- | --- |
+| numeric | `body_mass`, `gestation`, `home_range`, `longevity`, `social_group_size` |
+| binary factor | `sex_dimorphism` with governed values `0` and `1` |
+| categorical text | `mating_system`, including Pair, Polyandrous, and Polygynous states |
+| identity text | `family`, `species` |
 
-## Governed Derivatives
+`evidence-003` records empty parse-failure arrays for all five numeric columns.
+That proves the governed processed artifact satisfies this parsing contract; it
+does not prove that every workbook cell was semantically correct before
+processing.
 
-`reference_primate.csv` and `reference_trimmed_primatetree.nwk` are the prepared
-inputs reused by subsequent comparisons. They are derived records with
-provenance, not replacements for the original workbook, workspace, and tree.
+## Account For Missingness And Aggregation
 
-Treat the derivatives as a handoff boundary. A downstream result must identify
-their checksums and taxon order; matching filenames alone does not establish
-that it consumed the governed PCM1 state.
+The reference rule aggregates numeric values by species with missing-value
+removal. In the retained processed artifact, every governed column has a
+missing count of zero. The raw-to-processed delta is one row, and
+`evidence-005` records one duplicate-species contract with zero duplicates
+after grouping.
 
-## Claim Scope At This Boundary
+These facts must be read together:
 
-The preparation verdicts establish source interpretation, repair,
-aggregation, tree intake, reconciliation, and exported identity. They do not
-establish phylogenetic signal, fitted lambda, ancestral estimates, figure
-equivalence, or the suitability of the preprocessing choices for another
-study. Those claims require their own observations and verdicts.
+```text
+76 raw rows - 1 duplicate-species contraction = 75 processed species
+```
 
-## Review Checklist
+The evidence establishes the observed contraction and resulting unique-species
+state. It does not independently replay every workbook transformation. A
+different aggregation rule would define a different analysis input even if it
+also produced 75 rows.
 
-- Can every final row be traced to source observations?
-- Are non-numeric values and coercion failures visible?
-- Is the duplicate-species summary rule scientifically appropriate?
-- Are tree pruning and topology operations separated from label normalization?
-- Do the final trait and tree taxon sets match exactly?
-- Are exported identities checked before model fitting begins?
+## Reconcile Tree And Trait Identity
 
-The summary bundle records matched preparation, tree import/pruning, topology,
-and tree–trait join claims. Those verdicts establish this study state; they do
-not make later signal or ancestral claims automatic.
+The source tree has 77 tips; the processed table has 75 species. The two tree
+tips absent from the trait table are:
 
-Continue with [signal and ancestral results](signal-and-ancestral-results.md).
+- `Lagothrix_lagotricha`;
+- `Eulemur_fulvus`.
+
+After pruning, `evidence-008` records equality of the tree-tip set, tree-tip
+order, and aligned species order. It also matches representative node IDs:
+
+| Identity | R | Bijux |
+| --- | ---: | ---: |
+| `Hylobates_lar` | 29 | 29 |
+| `Pan_paniscus` | 33 | 33 |
+| `Node32` | 107 | 107 |
+
+Node numbers are valid only within this governed tree identity. The stronger
+durable identity for an internal node is its descendant-taxon signature; a
+different pruning or traversal can renumber nodes without changing a clade.
+
+## Verify Tree State Before Modeling
+
+`evidence-006` and `evidence-007` jointly establish:
+
+- original and trimmed tip counts agree across R and Bijux;
+- both retained tree records carry branch lengths;
+- the trimmed tree is rooted, binary, and ultrametric;
+- R node 77 labeled `Node2` resolves to the same taxa as the Bijux `Node2`
+  match.
+
+Rooting, topology, branch lengths, taxon set, and node identity are independent
+parts of the model input. Matching the tip count alone would not establish the
+same comparative covariance.
+
+## Accept The Downstream Handoff
+
+Before fitting a model, a consumer should verify:
+
+1. the processed CSV and trimmed Newick digests against the dataset registry or
+   input manifest;
+2. the nine-column table contract and 75 unique species;
+3. the 75-tip tree set and exact order;
+4. rooted, binary, ultrametric, and branch-length state;
+5. the two explicit pruning exclusions;
+6. any node reference by descendant-taxon signature as well as local node ID.
+
+Matching filenames are insufficient. A downstream result should retain input
+checksums, reconciliation state, and model-specific exclusions in its own
+manifest.
+
+## Claim Boundary
+
+The preparation verdicts establish source interpretation at the governed
+handoff, processed types and missingness, duplicate contraction, tree import,
+diagnostics, pruning, alignment, and exported identity. They do not establish:
+
+- the biological appropriateness of mean aggregation for another question;
+- phylogenetic signal or a fitted lambda value;
+- a Brownian trait model;
+- ancestral-state estimates or their historical truth;
+- plot equivalence;
+- general behavior on other datasets.
+
+Continue with [signal and ancestral results](signal-and-ancestral-results.md),
+where each numerical statement is tied to the aggregate scalar ledger.

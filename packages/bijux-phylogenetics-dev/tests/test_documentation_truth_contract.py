@@ -606,8 +606,18 @@ def test_primate_guides_publish_values_and_open_boundaries() -> None:
     assert (
         "aggregate `evidence-001` manifest is `matched_with_tolerance`" in preparation
     )
+    assert "76 raw rows - 1 duplicate-species contraction" in preparation
+    assert "Lagothrix_lagotricha" in preparation
+    assert "Eulemur_fulvus" in preparation
+    assert "Accept The Downstream Handoff" in preparation
     assert "matched_with_tolerance" in signal
     assert "not_comparable" in signal
+    assert "31 scalar observations" in signal
+    assert "The five seeded random datasets are parity fixtures" in signal
+    assert "74 shared internal nodes" in signal
+    assert "Bonobo–Gibbon MRCA Spot Check" in signal
+    assert "Branch-Wise Increase Counts" in signal
+    assert "What The Evidence Supports" in signal
     assert "Governed Observations" in pcm1_index
     assert "| estimated Pagel λ | 0.803 |" in pcm1_index
     assert "41.030408" in pcm1_index
