@@ -14,6 +14,11 @@ named assumption. Sensitivity analysis asks whether the conclusion survives a
 plausible change in tree, method, support surface, ancestral reconstruction, or
 comparative model. Neither is a generic “confidence score.”
 
+When the object is a bootstrap, posterior, gene-tree, or sensitivity
+population, use [Tree Uncertainty And Sensitivity](tree-uncertainty-and-sensitivity.md)
+for topology modes, unstable identities, run comparison, and propagation into
+downstream analyses.
+
 ```mermaid
 flowchart LR
     object["Tree · data<br/>fit or conclusion"]

@@ -165,6 +165,7 @@ nav:
           - Data Interchange And Identity: 02-bijux-phylogenetics-domains/data-and-structure/data-interchange-and-identity.md
           - Trees, Alignments, And Taxa: 02-bijux-phylogenetics-domains/data-and-structure/trees-alignments-and-taxa.md
           - Tree Operations And Identity: 02-bijux-phylogenetics-domains/data-and-structure/tree-operations-and-identity.md
+          - Tree Sets, Consensus, And Support: 02-bijux-phylogenetics-domains/data-and-structure/tree-sets-consensus-and-support.md
       - Inference:
           - Overview: 02-bijux-phylogenetics-domains/inference/index.md
           - Likelihood And Inference: 02-bijux-phylogenetics-domains/inference/likelihood-and-inference.md
@@ -183,6 +184,7 @@ nav:
           - Simulation And Datasets: 02-bijux-phylogenetics-domains/scientific-assurance/simulation-and-datasets.md
           - Validation, Benchmarks, And Reporting: 02-bijux-phylogenetics-domains/scientific-assurance/validation-benchmarks-and-reporting.md
           - Diagnostics And Sensitivity: 02-bijux-phylogenetics-domains/scientific-assurance/diagnostics-and-sensitivity.md
+          - Tree Uncertainty And Sensitivity: 02-bijux-phylogenetics-domains/scientific-assurance/tree-uncertainty-and-sensitivity.md
           - Reporting And Rendering: 02-bijux-phylogenetics-domains/scientific-assurance/reporting-and-rendering.md
           - Publication Artifact Review: 02-bijux-phylogenetics-domains/scientific-assurance/publication-artifact-review.md
   - Evidence Book:

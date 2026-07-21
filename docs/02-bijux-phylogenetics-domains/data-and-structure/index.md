@@ -38,6 +38,7 @@ rerooting, pruning, extracting, rescaling, or comparing trees.
 | Newick, Nexus, FASTA, or tabular files | [Data Interchange And Identity](data-interchange-and-identity.md) | which semantics survive parsing, normalization, and serialization |
 | trees, alignments, partitions, or tree sets already in memory | [Trees, Alignments, And Taxa](trees-alignments-and-taxa.md) | rootedness, branch meaning, state coding, support, and taxon reconciliation |
 | a tree that must be transformed or structurally compared | [Tree Operations And Identity](tree-operations-and-identity.md) | preserved invariants, structural node/branch identity, derivation ledger, and comparison boundary |
+| bootstrap, posterior, gene, candidate, or sensitivity trees | [Tree Sets, Consensus, And Support](tree-sets-consensus-and-support.md) | population meaning, member denominator, consensus policy, support identity, and selection record |
 
 These routes meet at the admitted analytical object. A packaged dataset is not
 automatically analysis-ready, and a successfully parsed file is not
@@ -120,3 +121,7 @@ dropping unmatched records cannot.
 
 The output of intake is therefore both a typed object and a reconciliation
 record. Downstream methods should consume the former and preserve the latter.
+
+For a population of trees, continue with
+[Tree Sets, Consensus, And Support](tree-sets-consensus-and-support.md) and then
+[Tree Uncertainty And Sensitivity](../scientific-assurance/tree-uncertainty-and-sensitivity.md).

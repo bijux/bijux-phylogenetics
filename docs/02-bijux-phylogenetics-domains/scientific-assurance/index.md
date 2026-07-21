@@ -33,6 +33,9 @@ flowchart LR
 - [Diagnostics And Sensitivity](diagnostics-and-sensitivity.md) explains tree
   validation, assumption findings, temporal-signal diagnostics, conclusion
   stability, and failure-aware sensitivity matrices.
+- [Tree Uncertainty And Sensitivity](tree-uncertainty-and-sensitivity.md)
+  explains topology modes, unstable taxa and clades, run comparison,
+  tree-population denominators, and propagation into downstream claims.
 - [Reporting And Rendering](reporting-and-rendering.md) explains how structured
   results become methods text, supplementary tables, tree figures, annotated
   trait trees, and reproducibility manifests.
@@ -46,6 +49,7 @@ flowchart LR
 | --- | --- | --- |
 | did an input or method contract hold? | validation observation and diagnostics | validation report |
 | how did a method behave over a declared population? | benchmark or sensitivity ledger | summary table or figure |
+| which tree conclusions survive the admitted tree population? | tree-set inventory plus mode, conflict, instability and sensitivity rows | topology distribution or stability figure |
 | what values and uncertainty belong to one result? | typed result plus machine-readable tables | methods text, tree figure, annotated report |
 | is a publication package complete and internally aligned? | manifest, inventory, checks, comparison and revalidation rows | reviewer checklist and publication report |
 | does a bounded scientific claim have governed support? | Evidence Book claim, checks, observations, verdict and freshness | study guide and citation text |
