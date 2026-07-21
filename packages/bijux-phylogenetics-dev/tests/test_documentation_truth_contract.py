@@ -379,7 +379,9 @@ def test_quality_guides_separate_tests_benchmarks_and_release_evidence() -> None
     assert "native-bug" in benchmark
     assert "Missing And Failed Cases" in benchmark
     assert "make check-release-readiness" in release
-    assert "Open Scientific Verdicts" in release
+    assert "Non-Comparable Claims And Open Follow-Through" in release
+    assert "may not rewrite the bundle verdict as “open,”" in release
+    assert "Open Scientific Verdicts" not in release
     assert "Required Evidence Set" in review
     assert "Review Procedure" in review
     assert "Release Blockers" in review

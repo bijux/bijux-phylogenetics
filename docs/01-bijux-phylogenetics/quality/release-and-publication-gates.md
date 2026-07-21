@@ -40,7 +40,7 @@ flowchart TD
 | compatibility | canonical and alias imports, commands, versions, metadata, and package data align |
 | contract | curated Python behavior, CLI reference, OpenAPI schema/hash, artifact compatibility |
 | documentation | strict site build, managed asset integrity, executable examples, current links and claims |
-| scientific | benchmark scope, evidence integrity, freshness, gaps, and open verdicts are visible |
+| scientific | benchmark scope, evidence integrity, freshness, gaps, non-comparable claims, and unresolved follow-through are visible |
 | publication | trusted workflow identity, version/tag consistency, license assets, target registry metadata |
 
 ## Governed Commands
@@ -67,16 +67,26 @@ revision. A report from another revision is context, not current gate evidence.
   rewritten as passing;
 - publication credentials or registry targets bypass governed workflows.
 
-## Open Scientific Verdicts
+## Non-Comparable Claims And Open Follow-Through
 
-An open or blocked study verdict does not automatically block a software
-release. It must be accurately represented, current, and excluded from claims
-that require closure. Structural corruption, missing provenance, stale status,
-or contradictory publication language is a release defect.
+An Evidence Book claim recorded as `not_comparable` does not automatically
+block a software release. Its provenance and structural contract must remain
+current, public language must preserve the non-comparable boundary, and no
+stronger claim may depend on absent comparison evidence.
+
+Open or blocked follow-through belongs to the resolution workflow rather than
+the verdict vocabulary. It identifies the missing execution, observation,
+adjudication, or external decision. A release may carry that bounded work when
+readiness policy permits it; it may not rewrite the bundle verdict as “open,”
+“pending,” or passing.
+
+Structural corruption, missing provenance, stale status, concealed
+observation mismatch, or contradictory publication language remains a release
+defect regardless of whether the intended scientific conclusion is favorable.
 
 ## Release Record
 
 Retain the revision, version, build identities, executed commands, relevant
 reports, package hashes, schema hash, documentation result, evidence freshness,
-and accepted open boundaries. This makes the publication decision auditable
-after transient CI logs expire.
+accepted bounded limitations, and open follow-through. This makes the
+publication decision auditable after transient CI logs expire.
