@@ -2,96 +2,93 @@
 title: Maintainer Handbook
 audience: maintainer
 type: handbook
-status: active
+status: canonical
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-21
 ---
 
 # Maintainer Handbook
 
-Use this handbook when the question is about repository health, release
-alignment, or documentation stewardship rather than runtime product use.
-
-These pages are public on purpose. This repository now publishes enough
-runtime and evidence depth that release stewardship is part of the public
-trust surface, not a private afterthought.
-
-```mermaid
-flowchart TD
-    A[Repository change] --> B[Public docs]
-    A --> C[Package metadata and READMEs]
-    A --> D[Evidence and trust guides]
-    A --> E[Release and quality reports]
-    B --> F[Maintainer review]
-    C --> F
-    D --> F
-    E --> F
-```
-
-## What Maintainers Are Responsible For
-
-- keeping public docs, package READMEs, and metadata aligned with the actual
-  runtime surface
-- preserving the boundary between native ownership, wrapper orchestration, and
-  evidence closure
-- keeping release narratives truthful across documentation and governed
-  readiness reports
-- preventing root clutter and unmanaged artifact drift
-
-## Stewardship Loop
+Maintaining `bijux-phylogenetics` means preserving one coherent contract across
+source, distributions, commands, schemas, artifacts, evidence, documentation,
+and release metadata. A change is complete only when every affected surface is
+identified and verified.
 
 ```mermaid
 flowchart LR
-    A[Runtime or evidence change] --> B[Public docs and README review]
-    B --> C[Quality and release review]
-    C --> D[Publishable repository state]
+    change["Runtime, evidence,<br/>or packaging change"]
+    impact["Classify affected<br/>contracts"]
+    implementation["Source and tests"]
+    surfaces["API · CLI · schemas<br/>artifacts · docs"]
+    proof["Benchmarks · evidence<br/>release gates"]
+    publish["Coherent release"]
+
+    change --> impact
+    impact --> implementation
+    impact --> surfaces
+    implementation --> proof
+    surfaces --> proof
+    proof --> publish
 ```
 
-## What This Handbook Helps Prevent
+## Maintained Invariants
 
-- public pages that understate the runtime depth now present in the code and
-  tests
-- native surfaces that appear in code but disappear from package READMEs or
-  release guidance
-- evidence-book pages that sound conclusive when the governed study record is
-  still bounded
-- repository runs that leave unmanaged root artifacts behind
+| Invariant | Failure signal |
+| --- | --- |
+| published distributions describe the same runtime contract | alias imports, commands, metadata, or examples diverge |
+| native and external computation remain attributable | an adapter is described as a native algorithm |
+| structured results remain the source for reports | reports contain values absent from machine-readable output |
+| evidence verdicts remain claim-scoped and fresh | broad claims cite stale or neighboring bundles |
+| generated files remain generated | synchronized or indexed output is hand-edited |
+| local execution leaves a clean source tree | caches, sites, logs, or reports appear outside `artifacts/` |
 
-## Handbook Sections
+## Change Classification
 
-- [Documentation system](documentation-system/index.md) for documentation
-  ownership and native surface documentation rules
-- [Trust surfaces](trust-surfaces/index.md) for public trust surface
-  maintenance, public interface and artifact maintenance, and trust lane and
-  study guide maintenance
-- [Repository operations](repository-operations/index.md) for artifact hygiene
-  and release surface alignment
+| Change | Minimum affected surfaces |
+| --- | --- |
+| public Python signature or result | source, contract tests, API docs, examples, serialization |
+| CLI command or option | command tests, generated reference, workflow guide, exit behavior |
+| artifact schema or manifest | producer, consumer tests, compatibility notes, evidence freshness |
+| numerical method or default | numerical tests, benchmarks, method docs, affected evidence |
+| external-engine adapter | discovery, invocation, parser, provenance, operational guide |
+| package metadata or alias | both distribution READMEs, build/install smoke tests, release metadata |
+| study claim, check, or input | bundle, indexes, freshness, public study guide |
 
-## Start With
+## Stewardship Workflow
 
-- Open [Documentation system](documentation-system/index.md) when the question
-  is how public docs, package READMEs, and flagship native surfaces should be
-  described together.
-- Open [Trust surfaces](trust-surfaces/index.md) when the concern is whether
-  architecture, evidence-book, interface, and validation pages still tell one
-  bounded public story.
-- Open [Repository operations](repository-operations/index.md) when the
-  question begins with artifact hygiene, release alignment, or repository
-  execution discipline.
+1. Classify the change by scientific and compatibility impact.
+2. Identify the canonical owner before editing projections or generated files.
+3. Implement and test the owned contract.
+4. Regenerate governed derivatives with repository tooling.
+5. Review public imports, commands, schemas, artifacts, examples, and package
+   metadata for drift.
+6. Re-evaluate benchmarks and evidence whose material dependencies changed.
+7. Run the narrow checks during development and the release-relevant checks
+   before publication.
+8. Confirm transient outputs remain under `artifacts/` and the worktree
+   contains only intentional source changes.
 
-## Boundary
+## Handbook Areas
 
-This handbook exists for repository stewardship, not product semantics. When a
-maintainer rule only wraps a runtime surface, this handbook should stop at the
-integration point and send the reader back to the owning product page.
+- [Documentation system](documentation-system/index.md): canonical sources,
+  ownership, generated references, and native-surface coverage.
+- [Trust surfaces](trust-surfaces/index.md): cross-surface compatibility,
+  claim language, artifacts, validation lanes, and study guides.
+- [Repository operations](repository-operations/index.md): environment,
+  generated artifacts, release alignment, and operational verification.
 
-For maintainers scanning by keyword, this handbook explicitly covers
-documentation ownership, native surface documentation, public trust surface
-maintenance, public interface and artifact maintenance, trust lane and study
-guide maintenance, artifact hygiene, and release surface alignment.
+## Release Evidence
 
-The maintained review vocabulary in this handbook includes these exact surface
-names because they are part of the repository's checked-in trust contract:
+A release decision should retain the revision, exact checks, package build and
+install results, documentation build, API/schema validation, evidence
+freshness, and any intentionally open scientific boundaries. “CI passed” is
+not a sufficient reconstruction record when multiple workflows and optional
+engines are involved.
 
-- `public trust surface maintenance`
-- `trust lane and study guide maintenance`
+## Escalation Boundaries
+
+Do not repair a failing evidence verdict by weakening its tolerance, removing a
+case, or changing prose. Do not patch generated shared standards downstream.
+Do not broaden a public claim because an adjacent method passes. Stop
+publication when package identity, schema compatibility, artifact integrity,
+or evidence provenance cannot be established.

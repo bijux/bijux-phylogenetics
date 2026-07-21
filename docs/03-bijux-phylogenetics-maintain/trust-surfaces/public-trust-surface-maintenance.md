@@ -1,63 +1,86 @@
 ---
-title: Public Trust Surface Maintenance
+title: Cross-Surface Contract Maintenance
 audience: maintainer
 type: handbook
-status: active
+status: canonical
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-21
 ---
 
-# Public Trust Surface Maintenance
+# Cross-Surface Contract Maintenance
 
-This repository has several public trust surfaces that must move together.
+One runtime capability can appear as a Python import, CLI command, API schema,
+artifact field, package description, workflow example, benchmark subject, and
+evidence dependency. These are projections of one contract and must change
+together when semantics change.
 
 ```mermaid
-flowchart LR
-    A[Runtime docs] --> E[Unified public trust story]
-    B[Evidence-book guides] --> E
-    C[Release and quality guides] --> E
-    D[Package metadata and READMEs] --> E
+flowchart TD
+    contract["Owned scientific contract"]
+    python["Python API"]
+    cli["CLI"]
+    schema["OpenAPI and artifacts"]
+    packages["Distribution metadata"]
+    guides["Usage and method guides"]
+    proof["Tests, benchmarks,<br/>evidence"]
+
+    contract --> python
+    contract --> cli
+    contract --> schema
+    contract --> packages
+    contract --> guides
+    contract --> proof
 ```
 
-## Surfaces To Review Together
+## Canonical Sources And Projections
 
-- runtime architecture pages
-- native workflow guides
-- release review guides
-- evidence-book navigation guides
-- package metadata and package READMEs
+| Concern | Canonical source | Projections to inspect |
+| --- | --- | --- |
+| Python behavior | curated runtime implementation and tests | API guide, examples, serialization |
+| command behavior | command registration and tests | generated CLI reference, operations guides |
+| service contract | pinned OpenAPI schema | API guide, clients, schema hash |
+| artifact meaning | result and manifest contracts | reports, consumer guide, evidence bundles |
+| package identity | package metadata | root/package READMEs, badges, release records |
+| evidence verdict | bundle claims and checks | indexes, study guides, release claims |
 
-## Why This Matters
+Never edit a projection to conceal disagreement with its canonical source.
 
-If those surfaces drift, the repository can start looking broader, cleaner, or
-more mature than its governed evidence actually supports.
+## Change Impact Review
 
-## Questions To Ask
+For each material change, record:
 
-- Does the architecture section still describe the real package and runtime
-  ownership split?
-- Do workflow guides still match the supported native and wrapper-backed
-  surfaces?
-- Does the release review guide still point to the real governed report and
-  gate surfaces?
-- Does the evidence-book overview avoid stale or contradictory summary claims?
-- Do package metadata and package README links reinforce the same public story?
+1. the owned contract and compatibility class;
+2. affected Python, CLI, schema, and artifact surfaces;
+3. affected package descriptions and examples;
+4. benchmarks whose configuration or interpretation changed;
+5. evidence bundles made stale by code, input, or configuration changes;
+6. verification commands and observed outcomes.
 
-## Common Failure Pattern
+## Drift Patterns
 
-The common failure is not one missing page. It is partial alignment:
+- A new native method exists but only an internal module path exposes it.
+- The canonical package shows an example the alias cannot execute.
+- CLI help changes while the generated command reference stays unchanged.
+- A result field changes meaning without an artifact schema change.
+- A study guide summarizes a verdict no longer present in the indexes.
+- Package metadata calls an adapter-backed workflow native.
+- A report renders successfully while omitting warnings from its structured
+  result.
 
-- workflow pages get updated
-- architecture pages stay stale
-- evidence pages still summarize old status
-- release pages still describe the previous review flow
+## Confidence Vocabulary
 
-That is when the repository starts looking polished in fragments instead of
-coherent as one release surface.
+Use `implemented`, `tested`, `benchmarked`, `evidence-backed`, and `released`
+only with the scope defined by the corresponding contract. Avoid umbrella
+labels such as “validated” when the actual proof is one unit test or one study
+bundle.
 
-## Maintainer Rule
+## Publication Gate
 
-When one trust surface changes materially, do not stop after updating the most
-obvious page. Keep going until the runtime docs, evidence guides, release
-guides, and package surfaces tell the same story at the same level of
-confidence.
+A change is ready for publication when canonical sources and projections
+agree, compatibility effects are explicit, generated outputs have been
+regenerated rather than hand-edited, evidence freshness has been evaluated,
+and the repository's package and documentation checks pass from a clean
+environment.
+
+An intentionally open scientific verdict can ship. An unacknowledged mismatch
+between runtime behavior and its published contracts cannot.

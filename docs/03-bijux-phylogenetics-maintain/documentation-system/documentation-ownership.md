@@ -2,63 +2,87 @@
 title: Documentation Ownership
 audience: maintainer
 type: handbook
-status: active
+status: canonical
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-21
 ---
 
 # Documentation Ownership
 
-This repository has several documentation layers. They do not answer the same
-question, and maintainers should not let them blur together.
+Each documentation surface has one durable responsibility. Duplication is
+acceptable only when the consumer and level of detail differ; scientific facts
+must still resolve to the same canonical implementation, schema, artifact, or
+evidence record.
 
-## Public Surface Responsibilities
+## Ownership Map
 
-- the root `README.md` introduces what the repository publishes and where the
-  major boundaries are
-- package `README.md` files explain the durable role of each published package
-- `docs/01-bijux-phylogenetics/` describes the runtime product surface, public
-  interfaces, operations, and quality boundaries
-- `docs/02-bijux-phylogenetics-evidence-book/` explains study evidence, parity, and
-  scientific trust boundaries
-- flagship native surfaces should be visible across reference, workflow, and quality pages rather than only in one inventory page
+| Surface | Primary responsibility | Must not become |
+| --- | --- | --- |
+| root `README.md` | repository identity, installation, capability map, first executable path | exhaustive command or API reference |
+| runtime package README | installable distribution contract and representative use | repository maintenance manual |
+| alias package README | compatibility behavior and naming differences | a second scientific product description |
+| product handbook | methods, architecture, interfaces, operations, quality, limits | source-tree inventory |
+| Evidence Book guide | scientific questions and bounded study verdicts | a substitute for bundle records |
+| checked-in evidence dossier | provenance, inputs, checks, results, verdicts | marketing narrative |
+| maintainer handbook | ownership, change impact, verification, publication | end-user method tutorial |
+| generated references | exhaustive CLI/API/index output | hand-edited explanation |
 
-## Reader-Facing Rule
+## Canonicality Rules
 
-Public documentation should help an external reader understand the runtime
-depth quickly. It should not read like a private repo note, a checklist, or a
-thin wrapper disclaimer when the code and tests now support a deeper story.
+- Runtime behavior resolves to curated source and contract tests.
+- CLI inventory resolves to registered commands and generated reference data.
+- Service behavior resolves to the pinned OpenAPI schema and hash.
+- Artifact meaning resolves to result, manifest, and schema contracts.
+- Evidence status resolves to bundle records and generated indexes.
+- Package identity resolves to package metadata and built-artifact inspection.
 
-That rule matters here because the repository now owns enough runtime and
-evidence depth that weak language becomes a kind of under-documentation. Public
-docs should sound accurate, concrete, and reader-facing, not apologetic or
-half-internal.
+Prose explains these sources; it does not override them.
 
-## Maintainer Surface Responsibilities
+## Public Writing Standard
 
-- `docs/03-bijux-phylogenetics-maintain/` is for repository stewardship, release
-  operations, and documentation alignment rules
-- maintainer docs should explain how to keep the public story truthful, not
-  replace the public docs
+Describe the scientific object, method, input, result, assumption, and limit
+directly. Avoid editorial statements about how impressive, serious, polished,
+or trustworthy the repository appears. Trust follows from concrete contracts,
+inspectable provenance, explicit verdicts, and reproducible examples.
 
-## When Runtime Ownership Changes
+Navigation should answer a real user decision. A page made mostly of “read
+next,” “why this page matters,” or “what this section should do” is incomplete
+until it contains the domain explanation itself.
 
-When the runtime gains one meaningful new owned surface, update every affected
-surface in the same review pass:
+## Change Propagation
 
-- root `README.md`
-- the relevant package `README.md`
-- the matching public handbook page
-- package metadata if description or maturity language changed
-- maintainer handbook guidance if maintainers need a new review rule
+```mermaid
+flowchart LR
+    behavior["Behavior or contract change"]
+    canonical["Canonical source and tests"]
+    generated["Generated references<br/>and schemas"]
+    explanatory["README and guides"]
+    evidence["Benchmarks and<br/>evidence freshness"]
 
-That review pass should make the new surface visible in public language, not
-just technically present in code or tests.
+    behavior --> canonical
+    canonical --> generated
+    canonical --> explanatory
+    canonical --> evidence
+```
 
-## Failure Modes To Avoid
+Update every affected projection in the same coherent change. If generated
+output and handwritten interpretation are independently reviewable, keep their
+commit boundaries separate.
 
-- public docs deny a surface that the code already owns
-- wrapper-backed workflows are described as if they were native
-- the evidence book is used as a substitute for product docs
-- package metadata lags far enough behind the docs that the release story
-  becomes contradictory
+## Review Checklist
+
+- Does the text name a real public import, command, schema, artifact, or study?
+- Are native methods and external engines attributed correctly?
+- Does the example execute through a supported surface?
+- Are defaults and assumptions visible where they affect interpretation?
+- Are machine contracts linked instead of reproduced manually?
+- Does evidence language match current bundle verdicts and freshness?
+- Are limitations stated next to the capability they qualify?
+- Does the page contain domain content rather than commentary about writing?
+
+## Generated Content
+
+Do not hand-edit synchronized shared assets, generated CLI reference blocks,
+schema hashes, or evidence indexes. Change their canonical source, run the
+supported generator, inspect the diff, and validate the governing checksum or
+integrity command before commit.
