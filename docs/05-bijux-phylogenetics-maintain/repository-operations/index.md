@@ -91,6 +91,26 @@ state. A handoff is complete only when downstream consumers can distinguish:
 Collapsing these states into “pass” or “fail” hides the action a maintainer must
 take and can silently narrow the denominator of a published report.
 
+## Isolate Runs Before Comparing Them
+
+Every verification, benchmark, evidence build, and package smoke run needs an
+owned run root or a producer-enforced identity check. Shared output directories
+otherwise allow stale files from one execution to satisfy another.
+
+| Isolation boundary | Required control | Contamination signal |
+| --- | --- | --- |
+| inputs | checksums and immutable or copied run-local identity | a run reads a mutable file whose revision is not retained |
+| configuration and policy | content identity recorded with the command | output exists but the settings that produced it differ |
+| output root | clean run identity or validated resume manifest | undeclared pre-existing files appear in the accepted inventory |
+| generated destination | generator owns exact expected files and drift check | obsolete generated files survive because no producer removes or rejects them |
+| comparison | both parent run identities and explicit join keys | rows are paired by filename, order, or directory proximity |
+| aggregate gate | child report revisions and hashes | reports from different candidate states are combined |
+
+Clean execution does not mean deleting diagnostic evidence. Preserve a failed
+run under its identity, diagnose it, and create a separate root for the next
+attempt. Promotion selects governed outputs through their producer; it never
+merges successful fragments from several run roots.
+
 ## Repository Gate Routing
 
 | Changed surface | Minimum repository gate |

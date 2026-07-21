@@ -65,6 +65,25 @@ when it changes how repository facts are kept coherent.
 | understanding a study verdict | Evidence Book study guide | freshness, regeneration, and publication gate |
 | changing an API, command, schema, or artifact | migration guidance when consumers are affected | canonical source, projection set, checks, and release decision |
 
+## Treat Public Examples As Executable Contracts
+
+An example is reader guidance and a compatibility consumer. Review it through
+the installed public surface it names, using inputs available to that
+installation context.
+
+| Example class | Execution proof | Semantic review |
+| --- | --- | --- |
+| installation or demo | clean wheel/sdist environment and packaged resources | result scope does not exceed packaging and capability proof |
+| Python workflow | curated imports and documented arguments | typed status, diagnostics, persistence, and owner remain visible |
+| CLI workflow | registered command, structured output, exit state, and manifest | shell syntax, output channels, omissions, and failure behavior agree |
+| external-engine workflow | controlled adapter contract plus named real-engine lane when claimed | executable ownership, version, native artifacts, and unavailable state remain explicit |
+| evidence or parity command | governed registry/bundle inputs and retained reports | runtime status, bundle verdict, and resolution vocabulary remain separate |
+
+Do not validate examples by syntax highlighting or source-checkout imports
+alone. When full execution requires an unavailable external environment,
+verify the controlled boundary and preserve the unexecuted lane as an explicit
+limitation rather than rewriting the example as proven live behavior.
+
 ## Propagate A Contract Change
 
 ```mermaid

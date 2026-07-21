@@ -109,6 +109,24 @@ The packet is incomplete when a skipped optional lane disappears into an
 aggregate pass, a report cannot be reconstructed from structured output, or a
 claim lacks a current governed record.
 
+## Reject Mixed-Revision Trust Packets
+
+A trust packet must describe one reconstructable repository and evidence
+state. Do not combine favorable reports produced from different revisions,
+policies, inputs, package builds, or generated indexes.
+
+| Conflict | Deciding owner | Required resolution |
+| --- | --- | --- |
+| runtime result and report disagree | typed result/schema and producer contract | correct the earliest producer or projection, then regenerate both |
+| parity summary and observations disagree | registry selection and observation ledger | preserve failure rows and rebuild the summary |
+| bundle manifest and generated evidence index disagree | bundle plus index generator/freshness contract | block the claim until regenerated state agrees |
+| package README and installed artifact disagree | built distribution metadata and public smoke contract | correct metadata or prose and rebuild the package |
+| release report cites stale child output | child report identity and aggregate dependency contract | rerun the child and aggregate gates from one candidate revision |
+
+Timestamp proximity is not identity. The packet records revision, policy,
+input, generated-state, and artifact hashes so a reviewer can prove that all
+constituent decisions were simultaneously valid.
+
 ## Maintained Guides
 
 - [Cross-surface contract maintenance](public-trust-surface-maintenance.md)

@@ -997,6 +997,8 @@ def test_maintainer_handbook_defines_change_and_artifact_ownership() -> None:
     assert "Keep Status In Its Owning Record" in handbook
     assert "Resolve Canonical Ownership" in handbook
     assert "Change-To-Check Routing" in handbook
+    assert "Close The Change Dependency Graph" in handbook
+    assert "closed, unaffected, blocked, and unexecuted edge" in handbook
     assert (
         "ready release can still publish explicit `not_comparable` boundaries"
         in handbook
@@ -1040,9 +1042,13 @@ def test_maintainer_indexes_define_operational_decisions_without_meta_prose() ->
     assert "Separate Reader And Maintainer Language" in documentation
     assert "Propagate A Contract Change" in documentation
     assert "Documentation Review Packet" in documentation
+    assert "Treat Public Examples As Executable Contracts" in documentation
+    assert "syntax highlighting or source-checkout imports" in documentation
     assert "Completion Criteria" in documentation
     assert "Detect Cross-Surface Drift" in trust
     assert "Release Review Questions" in trust
+    assert "Reject Mixed-Revision Trust Packets" in trust
+    assert "Timestamp proximity is not identity" in trust
     assert "Contract Projection Matrix" in public_interface
     assert "Maintain The Artifact Handoff" in public_interface
     assert "Public Result Invariants" in public_interface
@@ -1052,6 +1058,8 @@ def test_maintainer_indexes_define_operational_decisions_without_meta_prose() ->
     assert "Follow The Repository State Machine" in operations
     assert "Decide Whether Generated Output Is Governed" in operations
     assert "Inspect Each Handoff" in operations
+    assert "Isolate Runs Before Comparing Them" in operations
+    assert "never\nmerges successful fragments" in operations
     assert "Repository Gate Routing" in operations
     assert "Operational Completion" in operations
     for page in (documentation, trust, operations):

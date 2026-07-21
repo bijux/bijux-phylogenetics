@@ -72,6 +72,25 @@ A passed live parity case does not promote itself into Evidence Book evidence.
 
 If one change fits several rows, take the union of their dependent review.
 
+## Close The Change Dependency Graph
+
+A change is not complete when only its nearest projection agrees. Record the
+dependency graph from canonical owner to every consumer whose meaning,
+freshness, compatibility, or release decision can change.
+
+| Dependency edge | Closure evidence | Incomplete when |
+| --- | --- | --- |
+| implementation → public interface | contract tests and curated export or command inventory | an internal path passes while the installed surface differs |
+| interface → artifact producer | schema/result tests with complete, partial, refused, and warning states | only the happy-path payload was reviewed |
+| artifact → consumer or report | round-trip, omission, unit, status, and lineage checks | presentation survives but structured semantics drift |
+| numerical method → benchmark/parity | material-dependency and corpus review plus affected observations | old results remain current by date or filename alone |
+| result/comparison → Evidence Book claim | immutable dependency, check, verdict, and freshness record | capability proximity substitutes for claim consumption |
+| any public contract → package/docs/release | built-artifact proof, projections, limitation review, and readiness decision | one distribution or reader surface retains prior meaning |
+
+An explicitly unaffected edge still needs a reason tied to semantics, not a
+claim that its files were outside the diff. The final handoff identifies every
+closed, unaffected, blocked, and unexecuted edge.
+
 ## Scale Review By Semantic Risk
 
 Diff size does not determine review depth. Use the strongest applicable risk:
