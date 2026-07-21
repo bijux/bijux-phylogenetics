@@ -114,6 +114,37 @@ HTML and figures are interpretation surfaces. When a value also exists in JSON,
 TSV, a schema-governed result, or a bundle manifest, the structured record owns
 its identity and status.
 
+## Trace A Result When Something Looks Wrong
+
+Start at the observation that surprised you and move upstream to the component
+that made the disputed decision. Do not begin by rerunning the entire workflow
+or editing a report.
+
+```mermaid
+flowchart RL
+    claim["Claim or caption"]
+    report["Report, table,<br/>or figure"]
+    result["Structured result<br/>and diagnostics"]
+    execution["Command, model,<br/>version and warnings"]
+    inputs["Input identity<br/>and exclusions"]
+
+    claim --> report --> result --> execution --> inputs
+```
+
+| Symptom | Inspect first | Deciding owner | Do not conclude from |
+| --- | --- | --- | --- |
+| a taxon is absent | exclusion and reconciliation rows | input/tree/alignment contract | the final tip count alone |
+| a coefficient changed | design matrix, covariance, transform, and fitted population | comparative model | matching formula text |
+| a topology differs | taxon reconciliation, rooting, model, seed, and search state | inference method or external engine | a rendered tree image |
+| support values disagree | method label, scale, clade identity, and denominator | support procedure | normalized display percentages |
+| an ancestral value moved | node identity, model, tree, state scale, and uncertainty | reconstruction method | node array position |
+| a parity case failed | raw observations, normalization, tolerance, and reference identity | parity registry case | package-wide pass counts |
+| a study claim is unavailable | bundle verdict, primary outputs, checks, and freshness | Evidence Book claim | neighboring runtime capability |
+
+This trace preserves negative evidence. A failed check, missing output, or
+unresolved convention belongs in the record that owns it; changing a caption
+or omitting a row cannot resolve the underlying result.
+
 ## Build A Review Packet
 
 A durable analysis is a connected set of records, not a directory of files.

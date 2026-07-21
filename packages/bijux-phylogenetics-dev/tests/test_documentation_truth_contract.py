@@ -78,6 +78,8 @@ def test_root_readme_publishes_native_external_and_evidence_boundaries() -> None
     assert "the contract before choosing the command" in readme
     assert "Read The Demo As A Connected Record" in readme
     assert "phylo-inputs-report.json" in readme
+    assert "Follow One Analysis From Data To Claim" in readme
+    assert "capability proximity is not inherited evidence" in readme
 
 
 def test_site_landing_connects_first_run_to_scientific_review() -> None:
@@ -95,6 +97,8 @@ def test_site_landing_connects_first_run_to_scientific_review() -> None:
     )
     assert "Follow The Demo Records" in landing
     assert "Choose The Evidence Needed For The Decision" in landing
+    assert "Trace A Result When Something Looks Wrong" in landing
+    assert "changing a caption\nor omitting a row cannot resolve" in landing
 
 
 def test_foundation_and_architecture_define_owned_runtime_contracts() -> None:
@@ -160,6 +164,8 @@ def test_product_handbook_routes_analysis_and_preserves_run_identity() -> None:
     assert "parity registry, observation rows, and failure artifacts" in product
     assert "claim identifier, source, inputs, checks, freshness, verdict" in product
     assert "Make Four Decisions Before Execution" in product
+    assert "Locate The Scientific Decision" in product
+    assert "public interface starts a computation" in product
     assert "Open or blocked\n  resolution work" in product
     assert "Establish The Run Identity First" in operations
     assert "Minimum Handoff Record" in operations

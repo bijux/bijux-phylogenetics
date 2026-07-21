@@ -124,6 +124,39 @@ computational engines. Their adapters own input preparation, invocation,
 failure capture, output parsing, and normalization; they do not relabel the
 external algorithms as native code.
 
+## Follow One Analysis From Data To Claim
+
+The runtime, an external engine, and the Evidence Book can participate in one
+analysis without sharing ownership. The record at each boundary says who made
+the scientific decision and what survives for review.
+
+```mermaid
+flowchart LR
+    inputs["Tree · alignment · traits<br/>taxon and partition identity"]
+    native["Owned runtime<br/>model and diagnostics"]
+    adapter["Engine adapter<br/>execution identity"]
+    artifacts["Typed outputs<br/>manifest and checksums"]
+    comparison["Reference observation<br/>normalization and tolerance"]
+    evidence["Governed claim<br/>provenance and verdict"]
+
+    inputs --> native --> artifacts
+    inputs --> adapter --> artifacts
+    artifacts --> comparison --> evidence
+```
+
+| Boundary | Scientific decision | Authoritative record | Failure that must remain visible |
+| --- | --- | --- | --- |
+| input intake | which taxa, characters, traits, tree, and partitions are analyzed | validated object summaries and input checksums | duplicate or missing taxa, invalid states, incoherent dimensions |
+| native computation | which likelihood, covariance, prior, search, or reconstruction is evaluated | typed result with model state and diagnostics | non-finite objective, boundary solution, incomplete search, sampler warning |
+| external execution | which external executable and configuration produced the native files | engine manifest, version, command, streams, output checksums | unavailable binary, timeout, non-zero exit, stale or malformed output |
+| comparison | which quantities are equivalent enough to compare | observation rows with identities, normalization, tolerance, and denominator | missing reference, convention mismatch, unexplained numerical difference |
+| scientific claim | which bounded conclusion the retained observations support | Evidence Book claim, checks, freshness, and verdict | `mismatch_unexplained`, `not_comparable`, stale evidence, absent primary output |
+
+A workflow can stop legitimately at any row. For example, an external-engine
+run may produce a valid tree without participating in a reference comparison,
+and a native result may be useful without a governed study claim. The stopping
+point must be explicit; capability proximity is not inherited evidence.
+
 ## Select An Execution Contract
 
 | Work | Execution owner | Record to preserve | Strongest claim available from that record |

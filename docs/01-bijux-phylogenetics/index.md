@@ -40,6 +40,28 @@ the assumptions behind these routes. The [surface selection guide](interfaces/su
 then distinguishes Python composition, repeatable CLI execution, and durable
 artifact consumption.
 
+## Locate The Scientific Decision
+
+The public interface starts a computation; the owning runtime module decides
+its scientific meaning. Use the decision map to find assumptions and
+diagnostics before treating a command name as a method description.
+
+| Decision | Owning runtime surface | Identity that must accompany the result | First diagnostic boundary |
+| --- | --- | --- | --- |
+| tree structure and clade identity | `PhyloTree`, tree I/O, topology and validation modules | rooting, tip labels, branch lengths, support scale | duplicate taxa, invalid lengths, non-comparable tip sets |
+| alignment and character interpretation | FASTA, coding, partition and alignment modules | alphabet, record order, genetic code, partitions, gap/missing policy | unequal length, invalid symbols, excluded coding records |
+| finite-state likelihood | `phylo.likelihood` model and pruning surfaces | state space, rate model, frequencies, branch-length treatment | non-finite partials, invalid probabilities, objective failure |
+| native maximum likelihood | nucleotide ML result and search surfaces | start tree, model, bounds, seed/search controls | convergence, evaluated candidates, boundary estimates |
+| native Bayesian inference | `bayesian.run_bayesian_inference(...)` and typed posterior state | supported DNA model, priors, proposals, chain, seed, burn-in | acceptance, ESS, trace drift, retained samples |
+| comparative regression | comparative PGLS and model-selection surfaces | taxa, response, design columns, covariance and likelihood convention | rank, residual behavior, covariance boundary, model identity |
+| ancestral reconstruction | continuous/discrete ancestral modules | tree, node identity, trait/state space, transition model | uncertainty, infeasible states, sensitivity across trees/models |
+| parsimony and topology search | parsimony scoring and search modules | character encoding, cost matrix, rooting, move set | equal-best solutions, search coverage, ambiguity handling |
+| external engine execution | `engines` and Bayesian adapter surfaces | executable, version, command, native files, parser contract | unavailable engine, timeout, incomplete or stale bundle |
+
+The [runtime system map](architecture/runtime-system-map.md) follows these
+decisions through implementation layers. The [domain map](../02-bijux-phylogenetics-domains/index.md)
+explains when each decision is scientifically appropriate.
+
 ## Make Four Decisions Before Execution
 
 ```mermaid
