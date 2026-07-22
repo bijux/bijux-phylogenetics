@@ -4,7 +4,7 @@ audience: public
 type: guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Simulation Recovery And Calibration
@@ -27,6 +27,26 @@ flowchart LR
     generate --> analyze --> observations
     truth --> observations --> verdict
 ```
+
+## Design From The Failure Mode
+
+Begin with the scientific failure that would invalidate use of the method,
+then derive the experiment. A large undirected simulation grid can produce
+many summaries while never exercising the boundary that controls the claim.
+
+| Design field | Question fixed before generation | Example failure exposed |
+| --- | --- | --- |
+| estimand | What exact quantity or structure must be recovered? | a correct topology masks biased branch lengths |
+| regime | Which signal, boundary, missingness, and sample-size conditions matter? | average performance masks short-alignment failure |
+| population | How are seeds allocated, and what counts as a requested replicate? | failed draws disappear from the denominator |
+| metric | Which loss, coverage, topology, or completion measure addresses the claim? | mean error hides catastrophic tail behavior |
+| threshold | What result is acceptable, qualified, or refusing? | tolerance is relaxed after outcomes are known |
+| stopping rule | What determines the final replicate count? | sampling stops when a favorable estimate appears |
+| exclusion rule | Which outcomes are ineligible, and how are they retained? | non-converged fits are silently removed |
+
+The frozen design should make an unfavorable outcome interpretable. If a
+failure cannot be assigned to a regime, replicate state, metric, and rule, the
+experiment is not yet an acceptance test.
 
 ## Define The Estimand And Recovery Unit
 

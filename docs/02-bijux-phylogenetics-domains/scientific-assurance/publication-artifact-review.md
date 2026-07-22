@@ -4,7 +4,7 @@ audience: public
 type: how-to
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Publication Artifact Review
@@ -29,6 +29,26 @@ flowchart TD
     package --> semantics --> decision
     package --> projections --> audit --> decision
 ```
+
+## Treat The Package As A Dependency Graph
+
+Publication artifacts are not a flat folder of independently acceptable
+files. A defect in an upstream record constrains every projection and claim
+that depends on it.
+
+| Finding | Dependent surfaces that must be reconsidered |
+| --- | --- |
+| source identity or digest mismatch | all structured values, figures, methods, comparisons, and claims |
+| changed admitted population or exclusion policy | denominators, summary tables, support, figures, and narrative scope |
+| failed optimizer, search, chain, or diagnostic | fitted values, uncertainty summaries, selected result, and conclusion |
+| schema or unit mismatch in a value ledger | derived tables, axes, captions, methods language, and package comparison |
+| renderer-only change with identical governed values | visual review and checksum identity, but not automatically the scientific result |
+| missing provenance or external-producer identity | reproducibility and ownership claims even when files appear complete |
+
+Acceptance can be narrower than the package, but the boundary must follow
+these dependencies. A valid table does not rehabilitate a figure built from a
+different ledger, and a polished methods paragraph does not repair a failed
+source computation.
 
 ## Begin With Package Identity
 

@@ -4,7 +4,7 @@ audience: public
 type: guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Tree Uncertainty And Sensitivity
@@ -25,6 +25,24 @@ flowchart LR
 
     population --> structure --> patterns --> consequence --> claim
 ```
+
+## Uncertainty Axes Are Not Interchangeable
+
+An analysis can be stable on one axis and fragile on another. Name every axis
+that can reach the consumer instead of compressing them into “tree
+uncertainty.”
+
+| Axis | Population or alternative | Downstream quantity at risk |
+| --- | --- | --- |
+| topology | posterior, bootstrap, gene-tree, or candidate topology population | clade identity, sister relationships, transition placement |
+| root | admitted biological, temporal, or algorithmic roots | direction, ancestry, basal states, ingroup definition |
+| branch length or node time | samples, intervals, calibrations, or fitted alternatives | rates, chronology, exposure, comparative covariance |
+| taxon population | reconciled inclusions, missing taxa, rogue-taxon sensitivity | node correspondence, clade membership, available opportunities |
+| model and analysis policy | substitution/trait models, burn-in, thinning, consensus thresholds | tree weights, retained modes, support and final classification |
+
+Propagate the axes that can materially change the downstream claim. A stable
+consensus topology does not discharge uncertainty in dates or branch lengths;
+a narrow date interval does not establish stable clade identity.
 
 ## Diagnose The Uncertainty Source
 
