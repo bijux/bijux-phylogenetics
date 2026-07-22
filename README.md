@@ -24,9 +24,15 @@
 
 `bijux-phylogenetics` is a Python runtime for phylogenetic inference,
 comparative analysis, ancestral reconstruction, parsimony, simulation, and
-reviewable scientific reporting. It combines owned numerical methods with
-explicit adapters for established external engines and preserves the inputs,
-diagnostics, and provenance needed to audit a run.
+reviewable scientific reporting. It is built for the part after “the model
+ran”: establishing which data and tree were analyzed, who performed each
+computation, why a result was accepted, and which evidence supports the
+statement made from it.
+
+Owned numerical methods and explicit adapters for external engines share one
+result discipline. Inputs, exclusions, configuration, diagnostics, failures,
+and output identities remain connected instead of being reduced to a final
+tree, coefficient, or figure.
 
 ```mermaid
 flowchart LR
@@ -41,14 +47,19 @@ flowchart LR
 
 ## Choose A Starting Point
 
-| You need to… | Start with… |
-| --- | --- |
-| run a self-contained installed-package example | [the capability demo](#run-a-reviewable-example) |
-| compose an analysis in Python | [the workflow API](#python-workflow-api) |
-| find a model, assumption, or scientific output | [scientific domains](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-domains/) |
-| compare behavior with APE, GEIGER, phytools, or an external engine | [parities and correspondence](https://bijux.io/bijux-phylogenetics/04-bijux-phylogenetics-parities/) |
-| determine what evidence supports a claim | [the Evidence Book](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-evidence-book/) |
-| change or release the repository | [the maintainer handbook](https://bijux.io/bijux-phylogenetics/05-bijux-phylogenetics-maintain/) |
+| You need to… | Start with… | Leave with… |
+| --- | --- | --- |
+| prove the installed package can produce linked artifacts | [the capability demo](#run-a-reviewable-example) | a manifest, structured reports, and an explicit demonstration boundary |
+| compose an analysis in Python | [the workflow API](#python-workflow-api) | a typed result whose warnings and diagnostics remain available to the caller |
+| choose a model or understand its assumptions | [Scientific domains](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-domains/) | the scientific object, estimand, failure modes, and required review record |
+| compare behavior with APE, GEIGER, phytools, or an external engine | [parities and correspondence](https://bijux.io/bijux-phylogenetics/04-bijux-phylogenetics-parities/) | a named reference relationship, comparison denominator, and bounded outcome |
+| determine what evidence supports a public claim | [the Evidence Book](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-evidence-book/) | a claim identifier, observation population, verdict, limitations, and freshness state |
+| change or release the repository | [the maintainer handbook](https://bijux.io/bijux-phylogenetics/05-bijux-phylogenetics-maintain/) | the owning source, affected projections, focused checks, and release evidence |
+
+These are different assurance levels. A successful demo establishes packaging
+and artifact linkage, not numerical accuracy. A correct runtime result is not
+automatically a cross-tool parity result. A nearby passing evidence bundle does
+not support a claim that it does not name.
 
 ## Follow A Complete Study Guide
 

@@ -4,7 +4,7 @@ audience: public
 type: landing
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Bijux Phylogenetics
@@ -50,6 +50,37 @@ flowchart LR
     input --> runtime --> result --> artifact
     artifact -. selected workflows .-> evidence
 ```
+
+## Choose What Must Be Trusted
+
+The same analysis can be sound at one layer and unresolved at another. Begin
+with the decision that must survive review, then inspect the record that owns
+that decision.
+
+| Decision | Owning record | A weaker record cannot establish it |
+| --- | --- | --- |
+| Can these inputs enter this analysis? | validation result with taxon, state, schema, and exclusion details | successful file parsing |
+| Did the requested computation reach an interpretable state? | typed runtime result with model state, diagnostics, warnings, and status | process exit or output-file presence |
+| Can another person reconstruct the execution? | manifest linked to exact inputs, configuration, environment, attempts, and outputs | a figure or copied command |
+| Does Bijux correspond to a named reference here? | parity case with aligned assumptions, observation keys, tolerance, and complete denominator | similar headline values |
+| Does the repository support this scientific statement? | current Evidence Book claim with provenance, primary outputs, checks, verdict, and limitations | capability documentation or a neighboring bundle |
+
+```mermaid
+flowchart LR
+    admit["Admit inputs"] --> compute["Compute and diagnose"]
+    compute --> preserve["Preserve execution"]
+    preserve --> compare["Compare named observations"]
+    compare --> claim["Adjudicate bounded claim"]
+
+    parse["File parsed"] -. insufficient .-> admit
+    file["Output exists"] -. insufficient .-> compute
+    figure["Figure looks plausible"] -. insufficient .-> claim
+```
+
+Not every workflow must reach the final node. The honest stopping point may be
+a refused input, a valid runtime result with no reference comparison, or a
+`not_comparable` evidence claim whose missing observations are explicitly
+recorded.
 
 ## Run The Installed Runtime
 
