@@ -31,6 +31,20 @@ whether the biological model is true, whether the reconstructed values are
 historical observations, or whether the result generalizes beyond the
 governed data and configuration.
 
+### Read The Scientific Result In Layers
+
+The fitted λ summarizes how the declared covariance model weights shared
+ancestry among the observed tips. The likelihood-ratio result compares that
+fit with the registered λ=0 boundary. Ancestral reconstruction then projects
+the accepted tip values through a declared model onto internal clades, and the
+branch counts summarize differences between those conditional projections.
+
+These are dependent layers, not progressively more direct observations. The
+ancestral values inherit the tree, branch lengths, trait preparation, and
+model; branch counts inherit the ancestral values and threshold. Cross-runtime
+agreement establishes reproducibility of that chain while leaving biological
+model criticism and historical interpretation open.
+
 ## Connected Results Are Not Independent Replications
 
 The lambda fit, likelihood-ratio contrast, covariance entries, ancestral

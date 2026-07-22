@@ -66,6 +66,20 @@ The preparation is scientifically material. Type coercion, missing-data
 handling, duplicate-species aggregation, pruning, and label reconciliation can
 change both the observations and the covariance structure used downstream.
 
+### Why The Tree Changes The Question
+
+Species are not exchangeable replicates when related lineages share
+evolutionary history. Two primates with similar longevity may resemble one
+another partly because their branches share ancestry, so a model that treats
+all 75 species as independent answers a different question from a model whose
+covariance follows the tree.
+
+PCM1 first establishes which 75 species and branch relationships define that
+dependence, then asks how strongly longevity covaries with shared history and
+what internal-node values follow conditionally from the fitted model. The
+result is about this reconciled population and tree—not an intrinsic longevity
+constant for all primates.
+
 ## What PCM1 Contributes
 
 PCM1 is both a scientific comparison and an admission record for later primate

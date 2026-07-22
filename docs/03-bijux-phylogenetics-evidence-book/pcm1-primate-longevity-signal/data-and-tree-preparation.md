@@ -40,6 +40,22 @@ which every later scalar comparison depends. Their claim scope stops at that
 handoff: they cannot establish the fitted model merely because the model uses
 their accepted inputs.
 
+### Preparation Changes The Model Matrix
+
+For a comparative model, pruning is not equivalent to deleting decorative
+labels from a plot. Removing a tip selects a different covariance submatrix;
+aggregating duplicate rows changes the response vector; and reordering taxa
+changes which response is paired with each matrix row. The accepted model
+input is therefore the ordered pair:
+
+```text
+(75-species longevity vector, 75 × 75 tree-derived covariance)
+```
+
+Both members must use the same ordered species identity. A correct vector and
+a correct tree can still produce a scientifically wrong analysis when their
+orders or label mappings disagree.
+
 ```mermaid
 flowchart LR
     workbook["Raw workbook<br/>76 rows"]
