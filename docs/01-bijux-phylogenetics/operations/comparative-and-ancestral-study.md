@@ -13,6 +13,12 @@ Comparative regression and ancestral reconstruction can share a tree and trait
 table without sharing an estimand. Admit their common population once, then
 preserve a separate model, result, and acceptance decision for each analysis.
 
+The regression asks whether named predictors are associated with a response
+after accounting for the declared phylogenetic covariance. The ancestral
+analysis asks which states are supported at identified internal nodes under a
+declared transition model and root treatment. Similar inputs do not make these
+questions interchangeable.
+
 ```mermaid
 flowchart TB
     tree["Tree identity"] --> join["Taxon reconciliation"]
@@ -29,6 +35,17 @@ Before fitting either model, record the tree revision, rooting and branch
 length meaning; trait-table checksum; taxon column; units; factor reference
 levels; missing-value policy; and every taxon excluded from the join. Row order
 must not become an implicit taxon identifier.
+
+Create an admission table before either fit:
+
+| Taxon | Tree state | Response/predictor state | Ancestral-trait state | Disposition |
+| --- | --- | --- | --- | --- |
+| stable identifier | present or absent | observed, missing, transformed, or excluded | observed, missing, recoded, or excluded | admitted to regression, ancestral analysis, both, or neither |
+
+The table makes derived populations visible. If regression drops a taxon for
+a missing predictor while ancestral reconstruction retains it, the analyses
+no longer have one effective denominator even though they began from the same
+files.
 
 The curated Python workflows expose both analyses:
 
@@ -101,3 +118,11 @@ For publication, retain a common admission record plus separate JSON and TSV
 results, configurations, diagnostics, exclusions, and claim identifiers. If
 the two analyses use different taxon populations after filtering, record two
 derived dataset identities rather than implying one common denominator.
+
+Use separate acceptance ledgers as well. The regression ledger should name
+the formula, coding, units, lambda policy, covariance assumptions, residual
+checks, and coefficient-level claim. The ancestral ledger should name the
+trait coding, transition model, state ordering, root prior, node or clade
+keys, and uncertainty. A favorable regression diagnostic cannot close an
+ancestral-model sensitivity, and a stable ancestral state cannot validate a
+coefficient.

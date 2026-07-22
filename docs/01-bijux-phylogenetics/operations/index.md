@@ -36,6 +36,22 @@ flowchart LR
 | interpret benchmark records | [Native benchmark review](native-benchmark-review.md) |
 | understand what automation cannot decide | [Operational boundaries](operational-boundaries.md) |
 
+## Read A Guide At Three Levels
+
+Every operational guide separates three records that are easy to collapse:
+
+| Level | Owns | Completion question |
+| --- | --- | --- |
+| execution | programs, arguments, environment, process state, and native files | did the declared computation run as identified? |
+| scientific result | admitted population, estimand, model, diagnostics, exclusions, and structured values | is the result interpretable for the declared question? |
+| claim | bounded statement, observation population, comparison rule, verdict, and freshness | does governed evidence support the exact statement? |
+
+A complete execution can yield a scientifically rejected result. A valid
+scientific result can exist without a parity or Evidence Book claim. A claim
+can become stale while the historical execution remains reconstructable.
+Carry all three identities when the run will be cited; do not use one status
+as shorthand for the others.
+
 ## Establish The Run Identity First
 
 Before selecting a model, record the input set and the runtime that will own
