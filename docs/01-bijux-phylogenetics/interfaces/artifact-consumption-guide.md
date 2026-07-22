@@ -4,7 +4,7 @@ audience: public
 type: how-to
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Artifact Consumption Guide
@@ -45,6 +45,26 @@ Stop at the first contradiction. A schema-valid result paired with the wrong
 input checksum is not the run under review. A complete directory with a failed
 manifest status is not successful. A favorable summary cannot override a
 failed observation ledger.
+
+## Resolve Contradictions At The Owning Record
+
+Artifacts are projections with different owners, not a vote. When two files
+disagree, resolve the contradiction at the record that owns the disputed fact
+and retain the discrepancy.
+
+| Contradiction | Owning record | Required response |
+| --- | --- | --- |
+| directory contains a file absent from the inventory | manifest and artifact producer | treat it as undeclared until lineage and role are established |
+| checksum disagrees with retained bytes | checksum-bearing manifest | reject that identity; do not refresh the digest in place |
+| report says complete while structured status says partial or failed | typed result and run manifest | preserve the terminal state and correct the report projection |
+| figure label disagrees with a result value | machine-readable result | regenerate the figure from the identified source record |
+| normalized result disagrees with an external native file | adapter mapping contract | preserve both, diagnose parsing or normalization, and withhold correspondence |
+| Evidence Book prose exceeds a claim verdict | claim, check, and bundle manifests | narrow the prose and retain the governed verdict |
+
+Never resolve a conflict by choosing the friendlier representation, editing an
+archived producer record, or averaging incompatible values. A correction is a
+new identified record with explicit lineage unless the governed publication
+process defines a traceable replacement.
 
 ## Identify The Bundle
 
