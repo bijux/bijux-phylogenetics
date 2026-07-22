@@ -27,6 +27,39 @@ flowchart LR
     runtime --> artifacts
 ```
 
+## Choose The Contract Before The Syntax
+
+Begin with the work product another person or system must accept. That choice
+determines the stable boundary; syntax comes afterward.
+
+| Needed work product | Contract to depend on | Do not substitute |
+| --- | --- | --- |
+| an in-process scientific value | curated Python import and typed result | a nested implementation import or rendered table |
+| a repeatable shell operation | documented CLI command, exit behavior, and structured output | terminal wording or file existence alone |
+| a durable analytical record | schema-versioned artifact, manifest, and checksums | an object representation remembered from one runtime version |
+| a service exchange | pinned request and response schema plus scientific status | HTTP success as proof of analytical success |
+| a citable scientific statement | governed claim and its exact evidence dependencies | a successful run, parity row, or nearby study page |
+
+The same computation may legitimately produce all five work products. They
+are linked views, not interchangeable proof. A notebook can inspect a rich
+result while a scheduled job consumes its JSON projection and a reviewer reads
+an HTML report; each consumer must retain the identity of the structured
+result it actually accepted.
+
+```mermaid
+flowchart LR
+    request["Validated request"] --> execution["Execution identity"]
+    execution --> result["Typed result identity"]
+    result --> artifact["Artifact identity"]
+    artifact --> presentation["Presentation identity"]
+    artifact --> claim["Claim identity"]
+```
+
+A new serialization, report, or claim does not retroactively change the
+upstream computation. Conversely, changing an input, model, executable, or
+acceptance policy creates a new run identity even when the output filename is
+reused.
+
 ## Choose By Consumer
 
 | Consumer | Primary surface | Why |

@@ -26,6 +26,27 @@ flowchart TB
     workflow --> output
 ```
 
+## Trace One Result Through The System
+
+Consider a supported sequence-to-tree run. Its final Newick file is useful,
+but the file alone is not the result contract. The scientific meaning is built
+and retained across several owners:
+
+| Boundary | Decision made there | Record needed later |
+| --- | --- | --- |
+| FASTA parser and validation | which identifiers, records, and alphabet enter the study | original input, validation findings, and admitted-record identity |
+| sequence workflow | which alignment, trimming, inference, and support policies compose the run | workflow configuration and stage lineage |
+| external-engine adapters | which MAFFT, trimAl, and IQ-TREE2 executions performed the computation | executable versions, commands, native outputs, and process state |
+| normalized result | which tree, model, support output, warnings, and runtime belong together | typed result plus JSON/TSV projections |
+| report or downstream analysis | which fields are displayed or consumed | manifest linking every projection to its structured owner |
+| evidence review | which bounded claim, if any, those records can support | claim identifier, observation rule, denominator, verdict, and freshness |
+
+This trace is the fastest way to diagnose an apparently simple discrepancy.
+A wrong taxon population belongs at admission; a different selected model
+belongs at execution; a missing warning belongs at projection; an unsupported
+conclusion belongs at claim review. Fix the earliest owner of the incorrect
+state, then rebuild its downstream representations.
+
 ## Architectural Commitments
 
 - **One scientific meaning.** Tree, taxon, alignment, and model semantics do
