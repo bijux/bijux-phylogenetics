@@ -45,6 +45,24 @@ Artifacts should preserve both the requested alias identity and the resolved
 canonical runtime identity so another person can reconstruct what was
 installed and what actually performed the work.
 
+## Preserve Identity For Reproduction And Citation
+
+The compatibility name and scientific owner serve different purposes. Keep
+both where the route matters; use the canonical name where the implementation
+must be unambiguous.
+
+| Record | Identity to retain | Reason |
+| --- | --- | --- |
+| environment lock | `phylogenetic` request plus resolved `bijux-phylogenetics` version | reproduces dependency resolution |
+| command transcript | invoked alias and canonical runtime reported by the result | reproduces the exercised facade and computation owner |
+| manifest or support bundle | both distribution identities, loaded module path, and schema | distinguishes alias failure from runtime failure |
+| methods or software citation | canonical `bijux-phylogenetics` identity, with alias invocation when operationally relevant | credits the scientific implementation without hiding the entry route |
+| compatibility test | alias surface paired with the exact canonical surface | proves delegation rather than independent numerical agreement |
+
+Do not cite `phylogenetic` as an independent implementation or count an alias
+run as replication. Conversely, do not erase the alias from a defect report:
+the invoked facade is the surface whose compatibility is being tested.
+
 ## Installation
 
 ```bash

@@ -45,6 +45,23 @@ but they retain different computation owners. A normalized IQ-TREE2 or BEAST
 result remains an external-engine result; sharing a Python result shape does
 not make the algorithm native.
 
+## Read Success At The Correct Boundary
+
+The runtime exposes several success states, and each answers a narrower
+question than the next:
+
+| Boundary | Success establishes | It does not establish |
+| --- | --- | --- |
+| installation | the selected distribution was resolved and installed | that Python imports the intended artifact |
+| import and command discovery | the runtime and entry point load in this environment | that project inputs satisfy a scientific contract |
+| admission | identifiers, schemas, states, units, and preconditions are valid | that the selected model or method is appropriate |
+| execution | the named native method or external engine reached an admissible terminal state | that diagnostics and uncertainty support use of the result |
+| scientific acceptance | a declared consumer accepts the complete result for one bounded claim | that the result transfers to a different population, model, or claim |
+
+Preserve the state at every boundary. A zero exit code can coexist with
+scientific warnings or a qualified result, while a refusal can be the correct
+and reproducible outcome for inadmissible inputs.
+
 ## Installation
 
 ```bash

@@ -44,6 +44,22 @@ flowchart LR
     products --> checks --> release
 ```
 
+## A Release Decision Joins Three Ledgers
+
+Repository readiness is reconstructable only when source, execution, and
+artifact identities agree.
+
+| Ledger | Required identity | Contradiction that blocks reuse |
+| --- | --- | --- |
+| source | repository revision, configuration, governed inputs, dependency state | a source or policy change after the check ran |
+| execution | command, environment, tool versions, start/terminal state, exit status | a copied report with no matching execution or an interrupted run presented as complete |
+| artifacts | child reports, package hashes, site/evidence inventories, checksums | missing, mixed-revision, hand-edited, or regenerated outputs |
+
+The aggregate publication decision is a join over these ledgers, not a fourth
+source of truth. If any key changes, rerun the owning check and every consumer
+of its report. This preserves favorable evidence that is still applicable
+without carrying it across a revision where its inputs no longer match.
+
 ## What This Package Never Decides
 
 | Question | Why it remains elsewhere | Correct authority |
