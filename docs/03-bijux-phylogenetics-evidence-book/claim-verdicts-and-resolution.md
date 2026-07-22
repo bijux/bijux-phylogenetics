@@ -43,6 +43,33 @@ does not make every scientific method validated.
 “needs review.” Neither may be converted into `matched_with_tolerance` by
 widening the tolerance after observing the result.
 
+## Derive A Claim Verdict From Its Required Population
+
+Start from the claim dependency set, not from whichever rows are easiest to
+compare:
+
+```mermaid
+flowchart TD
+    required["Enumerate required observations"] --> aligned{"Every required observation<br/>has aligned identities and outputs?"}
+    aligned -- no --> incomparable["not_comparable"]
+    aligned -- yes --> rules{"Apply every predeclared rule"}
+    rules -- all exact --> exact["matched"]
+    rules -- all within budgets --> tolerance["matched_with_tolerance"]
+    rules -- violation with accepted cause --> explained["mismatch_explained"]
+    rules -- violation without accepted cause --> unexplained["mismatch_unexplained"]
+```
+
+The denominator includes every observation the claim declares, including
+missing, excluded, failed, and non-comparable members. A verdict may summarize
+that population only when the aggregation rule is defined in advance and the
+machine record retains each member. “Most rows matched” is a descriptive count,
+not one of the governed claim verdicts.
+
+When exact and tolerance rules coexist, report the strongest vocabulary that
+is true for the complete claim population. Do not label the claim `matched`
+because its exact subset passed while required tolerance-based observations
+were merely within budget.
+
 ## Apply Verdicts To The Present Studies
 
 The same repository can legitimately retain several evidence states because
@@ -103,6 +130,13 @@ non-comparable states remain part of the audit trail.
 A corrected implementation may produce a matching new comparison, but it does
 not mean the earlier mismatch never occurred. Report both when the history
 matters to released artifacts or scientific conclusions.
+
+Closure requires a new observation chain, not only a resolution-state edit.
+The closure record should link the corrected input, execution, result,
+comparison, claim verdict, and freshness projection. If an accepted causal
+explanation leaves the numerical difference in place, use
+`mismatch_explained`; explanation makes the discrepancy interpretable, not
+equal.
 
 ## Write The Public Statement
 

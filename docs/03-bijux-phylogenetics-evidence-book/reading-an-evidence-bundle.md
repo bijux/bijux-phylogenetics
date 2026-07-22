@@ -14,6 +14,24 @@ dependencies. Read it from identity to observation; starting with the summary
 report makes it too easy to miss a narrower claim, excluded output, or stale
 dependency.
 
+## Answer Six Questions Before Citing
+
+A first review should be able to answer these questions directly from governed
+records:
+
+| Question | Owning record |
+| --- | --- |
+| What exact statement is evaluated? | `claims.json` claim text and scope |
+| Which population and method does it cover? | claim dependencies, input manifest, and provenance |
+| Did both named computations produce identified primary outputs? | provenance and results inventory |
+| Which observations are required, missing, excluded, or mismatched? | claim dependency map and machine result ledgers |
+| What rule turns those observations into a verdict? | `checks.json` and observation-level comparison fields |
+| Is that verdict current for this repository revision? | freshness, integrity, and resolution indexes |
+
+If any answer comes only from `report.md`, a plot, a filename, or contextual
+prose, continue to the owning machine record. If no owning record exists, the
+claim is not ready for citation at that point in the chain.
+
 ## Classify The Bundle Before Reading Its Result
 
 The directory shape is intentionally similar across bundles, but the evidence
@@ -120,6 +138,12 @@ and resolution indexes. A bundle can be internally coherent but stale after a
 material code, source, dataset, or configuration change. A generated index can
 also lag its bundle; any contradiction stops citation until the owning records
 are rebuilt or investigated.
+
+Currency is claim-specific. An unchanged dataset does not keep a claim current
+when its runtime implementation changed; an unchanged implementation does not
+keep it current when a source locator, reference execution, tolerance, schema,
+or claim dependency changed. Record which dependency triggered review instead
+of replacing a specific freshness failure with the word “stale.”
 
 ## Produce A Citation Packet
 
