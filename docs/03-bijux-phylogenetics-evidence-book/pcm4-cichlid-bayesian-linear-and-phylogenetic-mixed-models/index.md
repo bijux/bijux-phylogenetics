@@ -4,7 +4,7 @@ audience: public
 type: study-guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # PCM4: Cichlid Bayesian Linear And Phylogenetic Mixed Models
@@ -42,6 +42,23 @@ flowchart LR
 The inverse covariance is not an implementation detail: taxon order,
 rootedness, branch lengths, and alignment with the species table determine the
 random-effect structure.
+
+## Why PCM4 Is More Than Bayesian PGLS
+
+PCM4 deliberately preserves four related estimators because each changes a
+different part of the scientific contract.
+
+| Estimator | Dependence model | Uncertainty object | Question it answers |
+| --- | --- | --- | --- |
+| Gaussian GLS baseline | independent residuals | maximum-likelihood sampling uncertainty | what fixed relationship appears without phylogenetic covariance? |
+| Bayesian Gaussian model | independent residuals with declared priors | posterior draws for fixed and residual terms | how do prior and posterior estimation change the same mean structure? |
+| phylogenetic mixed model | phylogenetic random effect plus residual variation | joint posterior for fixed effects and variance components | how much modeled variation is assigned to the tree-linked random effect? |
+| Brownian PGLS comparator | residual covariance derived directly from the tree | maximum-likelihood coefficient and fit uncertainty | how does a covariance-model treatment compare with the random-effect treatment? |
+
+Close fixed-effect point estimates would not make these estimators
+interchangeable. A comparison must preserve priors, variance components,
+posterior dependence, chain diagnostics, covariance scaling, and the different
+meaning of PGLS versus random-effect uncertainty.
 
 ## Model Components
 

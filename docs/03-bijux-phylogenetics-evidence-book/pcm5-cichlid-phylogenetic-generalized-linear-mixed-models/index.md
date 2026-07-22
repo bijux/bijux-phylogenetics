@@ -4,7 +4,7 @@ audience: public
 type: study-guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # PCM5: Cichlid Phylogenetic Generalized Linear Mixed Models
@@ -28,6 +28,26 @@ flowchart TB
     data --> binary --> derived
     binary --> repeated --> derived
 ```
+
+## What PCM5 Adds To PCM4
+
+PCM4 establishes the contract for a Gaussian phylogenetic mixed model. PCM5
+changes the response distribution, observation unit, link scale, and derived
+posterior questions. Each change creates a new evidence obligation.
+
+| Extension | Scientific question | Evidence that must be added |
+| --- | --- | --- |
+| Gaussian variance → phylogenetic signal ratio | what share of modeled variance is phylogenetic under the declared convention? | same-draw variance components and complete denominator |
+| species summary → repeated observations | how are within-species records separated from species and phylogenetic heterogeneity? | observation keys, species levels, tree levels, and all random-effect components |
+| Gaussian response → Poisson counts | how does expected parasite abundance change on the log-linked count scale? | count coding, offset/exposure, link, dispersion treatment, priors, posterior draws |
+| infection categories → binary-style latent model | how does infection probability change under the source category and residual convention? | category order, link/latent scale, residual convention, coefficient draws |
+| coefficient posterior → probability curve | what response-scale probability is implied across predictor values? | paired coefficient draws, predictor grid, inverse link, draw-wise summaries |
+| tip/random effects → ancestral node effects | what node-linked posterior quantities follow from the exact tree? | tree and node identity, parameter scale, parent draws, intervals, diagnostics |
+
+PCM5 is therefore a dependency graph, not a larger coefficient table. A
+derived probability, signal ratio, or variance share is trustworthy only when
+its parent model, chain, draw, parameter, and transformation identities remain
+linked.
 
 ## Why Model Families Stay Separate
 

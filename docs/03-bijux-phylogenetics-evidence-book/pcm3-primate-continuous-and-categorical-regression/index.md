@@ -4,7 +4,7 @@ audience: public
 type: study-guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # PCM3: Primate Continuous And Categorical Regression
@@ -40,6 +40,24 @@ An interaction coefficient is not an isolated effect. It modifies a
 conditional slope under a specific reference coding. Standardization changes
 the location represented by the intercept. Those semantics must match before
 coefficients from different implementations can be compared.
+
+## What PCM3 Is Designed To Distinguish
+
+PCM3 turns one multivariable analysis into eight bounded questions because
+changes that look cosmetic in formula notation change the estimand.
+
+| Design choice | Quantity that becomes interpretable | Identity needed for evidence |
+| --- | --- | --- |
+| continuous plus categorical main effects | reference-group intercept, common slope, and group contrast at `x = 0` | admitted rows, response scale, factor levels, reference level, design columns |
+| log-transformed response | multiplicative rather than additive response interpretation | transform rule, zero handling, units, back-transform policy |
+| intercept-free group parameterization | one directly estimated intercept per group | contrast/design matrix and coefficient mapping, not label similarity |
+| continuous-by-category interaction | reference slope and group-specific slope differences | centered/scaled predictor, reference group, interaction column |
+| standardized predictor | intercept at the predictor mean and slopes per standard deviation | training population, mean, scale, and application rule |
+| Martins phylogenetic covariance | coefficients and tests under tree-structured residual dependence | tree/taxon order, covariance definition, fitted parameter, likelihood convention |
+
+The evidence question is therefore not “did both tools fit PGLS?” It is
+whether they fitted the same population, design matrix, covariance, estimand,
+and hypothesis before any coefficient or p-value was compared.
 
 ## Read Coefficients From The Design Matrix
 
@@ -82,6 +100,20 @@ source programs, identified inputs, claim decomposition, runtime mapping,
 checks, and review locations, but it does not yet have governed
 observation-level lecture outputs under aligned factor coding, transformations,
 covariance, and hypothesis-test semantics.
+
+## What The Present Record Contributes
+
+| Retained evidence | Decision it enables now | Decision it does not enable |
+| --- | --- | --- |
+| checked lecture source and provenance | identify the intended formulas, objects, and source boundary | claim that the lecture execution completed in the governed lane |
+| governed table and tree derivatives | inspect exact candidate inputs and their identities | claim that both implementations admitted identical rows and design columns |
+| eight separated claim contracts | prevent baseline, interaction, transform, and phylogenetic tests from being collapsed | assign a favorable numerical verdict to any claim |
+| executable contract wrappers and zero-primary-output manifests | verify that absence is explicit and machine-readable | treat wrapper completion as regression execution |
+| closure requirements | run a future comparison without redefining its population or estimands | publish coefficients, likelihoods, p-values, or diagnostic correspondence today |
+
+PCM3 is evidence of a governed comparison design and its current absence of
+primary observations. That is useful evidence about readiness and scope, not
+numerical evidence about regression correspondence.
 
 ## No Numerical Headline Is Supported
 
