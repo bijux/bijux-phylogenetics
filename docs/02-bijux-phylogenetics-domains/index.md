@@ -166,34 +166,16 @@ to evolutionary analysis. Missing independent truth, reference incompatibility,
 or incomplete denominators belong to scientific assurance. Reports carry these
 states; they do not become their owner.
 
-## Shared Scientific Invariants
+## Leave With The Owning Record
 
-- Taxon identity must remain stable across every joined object.
-- Tree rootedness and branch-length meaning must match the chosen method.
-- Character or sequence state space must be explicit.
-- Model parameterization and transformation conventions must be retained with
-  estimates.
-- Search, optimization, and sampling diagnostics qualify final values.
-- Structured results are canonical; figures and prose are projections.
-- Validation scope is named rather than inherited from a neighboring method.
+| After the domain decision | Continue with | Preserve |
+| --- | --- | --- |
+| execute an owned or external method | the [product handbook](../01-bijux-phylogenetics/index.md) | computational owner, input identity, configuration, status, diagnostics, artifacts |
+| compare implementations | the [verification matrix](../04-bijux-phylogenetics-parities/correspondence/verification-matrix.md) | both owners, selected cases, normalization, observations, tolerance, denominator |
+| evaluate a study statement | the [Evidence Book](../03-bijux-phylogenetics-evidence-book/index.md) | claim, source, primary outputs, checks, freshness, verdict, limitations |
+| publish a table, figure, or package | [publication artifact review](scientific-assurance/publication-artifact-review.md) | structured source, visual encoding, inventory, consumer acceptance, revalidation identity |
 
-## Native And External Ownership
-
-The package owns substantial tree, likelihood, inference, comparative,
-ancestral, parsimony, simulation, validation, and reporting implementations.
-It also integrates MAFFT, trimAl, IQ-TREE2, FastTree, MrBayes, and BEAST where
-those programs remain the computational owner. Both paths converge on typed
-results and artifacts, but their installation, provenance, and failure
-boundaries remain different.
-
-## Connecting Domains To Evidence
-
-Scientific-domain coverage describes what the runtime implements. The
-[Evidence Book](../03-bijux-phylogenetics-evidence-book/index.md) records
-bounded study comparisons. A domain can be mature in code and tests without a
-course-study bundle; an evidence bundle can depend on an external engine
-without claiming native ownership.
-
-For cross-implementation questions, use the
-[verification matrix](../04-bijux-phylogenetics-parities/correspondence/verification-matrix.md)
-to distinguish live parity, checked fixtures, and governed external execution.
+Domain coverage states what the runtime can express; it is not an assurance
+shortcut. Native methods and external engines retain different computational
+owners, and neither acquires study evidence until a governed claim consumes
+the exact result.

@@ -4,7 +4,7 @@ audience: public
 type: index
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Parities And Correspondence
@@ -33,12 +33,12 @@ flowchart LR
 
 ## Reference Landscape
 
-| Relationship | Tools | What the repository owns |
-| --- | --- | --- |
-| live R parity | APE, GEIGER, phytools | governed cases, R runners, normalization, tolerances, mismatch artifacts |
-| checked R-derived correspondence | `nlme`, selected course workflows and fixtures | frozen inputs/outputs, comparison rules, provenance and limits |
-| external alignment and tree execution | MAFFT, trimAl, IQ-TREE2, FastTree | adapters, configuration, execution capture, parsing and normalized artifacts |
-| external posterior execution and review | MrBayes, BEAST | preparation, execution adapters, trace/tree parsing, diagnostics and reports |
+| Relationship | Tools | What the repository owns | What that record does not establish |
+| --- | --- | --- | --- |
+| live R parity | APE, GEIGER, phytools | governed cases, R runners, normalization, tolerances, mismatch artifacts | package-wide interchangeability or unselected operations |
+| checked R-derived correspondence | `nlme`, selected course workflows and fixtures | frozen inputs/outputs, comparison rules, provenance and limits | a current live execution of the reference package |
+| external alignment and tree execution | MAFFT, trimAl, IQ-TREE2, FastTree | adapters, configuration, execution capture, parsing and normalized artifacts | that Bijux owns or independently reproduces the external algorithm |
+| external posterior execution and review | MrBayes, BEAST | preparation, execution adapters, trace/tree parsing, diagnostics and reports | posterior agreement without a separate aligned comparison |
 
 An adapter is not automatically a parity proof. It establishes that the
 external program can participate in a governed Bijux workflow. Numerical or
