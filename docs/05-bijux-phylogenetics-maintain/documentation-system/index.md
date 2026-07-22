@@ -4,7 +4,7 @@ audience: maintainer
 type: handbook
 status: active
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Documentation System
@@ -64,6 +64,35 @@ when it changes how repository facts are kept coherent.
 | interpreting a result, warning, refusal, or limitation | interface, operations, or quality guide | producer/consumer ownership and compatibility obligations |
 | understanding a study verdict | Evidence Book study guide | freshness, regeneration, and publication gate |
 | changing an API, command, schema, or artifact | migration guidance when consumers are affected | canonical source, projection set, checks, and release decision |
+
+## Give Every Public Page A Reader Contract
+
+A public page earns its place by helping a reader make a durable decision. Its
+opening and structure should let that reader determine:
+
+1. **purpose** — which scientific or operational problem this surface solves;
+2. **owner** — which native method, external engine, schema, or evidence record
+   owns the behavior or conclusion;
+3. **entry point** — how an installed user invokes or inspects it;
+4. **result** — which values, diagnostics, refusals, and artifacts come back;
+5. **assurance** — which tests, benchmarks, parity cases, or claim records
+   support the bounded statement;
+6. **boundary** — which broader conclusion remains unavailable;
+7. **next decision** — where to go to execute, interpret, verify, or maintain
+   the surface.
+
+Do not expose this checklist as editorial commentary on the public page. Write
+the answers as direct product and scientific guidance. A reader should not
+need repository history, internal planning, or knowledge of the documentation
+tree to understand why the page matters.
+
+| Public page kind | Reader decision it must close |
+| --- | --- |
+| landing page | Is this product relevant, and which path matches my purpose? |
+| domain or workflow guide | Which contract applies, and what result or refusal should I expect? |
+| interface guide | How do I invoke, persist, and recover without losing semantics? |
+| Evidence Book study guide | What was claimed, what evidence exists, what is the verdict, and what remains unresolved? |
+| reference page | What exact stable names, fields, defaults, statuses, and compatibility rules may I depend on? |
 
 ## Treat Public Examples As Executable Contracts
 

@@ -4,7 +4,7 @@ audience: maintainer
 type: handbook
 status: canonical
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Cross-Surface Contract Maintenance
@@ -44,6 +44,33 @@ flowchart TD
 | evidence verdict | bundle claims and checks | indexes, study guides, release claims |
 
 Never edit a projection to conceal disagreement with its canonical source.
+
+## Trace Every Material Sentence To Its Authority
+
+Public prose is part of the trust surface when it changes a reader's decision.
+Review its material nouns and verbs as claims, then resolve each to the record
+that owns the fact.
+
+| Sentence form | Required authority | Typical overclaim to reject |
+| --- | --- | --- |
+| “Bijux implements …” | repository-owned implementation and installed public entry point | an adapter or planned surface described as native |
+| “the workflow runs …” | executable workflow contract, terminal-state handling, and artifact inventory | a source-only example described as an executed lane |
+| “results agree …” | registered comparison population, observations, comparator, tolerance, and verdict | matching display values generalized to parity |
+| “the study shows …” | claim-scoped Evidence Book record with source, inputs, checks, verdict, and freshness | nearby runtime capability substituted for study evidence |
+| “the release supports …” | built-package smoke, schema/docs alignment, and release-readiness decision | source-tree availability substituted for installed support |
+
+```mermaid
+flowchart LR
+    sentence["Material public sentence"] --> subject["Resolve subject and scope"]
+    subject --> owner["Locate canonical owner"]
+    owner --> proof["Locate current proof and denominator"]
+    proof --> boundary["Carry failures and exclusions"]
+    boundary --> publish["Publish bounded wording"]
+```
+
+If no authority resolves, weaken or remove the sentence and record the missing
+owner or proof. Do not make prose sound definitive while the underlying record
+is absent, stale, or explicitly `not_comparable`.
 
 ## Change Impact Review
 
