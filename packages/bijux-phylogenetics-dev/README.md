@@ -14,6 +14,26 @@ Repository verification and publication tooling for `bijux-phylogenetics`.
 This package is used by maintainers and CI; it is not part of the scientific
 runtime and is not required to run an analysis.
 
+## Who Should Install It
+
+Install this package only in a repository-maintenance environment that must
+answer one or more of these questions:
+
+| Maintainer need | Evidence produced or checked |
+| --- | --- |
+| review a change | scoped contract, boundary, documentation, and evidence checks |
+| inspect a distributable | wheel and source-archive contents plus clean-environment smoke results |
+| publish the documentation site | site construction, managed-asset, badge, link, and truth-contract results |
+| assess an evidence release | bundle identity, completeness, closure, freshness, and index records |
+| authorize publication | an aggregate decision linked to every required child report |
+
+Do not add it to an analysis environment merely to run models, parse trees, or
+render reports. The development package intentionally carries repository
+automation and its dependencies; the runtime package owns the scientific
+objects and methods. Keeping those environments separate makes package smoke
+tests representative and prevents a maintainer dependency from becoming an
+undeclared requirement of a published analysis.
+
 ## Install It For Repository Decisions
 
 Use `bijux-phylogenetics-dev` when the question concerns repository integrity,

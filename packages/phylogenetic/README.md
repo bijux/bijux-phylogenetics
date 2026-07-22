@@ -45,6 +45,26 @@ Artifacts should preserve both the requested alias identity and the resolved
 canonical runtime identity so another person can reconstruct what was
 installed and what actually performed the work.
 
+## Understand Operational Equivalence
+
+The compatibility surface is equivalent where a user enters the runtime, but
+identity is not erased after entry:
+
+| Surface | `phylogenetic` behavior | Canonical authority |
+| --- | --- | --- |
+| Python import | re-exports the supported public runtime facade | `bijux_phylogenetics` implementation and versioned API |
+| command | accepts the short executable name and delegates execution | canonical command handlers, exit semantics, and schemas |
+| package resources | resolves the same examples and contracts | resources shipped by `bijux-phylogenetics` |
+| result and artifacts | preserves canonical scientific fields and refusal states | canonical result type and serializer |
+
+Operational equivalence does not promise that every private module path,
+traceback prefix, distribution-metadata query, or command transcript is
+textually identical. Consumers should depend on the documented public facade
+and compare scientific records through their schemas. Automation that requires
+the canonical distribution name should request `bijux-phylogenetics`
+directly; existing short-name consumers can remain on `phylogenetic` without
+changing the computation they invoke.
+
 ## Preserve Identity For Reproduction And Citation
 
 The compatibility name and scientific owner serve different purposes. Keep

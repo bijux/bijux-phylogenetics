@@ -45,6 +45,24 @@ but they retain different computation owners. A normalized IQ-TREE2 or BEAST
 result remains an external-engine result; sharing a Python result shape does
 not make the algorithm native.
 
+## What The Distribution Contains
+
+Installing `bijux-phylogenetics` gives one runtime with three deliberately
+different kinds of capability:
+
+| Capability | Included | Ownership consequence |
+| --- | --- | --- |
+| scientific objects and native methods | tree, dataset, model, likelihood, parsimony, comparative, ancestral, simulation, and reporting APIs | the installed Bijux runtime owns validation and computation |
+| governed external-engine routes | command construction, execution capture, result parsing, diagnostics, and artifact lineage | the named executable still owns the scientific algorithm |
+| packaged examples and schemas | read-only demonstration inputs, machine contracts, and resource lookup | they verify installation and interoperability, not a study conclusion |
+
+Repository release gates, Evidence Book maintenance, and documentation
+publication tooling are intentionally absent from the runtime contract. Those
+surfaces decide whether this repository may publish evidence or packages; they
+are not dependencies of an end-user analysis. This separation keeps a
+scientific environment smaller and prevents repository policy from being
+mistaken for scientific validation.
+
 ## Read Success At The Correct Boundary
 
 The runtime exposes several success states, and each answers a narrower
