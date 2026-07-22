@@ -16,6 +16,25 @@ trees, continuous-mode fits, and likelihood-ratio comparisons. The shared
 response, predictors, taxa, and source tree make each change scientifically
 attributable—but only where the recorded observations actually agree.
 
+## PCM2 Is A Controlled Model Contrast
+
+The study holds the biological observations fixed while changing how
+evolutionary dependence enters the model. That structure gives each evidence
+family a distinct job:
+
+| Evidence family | Deliberate change | Question it can answer |
+| --- | --- | --- |
+| baseline GLS versus Pagel-lambda PGLS | independent residuals become tree-correlated residuals | how do the coefficient and uncertainty change under phylogenetic covariance? |
+| lambda-zero versus fitted-lambda likelihood | one covariance parameter changes within a shared model family | does the registered fitted covariance improve likelihood over the zero-signal boundary? |
+| Brownian, OU, early-burst, and late-burst transforms | branch-time weighting changes | do implementations construct and fit the same evolutionary-time parameterization? |
+| residual diagnostics | fitted residual definition and scale are inspected | does remaining structure have the same numerical meaning across implementations? |
+| ancestral modes | internal-node process projection changes | do clade-keyed conditional reconstructions correspond under the named mode? |
+
+This design makes disagreements informative. A stable baseline fit beside a
+reversed early-/late-burst transform points to the transform boundary rather
+than the shared trait table. It does not prove the cause, but it narrows where
+resolution must begin.
+
 ```mermaid
 flowchart LR
     inputs["75 species<br/>shared traits and tree"]
@@ -71,6 +90,12 @@ The slope falls from approximately 3.59 to 1.66 after phylogenetic covariance
 is fitted. This is the central PCM2 result: coefficient meaning depends on the
 declared covariance, not just the formula printed above the table. The fitted
 relationship remains associational; neither model establishes causality.
+
+The numerical difference between slopes is not itself a parity observation:
+the two slopes come from intentionally different scientific models. Parity is
+assessed within each model by comparing the R and Bijux estimates. Scientific
+interpretation then compares the accepted baseline and phylogenetic models as
+a controlled contrast.
 
 ## Model Evidence Ledger
 
@@ -149,6 +174,13 @@ Retain the following identity with every coefficient or fit statistic:
 Without that identity, a matching decimal may refer to a different estimand.
 With it, the baseline and Pagel-λ regression result is reproducible, while the
 early-burst family remains visibly unresolved.
+
+Do not select only the model family with favorable correspondence. The
+candidate denominator is the declared baseline, covariance, transformed-tree,
+and continuous-mode roster. A model may be excluded from a biological
+conclusion for a predeclared adequacy reason, but an unresolved parity row must
+remain in the evidence record and cannot disappear because another candidate
+fits better.
 
 Inspect the complete
 [`scalar-parity-table.json`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/studies/primate-pgls-and-signal/evidence-001/results/scalar-parity-table.json)

@@ -15,6 +15,20 @@ ancestral reconstruction projects a process onto internal nodes; and the
 intercept-mode sweep remains uncovered. These surfaces answer different
 questions and retain separate verdicts.
 
+## Read Each Surface As A Constraint
+
+| Surface | Constraint on interpretation | Failure does not automatically invalidate |
+| --- | --- | --- |
+| phylogenetic signal | names the covariance evidence for this response and tree | exact preparation correspondence |
+| residual diagnostics | tests whether fitted-error summaries retain aligned definitions and scales | the coefficient values already recorded under their own contract |
+| ancestral reconstruction | binds internal estimates to clades, mode, and uncertainty | the regression estimand, which is a different question |
+| intercept sweep | identifies a source analysis with no aligned runtime execution | neighboring PGLS or ancestral claims with complete observations |
+
+These constraints prevent an omnibus pass or fail. A residual mismatch narrows
+the residual claim; it also warns readers not to assume identical diagnostic
+semantics when interpreting the fit. It does not erase an exact input identity
+or silently become evidence against a different model surface.
+
 ```mermaid
 flowchart TB
     fit["Shared fitted model"]
@@ -120,6 +134,12 @@ Neighboring PGLS or continuous-mode results cannot be borrowed to fill this
 gap. The boundary register is the evidence: it names what is absent and what
 would make the comparison reviewable.
 
+This is useful evidence even without a numerical verdict. It prevents a reader
+from inferring coverage from nearby API capability, preserves the source
+analysis as a concrete target, and states the minimum outputs needed for a
+future comparison. Its role is to bound the public claim, not to contribute a
+favorable row to the parity denominator.
+
 ## Distinguish The Four Review Outcomes
 
 | Surface | Present outcome | Why it matters |
@@ -145,3 +165,8 @@ intercept-mode likelihood sweep.
 That mixed conclusion is stronger than an unqualified pass: readers can see
 which scientific statements are reproduced, which depend on tolerance, and
 which observations still require resolution.
+
+A citable PCM2 statement should therefore name the surface. “The baseline GLS
+and Pagel-lambda PGLS coefficients correspond under their bundle contracts” is
+supported. “PCM2 reproduces all comparative methods” is contradicted by the 12
+unresolved scalar observations and the non-comparable intercept sweep.
