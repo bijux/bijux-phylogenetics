@@ -29,6 +29,21 @@ flowchart LR
     gls --> diagnostics
 ```
 
+## The Covariance Question In One View
+
+| Dimension | PCM2 contract |
+| --- | --- |
+| scientific object | the PCM1 primate population evaluated through independent GLS, tree-transformed covariance, Pagel-λ PGLS, evolutionary modes, residual diagnostics, and ancestral models |
+| central idea | changing residual covariance can change coefficients, uncertainty, likelihood, diagnostics, and ancestral estimates even when response and taxa remain fixed |
+| evidence role | tests which conclusions survive the move from independent errors to phylogenetically structured dependence and which discrepancies remain model-specific |
+| present conclusion | bundle manifests record 3 `matched`, 6 `matched_with_tolerance`, and 1 `not_comparable`; the broader scalar ledger still retains 12 `mismatch_unexplained` observations |
+| downstream role | supplies the covariance and model-comparison discipline that PCM3 must extend when categorical coding and interactions change the design matrix |
+| forbidden inference | favorable claim-scoped bundles do not make PCM2 uniformly matching, interchangeable with the reference ecosystem, or biologically causal |
+
+PCM2 is deliberately a two-ledger study. The claim ledger says whether each
+bounded bundle closes; the scalar ledger preserves wider numerical debt. A
+reader needs both before summarizing correspondence.
+
 ## Scientific Questions
 
 - How do coefficient estimates and residual structure change after

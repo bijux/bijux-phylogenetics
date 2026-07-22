@@ -22,6 +22,22 @@ flowchart LR
     signal --> ancestral["Ancestral reconstruction"]
 ```
 
+## The Evidence Question In One View
+
+| Dimension | PCM1 contract |
+| --- | --- |
+| scientific object | one reconciled 75-taxon primate tree–longevity population derived from the governed workbook and tree |
+| central idea | data repair, duplicate aggregation, pruning, and taxon reconciliation are part of the signal analysis, not clerical preparation |
+| evidence role | establishes the reusable primate population, then compares registered signal and ancestral observations on that exact state |
+| present conclusion | eight focused bundles are `matched`; the aggregate bundle is `matched_with_tolerance`, with 31 scalar observations split into 16 `matched` and 15 tolerance matches |
+| downstream role | supplies the population and tree identity that PCM2 and PCM3 must either reuse exactly or replace with an explicit derived identity |
+| forbidden inference | a matched preparation or signal observation does not prove figure equivalence, biological adequacy, causality, or every later primate model |
+
+PCM1 is therefore both a scientific result and the admission ledger for the
+primate evidence sequence. Its strongest claim is not “the files loaded”; it
+is that the published observations resolve through one governed preparation
+chain.
+
 ## Scientific Question
 
 Do primate longevity traits retain phylogenetic structure after the raw table
