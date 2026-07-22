@@ -29,6 +29,26 @@ flowchart LR
     likelihood --> bayes
 ```
 
+## Interpret Likelihood In The Correct Direction
+
+For observed data `D` and a declared tree-model state `S`, likelihood is the
+quantity `L(S; D) = P(D | S)`. The data are held fixed while candidate states
+are compared. It is not `P(S | D)`, the probability that the tree or model is
+true, and it is not a measure of how biologically realistic the model is.
+
+This distinction controls what a likelihood result can support:
+
+| Observation | Defensible reading | Reading to reject |
+| --- | --- | --- |
+| one finite log-likelihood | the implementation evaluated these data under this complete state | the model is adequate or the tree is correct |
+| a larger comparable log-likelihood | the data receive greater likelihood under one aligned candidate state | the improvement is meaningful without search, complexity, or comparison review |
+| an optimized maximum | no evaluated state had a better objective under the recorded exploration | a global optimum was proven |
+| a likelihood difference | two aligned calculations differ by the reported amount | the difference is a calibrated probability or support value by itself |
+
+Likelihood becomes evidence for selection only through a declared comparison
+rule and candidate population. It becomes part of a posterior only after priors
+and normalization over the modeled state space are introduced.
+
 ## A Likelihood Value Has A Scientific Identity
 
 A log-likelihood is not a portable property of a tree. It identifies one

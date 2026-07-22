@@ -20,6 +20,23 @@ interpret either one.
 | Bayesian inference | characterize a posterior under likelihood and priors | proposals, acceptance, burn-in, ESS, chains, topology distribution |
 | parsimony | minimize declared character-change cost | state/cost model, search trace, equal-best trees, consensus, support |
 
+## Ask Three Questions Before Reading A Result
+
+Every inferential result combines three decisions that must remain separately
+reviewable:
+
+| Question | Examples | Failure if omitted |
+| --- | --- | --- |
+| what quantity is scored? | likelihood, posterior density, distance residual, character cost | the winning number has no stable scientific meaning |
+| how was the state space explored? | optimizer starts, topology moves, Markov chains, heuristic search | the best encountered state is presented as the best supported state |
+| how is uncertainty or stability represented? | profiles, resampling, independent chains, equal-best sets, sensitivity | one selected estimate is mistaken for certainty |
+
+The objective defines comparison under a model; exploration determines which
+candidate states were actually encountered; support qualifies the selected
+result. None can substitute for another. A high objective value cannot prove
+adequate exploration, and repeated discovery of one solution cannot establish
+that the model represents the data-generating process.
+
 Continue by method family:
 
 - [Likelihood And Inference](likelihood-and-inference.md) defines finite-state

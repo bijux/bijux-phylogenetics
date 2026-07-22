@@ -26,6 +26,27 @@ flowchart LR
     model --> state --> chains --> diagnostics --> posterior --> evidence
 ```
 
+## Read A Posterior As A Conditioned Distribution
+
+The posterior combines the likelihood and prior under one declared model:
+`P(S | D, M)` is proportional to `P(D | S, M) P(S | M)`. Its conclusions are
+therefore conditional on the data `D`, state `S`, and model contract `M`—not a
+model-free probability that a historical statement is true.
+
+| Layer | Scientific role | Common overclaim |
+| --- | --- | --- |
+| likelihood | relates observed data to a candidate state | treated as a probability of the state |
+| prior | assigns modeled mass before conditioning on these data | omitted from interpretation because the chain mixed |
+| sampler | approximates the posterior through dependent draws | each retained draw counted as independent corroboration |
+| diagnostics | assesses whether claimed quantities were explored adequately | interpreted as evidence that the model is adequate |
+| posterior summary | projects the retained distribution into trees, intervals, states, or predictions | presented without its prior, retention, and summary policy |
+
+A sample archive is a computational representation of one posterior. Thinning,
+burn-in, checkpoint continuation, and multiple chains change how that
+representation is assessed; they do not create independent scientific studies.
+Independent evidence requires a separately owned data or reference claim, not
+another draw from the same conditioned distribution.
+
 ## Native Model Families
 
 | Family | Representative native surface | Identity that must be retained |
