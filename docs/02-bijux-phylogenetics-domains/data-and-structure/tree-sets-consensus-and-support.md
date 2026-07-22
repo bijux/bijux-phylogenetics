@@ -4,7 +4,7 @@ audience: public
 type: guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Tree Sets, Consensus, And Support
@@ -14,6 +14,20 @@ Newick strings. It may represent bootstrap replicates, posterior samples,
 gene trees, search candidates, or a deliberately assembled sensitivity set.
 The population meaning determines which consensus, support, distance, and
 uncertainty summaries are valid.
+
+## Preserve Four Denominators
+
+| Denominator | Question it answers |
+| --- | --- |
+| requested members | what population did the procedure intend to generate or inspect? |
+| produced members | which runs, loci, states, or candidates emitted a tree? |
+| admitted members | which produced trees passed taxon, root, burn-in, integrity, and eligibility rules? |
+| clade-eligible members | which admitted trees could actually contribute to this clade, split, quartet, age, or branch summary? |
+
+These counts can differ legitimately, but none may disappear. A clade present
+in 80 of 100 admitted bootstrap trees has different support from a clade
+present in 80 of 80 successfully produced trees when 20 requested replicates
+failed. The summary must carry the population relevant to its numerator.
 
 ```mermaid
 flowchart LR

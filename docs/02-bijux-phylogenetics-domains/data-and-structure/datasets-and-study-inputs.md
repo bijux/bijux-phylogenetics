@@ -4,7 +4,7 @@ audience: public
 type: explanation
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Datasets And Study Inputs
@@ -14,6 +14,20 @@ recovery experiments, stress analysis, comparative biology, pathogens, and
 phylogenomics. Each family couples source identity and schema with loaders,
 exports, demonstrations, workflow results, and review artifacts. These are
 different projections of one dataset contract, not interchangeable copies.
+
+## A Dataset Role Limits The Claim
+
+| Dataset role | Truth available | Defensible conclusion |
+| --- | --- | --- |
+| known-answer fixture | exact expected object or value under a compact contract | the implementation recovers that governed answer |
+| simulated recovery corpus | recorded generator state and replicate population | recovery, bias, or calibration under those regimes |
+| empirical study input | observed data, source, schema, and admitted population | an analysis result conditional on those observations |
+| demonstration dataset | a small path through an interface or workflow | the documented surface executes and produces interpretable records |
+| stress dataset | deliberately malformed, sparse, duplicated, or extreme cases | refusal, repair, and diagnostic behavior at named boundaries |
+
+Do not borrow truth from one role into another. An empirical table has no
+latent generating parameter merely because a simulator can emit the same
+schema, and a demonstration that runs is not a recovery benchmark.
 
 ```mermaid
 flowchart LR

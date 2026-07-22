@@ -4,7 +4,7 @@ audience: public
 type: explanation
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Data Interchange And Identity
@@ -13,6 +13,23 @@ Newick, Nexus, FASTA, and delimited tables carry syntax; scientific methods
 consume objects with rootedness, branch units, alphabets, partitions, taxon
 namespaces, support conventions, and missing-data policies. Interchange is
 successful only when the required meaning survives the boundary.
+
+## Declare A Semantic Loss Budget
+
+Before converting an object, classify every field as required, optional,
+derivable, or deliberately discarded for the receiving method.
+
+| Field class | Conversion rule |
+| --- | --- |
+| required | preserve and verify by stable scientific identity |
+| optional but retained | preserve with explicit representation and version meaning |
+| derivable | record the derivation rule and parent identity |
+| deliberately discarded | name the omitted field and prove it is outside the consumer contract |
+
+A successful parser is not evidence that the loss budget was respected. If a
+Newick export drops support annotations needed by the consumer, or a table
+writer changes missing values into zeros, the conversion failed scientifically
+even when both files remain syntactically valid.
 
 ```mermaid
 flowchart LR
