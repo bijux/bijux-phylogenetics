@@ -25,6 +25,26 @@ the same workflow contract through `phylogenetic` import and command names.
 
 It is not a fork, legacy edition, or reduced feature set.
 
+```text
+install/import phylogenetic
+            |
+            v
+compatibility distribution and short-name facade
+            |
+            v
+bijux-phylogenetics canonical runtime
+            |
+            v
+canonical result, diagnostics, and artifacts
+
+The result also retains the requested compatibility name.
+```
+
+The short name selects an entry route, not a second scientific computation.
+Artifacts should preserve both the requested alias identity and the resolved
+canonical runtime identity so another person can reconstruct what was
+installed and what actually performed the work.
+
 ## Installation
 
 ```bash
@@ -106,6 +126,21 @@ If two commands produce similar trees while loading different canonical
 artifacts, alias identity has failed. If they load the same runtime but differ
 only in the invoked command name, there is one scientific execution, not two
 independent confirmations.
+
+### Follow One Alias Result
+
+```text
+environment lock (phylogenetic version)
+        -> resolved dependency (bijux-phylogenetics version)
+        -> alias import or command
+        -> canonical public surface
+        -> result manifest (both distribution identities)
+```
+
+A support report that records only `phylogenetic` loses the implementation
+identity. A report that records only `bijux-phylogenetics` loses the route the
+consumer exercised. Preserve both; compare behavior at the canonical surface
+and compatibility at the facade boundary.
 
 ## Name Mapping
 

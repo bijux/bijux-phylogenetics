@@ -44,6 +44,21 @@ flowchart LR
     products --> checks --> release
 ```
 
+## What This Package Never Decides
+
+| Question | Why it remains elsewhere | Correct authority |
+| --- | --- | --- |
+| Is a model appropriate for a biological question? | repository policy cannot replace study design | analyst, domain review, and model assumptions |
+| Did a native or external method compute the intended estimand? | a release gate consumes rather than creates scientific state | typed runtime or engine result and diagnostics |
+| Do two implementations correspond numerically? | package integrity is not a comparison observation | registered parity case or Evidence Book claim |
+| Is a `not_comparable` study actually “close enough”? | absence of aligned evidence cannot be repaired by publication policy | bundle manifest, missing-output record, and closure contract |
+| May a failed child report be omitted from readiness? | the aggregate denominator is governed | release policy and complete child-report inventory |
+
+The package may verify that these authorities are present, current, and
+internally coherent. It must refuse publication when required records are
+missing or contradictory; it must not synthesize the scientific decision that
+the missing record would have owned.
+
 ## Owned Verification Domains
 
 | Domain | Responsibilities |

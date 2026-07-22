@@ -24,6 +24,27 @@ provides owned tree, likelihood, inference, comparative, ancestral, parsimony,
 simulation, dataset, and reporting contracts together with explicit adapters
 for selected external engines.
 
+```text
+Python or CLI caller
+        |
+        v
+validated scientific objects and configuration
+        |
+        +----> Bijux-owned numerical method --------+
+        |                                            |
+        +----> governed adapter -> external engine --+
+                                                     v
+                                      typed result and diagnostics
+                                                     |
+                                                     v
+                                 manifest, JSON, TSV, tree, figure, report
+```
+
+Both execution paths use the same admission, result, and artifact discipline,
+but they retain different computation owners. A normalized IQ-TREE2 or BEAST
+result remains an external-engine result; sharing a Python result shape does
+not make the algorithm native.
+
 ## Installation
 
 ```bash
@@ -110,6 +131,20 @@ current environment; it is not an inference-accuracy result.
 | external-engine adapters | invocation, capture, parsing, and normalized results while preserving engine ownership |
 | typed results | scientific fields, status, diagnostics, warnings, and refusal state |
 | JSON, TSV, manifests, figures, and reports | persistent machine and review projections |
+
+### Read Ownership Across The Runtime
+
+| Boundary | Owner | Consumer must verify |
+| --- | --- | --- |
+| public invocation | installed Python export or registered command | documented arguments, package version, and selected execution path |
+| scientific admission | tree, alignment, trait, partition, or dataset contract | identifiers, ordering, units/states, exclusions, and transformations |
+| numerical computation | named native method or external executable | model, objective, search/sampler state, diagnostics, and termination |
+| normalization and persistence | typed result, serializer, and artifact producer | status, omissions, schema, manifest inventory, and checksums |
+| scientific use | consuming workflow or governed evidence claim | acceptance rule, limitations, and complete denominator |
+
+This chain is the shortest way to diagnose a disputed value. Start at the
+boundary that made the decision rather than at the final report that displayed
+it.
 
 ## Trace The Installed Result Lineage
 
