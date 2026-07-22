@@ -31,6 +31,27 @@ whether the biological model is true, whether the reconstructed values are
 historical observations, or whether the result generalizes beyond the
 governed data and configuration.
 
+## Connected Results Are Not Independent Replications
+
+The lambda fit, likelihood-ratio contrast, covariance entries, ancestral
+values, MRCA spot check, and branch-change counts share inputs and model
+components. Their agreement tests different projections of one analytical
+chain; it must not be counted as multiple independent confirmations of the
+biological conclusion.
+
+| Surface | Depends on | Additional contract it tests |
+| --- | --- | --- |
+| fitted λ and log likelihood | prepared trait vector, tree, covariance, bounds, likelihood | optimization and objective correspondence |
+| λ=0 contrast | fitted-model likelihood plus the registered null | nested-model calculation and p-value convention |
+| covariance entries | tree, order, branch lengths, and λ transform | matrix parameterization and indexing |
+| ancestral node rows | prepared state plus reconstruction convention | clade correspondence, estimates, and intervals |
+| MRCA spot check | one ancestral row | stable descendant-taxon identity and extraction |
+| branch-change counts | complete parent/child ancestral rows | branch mapping, direction, units, and threshold rule |
+
+Agreement at a child surface can localize an implementation comparison. It
+cannot compensate for a broken parent dependency, and it cannot be multiplied
+into a stronger causal or generalization claim.
+
 ```mermaid
 flowchart TD
     inputs["75-tip rooted ultrametric tree<br/>75 aligned longevity values"]

@@ -71,6 +71,24 @@ also prove label normalization, one-to-one membership, exact order, tree
 identity, and trait-row identity. Otherwise two different 75-taxon analyses
 could be mistaken for the same population.
 
+## Every Population Change Creates A New Identity
+
+Preparation operations are directional. The processed table and trimmed tree
+retain provenance to their sources, but they are new scientific objects with
+new membership and checksums.
+
+| Operation | Information changed | Identity required downstream |
+| --- | --- | --- |
+| type repair | representation and admissible numerical values | repaired schema, parse failures, and source-to-output mapping |
+| duplicate aggregation | row population and meaning of one species value | source members, aggregation function, missing-value policy, and resulting row |
+| tree pruning | tip population, descendant clades, covariance, and local node numbering | removed tips, retained order, topology, branch lengths, and derived tree digest |
+| tree–trait reordering | positional association between covariance rows and values | exact ordered taxon vector on both sides |
+| export | serialization of the accepted handoff | schema, format, content digest, and producer identity |
+
+Reproducing only the final count cannot reproduce these decisions. A later
+study that filters another taxon or transforms a trait must mint a derived
+identity and re-evaluate all dependent node, covariance, and model records.
+
 ## Governed Input And Handoff Records
 
 | Role | Repository record | Identity carried forward |

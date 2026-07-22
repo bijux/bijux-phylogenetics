@@ -38,6 +38,24 @@ primate evidence sequence. Its strongest claim is not “the files loaded”; it
 is that the published observations resolve through one governed preparation
 chain.
 
+## PCM1 Is A Baseline, Not A Universal Benchmark
+
+PCM1 establishes one reusable analytical state. Later work can inherit that
+state only by preserving its identity or by declaring a new derived
+population.
+
+| Later-study condition | What PCM1 contributes | What must be established again |
+| --- | --- | --- |
+| identical prepared CSV and tree digests | source interpretation, 75-taxon membership/order, pruning, and tree state | the later model, estimand, diagnostics, and result |
+| same taxa with a transformed response or predictor | taxon and tree identity only | transformation, units, missingness, design matrix, and model population |
+| subset after complete-case filtering | source lineage and candidates for admission | excluded taxa, new order, pruned tree, covariance, and derived checksums |
+| changed tree, branch lengths, labels, or aggregation | historical context only | the entire comparative handoff and every dependent result |
+| unrelated dataset or clade | no numerical validation transfer | complete independent admission and evidence chain |
+
+This is why PCM1 can strengthen PCM2 and PCM3 without acting as a vote for
+their coefficients. It removes ambiguity about inherited inputs; it does not
+pre-approve a new design, covariance model, or scientific conclusion.
+
 ## Scientific Question
 
 Do primate longevity traits retain phylogenetic structure after the raw table
