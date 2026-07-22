@@ -51,6 +51,24 @@ flowchart LR
     artifact -. selected workflows .-> evidence
 ```
 
+## Understand The Project In Plain Terms
+
+Bijux Phylogenetics is not a single tree-building algorithm and not a facade
+that makes every external tool look scientifically identical. It is a runtime
+for preserving the meaning of a phylogenetic analysis across five moments:
+
+1. observations become an admitted taxon and character population;
+2. a native method or named external engine owns the computation;
+3. diagnostics determine whether the result is interpretable;
+4. manifests and structured outputs make the result portable;
+5. selected public claims undergo a separate, claim-scoped evidence review.
+
+You may stop after any honest terminal state. A validated dataset, a refused
+model, an accepted runtime result without reference parity, and a current
+Evidence Book claim are all different useful outcomes. The site keeps those
+outcomes separate so capability is not advertised as proof and missing
+evidence is not disguised as success.
+
 ## Start With The Decision In Front Of You
 
 You do not need to learn the repository vocabulary before finding the right

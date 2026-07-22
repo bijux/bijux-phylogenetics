@@ -29,6 +29,24 @@ do not define different scientific truths.
 | durable handoff | manifests and structured artifacts own facts later rendered in tables, figures, and reports |
 | bounded evidence | parity and Evidence Book records qualify only the claims and populations they actually evaluate |
 
+## Know When An Analysis Is Reviewable
+
+A reviewer should be able to answer these questions without rerunning the
+analysis or inferring facts from filenames:
+
+| Review question | Owning record |
+| --- | --- |
+| Which observations entered, changed, or were excluded? | admitted population and transformation/reconciliation ledger |
+| Which method performed each scientific computation? | native result identity or external-engine execution record |
+| What exactly was estimated, searched, sampled, or reconstructed? | model, estimand, configuration, and typed result |
+| Which warnings or diagnostics limit interpretation? | result-linked diagnostic and decision records |
+| Which files are accepted outputs rather than incidental run products? | manifest with roles, checksums, statuses, and inventory |
+| Which public statement, if any, consumes the result? | claim-scoped comparison or Evidence Book record |
+
+If any answer exists only in terminal history, prose, or a figure, the handoff
+is incomplete. The product surfaces are designed so these answers remain
+machine-readable while reports provide a human projection of the same state.
+
 ## Understand The Product As Four Connected Contracts
 
 The runtime is not just a collection of algorithms. Every supported route

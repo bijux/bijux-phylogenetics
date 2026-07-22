@@ -53,6 +53,24 @@ flowchart LR
     data --> contracts --> methods --> results --> outputs
 ```
 
+## What You Can Build
+
+The runtime supports complete analytical records, not only isolated helper
+functions:
+
+| Starting scientific object | Analysis you can carry through | Durable result |
+| --- | --- | --- |
+| sequences and partitions | validate, align or trim through named engines, infer and support a tree | admitted sequence population, alignments, engine-native files, typed tree result, and manifest |
+| tree and continuous traits | reconcile taxa, fit comparative covariance models, estimate signal, regressions, and ancestors | population/design identity, estimates, diagnostics, uncertainty, and tables |
+| tree and discrete characters | fit transition or parsimony models, reconstruct states, and summarize branch changes | state/model identity, node probabilities or supported sets, branch observations, and opportunity denominators |
+| candidate trees or tree populations | compare splits, support, consensus, instability, and downstream sensitivity | structurally keyed observations with rooting, taxa, and complete denominators |
+| an accepted scientific result | render review packages and connect selected claims to governed evidence | machine source, report projections, inventory, and bounded claim record |
+
+These routes can be composed through Python or executed through supported CLI
+workflows. The output is intentionally richer than the headline estimate:
+downstream review depends on knowing which population, model, computation
+owner, diagnostic state, and artifacts produced it.
+
 | If you need… | Use… | Preserve… |
 | --- | --- | --- |
 | an in-process scientific result | the curated Python API | typed result, admitted inputs, warnings, and diagnostics |
