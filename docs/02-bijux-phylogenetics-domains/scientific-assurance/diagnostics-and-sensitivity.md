@@ -31,6 +31,25 @@ flowchart LR
     object --> sensitivity --> decision
 ```
 
+## Diagnostics Change What A Result May Support
+
+A diagnostic is consequential metadata, not a cosmetic attachment. Its finding
+changes the permitted interpretation of every dependent result:
+
+| Diagnostic state | Downstream permission |
+| --- | --- |
+| accepted | use the result for the exact declared consumer and assumption scope |
+| accepted with qualification | retain the result only with the named limitation visible in tables, figures, and claims |
+| investigate | preserve computation and partial evidence, but defer the affected conclusion |
+| refused | do not execute or publish the dependent interpretation under this object identity |
+| unavailable | state that the assumption was not assessed; do not convert absence into acceptance |
+
+The same finding can have different consequences for different consumers. An
+unrooted tree can support an unrooted split comparison while refusing a
+directional ancestral-transition claim. Record the consumer-specific decision
+alongside the finding so later reporting cannot promote an admissible use into
+an unsupported one.
+
 ## Tree Inspection, Validation, And Forensics
 
 The tree diagnostic surface separates increasingly strong questions:

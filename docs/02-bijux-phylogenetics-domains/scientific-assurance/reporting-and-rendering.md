@@ -31,6 +31,26 @@ flowchart LR
     figure --> manifest --> review
 ```
 
+## Treat Every Report As A Declared Query
+
+A table or figure selects, transforms, orders, and encodes part of a result.
+That operation is a query over a governed population, even when no SQL or data
+frame is visible. Make the query recoverable:
+
+| Reporting decision | Record to retain |
+| --- | --- |
+| selection | eligible source rows, included rows, omitted rows, and reasons |
+| transformation | source field, formula or classification rule, units, and precision |
+| aggregation | input grain, grouping key, denominator, weights, and missing/failed treatment |
+| ordering | stable sort keys and display-only order |
+| visual encoding | row-to-mark mapping, scales, legends, uncertainty, and style-only attributes |
+| caption claim | structured observations and diagnostics that authorize each statement |
+
+The report is therefore reproducible when another consumer can start from the
+typed result and recover the same displayed population and marks. A polished
+figure with an unknown selection denominator is less reviewable than a plain
+ledger with stable row identity.
+
 ## Public Reporting Families
 
 | Need | Public surface | Required source identity |

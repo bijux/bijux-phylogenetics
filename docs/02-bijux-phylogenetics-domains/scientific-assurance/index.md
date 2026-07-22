@@ -25,6 +25,25 @@ flowchart LR
     corpus --> method --> checks --> artifact --> claim
 ```
 
+## Replace “Validated” With The Question Answered
+
+There is no single assurance state that licenses every downstream claim.
+Different checks establish different properties:
+
+| Assurance question | Evidence needed | What a favorable result does not establish |
+| --- | --- | --- |
+| did the object satisfy its contract? | schema, identity, invariant, and refusal observations | numerical accuracy or biological suitability |
+| did the method behave on known conditions? | independent known answers or recovery simulations with denominators | behavior outside the tested regimes |
+| did two implementations correspond? | aligned inputs, estimands, conventions, observations, and tolerances | correctness if both share an assumption or defect |
+| did the conclusion survive plausible choices? | predeclared sensitivity cells including failures | robustness to untested data, models, or populations |
+| does a study claim have support? | governed source, exact artifacts, claim-scoped checks, verdict, limits, and freshness | transfer to a broader or different claim |
+
+Write the favorable statement at this resolution: “the parser preserved the
+registered round-trip invariants” or “the estimator met the declared recovery
+rule over these regimes.” The unqualified phrase “scientifically validated”
+collapses the tested property, population, independence basis, and limits into
+a status that cannot be reviewed.
+
 - [Simulation And Datasets](simulation-and-datasets.md) explains generators,
   known truth, catalog roles, bundle provenance, and circularity controls.
 - [Simulation Recovery And Calibration](simulation-recovery-and-calibration.md)
