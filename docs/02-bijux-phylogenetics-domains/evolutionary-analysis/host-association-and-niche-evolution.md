@@ -4,7 +4,7 @@ audience: public
 type: explanation
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Host Association And Niche Evolution
@@ -26,6 +26,24 @@ flowchart LR
 
     observed --> model --> nodes --> branches --> summaries --> interpretation
 ```
+
+## Define The Observation Unit Before The State
+
+A tip label such as `host = bat` or `niche = marine` may summarize very
+different evidence. The analysis contract must identify what was observed and
+how it became one state per admitted tip.
+
+| Source condition | Required evidence | Why it changes interpretation |
+| --- | --- | --- |
+| one observation per sampled individual | specimen identity, collection context, taxon mapping | the state is directly tied to one sampling unit |
+| several observations collapsed to one taxon | aggregation rule, counts, conflicts, uncertainty | a taxon consensus can hide within-taxon variation |
+| several simultaneous host associations | multi-state or ambiguity encoding, not an arbitrary preferred host | co-occurrence is different from missingness or uncertainty |
+| niche derived from environmental measurements | variables, transformation, thresholds, and provenance | discretization creates the state vocabulary being reconstructed |
+| literature- or database-derived association | source record, evidence class, reconciliation, access identity | reported association strength and sampling coverage may differ |
+
+The admitted population is therefore the set of reconciled observation units,
+not merely the set of tree labels. Every exclusion, aggregation, and state
+coercion changes the branches on which a switch or shift could be inferred.
 
 ## Select The Owning Contract
 

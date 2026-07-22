@@ -4,7 +4,7 @@ audience: public
 type: guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Discrete Ancestral States And Transitions
@@ -28,6 +28,26 @@ flowchart LR
     observations --> fit
     model --> fit --> nodes --> branches --> sensitivity --> claim
 ```
+
+## Direction Begins At The Root
+
+An unrooted topology can define splits but not ancestors, descendants, or a
+directed transition. Root placement is therefore part of the scientific model,
+not a display preference applied after reconstruction.
+
+| Root contract | Consequence for transition evidence |
+| --- | --- |
+| biologically justified outgroup root | direction depends on the admitted outgroup and its placement |
+| clock or dated-tree root | direction inherits the clock, calibration, and time-tree assumptions |
+| midpoint or other algorithmic root | direction is conditional on that rooting heuristic |
+| root prior over states | basal node probabilities and early transitions depend on the declared prior |
+| alternative plausible roots | node identity and transition direction must be recomputed, not relabeled |
+
+Retain the rooted tree identity with every node and branch row. A structural
+branch key must identify the descendant clade under that root; traversal
+numbers and drawing orientation cannot provide durable correspondence. When a
+plausible root changes a headline transition, publish the conclusion as
+root-sensitive rather than selecting the visually convenient history.
 
 ## Establish State Identity
 
