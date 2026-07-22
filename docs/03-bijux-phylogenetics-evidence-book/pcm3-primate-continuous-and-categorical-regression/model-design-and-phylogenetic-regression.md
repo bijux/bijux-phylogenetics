@@ -175,6 +175,38 @@ machine-adjudicated observations. The evidence must include failures and
 missing values; a table of successful coefficients alone cannot establish the
 denominator.
 
+## Close A Fit As A Dependency Packet
+
+Each fitted model should produce one joined packet whose components can be
+reviewed independently and invalidated together when an upstream identity
+changes.
+
+```mermaid
+flowchart LR
+    population["Ordered analytical<br/>population"] --> design["Response and<br/>design matrix"]
+    tree["Tree and branch<br/>identity"] --> covariance["Covariance<br/>matrix and parameters"]
+    design --> fit["Fit state<br/>and coefficients"]
+    covariance --> fit
+    fit --> hypotheses["Hypothesis tests<br/>and uncertainty"]
+    fit --> diagnostics["Residual and<br/>influence rows"]
+    hypotheses --> claim["Comparable observations<br/>and claim verdict"]
+    diagnostics --> claim
+```
+
+| Packet component | Required review fields |
+| --- | --- |
+| population | included and excluded species, source rows, order, missingness reason |
+| design | response vector, transformations, factor/contrast metadata, stable columns, rank and aliases |
+| covariance | independence or tree-derived identity, parameterization, bounds, fitted state, matrix order |
+| fit | coefficient keys, estimates, uncertainty, likelihood convention, convergence and warnings |
+| hypotheses | null/alternative or hypothesis matrix, statistic, degrees of freedom, tail and term order |
+| diagnostics | residual type and scale, fitted values, leverage/influence rules, complete row denominator |
+
+If a design or covariance component changes, child coefficient, test, and
+diagnostic observations become stale together. This dependency packet is the
+minimum durable object needed to convert PCM3 from a design dossier into
+numerical evidence.
+
 ## Key Every Comparable Observation
 
 A coefficient or test becomes comparable only after its observation key

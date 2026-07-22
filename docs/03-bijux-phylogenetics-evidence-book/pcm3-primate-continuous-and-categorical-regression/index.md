@@ -74,6 +74,25 @@ The evidence question is therefore not “did both tools fit PGLS?” It is
 whether they fitted the same population, design matrix, covariance, estimand,
 and hypothesis before any coefficient or p-value was compared.
 
+## Design Identity Must Be Inspectable, Not Inferred
+
+A future PCM3 execution needs a machine-readable design identity before it
+needs a coefficient table. Formula text is only one input to that identity.
+
+| Design layer | Minimum retained evidence | Failure hidden by formula text alone |
+| --- | --- | --- |
+| row population | ordered species keys, source-row keys, exclusions, and response values | different complete-case populations |
+| transformation | response transform, zero/domain policy, predictor center and scale, and fitted/application population | different intercept location or units |
+| categorical coding | raw levels, normalized levels, reference level, and contrast matrix | reversed or renamed contrasts |
+| numerical design | stable column keys, ordered column values, rank, and aliased-column state | same label attached to different vectors |
+| covariance | tree digest, ordered taxa, branch scale, Martins definition, bounds, and fitted parameter state | same mean design fitted under different dependence |
+| hypothesis | explicit tested column combination or hypothesis matrix, term order, and degrees of freedom | marginal and sequential tests mislabeled as equivalent |
+
+The strongest join key is a fingerprint over these governed components plus
+their independently reviewable rows—not a hash with no readable decomposition.
+Only after both executions resolve to the same design identity do numerical
+tolerances become meaningful.
+
 ## Read Coefficients From The Design Matrix
 
 For a model with continuous predictor `x`, group indicator `B`, and interaction
