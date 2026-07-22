@@ -4,7 +4,7 @@ audience: maintainer
 type: handbook
 status: active
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Repository Operations
@@ -90,6 +90,39 @@ state. A handoff is complete only when downstream consumers can distinguish:
 
 Collapsing these states into “pass” or “fail” hides the action a maintainer must
 take and can silently narrow the denominator of a published report.
+
+## Preserve A Command Receipt
+
+Every material generation, verification, benchmark, package, or evidence run
+needs a small receipt that makes the handoff reconstructable without terminal
+scrollback.
+
+| Receipt field | Required content |
+| --- | --- |
+| source state | repository revision plus clean state or an explicit digest of intentional uncommitted inputs |
+| invocation | exact repository command, resolved configuration, and policy identity |
+| environment | runtime, relevant dependency, and external-executable versions |
+| input set | roles, paths, and content identities consumed by the command |
+| output root | owned run directory or governed generated destination |
+| terminal state | start/end time, exit, refusal, timeout, warnings, and failure code |
+| inventory | expected, produced, missing, rejected, and checksum-covered outputs |
+| validation | validator identity, result, and links to detailed reports |
+
+```mermaid
+flowchart LR
+    receipt["Command receipt"] --> inputs["Identified inputs"]
+    receipt --> execution["Invocation and environment"]
+    receipt --> outputs["Output inventory"]
+    receipt --> validation["Validation result"]
+    validation --> promotion{"Governed promotion?"}
+    promotion -->|yes| destination["Declared repository destination"]
+    promotion -->|no| retained["Run-local diagnostic evidence"]
+```
+
+The receipt records facts; it does not turn an output into governed source.
+Promotion still requires a canonical owner, deterministic destination,
+generator contract, and validator. Never place credentials or unrelated host
+state in the receipt.
 
 ## Isolate Runs Before Comparing Them
 

@@ -4,7 +4,7 @@ audience: maintainer
 type: handbook
 status: active
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Trust Surfaces
@@ -126,6 +126,36 @@ policies, inputs, package builds, or generated indexes.
 Timestamp proximity is not identity. The packet records revision, policy,
 input, generated-state, and artifact hashes so a reviewer can prove that all
 constituent decisions were simultaneously valid.
+
+## Define One Trust Packet Identity
+
+Treat the packet as a joined record, not a directory of favorable files:
+
+> **repository revision × distribution set × schema × inputs × policy × evidence state**
+
+| Identity component | What must resolve |
+| --- | --- |
+| repository revision | source, generated state, and clean or explicitly captured worktree condition |
+| distribution set | canonical and alias package names, versions, built-artifact hashes, and installed smoke result |
+| schema | OpenAPI and artifact contract revisions understood by producers and consumers |
+| inputs | tree, alignment, traits, configuration, benchmark corpus, or evidence-source digests |
+| policy | tolerances, selection, failure handling, freshness, and release criteria actually applied |
+| evidence state | claim, bundle, generated index, observation, and verdict identities from one coherent record set |
+
+```mermaid
+flowchart LR
+    revision["Revision"] --> packet["Trust packet identity"]
+    packages["Built distributions"] --> packet
+    schemas["Schemas and artifacts"] --> packet
+    inputs["Inputs and policy"] --> packet
+    evidence["Evidence state"] --> packet
+    packet --> decision["Bounded publication decision"]
+```
+
+If one component cannot be joined, the packet may still diagnose the gap but
+cannot support the combined publication claim. A rerun that refreshes one
+component creates a new packet identity and requires every material edge to be
+reconciled again.
 
 ## Maintained Guides
 
