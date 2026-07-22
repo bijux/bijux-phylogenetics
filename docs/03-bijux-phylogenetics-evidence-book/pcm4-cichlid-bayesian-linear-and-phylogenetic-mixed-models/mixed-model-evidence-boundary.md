@@ -4,7 +4,7 @@ audience: public
 type: study-guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # PCM4 Mixed-Model Evidence Boundary
@@ -97,6 +97,36 @@ A comparable run fixes:
 
 If one of these identities differs, the observation must classify the
 difference before comparing values.
+
+## Build The Posterior Denominator Before Comparing Summaries
+
+A posterior mean or interval is a projection of selected draws. The comparable
+unit is therefore not the printed table row but an identified parameter over
+an admissible draw population:
+
+> **model × parameter × chain set × retained states × transform × summary rule**
+
+```mermaid
+flowchart LR
+    expected["Expected chains and states"] --> diagnostics["Chain-level diagnostic gate"]
+    diagnostics --> admitted["Explicit admitted-draw ledger"]
+    admitted --> parameter["Stable parameter identity"]
+    parameter --> summary["Declared summary and interval"]
+    summary --> observation["Reference-versus-Bijux observation"]
+```
+
+| Denominator defect | Why a similar summary is insufficient |
+| --- | --- |
+| a chain is absent or silently discarded | the retained posterior population differs |
+| burn-in, thinning, or terminal state differs | the draw indices do not represent the same sampling contract |
+| a variance parameter is transformed on one side | labels may match while scale and distribution differ |
+| non-finite or failed draws vanish from one summary | the eligible denominator and failure rate are hidden |
+| intervals use different quantiles or highest-density rules | endpoints answer different summary questions |
+
+The denominator ledger must be shared by fixed effects, variance components,
+and any derived quantity that claims same-draw correspondence. Diagnostics can
+exclude a declared population under a pre-registered rule; they cannot be used
+after inspection to select whichever draws make summaries agree.
 
 ## Required Observation Ledger
 

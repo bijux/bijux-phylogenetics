@@ -4,7 +4,7 @@ audience: public
 type: study-guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # PCM3 Model Design And Phylogenetic Regression
@@ -86,6 +86,25 @@ contrasts against a reference.
 Therefore, coefficient parity requires the design matrix—not merely the
 printed formula—to agree. Factor level order, contrast encoding, missing-value
 exclusions, centering, scaling, and term-column mapping are part of the result.
+
+## See How Each Design Changes The Estimand
+
+For a two-level factor with indicator `B`, the relevant row vectors make the
+changes visible:
+
+| Model form | Design row | Meaning changed by the operation |
+| --- | --- | --- |
+| baseline main effects | `[1, x, B]` | one reference intercept, one shared slope, one category contrast |
+| no intercept | `[1-B, B, x]` | separate category intercepts replace the reference contrast |
+| interaction | `[1, x, B, x*B]` | the category difference may vary with group size |
+| no-intercept interaction | `[1-B, B, x*(1-B), x*B]` | each category owns an explicit intercept and slope |
+| standardized interaction | replace `x` with `z = (x-center)/scale` | intercepts move to the recorded center; slopes become effects per recorded scale unit |
+
+Column order alone is not the contract: the evidence needs stable term keys and
+the actual column values after exclusions. Two tools can print the same formula
+while using different reference levels, missing-row populations, or
+standardization denominators. In that state, numerical coefficient comparison
+has no shared estimand and must remain `not_comparable`.
 
 ## Marginal And Sequential Tests Are Different Questions
 

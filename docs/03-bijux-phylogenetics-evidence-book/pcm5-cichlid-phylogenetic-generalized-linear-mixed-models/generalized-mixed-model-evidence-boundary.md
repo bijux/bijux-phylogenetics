@@ -4,7 +4,7 @@ audience: public
 type: study-guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # PCM5 Generalized Mixed-Model Evidence Boundary
@@ -121,6 +121,36 @@ the full eligible observation set is adjudicated.
 The ledger is part of the comparison contract, not explanatory decoration. A
 governed artifact should retain the input columns or their content identities,
 the expression version, the output scale, and the resulting observation key.
+
+## Treat Every Derived Quantity As A Child Evidence Record
+
+```mermaid
+flowchart LR
+    parent["Parent posterior draw<br/>model · chain · state"]
+    operands["Named operands<br/>with scale and units"]
+    rule["Versioned expression<br/>and domain checks"]
+    child["Derived draw<br/>with parent identity"]
+    summary["Summary, interval,<br/>and comparison verdict"]
+
+    parent --> operands --> rule --> child --> summary
+```
+
+The child record must retain enough identity to join back to one parent draw.
+Computing a ratio from separately summarized numerator and denominator
+posteriors destroys their dependence and is not equivalent to summarizing the
+draw-wise ratio.
+
+| Parent condition | Required child state |
+| --- | --- |
+| parent chain or draw is excluded by the declared diagnostic rule | excluded with the same parent reason |
+| a required operand is absent | missing, with the operand key recorded |
+| denominator is invalid under the expression contract | refused or non-finite under an explicit domain rule |
+| category, node, or predictor identity cannot be resolved | `not_comparable` at the derived-observation layer |
+| parent and transform identities align | eligible for summary and numerical adjudication |
+
+A rendered probability, signal fraction, or ancestral label cannot become the
+primary evidence owner. It remains a projection of the child draw ledger and
+must carry the same exclusions and denominator.
 
 ## Adjudicate Each Scale Separately
 
