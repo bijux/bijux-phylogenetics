@@ -4,7 +4,7 @@ audience: maintainer
 type: handbook
 status: canonical
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Maintainer Handbook
@@ -40,6 +40,34 @@ flowchart TD
 | evidence verdicts remain claim-scoped and fresh | broad prose cites neighboring or stale bundles | resolve exact claim, dependency, and freshness owner |
 | generated content remains generated | synchronized or indexed output is hand-edited | change the generator or canonical source and regenerate |
 | local execution preserves repository hygiene | caches, sites, logs, or reports appear outside `artifacts/` | correct the execution surface and artifact governance |
+
+## Review Changes From The Reader Decision Backward
+
+A maintainer change is complete when every public decision affected by the
+change resolves to one coherent repository state. Begin with the strongest
+decision a consumer could make from the changed surface, then walk backward to
+the canonical owner and forward through every projection.
+
+```mermaid
+flowchart RL
+    publication["Publication or claim<br/>decision"] --> evidence["Evidence or comparison<br/>record"]
+    evidence --> artifact["Structured artifact<br/>and manifest"]
+    artifact --> result["Typed result<br/>and diagnostics"]
+    result --> owner["Canonical runtime,<br/>schema, or policy owner"]
+```
+
+| Changed statement or surface | First question | Required closure |
+| --- | --- | --- |
+| capability wording | which exported method and supported composition owns it? | implementation, installed surface, examples, limits, and tests agree |
+| numerical or scientific statement | which observation and acceptance rule owns the value? | source inputs, execution, denominator, comparison, verdict, and freshness agree |
+| artifact field or omission | which producer defines presence, status, unit, and identity? | producer, old/new consumers, schema, migration behavior, and reports agree |
+| package or command promise | which built distribution exposes the behavior? | wheel/sdist inventory, clean install, invocation, exit/refusal semantics, and docs agree |
+| release claim | which exact candidate and child reports were evaluated? | revision, versions, artifacts, evidence, limitations, and decision owner form one packet |
+
+Editing the nearest prose is insufficient when the contradiction originates in
+code, schema, generated evidence, or release policy. Correct the earliest
+owner, regenerate derived records, and then review the public statement in its
+final rendered context.
 
 ## Keep Status In Its Owning Record
 

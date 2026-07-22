@@ -4,7 +4,7 @@ audience: public
 type: index
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Scientific Domains
@@ -39,6 +39,26 @@ flowchart TB
     histories --> review
     parsimony --> review
 ```
+
+## Track The Scientific Object That Changes
+
+Most cross-domain errors come from carrying a value forward after the object
+that gives it meaning has changed. Use the object transition—not the command
+sequence—to decide when a new identity and review record are required.
+
+| Transition | Scientific meaning that changes | Record to carry forward |
+| --- | --- | --- |
+| raw records → admitted taxa or characters | analysis population and denominator | included, excluded, aggregated, and refused records with reasons |
+| source tree → pruned, rerooted, scaled, or transformed tree | branch/clade identity and covariance geometry | parent identity, operation, parameters, invariants, and new tree identity |
+| alignment → trimmed or partitioned alignment | site population and model assignment | retained/removed sites, partition coordinates, alphabet, and new checksum |
+| traits → transformed design matrix | estimand, intercept, contrasts, and coefficient meaning | formula, transforms, levels, column order, and row/taxon order |
+| model configuration → fitted result | likelihood, prior, objective, and uncertainty convention | complete configuration, estimates/samples, diagnostics, warnings, and status |
+| fitted result → table, tree, map, or figure | selection and visual encoding | source result identity, selected rows/marks, units, omissions, and transform |
+
+Two objects may contain the same visible labels or headline value while having
+different scientific identities. A pruned tree is not merely a shorter file;
+a standardized predictor is not merely the same column in another unit; a
+consensus tree is not one sampled tree with extra support labels.
 
 ## Domain Map
 

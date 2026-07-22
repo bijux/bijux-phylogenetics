@@ -4,7 +4,7 @@ audience: public
 type: index
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Phylogenetics Product Handbook
@@ -22,6 +22,33 @@ bundles. The distinction between those surfaces is part of the product.
 | Should I use Python, the CLI, or an output bundle? | [Public interfaces](interfaces/index.md) |
 | How do I install, execute, and review a workflow? | [Runtime operations](operations/index.md) |
 | What does a passing check or evidence record establish? | [Quality and limits](quality/index.md) |
+
+## Understand The Product As Four Connected Contracts
+
+The runtime is not just a collection of algorithms. Every supported route
+connects four contracts, and each contract can stop independently.
+
+| Contract | Decision it owns | Evidence of completion |
+| --- | --- | --- |
+| scientific intake | which taxa, characters, traits, trees, partitions, and units are admitted | validated objects plus retained exclusions and transformations |
+| computation | which model, algorithm, engine, search, sampler, or reconstruction was evaluated | typed result with method identity, status, diagnostics, and warnings |
+| persistence | which execution state survives outside the process | manifest and structured artifacts with schema, checksums, and complete inventory |
+| claim consumption | which bounded statement may use the result | explicit comparison or Evidence Book record with observations, rules, verdict, and limitations |
+
+```mermaid
+flowchart LR
+    intake["Scientific intake<br/>defines population"]
+    compute["Computation<br/>defines estimand"]
+    persist["Persistence<br/>defines durable record"]
+    consume["Claim consumption<br/>defines conclusion"]
+
+    intake --> compute --> persist --> consume
+```
+
+A route that ends after persistence can be complete and useful without making
+a governed study claim. Conversely, a claim cannot skip directly from input
+files to a favorable conclusion: the computation and durable result identities
+must remain inspectable.
 
 ## Select An Analysis Route
 
