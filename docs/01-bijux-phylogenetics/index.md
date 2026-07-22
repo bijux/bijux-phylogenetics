@@ -41,6 +41,34 @@ a governed study claim. Conversely, a claim cannot skip directly from input
 files to a favorable conclusion: the computation and durable result identities
 must remain inspectable.
 
+## Computation Ownership Survives Every Projection
+
+Bijux can own an entire result contract without owning every algorithm that
+contributed to it. Ownership stays attached through normalization, reporting,
+comparison, and citation.
+
+```mermaid
+flowchart LR
+    native["Bijux-native method"] --> typed["Typed Bijux result"]
+    external["Named external engine"] --> adapter["Bijux adapter<br/>and parser"] --> typed
+    typed --> artifacts["Structured artifacts<br/>and manifest"]
+    artifacts --> evidence["Optional claim-indexed<br/>evidence review"]
+
+    external -. owns external computation .-> adapter
+    native -. owns native computation .-> typed
+```
+
+| Surface | Bijux owns | Ownership that remains elsewhere |
+| --- | --- | --- |
+| native method | algorithm, numerical contract, diagnostics, and result | scientific choice and downstream interpretation remain with the study |
+| external-engine route | input admission, invocation, capture, parsing, normalization, and artifacts | the external engine owns its algorithm and native output semantics |
+| report or figure | projection contract, source linkage, and rendering identity | the analytical result still owns the values |
+| Evidence Book claim | dependency graph, comparison rule, verdict, limitations, and freshness | source studies and reference implementations retain their identities |
+
+Normalization makes results reviewable under shared interfaces; it never
+rewrites computation provenance. Evidence review consumes those identities
+and can qualify or refuse a claim without changing who performed the method.
+
 ## Select An Analysis Route
 
 | Starting material and question | Primary route | First review checkpoint |

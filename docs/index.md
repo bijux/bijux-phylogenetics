@@ -51,6 +51,23 @@ flowchart LR
     artifact -. selected workflows .-> evidence
 ```
 
+## The Public Record Has Four Independent Depths
+
+The site distinguishes how much of a result is exposed, not merely whether a
+feature name appears.
+
+| Depth | Public question | Record that answers it |
+| --- | --- | --- |
+| capability | What scientific object and operation are supported? | domain contract with assumptions, inputs, outputs, and refusal conditions |
+| execution | Who performed the computation, and did it terminate acceptably? | native result or external-engine execution and parser records |
+| reproducibility | Can the exact run and every accepted output be reconstructed? | manifest, environment, configuration, attempts, checksums, and inventory |
+| evidence | Which bounded statement is supported at this revision? | claim-indexed bundle with observations, checks, verdict, limitations, and freshness |
+
+These depths may legitimately differ for one surface. Capability documentation
+can be complete while study evidence is absent; an external execution can be
+reproducible while numerical correspondence is unresolved. Each page names
+the strongest record it actually owns.
+
 ## Choose What Must Be Trusted
 
 The same analysis can be sound at one layer and unresolved at another. Begin

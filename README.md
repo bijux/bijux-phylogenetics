@@ -45,6 +45,23 @@ flowchart LR
     data --> contracts --> methods --> results --> outputs
 ```
 
+## Distinguish Capability, Ownership, And Evidence
+
+Three labels answer different questions in this repository. They must not be
+used as synonyms.
+
+| Label | What it means | Required proof | What it does not imply |
+| --- | --- | --- | --- |
+| native capability | Bijux owns the numerical or structural computation | public contract, implementation, tests, typed result, and diagnostics | correspondence with another implementation or suitability for a study |
+| governed integration | Bijux owns admission, invocation, capture, parsing, and normalization around another engine | adapter contract, engine identity, native outputs, parser state, and failure record | ownership of the external algorithm |
+| parity evidence | two named implementations were compared under aligned assumptions | selected case, both observations, normalization, tolerance, and complete denominator | evidence for a broader scientific claim or untested model |
+| study evidence | a bounded statement is adjudicated from governed source, execution, observation, and freshness records | Evidence Book claim, dependencies, checks, verdict, limitations, and current indexes | validation of every capability used nearby |
+
+A method can be native without having a corresponding Evidence Book study. An
+external workflow can be fully reproducible without becoming native. A parity
+observation can be exact while the scientific claim that would consume it is
+still incomplete. The relevant record must carry the label and scope.
+
 ## Choose A Starting Point
 
 | You need to… | Start with… | Leave with… |
