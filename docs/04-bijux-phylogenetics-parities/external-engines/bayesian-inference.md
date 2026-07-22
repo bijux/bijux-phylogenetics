@@ -195,6 +195,21 @@ Changing burn-in, subsampling, topology filtering, or parameter transformation
 creates a new projection. Preserve it alongside its rule; do not overwrite the
 prior summary and keep the old interpretation.
 
+### Admit Samples Before Summarizing Them
+
+Posterior review has an admission boundary before any pooled estimate. For
+each requested chain or run, retain whether it started, completed, parsed,
+passed the declared diagnostic policy, and contributed samples. Then retain
+requested, emitted, excluded, and admitted draw or tree counts for every
+contributing series.
+
+An excluded chain remains in the execution population with its exclusion
+reason; it is not erased from the study design. A resumed segment remains part
+of its parent chain unless the engine contract establishes independent
+initialization. The pooled posterior denominator is therefore the admitted
+sample population, while coverage and convergence statements still disclose
+all requested chains and their terminal states.
+
 ## Evidence Package Acceptance
 
 `adapter bayesian-evidence` requires explicit input, configuration, tree, log,

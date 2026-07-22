@@ -90,6 +90,21 @@ normalized to a common display range. They remain different statistical
 quantities and are labeled by engine and method in every comparison. SH-aLRT
 is a third estimand and must remain separately labeled as well.
 
+### Pass The Comparability Gate First
+
+Topology, likelihood, and support have different comparison requirements.
+Topology comparison requires a reconciled taxon set, split convention, and
+rooting policy. Likelihood comparison additionally requires the same alignment
+and partitions, likelihood family, state space, parameter treatment, and
+normalization convention. Support comparison requires a common clade key but
+retains each resampling or test procedure as a distinct estimand.
+
+If a requirement fails, retain the two engine observations and record the
+failed comparability dimension. Do not compute a pooled difference whose
+meaning depends on an unverified assumption. In particular, a larger native
+log-likelihood is not evidence that one engine is better when the evaluated
+models or normalizations differ.
+
 ## Run A Reviewable Comparison
 
 ```bash

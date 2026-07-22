@@ -84,6 +84,20 @@ For posterior workflows it includes chain or state selection, burn-in, and
 subsampling. If a link is absent, only the independently identifiable segment
 can be reviewed; the end-to-end run is incomplete.
 
+### Native Files Remain Authoritative
+
+The native file is the authority for what the external engine emitted. A
+parsed observation is an addressable reading of that file, and a normalized
+result is a deliberately narrower projection for comparison or downstream
+use. Neither projection may silently replace engine-specific structure.
+
+Every projection records the native parent checksum, parser and schema
+identity, extracted fields, unit or scale conversions, and values that could
+not be represented. When a parser changes, the native artifact is parsed into
+a new child record; the earlier projection remains attributable to the parser
+that created it. This makes parser corrections reviewable without rewriting
+the historical engine run.
+
 ## The Accepted Run Identity
 
 A reviewable external-engine record joins four identities:

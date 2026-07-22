@@ -121,6 +121,20 @@ the source record. It does not assert that homology or trimming was
 biologically correct; those remain scientific judgments outside structural
 acceptance.
 
+### Taxa And Sites Have Separate Denominators
+
+An alignment handoff carries two populations that must reconcile
+independently. The taxon ledger follows requested, excluded, accepted,
+aligned, and handed-off records. The site ledger follows source residues,
+alignment columns, trimmed columns, and partition membership. A complete
+taxon set cannot compensate for missing site lineage, and an exact site count
+cannot hide a dropped or renamed sequence.
+
+Report both ledgers at every boundary. For codon-aware paths, also reconcile
+accepted coding records, amino-acid guide positions, restored codons, and
+trimmed codon positions. Any operation that changes one population creates a
+new artifact identity even when the other population is unchanged.
+
 ## Run The Workflow
 
 ```bash
