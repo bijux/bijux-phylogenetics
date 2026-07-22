@@ -14,6 +14,11 @@ supports for each external reference. A stronger row must not be inferred from
 a weaker one: successful execution is not numerical agreement, and a checked
 study fixture is not a package-wide live parity surface.
 
+Read each row as a ceiling on the public statement, not as a score. The
+reference name identifies an external owner; the verification mode identifies
+how that owner was observed; the strongest claim states the largest supported
+scope; and the primary record contains the denominator, failures, and limits.
+
 | Reference | Verification mode | Strongest current claim | Primary record |
 | --- | --- | --- | --- |
 | APE | live R registry; checked study fixtures | 180 governed cases across 35 function shards, plus named study comparisons | [APE correspondence](../r-ecosystem/ape.md) |
@@ -103,6 +108,20 @@ A row may advance only when the stronger mode is implemented and governed.
 Documentation language alone cannot promote provenance to a checked fixture,
 an adapter to parity, or an analytical match to rendered-figure equivalence.
 
+## Select The Record From The Intended Statement
+
+| Intended statement | Minimum owning record |
+| --- | --- |
+| Bijux can prepare or invoke a named external engine | adapter contract with executable discovery, command, process state, and native outputs |
+| one registered operation corresponds for named cases | parity registry plus selected-case summary, keyed observations, rules, and failures |
+| one checked fixture reproduces a reference observation | fixture provenance, immutable reference value, Bijux execution, and comparison record |
+| one scientific result corresponds under a study contract | Evidence Book claim, complete observation denominator, verdict, limitations, and freshness |
+| two ecosystems are generally equivalent | no matrix row supplies this claim; define and govern a finite operation and population first |
+
+Choose the record whose scope matches the sentence. More operational detail
+does not compensate for a missing scientific claim, and a study verdict does
+not expand to every function offered by its reference package.
+
 ## Revision Rule
 
 Registry sizes and strongest claims describe the checked-in revision. When a
@@ -110,3 +129,9 @@ registry, normalization rule, reference version, tolerance, or governed
 fixture changes, regenerate its summary and reconsider the matrix claim. A
 larger case count is not automatically stronger evidence if new cases are
 skipped, incomparable, or governed by weaker observations.
+
+The citation should retain the repository revision, verification mode,
+reference and Bijux versions, selected operation and population, observation
+rule, complete denominator, strongest supported claim, and linked evidence
+verdict when one exists. Without the revision and denominator, the matrix row
+is navigation rather than a reproducible correspondence statement.

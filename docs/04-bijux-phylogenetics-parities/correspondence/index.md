@@ -13,6 +13,24 @@ Correspondence is a claim about named outputs under named assumptions. It is
 not a promise that two libraries expose identical APIs, optimize identical
 objectives, or will agree for every dataset.
 
+## Start With An Equivalence Proposal
+
+Before running either implementation, state why the compared outputs should
+represent the same quantity. The proposal must bind scientific meaning before
+normalization or tolerance is considered.
+
+| Identity to align | Example review question |
+| --- | --- |
+| analytical population | are the same taxa, rows, loci, states, and exclusions admitted? |
+| estimand | do both outputs answer the same coefficient, likelihood, topology, ancestral-state, or posterior question? |
+| parameterization | do bounds, signs, transforms, priors, factors, roots, and branch scales have the same meaning? |
+| observation key | can each scalar, row, node, clade, split, matrix entry, replicate, or draw be joined without position guessing? |
+| execution owner | is the record comparing native implementations, a Bijux adapter with its external engine, or a frozen reference fixture? |
+
+If the estimands cannot be aligned, record `not_comparable` at the evidence
+layer. Do not search for a scale transform or large tolerance that merely makes
+the displayed values close.
+
 ## Comparison Record
 
 | Field | Reviewer question |
@@ -71,6 +89,21 @@ leave evidence unavailable, but does not automatically establish
 `not_comparable`. Resolution state—such as open follow-through or a named
 blocker—remains a separate axis.
 
+```mermaid
+flowchart LR
+    proposal["Equivalence proposal"] --> executions["Identified executions"]
+    executions --> raw["Raw outputs"]
+    raw --> normalized["Audited normalization"]
+    normalized --> observations["Keyed observations"]
+    observations --> outcome["Runtime case outcome"]
+    outcome --> claim["Claim dependency set"]
+    claim --> verdict["Evidence verdict"]
+    verdict --> freshness["Current or stale"]
+```
+
+Every arrow is reviewable. A later layer may narrow or qualify an earlier one,
+but it cannot invent a missing execution, observation, or equivalence rule.
+
 ## Reproducing A Comparison
 
 The checked-fixture lane runs without R:
@@ -100,6 +133,12 @@ Before quoting correspondence, record how many cases were registered,
 selected, executed, passed, failed, and skipped. Then identify the exact
 shards. A statement about “all cases” is invalid when it silently means only
 the subset that executed successfully.
+
+For stochastic cases, retain a second denominator inside each selected case:
+requested replicates or draws, produced members, rejected or invalid members,
+and the population consumed by the summary rule. Case-level `passed=1` does
+not disclose whether a distributional check used 10, 1,000, or only the
+successful subset of 1,000 requested replicates.
 
 ## Diagnose A Non-Pass Without Relabeling It
 
