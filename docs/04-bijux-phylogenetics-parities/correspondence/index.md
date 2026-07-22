@@ -76,6 +76,27 @@ Retain raw and normalized observations side by side. A transformation chosen
 after observing the difference belongs to a new comparison rule; it cannot be
 used to rewrite the original failure as a pass.
 
+## Declare A Normalization Loss Budget
+
+Normalization may remove representational differences only when the removed
+information is irrelevant to the registered observation. Its loss budget must
+be explicit and reviewable.
+
+| Normalization class | Admissible example | Information that must remain |
+| --- | --- | --- |
+| canonical formatting | equivalent Newick whitespace or stable numeric formatting | topology, labels, branch/support semantics and full-precision source values |
+| key reordering | map parameter or matrix rows by stable names | original order, mapping, missing/duplicate keys and reordered values |
+| unit conversion | time or distance through a declared invertible factor | source units, target units, factor and unconverted observation |
+| sign or objective conversion | negate a documented log-likelihood convention | source objective definition and reversible transform |
+| structural projection | compare shared splits under a declared taxon population | full source trees, excluded taxa, rooting policy and projection identity |
+| stochastic summary | compare a predeclared distribution statistic | full replicate denominator, invalid members, estimator and threshold |
+
+Reject normalization when it aggregates distinct taxa or parameters, discards
+failed members, chooses a root or category after seeing the result, rounds
+beyond the registered tolerance, or maps non-invertible estimands merely
+because their summaries look close. The normalized value is a child
+observation; the raw source remains its audit owner.
+
 ## Promotion To An Evidence Verdict
 
 An Evidence Book bundle may interpret retained parity observations only after

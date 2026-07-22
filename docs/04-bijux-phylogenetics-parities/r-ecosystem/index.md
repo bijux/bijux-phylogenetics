@@ -108,6 +108,27 @@ installation does not retroactively identify an older checked fixture, and a
 fixture cannot be relabelled as live because the corresponding package is now
 installed.
 
+## Treat The R Session As Part Of The Reference
+
+An R function is not fully identified by package and function name. Live
+correspondence must retain the session conditions that can change dispatch,
+defaults, optimization, ordering, or stochastic output.
+
+| Session component | Why it matters |
+| --- | --- |
+| R and package versions | define exported behavior, object structures, defaults and numerical dependencies |
+| namespace-qualified call | prevents search-path masking and ambiguous method ownership |
+| loaded dependency versions | can change matrix, optimizer, tree, serialization and compiled behavior |
+| global options, contrasts and locale | affect factor coding, printing, parsing, ordering and numerical presentation |
+| random-number kind and seed | define stochastic case generation and reference draws |
+| platform and numeric libraries | can affect optimization paths, tolerances and floating-point results |
+| warnings, errors and session metadata | preserve diagnostic behavior rather than only returned values |
+
+Capture these fields from the reference process itself. Shell environment
+claims or a later `sessionInfo()` from another process are insufficient. When
+a session field changes materially, retain a new execution observation even
+if every compared scalar still passes.
+
 ## Treat Reference Drift As A New Observation
 
 An R, package, dependency, or platform change can alter defaults, object
