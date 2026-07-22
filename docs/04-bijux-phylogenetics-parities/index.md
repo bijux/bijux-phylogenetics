@@ -45,6 +45,25 @@ external program can participate in a governed Bijux workflow. Numerical or
 structural equivalence requires a separate comparison with aligned assumptions
 and explicit observation rules.
 
+## Name The Kind Of Correspondence
+
+“Parity” is too broad without the relationship being tested. One case can
+establish several layers, but a stronger layer requires its own observations.
+
+| Relationship | Question | Minimum evidence | Does not establish |
+| --- | --- | --- | --- |
+| invocation | can the named reference operation be selected and executed? | versions, command/call, inputs, terminal state | comparable outputs |
+| structural | do both outputs contain the same keyed objects and shapes? | taxa, nodes, parameters, dimensions, order and omissions | numerical agreement |
+| numerical | do aligned values satisfy declared exact or tolerance rules? | structural identity, both values, rule, complete denominator | identical failure behavior or scientific adequacy |
+| stochastic distribution | do sampled outputs satisfy registered distributional or calibration rules? | seed/chain/replicate populations, statistic and threshold | draw-wise identity or universal convergence |
+| behavioral | do validation, defaults, refusals, status and artifact semantics support the same consumer contract? | input and failure corpus plus interface observations | package-wide substitutability |
+| scientific claim | does the correspondence support one bounded interpretation? | claim dependency, source, observations, verdict, limits and freshness | transfer to another study or estimand |
+
+Report the strongest relationship actually observed. A numerically matching
+scalar does not imply behavioral equivalence, while a structurally matching
+tree can still contain different branch lengths, support meanings, or
+likelihood conventions.
+
 ## Choose The Relationship From The Question
 
 | Question | Required relationship | Minimum retained record |

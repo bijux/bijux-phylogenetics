@@ -44,6 +44,25 @@ scope; and the primary record contains the denominator, failures, and limits.
 Do not translate a mode into an outcome or an outcome into a verdict. They
 answer different questions and may change on different schedules.
 
+## Coverage Requires The Full Case Population
+
+A passing-case count is uninterpretable without the selection and execution
+denominators.
+
+| Count | Membership rule | Required visibility |
+| --- | --- | --- |
+| registered | every case defined by the governed registry revision | operation, parameterization, fixture and support state |
+| selected | cases included by the declared filter before execution | filter, exclusions and unsupported boundaries |
+| executed | selected cases for which both required lanes reached a comparable observation stage | failures, missing tools and incomplete outputs |
+| passed | executed comparable cases satisfying every registered rule | keyed observations and rules |
+| failed | executed comparable cases violating at least one rule | mismatch artifacts and owning observation |
+| skipped or not comparable | selected cases without an eligible comparison | exact absence, capability, environment or identity reason |
+
+Publish all counts and their case keys. A pass rate over executed cases can be
+useful, but it must not hide selected cases that never became comparable. A
+larger registry is stronger coverage only when its new cases retain explicit
+outcomes and comparable observation contracts.
+
 ## Verification Has Independent Axes
 
 Do not read the modes as one universal maturity ladder. Strength depends on at
