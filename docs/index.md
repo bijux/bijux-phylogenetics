@@ -33,7 +33,7 @@ last_reviewed: 2026-07-22
 
 One repository connects three things that scientific software too often keeps
 apart: an executable phylogenetics runtime, study-level evidence for selected
-comparative claims, and the controls that keep releases aligned with both.
+comparative claims, and publication controls that keep the two aligned.
 
 The runtime is broad; the available evidence is deliberately claim-specific.
 Implementation, contract tests, benchmarks, and governed studies therefore
@@ -344,30 +344,6 @@ Governed study bundles use `matched`, `matched_with_tolerance`,
 `mismatch_explained`, `mismatch_unexplained`, or `not_comparable`. A skipped
 runtime case is not an evidence verdict, and an open follow-through item is not
 a replacement for the recorded bundle verdict.
-
-## Essential Workflows And Contracts
-
-- [Runtime system map](01-bijux-phylogenetics/architecture/runtime-system-map.md)
-  — follow data from input contracts to reviewable artifacts.
-- [Surface selection](01-bijux-phylogenetics/interfaces/surface-selection.md)
-  — choose Python, CLI, or persisted artifacts by intended consumer.
-- [Native maximum-likelihood workflows](01-bijux-phylogenetics/operations/native-maximum-likelihood-workflows.md)
-  — understand the owned inference result and search evidence.
-- [Native Bayesian workflows](01-bijux-phylogenetics/operations/native-bayesian-workflows.md)
-  — see the supported DNA inference boundary and diagnostics.
-- [Evidence reading guide](01-bijux-phylogenetics/foundation/claim-reading-guide.md)
-  — trace a public statement to its strongest available proof.
-
-## Distribution Map
-
-| Distribution | Purpose |
-| --- | --- |
-| `bijux-phylogenetics` | canonical runtime, public Python API, and CLI |
-| `phylogenetic` | shorter compatibility distribution for the same runtime |
-| `bijux-phylogenetics-dev` | repository-only documentation, evidence, API, and release checks |
-
-The alias does not represent a reduced scientific edition. Maintainer tooling
-is intentionally separate from both runtime distributions.
 
 ## Scope Boundary
 

@@ -24,10 +24,10 @@
 
 `bijux-phylogenetics` is a Python runtime for phylogenetic inference,
 comparative analysis, ancestral reconstruction, parsimony, simulation, and
-reviewable scientific reporting. It is built for the part after “the model
-ran”: establishing which data and tree were analyzed, who performed each
-computation, why a result was accepted, and which evidence supports the
-statement made from it.
+reviewable scientific reporting. Its defining contract begins before a model
+runs and continues after it finishes: identify the admitted data and tree,
+attribute each computation, retain diagnostics and artifacts, and connect any
+published statement to the evidence that actually supports it.
 
 Owned numerical methods and explicit adapters for external engines share one
 result discipline. Inputs, exclusions, configuration, diagnostics, failures,
@@ -59,7 +59,8 @@ flowchart LR
 These are different assurance levels. A successful demo establishes packaging
 and artifact linkage, not numerical accuracy. A correct runtime result is not
 automatically a cross-tool parity result. A nearby passing evidence bundle does
-not support a claim that it does not name.
+not support a claim that it does not name. Only a bounded statement linked to
+its current governed bundle is described here as evidence-backed.
 
 ## Follow A Complete Study Guide
 
@@ -340,20 +341,6 @@ analysis code, checks, results, and reviewer verdicts. The cichlid posterior
 workflows retain their external `MCMCglmm` boundary; nearby runtime capability
 is not presented as a substitute.
 
-## Trust Vocabulary
-
-| Term | Meaning |
-| --- | --- |
-| implemented | executable code owns the stated behavior |
-| tested | a named contract passes its fixtures |
-| benchmarked | metrics were measured on a named corpus and configuration |
-| evidence-backed | a governed bundle supports a bounded claim |
-| released | packages, documentation, schemas, and declared evidence passed publication gates at a revision |
-
-These terms are deliberately narrower than “scientifically appropriate for
-every use.” Model choice, study design, diagnostics, and independent review
-remain essential.
-
 ## Repository Map
 
 | Path | Responsibility |
@@ -376,18 +363,13 @@ the runtime distribution.
 - [Documentation home](https://bijux.io/bijux-phylogenetics/)
 - [Product handbook](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
 - [Scientific domains](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-domains/)
-- [Datasets and study inputs](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-domains/data-and-structure/datasets-and-study-inputs/)
-- [Biogeography and migration](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-domains/evolutionary-analysis/biogeography-and-migration/)
-- [Continuous phylogeography and maps](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-domains/evolutionary-analysis/continuous-phylogeography-and-maps/)
-- [Reporting and rendering](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-domains/scientific-assurance/reporting-and-rendering/)
 - [Parities and correspondence](https://bijux.io/bijux-phylogenetics/04-bijux-phylogenetics-parities/)
-- [Runtime architecture](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/architecture/)
-- [Surface selection](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/surface-selection/)
-- [Native maximum-likelihood workflow](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/native-maximum-likelihood-workflows/)
-- [Native Bayesian workflow](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/native-bayesian-workflows/)
-- [Validation lanes](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/quality/validation-lanes/)
 - [Evidence Book](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-evidence-book/)
 - [Maintainer handbook](https://bijux.io/bijux-phylogenetics/05-bijux-phylogenetics-maintain/)
+
+The five handbook entrances own navigation. Domain, workflow, interface,
+validation, and study pages are linked from those entrances so this README
+does not become a second, inevitably stale site navigation tree.
 
 ## Development
 
