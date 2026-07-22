@@ -15,6 +15,23 @@ governed R reference and Bijux on fixed, reconciled inputs. The aggregate
 contain 16 exact `matched` rows and 15 `matched_with_tolerance` rows. Visual and
 artifact-governance claims remain `not_comparable` by design.
 
+## Know Exactly What Corresponded
+
+PCM1 tests a defined numerical surface, not every possible reading of the
+study:
+
+| Evaluated here | Not established here |
+| --- | --- |
+| fitted λ and log likelihood under aligned covariance and likelihood conventions | that λ is a causal fraction of longevity variation |
+| registered λ=0 contrast and selected covariance entries | that the Brownian/λ model is biologically adequate or uniquely preferred |
+| 74 clade-keyed ancestral point and interval rows | that ancestral longevity was observed or historically certain |
+| one MRCA extraction and two branch-summary counts | that each inferred branch difference is an independently observed event |
+| R–Bijux numerical correspondence under predeclared tolerances | equivalence of plots, every software default, unrelated datasets, or unregistered estimators |
+
+This table is the citation boundary. A downstream statement may be narrower
+than an evaluated row, but it must not be broader than the population, model,
+quantity, and comparison rule that own that row.
+
 ## Three Questions, Three Evidence Roles
 
 PCM1 is not one omnibus “phylogenetics parity” test. Its numerical ledger

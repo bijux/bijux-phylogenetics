@@ -40,6 +40,25 @@ which every later scalar comparison depends. Their claim scope stops at that
 handoff: they cannot establish the fitted model merely because the model uses
 their accepted inputs.
 
+## See How One Preparation Choice Reaches The Model
+
+Suppose two workbook rows name the same species. Keeping both would give that
+species two response entries while the tree contains one tip; selecting one
+row would make an undeclared choice; aggregating them defines one new species
+observation. PCM1 records the aggregation rule and resulting row so the model
+population is explicit.
+
+The same logic applies on the tree side. A tip with no retained trait value
+cannot contribute a paired observation, but removing it changes the tree from
+which covariance and internal clades are derived. PCM1 therefore records the
+two removed tips, preserves the derived tree identity, and proves exact set and
+order correspondence before any likelihood is evaluated.
+
+This is the essential evidence chain: a row-level decision changes the
+response vector; a tip-level decision changes the covariance; reconciliation
+determines which vector element belongs to which covariance row. “Seventy-five
+on both sides” is only a count until those identities are joined.
+
 ### Preparation Changes The Model Matrix
 
 For a comparative model, pruning is not equivalent to deleting decorative

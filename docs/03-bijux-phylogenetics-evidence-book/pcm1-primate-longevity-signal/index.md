@@ -38,6 +38,26 @@ primate evidence sequence. Its strongest claim is not “the files loaded”; it
 is that the published observations resolve through one governed preparation
 chain.
 
+## Read PCM1 In Two Passes
+
+First read [Data And Tree Preparation](data-and-tree-preparation.md). It
+explains how 76 workbook rows and 77 tree tips become one ordered 75-species
+comparative object. Stop there if the aggregation, pruning, labels, order, or
+tree state is not acceptable: every later covariance and node result depends
+on that object.
+
+Then read [Signal And Ancestral Results](signal-and-ancestral-results.md). It
+compares the fitted λ surface, likelihood contrast, covariance entries,
+clade-keyed ancestral estimates, and branch summaries across the reference and
+Bijux implementations. Agreement in this pass establishes correspondence for
+those registered calculations—not biological truth, causal explanation, or
+general performance on other trees and traits.
+
+The two passes answer different questions. Preparation evidence proves that
+both computations received the same scientific object. Result evidence proves
+that selected calculations on that object satisfy their declared rules. A
+reader needs both before citing the aggregate PCM1 verdict.
+
 ## PCM1 Is A Baseline, Not A Universal Benchmark
 
 PCM1 establishes one reusable analytical state. Later work can inherit that
