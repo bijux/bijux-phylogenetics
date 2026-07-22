@@ -61,6 +61,22 @@ scientific mismatch remains visible and unresolved.
 “needs review.” Neither may be converted into `matched_with_tolerance` by
 widening the tolerance after observing the result.
 
+## Keep Comparability, Agreement, And Currency Separate
+
+Three independent decisions qualify a claim:
+
+| Axis | Question | Possible outcome |
+| --- | --- | --- |
+| comparability | do both sides address the same population, estimand, identity, and required output? | comparable or `not_comparable` |
+| agreement | for comparable observations, does the registered exact, structural, or tolerance rule hold? | `matched`, `matched_with_tolerance`, `mismatch_explained`, or `mismatch_unexplained` |
+| currency | do the verdict and observations still resolve to unchanged material dependencies? | current or stale |
+
+The axes cannot compensate for one another. A current record may remain
+`not_comparable`; a numerically matched historical record may be stale; and a
+fresh mismatch remains a mismatch until a new governed observation chain is
+adjudicated. Public language must carry all applicable axes rather than
+compressing them into “valid” or “invalid.”
+
 ## Derive A Claim Verdict From Its Required Population
 
 Start from the claim dependency set, not from whichever rows are easiest to

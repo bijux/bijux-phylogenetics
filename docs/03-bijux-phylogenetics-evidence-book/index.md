@@ -26,6 +26,21 @@ flowchart LR
     indexes --> docs["Bounded public claim"]
 ```
 
+## What A PCM Represents
+
+“PCM” identifies a comparative-methods study family reconstructed from source
+teaching material. Each family has a scientific progression—prepare a
+population, fit named models, inspect diagnostics, and interpret bounded
+quantities—and an evidence progression that asks which of those steps can be
+reproduced and compared at the current repository revision.
+
+A PCM is therefore neither a runtime module nor a single benchmark. It is a
+dossier containing several claim-sized bundles. PCM1 and PCM2 currently carry
+governed numerical comparisons; PCM3 through PCM5 currently preserve source,
+input, estimand, and closure contracts without claiming missing executions as
+results. The numbering describes the source study sequence, not increasing
+software quality or transferable validation.
+
 ## Two Reading Layers
 
 Use these public pages to understand study questions and limitations. Use the

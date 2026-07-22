@@ -32,6 +32,21 @@ If any answer comes only from `report.md`, a plot, a filename, or contextual
 prose, continue to the owning machine record. If no owning record exists, the
 claim is not ready for citation at that point in the chain.
 
+### A Short First Review
+
+For an initial assessment, open only five records in this order:
+
+1. `manifest.json` for bundle identity, claim roster, verdict, and limitations;
+2. `inputs.manifest.json` for the exact source and derived analytical objects;
+3. `provenance.json` for reference and Bijux execution identities;
+4. `checks.json` plus the machine result ledger for the denominator and rule;
+5. the freshness index for whether that chain is current.
+
+This route is sufficient to decide whether the bundle contains a governed
+comparison, a mismatch, a contract-only design, or stale evidence. Read
+`report.md` afterward for interpretation. A report that cannot be reconstructed
+from those five records is not the authority for the claim.
+
 ## Stop At The First Broken Evidence Edge
 
 Evidence review is not a scavenger hunt for a nearby favorable value. Move
