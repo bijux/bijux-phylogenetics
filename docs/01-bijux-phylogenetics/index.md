@@ -14,15 +14,6 @@ phylogenetic analyses. Its public contract includes native analytical code,
 explicit integrations with external engines, typed results, and durable output
 bundles. The distinction between those surfaces is part of the product.
 
-## Product Areas
-
-| Area | Coverage |
-| --- | --- |
-| What belongs to the runtime, and how does data move through it? | [Architecture](architecture/index.md) |
-| Should I use Python, the CLI, or an output bundle? | [Public interfaces](interfaces/index.md) |
-| How do I install, execute, and review a workflow? | [Runtime operations](operations/index.md) |
-| What does a passing check or evidence record establish? | [Quality and limits](quality/index.md) |
-
 ## Understand The Product As Four Connected Contracts
 
 The runtime is not just a collection of algorithms. Every supported route
@@ -166,69 +157,6 @@ flowchart LR
 This order prevents an available command from silently deciding the model or
 the evidence standard.
 
-## Analytical Capability Map
-
-```mermaid
-flowchart TB
-    foundations["Scientific foundations"]
-    analysis["Analytical methods"]
-    execution["Execution paths"]
-    review["Review surfaces"]
-
-    foundations --> trees["Datasets, tree topology,<br/>taxa, alignments"]
-    foundations --> models["Finite-state likelihood,<br/>distance, covariance"]
-    trees --> analysis
-    models --> analysis
-    analysis --> inference["ML and Bayesian inference"]
-    analysis --> comparative["Comparative, ancestral,<br/>parsimony"]
-    analysis --> spatial["Biogeography, phylogeography,<br/>host and niche evolution"]
-    inference --> execution
-    comparative --> execution
-    spatial --> execution
-    execution --> native["Native Python runtime"]
-    execution --> adapters["Governed external-engine adapters"]
-    native --> review
-    adapters --> review
-    review --> outputs["Typed results, diagnostics,<br/>tables, figures, manifests, evidence"]
-```
-
-This is not a maturity diagram: capability families have different validation
-depth. Consult [validation lanes](quality/validation-lanes.md) before turning
-runtime breadth into a scientific assurance claim.
-
-## What Is Native
-
-The repository owns the semantics and implementation of its tree runtime,
-alignment diagnostics, finite-state likelihood foundations, supported native
-maximum-likelihood and Bayesian paths, comparative models, ancestral methods,
-parsimony families, simulations, datasets, and output contracts.
-
-“Native” does not mean “universally preferred” or “validated for every
-dataset.” It identifies implementation ownership. Suitability is a separate
-question answered through model assumptions, diagnostics, benchmarks, and
-study evidence.
-
-## What Is Integrated
-
-Adapters make established engines usable inside governed workflows. They own
-input preparation, invocation, failure reporting, output parsing, and artifact
-packaging. They do not own the scientific algorithms inside the external
-executable. This boundary matters for installation, reproducibility, licensing,
-and claim language.
-
-## A Typical Analysis
-
-1. Validate taxon identities, tree shape, alignment content, and model inputs.
-2. Select an owned native method or an explicit external-engine adapter.
-3. Execute through Python for composition or the CLI for repeatable operation.
-4. Inspect typed diagnostics before interpreting parameter estimates.
-5. Persist the report, manifest, tables, and figures needed for review.
-6. Use evidence records only when making claims covered by those records.
-
-The runtime is designed so that the scientific result is not the only output.
-Inputs, configuration, diagnostics, and provenance remain available to a
-reviewer.
-
 ## A Complete Result Is More Than An Estimate
 
 ```mermaid
@@ -253,16 +181,6 @@ diagnostics cannot be interpreted safely. A report without structured results
 cannot be consumed reliably. The workflow is complete when all three
 relationships remain inspectable.
 
-## Ownership Boundaries
-
-| Surface | Owns | Does not imply |
-| --- | --- | --- |
-| runtime method | computation and result contract | evidence closure for every use |
-| engine adapter | orchestration and normalized artifacts | native ownership of the engine |
-| benchmark | behavior on a named corpus and configuration | universal performance ranking |
-| evidence bundle | provenance and verdicts for named claims | validation beyond its study scope |
-| published handbook | supported behavior, assumptions, and navigation | proof without executable checks |
-
 ## Locate The Owning Contract
 
 | Disputed subject | Canonical record | Reader-facing interpretation |
@@ -279,58 +197,17 @@ The public handbook explains these contracts but cannot override them. When a
 guide and a structured record disagree, use the owning contract to identify the
 stale projection and preserve the disagreement until it is corrected.
 
-## Recommended Reading Paths
+## Continue By Concern
 
-**Scientific capability:** [domain map](../02-bijux-phylogenetics-domains/index.md)
-→ [trees, alignments, and taxa](../02-bijux-phylogenetics-domains/data-and-structure/trees-alignments-and-taxa.md)
-→ [tree operations and identity](../02-bijux-phylogenetics-domains/data-and-structure/tree-operations-and-identity.md)
-→ [likelihood and inference](../02-bijux-phylogenetics-domains/inference/likelihood-and-inference.md).
-
-**Tree-set review:** [tree sets, consensus and support](../02-bijux-phylogenetics-domains/data-and-structure/tree-sets-consensus-and-support.md)
-→ [tree uncertainty and sensitivity](../02-bijux-phylogenetics-domains/scientific-assurance/tree-uncertainty-and-sensitivity.md)
-→ [diagnostics and sensitivity](../02-bijux-phylogenetics-domains/scientific-assurance/diagnostics-and-sensitivity.md).
-
-**Selection and support:** [inference overview](../02-bijux-phylogenetics-domains/inference/index.md)
-→ [search, model selection and support](../02-bijux-phylogenetics-domains/inference/search-model-selection-and-support.md)
-→ [native benchmark evidence](quality/native-benchmark-evidence.md).
-
-**Data and study inputs:** [datasets and study inputs](../02-bijux-phylogenetics-domains/data-and-structure/datasets-and-study-inputs.md)
-→ [data interchange and identity](../02-bijux-phylogenetics-domains/data-and-structure/data-interchange-and-identity.md)
-→ [simulation and datasets](../02-bijux-phylogenetics-domains/scientific-assurance/simulation-and-datasets.md).
-
-**Simulation recovery:** [simulation and datasets](../02-bijux-phylogenetics-domains/scientific-assurance/simulation-and-datasets.md)
-→ [simulation recovery and calibration](../02-bijux-phylogenetics-domains/scientific-assurance/simulation-recovery-and-calibration.md)
-→ [validation, benchmarks and reporting](../02-bijux-phylogenetics-domains/scientific-assurance/validation-benchmarks-and-reporting.md).
-
-**Discrete histories:** [comparative and ancestral methods](../02-bijux-phylogenetics-domains/evolutionary-analysis/comparative-and-ancestral-methods.md)
-→ [discrete ancestral states and transitions](../02-bijux-phylogenetics-domains/evolutionary-analysis/discrete-ancestral-states-and-transitions.md)
-→ [tree uncertainty and sensitivity](../02-bijux-phylogenetics-domains/scientific-assurance/tree-uncertainty-and-sensitivity.md).
-
-**Spatial and ecological evolution:** [biogeography and migration](../02-bijux-phylogenetics-domains/evolutionary-analysis/biogeography-and-migration.md)
-→ [continuous phylogeography and maps](../02-bijux-phylogenetics-domains/evolutionary-analysis/continuous-phylogeography-and-maps.md)
-→ [host association and niche evolution](../02-bijux-phylogenetics-domains/evolutionary-analysis/host-association-and-niche-evolution.md).
-
-**Publication review:** [reporting and rendering](../02-bijux-phylogenetics-domains/scientific-assurance/reporting-and-rendering.md)
-→ [publication artifact review](../02-bijux-phylogenetics-domains/scientific-assurance/publication-artifact-review.md)
-→ [artifact consumption](interfaces/artifact-consumption-guide.md).
-
-**Reference correspondence:** [parities and correspondence](../04-bijux-phylogenetics-parities/index.md)
-→ [R ecosystem](../04-bijux-phylogenetics-parities/r-ecosystem/index.md)
-→ [interpreting correspondence](../04-bijux-phylogenetics-parities/correspondence/index.md).
-
-**First analysis:** [installation](operations/installation-and-setup.md) →
-[surface selection](interfaces/surface-selection.md) →
-[common workflows](operations/common-workflows.md) →
-[artifact consumption](interfaces/artifact-consumption-guide.md).
-
-**Technical review:** [runtime system map](architecture/runtime-system-map.md) →
-[Python surface](interfaces/python-surface.md) →
-[artifact contracts](interfaces/artifact-contracts.md) →
-[test strategy](quality/test-strategy.md).
-
-**Scientific claim review:** [claim reading guide](foundation/claim-reading-guide.md)
-→ [evidence boundary](foundation/evidence-boundary.md) →
-[Evidence book](../03-bijux-phylogenetics-evidence-book/index.md).
+| Concern | Continue with | Finish with |
+| --- | --- | --- |
+| first analysis | [installation](operations/installation-and-setup.md) and [surface selection](interfaces/surface-selection.md) | [artifact consumption](interfaces/artifact-consumption-guide.md) |
+| scientific capability | [domain map](../02-bijux-phylogenetics-domains/index.md) | the model-specific result and diagnostic guide |
+| tree-set, selection, or support review | [inference](../02-bijux-phylogenetics-domains/inference/index.md) | [diagnostics and sensitivity](../02-bijux-phylogenetics-domains/scientific-assurance/diagnostics-and-sensitivity.md) |
+| Spatial and ecological evolution | [evolutionary analysis](../02-bijux-phylogenetics-domains/evolutionary-analysis/index.md) | the biogeography, phylogeography, host, or niche ledger |
+| Publication review | [reporting and rendering](../02-bijux-phylogenetics-domains/scientific-assurance/reporting-and-rendering.md) | [publication artifact review](../02-bijux-phylogenetics-domains/scientific-assurance/publication-artifact-review.md) |
+| reference correspondence | [parities and correspondence](../04-bijux-phylogenetics-parities/index.md) | the selected case, observation, normalization, and verdict |
+| scientific claim review | [claim reading guide](foundation/claim-reading-guide.md) | [Evidence Book](../03-bijux-phylogenetics-evidence-book/index.md) |
 
 ## Product Limits
 
