@@ -29,6 +29,24 @@ flowchart TD
     change --> classify --> owner --> implement --> derive --> assure --> align --> complete
 ```
 
+## Maintain The Promise A Reader Actually Sees
+
+Repository mechanics are means, not the public product. For every change,
+translate the internal work into the external promise that must remain true:
+
+| Internal change | Reader-visible promise to re-evaluate |
+| --- | --- |
+| numerical implementation or default | the documented estimand, result, diagnostics, examples, parity scope, and evidence freshness still agree |
+| parser, schema, or manifest | an existing result can still be identified, interpreted, and consumed without silent loss |
+| adapter or external-engine support | computation ownership, unavailable state, native outputs, and accepted handoff remain explicit |
+| Evidence Book observation or verdict | every public scientific sentence stays inside the current claim and denominator |
+| documentation navigation or rendering | readers can still reach the owning contract and distinguish source facts from projections |
+
+Public scientific pages should contain the resulting method, evidence, and
+limitation—not the maintenance checklist used to keep them correct. This
+handbook owns that checklist so internal process language does not leak into a
+study explanation or product guide.
+
 ## Maintained Invariants
 
 | Invariant | Failure signal | Owning response |

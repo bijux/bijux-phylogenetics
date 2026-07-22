@@ -31,6 +31,24 @@ flowchart TD
     handbook --> contracts
 ```
 
+## Translate Repository Facts Into Reader Decisions
+
+An accurate page can still fail if it exposes implementation bookkeeping
+instead of answering the reader’s question. Translate the canonical fact at
+the documentation boundary:
+
+| Canonical repository fact | Reader-facing statement | Maintainer record |
+| --- | --- | --- |
+| a result type has complete, partial, refused, and failed states | explain what the user receives and which interpretations each state permits | producer/consumer/status contract and focused checks |
+| an adapter resolves and runs IQ-TREE2 | explain that IQ-TREE2 owns inference while Bijux owns admission, execution capture, parsing, and artifacts | executable, command, native-output, parser, and workflow verification |
+| a PCM bundle is `not_comparable` | explain which scientific comparison is unavailable and what evidence would close it | manifest, absent-output inventory, resolution, and freshness records |
+| a generated index changed | present the current evidence population and limits | generator inputs, command, diff, and integrity result |
+
+Do not tell a public reader that a page “aims to document” a capability or that
+a section exists to satisfy coverage. State the capability, evidence, and
+boundary directly. Keep editing rationale, projection ownership, generator
+commands, and publication checks in maintainer records such as this one.
+
 ## Resolve Ownership Before Editing
 
 | Changed fact | Canonical owner | Maintained projections |
