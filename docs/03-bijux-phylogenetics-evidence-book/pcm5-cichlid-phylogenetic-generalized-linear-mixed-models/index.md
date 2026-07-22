@@ -29,6 +29,21 @@ flowchart TB
     binary --> repeated --> derived
 ```
 
+## The Derived-Scale Question In One View
+
+| Dimension | PCM5 contract |
+| --- | --- |
+| scientific object | cichlid Gaussian, Poisson, infection, ancestral, and repeated-observation posterior models linked to draw-wise signal, probability, and variance-partition quantities |
+| central idea | family, link, residual convention, random-effect denominator, and inverse-link transformation determine the scale on which every posterior quantity is meaningful |
+| evidence role | requires each derived value to remain a child of identified model, chain, draw, operand, tree/node, and transformation records |
+| present conclusion | all nine manifests are `not_comparable`, use `bundle_contract_only`, and report `governed_primary_output_count: 0`; the generalized posterior comparison has not run |
+| relation to PCM4 | consumes the Gaussian mixed-model discipline, then adds model-family separation, repeated-measure structure, and draw-wise derivation lineage |
+| forbidden inference | a logistic helper, plotted probability, similar posterior mean, or large draw count cannot substitute for an aligned governed posterior denominator |
+
+PCM5 is the evidence sequence's scale-discipline study. Its current record says
+exactly how future posterior claims must be derived and joined; it does not
+provide those posterior observations today.
+
 ## What PCM5 Adds To PCM4
 
 PCM4 establishes the contract for a Gaussian phylogenetic mixed model. PCM5

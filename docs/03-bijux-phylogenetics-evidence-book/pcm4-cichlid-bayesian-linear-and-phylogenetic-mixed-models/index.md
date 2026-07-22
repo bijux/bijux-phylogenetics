@@ -30,6 +30,22 @@ flowchart LR
     mixed --> compare
 ```
 
+## The Posterior Question In One View
+
+| Dimension | PCM4 contract |
+| --- | --- |
+| scientific object | a species-level cichlid parasite response analyzed by Gaussian GLS, Bayesian Gaussian chains, a phylogenetic mixed model, and a Brownian PGLS comparator |
+| central idea | covariance-model regression and phylogenetic random effects can describe related dependence while producing different estimands, uncertainty objects, and diagnostic obligations |
+| evidence role | defines the population, inverse-covariance, prior, chain, fixed-effect, variance-component, and comparator identities required for posterior correspondence |
+| present conclusion | all seven manifests are `not_comparable`, use `bundle_contract_only`, and report `governed_primary_output_count: 0`; no governed posterior is available |
+| relation to PCM5 | establishes the Gaussian posterior and random-effect denominator that PCM5 extends to non-Gaussian families, repeated records, and derived quantities |
+| forbidden inference | adjacent native Bayesian or PGLS capability does not reproduce the source `MCMCglmm` chains, posterior summaries, or variance components |
+
+PCM4 preserves the exact analytical bridge that is still missing. The dossier
+can support a statement about source identity and closure requirements; it
+cannot support a coefficient, credible interval, convergence, or variance
+correspondence claim.
+
 ## Scientific Questions
 
 - Does the parasite response retain the baseline predictor relationship after
