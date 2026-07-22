@@ -4,7 +4,7 @@ audience: public
 type: study-guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # PCM1 Signal And Ancestral Results
@@ -43,6 +43,20 @@ covariance while retaining the diagonal. Under this parameterization:
 The estimate is conditional on tree, branch lengths, taxon order, trait scale,
 likelihood definition, bounds, and optimizer behavior. It is not a universal
 property of “primates” or “longevity.”
+
+For a Brownian covariance matrix `V`, the compared parameterization can be
+read conceptually as:
+
+```text
+V(lambda)[i, i] = V[i, i]
+V(lambda)[i, j] = lambda * V[i, j]    for i != j
+```
+
+This makes the estimand concrete. λ changes modeled cross-species covariance;
+it does not rescale the longevity observations and does not represent the
+fraction of longevity “caused by phylogeny.” Agreement on λ therefore requires
+agreement on the untransformed covariance, diagonal convention, bounds,
+likelihood, and taxon order before the scalar values are compared.
 
 ## Governed Lambda Observations
 
@@ -154,6 +168,18 @@ The block registry is more detailed: 10 `verified`, 6
 `seeded_input_only`, and 1 `workflow_only`. The scalar ledger contains the 31
 numerically adjudicated rows. Do not mix block status counts with claim
 verdicts or the bundle verdict.
+
+## Separate Statistical Evidence From Historical Interpretation
+
+| Observation | Statistical conclusion available | Historical conclusion unavailable |
+| --- | --- | --- |
+| fitted λ near 0.803 | the registered model estimates λ near 0.803 on this population | a causal fraction of longevity explained by ancestry |
+| λ=0 likelihood-ratio result | the registered zero-signal model fits materially worse under the compared likelihood contract | proof that every lineage evolved longevity through one process |
+| clade-keyed ancestral estimate | R and Bijux produce corresponding conditional node estimates under the declared reconstruction | direct observation of an ancestor's longevity |
+| branch increase count | the inferred parent/child state difference exceeds the declared threshold on named branches | independently observed evolutionary events or rates |
+
+These interpretation limits are part of the result, not optional caveats added
+after the comparison.
 
 ## What The Evidence Supports
 

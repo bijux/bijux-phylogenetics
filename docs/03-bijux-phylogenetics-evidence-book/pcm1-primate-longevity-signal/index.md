@@ -4,7 +4,7 @@ audience: public
 type: study-guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # PCM1: Primate Longevity Signal
@@ -31,6 +31,23 @@ values tied to that same prepared state?
 The preparation is scientifically material. Type coercion, missing-data
 handling, duplicate-species aggregation, pruning, and label reconciliation can
 change both the observations and the covariance structure used downstream.
+
+## What PCM1 Contributes
+
+PCM1 is both a scientific comparison and an admission record for later primate
+models. Its evidence has four distinct jobs:
+
+| Evidence role | Question answered | Bundles that own it |
+| --- | --- | --- |
+| population evidence | which workbook rows become one row per species, and which records are excluded or aggregated? | `evidence-002` through `evidence-005` |
+| structural evidence | which tree, rooting, branch lengths, tips, and node identities define relatedness? | `evidence-006` through `evidence-008` |
+| analytical handoff evidence | which exact CSV and Newick enter signal and ancestral computation? | `evidence-009` |
+| comparative result evidence | do the registered R and Bijux signal and ancestral observations correspond? | `evidence-001` |
+
+The roles cannot substitute for one another. A matched tree import does not
+establish a matched tree–trait join. A matched join does not establish a
+signal estimate. A matched signal estimate does not prove that the selected
+model is biologically sufficient.
 
 ## Study Inputs
 
@@ -157,6 +174,13 @@ the tree under the chosen model; it is not a measure of causal inheritance.
 Ancestral reconstruction estimates internal-node states conditional on the
 prepared tips, tree, branch lengths, and model. Neither analysis repairs a bad
 taxon mapping retroactively.
+
+Signal and ancestral reconstruction also remain separate claims. Signal asks
+how the observed tip covariance is structured under the fitted λ model.
+Ancestral reconstruction estimates conditional internal-node values under a
+declared reconstruction model. A favorable signal test is not a validation of
+each ancestral estimate, and close ancestral parity is not independent support
+for the signal model.
 
 ## Review Priorities
 

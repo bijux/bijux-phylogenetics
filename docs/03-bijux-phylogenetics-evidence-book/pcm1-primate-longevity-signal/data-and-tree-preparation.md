@@ -4,7 +4,7 @@ audience: public
 type: study-guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # PCM1 Data And Tree Preparation
@@ -29,6 +29,22 @@ flowchart LR
     workbook --> typing --> missing --> aggregate --> join
     source_tree --> trim --> join --> derivatives
 ```
+
+## Keep The Three Populations Separate
+
+PCM1 begins with different row and taxon populations. The final value `75`
+appears several times, but each occurrence answers a different question.
+
+| Population | Starting denominator | Material operation | Accepted denominator |
+| --- | ---: | --- | ---: |
+| workbook records | 76 rows | aggregate the duplicate-species contract after type and missingness review | 75 species rows |
+| source-tree tips | 77 tips | prune `Lagothrix_lagotricha` and `Eulemur_fulvus`, which lack retained trait rows | 75 tips |
+| comparative join | 75 species rows and 75 tips | establish exact set and order correspondence | 75 aligned taxa |
+
+Equality of the accepted counts is necessary but not sufficient. The join must
+also prove label normalization, one-to-one membership, exact order, tree
+identity, and trait-row identity. Otherwise two different 75-taxon analyses
+could be mistaken for the same population.
 
 ## Governed Input And Handoff Records
 

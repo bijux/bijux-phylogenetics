@@ -25,6 +25,21 @@ not a claim that every lecture block is numerically comparable: its manifest
 separately counts verified, tolerance-matched, plot-only, artifact-only,
 seeded-input-only, and workflow-only blocks.
 
+## Claim Map
+
+| Claim family | Required parent evidence | Primary comparison record | Evidence that cannot replace it |
+| --- | --- | --- | --- |
+| processed trait population | workbook identity, repaired types, missingness, duplicate aggregation | focused bundles `evidence-002` through `evidence-005` | final row count alone |
+| prepared tree population | source/trimmed tree identity, rooting, branch lengths, excluded tips | `evidence-006` and `evidence-007` | successful Newick parsing |
+| tree–trait correspondence | exact retained sets, normalization, order, and representative identities | `evidence-008` | equal counts or matching filenames |
+| reusable study derivatives | accepted table/tree content and checksums | `evidence-009` | a similarly named derivative from PCM2 or PCM3 |
+| signal and ancestral correspondence | every preparation parent plus aligned R/Bijux outputs and scalar rules | aggregate `evidence-001` | plots, reviewer summary, or nearby runtime capability |
+
+This map explains why PCM1 uses focused bundles instead of treating its
+aggregate result as one indivisible proof. A preparation failure reopens every
+dependent analytical claim; a plotting limitation does not retroactively
+invalidate a governed numerical observation.
+
 ## Read The Evidence In Dependency Order
 
 | Decision | Owning record | Why it precedes the next decision |
