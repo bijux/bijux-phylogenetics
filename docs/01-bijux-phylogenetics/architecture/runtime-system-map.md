@@ -4,7 +4,7 @@ audience: public
 type: architecture
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Runtime System Map
@@ -12,6 +12,24 @@ last_reviewed: 2026-07-21
 The system is easiest to understand as a flow of scientific state. Inputs gain
 stronger contracts as they move through validation, computation, diagnostics,
 and publication-oriented output. Evidence review is downstream of that flow.
+
+## Locate The First Semantic Change
+
+When a result is surprising, trace backward until the scientific meaning first
+changed. That boundary owns the correction; downstream files must then be
+rebuilt from it.
+
+| Observed problem | First state to inspect | Why later repair is unsafe |
+| --- | --- | --- |
+| coefficient belongs to the wrong species | taxon reconciliation and admitted row order | relabeling the report leaves the fitted covariance wrong |
+| normalized likelihood has the wrong sign | adapter parsing and scale convention | changing a table cell leaves every consumer inconsistent |
+| support count omits failed replicates | execution result and declared replicate denominator | editing the manifest invents computation state |
+| report hides a convergence warning | result-to-presentation projection | rerunning the method does not repair the renderer contract |
+| public claim exceeds its observed fields | evidence dependency map | changing runtime code cannot create an absent comparison |
+
+This rule keeps diagnosis causal. The visible error may appear in a figure or
+index, but the repair begins where identity, value, status, or scope first
+diverged from its owner.
 
 ```mermaid
 flowchart LR

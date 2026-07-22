@@ -4,7 +4,7 @@ audience: public
 type: explanation
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Evidence Consumer Boundary
@@ -13,6 +13,19 @@ Evidence governance is a downstream consumer of runtime artifacts. Ordinary
 analysis must not require a study dossier, claim registry, or evidence index;
 Evidence Book workflows may depend on stable runtime and artifact contracts to
 evaluate named claims.
+
+## One Run, Three Acceptance Decisions
+
+| Decision | Owner | Accepts | Does not establish |
+| --- | --- | --- | --- |
+| execution acceptance | workflow or engine adapter | identified process state, required native outputs, and captured diagnostics | scientific suitability or correspondence |
+| result acceptance | scientific method and consumer | admitted population, model, structured values, uncertainty, exclusions, and intended use | agreement with a reference implementation |
+| claim acceptance | Evidence Book bundle | complete claim dependencies, comparison rules, verdict, limits, and freshness | broader runtime correctness or unobserved methods |
+
+These decisions may differ without contradiction. A complete execution can be
+scientifically rejected; a valid result can have no comparison claim; a
+structurally current bundle can retain `not_comparable`. Preserve the three
+statuses rather than replacing them with a single “validated” label.
 
 ```mermaid
 flowchart LR

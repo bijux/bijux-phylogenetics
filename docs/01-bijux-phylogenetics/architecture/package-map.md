@@ -4,7 +4,7 @@ audience: public
 type: reference
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Distribution And Package Map
@@ -12,6 +12,19 @@ last_reviewed: 2026-07-21
 The repository publishes two runtime distributions and keeps its maintainer
 automation in a third package. The split is about naming and responsibility,
 not separate scientific editions.
+
+## Choose The Distribution From The Record You Need
+
+| Need | Install | Identity to retain |
+| --- | --- | --- |
+| canonical scientific runtime for analysis or publication | `bijux-phylogenetics` | canonical distribution, import namespace, command, and runtime version |
+| compatibility with the shorter package or command name | `phylogenetic` | facade version **and** resolved canonical runtime version |
+| repository documentation, evidence, API, or release verification | `bijux-phylogenetics-dev` in a repository checkout | maintainer package version and repository revision |
+
+The compatibility distribution is not a second implementation, and the
+maintainer distribution is not an analysis extension. Installing all three
+does not create three independent scientific owners; it creates one runtime,
+one forwarding facade, and one repository-governance surface.
 
 ```mermaid
 flowchart TD
