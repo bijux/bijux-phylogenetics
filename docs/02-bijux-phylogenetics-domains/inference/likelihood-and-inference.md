@@ -4,7 +4,7 @@ audience: public
 type: explanation
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Likelihood And Inference
@@ -28,6 +28,26 @@ flowchart LR
     likelihood --> ml
     likelihood --> bayes
 ```
+
+## A Likelihood Value Has A Scientific Identity
+
+A log-likelihood is not a portable property of a tree. It identifies one
+calculation under a complete data-and-model contract.
+
+| Identity component | Questions that must have one answer |
+| --- | --- |
+| observation population | Which taxa, sites, partitions, and ascertainment rule are included? |
+| character process | Which state space, ambiguity policy, substitution model, rate mixture, and equilibrium frequencies apply? |
+| tree state | Which topology, rooting convention, branch-length units, clock constraint, and fitted values apply? |
+| numerical contract | Which transition calculation, scaling policy, tolerances, and invalid-state behavior apply? |
+| objective | Is the value a fixed-state likelihood, an optimized maximum, a marginal likelihood, or part of a posterior calculation? |
+| computation owner | Was the value produced natively, by an adapter, or by an external engine, and which version and invocation own it? |
+
+Compare scalar values only after these identities match. Otherwise, the
+difference may reflect a changed population, model, parameterization, or
+normalization rather than stronger support for a tree. A posterior probability
+is still further removed: it depends on priors and the sampled state space in
+addition to the likelihood contract.
 
 ## Finite-State Likelihood
 

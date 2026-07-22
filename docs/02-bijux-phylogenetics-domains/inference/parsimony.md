@@ -4,7 +4,7 @@ audience: public
 type: explanation
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Parsimony
@@ -33,6 +33,24 @@ flowchart LR
     search --> artifacts
     support --> artifacts
 ```
+
+## Keep Cost, Optimum, Topology, And History Separate
+
+Parsimony answers several nested questions. Each answer has a different
+identity and a different evidentiary limit.
+
+| Result layer | Meaning | Does not by itself establish |
+| --- | --- | --- |
+| cost model | the penalty assigned to every allowed state change | that the penalties describe the generating evolutionary process |
+| tree score | the minimum cost attainable on one topology | that the topology is globally optimal |
+| optimal score | the best score found under the declared search | that all tree space was exhausted |
+| optimal topology set | all distinct equal-best trees retained by the search | one uniquely supported history |
+| ancestral reconstruction | one or more minimum-cost state assignments | that reconstructed states or branch changes were observed |
+| support summary | stability or extra-cost evidence under a named rule | a posterior probability or likelihood ratio |
+
+The result packet must preserve all six layers. Reporting only the best score
+erases topological multiplicity; reporting one resolved tree erases both
+search limits and ambiguity among minimum-cost histories.
 
 ## Scoring Models
 
