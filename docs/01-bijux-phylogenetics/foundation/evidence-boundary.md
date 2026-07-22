@@ -4,7 +4,7 @@ audience: public
 type: explanation
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Runtime And Evidence Boundary
@@ -60,6 +60,38 @@ dependency freshness. The claim is no broader than that binding.
 Copying a report into the Evidence Book does not satisfy these requirements.
 Promotion requires a registered bundle whose machine-readable records connect
 the claim to the exact runtime or external computation.
+
+## Stop At The Strongest Record Actually Owned
+
+Evidence accumulates by adding specific records. It does not advance merely
+because a neighboring capability exists.
+
+```mermaid
+flowchart LR
+    capability["Executable capability"] --> result["Identified result"]
+    result --> reproducible["Reconstructable run"]
+    reproducible --> comparison["Registered comparison"]
+    comparison --> claim["Adjudicated claim"]
+
+    capability -. "valid stopping point" .-> capability
+    result -. "valid stopping point" .-> result
+    reproducible -. "valid stopping point" .-> reproducible
+    comparison -. "valid stopping point" .-> comparison
+```
+
+Each stop is useful when described honestly:
+
+| Strongest retained record | Defensible statement | Statement still unavailable |
+| --- | --- | --- |
+| executable capability | the method or adapter is available under its public contract | this study result was reproduced |
+| identified result | the named inputs and configuration produced this result and diagnostic state | an independent implementation agrees |
+| reconstructable run | the computation can be reconstructed from retained identities and artifacts | the scientific claim passes |
+| registered comparison | named observations were compared under a declared rule | neighboring outputs or parameterizations agree |
+| adjudicated claim | the bounded claim has the recorded verdict and freshness state | broader scientific validity or independent replication |
+
+A missing higher layer is neither erased by a lower-layer success nor evidence
+that the lower layer failed. It determines the strongest language the public
+record can support.
 
 ## Evidence Record Anatomy
 

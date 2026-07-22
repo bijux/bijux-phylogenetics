@@ -4,7 +4,7 @@ audience: public
 type: explanation
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Repository Scope And Limits
@@ -40,6 +40,26 @@ flowchart TD
 - benchmark corpora and governed evidence for named comparisons and studies;
 - compatibility distribution, API schema, packaging, documentation, and
   release verification.
+
+## Where The Repository's Depth Lives
+
+The repository is more than a collection of callable methods. Its depth comes
+from keeping distinct scientific and publication responsibilities connected
+without pretending that one can substitute for another.
+
+| Responsibility | Repository-owned depth | Explicit boundary |
+| --- | --- | --- |
+| scientific objects | validated trees, alignments, traits, partitions, identities, exclusions, and typed state | validation does not establish representativeness |
+| native analysis | maintained likelihood, inference, comparative, ancestral, parsimony, simulation, and diagnostic contracts | implementation does not select the right model for a study |
+| governed integration | executable discovery, preparation, invocation, capture, parsing, normalization, and provenance | orchestration does not transfer ownership of the external algorithm |
+| durable review | manifests, structured results, tables, figures, diagnostics, and reconstructable identities | artifact completeness does not establish scientific validity |
+| scientific assurance | contract tests, known answers, invariants, parity cases, benchmarks, and claim-scoped evidence | each assurance lane keeps its own denominator |
+| publication integrity | package, command, schema, documentation, evidence, and release alignment | publication gates do not replace independent review or replication |
+
+Depth in one row does not promote another row. A richly instrumented adapter
+remains an adapter; a complete artifact packet can retain a negative or
+`not_comparable` verdict; extensive method coverage can coexist with five
+narrowly governed study families.
 
 ## Scientific Non-Goals
 

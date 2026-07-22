@@ -4,7 +4,7 @@ audience: public
 type: how-to
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Claim Reading Guide
@@ -45,6 +45,31 @@ flowchart LR
 5. Check the verdict and whether the record remains fresh.
 6. Carry exclusions and limitations into your own use of the claim.
 
+## Reconstruct The Claim As A Contract
+
+A reviewable claim is the product of six bounded fields:
+
+> **subject × population × method × observation × acceptance rule × revision**
+
+Removing any field changes the statement. “PGLS agrees” does not identify the
+traits, taxa, covariance convention, compared coefficient, tolerance, or
+software revision. A green verdict cannot restore information that the claim
+never declared.
+
+For example, a bounded PCM2 claim can be read as follows:
+
+| Field | Bounded meaning |
+| --- | --- |
+| subject | the registered PGLS covariance observation |
+| population | the retained mammal taxa after named reconciliation and exclusions |
+| method | the declared Brownian covariance construction and regression parameterization |
+| observation | the registered matrix entries or derived coefficient named by the check |
+| acceptance rule | the stored structural rule and numerical tolerance |
+| revision | the runtime, reference, input, and bundle identities recorded by the evidence manifest |
+
+The contract supports only the intersection of those fields. It does not imply
+that every PGLS model, taxon set, covariance convention, or output agrees.
+
 ## Qualifiers That Change Meaning
 
 | Qualifier | Question it must answer |
@@ -68,6 +93,9 @@ version says which native entry point, corpus, model/search configuration,
 comparison metric, environment, and acceptance threshold were measured. If a
 study claim relies on that benchmark, the evidence bundle must make the link
 explicit.
+
+A stronger claim need not be longer. It must use nouns that resolve to owned
+records and qualifiers whose exact meaning is declared.
 
 ## Scope Traps
 

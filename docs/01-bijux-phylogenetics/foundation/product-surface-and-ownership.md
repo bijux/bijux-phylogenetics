@@ -4,7 +4,7 @@ audience: public
 type: reference
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Product Surface And Ownership
@@ -62,6 +62,25 @@ an owned behavior contract. Use these signals together:
 
 An import found by searching the source tree is not sufficient. Neither is a
 CLI example that depends on repository fixtures absent from the wheel.
+
+## Find The Owner From The Disputed Decision
+
+When a result is challenged, start with the decision in dispute rather than
+the file in which the symptom appeared. The same failed run can cross several
+surfaces, but each decision has one primary owner.
+
+| Disputed decision | Owning surface | Evidence needed to resolve it |
+| --- | --- | --- |
+| why a taxon was excluded | input reconciliation contract | normalized identities, exclusion reason, and admitted population |
+| why a numerical value differs | native method or named external engine | method identity, configuration, diagnostics, and primary values |
+| why external output was rejected | adapter parser | raw engine files, parser contract, version, and parse error |
+| why a JSON consumer failed | versioned schema or serializer | schema revision, payload, validation result, and compatibility rule |
+| why HTML and JSON disagree | report projection | source artifact identities and the rendering rule |
+| why study prose is broader than its result | Evidence Book claim record | claim ID, observation checks, verdict, limitations, and freshness |
+
+This routing prevents two common category errors: assigning an external
+algorithm's numerical behavior to the adapter, and treating a presentation
+defect as if it changed the underlying scientific result.
 
 ## Ownership Matrix
 
