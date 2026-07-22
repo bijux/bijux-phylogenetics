@@ -4,7 +4,7 @@ audience: public
 type: contract
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Result And Refusal Semantics
@@ -58,6 +58,38 @@ errors, evidence-contract violations, and workflow-budget refusals.
 “Complete” is not synonymous with “accepted.” A numerically complete result
 can be unsuitable because its taxon population, convergence, support,
 sensitivity, or model assumptions do not satisfy the intended claim.
+
+## Treat Terminal State As An Evidence-Preserving State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> validating
+    validating --> refused: input, policy, or capability boundary
+    validating --> executing: preflight admitted
+    executing --> failed: computation or infrastructure stops
+    executing --> partial: valid record lacks a required component
+    executing --> complete: declared inventory and terminal diagnostics exist
+    complete --> accepted: consumer rule passes for one bounded use
+    partial --> accepted: consumer explicitly narrows the use
+    refused --> [*]
+    failed --> [*]
+    partial --> [*]
+    complete --> [*]
+    accepted --> [*]
+```
+
+The terminal producer state is immutable evidence. A retry creates a sibling
+run; it does not turn the earlier `failed` record into `complete`. A consumer
+may accept a `partial` result for a narrower purpose, but that child decision
+must preserve the missing components and cannot rewrite the producer status.
+
+| Transition request | Correct treatment |
+| --- | --- |
+| refused input is corrected | create a new run with the corrected input identity |
+| failed engine execution is retried | retain the failed attempt and link the retry policy and new run |
+| missing component arrives later | create or revise a governed record with explicit lineage; do not silently mutate an archived bundle |
+| complete result fails a scientific threshold | preserve `complete`; record rejection for the bounded claim |
+| partial result is useful for diagnosis | accept only the diagnostic use and prohibit unsupported scientific conclusions |
 
 ## External-Engine Incomplete Runs
 

@@ -4,7 +4,7 @@ audience: public
 type: how-to
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Surface Selection
@@ -79,6 +79,36 @@ point.
 
 The surface follows the consumer and failure-recovery contract. It does not
 change who owns the scientific computation.
+
+## One Analysis Can Cross Surfaces Without Transferring Ownership
+
+```mermaid
+sequenceDiagram
+    participant Analyst
+    participant Python as Python workflow
+    participant CLI as Scheduled CLI
+    participant Engine as Computation owner
+    participant Bundle as Artifact bundle
+    participant Reviewer
+
+    Analyst->>Python: define and validate the analysis
+    Python-->>Analyst: typed configuration and preflight state
+    Analyst->>CLI: submit the frozen request
+    CLI->>Engine: execute native method or named adapter path
+    Engine-->>CLI: result, diagnostics, and native outputs
+    CLI->>Bundle: persist manifest and structured records
+    Reviewer->>Bundle: inspect identity, status, values, and limits
+```
+
+Every arrow needs a durable handoff, but the arrows do not create new
+scientific owners. Python owns its object and validation contract; the CLI owns
+argument translation and exit behavior; the native method or external engine
+owns the computation; the bundle owns retained identity and inventory; the
+reviewer owns the downstream acceptance decision.
+
+If a handoff drops taxa, defaults, units, warnings, method identity, or result
+state, the workflow is not equivalent merely because its headline estimate is
+unchanged.
 
 ## Python Is The Right Choice When
 
