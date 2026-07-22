@@ -76,11 +76,11 @@ flowchart LR
 
 | Study | Scientific contribution | Evidence contribution at this revision |
 | --- | --- | --- |
-| PCM1 | shows why type repair, duplicate aggregation, pruning, and tree–trait reconciliation are part of the analysis | governed preparation lineage plus matched or tolerance-matched signal and ancestral observations |
-| PCM2 | shows how residual phylogenetic covariance changes regression, evolutionary-mode comparison, and diagnostics | claim-scoped matches coexist with one non-comparable bundle and a broader 12-row unexplained mismatch population |
-| PCM3 | makes factor coding, transformations, interactions, and Martins covariance explicit before coefficients are compared | complete comparison design and closure locations; no governed numerical comparison yet |
-| PCM4 | separates Gaussian, Bayesian, PGLS, and phylogenetic random-effect estimands | source, population, covariance, prior, chain, and output contract; no governed posterior yet |
-| PCM5 | distinguishes Gaussian, count, infection, and repeated-measure models and their draw-wise derived quantities | model-family and derivation contract; no governed generalized mixed-model posterior yet |
+| [PCM1](pcm1-primate-longevity-signal/index.md) | shows why type repair, duplicate aggregation, pruning, and tree–trait reconciliation are part of the analysis | governed preparation lineage plus matched or tolerance-matched signal and ancestral observations |
+| [PCM2](pcm2-primate-pgls-and-signal/index.md) | shows how residual phylogenetic covariance changes regression, evolutionary-mode comparison, and diagnostics | claim-scoped matches coexist with one non-comparable bundle and a broader 12-row unexplained mismatch population |
+| [PCM3](pcm3-primate-continuous-and-categorical-regression/index.md) | makes factor coding, transformations, interactions, and Martins covariance explicit before coefficients are compared | complete comparison design and closure locations; no governed numerical comparison yet |
+| [PCM4](pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md) | separates Gaussian, Bayesian, PGLS, and phylogenetic random-effect estimands | source, population, covariance, prior, chain, and output contract; no governed posterior yet |
+| [PCM5](pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md) | distinguishes Gaussian, count, infection, and repeated-measure models and their draw-wise derived quantities | model-family and derivation contract; no governed generalized mixed-model posterior yet |
 
 The absence of a favorable PCM3–PCM5 verdict does not erase their value as
 design records. It does bound that value: they prevent a future comparison
@@ -222,19 +222,6 @@ evidence source; it must trace to a governed result file.
 When a generated index and a bundle disagree, stop at the contradiction. Do
 not choose the more favorable status. Rebuild or investigate the owning record
 before using the claim.
-
-## Study Atlas
-
-| Study family | Scientific focus | Governed bundles | Material boundary |
-| --- | --- | ---: | --- |
-| [Cichlid Bayesian Linear And Phylogenetic Mixed Models](./pcm4-cichlid-bayesian-linear-and-phylogenetic-mixed-models/index.md) | Bayesian linear and phylogenetic mixed models | 7 | posterior computation remains external |
-| [Cichlid Phylogenetic Generalized Linear Mixed Models](./pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md) | count, binary, repeated-measure models | 9 | posterior computation remains external |
-| [Primate Continuous And Categorical Regression](./pcm3-primate-continuous-and-categorical-regression/index.md) | predictors, interactions, comparative regression | 8 | all bundle verdicts are `not_comparable`; comparison follow-through remains open |
-| [Primate Longevity Signal](./pcm1-primate-longevity-signal/index.md) | preparation, signal, ancestral reconstruction | 9 | plotting boundary remains explicit |
-| [Primate PGLS And Signal](./pcm2-primate-pgls-and-signal/index.md) | GLS/PGLS, transformed trees, signal tests | 10 | one coverage boundary remains explicit |
-
-The bundle count describes inventory, not number of passing claims. Consult
-the live indexes for verdicts.
 
 ## Repository-Wide Control Reports
 
