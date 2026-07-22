@@ -59,6 +59,20 @@ The inverse covariance is not an implementation detail: taxon order,
 rootedness, branch lengths, and alignment with the species table determine the
 random-effect structure.
 
+### What The Phylogenetic Random Effect Represents
+
+The mixed model assigns each species a latent deviation whose joint covariance
+follows the tree. Closely related cichlids are allowed to have more similar
+deviations, while residual variance represents variation not assigned to that
+tree-linked component under the model. The posterior estimates both components
+with the fixed effects rather than applying a correction after fitting.
+
+This is related to Brownian PGLS but not identical to it. PGLS places the
+tree-derived structure in the residual covariance; the mixed model represents
+it as a random effect with its own variance posterior. Similar fixed-effect
+estimates can be informative, but they do not make the likelihoods, variance
+components, or uncertainty objects interchangeable.
+
 ## Why PCM4 Is More Than Bayesian PGLS
 
 PCM4 deliberately preserves four related estimators because each changes a

@@ -31,6 +31,20 @@ cannot promote an unobserved derived claim. At the current boundary they show
 exactly which source analysis and transformations a future comparison must
 own; they supply no posterior observations and therefore no numerical evidence.
 
+### Derived Quantities Are Part Of The Analysis
+
+PCM5's headline quantities are not columns emitted directly by a sampler.
+Probabilities, phylogenetic-signal ratios, variance shares, and ancestral
+responses are functions of linked posterior operands. Their scientific identity
+includes the parent model, chain and draw, input point or node, transformation,
+and denominator.
+
+That dependency is why a printed posterior mean is insufficient. Nonlinear
+transformations and ratios must be applied within each admitted draw so
+posterior dependence and asymmetry survive. The derived draw population then
+receives its own summary and comparison rule; it cannot be reconstructed
+faithfully from separately rounded marginal summaries.
+
 ```mermaid
 flowchart LR
     inputs["Source scripts · data<br/>tree and workspace"]

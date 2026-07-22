@@ -92,6 +92,19 @@ differ, which changes posterior phylogenetic-signal calculations.
 Repeated observations add another variance component. Species identity and
 phylogenetic relatedness must not be merged into one unnamed random effect.
 
+### The Same Predictor Has Different Meanings Across Families
+
+A slope in a Gaussian model describes an additive response-scale change. A
+Poisson log-link slope describes a multiplicative expected-count ratio after
+exponentiation. A binary-style latent or logit slope changes log odds and must
+be transformed, with its category convention, to describe probability. Equal
+coefficient names or signs do not make these effects numerically comparable.
+
+PCM5 therefore compares model identity before posterior values. The response
+family, link, exposure or trial denominator, observation grain, random effects,
+and residual convention decide what a coefficient or variance component means.
+Only then can draw-wise response-scale quantities be constructed and reviewed.
+
 ## Preserve The Scale Of Every Quantity
 
 | Model component | Linear-predictor scale | Response-scale interpretation |

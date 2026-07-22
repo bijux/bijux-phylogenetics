@@ -33,6 +33,20 @@ evidentiary contribution is a claim-complete closure contract, not a posterior
 result. Adjacent Bayesian or PGLS capability cannot satisfy a row until the
 PCM4 population, priors, draws, and parameter identities are governed together.
 
+### What Is Known Without A Posterior
+
+The current record identifies the intended cichlid population, source model
+sequence, formulas, tree-derived covariance role, priors and chain questions,
+seven claim boundaries, and the primary outputs required to compare them.
+Those facts make the missing computation precise and reproducible as future
+work.
+
+It does not establish that a chain mixed, a parameter existed, a coefficient
+had a particular sign, or phylogeny explained any share of variance. Those
+statements require governed posterior draws and diagnostics. A complete map of
+missing evidence is stronger than an ambiguous claim of coverage, but it
+remains a map rather than a numerical result.
+
 ```mermaid
 flowchart LR
     source["Lund source, data,<br/>tree and workspace"]
