@@ -51,6 +51,23 @@ flowchart LR
     artifact -. selected workflows .-> evidence
 ```
 
+## Start With The Decision In Front Of You
+
+You do not need to learn the repository vocabulary before finding the right
+record. Choose the decision you are making now:
+
+| Your immediate decision | Start here | Stop when you have |
+| --- | --- | --- |
+| Can I run the package and inspect its outputs? | [installed runtime](#run-the-installed-runtime) | a manifest-linked demonstration and its explicit limits |
+| Which method and assumptions fit my scientific object? | [scientific domains](02-bijux-phylogenetics-domains/index.md) | a model, estimand, admitted population, and diagnostic contract |
+| Which interface should own my analysis? | [product handbook](01-bijux-phylogenetics/index.md) | a Python, CLI, adapter, or artifact-consumer route |
+| Does Bijux correspond to a named tool for this case? | [parities and correspondence](04-bijux-phylogenetics-parities/index.md) | aligned observations, denominator, and bounded outcome |
+| What supports a public scientific statement? | [Evidence Book](03-bijux-phylogenetics-evidence-book/index.md) | a current claim, governed observations, verdict, and limitations |
+
+These routes can share data and software without sharing a conclusion. A
+runtime result may be complete without parity evidence, and a study dossier
+may remain valuable while its numerical comparison is explicitly unavailable.
+
 ## The Public Record Has Four Independent Depths
 
 The site distinguishes how much of a result is exposed, not merely whether a

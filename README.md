@@ -34,6 +34,14 @@ result discipline. Inputs, exclusions, configuration, diagnostics, failures,
 and output identities remain connected instead of being reduced to a final
 tree, coefficient, or figure.
 
+In practical terms, the installed package lets you validate and transform
+trees and alignments, fit native likelihood and comparative models, run
+ancestral and parsimony analyses, orchestrate named external engines, and emit
+machine-readable results with review artifacts. The repository adds benchmark,
+parity, and Evidence Book records around selected questions; those assurance
+records are not prerequisites for using every runtime capability and do not
+automatically transfer to neighboring methods.
+
 ```mermaid
 flowchart LR
     data["Trees · alignments<br/>traits · partitions"]
@@ -44,6 +52,16 @@ flowchart LR
 
     data --> contracts --> methods --> results --> outputs
 ```
+
+| If you need… | Use… | Preserve… |
+| --- | --- | --- |
+| an in-process scientific result | the curated Python API | typed result, admitted inputs, warnings, and diagnostics |
+| a repeatable shell workflow | the CLI | structured output, manifest, terminal state, and output inventory |
+| an established external algorithm | a named adapter for MAFFT, IQ-TREE2, BEAST, or another supported engine | executable identity, native files, parser record, and normalized child result |
+| an auditable claim about correspondence | parity or an Evidence Book bundle | exact population, observations, rule, denominator, verdict, and limitations |
+
+The first three rows are execution choices. The last is an evidence decision.
+Keeping that distinction visible is the shortest route through this repository.
 
 ## Distinguish Capability, Ownership, And Evidence
 

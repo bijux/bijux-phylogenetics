@@ -14,6 +14,21 @@ phylogenetic analyses. Its public contract includes native analytical code,
 explicit integrations with external engines, typed results, and durable output
 bundles. The distinction between those surfaces is part of the product.
 
+The runtime is designed around scientific decisions rather than file
+conversion alone. It determines which observations enter an analysis, which
+model or algorithm evaluates them, what diagnostic state qualifies the
+result, and which structured record survives for another person to review.
+Python, CLI, and adapter interfaces are projections of those decisions; they
+do not define different scientific truths.
+
+| Product responsibility | Reader-visible consequence |
+| --- | --- |
+| scientific objects | trees, taxa, alignments, traits, states, and partitions retain explicit identity |
+| analytical ownership | native calculations and external-engine calculations remain distinguishable in every result |
+| result semantics | estimates travel with model state, warnings, exclusions, uncertainty, and refusal conditions |
+| durable handoff | manifests and structured artifacts own facts later rendered in tables, figures, and reports |
+| bounded evidence | parity and Evidence Book records qualify only the claims and populations they actually evaluate |
+
 ## Understand The Product As Four Connected Contracts
 
 The runtime is not just a collection of algorithms. Every supported route
