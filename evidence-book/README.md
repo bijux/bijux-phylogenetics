@@ -65,15 +65,43 @@ the claim verdict and the current repository indexes.
 
 ## Verdict Discipline
 
-Verdicts are claim-scoped:
+Bundle verdicts are claim-scoped and use the governed vocabulary stored in
+each `manifest.json`:
 
-- `pass` means the declared acceptance rule was met;
-- `fail` means a required check was not met;
-- `open` means evidence is incomplete or inconclusive;
-- `blocked` means a named dependency prevents closure.
+| Verdict | Meaning |
+| --- | --- |
+| `matched` | every claim-required comparable observation satisfies the registered exact or structural rule |
+| `matched_with_tolerance` | every claim-required comparable observation satisfies the predeclared numerical rule |
+| `mismatch_explained` | a comparable difference exists with a governed cause and consequence |
+| `mismatch_unexplained` | a comparable difference violates its rule without an accepted explanation |
+| `not_comparable` | required estimand, identity, execution, or output alignment is unavailable |
 
-A passing bundle does not cause neighboring claims to pass. An open external
-posterior boundary does not erase valid preparation or contract evidence.
+Execution states such as failed, partial, blocked, or complete belong to run
+records. Open follow-through belongs to the resolution workflow. Neither is a
+sixth bundle verdict, and neither may replace the verdict recorded by the
+manifest.
+
+A matched bundle does not cause neighboring claims to match. A
+`not_comparable` posterior claim is not a numerical failure and not partial
+credit: it preserves exactly why no valid comparison is currently owned.
+
+## Read The Evidence Population, Not A Headline
+
+The checked-in revision contains 43 bundles across five study families. Their
+manifest verdicts are distributed as follows:
+
+| Study family | `matched` | `matched_with_tolerance` | `not_comparable` |
+| --- | ---: | ---: | ---: |
+| primate longevity signal | 8 | 1 | 0 |
+| primate PGLS and signal | 3 | 6 | 1 |
+| primate continuous and categorical regression | 0 | 0 | 8 |
+| cichlid Bayesian linear and phylogenetic mixed models | 0 | 0 | 7 |
+| cichlid phylogenetic generalized linear mixed models | 0 | 0 | 9 |
+
+These counts describe bundle manifests, not every observation stored under a
+bundle. PCM2 also retains 12 `mismatch_unexplained` scalar observations in its
+broader parity ledger. Read the claim scope and complete observation
+denominator before summarizing a study.
 
 ## Freshness And Integrity
 
@@ -100,4 +128,4 @@ before citing a verdict as current.
 This directory is not a claim that every runtime method has study evidence,
 that every course analysis is reproduced end to end, or that passing parity
 settles model choice and biological interpretation. It is a governed map of
-what has been checked and what remains open.
+what has been checked, what verdict is owned, and what resolution work remains.

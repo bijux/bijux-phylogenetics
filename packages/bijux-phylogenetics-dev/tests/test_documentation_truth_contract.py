@@ -1237,3 +1237,20 @@ def test_public_markdown_avoids_obsolete_meta_language() -> None:
             text = _read(path).lower()
             for phrase in forbidden:
                 assert phrase not in text, f"{path}: obsolete phrase {phrase!r}"
+
+
+def test_evidence_record_readme_uses_governed_verdict_vocabulary() -> None:
+    readme = _read(REPO_ROOT / "evidence-book" / "README.md")
+
+    for verdict in (
+        "matched",
+        "matched_with_tolerance",
+        "mismatch_explained",
+        "mismatch_unexplained",
+        "not_comparable",
+    ):
+        assert f"`{verdict}`" in readme
+
+    assert "`pass` means the declared acceptance rule" not in readme
+    assert "`open` means evidence is incomplete" not in readme
+    assert "Neither is a\nsixth bundle verdict" in readme

@@ -4,7 +4,7 @@ audience: public
 type: evidence-guide
 status: canonical
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Reading An Evidence Bundle
@@ -13,6 +13,24 @@ An Evidence Book bundle is a claim record with executable and reviewable
 dependencies. Read it from identity to observation; starting with the summary
 report makes it too easy to miss a narrower claim, excluded output, or stale
 dependency.
+
+## Classify The Bundle Before Reading Its Result
+
+The directory shape is intentionally similar across bundles, but the evidence
+state is not. Determine which state is actually retained before interpreting
+scripts, tables, or reports.
+
+| Retained state | What exists | Defensible use |
+| --- | --- | --- |
+| governed comparison | both execution identities, primary outputs, aligned observations, rules, and verdict | cite only the registered claim and its complete denominator |
+| governed comparison with mismatches | comparable observations whose rules are violated | report the mismatches and accepted explanations, if any; do not average them away |
+| contract-only design record | source, inputs, claim decomposition, wrappers, checks, and explicit absent-output state | explain the intended comparison and exact closure requirements |
+| stale comparison | previously governed record whose material dependency changed | historical inspection only until rebuilt and adjudicated |
+| internally contradictory record | bundle, result, report, or generated index disagree | stop the affected claim and resolve the canonical owner |
+
+Executable-looking `analysis.py` and `reference.R` files do not distinguish
+the first state from the third. Primary output identity, observation records,
+and the manifest verdict do.
 
 ## Follow The Bundle In Dependency Order
 
@@ -114,3 +132,22 @@ public study guide for context and the governed bundle records for proof.
 If the chain stops before an observation or current verdict, say precisely
 where it stops. A well-described gap remains a design or provenance record; it
 does not become scientific correspondence.
+
+### Citation Packet Minimum
+
+```text
+repository revision:
+study_id / evidence_id / claim_id:
+population and method:
+source and input identities:
+reference and Bijux execution identities:
+observation keys and complete denominator:
+comparison rule and tolerance:
+verdict and limitations:
+freshness state:
+resolution state, when applicable:
+```
+
+Every field narrows the statement. If an execution or observation field is
+absent because the bundle is contract-only, retain that absence explicitly
+instead of filling it from nearby capability documentation.

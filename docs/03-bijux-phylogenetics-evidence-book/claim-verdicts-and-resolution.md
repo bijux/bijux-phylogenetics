@@ -4,7 +4,7 @@ audience: public
 type: evidence-guide
 status: canonical
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Claim Verdicts And Resolution
@@ -42,6 +42,23 @@ does not make every scientific method validated.
 `not_comparable` is not a polite match and `mismatch_unexplained` is not merely
 “needs review.” Neither may be converted into `matched_with_tolerance` by
 widening the tolerance after observing the result.
+
+## Apply Verdicts To The Present Studies
+
+The same repository can legitimately retain several evidence states because
+each state belongs to a different claim and observation population.
+
+| Present record | Correct interpretation | Incorrect compression |
+| --- | --- | --- |
+| PCM1 focused preparation bundle marked `matched` | the named preparation invariant corresponds for its registered inputs | every PCM1 output is exact or every figure is equivalent |
+| PCM1 aggregate bundle marked `matched_with_tolerance` | all claim-required comparable observations meet their predeclared budgets | numerical identity or proof on unrelated primate data |
+| PCM2 focused matches beside 12 broader `mismatch_unexplained` scalar rows | bounded bundle claims and unresolved broader observations coexist | PCM2 “passes overall” because most bundles are favorable |
+| PCM2 intercept sweep marked `not_comparable` | no governed aligned observation currently supports that comparison | the two implementations were compared and disagreed |
+| PCM3–PCM5 contract-only bundles marked `not_comparable` | the intended claim, inputs, source, and missing execution boundary are governed | wrappers, nearby methods, or complete manifests constitute numerical evidence |
+
+These examples are not exceptions to the vocabulary. They demonstrate why a
+verdict must travel with its claim identifier, population, method,
+observations, and limitations.
 
 ## Keep Other Statuses In Their Own Records
 

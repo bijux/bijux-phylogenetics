@@ -4,7 +4,7 @@ audience: public
 type: evidence-navigation
 status: canonical
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Evidence Book
@@ -50,9 +50,42 @@ claim, bundle, repository, and follow-through statuses.
 - reviewer readiness: `bounded`
 - maturity tier: `reviewable_but_incomplete`
 
-These values describe the checked-in revision reviewed on 2026-07-21. The
+These values describe the checked-in revision reviewed on 2026-07-22. The
 [freshness report](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/freshness-report.md)
 is authoritative when the generated state changes.
+
+## Understand The Five-Study Evidence Progression
+
+The study families are related analytical lessons, not five interchangeable
+votes on one implementation. PCM1 establishes a reusable primate population;
+PCM2 changes its covariance and model comparisons; PCM3 changes the regression
+design; PCM4 introduces posterior and phylogenetic random-effect estimation;
+PCM5 changes response families and derives quantities from posterior draws.
+
+```mermaid
+flowchart LR
+    pcm1["PCM1<br/>population · signal · ancestors"]
+    pcm2["PCM2<br/>GLS · PGLS · modes"]
+    pcm3["PCM3<br/>contrasts · interactions"]
+    pcm4["PCM4<br/>Bayesian mixed models"]
+    pcm5["PCM5<br/>counts · infection · repeated data"]
+
+    pcm1 --> pcm2 --> pcm3
+    pcm4 --> pcm5
+```
+
+| Study | Scientific contribution | Evidence contribution at this revision |
+| --- | --- | --- |
+| PCM1 | shows why type repair, duplicate aggregation, pruning, and tree–trait reconciliation are part of the analysis | governed preparation lineage plus matched or tolerance-matched signal and ancestral observations |
+| PCM2 | shows how residual phylogenetic covariance changes regression, evolutionary-mode comparison, and diagnostics | claim-scoped matches coexist with one non-comparable bundle and a broader 12-row unexplained mismatch population |
+| PCM3 | makes factor coding, transformations, interactions, and Martins covariance explicit before coefficients are compared | complete comparison design and closure locations; no governed numerical comparison yet |
+| PCM4 | separates Gaussian, Bayesian, PGLS, and phylogenetic random-effect estimands | source, population, covariance, prior, chain, and output contract; no governed posterior yet |
+| PCM5 | distinguishes Gaussian, count, infection, and repeated-measure models and their draw-wise derived quantities | model-family and derivation contract; no governed generalized mixed-model posterior yet |
+
+The absence of a favorable PCM3–PCM5 verdict does not erase their value as
+design records. It does bound that value: they prevent a future comparison
+from silently changing the population, estimand, scale, or denominator, but
+they do not supply coefficients, draws, diagnostics, or parity conclusions.
 
 ## Find The Record From The Statement
 
