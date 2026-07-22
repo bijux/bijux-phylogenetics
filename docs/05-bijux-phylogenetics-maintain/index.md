@@ -157,39 +157,12 @@ the affected claim or publication surface.
 
 ## Resolve Canonical Ownership
 
-Before editing, follow the value or rule to its source:
-
-```mermaid
-flowchart LR
-    source["Runtime · schema · bundle<br/>or governance policy"]
-    generated["Generated reference<br/>index or report"]
-    docs["README · handbook<br/>package metadata"]
-    decision["Benchmark · evidence<br/>release decision"]
-
-    source --> generated --> docs --> decision
-```
-
-Correct the earliest owning layer. Do not hand-edit a generated index to hide
-a bad source record, change prose to mask a numerical mismatch, or loosen a
-tolerance to preserve a desired decision.
-
-## Stewardship Workflow
-
-1. Identify repository revision, branch, worktree state, and existing user
-   changes.
-2. Classify compatibility, scientific, artifact, evidence, package, and
-   publication impact.
-3. Resolve the canonical source and every generated or public projection.
-4. Implement the smallest complete owned change with failure-path tests.
-5. Run the narrow relevant check and inspect retained artifacts.
-6. Regenerate governed derivatives through repository tooling.
-7. Re-evaluate benchmarks, parity cases, and evidence records whose material
-   dependencies changed.
-8. Align runtime, alias, package metadata, API, CLI, docs, and release surfaces.
-9. Run composed gates appropriate to the change and confirm only intentional
-   source changes remain.
-10. Retain a handoff with exact verification, unexecuted lanes, risks, and
-    decision artifacts.
+Follow the disputed value or rule to the earliest runtime, schema, bundle, or
+governance record that defines it. Generated references, READMEs, handbook
+pages, metadata, benchmark summaries, and release reports are consumers of
+those owners. Correct the owner, regenerate governed projections, then verify
+the final reader decision. Never edit a later projection to mask an upstream
+numerical, provenance, compatibility, or status defect.
 
 ## Change-To-Check Routing
 
@@ -207,14 +180,13 @@ tolerance to preserve a desired decision.
 The narrow check accelerates diagnosis; it does not remove downstream checks
 from the final verification set.
 
-## Handbook Areas
+## Continue With The Owning Handbook
 
-- [Documentation system](documentation-system/index.md) defines canonical
-  sources, generated projections, ownership, and native-surface coverage.
-- [Trust surfaces](trust-surfaces/index.md) governs cross-surface claims,
-  status namespaces, validation lanes, and study guides.
-- [Repository operations](repository-operations/index.md) covers environment,
-  artifacts, release alignment, and operational verification.
+| Maintenance question | Owning handbook | Leave with |
+| --- | --- | --- |
+| Which source owns a public statement or generated reference? | [Documentation system](documentation-system/index.md) | canonical owner, affected projections, reader contract, documentation checks |
+| Can a capability, comparison, or evidence statement be published? | [Trust surfaces](trust-surfaces/index.md) | one revision-coherent trust packet and bounded language |
+| Where should a run write, what may be committed, and which release gate applies? | [Repository operations](repository-operations/index.md) | command receipt, governed/transient classification, validation and candidate identity |
 
 ## Release Evidence
 
