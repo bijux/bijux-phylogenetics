@@ -29,6 +29,23 @@ flowchart LR
     model --> fit --> nodes --> branches --> sensitivity --> claim
 ```
 
+## Distinguish Four Transition Claims
+
+The word “transition” can describe four materially different records:
+
+| Claim | What is known | What remains unknown |
+| --- | --- | --- |
+| endpoints prefer different states | parent and child node summaries differ under one fit | whether, where, or how often change occurred on the branch |
+| a change has posterior or likelihood weight | model-integrated evidence favors a change | a single realized history |
+| a sampled history contains an event | one stochastic history realizes the event | whether the event is stable across samples, trees, and models |
+| an observed state pair differs across taxa | tip observations differ | the ancestral direction and branch on which change occurred |
+
+Reports must name which record is being counted. A preferred-endpoint change
+is a deterministic summary of reconstructed probabilities; a sampled event is
+a draw conditional on a model; and neither is an observed historical event.
+Transition frequencies become interpretable only with their branch or
+tree-sample opportunity denominator.
+
 ## Direction Begins At The Root
 
 An unrooted topology can define splits but not ancestors, descendants, or a

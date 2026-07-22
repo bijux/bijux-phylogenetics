@@ -25,6 +25,24 @@ flowchart LR
     models --> results
 ```
 
+## Begin With What Was Actually Observed
+
+Most evolutionary outputs concern quantities that were not directly observed.
+Name the boundary before interpreting a result:
+
+| Quantity | Evidence status | Required conditioning record |
+| --- | --- | --- |
+| measured tip trait or state | observation for an admitted sampling unit | source, unit, uncertainty, mapping, missingness, and exclusions |
+| fitted coefficient, rate, or covariance parameter | model estimate | tree, population, design, likelihood, constraints, and diagnostics |
+| internal-node value or state probability | conditional reconstruction | fitted model, rooted node identity, uncertainty, and tree sensitivity |
+| branch transition or movement | derived historical summary | endpoint or sampled-history rule, branch identity, opportunity, and ambiguity |
+| ecological or geographic narrative | interpretation | explicit claim linking only the accepted observations and reconstructions |
+
+This ordering prevents a reconstruction from being described as a recovered
+observation. It also prevents a visual narrative—such as an annotated tree or
+map—from silently becoming the source of a transition that was only weakly or
+conditionally supported in the structured result.
+
 [Comparative And Ancestral Methods](comparative-and-ancestral-methods.md)
 covers PGLS, phylogenetic signal, continuous and discrete evolutionary modes,
 ancestral reconstruction, diversification summaries, and sensitivity review.

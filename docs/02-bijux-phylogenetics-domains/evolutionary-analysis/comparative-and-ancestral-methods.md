@@ -33,6 +33,24 @@ flowchart LR
     ancestral --> review
 ```
 
+## Read Coefficients And Ancestors As Different Estimands
+
+A comparative coefficient and an ancestral estimate may use the same tree and
+trait table, but they answer different questions:
+
+| Result | Conditional question | Interpretation boundary |
+| --- | --- | --- |
+| regression coefficient | how does the modeled response change with one design column after accounting for the declared phylogenetic covariance? | specific population, formula, contrast coding, transform, units, and covariance family |
+| signal estimate | how compatible is observed trait resemblance with the named phylogenetic null or transformation? | statistic-specific scale and null; not a predictor effect |
+| mode parameter | which process parameter best fits the declared tree and trait observations? | candidate family, tree time scale, identifiability, and bounds |
+| ancestral value or state | what internal quantity is supported under the fitted model and rooted tree? | unobserved conditional estimate with node and tree uncertainty |
+
+Accordingly, a coefficient does not describe an ancestral trajectory, and an
+ancestral reconstruction does not validate a regression mechanism. Even a
+numerically stable result changes meaning when the admitted taxa, observation
+unit, factor reference level, trait transform, or tree-derived covariance
+changes.
+
 ## The Shared Contract
 
 Every analysis begins with an explicit mapping between tree tips and trait
