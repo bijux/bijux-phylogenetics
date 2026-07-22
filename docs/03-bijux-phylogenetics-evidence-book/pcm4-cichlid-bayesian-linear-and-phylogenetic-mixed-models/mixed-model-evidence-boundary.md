@@ -147,6 +147,25 @@ and any derived quantity that claims same-draw correspondence. Diagnostics can
 exclude a declared population under a pre-registered rule; they cannot be used
 after inspection to select whichever draws make summaries agree.
 
+## Posterior Admission Is Parameter-Aware
+
+A run-level “converged” flag is too coarse for PCM4. Fixed effects and variance
+components can have materially different mixing, boundary behavior, and
+effective sample sizes within the same chains.
+
+| Admission layer | Evidence retained | Unsafe shortcut |
+| --- | --- | --- |
+| chain | initialization, seed, terminal state, iterations, burn-in, thinning, warnings | count only chains that produced a file |
+| parameter | expected key, presence in every chain, finite states, scale, boundary state | infer availability from one summary table |
+| mixing | autocorrelation, effective sample size, between-chain behavior, selected window | apply one global diagnostic result to every parameter |
+| summary | admitted chain/draw keys, statistic, interval rule, transform | compare rounded means from differently admitted draws |
+| claim | complete expected parameter and diagnostic denominator | omit a poorly mixing variance component while matching fixed effects |
+
+Admission rules should be declared before comparing posterior summaries. A
+parameter that fails its diagnostic rule remains present as failed or excluded
+evidence with its denominator; it must not disappear from the bundle because
+another parameter mixes well.
+
 ## Required Observation Ledger
 
 Each claim needs rows that identify the bundle, parameter or structure,

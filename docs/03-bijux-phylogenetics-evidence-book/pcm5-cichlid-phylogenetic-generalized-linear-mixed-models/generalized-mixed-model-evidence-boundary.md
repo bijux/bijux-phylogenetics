@@ -124,6 +124,35 @@ execution retains `not_comparable`; an unexplained observed disagreement can
 support `mismatch_unexplained`; agreement supports a matched verdict only after
 the full eligible observation set is adjudicated.
 
+## Same-Draw Algebra Is Part Of The Estimand
+
+Nonlinear posterior quantities must be computed from operands belonging to the
+same model, chain, and retained draw. In general:
+
+```text
+mean(inverse_link(eta_draw)) != inverse_link(mean(eta_draw))
+
+mean(A_draw / (A_draw + B_draw))
+    != mean(A_draw) / (mean(A_draw) + mean(B_draw))
+```
+
+The difference is scientific, not merely numerical: the draw-wise calculation
+preserves posterior dependence and nonlinear uncertainty. A valid child
+ledger therefore retains:
+
+| Child field | Required parent identity |
+| --- | --- |
+| model and parameter keys | exact family, link, fixed/random terms, priors, covariance and scale |
+| chain and draw key | one admitted posterior state shared by every operand |
+| predictor/category/node key | the response-scale target or structural object being derived |
+| expression identity | versioned operands, constants, inverse link, denominator and domain rules |
+| child state | finite, missing, refused, or excluded with the inherited parent reason |
+
+Pairing operands by row position after chains are filtered independently is
+not same-draw evidence. Neither is reconstructing a ratio from published
+marginal summaries. Those outputs may be retained as separate descriptive
+records, but they cannot close the registered derived-posterior claim.
+
 ## Derived-Quantity Ledger
 
 | Quantity | Draw-wise source expression | Identity that must be retained |

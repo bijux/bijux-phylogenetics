@@ -92,6 +92,27 @@ align not only fixed-effect formulas but also covariance scaling, random-effect
 levels, priors on variance components, observation aggregation, and posterior
 summaries.
 
+## Random Effects And Residual Covariance Are Related, Not Identical Records
+
+A Brownian PGLS fit and a phylogenetic mixed model can encode related tree
+structure while assigning it to different model components. Similar fixed
+effects are therefore a cross-estimator diagnostic, not proof that the models
+share one likelihood or uncertainty object.
+
+| Identity | Brownian PGLS | Phylogenetic mixed model |
+| --- | --- | --- |
+| phylogenetic dependence | residual covariance is structured directly by the tree | a latent random effect has tree-derived covariance |
+| residual term | part of the combined fitted covariance contract | separately parameterized residual variance |
+| principal uncertainty | maximum-likelihood sampling uncertainty | joint posterior over fixed effects and variance components |
+| tree scaling consequence | changes residual weighting and likelihood | changes random-effect covariance and variance interpretation |
+| reported comparison | coefficients, fit, covariance and diagnostics | fixed posterior, phylogenetic/residual variance posteriors, chains and diagnostics |
+
+To compare their scientific conclusions, retain whether effects are marginal
+or conditional, how covariance is scaled, and which variance components are
+integrated or estimated. To compare implementations, first reproduce each
+estimator under its own identity; do not use one as the missing output of the
+other.
+
 ## The Preserved Source Analysis
 
 The preserved Lund program is a connected analysis, not a collection of

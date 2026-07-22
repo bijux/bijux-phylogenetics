@@ -64,6 +64,24 @@ derived probability, signal ratio, or variance share is trustworthy only when
 its parent model, chain, draw, parameter, and transformation identities remain
 linked.
 
+## Observation Grain Changes The Scientific Population
+
+PCM5 moves between species summaries and repeated records. Those populations
+cannot share a denominator merely because they contain the same species names.
+
+| Grain | Unit represented by one row | Dependence that must be modeled or retained |
+| --- | --- | --- |
+| species-level summary | one aggregated species response | aggregation members and rule, tree-linked species covariance |
+| parasite count record | one declared count observation | exposure or offset, sampling unit, overdispersion policy, species/tip link |
+| infection composition | infected and not-infected outcomes for one sampling unit | trial/composition denominator, category coding, link and latent residual convention |
+| repeated observation | one measurement nested within species | record identity, within-species repetition, species effect, phylogenetic effect |
+| ancestral node quantity | one model-derived node effect or response | exact tree, descendant identity, parent posterior, parameter and scale |
+
+Collapsing repeated records changes the response and removes a variance layer;
+expanding a species summary without source records invents replication. Every
+model and derived quantity must state which grain it consumes and how that
+population maps to species and tree identities.
+
 ## Why Model Families Stay Separate
 
 Gaussian, Poisson, and binary-style models operate on different likelihood and
