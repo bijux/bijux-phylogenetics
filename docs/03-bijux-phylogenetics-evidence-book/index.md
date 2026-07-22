@@ -38,6 +38,36 @@ from identity through machine observations and freshness. Use [Claim verdicts
 and resolution](claim-verdicts-and-resolution.md) to distinguish observation,
 claim, bundle, repository, and follow-through statuses.
 
+## The Unit Of Evidence Is A Bounded Claim
+
+A PCM study is a dossier that organizes related scientific questions. It is
+not a single test and does not receive one transferable “pass” label. Its
+bundles register claims; claims declare required observations; observations
+carry exact identities, rules, and outcomes.
+
+```mermaid
+flowchart LR
+    study["Study dossier<br/>scientific context"] --> bundles["Evidence bundles<br/>comparison modes"]
+    bundles --> claims["Bounded claims<br/>population and method"]
+    claims --> observations["Required observations<br/>keys and denominators"]
+    observations --> rules["Predeclared checks<br/>exact or tolerance"]
+    rules --> verdicts["Claim verdicts<br/>with limitations"]
+
+    verdicts -. summarized without promotion .-> study
+```
+
+| Level | Owns | Must not be used as |
+| --- | --- | --- |
+| study | source context, scientific progression, and the inventory of questions | one vote that overrides mixed claim states |
+| bundle | one comparison mode and its governed files | proof for quantities outside its registered claims |
+| claim | exact statement, population, method, dependencies, and verdict | a general capability badge |
+| observation | compared scalar, row, topology, node, artifact, or absence | a claim verdict without the declared aggregation rule |
+| resolution | cause, owner, follow-through, and closure evidence | a replacement for the current verdict |
+
+This model allows PCM2 to retain matched claim-scoped bundles and unexplained
+scalar mismatches without contradiction. It also allows PCM3–PCM5 to be
+complete design dossiers while remaining numerically `not_comparable`.
+
 ## At A Glance
 
 - studies: `5`

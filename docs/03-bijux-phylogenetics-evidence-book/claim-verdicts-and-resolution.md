@@ -29,6 +29,24 @@ matched observation does not make its claim matched; a matched claim does not
 make every observation in the bundle matched; a repository readiness result
 does not make every scientific method validated.
 
+## Summaries Do Not Promote Verdicts
+
+Higher-level views preserve lower-level states; they do not replace them.
+
+| Summary surface | Defensible content | Forbidden promotion |
+| --- | --- | --- |
+| observation table | counts and identities for exact, within-budget, mismatched, absent, and excluded rows | “overall match” without the claim aggregation rule |
+| claim record | one verdict derived from its complete required population | extension to an unregistered quantity or population |
+| bundle report | inventory of its claims, observations, contradictions, and limitations | selecting the most favorable claim as the bundle meaning |
+| study guide | scientific relationship among bundles and the current mixed evidence state | a study-wide pass/fail label |
+| repository dashboard | coverage, freshness, integrity, and verdict counts | numerical or scientific validation of every runtime surface |
+
+An aggregate can say that ten observations matched and two did not. It cannot
+say the claim matched unless the claim contract declares those twelve rows,
+their eligibility, and the rule that yields that verdict. Likewise, a release
+gate can establish publication eligibility for its governed inventory while a
+scientific mismatch remains visible and unresolved.
+
 ## Verdict Vocabulary
 
 | Verdict | Required meaning | Honest downstream language |

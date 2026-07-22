@@ -32,6 +32,27 @@ If any answer comes only from `report.md`, a plot, a filename, or contextual
 prose, continue to the owning machine record. If no owning record exists, the
 claim is not ready for citation at that point in the chain.
 
+## Stop At The First Broken Evidence Edge
+
+Evidence review is not a scavenger hunt for a nearby favorable value. Move
+backward from the intended statement and stop when the owning edge is absent,
+stale, or contradictory.
+
+| Broken edge | What remains usable | What must stop |
+| --- | --- | --- |
+| statement → claim | general study context and capability description | citation of the statement as governed evidence |
+| claim → required observation | claim design and declared closure contract | a verdict based on the available subset |
+| observation → comparison rule | raw values and identities | matched, tolerance, or mismatch language |
+| comparison → execution | retained comparison schema or fixture | assertion that either program produced the value |
+| execution → primary output | invocation and terminal state | numerical interpretation of a missing or malformed result |
+| primary output → input identity | output artifact as an orphaned record | reproduction or transfer to a named population |
+| current bundle → freshness indexes | historical bundle inspection | present-tense citation |
+
+Do not bridge the gap with a study-guide number, a runtime capability, a
+different bundle, or a hand-computed substitute. Record the exact stopping
+edge; that is more informative than flattening every failure into “evidence is
+missing.”
+
 ## Classify The Bundle Before Reading Its Result
 
 The directory shape is intentionally similar across bundles, but the evidence
