@@ -4,7 +4,7 @@ audience: maintainer
 type: handbook
 status: canonical
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Evidence Claim And Study-Guide Maintenance
@@ -13,6 +13,20 @@ A study guide is a public projection of governed evidence, not an independent
 place to decide what the software proved. Maintain the claim from its inputs
 through its verdict first; then make the guide state that result, its boundary,
 and the record needed to reproduce it.
+
+## Propagate From The Changed Owner
+
+| Changed owner | Recompute or review first | Then regenerate or revise |
+| --- | --- | --- |
+| source, dataset, or tree identity | input manifests, admitted population, and dependent freshness | observations, verdicts, indexes, and study interpretation |
+| runtime method or external adapter | affected executions, result schemas, diagnostics, and artifact bundles | comparisons, evidence freshness, and capability language |
+| observation key, normalization, or tolerance | raw-to-normalized mapping and complete claim denominator | claim verdict, mismatch records, guide tables, and summaries |
+| claim dependency or wording | claim scope and required observations | bundle summary, study guide, site index, and release statement |
+| generated index or guide only | canonical bundle and current projections | regenerate the stale projection; do not edit evidence to match it |
+
+Move forward from the earliest changed authority. Editing the study guide first
+can temporarily hide a stale or contradictory claim while leaving every
+machine consumer wrong.
 
 ```mermaid
 flowchart LR

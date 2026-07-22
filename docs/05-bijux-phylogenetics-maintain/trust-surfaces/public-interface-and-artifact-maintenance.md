@@ -4,7 +4,7 @@ audience: maintainer
 type: handbook
 status: active
 owner: bijux-phylogenetics-dev
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Public Interface And Artifact Maintenance
@@ -13,6 +13,23 @@ The public contract spans discovery, invocation, structured results, durable
 artifacts, package identity, and scientific assurance. A change is incomplete
 when one layer advertises behavior that another layer cannot execute, consume,
 or substantiate.
+
+## Preserve One Meaning Across Every Projection
+
+For each changed field or behavior, record a projection ledger:
+
+| Projection | Required review |
+| --- | --- |
+| Python result | type, default, omission, warning, error, and compatibility meaning |
+| CLI or service | translation, status, exit or transport behavior, and serialized field |
+| manifest and artifact | schema, units, denominator, provenance, inventory, and migration decision |
+| report or figure | source field, transformation, missingness, warning visibility, and caption scope |
+| benchmark or evidence consumer | observation identity, acceptance rule, claim dependency, and freshness |
+| package and documentation | installed discovery path, example, version, and bounded support language |
+
+The ledger closes only when each applicable projection either preserves the
+canonical meaning or refuses incompatibility explicitly. A successful site
+build or JSON parse does not close a semantic discrepancy.
 
 ```mermaid
 flowchart LR
