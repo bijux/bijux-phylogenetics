@@ -31,6 +31,24 @@ If the estimands cannot be aligned, record `not_comparable` at the evidence
 layer. Do not search for a scale transform or large tolerance that merely makes
 the displayed values close.
 
+## Numerical Closeness Is Neither Necessary Nor Sufficient By Itself
+
+Two close numbers can be non-comparable when they refer to different taxa,
+units, likelihood conventions, factor contrasts, nodes, or support methods.
+Conversely, two differently encoded objects can correspond exactly after an
+audited, reversible normalization—for example, reordering a keyed matrix or
+canonicalizing equivalent Newick formatting.
+
+The review order is therefore semantic identity, structural keys,
+normalization, and only then the numerical rule. Tolerance answers “how much
+difference is acceptable for this shared quantity?” It cannot answer “are
+these quantities the same thing?”
+
+This ordering also makes a failure useful. An identity failure points to the
+comparison design; a structural failure points to missing or inconsistent
+objects; an observation failure points to an implementation or registered
+rule. One generic “parity failed” status would hide that ownership.
+
 ## Comparison Record
 
 | Field | Reviewer question |

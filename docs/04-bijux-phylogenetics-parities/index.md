@@ -31,6 +31,23 @@ flowchart LR
     normalize --> compare --> outcome
 ```
 
+## Decide Whether You Need Execution Or Comparison
+
+Start from the claim you need to make:
+
+| Needed claim | Correct record | Example conclusion |
+| --- | --- | --- |
+| a named external tool can run inside a Bijux workflow | adapter execution | IQ-TREE2 executed with this input, command, version, and accepted native output |
+| Bijux can read an existing external artifact | parser record | this BEAST or MrBayes artifact satisfies the supported parse contract |
+| two implementations agree for one operation | parity case | aligned observations for this registered case satisfy the declared rules |
+| correspondence supports a scientific statement | Evidence Book claim | the current bounded claim has the recorded verdict and limitations |
+
+These records can share files but they answer progressively different
+questions. Running IQ-TREE2 through an adapter is not a comparison with native
+Bijux inference. Parsing the same tree shape is not evidence that likelihoods
+or support estimands agree. Choose the claim first so a successful execution
+is not reported as a stronger correspondence result.
+
 ## Reference Landscape
 
 | Relationship | Tools | What the repository owns | What that record does not establish |

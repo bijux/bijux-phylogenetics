@@ -33,6 +33,26 @@ flowchart LR
     inputs --> preflight --> execution --> native --> validation --> record
 ```
 
+## Require Both Execution And Artifact Acceptance
+
+An external-engine workflow has two terminal decisions:
+
+| Decision | Evidence | Example failure |
+| --- | --- | --- |
+| execution acceptance | resolved executable and version, exact command, process state, streams, timeout, and exit code | executable missing, timeout, signal, or nonzero exit |
+| scientific-artifact acceptance | required file inventory, checksums, parse state, dimensions, taxa, model/support fields, diagnostics, and warnings | zero exit with missing, truncated, stale, or malformed output |
+
+The workflow succeeds only when both decisions accept the same run identity.
+A process can exit normally without producing a usable scientific artifact;
+an apparently valid file can predate the current invocation. Conversely, a
+failed process may leave diagnostic files worth retaining, but those files do
+not become an accepted result.
+
+This separation explains why manifests record attempts, native outputs, and
+parser state independently. It allows a reviewer to distinguish engine
+failure from artifact-validation or parser failure without attributing all
+three to the scientific algorithm.
+
 ## Choose The Surface By Scientific Operation
 
 | Operation | Computational owner | Bijux correspondence | Detailed guide |
