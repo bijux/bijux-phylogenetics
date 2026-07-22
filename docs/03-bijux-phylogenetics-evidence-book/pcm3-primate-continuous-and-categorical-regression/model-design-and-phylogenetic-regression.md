@@ -34,6 +34,21 @@ comparison keys. The present record proves that the proposed reproduction is
 finite and auditable. It does not prove that any coefficient, test, or
 covariance estimate has been reproduced.
 
+### Separate Reparameterization From A New Estimand
+
+An intercept model with one reference-group coefficient and a no-intercept
+model with one coefficient per group can span the same fitted means. Their raw
+coefficient tables are not row-wise comparable; the correct comparison first
+maps both tables to shared group intercepts or shared predictions. Likewise,
+centering a predictor relocates the intercept while preserving fitted values
+when the rest of the design is unchanged.
+
+An interaction, log response, altered complete-case population, or different
+marginal/sequential hypothesis is not merely a new display basis. It changes
+the target quantity or tested statement. PCM3 needs the design and hypothesis
+ledgers to classify which kind of change occurred before any tolerance is
+applied.
+
 ```mermaid
 flowchart LR
     raw["longevity ~ group size<br/>+ dimorphism"]

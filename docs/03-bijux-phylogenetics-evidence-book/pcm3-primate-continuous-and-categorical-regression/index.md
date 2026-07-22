@@ -56,6 +56,20 @@ conditional slope under a specific reference coding. Standardization changes
 the location represented by the intercept. Those semantics must match before
 coefficients from different implementations can be compared.
 
+### Coefficient Labels Are Coordinates, Not The Model Itself
+
+A fitted mean can be expressed through different but equivalent design bases.
+Changing the factor reference level, removing the intercept, or centering a
+predictor changes the coefficient coordinates and their labels even when the
+model predicts the same value for every admitted row. By contrast, filtering
+rows, changing a response transform, or testing a different linear combination
+changes the scientific question.
+
+PCM3 therefore requires both a prediction-level identity and a
+coefficient-to-design-column identity. Similar predictions cannot prove that
+named coefficients have the same meaning, and similar coefficient labels
+cannot prove that the fitted population or hypothesis is the same.
+
 ## What PCM3 Is Designed To Distinguish
 
 PCM3 turns one multivariable analysis into eight bounded questions because
