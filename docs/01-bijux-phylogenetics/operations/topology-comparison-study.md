@@ -18,6 +18,25 @@ with respect to `<rooted or unrooted splits>` over `<admitted taxa>`?” If the
 question cannot name both dimensions, a Robinson–Foulds value has no stable
 interpretation.
 
+## Read Robinson–Foulds As A Split-Set Observation
+
+For the admitted taxon set and selected rooting mode, the raw RF distance
+counts splits present in one tree but not the other. The normalized value
+scales that difference by the eligible split population used by the
+implementation. Neither value is a percentage of taxa that “match.”
+
+| Change between comparisons | Why the RF value is no longer directly comparable |
+| --- | --- |
+| taxon pruning or addition | the eligible split sets and maximum distance change |
+| rooted versus unrooted mode | directed clades and unrooted bipartitions answer different questions |
+| resolving or collapsing a polytomy | the set of represented splits changes |
+| duplicate or normalized labels | taxon correspondence and therefore split identity changes |
+
+Report raw distance, normalized distance, eligible split denominator, and
+admitted taxa together. A smaller normalized value after additional pruning
+can reflect an easier comparison population rather than greater agreement
+between the original trees.
+
 ## Define The Comparison Population
 
 Record both tree identities, rootedness, taxon sets, duplicate-label checks,

@@ -31,6 +31,23 @@ flowchart LR
     support --> record["Workflow result<br/>manifest and outputs"]
 ```
 
+## Follow Every Changing Population
+
+This workflow contains several denominators, not one generic “dataset size”:
+
+| Population | Change that must be visible | Downstream consequence |
+| --- | --- | --- |
+| source sequences | invalid, duplicate, renamed, or excluded records | defines which biological samples can enter alignment |
+| aligned sequences and columns | inserted gaps, sequence order, unalignable regions | defines the character matrix before filtering |
+| retained alignment | removed columns, partitions, missingness, composition | defines the exact sites seen by inference |
+| inference and support runs | starts, candidates, replicates, failures, incomplete outputs | defines search coverage and support denominators |
+
+Record the before-and-after identity at every boundary. If trimming removes
+half the sites, a high-support final tree is evidence about the retained
+matrix; it does not retroactively establish that the removed characters were
+uninformative. If a bootstrap replicate fails, the observed support
+denominator must not silently remain the requested count.
+
 ## Declare The Study Before Execution
 
 Record the sequence population, molecule type, identifier policy, trimming

@@ -29,6 +29,25 @@ flowchart TB
     ancestral --> review
 ```
 
+## Join Lineage Without Joining Conclusions
+
+The shared admission record supports a precise lineage statement: both
+analyses began from identified source objects and their derived populations
+are known. It does not create a combined scientific result.
+
+| Shared fact | Regression still owns | Ancestral analysis still owns |
+| --- | --- | --- |
+| source tree and trait-table identity | response, predictors, formula, design columns | reconstructed trait, state space, node keys |
+| taxon reconciliation ledger | rows eligible after response/predictor missingness | tips eligible after state ambiguity/missingness |
+| branch-length and rooting record | covariance geometry and coefficient interpretation | direction, node identity, and transition interpretation |
+| common software/run context | fit, residual, coefficient, and sensitivity diagnostics | model, node-probability, transition, and tree sensitivity |
+
+A cross-analysis sentence is defensible only when it cites both result
+identities and states the logical connection being made. Association between a
+predictor and response does not demonstrate a particular ancestral state;
+reconstruction of a state does not demonstrate that the state caused the
+regression pattern.
+
 ## Admit The Shared Population
 
 Before fitting either model, record the tree revision, rooting and branch

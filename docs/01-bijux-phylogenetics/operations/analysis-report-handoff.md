@@ -17,6 +17,24 @@ Use this workflow when structured results already exist and the next consumer
 needs a navigable human review surface. Do not use report rendering as the
 analysis step or as a recovery mechanism for missing machine output.
 
+## Transfer Custody Without Transferring Authority
+
+The handoff changes who receives and reviews the package; it does not change
+which record owns a scientific fact.
+
+| Participant | Obligation |
+| --- | --- |
+| analytical producer | freeze accepted result identities, statuses, diagnostics, warnings, and expected projections |
+| report builder | render only traceable fields and retain selection, transform, omission, and artifact records |
+| handing-off reviewer | verify forward inventory and backward claim traversal before release |
+| receiving consumer | interpret within the declared population and claim scope; preserve qualifications on reuse |
+
+Acceptance by a new consumer is a new decision record, not a mutation of the
+underlying coefficient, tree, support value, or ancestral state. If the
+consumer needs a different population, transform, model, or claim, return to
+the owning analytical surface and create a newly identified result before
+rendering another report.
+
 ## Build A Linked Review Surface
 
 ```python
