@@ -83,6 +83,23 @@ run; it does not turn the earlier `failed` record into `complete`. A consumer
 may accept a `partial` result for a narrower purpose, but that child decision
 must preserve the missing components and cannot rewrite the producer status.
 
+## Retain The Requested, Executed, And Accepted Populations
+
+Batch and repeated workflows need three denominators. Counting only successful
+outputs makes failures and selective acceptance disappear.
+
+| Population | Members | Question answered |
+| --- | --- | --- |
+| requested | every declared taxon set, replicate, model, start, chain, engine case, or artifact | what work and coverage were promised? |
+| executed | every admitted attempt, including failed and partial terminal states | what actually ran and how did it terminate? |
+| accepted | results a consumer admits for one bounded use, plus explicit rejections | what supports the downstream decision? |
+
+The populations may differ, but their transitions must be row-addressable. A
+refused request stays in the requested denominator; a failed attempt stays in
+the executed denominator; a complete result rejected for poor diagnostics
+stays outside acceptance with its reason. Retrying adds an attempt—it does not
+reduce the failure count or original requested population.
+
 | Transition request | Correct treatment |
 | --- | --- |
 | refused input is corrected | create a new run with the corrected input identity |

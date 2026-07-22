@@ -118,6 +118,27 @@ score.
 These statuses require recorded corpus, versions, configuration, environment,
 metric, and threshold. They are not package-wide labels.
 
+## Keep Benchmark Dimensions Independent
+
+Speed, memory, truth recovery, topology correspondence, support calibration,
+and completion rate are different observations. A benchmark suite may connect
+them through one corpus identity, but it must not reduce them to an unnamed
+overall score.
+
+| Dimension | Required denominator | Result it cannot establish |
+| --- | --- | --- |
+| speed | completed eligible cases under a named environment and timing policy | correctness, memory safety, or performance on failed cases |
+| memory | measured executions, measurement method, process boundary and peak policy | runtime speed or scientific accuracy |
+| recovery | generated truth, comparable cases, loss metric, failures and exclusions | correspondence with an external implementation |
+| wrapper correspondence | aligned native/wrapper estimands, cases, observations and rules | either implementation is scientifically adequate |
+| support calibration | replicate population, nominal levels, clade keys and coverage rule | exact topology recovery or search completeness |
+| completion | every requested case and terminal state | quality of the successful results |
+
+Publish the joint case key so dimensions can be related without hiding their
+own denominators. A native speed advantage beside a recovery failure remains
+two results, not a favorable average; an unsupported case remains in coverage
+even when it is excluded from elapsed-time summaries.
+
 ## Result Selection
 
 Use native result objects when composing methods or inspecting rich state. Use

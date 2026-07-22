@@ -110,6 +110,26 @@ If a handoff drops taxa, defaults, units, warnings, method identity, or result
 state, the workflow is not equivalent merely because its headline estimate is
 unchanged.
 
+## Cross-Surface Equivalence Requires Preserved Semantics
+
+Moving a request between Python, CLI, service, and artifact surfaces changes
+representation and lifecycle. It must not silently change the scientific
+contract.
+
+| Semantic field | Cross-surface invariant | Typical loss to detect |
+| --- | --- | --- |
+| input identity | same source objects, content identities, admitted population and order | path-based lookup resolves different bytes or row order |
+| defaults | every material default resolves to the same explicit value | CLI or service default differs from Python construction |
+| method identity | native or external owner, model, parameterization and controls match | normalized result hides a different engine or model |
+| absence and failure | null reasons, refusal codes, partial state and missing inventory survive | TSV empty cell or exit code collapses distinct states |
+| uncertainty | support, intervals, chains, diagnostics and denominator remain linked | summary serialization drops samples or warnings |
+| persistence | schema, manifest, checksums and producer identity bind the output | copied report becomes detached from the owning result |
+
+An equivalence check compares these fields before numerical output. If a
+surface cannot represent a material state, retain a link to the richer owner
+or refuse the migration; do not compensate with explanatory prose around a
+lossy payload.
+
 ## Python Is The Right Choice When
 
 You need custom composition, iterative model construction, in-memory tree or
