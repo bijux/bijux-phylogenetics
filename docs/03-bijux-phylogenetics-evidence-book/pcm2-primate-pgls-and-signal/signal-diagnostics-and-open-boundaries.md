@@ -29,6 +29,24 @@ the residual claim; it also warns readers not to assume identical diagnostic
 semantics when interpreting the fit. It does not erase an exact input identity
 or silently become evidence against a different model surface.
 
+## Treat Diagnostics As Comparable Scientific Objects
+
+A diagnostic scalar is the end of another data pipeline. For residual
+correlation, both implementations must first agree on the admitted rows,
+fitted-value scale, residual definition, standardization or whitening,
+missing-value treatment, and outlier policy. Only then does the correlation
+coefficient have a shared meaning.
+
+The same applies to ancestral diagnostics: node rows require a common rooted
+tree, clade key, model, estimate scale, and uncertainty convention before a
+vector difference is meaningful. Matching row counts or similar plots do not
+establish this identity.
+
+PCM2 therefore retains diagnostics as governed result objects, not secondary
+illustrations. Their mismatch can qualify use of an otherwise corresponding
+coefficient because it reveals that the implementations may be inspecting
+different error or reconstruction quantities.
+
 ### Coefficients And Diagnostics Can Disagree Honestly
 
 Two implementations can produce nearly identical coefficients and likelihoods

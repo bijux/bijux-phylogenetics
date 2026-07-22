@@ -35,6 +35,24 @@ reversed early-/late-burst transform points to the transform boundary rather
 than the shared trait table. It does not prove the cause, but it narrows where
 resolution must begin.
 
+## Use Disagreement To Locate The Broken Contract
+
+PCM2’s surfaces form a dependency chain, so the earliest disagreement limits
+which later comparisons are interpretable:
+
+| Observation pattern | Boundary localized first |
+| --- | --- |
+| baseline coefficients disagree | population, design, likelihood, or ordinary regression implementation |
+| baseline agrees but Pagel-λ fit disagrees | tree ordering, covariance transform, λ bounds, or phylogenetic likelihood |
+| both regressions agree but residual summaries disagree | residual definition, scale, ordering, or diagnostic computation |
+| Brownian mode agrees but early-burst transform reverses | rate-through-time parameter direction or transform convention |
+| fitted modes align but likelihood-ratio result disagrees | nesting, parameter count, likelihood convention, or test calculation |
+
+This localization is a scientific benefit of the dossier. It preserves the
+accepted parent observations while refusing unsupported children. A later
+failure must not be used to erase an earlier match, and an earlier match must
+not be used to waive a broken downstream dependency.
+
 ### Why The Slope Can Change Without Changing The Data
 
 Ordinary GLS gives the residual vector an independence structure. Under PGLS,

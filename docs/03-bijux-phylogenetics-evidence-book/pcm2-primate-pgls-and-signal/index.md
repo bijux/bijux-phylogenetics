@@ -44,6 +44,23 @@ PCM2 is deliberately a two-ledger study. The claim ledger says whether each
 bounded bundle closes; the scalar ledger preserves wider numerical debt. A
 reader needs both before summarizing correspondence.
 
+## Separate The Four Sentences PCM2 Can Produce
+
+One table of coefficients can tempt a reader into one omnibus conclusion.
+PCM2 instead supports or limits four different sentences:
+
+| Sentence type | Example | Required comparison |
+| --- | --- | --- |
+| within-model correspondence | R and Bijux baseline GLS slopes correspond | same population, design, covariance, likelihood, and coefficient key across implementations |
+| within-model correspondence | R and Bijux Pagel-λ PGLS slopes correspond within tolerance | same fitted phylogenetic covariance contract across implementations |
+| cross-model scientific contrast | the slope is smaller under PGLS than under independent GLS | accepted fits within one interpretation chain, with covariance as the deliberate change |
+| model adequacy or sensitivity | residual behavior or evolutionary-mode results qualify the preferred interpretation | named diagnostics, candidate models, failures, and complete denominator |
+
+The first two are parity statements. The third is a scientific model
+comparison. The fourth determines whether either model supports the intended
+interpretation. Combining values across rows and columns—for example R GLS
+against Bijux PGLS—changes both implementation and model and isolates neither.
+
 ## Scientific Questions
 
 - How do coefficient estimates and residual structure change after
