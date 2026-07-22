@@ -4,7 +4,7 @@ audience: public
 type: explanation
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Continuous Phylogeography And Maps
@@ -26,6 +26,24 @@ flowchart LR
     tips --> estimates
     tree --> estimates --> movement --> geometry --> map
 ```
+
+## The Map Is The Final Projection, Not The Evidence
+
+Continuous phylogeography has an inferential ladder. Each rung depends on the
+one before it and must remain independently reviewable.
+
+| Rung | Owned record | Interpretation boundary |
+| --- | --- | --- |
+| admitted observations | source coordinates, precision, taxon matches, exclusions | locality data may be measured, aggregated, or uncertain |
+| conditional reconstruction | node coordinates and uncertainty under one tree and spatial model | internal coordinates are estimates, not sampled locations |
+| derived movement | branch distance and rate joined to branch time | a displacement is model-derived and does not identify a migration path |
+| display geometry | projected markers, segments, wrapping, clipping | geometry may alter appearance without changing the scientific record |
+| rendered map | HTML, vector, or raster presentation | visual prominence is not support, certainty, or effect size |
+
+A reviewer must be able to move backward from any line on the map to its
+geometry row, movement row, endpoint estimates, and admitted observations.
+Projection, antimeridian handling, and line simplification belong to the
+display contract; they must never rewrite the underlying coordinate ledger.
 
 ## Owned Review Surfaces
 

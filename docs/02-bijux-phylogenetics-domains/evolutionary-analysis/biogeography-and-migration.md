@@ -4,7 +4,7 @@ audience: public
 type: explanation
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Biogeography And Migration
@@ -26,6 +26,22 @@ flowchart LR
 
     inputs --> model --> nodes --> branches --> population --> claim
 ```
+
+## Separate State, Opportunity, And Process
+
+A migration claim crosses three inferential layers. Collapsing them produces
+the common error of reading reconstructed changes as observed movement rates.
+
+| Layer | Governing evidence | Defensible claim | Claim that remains unsupported |
+| --- | --- | --- | --- |
+| state | admitted tip regions, state vocabulary, node probabilities | a region is conditionally preferred at a node | an ancestor was observed in that region |
+| opportunity | dated branches, occupied source states, allowed routes, time strata | a transition could contribute under the model | every route was equally available or sampled |
+| process | rate parameterization, exposure, constraints, fitted model | transition intensity under the declared process | an empirical movement frequency independent of the model |
+| event summary | parent/child uncertainty, branch identity, event rule | a branch satisfies the declared reconstructed-event rule | a witnessed dispersal event or causal mechanism |
+
+The opportunity population is especially important. Counts must not be
+compared across regions, time bins, or tree sets unless eligible branches,
+exposure, exclusions, and failed reconstructions remain visible.
 
 ## Choose The Biogeographic Contract
 
