@@ -4,7 +4,7 @@ audience: public
 type: study-guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # PCM2 Diagnostics And Open Boundaries
@@ -53,10 +53,11 @@ The longevity signal fit agrees closely across implementations:
 | λ=0 likelihood-ratio statistic | 41.030418693040 | 41.030418692855 |
 | likelihood-ratio p-value | 1.498782717 × 10⁻¹⁰ | 1.498782717 × 10⁻¹⁰ |
 
-This supports strong phylogenetic structure for the governed response, taxa,
-tree, bounds, and likelihood convention. It does not certify the downstream
-regression, establish a causal mechanism, or imply that every covariance
-family is adequate.
+Under the registered model, the fitted λ is about 0.803 and the λ=0 comparison
+is rejected at the recorded p-value. This supports a nonzero-signal conclusion
+for the governed response, taxa, tree, bounds, and likelihood convention. It
+does not turn λ into a causal fraction, certify the downstream regression, or
+imply that every covariance family is adequate.
 
 ## Residual Diagnostics Use Named Scales
 
@@ -118,6 +119,20 @@ The boundary closes only when the record contains:
 Neighboring PGLS or continuous-mode results cannot be borrowed to fill this
 gap. The boundary register is the evidence: it names what is absent and what
 would make the comparison reviewable.
+
+## Distinguish The Four Review Outcomes
+
+| Surface | Present outcome | Why it matters |
+| --- | --- | --- |
+| signal scalar observations | corresponding within registered tolerances | supports only the named λ and λ=0 claim |
+| estimated-λ residual correlation | `mismatch_unexplained` in the aggregate ledger | comparable values exist and violate the registered rule |
+| aggregate ancestral vectors | `mismatch_unexplained` under their exact rule | named-node bundle tolerance does not erase broader vector differences |
+| intercept sweep | `not_comparable` | required aligned execution and observation rows do not exist |
+
+The last two states are not synonyms. A mismatch requires comparable
+observations that disagree; `not_comparable` records that the comparison
+cannot yet be made. Their resolution work therefore starts at different
+owners.
 
 ## What PCM2 Supports
 

@@ -31,6 +31,22 @@ early-burst fitting, one likelihood-ratio comparison, ancestral vectors, and
 one residual diagnostic. Those rows remain scientific debt; favorable focused
 bundle verdicts do not remove them.
 
+## Select Evidence From The Claim
+
+| Intended statement | Required focused bundles | Additional record that must remain visible |
+| --- | --- | --- |
+| baseline GLS correspondence | `evidence-001` population plus `evidence-002` | baseline model identity and diagnostics |
+| effect of fitted phylogenetic covariance on the regression | `evidence-002`, `evidence-003`, and `evidence-005` | both coefficient/likelihood records and the unresolved residual observation |
+| longevity phylogenetic signal | `evidence-004` | response/tree identity, λ bounds, zero-signal rule, and tolerance |
+| Brownian or OU mode comparison | `evidence-006` through `evidence-008` | corresponding aggregate rows and complete candidate denominator |
+| early-burst correspondence | `evidence-006` through `evidence-008` | unresolved transform, fitted-mode, and likelihood-ratio scalar rows |
+| ancestral correspondence | `evidence-009` | model-specific clade keys plus broader unresolved vector rows |
+| complete source-workflow coverage | all ten bundles | `evidence-010` remains `not_comparable` and the 12 mismatches remain in scope |
+
+The table prevents a favorable claim-scoped verdict from being reused for a
+broader model family. In particular, evidence for the baseline-to-PGLS slope
+change does not establish early-burst transformation or ancestral parity.
+
 ## Keep The Two Ledgers Separate
 
 | Ledger | Unit | Status vocabulary | Appropriate use |

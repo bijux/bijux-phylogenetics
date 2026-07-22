@@ -4,7 +4,7 @@ audience: public
 type: study-guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # PCM2 Model Comparisons And PGLS
@@ -29,6 +29,25 @@ flowchart LR
     inputs --> pgls --> ledger
     inputs --> transforms --> modes --> ledger
 ```
+
+## Hold The Estimand Fixed Before Comparing Values
+
+A coefficient can be compared only after the population, response, design
+column, and residual covariance are identified. The baseline and PGLS slope
+both describe `social_group_size`, but they are estimates under different
+error models.
+
+| Component | Baseline GLS | Pagel-λ PGLS | Comparison consequence |
+| --- | --- | --- | --- |
+| admitted observations | governed 75-species population | same governed population | population change is not the explanation for the slope difference |
+| mean structure | shared response and predictor formula | shared response and predictor formula | coefficient labels address the same design column |
+| residual covariance | independence model | tree-derived covariance with fitted λ | uncertainty, weighting, coefficient, and likelihood can all change |
+| model identity | baseline likelihood and diagnostics | λ bounds, transformed covariance, likelihood and diagnostics | both records must travel with any coefficient comparison |
+
+The observed slope change is scientifically interpretable because the shared
+parts and changed covariance are explicit. Similar column names from an
+unreconciled dataset or different likelihood convention would not support the
+same comparison.
 
 ## The Regression Result
 

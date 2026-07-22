@@ -4,7 +4,7 @@ audience: public
 type: study-guide
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # PCM2: Primate PGLS And Signal
@@ -41,6 +41,25 @@ flowchart LR
 PGLS changes the residual covariance model. It does not simply add a
 “phylogenetic correction” flag to ordinary regression, and it does not make
 the fitted relationship causal.
+
+## What PCM2 Adds Beyond PCM1
+
+PCM1 established the admitted primate population and a signal/ancestral
+comparison. PCM2 keeps that population fixed while changing the model layer.
+This lets the study ask whether a result changes because covariance changed,
+rather than because different taxa or traits entered the fit.
+
+| Analytical move | New question | Evidence required |
+| --- | --- | --- |
+| independent GLS → Pagel-λ PGLS | how do coefficients and uncertainty change when residual covariance follows the tree? | same response/design population, covariance identity, fitted λ, coefficients, likelihood, residual diagnostics |
+| source tree → transformed trees | how do OU or time-dependent branch transformations change evolutionary-mode fits? | parent tree, transform convention and direction, parameters, branch totals, fitted objectives |
+| fitted modes → likelihood-ratio tests | does a more complex registered mode improve fit under the declared comparison? | same observations and likelihood convention, nesting, degrees of freedom, optimizer state, statistic |
+| fitted process → ancestral estimates | how do conditional node values change under Brownian or early-burst assumptions? | model and tree revision, clade-keyed node identity, estimates, uncertainty, complete node denominator |
+| model family → intercept sweep | can the source `corBlomberg` likelihood surface be reproduced? | aligned execution and observations that are currently absent |
+
+The study therefore contributes more than a list of coefficients. It exposes
+which conclusions remain stable under a covariance change and where transform,
+residual, ancestral, or coverage semantics still disagree.
 
 ## Evidence Decomposition
 
