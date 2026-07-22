@@ -13,6 +13,11 @@ A topology comparison answers a structural question about two identified
 trees. It does not compare likelihoods, branch-length accuracy, support
 calibration, or biological plausibility unless those are separately measured.
 
+Write the question before computing the distance: “Are these two trees equal
+with respect to `<rooted or unrooted splits>` over `<admitted taxa>`?” If the
+question cannot name both dimensions, a Robinson–Foulds value has no stable
+interpretation.
+
 ## Define The Comparison Population
 
 Record both tree identities, rootedness, taxon sets, duplicate-label checks,
@@ -40,6 +45,19 @@ The result records the input paths, shared taxa, rooted and unrooted
 Robinson–Foulds distances, normalized distance, and topology-equality flags.
 Persist the JSON when the full admitted population matters; the TSV is a
 compact projection for tabular review.
+
+Preserve an admission ledger beside that result:
+
+| Item | Required record |
+| --- | --- |
+| left and right trees | content identity, source, parsing state, and rooting interpretation |
+| label integrity | duplicate, empty, normalized, and unmatched labels |
+| overlap | taxa unique to each tree and the exact shared set |
+| comparison mode | rooted or unrooted split semantics and pruning policy |
+| denominator | eligible split count used by the raw and normalized distances |
+
+Without the unique-taxon lists and eligible-split denominator, a normalized
+distance cannot be audited or compared with another run.
 
 ## Interpret Distance In Context
 
@@ -80,3 +98,8 @@ changes the denominator and prevents review of search or sensitivity coverage.
 Accept a topology claim only when input identity, rooting, taxon admission,
 comparison mode, eligible split denominator, and result all remain linked.
 Create a new comparison record whenever any of those facts changes.
+
+State the accepted conclusion at the same resolution as the computation. For
+example: “the trees have the same unrooted topology over the 68 shared taxa”
+is reviewable; “the analyses agree” silently adds branch lengths, support,
+sampling, and method quality that RF distance did not inspect.

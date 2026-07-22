@@ -13,6 +13,10 @@ A report is a review view over identified scientific objects. It does not
 become the owner of the tree, alignment, trait model, or claim merely because
 it presents them together.
 
+Use this workflow when structured results already exist and the next consumer
+needs a navigable human review surface. Do not use report rendering as the
+analysis step or as a recovery mechanism for missing machine output.
+
 ## Build A Linked Review Surface
 
 ```python
@@ -80,6 +84,20 @@ symbol.
 A consumer should be able to ignore the HTML and still reconstruct the result
 contract. Conversely, opening the HTML should make unresolved warnings and
 missing components visible rather than requiring access to terminal history.
+
+The handoff is accepted only if all four traversals succeed:
+
+| Traversal | Acceptance condition |
+| --- | --- |
+| report to value | every displayed analytical value resolves to one structured owner and field |
+| value to computation | the result resolves to inputs, population, method, configuration, and status |
+| manifest to file | every declared path exists in the accepted package and has the expected role |
+| warning to presentation | partial, missing, excluded, or uncertain state remains visible at the point of interpretation |
+
+Presentation-only text may explain a structured result; it cannot be the sole
+location of a coefficient, support value, ancestral state, model verdict, or
+scientific limitation. If a reviewer must scrape HTML to recover one of those
+facts, return the package to its analytical owner.
 
 When a source result changes, create a newly identified report package and
 revalidate every dependent view. Do not overwrite the older package and imply

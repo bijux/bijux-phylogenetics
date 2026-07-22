@@ -33,6 +33,39 @@ flowchart TB
 The arrows show increasing context, not a universal promotion ladder. A method
 can have strong numerical tests without belonging to a published study.
 
+## Find The Weakest Required Edge
+
+Quality review is a dependency problem. Begin with the statement being relied
+on, trace every required edge to its owner, and stop at the first missing,
+failed, stale, or contradictory record.
+
+```mermaid
+flowchart LR
+    claim["Bounded claim"] --> observations["Required observations"]
+    observations --> result["Structured result"]
+    result --> execution["Execution and diagnostics"]
+    execution --> inputs["Admitted inputs"]
+    observations --> rule["Acceptance rule"]
+    claim --> freshness["Freshness state"]
+```
+
+The claim is no stronger than its weakest required edge. Passing code tests
+cannot supply missing study observations; a current evidence verdict cannot
+repair an unidentifiable input; a complete result cannot satisfy a tolerance
+that failed. This rule also prevents a large green repository aggregate from
+overriding the local record that actually owns the decision.
+
+Use the nearest owner to describe the outcome precisely:
+
+| Weak edge | Honest outcome |
+| --- | --- |
+| input identity or admission | population is unresolved; do not interpret the fit |
+| execution or diagnostics | run is refused, failed, partial, or unsuitable for the claim |
+| structured result contract | value cannot be consumed reliably |
+| comparison observation or rule | correspondence is mismatched or not comparable |
+| freshness | historical evidence exists but does not support the current revision |
+| no weak edge in the declared graph | cite the bounded claim with its denominator and limits |
+
 ## Read By Question
 
 | Question | Page |
