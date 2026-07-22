@@ -17,6 +17,23 @@ claims, but no bundle yet retains comparable lecture and Bijux observations;
 every current bundle verdict
 is `not_comparable`.
 
+## Why PCM3 Matters
+
+PCM3 tests whether a multivariable comparative analysis retains meaning while
+its design is deliberately re-expressed. It separates two questions that are
+often confused:
+
+| Scientific question | Quantity that must remain identifiable |
+| --- | --- |
+| how does log longevity vary with group size within each dimorphism category? | category-specific intercepts and slopes derived from the exact design columns |
+| how does phylogenetic covariance change uncertainty and fit for that same mean structure? | Martins covariance parameterization, tree identity, likelihood, and diagnostics |
+
+The sequence is valuable evidence architecture even before numerical closure:
+each formula transformation has its own claim address, required outputs, and
+comparison keys. The present record proves that the proposed reproduction is
+finite and auditable. It does not prove that any coefficient, test, or
+covariance estimate has been reproduced.
+
 ```mermaid
 flowchart LR
     raw["longevity ~ group size<br/>+ dimorphism"]

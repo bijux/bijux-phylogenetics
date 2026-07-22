@@ -14,6 +14,23 @@ posterior quantities. Its governed records currently stop at source identity,
 claim decomposition, and executable contract wrappers. They do not contain a
 governed posterior result or numerical comparison.
 
+## What PCM5 Is Designed To Establish
+
+PCM5 asks whether phylogenetic mixed-model evidence remains coherent when the
+response is no longer Gaussian and when reported quantities are derived from
+posterior draws. That creates three coupled proof problems:
+
+| Proof problem | Why it is scientifically material |
+| --- | --- |
+| generalized model identity | Poisson and multinomial families, links, baselines, offsets, and latent scales define different estimands |
+| random-effect identity | phylogenetic, species, residual, and family-specific components require distinct covariance and variance meanings |
+| derived posterior identity | signal ratios, probabilities, ancestral summaries, and plots must be computed from the same retained draw population |
+
+The nine dossiers partition those problems so a favorable low-level check
+cannot promote an unobserved derived claim. At the current boundary they show
+exactly which source analysis and transformations a future comparison must
+own; they supply no posterior observations and therefore no numerical evidence.
+
 ```mermaid
 flowchart LR
     inputs["Source scripts · data<br/>tree and workspace"]

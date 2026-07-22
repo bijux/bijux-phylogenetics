@@ -14,6 +14,25 @@ summaries, convergence diagnostics, and phylogenetic variance estimates. The
 checked-in dossiers currently govern the claim map and source boundary; they do
 not retain a completed reference-versus-Bijux comparison.
 
+## What PCM4 Is Designed To Establish
+
+PCM4 asks whether a Gaussian trait model can separate its population-level
+effects from phylogenetic and residual variation while retaining a trustworthy
+posterior. Its evidence roles are distinct:
+
+| Evidence role | Required scientific object |
+| --- | --- |
+| establish the analysis population | reconciled cichlid observations, ordered tree tips, and exclusions |
+| establish posterior usability | identified chains, retained draws, convergence, autocorrelation, and effective sample size |
+| establish fixed-effect correspondence | aligned coefficient parameters under matched design and priors |
+| establish variance correspondence | phylogenetic and residual components on explicitly matched scales |
+| establish a comparator | Brownian PGLS quantities linked to the same population and covariance identity |
+
+The current dossiers make these dependencies and absences reviewable. Their
+evidentiary contribution is a claim-complete closure contract, not a posterior
+result. Adjacent Bayesian or PGLS capability cannot satisfy a row until the
+PCM4 population, priors, draws, and parameter identities are governed together.
+
 ```mermaid
 flowchart LR
     source["Lund source, data,<br/>tree and workspace"]
