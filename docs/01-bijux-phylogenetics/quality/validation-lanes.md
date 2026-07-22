@@ -4,13 +4,29 @@ audience: mixed
 type: reference
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Validation Lanes
 
 Use the narrowest truthful lane name when describing confidence. Lanes are
 orthogonal proof families; passing one never silently grants another.
+
+## Choose Proof From The Failure You Must Exclude
+
+| Decision at risk | Failure that matters | Owning proof lane |
+| --- | --- | --- |
+| accept an input or bundle | malformed or semantically unidentifiable structure | structural |
+| integrate a public surface | documented type, status, or failure behavior changes | contract |
+| rely on a computed quantity | invariant or reference budget is violated | numerical |
+| hand a workflow result downstream | components lose identity, status, or artifact linkage | integration |
+| make a corpus-scoped performance claim | named cases miss thresholds or disappear from the denominator | benchmark |
+| cite a study statement | claim dependencies, observations, verdict, or freshness are absent | evidence |
+| publish a repository revision | packages, schemas, docs, assurance, or release identity disagree | release |
+
+Run additional lanes when the decision depends on them, but do not count
+unrelated green checks as substitutes. A parser schema test cannot exclude a
+wrong likelihood, and a benchmark cannot exclude a packaging defect.
 
 | Lane | Core question | Typical proof | Does not prove |
 | --- | --- | --- | --- |

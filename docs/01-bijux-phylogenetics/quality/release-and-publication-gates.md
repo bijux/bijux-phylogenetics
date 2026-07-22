@@ -4,7 +4,7 @@ audience: public
 type: explanation
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Release And Publication Gates
@@ -14,6 +14,20 @@ distributions, command and API contracts, documentation, artifacts,
 benchmarks, and 43 Evidence Book bundles. Publication is safe only when those
 surfaces agree about identity, ownership, capability, limitations, and
 scientific status.
+
+## Separate Software Publication From Scientific Acceptance
+
+| Decision | Core question | A favorable decision means | It does not mean |
+| --- | --- | --- | --- |
+| software publication | may this identified source and distribution candidate be published under repository policy? | public packages, interfaces, documentation, assurance records, and bounded limitations agree | every scientific claim matched |
+| result acceptance | may this identified analysis result be used for its declared purpose? | population, method, diagnostics, outputs, and limitations satisfy the consumer rule | the repository release is current or generally validated |
+| claim publication | may this exact scientific statement be cited now? | governed observations support the claim verdict and freshness is current | neighboring methods or datasets inherit the verdict |
+
+A software candidate can be publishable while openly carrying
+`not_comparable` study claims, provided those boundaries are current and no
+public text implies missing evidence exists. Conversely, a historically
+matched study claim does not authorize publishing a candidate whose wheel,
+schema, documentation, or version identity is contradictory.
 
 ```mermaid
 flowchart TD

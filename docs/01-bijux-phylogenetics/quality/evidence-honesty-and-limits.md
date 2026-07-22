@@ -4,7 +4,7 @@ audience: public
 type: explanation
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Evidence Honesty And Limits
@@ -13,6 +13,26 @@ Evidence earns trust when readers can see both what it supports and where it
 stops. The project therefore treats unexplained mismatches, non-comparable
 claims, open follow-through, and external blockers as useful information rather
 than wording problems.
+
+## Write Every Claim With A Positive And A Boundary
+
+A complete public statement has two inseparable clauses:
+
+```text
+supported statement = observed subject + population + method + rule + verdict
+claim boundary      = exclusions + unresolved observations + freshness scope
+```
+
+For example, “the named PGLS coefficients agree within their registered
+tolerances on the 75-species primate fixture” is incomplete unless it also
+preserves the unresolved early-burst rows and non-comparable intercept sweep
+when the surrounding sentence describes PCM2 more broadly. The boundary is
+not defensive wording; it prevents a local observation from being promoted to
+an unobserved method family.
+
+When space is limited, narrow the positive clause rather than deleting the
+boundary. A precise one-sentence claim is stronger than a broad headline whose
+qualifiers exist only on another page.
 
 ## Claim Anatomy
 
