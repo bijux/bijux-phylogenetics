@@ -13,6 +13,19 @@ Reproducibility is a chain of identified records. A command line in prose is
 useful, but it is not enough to prove which inputs, runtime, engines,
 configuration, outputs, and acceptance decision produced a scientific claim.
 
+## Declare The Reproduction Target Before Execution
+
+| Target | Identity held fixed | Permitted variation | Comparator |
+| --- | --- | --- | --- |
+| deterministic artifact replay | inputs, configuration, producer, environment, and serialization contract | none declared | byte equality and complete inventory |
+| semantic result replay | scientific inputs, estimand, model, and observation keys | harmless representation or environment variation | structural or numerical rule |
+| stochastic correspondence | data-generating or posterior target, seeds or chain plan, estimator, and draw population | individual histories or samples | distributional budgets and diagnostics |
+| reference reproduction | aligned estimand, population, parameterization, and both execution identities | implementation-specific representation | registered observation and tolerance |
+
+Choose one target before seeing the new output. Downgrading byte replay to
+visual similarity or widening a numerical budget afterward records a new
+comparison, not a successful reproduction of the original contract.
+
 ## The Reproduction Chain
 
 ```mermaid

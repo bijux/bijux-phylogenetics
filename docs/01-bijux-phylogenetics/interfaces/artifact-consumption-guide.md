@@ -14,6 +14,22 @@ which run the files belong to; structured results preserve values and status;
 tables, figures, and reports project selected parts for a purpose. Opening the
 most polished figure first reverses the trust order.
 
+## Apply The Refusal Screen First
+
+Refuse the bundle for analytical consumption before reading headline values
+when any of these conditions holds:
+
+- no manifest identifies the producer contract and run;
+- the schema version is unknown or semantically incompatible;
+- input, runtime, or external-engine identity is missing;
+- expected and present outputs cannot be reconciled;
+- terminal status, warnings, or exclusions contradict a summary;
+- governed bytes fail path, size, or checksum validation.
+
+Refusal is purpose-specific. The same bundle may remain useful for failure
+diagnosis, parser development, or historical inspection, but the consumer
+acceptance record must name that narrower use and exclude scientific values.
+
 ```mermaid
 flowchart LR
     manifest["Manifest<br/>identity and inventory"]

@@ -4,7 +4,7 @@ audience: public
 type: reference
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # Artifact Contracts
@@ -13,6 +13,25 @@ An artifact remains useful when it can be interpreted after the producing
 process, machine, and working directory are gone. The contract is therefore
 larger than a filename: it combines identity, provenance, structure, status,
 integrity, inventory, and relationships between records.
+
+## Treat The Bundle As An Immutable Record Graph
+
+Files in one directory are not related merely by proximity. The manifest must
+name every governed edge: input to execution, execution to result, result to
+projection, and projection to claim. Once published or handed off, those
+identities are immutable.
+
+| Change discovered after production | Correct action |
+| --- | --- |
+| report or figure projected the wrong field | create a corrected projection linked to the unchanged result |
+| parser or normalization changed scientific meaning | create a new result and manifest from retained native output, or rerun when required |
+| input, model, seed, engine, or execution policy changed | create a sibling run with a new identity |
+| checksum or inventory contradicts retained bytes | reject the affected identity and investigate; do not refresh the manifest in place |
+| evidence mapping or tolerance changed | create a new adjudication record and reassess freshness |
+
+This preserves history while allowing correction. Overwriting the original
+manifest makes it impossible to tell whether a later review examined the same
+run.
 
 ```mermaid
 flowchart TD
