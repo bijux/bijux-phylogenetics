@@ -29,6 +29,19 @@ the residual claim; it also warns readers not to assume identical diagnostic
 semantics when interpreting the fit. It does not erase an exact input identity
 or silently become evidence against a different model surface.
 
+### Coefficients And Diagnostics Can Disagree Honestly
+
+Two implementations can produce nearly identical coefficients and likelihoods
+while exposing different residual vectors. Raw response-scale residuals,
+normalized residuals, and phylogenetically transformed residuals are different
+objects even when they come from the same fitted mean. A diagnostic computed
+from one cannot be compared directly with a diagnostic computed from another.
+
+PCM2 therefore preserves the favorable coefficient correspondence and the
+unexplained residual correlation mismatch at the same time. That is not an
+inconsistent verdict: it localizes agreement at the fit-summary surface and
+an unresolved definition or construction at the residual surface.
+
 ```mermaid
 flowchart TB
     fit["Shared fitted model"]

@@ -35,6 +35,20 @@ reversed early-/late-burst transform points to the transform boundary rather
 than the shared trait table. It does not prove the cause, but it narrows where
 resolution must begin.
 
+### Why The Slope Can Change Without Changing The Data
+
+Ordinary GLS gives the residual vector an independence structure. Under PGLS,
+closely related species contribute correlated information, so the fit no
+longer treats every tip as an equally independent replicate. The coefficient
+is re-estimated under that covariance; it is not obtained by subtracting a
+phylogenetic component from the baseline slope.
+
+This distinction is why PCM2 retains both accepted fits. The baseline result
+describes the association under independent residuals, while the Pagel-λ
+result describes it under fitted tree-structured residuals. Their difference
+is scientifically meaningful only because population, response, predictor,
+and mean design remain fixed.
+
 ## Correspondence And Model Adequacy Are Separate Decisions
 
 Parity establishes whether implementations answer the same registered

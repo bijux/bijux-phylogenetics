@@ -57,6 +57,20 @@ PGLS changes the residual covariance model. It does not simply add a
 “phylogenetic correction” flag to ordinary regression, and it does not make
 the fitted relationship causal.
 
+### Independence Is Also A Model
+
+Baseline GLS assumes that, after accounting for the predictors, one species'
+residual contains no information about another's. PGLS replaces that identity
+covariance with a tree-derived covariance whose strength is estimated or
+declared. The observations and printed formula can stay fixed while the
+effective weighting, uncertainty, likelihood, and coefficient estimates all
+change.
+
+PCM2 uses that controlled change to ask whether the social-group-size
+association is sensitive to shared ancestry. The smaller PGLS slope is not a
+“phylogeny removed” coefficient; it is the coefficient under a different
+residual dependence model for the same governed population.
+
 ## Keep Cross-Implementation And Cross-Model Contrasts Orthogonal
 
 PCM2 contains two comparison axes. They answer different questions and use
