@@ -40,6 +40,25 @@ flowchart TB
     parsimony --> review
 ```
 
+## Read The Map As A Set Of Decisions
+
+The same tree may appear in several domains, but each domain asks a different
+question and owns a different record:
+
+| Encounter with the tree | Decision | Record that answers it |
+| --- | --- | --- |
+| intake | are topology, rooting, lengths, labels, and annotations admissible? | validated tree identity and reconciliation ledger |
+| inference | which topology or parameter values optimize or sample the declared objective? | method result, search or chain state, and diagnostics |
+| evolutionary analysis | what does the tree imply for trait covariance, ancestral quantities, or histories? | estimand-specific result with model and population |
+| assurance | does the result satisfy invariants, recover known behavior, remain stable, or correspond to an independent reference? | check, benchmark, sensitivity, or evidence observation |
+| reporting | which accepted result is projected for a consumer? | table or figure linked to its structured source and omissions |
+
+Moving an object between domains does not transfer authority. Intake can
+establish that a branch length is finite, but only the consuming method can say
+whether its units and assumptions are suitable. Inference can produce a
+numerically complete result, but only diagnostics and a declared claim can
+establish whether that result is usable evidence.
+
 ## Track The Scientific Object That Changes
 
 Most cross-domain errors come from carrying a value forward after the object

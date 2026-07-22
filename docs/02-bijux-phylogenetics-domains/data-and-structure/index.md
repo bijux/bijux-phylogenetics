@@ -30,6 +30,25 @@ shared object contracts. Continue with
 [Tree Operations And Identity](tree-operations-and-identity.md) before
 rerooting, pruning, extracting, rescaling, or comparing trees.
 
+## Identify Data Beyond Its File
+
+A checksum answers whether bytes changed. A scientific identity must also
+answer what those bytes mean and which observations will be analyzed:
+
+| Identity dimension | Example question |
+| --- | --- |
+| content | are these exactly the source bytes or records that were admitted? |
+| semantics | do branch lengths mean time or substitutions, and do `0`, `?`, and gaps have declared state meanings? |
+| population | which taxa, sites, characters, trees, or trait rows are included and excluded? |
+| order and correspondence | which matrix row, partition interval, node, or branch matches each identifier? |
+
+Two Newick files can encode the same topology while differing in rooting,
+branch scale, support semantics, or tip namespace. Conversely, a serializer
+can change whitespace and quoting without changing the admitted scientific
+object. Record both the source representation and the normalized semantic
+identity so exact-file reproduction and scientific correspondence remain
+separate, testable claims.
+
 ## Choose The Data Contract
 
 | Starting material | Read first | Decision owned there |
