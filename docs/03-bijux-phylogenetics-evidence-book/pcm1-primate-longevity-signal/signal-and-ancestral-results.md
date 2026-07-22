@@ -15,6 +15,22 @@ governed R reference and Bijux on fixed, reconciled inputs. The aggregate
 contain 16 exact `matched` rows and 15 `matched_with_tolerance` rows. Visual and
 artifact-governance claims remain `not_comparable` by design.
 
+## Three Questions, Three Evidence Roles
+
+PCM1 is not one omnibus “phylogenetics parity” test. Its numerical ledger
+answers three connected but distinct questions:
+
+| Question | Evidence role | Conclusion at the current boundary |
+| --- | --- | --- |
+| Do R and Bijux fit the same lambda-defined covariance problem on the governed population? | compare lambda, log likelihood, lambda-zero contrast, and selected covariance entries | the registered scalar surfaces correspond within their declared tolerances |
+| Do both implementations reconstruct the same conditional values at the same internal clades? | align 74 nodes by descendant taxa and compare point and interval estimates | the registered ancestral surfaces correspond to floating-point scale |
+| Do derived summaries preserve those reconstructed states? | compare one clade-keyed MRCA estimate and two branch-change counts | the named summaries correspond, conditional on the same reconstruction |
+
+Each question consumes the accepted 75-taxon preparation state. None answers
+whether the biological model is true, whether the reconstructed values are
+historical observations, or whether the result generalizes beyond the
+governed data and configuration.
+
 ```mermaid
 flowchart TD
     inputs["75-tip rooted ultrametric tree<br/>75 aligned longevity values"]
@@ -168,6 +184,12 @@ The block registry is more detailed: 10 `verified`, 6
 `seeded_input_only`, and 1 `workflow_only`. The scalar ledger contains the 31
 numerically adjudicated rows. Do not mix block status counts with claim
 verdicts or the bundle verdict.
+
+The bundle verdict is driven by the complete required scalar population, not
+by the most favorable row. Because 15 required rows use tolerance-based
+agreement, the aggregate numerical claim cannot be called exact even though
+16 rows match exactly. Plot-only and artifact-only blocks remain visible as
+tracked surfaces, but they do not enter the 31-row numerical denominator.
 
 ## Separate Statistical Evidence From Historical Interpretation
 

@@ -15,6 +15,31 @@ one duplicated species record is aggregated and two tree tips absent from the
 trait table are removed. Eight focused evidence bundles make every boundary
 reviewable before signal or ancestral inference begins.
 
+## Why Preparation Is Part Of The Evidence
+
+Pagel's lambda and ancestral reconstruction both depend on the correspondence
+between trait rows and tree tips. A parsing error changes a trait value; an
+aggregation decision changes the species observation; pruning changes the
+covariance matrix; reordered taxa can attach correct values to the wrong
+species. Numerical agreement downstream cannot diagnose or repair those
+identity failures.
+
+```mermaid
+flowchart LR
+    cell["Workbook cell"] --> species["Species observation"]
+    species --> join["Tree–trait row"]
+    tip["Tree tip and branch lengths"] --> join
+    join --> covariance["Phylogenetic covariance"]
+    covariance --> fit["Lambda and ancestral fit"]
+    fit --> claim["Bounded PCM1 claim"]
+```
+
+The eight preparation bundles therefore do more than show that files load.
+Together they establish the analytical population and the object identity on
+which every later scalar comparison depends. Their claim scope stops at that
+handoff: they cannot establish the fitted model merely because the model uses
+their accepted inputs.
+
 ```mermaid
 flowchart LR
     workbook["Raw workbook<br/>76 rows"]
@@ -165,6 +190,12 @@ Before fitting a model, a consumer should verify:
 Matching filenames are insufficient. A downstream result should retain input
 checksums, reconciliation state, and model-specific exclusions in its own
 manifest.
+
+Reject the handoff if any count is reported without its members, if pruning is
+recoverable only from prose, if tree and table order were assumed rather than
+checked, or if an internal node is identified only by a local integer. Those
+conditions can preserve the headline number 75 while changing the actual
+population or ancestral target.
 
 ## Claim Boundary
 
