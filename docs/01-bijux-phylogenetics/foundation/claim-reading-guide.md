@@ -70,6 +70,25 @@ For example, a bounded PCM2 claim can be read as follows:
 The contract supports only the intersection of those fields. It does not imply
 that every PGLS model, taxon set, covariance convention, or output agrees.
 
+## Transfer A Claim Only To A Narrower Contract
+
+A governed claim can support a downstream statement only when the downstream
+contract is contained within every material dimension of the source claim.
+
+| Proposed transfer | Valid only when |
+| --- | --- |
+| one observation from a multi-observation claim | the observation is registered, eligible, adjudicated, and carries the same rule and revision |
+| one taxon subset from a study population | the claim explicitly supports subset interpretation or the analysis is rerun on a newly identified population |
+| one model from a model family | the exact parameterization and result are inside the governed claim |
+| a newer runtime or reference version | freshness review establishes that every material dependency remains applicable |
+| a scientific statement from a parity result | a claim record explicitly consumes that parity observation and preserves its limitations |
+
+Changing the population, estimand, method, observation, acceptance rule, or
+revision creates a different contract. Similarity, monotonicity, or intuitive
+scientific plausibility is not an entailment rule. When containment cannot be
+shown, cite the original narrower claim as context and leave the new statement
+unevidenced until it has its own record.
+
 ## Qualifiers That Change Meaning
 
 | Qualifier | Question it must answer |

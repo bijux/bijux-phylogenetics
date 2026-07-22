@@ -61,6 +61,33 @@ Copying a report into the Evidence Book does not satisfy these requirements.
 Promotion requires a registered bundle whose machine-readable records connect
 the claim to the exact runtime or external computation.
 
+## Promotion Creates A Child Record
+
+Evidence promotion does not mutate a runtime result into a different kind of
+truth. It creates a claim record that consumes an immutable result and adds
+scientific source, comparison, adjudication, and freshness identities.
+
+```mermaid
+flowchart LR
+    result["Runtime result<br/>status and diagnostics"] --> artifact["Immutable artifact<br/>identity and inventory"]
+    artifact --> observation["Claim observation<br/>normalization and rule"]
+    observation --> verdict["Bounded verdict<br/>limitations and freshness"]
+
+    artifact -. remains runtime-owned .-> artifact
+    verdict -. links, never rewrites .-> artifact
+```
+
+| Change after promotion | Required action |
+| --- | --- |
+| result bytes, schema, or diagnostics change | create a new result identity and reopen dependent observations |
+| normalization or tolerance changes | create a new comparison rule and adjudication record |
+| claim wording or population changes | register a new or revised claim dependency set |
+| only explanatory prose changes | preserve machine values, verdict, limitations, and links exactly |
+
+This child relationship preserves both histories: the runtime record explains
+what happened, while the Evidence Book explains which bounded statement may
+consume it. Editing one to resemble the other destroys the audit boundary.
+
 ## Stop At The Strongest Record Actually Owned
 
 Evidence accumulates by adding specific records. It does not advance merely

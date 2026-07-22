@@ -63,6 +63,25 @@ set, excluded records, order used by matrices, and any mapping to stable node
 or branch identifiers. A result is ambiguous when those decisions exist only
 in an in-memory preprocessing step.
 
+## Scientific Identity Is More Than A Checksum
+
+A checksum identifies bytes. A scientific identity also identifies how those
+bytes were interpreted and which population entered the method.
+
+| Identity dimension | Example | Why it is material |
+| --- | --- | --- |
+| content | source and derived artifact digests | detects byte-level change |
+| schema and units | columns, alphabets, state vocabularies, branch/time units | determines what values mean |
+| population | admitted and excluded taxa, sites, records, trees, or draws | determines the result denominator |
+| ordering | taxon, state, partition, matrix, parameter, and draw order | determines positional correspondence |
+| transformation | pruning, aggregation, scaling, coding, rooting, normalization | defines the derived scientific object |
+| lineage | source identity, producer, configuration, parent objects | explains how the object can be reconstructed and invalidated |
+
+Two files may share a semantic identity despite lossless serialization
+differences, but only when a declared equivalence rule proves that fact. Two
+files with the same labels and row count may still be scientifically different
+because their ordering, units, exclusions, or transformations differ.
+
 ## Define The Decision Target Before The Method
 
 A method name is not a scientific question. Before selecting an inference or
