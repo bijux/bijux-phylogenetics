@@ -4,7 +4,7 @@ audience: public
 type: reference
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # MrBayes And BEAST Correspondence
@@ -14,6 +14,21 @@ analysis preparation, governed execution, native artifact parsing, posterior
 diagnostics, tree-set review, and evidence packaging. The record always says
 whether an analysis was only prepared, parsed from existing outputs, or
 executed by the current workflow.
+
+## A Posterior Claim Begins With Its Sample Population
+
+| Required identity | Review requirement |
+| --- | --- |
+| analytical target | likelihood, priors, clock or tree prior, topology treatment, and monitored parameters |
+| execution population | independent chains, resumed segments, seeds, generations or states, and terminal status |
+| selected posterior | burn-in, thinning or subsampling, failed-chain policy, and retained draw/tree identities |
+| diagnostic population | exact series, estimator, threshold, and chains contributing to ESS, drift, or convergence |
+| reported quantity | parameter or clade key, transformation, estimator, interval rule, units, and retained denominator |
+
+A posterior mean without this lineage is not portable evidence. Similar means
+can arise from different priors, chains, burn-in windows, transformations, or
+failed-sample policies. Compare values only after their sample populations and
+estimands align.
 
 ```mermaid
 flowchart LR

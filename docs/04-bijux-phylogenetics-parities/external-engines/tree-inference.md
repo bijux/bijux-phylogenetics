@@ -4,7 +4,7 @@ audience: public
 type: reference
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # IQ-TREE2 And FastTree Correspondence
@@ -14,6 +14,20 @@ bootstrap, and SH-aLRT procedures. FastTree owns approximate tree inference
 and its SH-like local support. Bijux gives both engines a common execution and
 review boundary without pretending that their models, searches, or support
 values are interchangeable.
+
+## Keep Within-Engine And Cross-Engine Questions Separate
+
+| Question | Comparison population | Valid conclusion |
+| --- | --- | --- |
+| did IQ-TREE2 or FastTree execute reproducibly? | repeated identified runs of the same engine contract | stability or variation under the retained configuration |
+| do two engine trees share topology? | reconciled taxa and splits from two complete parent bundles | structural agreement for this matrix and rooting policy |
+| do support annotations correspond? | clade-keyed values retaining each method label and scale | observed support relationship without estimand equivalence |
+| which engine is biologically more accurate? | requires known truth or independently governed benchmark evidence | not answered by cross-engine agreement alone |
+
+Two engines can agree because both recover the relevant structure, disagree
+because their declared models or searches differ, or agree on a wrong answer.
+The comparison record reports the observed relationship; accuracy requires a
+separate truth-bearing design.
 
 ## Choose The Command By Question
 

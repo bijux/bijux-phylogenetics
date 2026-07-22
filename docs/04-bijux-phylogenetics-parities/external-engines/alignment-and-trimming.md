@@ -4,7 +4,7 @@ audience: public
 type: reference
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-22
 ---
 
 # MAFFT And trimAl Correspondence
@@ -14,6 +14,20 @@ trimming. Bijux owns the reproducible handoff around those computations: input
 validation, named strategy selection, executable identity, captured process
 state, output validation, checksums, diagnostics, and the manifest consumed by
 tree inference.
+
+## What Correspondence Means At This Boundary
+
+| Statement | Owner | Evidence required |
+| --- | --- | --- |
+| the input was admissible for the selected route | Bijux validation | identifier, alphabet, coding, exclusion, and source checks |
+| this alignment was computed | MAFFT execution through the Bijux adapter | executable identity, command, process state, and native alignment |
+| these columns were removed | trimAl execution through the Bijux adapter | policy, native command, input/output matrices, and site ledger |
+| the final alignment is the accepted inference input | workflow handoff | artifact checksum, taxa/order, sequence or codon state, partitions, and manifest link |
+| the alignment or trimming is biologically optimal | scientific study design | independent adequacy evidence not supplied by adapter completion |
+
+The correspondence claim is therefore about attributable execution and
+preserved handoff semantics. It is not a native reimplementation claim and it
+does not infer homology quality from a successful process.
 
 ```mermaid
 flowchart LR
