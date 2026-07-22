@@ -35,6 +35,24 @@ reversed early-/late-burst transform points to the transform boundary rather
 than the shared trait table. It does not prove the cause, but it narrows where
 resolution must begin.
 
+## Correspondence And Model Adequacy Are Separate Decisions
+
+Parity establishes whether implementations answer the same registered
+calculation. Model assessment asks whether that calculation is scientifically
+adequate for the data and question.
+
+| Correspondence state | Adequacy state | Defensible action |
+| --- | --- | --- |
+| established | acceptable under declared diagnostics | interpret the model within its population, assumptions, and uncertainty |
+| established | diagnostics or assumptions fail | retain the parity result but refuse or qualify the scientific model |
+| unresolved mismatch | apparently adequate in one implementation | investigate correspondence before transferring the result across implementations |
+| not comparable | unknown or unassessed | preserve the design boundary; make neither a parity nor adequacy claim |
+
+Matching coefficients cannot rescue residual misspecification, and favorable
+diagnostics in one runtime cannot resolve a transform mismatch. PCM2 therefore
+retains implementation verdicts, model comparisons, and diagnostic outcomes
+as linked records rather than reducing them to one score.
+
 ```mermaid
 flowchart LR
     inputs["75 species<br/>shared traits and tree"]

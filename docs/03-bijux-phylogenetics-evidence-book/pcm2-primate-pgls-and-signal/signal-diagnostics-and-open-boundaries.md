@@ -98,6 +98,26 @@ For any diagnostic comparison, preserve residual type, standardization,
 fitted-value scale, outlier rule, row exclusions, and covariance fit. A plot
 that looks similar is not a machine-verifiable observation contract.
 
+### Resolve A Residual Discrepancy At Its Definition
+
+The estimated-λ correlation mismatch must be investigated before changing its
+tolerance. The shortest defensible resolution path is:
+
+1. align the fitted observation order and exclusions;
+2. identify raw, normalized, studentized, or phylogenetically transformed
+   residuals in each implementation;
+3. identify the fitted-value scale and any centering or variance transform;
+4. recompute the diagnostic from retained row-level residual and fitted-value
+   vectors;
+5. compare the aligned vectors before comparing their correlation summary;
+6. retain the original mismatch and adjudicate a new observation under a
+   predeclared rule.
+
+If a deterministic scale transform fully explains the difference, the new
+claim may become `mismatch_explained`; it does not become exact agreement by
+renaming the residuals. If the row vectors differ after alignment, resolution
+must move upstream to the fitted model or residual construction.
+
 ## Ancestral Reconstruction Is Node-Indexed
 
 `evidence-009` records 74 internal nodes for both Brownian and early-burst

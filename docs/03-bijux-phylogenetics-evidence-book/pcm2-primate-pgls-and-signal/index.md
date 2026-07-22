@@ -57,6 +57,23 @@ PGLS changes the residual covariance model. It does not simply add a
 “phylogenetic correction” flag to ordinary regression, and it does not make
 the fitted relationship causal.
 
+## Keep Cross-Implementation And Cross-Model Contrasts Orthogonal
+
+PCM2 contains two comparison axes. They answer different questions and use
+different denominators.
+
+| Axis | Comparison | Quantity held fixed | Conclusion available |
+| --- | --- | --- | --- |
+| implementation correspondence | R baseline GLS versus Bijux baseline GLS | population, formula, independent covariance, likelihood convention | whether two implementations reproduce the registered baseline result |
+| implementation correspondence | R Pagel-λ PGLS versus Bijux Pagel-λ PGLS | population, formula, tree covariance parameterization, likelihood convention | whether two implementations reproduce the registered phylogenetic fit |
+| scientific model contrast | baseline GLS versus Pagel-λ PGLS within an accepted implementation record | population and mean design | how the estimate changes when residual covariance changes |
+| scientific model contrast | Brownian, OU, early-burst, and other registered modes | population, response, and declared comparison basis | how candidate evolutionary models differ when their identities are aligned |
+
+The fall in the social-group-size slope from roughly 3.59 to 1.66 is a
+cross-model scientific contrast. The close R–Bijux values within each model
+are correspondence observations. Subtracting the R baseline slope from the
+Bijux PGLS slope would cross both axes and would not isolate either question.
+
 ## What PCM2 Adds Beyond PCM1
 
 PCM1 established the admitted primate population and a signal/ancestral
