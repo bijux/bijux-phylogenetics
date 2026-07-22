@@ -29,6 +29,21 @@ flowchart TB
     covariance --> interpretation
 ```
 
+## The Design-Matrix Question In One View
+
+| Dimension | PCM3 contract |
+| --- | --- |
+| scientific object | primate longevity regressions whose rows, response scale, factor levels, contrasts, interaction columns, standardization, and Martins covariance must resolve together |
+| central idea | a familiar formula label is not an estimand; coding and transformation determine what every intercept, slope, contrast, and test means |
+| evidence role | decomposes a multivariable comparison into eight independently closable claims so a coefficient cannot hide a population, design, covariance, or hypothesis mismatch |
+| present conclusion | all eight manifests are `not_comparable`; they retain source, inputs, claim boundaries, checks, and explicit closure requirements but no governed primary numerical outputs |
+| relation to PCM1–PCM2 | inherits the need for a governed primate population and covariance identity, then adds design-matrix identity as a separate comparison gate |
+| forbidden inference | runtime support for regression or PGLS does not establish lecture coefficients, p-values, likelihoods, diagnostics, or parity |
+
+PCM3 is a governed comparison design, not a weak numerical result. Its evidence
+value is that it makes the missing denominator and estimand observable before
+any future values are allowed into a parity ledger.
+
 ## Scientific Questions
 
 - How does categorical coding change the intercept and reported contrasts?
