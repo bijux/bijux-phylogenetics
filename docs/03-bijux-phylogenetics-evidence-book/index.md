@@ -41,6 +41,26 @@ input, estimand, and closure contracts without claiming missing executions as
 results. The numbering describes the source study sequence, not increasing
 software quality or transferable validation.
 
+## Follow One Scientific Statement
+
+Consider the statement “the registered PCM1 phylogenetic-signal observation
+corresponds between the reference analysis and Bijux.” The Evidence Book does
+not accept that sentence because a signal function exists or because two
+printed values look close. The review path is:
+
+1. identify the exact PCM1 claim and its admitted 75-species population;
+2. resolve the prepared trait table and tree to governed input identities;
+3. confirm both executions, implementations, versions, and primary outputs;
+4. select the signal observation declared by the claim dependency map;
+5. apply the predeclared numerical rule and retain the complete denominator;
+6. read the resulting claim verdict with its limitations;
+7. confirm that material dependencies remain current at this revision.
+
+That chain supports only the registered observation and population. It does
+not establish that all signal estimators agree, that the model is biologically
+adequate, or that every PCM1 figure is equivalent. Every study page follows
+this same pattern while changing the scientific question and evidence state.
+
 ## Two Reading Layers
 
 Use these public pages to understand study questions and limitations. Use the

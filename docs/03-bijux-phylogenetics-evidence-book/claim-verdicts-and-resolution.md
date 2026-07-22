@@ -77,6 +77,22 @@ fresh mismatch remains a mismatch until a new governed observation chain is
 adjudicated. Public language must carry all applicable axes rather than
 compressing them into “valid” or “invalid.”
 
+## Read Similar-Looking Records Differently
+
+Three result directories can all contain source descriptions, analysis code,
+checks, and reports while supporting different sentences:
+
+| Record state | Public sentence |
+| --- | --- |
+| aligned outputs satisfy all registered rules and freshness is current | the named claim corresponds under its exact comparison contract |
+| aligned outputs violate a rule and the cause is not established | the named claim is currently mismatched; investigation remains open |
+| a required execution or primary output is absent | the claim is not currently comparable; the dossier defines what must be produced |
+
+The amount of documentation in a directory does not choose among these
+sentences. Primary outputs, observation alignment, the verdict rule, and
+freshness do. A detailed contract-only bundle can be excellent evidence of
+what remains to run while still being no evidence of numerical agreement.
+
 ## Derive A Claim Verdict From Its Required Population
 
 Start from the claim dependency set, not from whichever rows are easiest to

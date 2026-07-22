@@ -32,6 +32,20 @@ If any answer comes only from `report.md`, a plot, a filename, or contextual
 prose, continue to the owning machine record. If no owning record exists, the
 claim is not ready for citation at that point in the chain.
 
+## Test The Sentence Before Reading The Dashboard
+
+The intended sentence determines which records are required. Compare these
+two formulations:
+
+| Intended statement | Evidence needed | Why nearby evidence is insufficient |
+| --- | --- | --- |
+| “the registered PCM1 signal estimate agrees within tolerance” | one claim, exact population, both signal observations, registered tolerance, claim verdict, and current freshness | a matched tree–trait join establishes inputs, not the signal value |
+| “PCM1 validates phylogenetic signal analysis” | a defined method/population scope covering the intended generalization | one study population and selected estimator cannot support universal validation |
+
+Rewrite an overbroad sentence until one claim record can own it. Then use the
+bundle to test that sentence. This reverses the tempting workflow of finding a
+favorable dashboard cell first and inventing a claim around it afterward.
+
 ### A Short First Review
 
 For an initial assessment, open only five records in this order:
