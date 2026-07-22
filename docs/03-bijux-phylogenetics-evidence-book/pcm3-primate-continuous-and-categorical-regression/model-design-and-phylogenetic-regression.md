@@ -34,6 +34,24 @@ comparison keys. The present record proves that the proposed reproduction is
 finite and auditable. It does not prove that any coefficient, test, or
 covariance estimate has been reproduced.
 
+## The First Comparable Artifact Is The Design, Not The Coefficient Table
+
+PCM3 should close from the population outward. The first numerical lane must
+retain the ordered admitted species, response vector, factor levels, contrast
+matrix, transformed predictor columns, and exclusions for both executions.
+Those records establish whether a coefficient key refers to the same vector.
+
+Only after design identity aligns should the lane compare coefficients,
+uncertainty, likelihood, and residuals. Beginning with printed coefficient
+tables would hide exactly the differences PCM3 is designed to expose: another
+reference level, a different complete-case population, a differently centered
+predictor, or a test of another linear combination.
+
+A useful first closure is therefore modest but decisive: reproduce one
+baseline GLS design and fit with a complete row and column ledger. That result
+would not close the interaction, standardization, or Martins-covariance claims,
+but it would establish the shared foundation those later bundles consume.
+
 ### Separate Reparameterization From A New Estimand
 
 An intercept model with one reference-group coefficient and a no-intercept

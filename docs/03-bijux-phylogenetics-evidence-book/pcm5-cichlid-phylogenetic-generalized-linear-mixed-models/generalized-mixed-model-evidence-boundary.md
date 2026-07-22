@@ -45,6 +45,25 @@ posterior dependence and asymmetry survive. The derived draw population then
 receives its own summary and comparison rule; it cannot be reconstructed
 faithfully from separately rounded marginal summaries.
 
+## Do Not Start Closure From The Headline Plot
+
+Suppose a source plot shows infection probability across a predictor. Its
+points are several evidence layers away from the model: category coding and
+observation denominator define the response; family and link define the
+linear-predictor scale; fixed and random effects define each draw; the inverse
+link creates a response-scale probability; and the plot selects predictor
+values and summarizes those derived draws.
+
+Reproducing the curve shape does not establish correspondence at any parent
+layer. PCM5 must first retain aligned model and posterior draws, then create a
+draw-keyed probability ledger, then compare the summaries, and only afterward
+render the curve. The same dependency order applies to phylogenetic-signal
+ratios, variance partitions, and ancestral displays.
+
+This is why PCM5’s current plot and derivation contracts are useful despite
+being `not_comparable`: they prevent a visually plausible endpoint from
+claiming evidence that its parent posterior does not yet supply.
+
 ```mermaid
 flowchart LR
     inputs["Source scripts · data<br/>tree and workspace"]

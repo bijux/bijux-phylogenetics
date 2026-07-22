@@ -47,6 +47,24 @@ statements require governed posterior draws and diagnostics. A complete map of
 missing evidence is stronger than an ambiguous claim of coverage, but it
 remains a map rather than a numerical result.
 
+## What The First Governed Posterior Must Prove
+
+The first acceptable PCM4 execution cannot be only a posterior summary table.
+It must join four independently reviewable objects:
+
+1. the exact species-level population and ordered tree covariance;
+2. the model identity, including fixed effects, random effects, family, priors,
+   and covariance scaling;
+3. every expected chain with terminal state, burn-in, retained draw keys, and
+   parameter-specific diagnostics;
+4. primary draws and summaries whose parameter keys and transforms align
+   across the reference and Bijux records.
+
+This packet could close one bounded Gaussian posterior claim while variance or
+PGLS-comparator claims remain open. Evidence advances by closing a complete
+dependency slice, not by collecting disconnected favorable means from several
+claims.
+
 ```mermaid
 flowchart LR
     source["Lund source, data,<br/>tree and workspace"]
