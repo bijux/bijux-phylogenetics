@@ -146,6 +146,20 @@ owner, and every changed owner must account for its consumers. This catches
 orphaned schemas, examples, summaries, and evidence dependencies that a
 source-only search cannot discover.
 
+### Publish One Coherent Snapshot
+
+Dependent trust surfaces form one publication set. A changed runtime contract,
+package description, generated reference, method guide, evidence projection,
+and limitation may be separate artifacts, but readers must not encounter a
+mixture of their old and new meanings. Record the candidate identity for each
+member and publish only when all required members resolve to the same owned
+contract.
+
+If a surface cannot ship with the set, keep the affected claim unpublished or
+carry an explicit compatibility boundary that is true for both states. A later
+documentation deployment is not harmless when the earlier package or website
+would make a materially different promise.
+
 ## Drift Patterns
 
 - A new native method exists but only an internal module path exposes it.

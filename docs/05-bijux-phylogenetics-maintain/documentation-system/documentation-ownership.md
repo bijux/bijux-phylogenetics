@@ -75,6 +75,20 @@ re-establish the statement, narrow it, mark the owning status honestly, or
 remove the unsupported projection. Leaving old prose in place is a claim
 decision, not a neutral documentation omission.
 
+### Retire Claims Deliberately
+
+Removing a capability, comparison, or evidence statement is a dependency
+change. Locate every projection, replace executable examples with current
+routes or migration guidance, and remove generated references through their
+owner. Preserve the historical result in its governed record when that record
+remains valid for an earlier revision; do not leave public navigation pointing
+to it as current behavior.
+
+The retirement record names the last supported identity, replacement or
+absence of replacement, affected artifacts and consumers, and the first
+release in which the public statement no longer applies. Silence on one page
+must not coexist with an affirmative promise on another.
+
 ## Duplication And Projection
 
 Repeated prose is acceptable only when each copy serves a distinct reader

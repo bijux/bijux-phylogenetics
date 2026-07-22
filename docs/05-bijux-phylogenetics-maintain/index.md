@@ -119,6 +119,20 @@ An explicitly unaffected edge still needs a reason tied to semantics, not a
 claim that its files were outside the diff. The final handoff identifies every
 closed, unaffected, blocked, and unexecuted edge.
 
+### Leave A Closure Receipt
+
+The durable unit of completion is a closure receipt, not a list of changed
+files. It identifies the owned contract and before/after meaning, classifies
+compatibility and scientific impact, enumerates every dependent edge, and
+links each verification outcome to the exact revision or artifact it checked.
+It also carries unresolved limitations and the publication decision they
+constrain.
+
+A reviewer must be able to reconstruct why an edge was changed, regenerated,
+declared unaffected, or blocked. “No diff” is not evidence that a dependency
+was reviewed, and a successful command without its selected population and
+input identity is not a closed verification edge.
+
 ## Scale Review By Semantic Risk
 
 Diff size does not determine review depth. Use the strongest applicable risk:

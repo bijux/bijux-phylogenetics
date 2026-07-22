@@ -115,6 +115,19 @@ Verify all of the following resolve to the candidate:
 If two surfaces cannot be joined by exact identity, they cannot jointly support
 the release decision.
 
+### Never Assemble A Composite Candidate
+
+Each successful record is valid only for the inputs it names. A wheel built
+from one commit, documentation rendered from another, an Evidence Book index
+from a third, and a readiness report from a fourth do not become one candidate
+because their versions or filenames match. Join records through exact parent
+identities and digests, not labels.
+
+When a child record lacks a required parent identity, classify that decision
+edge as unverified. Re-run the child against the admitted candidate or block
+the release; do not infer the missing join from timestamps, branch names,
+artifact locations, or individually green status values.
+
 ## Compare Meaning Across Surfaces
 
 Identity equality is necessary but insufficient. Review semantic joins:
