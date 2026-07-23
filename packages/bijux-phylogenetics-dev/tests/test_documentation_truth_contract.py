@@ -162,7 +162,9 @@ def test_foundation_and_architecture_define_owned_runtime_contracts() -> None:
     assert "Scientific State Transformations" in architecture
     assert "Runtime Ownership Map" in architecture
     assert "Audit Every Representation Boundary" in architecture
-    assert "Representation equality is weaker than semantic preservation" in architecture
+    assert (
+        "Representation equality is weaker than semantic preservation" in architecture
+    )
     assert "Installed Identity Chain" in package_map
     assert "record both distribution versions" in package_map
     assert "Inspect Installed Identity" in package_map
@@ -431,9 +433,7 @@ def test_domain_map_covers_scientific_ownership_and_invariants() -> None:
         DOMAINS_ROOT / "evolutionary-analysis" / "biogeography-and-migration.md"
     )
     phylogeography_domain = _read(
-        DOMAINS_ROOT
-        / "evolutionary-analysis"
-        / "continuous-phylogeography-and-maps.md"
+        DOMAINS_ROOT / "evolutionary-analysis" / "continuous-phylogeography-and-maps.md"
     )
     ecology_detail_domain = _read(
         DOMAINS_ROOT
