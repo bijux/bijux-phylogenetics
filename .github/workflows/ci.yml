@@ -2,7 +2,7 @@
 # Source of truth: bijux-std/.github/standards/repo-config.manifest.json and bijux-std/shared/bijux-gh/workflows/.
 # Do not edit this generated copy directly.
 
-name: "repo / ci"
+name: "continuous integration"
 on:
   workflow_call:
     inputs:
@@ -49,7 +49,7 @@ jobs:
       - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548
         with:
           python-version: "${{ matrix.python-version }}"
-      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
@@ -86,15 +86,15 @@ jobs:
       - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548
         with:
           python-version: 3.11
-      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         if: "${{ contains(fromJson(inputs.api_toolchain_targets), matrix.target) }}"
         with:
           node-version: 20
-      - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95
         if: "${{ contains(fromJson(inputs.api_toolchain_targets), matrix.target) }}"
         with:
           distribution: temurin
@@ -122,7 +122,7 @@ jobs:
       - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548
         with:
           python-version: 3.11
-      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
