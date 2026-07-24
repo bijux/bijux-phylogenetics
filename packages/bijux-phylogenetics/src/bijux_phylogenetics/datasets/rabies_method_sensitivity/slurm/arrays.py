@@ -321,8 +321,10 @@ def write_rabies_method_sensitivity_slurm_array_partition_scripts(
                     'array_root="${BIJUX_PHYLOGENETICS_ARRAY_ROOT:-artifacts/'
                     'rabies-method-sensitivity-arrays}"'
                 ),
-                'output_root="${array_root}/'
-                f'{partition.partition_id}/${{variant_id}}"',
+                (
+                    'output_root="${array_root}/'
+                    f'{partition.partition_id}/${{variant_id}}"'
+                ),
                 "exec bijux-phylogenetics demo rabies-method-sensitivity-panel \\",
                 '  --out "${output_root}" \\',
                 '  --variant-id "${variant_id}" \\',

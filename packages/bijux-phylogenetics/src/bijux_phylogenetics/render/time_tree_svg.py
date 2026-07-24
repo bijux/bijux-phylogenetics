@@ -210,18 +210,20 @@ def render_time_tree_svg(
     svg = "\n".join(
         [
             f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
-            "<style>"
-            ".title{font:700 20px 'Avenir Next','Segoe UI',sans-serif;fill:#0f172a}"
-            ".branch{stroke:#334155;stroke-width:2.2;fill:none}"
-            ".tip-label{font:500 14px 'Iowan Old Style','Palatino Linotype',serif;fill:#0f172a}"
-            ".node-age-label{font:600 12px 'SFMono-Regular','SF Mono',Consolas,monospace;fill:#0f766e}"
-            ".node-age-dot{fill:#0f766e;stroke:#ffffff;stroke-width:1.4}"
-            ".hpd-interval{stroke:#b45309;stroke-width:3.2;stroke-linecap:round}"
-            ".hpd-whisker{stroke:#b45309;stroke-width:1.8}"
-            ".axis{stroke:#475569;stroke-width:1.6}"
-            ".axis-label{font:500 11px 'SFMono-Regular','SF Mono',Consolas,monospace;fill:#334155}"
-            ".axis-title{font:600 12px 'Avenir Next','Segoe UI',sans-serif;fill:#334155;letter-spacing:0.03em;text-transform:uppercase}"
-            "</style>",
+            (
+                "<style>"
+                ".title{font:700 20px 'Avenir Next','Segoe UI',sans-serif;fill:#0f172a}"
+                ".branch{stroke:#334155;stroke-width:2.2;fill:none}"
+                ".tip-label{font:500 14px 'Iowan Old Style','Palatino Linotype',serif;fill:#0f172a}"
+                ".node-age-label{font:600 12px 'SFMono-Regular','SF Mono',Consolas,monospace;fill:#0f766e}"
+                ".node-age-dot{fill:#0f766e;stroke:#ffffff;stroke-width:1.4}"
+                ".hpd-interval{stroke:#b45309;stroke-width:3.2;stroke-linecap:round}"
+                ".hpd-whisker{stroke:#b45309;stroke-width:1.8}"
+                ".axis{stroke:#475569;stroke-width:1.6}"
+                ".axis-label{font:500 11px 'SFMono-Regular','SF Mono',Consolas,monospace;fill:#334155}"
+                ".axis-title{font:600 12px 'Avenir Next','Segoe UI',sans-serif;fill:#334155;letter-spacing:0.03em;text-transform:uppercase}"
+                "</style>"
+            ),
             '<rect width="100%" height="100%" fill="#f8fafc" />',
             f'<text x="{left_margin:.1f}" y="28" class="title">{escape(title)}</text>',
             *lines,

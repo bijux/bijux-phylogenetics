@@ -92,15 +92,19 @@ def write_fasta_to_tree_log(
     lines = [
         "workflow: fasta-to-tree",
         f"input_path: {_display_path(report.input_path, root_dir=root_dir)}",
-        "prepared_input_path: "
-        f"{_display_path(report.prepared_input_path, root_dir=root_dir)}",
+        (
+            "prepared_input_path: "
+            f"{_display_path(report.prepared_input_path, root_dir=root_dir)}"
+        ),
         f"sequence_type: {report.sequence_type}",
         f"selected_model: {report.selected_model}",
         f"started_at_utc: {report.started_at_utc}",
         f"ended_at_utc: {report.ended_at_utc}",
         f"runtime_seconds: {report.runtime_seconds:.3f}",
-        "run_manifest_path: "
-        f"{_display_path(report.run_manifest_path, root_dir=root_dir)}",
+        (
+            "run_manifest_path: "
+            f"{_display_path(report.run_manifest_path, root_dir=root_dir)}"
+        ),
         "",
         "[input-validation]",
         f"sequence_count: {report.input_validation.summary.sequence_count}",
