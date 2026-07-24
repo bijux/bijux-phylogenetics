@@ -1,27 +1,48 @@
 ---
-title: Native Bayesian Workflows
+title: Native Bayesian Inference
 audience: public
 type: how-to
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-21
 ---
 
-# Native Bayesian Workflows
+# Native Bayesian Inference
 
-Use the native Bayesian dispatcher when you want one owned posterior run
-through `run_bayesian_inference(...)` and you are prepared to define the model
-surface explicitly.
+The native dispatcher runs supported DNA models with an explicitly compatible
+proposal schedule. Priors, moves, iteration policy, sampling interval, and
+seed are part of the inference contract—not hidden execution details.
 
-This public surface is Python-first today. The stable contract is one
-dispatcher plus validated model-definition and proposal-schedule builders. The
-dispatcher rejects unsupported or mismatched inputs explicitly instead of
-quietly routing through external engines.
+```mermaid
+flowchart LR
+    inputs["Tree and DNA<br/>alignment"]
+    model["Likelihood and priors"]
+    proposals["Proposal schedule"]
+    chain["Metropolis–Hastings<br/>chain"]
+    diagnostics["Acceptance, mixing,<br/>independent-chain review"]
+    posterior["Posterior samples<br/>and summaries"]
 
-## Run One Fixed-Topology DNA Chain
+    inputs --> model --> chain
+    proposals --> chain --> diagnostics --> posterior
+```
 
-Fixed-topology DNA workflows keep the supplied tree constant while sampling
-branch lengths and supported substitution parameters.
+## Fixed-Topology DNA
+
+The supplied topology remains fixed while branch lengths and supported
+substitution parameters are sampled.
+
+Before sampling, write down the estimand and the state allowed to move:
+
+| Contract choice | Fixed-topology run | Joint-topology run |
+| --- | --- | --- |
+| topology | conditioned on the supplied tree | sampled under the declared topology prior |
+| branch lengths | sampled under the branch-length prior | sampled together with topology |
+| substitution parameters | sampled when supported by the chosen model | sampled through the embedded sequence model |
+| topology proposals | none | at least one positive NNI, SPR, or TBR move weight |
+| topology uncertainty | outside the run | represented by sampled topology identities |
+
+These are different posterior models. A fixed-topology chain cannot be
+reinterpreted as topology-marginal inference after it has run.
 
 ```python
 from bijux_phylogenetics.bayesian import (
@@ -39,7 +60,7 @@ from bijux_phylogenetics.io.trees import load_tree
 tree = load_tree("dataset/tree.nwk")
 records = load_fasta_alignment("dataset/alignment.fasta")
 
-model_definition = build_fixed_topology_dna_model_definition(
+model = build_fixed_topology_dna_model_definition(
     substitution_model_name="HKY85",
     branch_length_prior=build_exponential_branch_length_prior(rate=4.0),
     substitution_parameter_prior_bundle=build_substitution_parameter_prior_bundle(
@@ -53,8 +74,8 @@ model_definition = build_fixed_topology_dna_model_definition(
     ),
 )
 
-proposal_schedule = build_fixed_topology_dna_proposal_schedule(
-    model_definition=model_definition,
+proposals = build_fixed_topology_dna_proposal_schedule(
+    model_definition=model,
     branch_length_move_weight=1.0,
     branch_length_log_scale_standard_deviation=0.25,
     kappa_move_weight=1.0,
@@ -66,123 +87,179 @@ proposal_schedule = build_fixed_topology_dna_proposal_schedule(
 report = run_bayesian_inference(
     tree=tree,
     records=records,
-    model_definition=model_definition,
-    proposal_schedule=proposal_schedule,
-    iteration_count=2_000,
-    sample_every=10,
+    model_definition=model,
+    proposal_schedule=proposals,
+    iteration_count=20_000,
+    sample_every=20,
     seed=11,
 )
-
-print(report.chain_report.accepted_count)
-print(len(report.posterior_rows))
 ```
 
-The supported fixed-topology DNA substitution families are the public
-parameterized models, not `JC69`. Use `K80`, `HKY85`, or `GTR` when building
-the model definition.
+The documented parameterized substitution families are `K80`, `HKY85`, and
+`GTR`; `JC69` is not accepted by this builder contract.
 
-## Run One Joint-Topology DNA Chain
+## Observation Policy Changes The Likelihood
 
-Joint-topology DNA workflows combine the same sequence-model surface with one
-topology prior and explicit topology-move weights.
+`observation_policy` is part of the model identity, not an input-cleaning
+convenience:
+
+| Policy | Treatment | Interpretation boundary |
+| --- | --- | --- |
+| `reject` | refuse gaps, ambiguity, or explicit missing states outside the strict DNA contract | strongest refusal semantics; preprocessing must be separately recorded |
+| `treat-as-missing` | allow supported non-base observations to contribute as missing | discards state-specific information at affected cells |
+| `ambiguity-vector` | map supported IUPAC ambiguity symbols to compatible base-state vectors | likelihood integrates the declared ambiguity set |
+| `fifth-state` | treat gap as an additional modeled state under supported contracts | changes the state space and compatible root/model assumptions |
+
+Runs with different observation policies target different likelihoods even
+when the tree, alignment file, and substitution-model label match. Preserve
+the policy in every posterior comparison and predictive check.
+
+## Joint-Topology DNA
+
+Joint inference adds a topology prior and topology moves to the sequence-model
+schedule:
 
 ```python
 from bijux_phylogenetics.bayesian import (
-    build_exponential_branch_length_prior,
-    build_exponential_positive_substitution_parameter_prior,
-    build_fixed_topology_dna_model_definition,
-    build_fixed_topology_dna_proposal_schedule,
     build_joint_topology_dna_model_definition,
     build_joint_topology_dna_proposal_schedule,
-    build_substitution_parameter_prior_bundle,
     build_uniform_rooted_tree_topology_prior,
-    run_bayesian_inference,
 )
-from bijux_phylogenetics.io.fasta.core import load_fasta_alignment
-from bijux_phylogenetics.io.trees import load_tree
 
-tree = load_tree("dataset/start-tree.nwk")
-records = load_fasta_alignment("dataset/alignment.fasta")
-
-sequence_model_definition = build_fixed_topology_dna_model_definition(
-    substitution_model_name="K80",
-    branch_length_prior=build_exponential_branch_length_prior(rate=4.0),
-    substitution_parameter_prior_bundle=build_substitution_parameter_prior_bundle(
-        kappa_prior=build_exponential_positive_substitution_parameter_prior(
-            rate=1.5
-        )
+joint_model = build_joint_topology_dna_model_definition(
+    sequence_model_definition=model,
+    topology_prior=build_uniform_rooted_tree_topology_prior(
+        ["A", "B", "C", "D"]
     ),
 )
 
-model_definition = build_joint_topology_dna_model_definition(
-    sequence_model_definition=sequence_model_definition,
-    topology_prior=build_uniform_rooted_tree_topology_prior(["A", "B", "C", "D"]),
-)
-
-proposal_schedule = build_joint_topology_dna_proposal_schedule(
-    sequence_proposal_schedule=build_fixed_topology_dna_proposal_schedule(
-        model_definition=sequence_model_definition,
-        branch_length_move_weight=1.0,
-        branch_length_log_scale_standard_deviation=0.25,
-        kappa_move_weight=1.0,
-        kappa_log_scale_standard_deviation=0.35,
-    ),
+joint_proposals = build_joint_topology_dna_proposal_schedule(
+    sequence_proposal_schedule=proposals,
     nni_move_weight=1.0,
 )
 
-report = run_bayesian_inference(
+joint_report = run_bayesian_inference(
     tree=tree,
     records=records,
-    model_definition=model_definition,
-    proposal_schedule=proposal_schedule,
-    iteration_count=2_000,
-    sample_every=10,
+    model_definition=joint_model,
+    proposal_schedule=joint_proposals,
+    iteration_count=20_000,
+    sample_every=20,
     seed=7,
 )
-
-print(report.distinct_topology_count)
-print(len(report.posterior_rows))
 ```
 
-Use this surface when topology uncertainty is part of the review question.
-Keep the topology prior and topology-move weights explicit, because they are
-part of the public contract rather than hidden defaults.
+Taxa in the topology prior, starting tree, and alignment must agree. Topology
+diversity is exposed through `distinct_topology_count` and
+`distinct_topology_ids`; diversity alone does not establish adequate mixing.
 
-## What The Dispatcher Protects
+## Dispatcher Invariants
 
-The dispatcher validates that:
+The dispatcher rejects unknown definitions and schedules, fixed-topology
+models paired with joint schedules, and joint-topology models paired with fixed
+schedules. It never routes these calls through BEAST or MrBayes.
 
-- the model definition is one supported native Bayesian definition
-- the proposal schedule is one supported native Bayesian schedule
-- fixed-topology definitions only pair with fixed-topology schedules
-- joint-topology definitions only pair with joint-topology schedules
+## Read The Returned Record
 
-That validation is part of the serious public story. Mismatches fail
-explicitly instead of producing one ambiguous runtime result.
+Both dispatcher paths return the model definition, proposal schedule,
+observation policy, underlying `chain_report`, and retained `posterior_rows`.
+Joint-topology reports additionally expose `distinct_topology_ids` and
+`distinct_topology_count`.
 
-## How To Read The Run Reports
+```python
+print(report.observation_policy)
+print(len(report.posterior_rows))
+print(report.chain_report)
 
-Treat the returned run report as the stable output contract for the chosen
-workflow family.
+if hasattr(report, "distinct_topology_count"):
+    print(report.distinct_topology_count)
+```
 
-The most important fields to inspect are:
+Preserve the model and schedule with posterior rows. A table of sampled values
+without the priors, proposal kernels, iteration policy, seed, and observation
+policy is not a reconstructable posterior record.
 
-- `model_definition`
-- `proposal_schedule`
-- `observation_policy`
-- `chain_report`
-- `posterior_rows`
+## Read One Posterior Row
 
-Joint-topology runs also keep topology diversity explicit through
-`distinct_topology_count` and `distinct_topology_ids`.
+Each retained row records `sample_index`, `iteration_index`, `topology_id`,
+substitution model, total log prior, log likelihood, posterior log score,
+prior-component contributions, branch lengths, scalar parameters, and vector
+parameters. These fields form one coherent state; joining values from different
+rows creates a state the chain never visited.
 
-## Current Boundaries
+```text
+posterior log score = total log prior + log likelihood
+```
 
-- this public page covers the native dispatcher for fixed-topology and
-  joint-topology DNA workflows
-- this page does not claim that every Bayesian submodule has the same public
-  maturity as those two dispatcher-routed contracts
-- this page does not rename BEAST or MrBayes wrapper surfaces as native
-  inference ownership
-- this page does not replace the evidence-book or broader validation studies
-  when the question is scientific trust rather than API usage
+Check the retained identity before summarizing:
+
+- `sample_index` identifies order in the retained sample, while
+  `iteration_index` identifies the chain iteration that produced it;
+- `topology_id` is constant for fixed-topology runs and varies only when a
+  joint-topology chain accepts topology moves;
+- prior-component rows explain the total prior contribution and should remain
+  aligned with the model definition;
+- scalar/vector parameter names and branch identities must be consistent
+  across rows before computing summaries.
+
+## The Chain Report Owns Execution State
+
+`chain_report` retains iteration count, sampling interval, seed, accepted and
+rejected counts, aggregate acceptance rate, initial and final state, sampled
+states, and iteration-level proposal rows. The proposal rows expose changed
+fields, validity, Hastings ratio, acceptance decision, and posterior scores.
+
+Aggregate acceptance can hide a frozen parameter family. Review movement and
+validity by proposal target, then assess autocorrelation and effective sample
+size on every quantity used in the conclusion. Independent chains are
+separate executions with separate seeds and initial states; concatenating one
+chain’s segments does not create an independent-chain denominator.
+
+## Posterior Review
+
+Inspect `model_definition`, `proposal_schedule`, `observation_policy`,
+`chain_report`, and `posterior_rows`. A defensible analysis also evaluates:
+
+- move-level acceptance rates rather than one aggregate count;
+- burn-in and retained-sample policy;
+- autocorrelation and effective sample size;
+- stability of summaries across independent seeds;
+- trace behavior and topology visitation where applicable;
+- prior sensitivity for weakly identified parameters.
+
+Iteration count in an example is not a convergence guarantee. Extend or tune a
+chain based on diagnostics, then preserve the diagnostics with summaries.
+
+## Decide Whether The Run Is Interpretable
+
+```mermaid
+flowchart TD
+    complete{"Did the chain finish<br/>under the declared contract?"}
+    movement{"Did every claimed quantity<br/>mix adequately?"}
+    replicate{"Do independent chains<br/>support the same summary?"}
+    sensitivity{"Is the conclusion stable<br/>to material prior choices?"}
+    accept["Interpret the bounded posterior"]
+    refuse["Retain diagnostics; do not interpret"]
+    qualify["Report the sensitivity boundary"]
+
+    complete -- no --> refuse
+    complete -- yes --> movement
+    movement -- no --> refuse
+    movement -- yes --> replicate
+    replicate -- no --> refuse
+    replicate -- yes --> sensitivity
+    sensitivity -- no --> qualify
+    sensitivity -- yes --> accept
+```
+
+Run completion and sample count are necessary bookkeeping, not convergence
+evidence. Apply diagnostics to every quantity used by the conclusion; topology
+mixing cannot be inferred from a well-mixed substitution parameter.
+
+## Scope
+
+The dispatcher contract covers supported fixed- and joint-topology DNA paths.
+Other native Bayesian modules have their own contracts and maturity. External
+BEAST, MrBayes, and `MCMCglmm` workflows remain separately attributed.
+Posterior computation does not by itself validate the biological model or
+close an Evidence Book claim.

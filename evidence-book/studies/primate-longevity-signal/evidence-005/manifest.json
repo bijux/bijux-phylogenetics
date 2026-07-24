@@ -18,7 +18,7 @@
       "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles/report_payloads.py",
       "packages/bijux-phylogenetics/src/bijux_phylogenetics/evidence/studies/primate_pcm1_component_bundles/bundle_builder.py"
     ],
-    "last_generated_on": "2026-07-04",
+    "last_generated_on": "2026-07-21",
     "source_basis_locators": [
       "evidence-book/studies/primate-longevity-signal/datasets/reference_primate.csv",
       "evidence-book/studies/primate-longevity-signal/evidence-005/duplicate-species-aggregation-parity.json"

@@ -70,7 +70,7 @@ from .study_registry import (
 )
 
 DOCS_EVIDENCE_OVERVIEW = (
-    Path("docs") / "02-bijux-phylogenetics-evidence-book" / "index.md"
+    Path("docs") / "03-bijux-phylogenetics-evidence-book" / "index.md"
 )
 
 
@@ -179,26 +179,30 @@ def render_docs_evidence_overview(
             "pcm5-cichlid-phylogenetic-generalized-linear-mixed-models"
         ),
     }
-    study_question_by_id = {
-        "primate-longevity-signal": (
-            "How do primate traits and tree preparation become a usable signal and"
-            " ancestral-state workflow?"
-        ),
-        "primate-pgls-and-signal": (
-            "How do baseline GLS, PGLS, transformed trees, and signal tests behave"
-            " on the same primate dataset?"
-        ),
+    study_focus_by_id = {
+        "primate-longevity-signal": "preparation, signal, ancestral reconstruction",
+        "primate-pgls-and-signal": "GLS/PGLS, transformed trees, signal tests",
         "primate-continuous-and-categorical-regression": (
-            "How should continuous predictors, categorical predictors, and"
-            " interactions be interpreted together in comparative regression?"
+            "predictors, interactions, comparative regression"
         ),
         "cichlid-bayesian-linear-and-phylogenetic-mixed-models": (
-            "Where does the cichlid workflow move from standard regression into"
-            " Bayesian mixed models with a phylogenetic effect?"
+            "Bayesian linear and phylogenetic mixed models"
         ),
         "cichlid-phylogenetic-generalized-linear-mixed-models": (
-            "How do count models, binary-style models, repeated measures, and"
-            " posterior signal estimates fit together in one study family?"
+            "count, binary, repeated-measure models"
+        ),
+    }
+    study_boundary_by_id = {
+        "primate-longevity-signal": "plotting boundary remains explicit",
+        "primate-pgls-and-signal": "one coverage boundary remains explicit",
+        "primate-continuous-and-categorical-regression": (
+            "lecture-specific verdicts remain open"
+        ),
+        "cichlid-bayesian-linear-and-phylogenetic-mixed-models": (
+            "posterior computation remains external"
+        ),
+        "cichlid-phylogenetic-generalized-linear-mixed-models": (
+            "posterior computation remains external"
         ),
     }
     lines = [
@@ -206,40 +210,34 @@ def render_docs_evidence_overview(
         "title: Evidence Book",
         "audience: public",
         "type: evidence-navigation",
-        "status: active",
+        "status: canonical",
         "owner: bijux-phylogenetics-dev",
-        "last_reviewed: 2026-07-04",
+        "last_reviewed: 2026-07-21",
         "---",
         "",
         "# Evidence Book",
         "",
-        "This section explains the comparative study record behind the public",
-        "phylogenetics runtime.",
-        "",
-        "The five study families come from course material that the repository has",
-        "turned into checked-in, reviewable evidence. All five now have governed",
-        "parity bundle IDs. Some studies already carry stronger numerical",
-        "parity records, while others keep parity verdicts open because the",
-        "scientific workflow still depends on an external engine or an unclosed",
-        "lecture-specific boundary.",
+        "The Evidence Book is the review layer between scientific source material and",
+        "public claims. It records what was run, with which inputs and versions, which",
+        "checks were applied, and whether each bounded claim passes, fails, remains",
+        "open, or is blocked.",
         "",
         "```mermaid",
         "flowchart LR",
-        "    A[Source lecture] --> B[Public study guide]",
-        "    B --> C[Checked-in evidence dossier]",
-        "    C --> D[Freshness and integrity reports]",
-        "    C --> E[Study-specific evidence bundles]",
+        '    source["Course or scientific<br/>source"] --> study["Study dossier"]',
+        '    study --> bundle["Evidence bundle"]',
+        '    bundle --> checks["Declared checks<br/>and tolerances"]',
+        '    checks --> verdict["Claim verdict"]',
+        '    verdict --> indexes["Freshness, integrity,<br/>coverage, parity indexes"]',
+        '    indexes --> docs["Bounded public claim"]',
         "```",
         "",
-        "## Start Here",
+        "## Two Reading Layers",
         "",
-        "- checked-in study dossiers:",
-        "  [`evidence-book/README.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/README.md)",
-        "- repository-wide review reports:",
-        "  [`evidence-book/index/`](https://github.com/bijux/bijux-phylogenetics/tree/main/evidence-book/index)",
-        "",
-        "Treat those checked-in reports as the current source of truth when you need",
-        "live repository status rather than the stable narrative on this page.",
+        "Use these public pages to understand study questions and limitations. Use the",
+        "checked-in [`evidence-book/`](https://github.com/bijux/bijux-phylogenetics/tree/main/evidence-book)",
+        "for primary bundle records, registries, sources, and repository-wide review",
+        "reports. The narrative explains; the checked-in record adjudicates.",
         "",
         "## At A Glance",
         "",
@@ -253,92 +251,72 @@ def render_docs_evidence_overview(
         f"- reviewer readiness: `{reviewer_status}`",
         f"- maturity tier: `{scorecard_payload['maturity_tier']}`",
         "",
-        "## Core Reading Order",
+        "## Review A Claim In This Order",
         "",
-        "1. `overview`",
-        "2. `PCM1`",
-        "3. `PCM2`",
-        "4. `PCM3`",
-        "5. `PCM4`",
-        "6. `PCM5`",
-        "",
-        "That sequence mirrors the course progression. It starts with data and tree",
-        "preparation, moves through comparative regression, and ends with the",
-        "cichlid mixed-model studies where external posterior tooling remains the",
-        "largest open boundary.",
+        "1. Find the study and claim identifier.",
+        "2. Open the bundle manifest and input manifest.",
+        "3. Inspect source provenance and runtime or engine versions.",
+        "4. Read the declared checks and acceptance criteria.",
+        "5. Inspect machine-readable results before the reviewer summary.",
+        "6. Confirm the verdict in the current indexes and freshness report.",
+        "7. Carry exclusions and open boundaries into any downstream statement.",
         "",
         "## Study Atlas",
         "",
-        "| Study | Main question | Evidence IDs | Current repository state |",
-        "| --- | --- | --- | --- |",
+        "| Study family | Scientific focus | Governed bundles | Material boundary |",
+        "| --- | --- | ---: | --- |",
     ]
     for study in index_payload["studies"]:
         study_id = str(study["study_id"])
         study_page = study_page_by_id.get(study_id)
         study_title = str(study["study_title"])
-        study_question = study_question_by_id.get(
-            study_id,
-            "What evidence, datasets, and governed bundle boundaries define this study?",
+        study_focus = study_focus_by_id.get(study_id, "governed study record")
+        boundary = study_boundary_by_id.get(
+            study_id, "open limits are recorded in the study dossier"
         )
-        state = "Documented study family with open limits"
         evidence_ids = [str(entry["evidence_id"]) for entry in study["evidence"]]
-        evidence_span = (
-            f"`{evidence_ids[0]}` to `{evidence_ids[-1]}` ({len(evidence_ids)} bundles)"
-            if evidence_ids
-            else "none"
-        )
-        if study_id == "primate-longevity-signal":
-            state = (
-                "Governed parity bundles deployed; plotting boundary remains explicit"
-            )
-        elif study_id == "primate-pgls-and-signal":
-            state = "Governed parity bundles deployed; one coverage boundary remains explicit"
-        elif study_id == "primate-continuous-and-categorical-regression":
-            state = "Governed parity bundles deployed; lecture-specific verdicts remain open"
-        elif study_id.startswith("cichlid-"):
-            state = (
-                "Governed parity bundles deployed; posterior workflow still external"
-            )
+        evidence_count = str(len(evidence_ids))
         study_label = (
             study_title
             if study_page is None
             else f"[{study_title}](./{study_page}/index.md)"
         )
         lines.append(
-            f"| {study_label} | {study_question} | {evidence_span} | {state} |"
+            f"| {study_label} | {study_focus} | {evidence_count} | {boundary} |"
         )
     lines.extend(
         [
             "",
-            "## When To Use These Pages",
+            "The bundle count describes inventory, not number of passing claims. Consult",
+            "the live indexes for verdicts.",
             "",
-            "- Start with PCM1 if you want the full preparation path from raw primate traits and tree files to signal estimation and ancestral reconstruction.",
-            "- Continue to PCM2 when you want to compare baseline GLS, PGLS, transformed trees, and signal testing on the same primate study.",
-            "- Read PCM3 when the main question is how continuous predictors, categorical predictors, and interactions should be interpreted together.",
-            "- Read PCM4 and PCM5 together when the main question is the cichlid mixed-model sequence, because they share the same dataset family and the same external posterior boundary.",
+            "## Repository-Wide Control Reports",
             "",
-            "- Use the public study guides when you want the scientific story in plain language.",
-            "- Use the checked-in evidence-book when you need provenance, registries, or bundle-level proof.",
-            "- Use the index reports when you need freshness, integrity, or repository-wide gap tracking.",
+            "| Report | Question it answers |",
+            "| --- | --- |",
+            "| [evidence index](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/evidence-index.json) | which bundles and claims exist? |",
+            "| [integrity report](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/integrity-report.md) | are declared records structurally coherent? |",
+            "| [freshness report](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/freshness-report.md) | do records still match their material dependencies? |",
+            "| [parity dashboard](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/parity-dashboard.md) | which declared parity comparisons pass or remain open? |",
+            "| [coverage gaps](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/coverage-gaps.md) | where are claim or workflow proofs incomplete? |",
+            "| [false-confidence audit](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/false-confidence-audit.md) | where could presentation overstate evidence strength? |",
+            "| [scientific debt register](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/scientific-debt-register.md) | which unresolved boundaries require durable follow-through? |",
             "",
-            "## Reading Boundaries",
+            "## What A Bundle Proves",
             "",
-            "- These pages do not claim that every lecture has already been reproduced end to end inside the repository.",
-            "- They do not hide external-tool dependencies just because nearby Python surfaces exist.",
-            "- They do keep those limits visible, especially for PCM4 and PCM5.",
+            "A bundle proves only that its declared checks and acceptance rules produce its",
+            "recorded verdict for identified inputs, sources, versions, and configuration.",
+            "It may support a larger claim only when the claim mapping says so. It does not",
+            "certify untested datasets, models, external-engine versions, or biological",
+            "interpretations.",
             "",
-            "## Review Reports",
+            "## Open Evidence Is First-Class",
             "",
-            "- teaching and migration index: [`evidence-book/index/teaching-and-migration.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/teaching-and-migration.md)",
-            "- parity dashboard: [`evidence-book/index/parity-dashboard.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/parity-dashboard.md)",
-            "- freshness report: [`evidence-book/index/freshness-report.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/freshness-report.md)",
-            "- integrity report: [`evidence-book/index/integrity-report.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/integrity-report.md)",
-            "- coverage gaps: [`evidence-book/index/coverage-gaps.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/coverage-gaps.md)",
-            "- claim re-audit: [`evidence-book/index/claim-reaudit.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/claim-reaudit.md)",
-            "- closure criteria: [`evidence-book/index/closure-criteria.md`](https://github.com/bijux/bijux-phylogenetics/blob/main/evidence-book/index/closure-criteria.md)",
-            "",
-            "The study record is useful because it keeps strong results visible without",
-            "pretending that every workflow is fully reproduced inside the repository.",
+            "PCM4 and PCM5 remain valuable precisely because their external posterior",
+            "boundary is visible. An open or blocked verdict identifies the missing work",
+            "more honestly than a polished narrative that implies completion. Use",
+            "[evidence honesty and limits](../01-bijux-phylogenetics/quality/evidence-honesty-and-limits.md)",
+            "when translating these records into public language.",
             "",
         ]
     )

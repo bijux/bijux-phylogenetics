@@ -1,0 +1,201 @@
+---
+title: Claim Verdicts And Resolution
+audience: public
+type: evidence-guide
+status: canonical
+owner: bijux-phylogenetics-dev
+last_reviewed: 2026-07-22
+---
+
+# Claim Verdicts And Resolution
+
+A verdict reports the outcome of a registered comparison. Resolution reports
+what happens next. Keeping them separate prevents open work from weakening a
+real mismatch and prevents a detailed plan from masquerading as completed
+evidence.
+
+## Locate The Status Level
+
+```mermaid
+flowchart TB
+    observation["Observation status<br/>one scalar, row or structure"] --> claim["Claim verdict<br/>one bounded statement"]
+    claim --> bundle["Bundle summary<br/>registered claim collection"]
+    bundle --> index["Repository indexes<br/>coverage and freshness"]
+    claim --> resolution["Resolution record<br/>owner, blocker and closure"]
+```
+
+Never lift a favorable status upward without checking its denominator. A
+matched observation does not make its claim matched; a matched claim does not
+make every observation in the bundle matched; a repository readiness result
+does not make every scientific method validated.
+
+## Summaries Do Not Promote Verdicts
+
+Higher-level views preserve lower-level states; they do not replace them.
+
+| Summary surface | Defensible content | Forbidden promotion |
+| --- | --- | --- |
+| observation table | counts and identities for exact, within-budget, mismatched, absent, and excluded rows | “overall match” without the claim aggregation rule |
+| claim record | one verdict derived from its complete required population | extension to an unregistered quantity or population |
+| bundle report | inventory of its claims, observations, contradictions, and limitations | selecting the most favorable claim as the bundle meaning |
+| study guide | scientific relationship among bundles and the current mixed evidence state | a study-wide pass/fail label |
+| repository dashboard | coverage, freshness, integrity, and verdict counts | numerical or scientific validation of every runtime surface |
+
+An aggregate can say that ten observations matched and two did not. It cannot
+say the claim matched unless the claim contract declares those twelve rows,
+their eligibility, and the rule that yields that verdict. Likewise, a release
+gate can establish publication eligibility for its governed inventory while a
+scientific mismatch remains visible and unresolved.
+
+## Verdict Vocabulary
+
+| Verdict | Required meaning | Honest downstream language |
+| --- | --- | --- |
+| `matched` | all claim-required comparable observations satisfy the registered exact or structural rule | the bounded claim matches under the recorded contract |
+| `matched_with_tolerance` | all claim-required comparable observations satisfy the predeclared numerical budget | the bounded claim agrees within the named tolerance |
+| `mismatch_explained` | a comparable difference exists and its registered cause and consequence are established | the claim differs for the recorded reason; state its impact |
+| `mismatch_unexplained` | a comparable difference violates the rule without an accepted explanation | the claim does not currently correspond |
+| `not_comparable` | the required estimand, identity, execution, or output alignment is unavailable | no valid comparison is currently owned |
+
+`not_comparable` is not a polite match and `mismatch_unexplained` is not merely
+“needs review.” Neither may be converted into `matched_with_tolerance` by
+widening the tolerance after observing the result.
+
+## Keep Comparability, Agreement, And Currency Separate
+
+Three independent decisions qualify a claim:
+
+| Axis | Question | Possible outcome |
+| --- | --- | --- |
+| comparability | do both sides address the same population, estimand, identity, and required output? | comparable or `not_comparable` |
+| agreement | for comparable observations, does the registered exact, structural, or tolerance rule hold? | `matched`, `matched_with_tolerance`, `mismatch_explained`, or `mismatch_unexplained` |
+| currency | do the verdict and observations still resolve to unchanged material dependencies? | current or stale |
+
+The axes cannot compensate for one another. A current record may remain
+`not_comparable`; a numerically matched historical record may be stale; and a
+fresh mismatch remains a mismatch until a new governed observation chain is
+adjudicated. Public language must carry all applicable axes rather than
+compressing them into “valid” or “invalid.”
+
+## Read Similar-Looking Records Differently
+
+Three result directories can all contain source descriptions, analysis code,
+checks, and reports while supporting different sentences:
+
+| Record state | Public sentence |
+| --- | --- |
+| aligned outputs satisfy all registered rules and freshness is current | the named claim corresponds under its exact comparison contract |
+| aligned outputs violate a rule and the cause is not established | the named claim is currently mismatched; investigation remains open |
+| a required execution or primary output is absent | the claim is not currently comparable; the dossier defines what must be produced |
+
+The amount of documentation in a directory does not choose among these
+sentences. Primary outputs, observation alignment, the verdict rule, and
+freshness do. A detailed contract-only bundle can be excellent evidence of
+what remains to run while still being no evidence of numerical agreement.
+
+## Derive A Claim Verdict From Its Required Population
+
+Start from the claim dependency set, not from whichever rows are easiest to
+compare:
+
+```mermaid
+flowchart TD
+    required["Enumerate required observations"] --> aligned{"Every required observation<br/>has aligned identities and outputs?"}
+    aligned -- no --> incomparable["not_comparable"]
+    aligned -- yes --> rules{"Apply every predeclared rule"}
+    rules -- all exact --> exact["matched"]
+    rules -- all within budgets --> tolerance["matched_with_tolerance"]
+    rules -- violation with accepted cause --> explained["mismatch_explained"]
+    rules -- violation without accepted cause --> unexplained["mismatch_unexplained"]
+```
+
+The denominator includes every observation the claim declares, including
+missing, excluded, failed, and non-comparable members. A verdict may summarize
+that population only when the aggregation rule is defined in advance and the
+machine record retains each member. “Most rows matched” is a descriptive count,
+not one of the governed claim verdicts.
+
+When exact and tolerance rules coexist, report the strongest vocabulary that
+is true for the complete claim population. Do not label the claim `matched`
+because its exact subset passed while required tolerance-based observations
+were merely within budget.
+
+## Apply Verdicts To The Present Studies
+
+The same repository can legitimately retain several evidence states because
+each state belongs to a different claim and observation population.
+
+| Present record | Correct interpretation | Incorrect compression |
+| --- | --- | --- |
+| PCM1 focused preparation bundle marked `matched` | the named preparation invariant corresponds for its registered inputs | every PCM1 output is exact or every figure is equivalent |
+| PCM1 aggregate bundle marked `matched_with_tolerance` | all claim-required comparable observations meet their predeclared budgets | numerical identity or proof on unrelated primate data |
+| PCM2 focused matches beside 12 broader `mismatch_unexplained` scalar rows | bounded bundle claims and unresolved broader observations coexist | PCM2 “passes overall” because most bundles are favorable |
+| PCM2 intercept sweep marked `not_comparable` | no governed aligned observation currently supports that comparison | the two implementations were compared and disagreed |
+| PCM3–PCM5 contract-only bundles marked `not_comparable` | the intended claim, inputs, source, and missing execution boundary are governed | wrappers, nearby methods, or complete manifests constitute numerical evidence |
+
+These examples are not exceptions to the vocabulary. They demonstrate why a
+verdict must travel with its claim identifier, population, method,
+observations, and limitations.
+
+## Keep Other Statuses In Their Own Records
+
+Execution states such as blocked, failed, partial, and complete belong to run
+records. Freshness states belong to dependency review. Coverage gaps describe
+missing proof. Plot-only, workflow-only, artifact-only, and seeded-input-only
+classify tracked surfaces that are not analytical correspondence. Preserve
+these dimensions beside the verdict instead of forcing them into it.
+
+## Resolve By Earliest Owning Cause
+
+| Problem | Owning layer | Closure evidence |
+| --- | --- | --- |
+| source or dataset unavailable | provenance and dataset registry | governed locator, checksum, license and admitted population |
+| reference program never executed | reference execution | versioned invocation, terminal record and primary outputs |
+| Bijux program never executed | Bijux execution | runtime identity, invocation, diagnostics and primary outputs |
+| estimands or identities differ | comparison design | aligned parameterization and stable observation keys |
+| registered tolerance fails | observation | corrected implementation or accepted causal explanation plus consequence |
+| claim lacks required observations | claim dependency map | complete eligible observation denominator |
+| material dependency changed | freshness record | regenerated bundle and current indexes |
+
+Resolve the earliest broken edge. Editing a report cannot repair a missing
+execution; rerunning a program cannot repair an ill-defined estimand; marking
+an item closed cannot repair a failed tolerance.
+
+## Preserve Contradictions
+
+When bundle, claim, observation, report, and generated index disagree, retain
+all conflicting records and stop the affected claim. Identify the owning
+source, rebuild projections, and review whether the contradiction changed a
+published interpretation. Do not choose the most favorable status or delete
+the row that prevents a clean summary.
+
+## Record Resolution Without Rewriting History
+
+A resolution record names the affected claim and observations, current
+verdict, blocker or causal explanation, responsible owner, required execution
+or evidence, acceptance rule, and closure artifacts. When work closes, create
+new governed outputs and freshness state. Historical mismatches and
+non-comparable states remain part of the audit trail.
+
+A corrected implementation may produce a matching new comparison, but it does
+not mean the earlier mismatch never occurred. Report both when the history
+matters to released artifacts or scientific conclusions.
+
+Closure requires a new observation chain, not only a resolution-state edit.
+The closure record should link the corrected input, execution, result,
+comparison, claim verdict, and freshness projection. If an accepted causal
+explanation leaves the numerical difference in place, use
+`mismatch_explained`; explanation makes the discrepancy interpretable, not
+equal.
+
+## Write The Public Statement
+
+Use this pattern:
+
+> Claim `<claim_id>` is `<verdict>` for `<population and method>` under
+> `<comparison rule>`. The record excludes `<limits>`. Freshness is `<state>`
+> at `<repository revision>`. Resolution state is `<state and owner>`.
+
+Omit no material qualifier. If a statement cannot name its claim identifier,
+population, method, comparison rule, and current verdict, it is broader than
+the Evidence Book record supports.

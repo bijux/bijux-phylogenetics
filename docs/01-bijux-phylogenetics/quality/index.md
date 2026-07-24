@@ -1,73 +1,198 @@
 ---
-title: Quality and Limits
+title: Quality And Scientific Limits
 audience: public
-type: explanation
+type: index
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-22
 ---
 
-# Quality And Limits
+# Quality And Scientific Limits
 
-This section explains how the repository tests itself, how it describes its
-confidence boundaries, and how it decides whether a release is serious enough
-to publish.
+Quality is not one green check. Scientific software needs evidence about API
+contracts, numerical behavior, workflow integration, packaging, documentation,
+and bounded study claims. Each proof surface answers a different question.
 
-Start with validation lanes when the question is what a green result actually
-proves.
+```mermaid
+flowchart TB
+    contract["Contract tests<br/>Does the interface behave?"]
+    numerical["Numerical checks<br/>Are values within stated tolerances?"]
+    workflow["Workflow tests<br/>Do components and artifacts agree?"]
+    benchmark["Benchmarks<br/>How does named behavior compare?"]
+    evidence["Study evidence<br/>Which bounded claims are supported?"]
+    release["Release gates<br/>Are public surfaces aligned now?"]
 
-Quality matters here because the runtime surface is broad. A single green
-check cannot mean the same thing for unit behavior, benchmark posture,
-comparative evidence, and release readiness.
+    contract --> workflow
+    numerical --> workflow
+    workflow --> benchmark
+    benchmark --> evidence
+    workflow --> release
+    evidence --> release
+```
 
-## What This Section Answers
+The arrows show increasing context, not a universal promotion ladder. A method
+can have strong numerical tests without belonging to a published study.
 
-- Which validation lane proves which kind of behavior?
-- How should benchmark results be interpreted?
-- What makes a release believable instead of merely green?
-- How does the project keep public claims narrower than the evidence supports?
+## Find The Weakest Required Edge
+
+Quality review is a dependency problem. Begin with the statement being relied
+on, trace every required edge to its owner, and stop at the first missing,
+failed, stale, or contradictory record.
+
+```mermaid
+flowchart LR
+    claim["Bounded claim"] --> observations["Required observations"]
+    observations --> result["Structured result"]
+    result --> execution["Execution and diagnostics"]
+    execution --> inputs["Admitted inputs"]
+    observations --> rule["Acceptance rule"]
+    claim --> freshness["Freshness state"]
+```
+
+The claim is no stronger than its weakest required edge. Passing code tests
+cannot supply missing study observations; a current evidence verdict cannot
+repair an unidentifiable input; a complete result cannot satisfy a tolerance
+that failed. This rule also prevents a large green repository aggregate from
+overriding the local record that actually owns the decision.
+
+Use the nearest owner to describe the outcome precisely:
+
+| Weak edge | Honest outcome |
+| --- | --- |
+| input identity or admission | population is unresolved; do not interpret the fit |
+| execution or diagnostics | run is refused, failed, partial, or unsuitable for the claim |
+| structured result contract | value cannot be consumed reliably |
+| comparison observation or rule | correspondence is mismatched or not comparable |
+| freshness | historical evidence exists but does not support the current revision |
+| no weak edge in the declared graph | cite the bounded claim with its denominator and limits |
+
+## Read By Question
+
+| Question | Page |
+| --- | --- |
+| What does each class of check prove? | [Validation lanes](validation-lanes.md) |
+| How are tests organized? | [Test strategy](test-strategy.md) |
+| How should public claims expose incomplete proof? | [Evidence honesty and limits](evidence-honesty-and-limits.md) |
+| What does native benchmark evidence establish? | [Native benchmark evidence](native-benchmark-evidence.md) |
+| What blocks publication? | [Release and publication gates](release-and-publication-gates.md) |
+| How should a release be reviewed? | [Release review workflow](release-review-workflow.md) |
+
+## Evaluate One Result
+
+Start with the artifact or value you intend to rely on, not the repository's
+largest green aggregate:
 
 ```mermaid
 flowchart TD
-    A[Quality question] --> B[Testing strategy]
-    A --> C[Validation lanes]
-    A --> D[Benchmark interpretation]
-    A --> E[Release review]
-    A --> F[Claim honesty]
+    result["Result or public claim"] --> identity{"Can inputs, method,<br/>configuration, and revision be identified?"}
+    identity -- no --> refuse["Do not rely on the result"]
+    identity -- yes --> contract{"Did the owning interface<br/>complete its contract?"}
+    contract -- no --> refuse
+    contract -- yes --> science{"Which numerical, benchmark,<br/>or evidence lane supports the claim?"}
+    science -- none --> capability["Describe implementation only"]
+    science -- found --> limits{"Are failures, denominators,<br/>and limits retained?"}
+    limits -- no --> refuse
+    limits -- yes --> cite["Cite the bounded result and proof"]
 ```
 
-## Quality Reading Model
+For example, a serialized maximum-likelihood result can pass its contract and
+round-trip tests while its starting trees disagree or its benchmark corpus
+reveals a recovery failure. The artifact is valid; the stronger scientific
+claim is not. Preserve both conclusions.
 
-- read validation lanes to understand what runtime behavior was actually
-  checked
-- read benchmark evidence to understand performance signals without turning
-  them into blanket scientific claims
-- read release review and publication gates to understand whether the public
-  repository story is still aligned
-- read evidence honesty guidance whenever a green check might be mistaken for
-  broader scientific closure
+## Proof Must Name Its Scope
 
-## Proof Surfaces
+A trustworthy claim identifies the subject, fixture or corpus, method and
+configuration, comparison or invariant, tolerance or acceptance rule, and
+current verdict. “Validated” without those qualifiers forces the reader to
+invent a stronger meaning than the evidence may support.
 
-| Proof surface | What it helps a reader judge |
+## Count Independent Proof Deliberately
+
+Several passing checks can be projections of the same underlying observation.
+A unit test, benchmark row, parity summary, and report generated from one
+fixture do not become four independent confirmations merely because they live
+in different files.
+
+| Shared dependency | What can still be claimed | What cannot be multiplied |
+| --- | --- | --- |
+| same input fixture and expected value | several contracts consumed one governed case correctly | independent data coverage |
+| same implementation path exposed by Python and CLI | both interfaces preserve the result contract | independent numerical implementations |
+| same external-engine output parsed into several tables | each projection is internally consistent | repeated external execution or algorithmic agreement |
+| same reference observation reused across parity and evidence | both records can cite the observation within their scopes | independent reference confirmation |
+| same random seed or simulated history across metrics | multiple properties of one replicate are inspectable | replicate count or stochastic robustness |
+| same release report summarized on several pages | public projections agree with one decision | additional release gates |
+
+Record the proof lineage and count independence at the level relevant to the
+claim: distinct inputs, implementations, executions, chains, replicates,
+references, or reviewers. Correlated proof can be valuable, but its shared
+parent must remain visible.
+
+## Quality Decision Record
+
+| Field | Reviewer requirement |
 | --- | --- |
-| Test strategy | what kinds of behavior the repository bothers to check at all |
-| Validation lanes | which green results correspond to which level of proof |
-| Benchmark evidence | how to read performance and native-inference signals without overclaiming |
-| Release review | whether docs, metadata, and governed reports remain aligned |
-| Evidence honesty | where the code surface is broader than the closed evidence surface |
+| subject | exact parser, method, workflow, adapter, artifact, package, or claim |
+| scope | fixtures, corpus, taxa, models, versions, configuration, and exclusions |
+| owner | native implementation, Bijux adapter, or named external engine |
+| observation | invariant, value, topology, distribution summary, artifact, or gate condition |
+| rule | exact, tolerance-based, structural, distributional, or policy acceptance criterion |
+| denominator | selected, executed, passed, failed, skipped, and missing cases |
+| status | lane-specific verdict plus warnings and unresolved boundaries |
+| revision | code, data, reference, schema, and environment identity |
 
-## Why This Section Is Public, Not Internal
+A percentage without its denominator and exclusions is not an adequate quality
+record. Neither is a green aggregate whose failed or skipped components cannot
+be enumerated.
 
-This repository has enough scientific and runtime breadth that readers need a
-public explanation of how trust is earned. Quality pages are not maintainer
-notes. They are part of the user-facing truth surface.
+## Important Separations
 
-## Read Next
+- Correct serialization does not establish correct science.
+- Agreement with a reference does not establish that the reference model fits
+  a new biological question.
+- Reproducibility does not eliminate systematic error.
+- Passing benchmarks do not guarantee behavior outside their corpus.
+- A release gate proves alignment at a particular revision, not permanent
+  quality.
+- Documentation can disclose proof; it cannot manufacture it.
 
-- [Test strategy](test-strategy.md)
-- [Validation lanes](validation-lanes.md)
-- [Native benchmark evidence](native-benchmark-evidence.md)
-- [Release review workflow](release-review-workflow.md)
-- [Release and publication gates](release-and-publication-gates.md)
-- [Evidence honesty and limits](evidence-honesty-and-limits.md)
+## Failure And Uncertainty Are Outputs
+
+Warnings, non-convergence, weak support, sensitivity, excluded cases, and open
+evidence verdicts must remain visible. A pipeline that converts all completed
+processes into success destroys information reviewers need.
+
+## Assemble A Trust Packet
+
+For any result used in a publication or downstream decision, retain:
+
+1. input identities and the exact analytical population;
+2. runtime, model, configuration, seeds, and external-owner versions;
+3. structured result plus warnings, diagnostics, and partial state;
+4. the closest numerical, benchmark, or evidence record;
+5. acceptance rule, denominator, verdict, and unresolved observations;
+6. the revision and freshness state under which the conclusion was reviewed.
+
+This packet is deliberately result-scoped. A repository release report can
+show that public surfaces align, but the result's own scientific evidence must
+still travel with it.
+
+## Stronger Context Can Reveal New Failure
+
+A method may pass unit and known-answer tests yet fail integration because
+taxa are misaligned, fail a benchmark because a boundary case is unstable, or
+remain non-comparable in a study because the external reference cannot be
+executed under matched assumptions. Later lanes add context; they do not merely
+repeat earlier checks at larger scale.
+
+## Reader Standard
+
+For a result you plan to rely on, locate the closest proof surface, inspect its
+inputs and acceptance rule, confirm freshness against the current runtime, and
+state limitations with the result. If the appropriate proof does not exist,
+describe the capability as implemented or experimental according to its actual
+contract—not as validated by association.
+
+When two proof surfaces disagree, use the weaker claim until the contradiction
+is resolved. A passing summary never erases a retained mismatch, and an old
+successful run never overrides a freshness failure at a newer revision.

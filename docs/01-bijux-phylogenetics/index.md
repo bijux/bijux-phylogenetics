@@ -1,122 +1,282 @@
 ---
-title: Product Guide
+title: Phylogenetics Product Handbook
 audience: public
 type: index
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-05
+last_reviewed: 2026-07-22
 ---
 
-# Bijux Phylogenetics Product Guide
+# Phylogenetics Product Handbook
 
-This handbook explains the public runtime in product terms: what the
-repository owns, how the capability families fit together, which interfaces
-are stable, how to operate them, and how to read their quality boundaries
-without flattening everything into one vague claim.
+`bijux-phylogenetics` is a Python runtime for building, running, and reviewing
+phylogenetic analyses. Its public contract includes native analytical code,
+explicit integrations with external engines, typed results, and durable output
+bundles. The distinction between those surfaces is part of the product.
 
-Use it when you want the product answer first without losing the source-tree
-depth behind that answer.
+The runtime is designed around scientific decisions rather than file
+conversion alone. It determines which observations enter an analysis, which
+model or algorithm evaluates them, what diagnostic state qualifies the
+result, and which structured record survives for another person to review.
+Python, CLI, and adapter interfaces are projections of those decisions; they
+do not define different scientific truths.
 
-```mermaid
-flowchart TD
-    A[Start with a product question] --> B[What is this runtime for?]
-    A --> C[How is it organized?]
-    A --> D[Which interface should I use?]
-    A --> E[How do I run it?]
-    A --> F[How much should I trust a result?]
-    B --> G[Foundation]
-    C --> H[Architecture]
-    D --> I[Interfaces]
-    E --> J[Operations]
-    F --> K[Quality]
-```
-
-<div class="bijux-quicklinks">
-  <a class="md-button md-button--primary" href="../../index.md">Documentation home</a>
-  <a class="md-button" href="foundation/">Runtime purpose and scope</a>
-  <a class="md-button" href="architecture/">Architecture and package roles</a>
-  <a class="md-button" href="interfaces/">Public interfaces</a>
-  <a class="md-button" href="operations/">Installation and workflows</a>
-  <a class="md-button" href="quality/">Quality and release limits</a>
-</div>
-
-## What The Runtime Already Makes Possible
-
-The checked-in runtime already spans:
-
-- tree inspection, comparison, support handling, rootedness review, and
-  rendering
-- alignment validation, trimming, translation, and dataset preparation
-- native finite-state likelihood plus native maximum-likelihood and supported
-  native Bayesian public surfaces
-- comparative regression, phylogenetic signal, discrete evolution,
-  diversification, and ancestral reconstruction
-- explicit parsimony, simulation, datasets, benchmark corpora, and
-  review-facing report generation
-
-## Runtime Capability Atlas
-
-| Capability family | What this handbook should help a reader discover |
+| Product responsibility | Reader-visible consequence |
 | --- | --- |
-| Tree and alignment runtime | owned semantics, validation paths, comparison surfaces, and reportable artifacts |
-| Native inference runtime | locally owned likelihood and inference contracts rather than only wrapped executables |
-| Comparative runtime | PGLS, signal, regression, ancestral, discrete-evolution, and diversification families |
-| Workflow runtime | CLI and typed Python routes that emit durable artifacts |
-| Trust runtime | benchmarks, validation lanes, evidence links, and release-facing quality reading |
+| scientific objects | trees, taxa, alignments, traits, states, and partitions retain explicit identity |
+| analytical ownership | native calculations and external-engine calculations remain distinguishable in every result |
+| result semantics | estimates travel with model state, warnings, exclusions, uncertainty, and refusal conditions |
+| durable handoff | manifests and structured artifacts own facts later rendered in tables, figures, and reports |
+| bounded evidence | parity and Evidence Book records qualify only the claims and populations they actually evaluate |
 
-## Why This Is Not A Small Wrapper Layer
+## Know When An Analysis Is Reviewable
+
+A reviewer should be able to answer these questions without rerunning the
+analysis or inferring facts from filenames:
+
+| Review question | Owning record |
+| --- | --- |
+| Which observations entered, changed, or were excluded? | admitted population and transformation/reconciliation ledger |
+| Which method performed each scientific computation? | native result identity or external-engine execution record |
+| What exactly was estimated, searched, sampled, or reconstructed? | model, estimand, configuration, and typed result |
+| Which warnings or diagnostics limit interpretation? | result-linked diagnostic and decision records |
+| Which files are accepted outputs rather than incidental run products? | manifest with roles, checksums, statuses, and inventory |
+| Which public statement, if any, consumes the result? | claim-scoped comparison or Evidence Book record |
+
+If any answer exists only in terminal history, prose, or a figure, the handoff
+is incomplete. The product surfaces are designed so these answers remain
+machine-readable while reports provide a human projection of the same state.
+
+## Understand The Product As Four Connected Contracts
+
+The runtime is not just a collection of algorithms. Every supported route
+connects four contracts, and each contract can stop independently.
+
+| Contract | Decision it owns | Evidence of completion |
+| --- | --- | --- |
+| scientific intake | which taxa, characters, traits, trees, partitions, and units are admitted | validated objects plus retained exclusions and transformations |
+| computation | which model, algorithm, engine, search, sampler, or reconstruction was evaluated | typed result with method identity, status, diagnostics, and warnings |
+| persistence | which execution state survives outside the process | manifest and structured artifacts with schema, checksums, and complete inventory |
+| claim consumption | which bounded statement may use the result | explicit comparison or Evidence Book record with observations, rules, verdict, and limitations |
 
 ```mermaid
 flowchart LR
-    A[Canonical runtime] --> B[Trees and alignments]
-    A --> C[Native likelihood and inference]
-    A --> D[Comparative and ancestral analysis]
-    A --> E[Reports, bundles, and artifacts]
-    A --> F[Benchmarks and validation]
+    intake["Scientific intake<br/>defines population"]
+    compute["Computation<br/>defines estimand"]
+    persist["Persistence<br/>defines durable record"]
+    consume["Claim consumption<br/>defines conclusion"]
+
+    intake --> compute --> persist --> consume
 ```
 
-The runtime is larger than a "FASTA to tree" wrapper story. It owns a real
-tree runtime, lower-level likelihood contracts, benchmark surfaces, typed
-workflow results, and substantial comparative-analysis families. This
-handbook keeps that depth visible while also keeping evidence limits visible.
+A route that ends after persistence can be complete and useful without making
+a governed study claim. Conversely, a claim cannot skip directly from input
+files to a favorable conclusion: the computation and durable result identities
+must remain inspectable.
 
-## Read By Question
+## Computation Ownership Survives Every Projection
 
-- What is this repository trying to do, and what is it refusing to claim?
-  Start with [Foundation](foundation/index.md).
-- Which package or capability family owns a surface?
-  Start with [Architecture](architecture/index.md).
-- Which entry point should I use for my task?
-  Start with [Interfaces](interfaces/index.md).
-- How do I install the runtime and run practical workflows?
-  Start with [Operations](operations/index.md).
-- How do I judge trust, release posture, and limits?
-  Start with [Quality](quality/index.md).
+Bijux can own an entire result contract without owning every algorithm that
+contributed to it. Ownership stays attached through normalization, reporting,
+comparison, and citation.
 
-## Flagship Guides
+```mermaid
+flowchart LR
+    native["Bijux-native method"] --> typed["Typed Bijux result"]
+    external["Named external engine"] --> adapter["Bijux adapter<br/>and parser"] --> typed
+    typed --> artifacts["Structured artifacts<br/>and manifest"]
+    artifacts --> evidence["Optional claim-indexed<br/>evidence review"]
 
-- [Surface selection guide](interfaces/surface-selection.md)
-- [Native maximum-likelihood workflows](operations/native-maximum-likelihood-workflows.md)
-- [Native Bayesian workflows](operations/native-bayesian-workflows.md)
-- [Native benchmark review](operations/native-benchmark-review.md)
-- [Validation lanes](quality/validation-lanes.md)
-- [Claim reading guide](foundation/claim-reading-guide.md)
+    external -. owns external computation .-> adapter
+    native -. owns native computation .-> typed
+```
 
-## Read This Handbook Like A Map
+| Surface | Bijux owns | Ownership that remains elsewhere |
+| --- | --- | --- |
+| native method | algorithm, numerical contract, diagnostics, and result | scientific choice and downstream interpretation remain with the study |
+| external-engine route | input admission, invocation, capture, parsing, normalization, and artifacts | the external engine owns its algorithm and native output semantics |
+| report or figure | projection contract, source linkage, and rendering identity | the analytical result still owns the values |
+| Evidence Book claim | dependency graph, comparison rule, verdict, limitations, and freshness | source studies and reference implementations retain their identities |
 
-1. Start with [Foundation](foundation/index.md) to understand what the runtime
-   is claiming and refusing to claim.
-2. Continue to [Architecture](architecture/index.md) to understand which
-   package and capability family owns what.
-3. Use [Interfaces](interfaces/index.md) to choose the right public surface.
-4. Use [Operations](operations/index.md) to run the package in the right mode.
-5. Finish with [Quality](quality/index.md) to understand how strong the proof
-   surface really is.
+Normalization makes results reviewable under shared interfaces; it never
+rewrites computation provenance. Evidence review consumes those identities
+and can qualify or refuse a claim without changing who performed the method.
 
-## Related Reading
+## Select An Analysis Route
 
-- Use the [Evidence book](../02-bijux-phylogenetics-evidence-book/index.md) when the
-  question is study evidence, parity, freshness, or coverage gaps.
-- Use the [Maintainer handbook](../03-bijux-phylogenetics-maintain/index.md)
-  when the question is release stewardship, documentation alignment, or
-  repository health.
+| Starting material and question | Primary route | First review checkpoint |
+| --- | --- | --- |
+| a tree that needs structural or branch-length review | `inspect`, `validate`, `diagnose`, or the tree Python surface | rootedness, branch lengths, tip identity, support scale |
+| sequences that need alignment, trimming, and tree inference | sequence-to-tree workflow or explicit alignment and engine commands | sequence type, retained sites, model, engine ownership |
+| a tree plus continuous or categorical traits | comparative workflow and domain-specific model commands | taxon reconciliation, design matrix, covariance model |
+| ancestral values or histories | ancestral and discrete-evolution surfaces | state space, transition model, node identity, uncertainty |
+| character-cost or topology-search analysis | parsimony surfaces | coding, cost matrix, search coverage, equal-best trees |
+| controlled recovery or stress analysis | simulation and dataset workflows | known truth, independence, seed policy, acceptance rule |
+| packaged dataset or external study table | dataset catalog, loaders, exports, and study-input linkage | provenance, schema, taxon population, units, transformations, exclusions |
+| region, coordinate, host, or niche history | biogeography, phylogeography, and ecology surfaces | state/spatial model, nodes, branches, constraints, uncertainty, event denominator |
+| scientific result requiring tables, figures, or a review package | reports, rendering, and publication artifact surfaces | structured source, row/mark identity, manifest, inventory, audit and revalidation |
+| a claim that must be cited or released | Evidence Book review path | claim identifier, source, inputs, checks, freshness, verdict |
+
+The [scientific domain map](../02-bijux-phylogenetics-domains/index.md) defines
+the assumptions behind these routes. The [surface selection guide](interfaces/surface-selection.md)
+then distinguishes Python composition, repeatable CLI execution, and durable
+artifact consumption.
+
+## Move From Question To Citation
+
+```mermaid
+flowchart LR
+    question["Bounded scientific<br/>question"] --> study["Complete study<br/>guide"]
+    study --> result["Typed result,<br/>diagnostics and refusal state"]
+    result --> handoff["Manifest, structured<br/>artifacts and report"]
+    handoff --> evidence["Claim observations,<br/>checks and freshness"]
+    evidence --> citation["Qualified statement"]
+```
+
+Use the route that matches the work:
+
+- [sequence-to-tree study](operations/sequence-to-tree-study.md) for admitted
+  FASTA through external alignment, trimming, inference, and support;
+- [comparative and ancestral study](operations/comparative-and-ancestral-study.md)
+  for a shared tree–trait population with separate model claims;
+- [topology comparison study](operations/topology-comparison-study.md) for
+  rooted or unrooted split correspondence under an explicit taxon denominator;
+- [analysis report handoff](operations/analysis-report-handoff.md) for linked
+  machine and human review artifacts;
+- [result and refusal semantics](interfaces/result-and-refusal-semantics.md)
+  when execution does not reach an accepted scientific state;
+- [reading an evidence bundle](../03-bijux-phylogenetics-evidence-book/reading-an-evidence-bundle.md)
+  when a result is used to support a public statement.
+
+Evidence is not an automatic final stage for every analysis. Stop at the
+structured result when no governed claim consumes it, and describe that scope
+honestly. When a claim does consume the result, the bundle—not proximity to a
+study guide—owns its verdict.
+
+## Define Completion Before Running
+
+An analysis route is ready only when its completion condition names both the
+scientific result and the record needed to review that result. “The command
+finished” is an execution observation, not a scientific completion rule.
+
+| Route | Scientific completion condition | Review record that closes the route |
+| --- | --- | --- |
+| tree or alignment validation | every retained, excluded, and refused item has an explicit reason | structured result with the original input identity and complete denominator |
+| likelihood or comparative fit | estimand, model, fitted population, objective convention, and diagnostics are resolved | typed result plus configuration, taxa/design identity, warnings, and persisted tables |
+| topology search or ancestral reconstruction | selected solutions remain connected to search coverage or uncertainty | result plus candidates or samples, node/clade identity, and uncertainty diagnostics |
+| external-engine workflow | engine execution and parsing both reach an accepted terminal state | engine command and version, native outputs, parser record, normalized result, and manifest |
+| reference correspondence | the selected comparison case reaches a governed verdict | registry selection, raw observations, normalization, tolerance, and failure artifact when applicable |
+| Evidence Book claim | every required claim dependency is present, current, and internally consistent | governed bundle with provenance, inputs, primary output, checks, freshness, and verdict |
+
+A partial or refused result can be a complete record when the contract retains
+why it stopped and what was not produced. It is not a completed scientific
+analysis, and downstream consumers must preserve that distinction.
+
+## Locate The Scientific Decision
+
+The public interface starts a computation; the owning runtime module decides
+its scientific meaning. Use the decision map to find assumptions and
+diagnostics before treating a command name as a method description.
+
+| Decision | Owning runtime surface | Identity that must accompany the result | First diagnostic boundary |
+| --- | --- | --- | --- |
+| tree structure and clade identity | `PhyloTree`, tree I/O, topology and validation modules | rooting, tip labels, branch lengths, support scale | duplicate taxa, invalid lengths, non-comparable tip sets |
+| alignment and character interpretation | FASTA, coding, partition and alignment modules | alphabet, record order, genetic code, partitions, gap/missing policy | unequal length, invalid symbols, excluded coding records |
+| finite-state likelihood | `phylo.likelihood` model and pruning surfaces | state space, rate model, frequencies, branch-length treatment | non-finite partials, invalid probabilities, objective failure |
+| native maximum likelihood | nucleotide ML result and search surfaces | start tree, model, bounds, seed/search controls | convergence, evaluated candidates, boundary estimates |
+| native Bayesian inference | `bayesian.run_bayesian_inference(...)` and typed posterior state | supported DNA model, priors, proposals, chain, seed, burn-in | acceptance, ESS, trace drift, retained samples |
+| comparative regression | comparative PGLS and model-selection surfaces | taxa, response, design columns, covariance and likelihood convention | rank, residual behavior, covariance boundary, model identity |
+| ancestral reconstruction | continuous/discrete ancestral modules | tree, node identity, trait/state space, transition model | uncertainty, infeasible states, sensitivity across trees/models |
+| parsimony and topology search | parsimony scoring and search modules | character encoding, cost matrix, rooting, move set | equal-best solutions, search coverage, ambiguity handling |
+| external engine execution | `engines` and Bayesian adapter surfaces | executable, version, command, native files, parser contract | unavailable engine, timeout, incomplete or stale bundle |
+
+The [runtime system map](architecture/runtime-system-map.md) follows these
+decisions through implementation layers. The [domain map](../02-bijux-phylogenetics-domains/index.md)
+explains when each decision is scientifically appropriate.
+
+## Make Four Decisions Before Execution
+
+```mermaid
+flowchart LR
+    object["Scientific object<br/>and identity"]
+    model["Model, assumptions,<br/>and estimand"]
+    owner["Native runtime or<br/>external engine"]
+    record["Result, diagnostics,<br/>and artifact contract"]
+
+    object --> model --> owner --> record
+```
+
+1. **Object identity:** decide which trees, taxa, alignments, traits, states,
+   and partitions belong to the analysis.
+2. **Scientific contract:** name the model family, transformation, costs,
+   priors, search or sampler, and quantity to interpret.
+3. **Computation owner:** choose an owned native implementation or a named
+   external engine before selecting its interface.
+4. **Review contract:** decide which diagnostics, omissions, tables,
+   manifests, and visualizations must survive execution.
+
+This order prevents an available command from silently deciding the model or
+the evidence standard.
+
+## A Complete Result Is More Than An Estimate
+
+```mermaid
+flowchart LR
+    identity["Input identity"]
+    assumptions["Model and<br/>method assumptions"]
+    execution["Versioned execution"]
+    estimate["Estimate, topology,<br/>or reconstruction"]
+    diagnostics["Convergence, support,<br/>uncertainty, sensitivity"]
+    bundle["Manifest and linked<br/>review artifacts"]
+
+    identity --> execution
+    assumptions --> execution
+    execution --> estimate
+    execution --> diagnostics
+    estimate --> bundle
+    diagnostics --> bundle
+```
+
+An estimate without input identity cannot be reproduced. An estimate without
+diagnostics cannot be interpreted safely. A report without structured results
+cannot be consumed reliably. The workflow is complete when all three
+relationships remain inspectable.
+
+## Locate The Owning Contract
+
+| Disputed subject | Canonical record | Reader-facing interpretation |
+| --- | --- | --- |
+| function, signature, or default | curated public source and contract tests | Python and API guides |
+| command, option, or exit behavior | command registry and CLI tests | generated CLI reference and workflow guides |
+| service request or response | pinned OpenAPI schema and server tests | API surface guide |
+| artifact field or omission | versioned result/manifest schema and producer tests | artifact contracts and consumption guide |
+| numerical or topological behavior | named validation or benchmark record | quality and domain guides |
+| parity case outcome | parity registry, observation rows, and failure artifacts | parity handbook |
+| scientific claim verdict | governed Evidence Book bundle and indexes | study guide |
+
+The public handbook explains these contracts but cannot override them. When a
+guide and a structured record disagree, use the owning contract to identify the
+stale projection and preserve the disagreement until it is corrected.
+
+## Continue By Concern
+
+| Concern | Continue with | Finish with |
+| --- | --- | --- |
+| first analysis | [installation](operations/installation-and-setup.md) and [surface selection](interfaces/surface-selection.md) | [artifact consumption](interfaces/artifact-consumption-guide.md) |
+| scientific capability | [domain map](../02-bijux-phylogenetics-domains/index.md) | the model-specific result and diagnostic guide |
+| tree-set, selection, or support review | [inference](../02-bijux-phylogenetics-domains/inference/index.md) | [diagnostics and sensitivity](../02-bijux-phylogenetics-domains/scientific-assurance/diagnostics-and-sensitivity.md) |
+| Spatial and ecological evolution | [evolutionary analysis](../02-bijux-phylogenetics-domains/evolutionary-analysis/index.md) | the biogeography, phylogeography, host, or niche ledger |
+| Publication review | [reporting and rendering](../02-bijux-phylogenetics-domains/scientific-assurance/reporting-and-rendering.md) | [publication artifact review](../02-bijux-phylogenetics-domains/scientific-assurance/publication-artifact-review.md) |
+| reference correspondence | [parities and correspondence](../04-bijux-phylogenetics-parities/index.md) | the selected case, observation, normalization, and verdict |
+| scientific claim review | [claim reading guide](foundation/claim-reading-guide.md) | [Evidence Book](../03-bijux-phylogenetics-evidence-book/index.md) |
+
+## Product Limits
+
+- The available command or function is not a recommendation to use its model.
+- A deterministic bundle is reproducible only with its declared inputs and
+  execution assumptions.
+- Numerical agreement needs stated tolerances and comparable conventions.
+- External engines remain separate software with their own support constraints.
+- `mismatch_unexplained` and `not_comparable` verdicts are visible product
+  information, not documentation defects to be worded away. Open or blocked
+  resolution work remains a separate operational record.

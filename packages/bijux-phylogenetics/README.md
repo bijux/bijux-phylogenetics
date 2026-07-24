@@ -19,119 +19,276 @@
 [![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
 <!-- bijux-phylogenetics-badges:generated:end -->
 
-Canonical runtime package for the `bijux-phylogenetics` repository.
+The canonical Python distribution for the Bijux phylogenetics runtime. It
+provides owned tree, likelihood, inference, comparative, ancestral, parsimony,
+simulation, dataset, and reporting contracts together with explicit adapters
+for selected external engines.
 
-This package is the public Python API and CLI for tree validation, alignment
-handling, comparative trait analysis, ancestral-state reconstruction,
-discrete-state evolution analysis, external-engine orchestration, native
-likelihood and inference, Bayesian posterior summarization, diversification
-review, evidence bundles, explicit parsimony scoring, and HTML report
-generation.
+```text
+Python or CLI caller
+        |
+        v
+validated scientific objects and configuration
+        |
+        +----> Bijux-owned numerical method --------+
+        |                                            |
+        +----> governed adapter -> external engine --+
+                                                     v
+                                      typed result and diagnostics
+                                                     |
+                                                     v
+                                 manifest, JSON, TSV, tree, figure, report
+```
 
-Choose this package when you want the full runtime contract rather than the
-shorter compatibility alias.
+Both execution paths use the same admission, result, and artifact discipline,
+but they retain different computation owners. A normalized IQ-TREE2 or BEAST
+result remains an external-engine result; sharing a Python result shape does
+not make the algorithm native.
 
-## Package Structure At A Glance
+## What The Distribution Contains
 
-- runtime package
-- CLI workflows
-- workflow Python API
-- native runtime contracts
-- likelihood foundations
-- maximum-likelihood inference
-- Bayesian inference
-- benchmark contracts
+Installing `bijux-phylogenetics` gives one runtime with three deliberately
+different kinds of capability:
 
-## Install
+| Capability | Included | Ownership consequence |
+| --- | --- | --- |
+| scientific objects and native methods | tree, dataset, model, likelihood, parsimony, comparative, ancestral, simulation, and reporting APIs | the installed Bijux runtime owns validation and computation |
+| governed external-engine routes | command construction, execution capture, result parsing, diagnostics, and artifact lineage | the named executable still owns the scientific algorithm |
+| packaged examples and schemas | read-only demonstration inputs, machine contracts, and resource lookup | they verify installation and interoperability, not a study conclusion |
 
-`bijux-phylogenetics` supports Python 3.11 and newer.
+Repository release gates, Evidence Book maintenance, and documentation
+publication tooling are intentionally absent from the runtime contract. Those
+surfaces decide whether this repository may publish evidence or packages; they
+are not dependencies of an end-user analysis. This separation keeps a
+scientific environment smaller and prevents repository policy from being
+mistaken for scientific validation.
+
+## Read Success At The Correct Boundary
+
+The runtime exposes several success states, and each answers a narrower
+question than the next:
+
+| Boundary | Success establishes | It does not establish |
+| --- | --- | --- |
+| installation | the selected distribution was resolved and installed | that Python imports the intended artifact |
+| import and command discovery | the runtime and entry point load in this environment | that project inputs satisfy a scientific contract |
+| admission | identifiers, schemas, states, units, and preconditions are valid | that the selected model or method is appropriate |
+| execution | the named native method or external engine reached an admissible terminal state | that diagnostics and uncertainty support use of the result |
+| scientific acceptance | a declared consumer accepts the complete result for one bounded claim | that the result transfers to a different population, model, or claim |
+
+Preserve the state at every boundary. A zero exit code can coexist with
+scientific warnings or a qualified result, while a refusal can be the correct
+and reproducible outcome for inadmissible inputs.
+
+## Installation
 
 ```bash
-python3.11 -m pip install bijux-phylogenetics
+python -m pip install bijux-phylogenetics
 bijux-phylogenetics --help
 ```
 
-The installed runtime also ships packaged example inputs:
+Python 3.11 or newer is required. External-engine workflows also require their
+named executable—such as MAFFT, trimAl, IQ-TREE2, FastTree, MrBayes, or
+BEAST—to be installed separately.
+
+## Choose The First Scientific Route
+
+| Starting material | Public route | First durable record |
+| --- | --- | --- |
+| unaligned FASTA | sequence-to-tree workflow | admitted-sequence report and stage-linked workflow result |
+| tree plus continuous predictors | comparative model workflow | reconciled population, model specification and coefficient result |
+| tree plus discrete trait | ancestral reconstruction workflow | state model, node identities and uncertainty-aware estimates |
+| two candidate trees | topology comparison workflow | shared-taxon population, comparison mode and split observations |
+| existing tree, alignment, traits or metadata | report workflow | machine manifest linked to the source scientific records |
+
+The route is selected by the scientific object and intended result, not by the
+shortest command. Native methods are computed by this distribution. Adapter
+workflows retain Bijux orchestration while naming the external executable that
+owns alignment, trimming, or inference.
+
+| Decision boundary | Record that must survive |
+| --- | --- |
+| scientific object | admitted input identity and exclusions |
+| method owner | native implementation or named external executable |
+| computation | typed result, status, warnings, and diagnostics |
+| persistence | structured outputs and complete manifest inventory |
+| consumption | explicit acceptance or refusal for one bounded claim |
+
+Do not skip admission because an example runs successfully. Packaged examples
+prove installation and resource wiring; they do not approve a project dataset
+or analysis design.
+
+## Confirm Package Identity
+
+Check the installed distribution and import before diagnosing scientific
+behavior:
 
 ```python
-from pathlib import Path
+from importlib.metadata import version
 
-from bijux_phylogenetics.core import copy_example_inputs
+import bijux_phylogenetics
 
-copy_example_inputs(Path("artifacts/example-inputs"))
+print(version("bijux-phylogenetics"))
+print(bijux_phylogenetics.__version__)
+print(bijux_phylogenetics.__all__)
 ```
 
-## What This Package Already Covers
+The distribution version identifies the installed artifact. The import version
+identifies the runtime loaded by Python. Investigate a disagreement before
+trusting results; editable installs, environment shadowing, and mixed
+environments can otherwise make a correct command execute the wrong code.
 
-| Capability family | Examples |
+## Verify The Installed Artifact
+
+Run the packaged demonstration before connecting project data:
+
+```bash
+bijux-phylogenetics demo run \
+  --out artifacts/capability-demo \
+  --manifest artifacts/capability-demo/manifest.json \
+  --json
+```
+
+This command reads examples from the installed distribution, copies them into
+a writable run directory, and produces tree, dataset, phylogenetic-input, and
+topology-comparison reports. Inspect the manifest and the four reports under
+`artifacts/capability-demo/reports/`. A successful run verifies package data,
+runtime imports, parsing, comparison, reporting, and artifact linkage in the
+current environment; it is not an inference-accuracy result.
+
+## Runtime Map
+
+| Layer | Responsibility |
 | --- | --- |
-| Trees | validation, rootedness review, support normalization, clade extraction, MRCA lookup, comparison, rendering, tree-set inspection |
-| Alignments | FASTA validation, trimming, coding checks, translation, partition-aware input handling |
-| Native likelihood | nucleotide, protein, codon, and discrete Mk finite-state likelihood foundations |
-| Native inference | native maximum-likelihood tree inference results and native Bayesian public inference entry points |
-| Comparative analysis | PGLS, signal, Brownian and OU modeling, discrete-state evolution, comparative diagnostics |
-| Ancestral analysis | continuous and discrete reconstruction, uncertainty ledgers, transition review, report artifacts |
-| Parsimony | Fitch, Wagner, Sankoff, Dollo, Camin-Sokal, ACCTRAN, DELTRAN, bootstrap, jackknife, NNI, SPR, ratchet |
-| Reports and artifacts | reviewer-facing TSV, JSON, HTML, manifest, benchmark, and evidence-linked bundle surfaces |
+| trees, alignments, traits, and models | validated scientific inputs |
+| `bijux_phylogenetics.api` | curated workflow composition |
+| native methods | Bijux-owned numerical computation |
+| external-engine adapters | invocation, capture, parsing, and normalized results while preserving engine ownership |
+| typed results | scientific fields, status, diagnostics, warnings, and refusal state |
+| JSON, TSV, manifests, figures, and reports | persistent machine and review projections |
 
-## Why The Package Is Deeper Than A Typical Wrapper Toolkit
+### Read Ownership Across The Runtime
 
-The package surface is broad because it joins several families that often live
-in separate projects:
+| Boundary | Owner | Consumer must verify |
+| --- | --- | --- |
+| public invocation | installed Python export or registered command | documented arguments, package version, and selected execution path |
+| scientific admission | tree, alignment, trait, partition, or dataset contract | identifiers, ordering, units/states, exclusions, and transformations |
+| numerical computation | named native method or external executable | model, objective, search/sampler state, diagnostics, and termination |
+| normalization and persistence | typed result, serializer, and artifact producer | status, omissions, schema, manifest inventory, and checksums |
+| scientific use | consuming workflow or governed evidence claim | acceptance rule, limitations, and complete denominator |
 
-- owned tree and topology semantics
-- workflow APIs that emit typed, reviewable results
-- native maximum-likelihood and supported native Bayesian public surfaces
-- comparative, ancestral, and parsimony families
-- packaged datasets, example inputs, reports, and benchmark contracts
+This chain is the shortest way to diagnose a disputed value. Start at the
+boundary that made the decision rather than at the final report that displayed
+it.
 
-## Why This Package Is Not Just A Wrapper
+## Trace The Installed Result Lineage
 
-- it owns the `PhyloTree` runtime and the topology, support, and tree-distance
-  semantics that sit underneath multiple workflows
-- it exposes typed Python workflow results with stable artifact writers instead
-  of only printing shell output
-- it includes native maximum-likelihood tree inference results and native
-  Bayesian public inference entry points as documented public surfaces
-- it keeps wrapper-backed orchestration honest by separating native ownership
-  from external-engine execution
+A runtime result should remain traceable after the Python process exits:
 
-## Flagship User Paths
+| Lineage component | Required identity |
+| --- | --- |
+| runtime | installed distribution version, import version, and implementation owner |
+| inputs | paths, content hashes, schemas, taxon/partition identity, and exclusions |
+| configuration | model, method, transforms, seed policy, and execution settings |
+| result | type/schema, status, diagnostics, warnings, and scientific fields |
+| inventory | manifest identity and every accepted output checksum |
+| projections | source result and transform behind each JSON, TSV, tree, figure, or report |
 
-- use the CLI when you want one governed workflow with durable files
-- use `bijux_phylogenetics.api` when you want typed workflow results in Python
-- use native likelihood or Bayesian modules when you want lower-level owned
-  runtime contracts
-- use the benchmark and evidence-book guides when you need trust-oriented
-  review rather than only execution
+The manifest identifies the accepted projections; the typed result owns status,
+warnings, and scientific fields. A projection that cannot be linked back to
+the installed distribution, input identity, configuration, and typed result is
+not a reconstructable runtime result.
 
-## Public Runtime Families
+For an external-engine route, insert executable path and version, invocation,
+captured streams, native files, and parser state between configuration and the
+normalized result. Normalization preserves ownership; it does not make the
+external computation native.
 
-The public runtime families are:
+## Capability Families
 
-- CLI workflows
-- workflow Python APIs
-- native runtime modules
-- comparative analysis
-- reports and artifacts
+| Family | Examples |
+| --- | --- |
+| tree runtime | rootedness, support, clades, MRCA, splits, topology distance, tree sets, SVG rendering |
+| alignment runtime | FASTA validation, trimming, translation, coding diagnostics, partitions |
+| native likelihood | nucleotide, protein, codon, and discrete Mk finite-state models |
+| native inference | maximum-likelihood tree results and supported Bayesian DNA inference |
+| comparative methods | PGLS, Brownian and OU fits, signal, regression diagnostics, discrete evolution |
+| ancestral methods | continuous/discrete reconstruction, uncertainty, stochastic mapping, tree-set review |
+| parsimony | Fitch, Wagner, Sankoff, Dollo, Camin–Sokal, optimization, resampling, topology search |
+| context and review | datasets, simulation, benchmarks, biogeography, diversification, reports, evidence bundles |
 
-## Python Workflow Surface
+## What Installation Does And Does Not Supply
 
-The stable notebook-and-pipeline surface lives under `bijux_phylogenetics.api`.
+| Surface | Included in the Python distribution | Separate requirement |
+| --- | --- | --- |
+| native tree, likelihood, comparative, ancestral, parsimony, simulation, and supported Bayesian methods | yes | scientifically appropriate inputs and analysis design |
+| packaged examples and demonstration inputs | yes | none for the installed-wheel proof |
+| external-engine adapters and parsers | yes | the named executable and its runtime dependencies |
+| R parity harness integration | Python-side contract | R, required packages, and explicit live-execution opt-in |
+| governed study evidence | checked in with the repository and published through the Evidence Book | do not infer that every installed method has study evidence |
+| HTML documentation and reports | generated presentation surfaces | structured artifacts for machine consumption |
 
-It exposes typed workflow results for:
+Installing an adapter does not install or reimplement its external engine.
+Installing the runtime does not convert Evidence Book boundaries into favorable
+verdicts.
 
-- FASTA validation
-- multiple-sequence alignment
-- alignment trimming
-- full FASTA-to-tree execution
-- maximum-likelihood tree inference
-- branch-support estimation
-- topology comparison
-- PGLS comparative modeling
-- discrete ancestral reconstruction
-- reviewer-facing report generation
-- config-driven workflow execution
+## Select A Public Surface
+
+| Consumer | Use | Preserve |
+| --- | --- | --- |
+| Python application or notebook | curated `bijux_phylogenetics.api` workflows and documented domain imports | typed result, configuration, warnings, serialized artifacts |
+| shell pipeline or scheduled execution | `bijux-phylogenetics` commands | command, exit status, JSON/TSV output, manifest, stderr |
+| reviewer or downstream tool | versioned JSON, TSV, manifests, and linked reports | schema/version identity and complete output inventory |
+
+Human-readable HTML is an inspection surface, not a stable data-exchange API.
+Use structured output when another program needs to consume the result.
+
+## Accept Or Refuse A Result
+
+Do not equate file creation or a zero process exit with a usable scientific
+result. Acceptance depends on the contract that produced it:
+
+| Producer | Accept only when | Preserve on refusal |
+| --- | --- | --- |
+| Python workflow | result status, required output inventory, and method diagnostics satisfy the caller's policy | typed failure or partial state, warnings, configuration, and any valid diagnostics |
+| CLI workflow | exit status agrees with structured status and every required artifact is present | stderr, JSON error record, manifest, and produced subset |
+| native inference | model/search or chain state is complete enough for the intended interpretation | start/chain diagnostics, boundary estimates, rejected moves, and seed |
+| external adapter | executable identity, invocation, native output, parser state, and normalized result are mutually consistent | captured streams, exit state, native partial output, and parse failure |
+
+The caller owns the final suitability decision. The runtime exposes the state
+needed to make it without treating warnings, skipped components, or partial
+output as success.
+
+## Publish A Reconstructable Result
+
+Before a result leaves the analysis environment, retain the input identities,
+runtime version, complete configuration, random seeds, typed or structured
+result, warnings and diagnostics, required output inventory, and the acceptance
+rule used for the scientific claim. For external execution, add executable
+version, invocation, captured streams, native files, and parser state.
+
+A Newick tree, coefficient table, or figure is a projection. Publish it beside
+the structured record that explains how it was produced and where its
+interpretation stops.
+
+## Separate Reuse From Reinterpretation
+
+Reusing a valid result does not permit changing its scientific meaning. A
+consumer may create a new table, figure, or report when the projection remains
+linked to the original status, model, units, ordering, exclusions, and
+diagnostics. A changed transform, denominator, node mapping, factor reference,
+or support interpretation creates a new analytical projection and must record
+that rule.
+
+When the original typed state is unavailable, consume the manifest and
+versioned structured artifacts. Do not reconstruct a result from HTML, console
+text, filenames, or row position. If the retained contract cannot express the
+needed interpretation, refuse the reuse or rerun from the identified inputs.
+
+## Workflow API
+
+Use the curated `bijux_phylogenetics.api` namespace for application and
+notebook workflows:
 
 ```python
 from pathlib import Path
@@ -142,39 +299,41 @@ from bijux_phylogenetics.api import (
     run_sequence_to_tree_workflow,
 )
 
-workflow = run_sequence_to_tree_workflow(
+sequence_run = run_sequence_to_tree_workflow(
     Path("dataset/sequences.fasta"),
     out_dir=Path("artifacts/sequence-to-tree"),
     sequence_type="dna",
 )
 
-comparative = run_comparative_model_workflow(
+comparative_run = run_comparative_model_workflow(
     Path("dataset/tree.nwk"),
     Path("dataset/traits.tsv"),
     response="response",
-    predictors=["predictor_one"],
+    predictors=["predictor"],
     lambda_value=1.0,
 )
 
-report = render_report_workflow(
-    tree_path=workflow.output_paths["tree"],
-    alignment_path=workflow.output_paths["trimmed_alignment"],
+render_report_workflow(
+    tree_path=sequence_run.output_paths["tree"],
+    alignment_path=sequence_run.output_paths["trimmed_alignment"],
     traits_path=Path("dataset/traits.tsv"),
     metadata_path=Path("dataset/metadata.tsv"),
     out_path=Path("artifacts/sequence-to-tree/report.html"),
 )
 
-workflow.write_json(Path("artifacts/sequence-to-tree/workflow.json"))
-workflow.write_tsv(Path("artifacts/sequence-to-tree/workflow.tsv"))
-comparative.write_tsv(Path("artifacts/comparative-model.tsv"))
+sequence_run.write_json(Path("artifacts/sequence-to-tree/workflow.json"))
+comparative_run.write_tsv(Path("artifacts/comparative-model.tsv"))
 ```
 
-## Native Inference And Benchmark Surfaces
+Structured results retain information that console output cannot: diagnostics,
+warnings, output identities, and serialization methods. Persist those records
+with model configuration and input identity when a run must be reviewed.
 
-Native Inference And Benchmark Surfaces are part of the public package
-contract.
+External-engine results must also retain the executable name and version,
+captured invocation, native output, and parser status. Normalization into a
+Bijux result never transfers ownership of the external algorithm.
 
-Public native surfaces include:
+## Native Inference Entry Points
 
 - `bijux_phylogenetics.phylo.likelihood.infer_nucleotide_maximum_likelihood_result(...)`
 - `bijux_phylogenetics.phylo.likelihood.infer_nucleotide_maximum_likelihood_result_from_alignment(...)`
@@ -182,41 +341,36 @@ Public native surfaces include:
 - `bijux_phylogenetics.bayesian.run_bayesian_inference(...)`
 - `bijux_phylogenetics.benchmark.benchmark_native_maximum_likelihood_suite(...)`
 
-These surfaces matter because the package now owns native maximum-likelihood
-tree inference results, native Bayesian public inference entry points, and
-benchmark review contracts in addition to the higher-level workflow wrappers.
+Native means that this package owns the computation. Tests, benchmarks, and
+Evidence Book bundles separately define which numerical or study claims are
+supported.
 
-Representative public runtime surfaces include:
+## Packaged Example Inputs
 
-- `bijux_phylogenetics.api.run_sequence_to_tree_workflow(...)`
-- `bijux_phylogenetics.api.run_comparative_model_workflow(...)`
-- `bijux_phylogenetics.compare.topology`
-- `bijux_phylogenetics.phylo.likelihood`
-- `bijux_phylogenetics.bayesian`
-- `bijux_phylogenetics.benchmark`
+```python
+from pathlib import Path
 
-## Public Reading Rule
+from bijux_phylogenetics.core import copy_example_inputs
 
-Runtime breadth and evidence closure are related, but they are not the same
-claim.
+copy_example_inputs(Path("artifacts/example-inputs"))
+```
 
-- A documented runtime surface is usable.
-- A native surface is locally implemented rather than only wrapped.
-- A study or benchmark surface explains how much trust that claim currently
-  carries.
+Packaged-resource smoke tests exercise this API from built wheels and source
+distributions, not only from the repository checkout.
 
-That separation is deliberate. The package can expose substantial runtime depth
-without pretending that every surrounding scientific claim is already closed by
-the evidence-book.
+## Documentation
 
-## Read This Next
+- [Product handbook](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
+- [Scientific domains](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-domains/)
+- [Python surface](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/python-surface/)
+- [Sequence-to-tree study](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/sequence-to-tree-study/)
+- [Comparative and ancestral study](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/comparative-and-ancestral-study/)
+- [Result and refusal semantics](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/result-and-refusal-semantics/)
+- [Reproducibility records](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/reproducibility-records/)
+- [CLI reference](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/cli-surface/)
+- [Native maximum-likelihood workflow](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/native-maximum-likelihood-workflows/)
+- [Native Bayesian workflow](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/native-bayesian-workflows/)
+- [Artifact contracts](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/artifact-contracts/)
+- [Evidence Book](https://bijux.io/bijux-phylogenetics/03-bijux-phylogenetics-evidence-book/)
 
-- [Surface selection guide](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/surface-selection/)
-- [Artifact consumption guide](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/artifact-consumption-guide/)
-- [Native Inference And Benchmark Surfaces](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/interfaces/native-inference-and-benchmarks/)
-- [Native maximum-likelihood workflows](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/native-maximum-likelihood-workflows/)
-- [Native Bayesian workflows](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/native-bayesian-workflows/)
-- [Native benchmark review](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/operations/native-benchmark-review/)
-- [Runtime architecture](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/architecture/)
-- [Release review workflow](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/quality/release-review-workflow/)
-- [Evidence-book guide](https://bijux.io/bijux-phylogenetics/02-bijux-phylogenetics-evidence-book/)
+Apache License 2.0.

@@ -1,63 +1,154 @@
 ---
-title: Installation and Setup
+title: Installation And Setup
 audience: public
 type: how-to
-status: active
+status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-21
 ---
 
 # Installation And Setup
 
-Use the canonical runtime package when you want the main product surface.
-
-## Basic Route
-
-1. Install the runtime package.
-2. Confirm the CLI resolves.
-3. Run a small validation or inspection command.
-4. Keep local run products under `artifacts/`.
-
-The operational goal is predictable local behavior, not hidden notebook state
-or scattered temporary outputs.
-
-## External Engine Runtime
-
-Some workflows execute real scientific binaries rather than mock adapters. On
-macOS with Homebrew, install the current local engine set with:
+Install the canonical runtime unless compatibility with the shorter
+distribution name is a requirement.
 
 ```bash
-make install-external-engine-runtime
+python -m venv .venv
+. .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install bijux-phylogenetics
 ```
 
-That target installs:
+The supported Python floor is 3.11. Record both Python and distribution
+versions in reproducible work.
 
-- `mafft`
-- `trimal`
-- `iqtree2`
-- `FastTree`
-- `mb` from MrBayes
-- `beast` from BEAST2
-
-If you install those executables another way, make sure they resolve on
-`PATH` before you run the real local lanes.
-
-## Local Verification Routes
-
-Use these commands when you want an executable-backed verification rather than
-the default lightweight surface:
+## Verify The Environment
 
 ```bash
-make test-external-engines
-make test-scientific-validation-slow
+python -c "import importlib.metadata as m; print(m.version('bijux-phylogenetics'))"
+python -c "import bijux_phylogenetics; print(bijux_phylogenetics.__name__)"
+bijux-phylogenetics --help
 ```
 
-- `make test-external-engines`
-  Runs the compact real-engine integration lane plus the non-slow governed
-  scientific-validation reruns.
-- `make test-scientific-validation-slow`
-  Keeps the longer FASTA-to-tree reruns separate so they do not slow every
-  local engine check.
+Verification separates three failures that are otherwise easy to confuse:
+distribution installation, Python import, and command discovery.
 
-The repository-owned make targets already route outputs into `artifacts/` by
-default.
+## Run The Installed-Wheel Proof
+
+```bash
+bijux-phylogenetics env inspect --json
+bijux-phylogenetics demo run \
+  --out artifacts/capability-demo \
+  --manifest artifacts/capability-demo/manifest.json \
+  --json
+```
+
+The first command reports runtime dependencies and optional executable
+availability. The second uses resources shipped inside the wheel, copies them
+to a writable destination, and builds a linked report set. It does not depend
+on a source checkout or repository test fixtures.
+
+Inspect `manifest.json` for package, Python, input, command, and output
+identity. A successful demo proves the installation and packaged reporting
+path; it does not benchmark inference accuracy.
+
+## Canonical And Alias Distributions
+
+```bash
+python -m pip install phylogenetic
+```
+
+`phylogenetic` provides the shorter compatibility distribution for the same
+runtime story. It is not a reduced edition and should not be installed beside
+the canonical distribution to create two independent runtimes. See the
+[package map](../architecture/package-map.md).
+
+## External Engines
+
+Some workflows invoke MAFFT, trimAl, IQ-TREE2, FastTree, MrBayes, or BEAST.
+Installing the Python package does not install those executables. For an
+adapter workflow:
+
+1. install the engine through a channel appropriate to your platform;
+2. confirm its executable is discoverable;
+3. record the engine version;
+4. run the adapter's smallest validation or help path;
+5. preserve captured diagnostics with the analysis artifacts.
+
+The runtime should report missing executables as adapter-environment failures,
+not as native numerical failures.
+
+Use workflow-specific preflight when the analysis depends on an engine:
+
+```bash
+bijux-phylogenetics phylo preflight \
+  --workflow fasta-to-tree \
+  --manifest artifacts/phylo-preflight/manifest.json \
+  --json
+```
+
+Preflight records readiness; it does not execute the scientific workflow.
+
+## Admit The Environment Deliberately
+
+Availability is only the first environment decision. Before a governed run,
+record whether the discovered runtime and engines are admissible for the
+specific workflow and whether any limitation narrows the intended result.
+
+| Environment finding | Operational decision | Scientific consequence |
+| --- | --- | --- |
+| required distribution and command match the pinned version | admit the runtime identity | documented installed contracts can be selected |
+| engine is found but its version is unknown or unsupported | refuse or create an explicitly bounded exception record | external computation cannot inherit the expected compatibility claim |
+| optional engine is absent | omit only a stage declared optional before execution | absence stays in the selected-stage denominator |
+| platform, architecture, thread, or numerical dependency differs | record the difference and apply the workflow reproducibility rule | byte identity or numerical equivalence may no longer be expected |
+| packaged demo succeeds but workflow preflight fails | retain both records and resolve the workflow-specific blocker | installation health does not establish analysis readiness |
+| preflight succeeds but input validation fails | keep the environment admitted and refuse the input | environment and scientific input failures remain separate |
+
+The admission record should identify the intended workflow, runtime and
+engine versions, resolved executable paths, platform, compatibility findings,
+blocking and optional components, and the decision. Re-run admission when any
+of those identities change.
+
+## Pinning For Reproducibility
+
+Exploration can use a compatible release range. A governed analysis should
+record an exact runtime version and external-engine versions, plus input and
+configuration identities. A lock file or environment specification is useful
+only when it is retained with enough platform context to recreate the
+environment.
+
+```text
+Python:                  3.11.x
+bijux-phylogenetics:     exact installed version
+external engine:         name and exact version, when used
+platform:                OS and architecture
+inputs:                  paths plus durable identity/checksum
+configuration:           persisted parameters and seed policy
+```
+
+## Source Checkout For Contributors
+
+Repository development uses the tracked lock and repository automation:
+
+```bash
+make install
+make check
+make docs-serve
+```
+
+Transient outputs belong under `artifacts/`. The root environment and docs
+site are managed beneath `artifacts/root/`; do not treat generated output as
+source documentation.
+
+## Common Failure Diagnosis
+
+| Symptom | Check first |
+| --- | --- |
+| package installs but import fails | active interpreter and environment |
+| import works but command is missing | environment `bin` directory and command name |
+| native method imports but adapter fails | external executable discovery and version |
+| run starts but rejects data | taxon, format, rootedness, partition, or model validation |
+| result differs after replay | versions, input identity, nondeterminism, seeds, and defaults |
+
+After installation, use [surface selection](../interfaces/surface-selection.md)
+and then a method-specific operations guide.

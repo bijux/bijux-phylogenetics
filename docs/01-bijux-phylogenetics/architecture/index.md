@@ -1,84 +1,202 @@
 ---
 title: Runtime Architecture
 audience: public
-type: explanation
+type: architecture
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-22
 ---
 
 # Runtime Architecture
 
-This section explains how the runtime is organized so capability claims stay
-readable and package ownership stays explicit.
-
-It should help a reader understand that the repository is not one flat module
-tree. It contains distinct scientific and runtime families with separate
-responsibilities, packaging roles, and trust relationships.
-
-## Design Priorities
-
-- one canonical runtime package
-- one thin compatibility distribution
-- a clear split between runtime, evidence, and maintainer tooling
-- capability families grouped by durable responsibility rather than by delivery
-  history
-- governed artifacts instead of ad hoc local output layouts
+The architecture separates scientific meaning, analytical methods, execution,
+and presentation. A workflow may cross all four, but no layer should silently
+redefine the contracts owned below it.
 
 ```mermaid
-flowchart TD
-    A[Canonical runtime package] --> B[CLI and workflow API]
-    A --> C[Native runtime contracts]
-    A --> D[Comparative and ancestral families]
-    A --> E[Datasets, reports, and bundles]
-    E --> F[Evidence consumers]
-    G[Maintainer package] --> H[Docs, quality, release tooling]
-    I[Compatibility alias] --> A
+flowchart TB
+    interface["Python API · CLI · HTTP schema"]
+    workflow["Workflow orchestration"]
+    method["Inference · comparative · ancestral · parsimony"]
+    foundation["Trees · alignments · taxa · likelihood · datasets"]
+    output["Typed results · diagnostics · reports · bundles"]
+
+    interface --> workflow --> method --> foundation
+    method --> output
+    workflow --> output
 ```
 
-## Architectural Promise
+## Trace One Result Through The System
 
-The architecture is organized so public capability claims remain traceable:
+Consider a supported sequence-to-tree run. Its final Newick file is useful,
+but the file alone is not the result contract. The scientific meaning is built
+and retained across several owners:
 
-- package roles stay explicit instead of hiding runtime, evidence, and
-  maintainer concerns in one surface
-- capability families group by durable scientific responsibility rather than
-  by temporary delivery history
-- evidence consumers read governed outputs from the runtime without turning the
-  evidence-book into a shadow runtime layer
+| Boundary | Decision made there | Record needed later |
+| --- | --- | --- |
+| FASTA parser and validation | which identifiers, records, and alphabet enter the study | original input, validation findings, and admitted-record identity |
+| sequence workflow | which alignment, trimming, inference, and support policies compose the run | workflow configuration and stage lineage |
+| external-engine adapters | which MAFFT, trimAl, and IQ-TREE2 executions performed the computation | executable versions, commands, native outputs, and process state |
+| normalized result | which tree, model, support output, warnings, and runtime belong together | typed result plus JSON/TSV projections |
+| report or downstream analysis | which fields are displayed or consumed | manifest linking every projection to its structured owner |
+| evidence review | which bounded claim, if any, those records can support | claim identifier, observation rule, denominator, verdict, and freshness |
 
-## Runtime Shape At A Glance
+This trace is the fastest way to diagnose an apparently simple discrepancy.
+A wrong taxon population belongs at admission; a different selected model
+belongs at execution; a missing warning belongs at projection; an unsupported
+conclusion belongs at claim review. Fix the earliest owner of the incorrect
+state, then rebuild its downstream representations.
 
-| Runtime area | Representative families that already exist |
+## Architectural Commitments
+
+- **One scientific meaning.** Tree, taxon, alignment, and model semantics do
+  not change according to entry point.
+- **Explicit computation ownership.** Native methods and external-engine
+  adapters remain distinguishable in code, diagnostics, and documentation.
+- **Results before presentation.** Computation returns structured state;
+  renderers and report writers consume it.
+- **Review is designed in.** Important workflows preserve configuration,
+  provenance, diagnostics, and manifests, not only headline estimates.
+- **Failure stays attributable.** Input validation, runtime computation,
+  external process execution, parsing, and artifact writing have different
+  failure meanings.
+
+## Read This Section By Need
+
+| Need | Page |
 | --- | --- |
-| Core tree runtime | `phylo`, `trees`, `compare`, `distance`, `render` |
-| Native inference runtime | `phylo.likelihood`, `bayesian`, `benchmark.likelihood_tree_inference` |
-| Comparative runtime | `comparative`, `ancestral`, `parsimony`, `simulation` |
-| Workflow and command surfaces | `api`, `command_line`, `engines`, `reports` |
-| Data and evidence surfaces | `datasets`, `resources`, `evidence`, `benchmark`, `validation` |
+| understand the end-to-end execution and review path | [Runtime system map](runtime-system-map.md) |
+| decide which installed distribution owns a concern | [Package map](package-map.md) |
+| understand why evidence is a consumer, not runtime state | [Evidence consumer boundary](evidence-consumer-boundary.md) |
 
-## Why This Matters Publicly
+## Native And Adapter Paths
 
-If the docs flatten these areas into one generic "workflow toolkit" story,
-readers miss the actual product shape:
+```mermaid
+flowchart LR
+    request["Validated request"]
+    native["Owned algorithm"]
+    adapter["Owned adapter"]
+    engine["External executable"]
+    normalized["Normalized result contract"]
+    review["Diagnostics and artifacts"]
 
-- the runtime package owns lower-level scientific contracts
-- the alias package is only a naming bridge, not a second implementation
-- the maintainer package owns truth-preserving infrastructure, not runtime
-  semantics
-- the evidence book consumes outputs from the runtime but does not replace the
-  runtime as the user-facing product
+    request --> native --> normalized
+    request --> adapter --> engine --> adapter --> normalized
+    normalized --> review
+```
 
-## Questions This Section Answers
+Normalization gives consumers a coherent review surface. It does not erase
+provenance: adapter results must still identify the external engine,
+configuration, and captured outputs needed to explain the run.
 
-- which package should I install or depend on
-- which runtime family owns a capability
-- where native ownership ends and wrapper orchestration begins
-- how the evidence book consumes runtime outputs without becoming the runtime
-  itself
+## Dependency Direction
 
-## Read Next
+Scientific foundations should not import command-line policy or report
+templates. Methods consume foundation contracts. Workflows compose methods.
+Interfaces translate user intent into workflow calls. Presentation consumes
+results. Evidence tooling consumes persisted artifacts and source records
+outside the runtime execution path.
 
-- [Runtime system map](runtime-system-map.md)
-- [Package map](package-map.md)
-- [Evidence consumer boundary](evidence-consumer-boundary.md)
+This direction keeps a numerical method usable without the CLI and prevents a
+report format from becoming the hidden owner of scientific state.
+
+## Layer Contracts
+
+| Layer | Accepts | Produces | Must not own |
+| --- | --- | --- | --- |
+| scientific foundations | files, identifiers, explicit scientific definitions | validated trees, alignments, tables, models, datasets | CLI policy or report layout |
+| analytical methods | validated domain objects and method configuration | typed estimates, trees, histories, diagnostics | filesystem presentation or study verdicts |
+| workflows | method requests, execution policy, output destination | coordinated results and artifact inventory | new scientific semantics hidden from methods |
+| interfaces | user/application input | validated workflow requests and serialized responses | duplicate numerical implementations |
+| presentation | typed results and linked ledgers | tables, figures, HTML, Markdown | values absent from structured results |
+| evidence governance | persisted results, sources, claims, checks | claim-scoped verdicts and indexes | runtime success or method implementation |
+
+Cross-layer convenience is acceptable only when ownership remains traceable.
+A workflow may call validation and rendering, but it cannot redefine a taxon,
+likelihood, support statistic, or verdict inside orchestration code.
+
+## Audit Every Representation Boundary
+
+The same scientific state can appear as an object, command payload, JSON
+record, table row, or report element. A boundary is correct only when the
+target representation either preserves every interpretation-critical field or
+declares what was omitted.
+
+| Boundary | State that must remain invariant | Typical semantic loss |
+| --- | --- | --- |
+| parser → domain object | source identity, ordering, units, missing values, exclusions, and repairs | normalized labels hide the original taxa or states |
+| domain object → method request | analytical population, model parameterization, transformations, and constraints | a workflow default silently chooses the method |
+| method → typed result | computation owner, status, objective/estimand, uncertainty, diagnostics, and absent components | a scalar return discards search or sampler state |
+| typed result → artifact | schema version, units, identifiers, warnings, denominator, and parent identity | serialization converts unknown or partial state to success |
+| artifact → presentation | structured value owner, display transform, omissions, and caption scope | figure labels imply a stronger method or verdict |
+| artifact → evidence | exact result identity, observation rule, scope, freshness, and claim identifier | proximity to a study substitutes for governed consumption |
+
+Representation equality is weaker than semantic preservation. Two JSON
+objects can have the same keys while using different units, status meanings,
+taxon orders, or denominators. Test and review those meanings at the boundary
+that performs the projection.
+
+## Runtime Ownership Map
+
+| Responsibility | Owning runtime families | Boundary to preserve |
+| --- | --- | --- |
+| trees and topology | `trees`, `phylo`, `compare`, `distance` | stable taxon, node, clade, split, rooting, and branch-length meaning |
+| sequence and character intake | `io`, `validation`, `datasets` | alphabet, alignment shape, partition, missing-state, and exclusion identity |
+| numerical methods | `phylo`, `bayesian`, `comparative`, `ancestral`, `parsimony` | model parameterization, estimator, search or sampler, and diagnostics |
+| ecological history | `biogeography`, `phylogeography`, `ecology` | geography, host, niche, transition, and tree identity |
+| controlled evaluation | `simulation`, `benchmark`, `parity` | truth or reference owner, denominator, seed, tolerance, and outcome |
+| external execution | `engines` | executable discovery, invocation, native files, parser state, and provenance |
+| user composition | `api`, `command_line` | translation and orchestration without duplicate scientific semantics |
+| review output | `reports`, `render`, `evidence` | structured values before presentation and claim-scoped promotion |
+
+These are ownership families, not a promise that every symbol beneath a module
+is public. Curated exports, registered commands, and documented artifact
+contracts define the installed surface.
+
+## Scientific State Transformations
+
+```mermaid
+flowchart LR
+    raw["Raw input"]
+    validated["Validated domain<br/>objects"]
+    computed["Typed scientific<br/>result"]
+    persisted["Versioned artifact<br/>bundle"]
+    adjudicated["Claim-scoped<br/>evidence verdict"]
+
+    raw -->|parse, reconcile, validate| validated
+    validated -->|infer, compare, reconstruct| computed
+    computed -->|serialize, render, manifest| persisted
+    persisted -->|map, check, review| adjudicated
+```
+
+Each transformation adds context; none may silently discard upstream identity.
+The evidence verdict refers back to the exact persisted result, which refers
+back to method configuration and validated inputs.
+
+## Architectural Risks
+
+| Risk | Warning sign | Required response |
+| --- | --- | --- |
+| interface leakage | a method needs CLI option objects | move translation to the interface boundary |
+| provenance loss | a report cannot identify inputs or engine | preserve configuration and source records |
+| wrapper ambiguity | docs call an external computation native | name the adapter and engine explicitly |
+| result flattening | only a scalar estimate survives | retain diagnostics and structured results |
+| evidence coupling | runtime success depends on a study dossier | keep evidence as a downstream reviewer |
+| hidden mutation | taxon order or model configuration changes inside presentation | make transformations explicit and retain the before/after identity |
+| partial success flattening | incomplete support or failed replicates become `ok` | preserve component status and denominator in the result |
+
+## Code Navigation
+
+The canonical source root is
+`packages/bijux-phylogenetics/src/bijux_phylogenetics/`. Domain directories
+such as `phylo`, `comparative`, `ancestral`, `parsimony`, `simulation`, and
+`reports` carry enduring scientific ownership. `command_line` owns CLI
+translation. `engines` owns common execution and artifact concerns.
+`evidence` connects runtime outputs to governed study records without making
+those records prerequisites for ordinary analysis.
+
+When tracing a defect, begin at the layer that first owns the incorrect state.
+A wrong likelihood value belongs below rendering; a missing output path belongs
+at persistence; an overstated scientific conclusion belongs in evidence or
+documentation. Correcting only the visible downstream projection preserves the
+underlying contradiction.

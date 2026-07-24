@@ -1,34 +1,84 @@
 # PCM1 Runtime Reference Mapping
 
-PCM1 already owns a strong governed parity surface for the data-preparation,
-tree-alignment, signal, and ancestral workflow used in the lecture family.
+This directory connects the PCM1 lecture source to two executable reference
+paths and to the owned runtime operations being compared. It is an execution
+map, not a second verdict ledger; bundle manifests under `../evidence-*` own
+the current claim status.
 
-Checked-in reference artifacts:
+## Reference Paths
 
-- `primate_lifespan_signal_reference_r.R`
-- `primate_lifespan_signal_reference_bijux.py`
-- `lund_pcm1_plots_signal_source.R`
+| File | Role |
+| --- | --- |
+| `lund_pcm1_plots_signal_source.R` | checked lecture source that defines the study boundary |
+| `primate_lifespan_signal_reference_r.R` | R extraction path for registered reference observations |
+| `primate_lifespan_signal_reference_bijux.py` | Bijux extraction path for the corresponding structured observations |
 
-Checked-in lecture source copies now live beside the study:
+The execution paths consume the study-local files under `../datasets/`. Their
+outputs are retained in `../evidence-001/results/` as native R observations,
+Bijux observations, comparison tables, and block-level payloads.
 
-- `../datasets/primate_raw.xlsx`
-- `../datasets/primate.RData`
-- `../datasets/primate.csv`
-- `../datasets/primatetree.nex`
-- `../datasets/trimmed_primatetree.nex`
+```mermaid
+flowchart LR
+    lecture["lecture source"] --> contract["registered observation contract"]
+    datasets["study datasets"] --> rpath["R reference path"]
+    datasets --> bijuxpath["Bijux reference path"]
+    contract --> rpath
+    contract --> bijuxpath
+    rpath --> compare["evidence-001 comparison"]
+    bijuxpath --> compare
+```
 
-Relevant owned surfaces include:
+## Bijux Ownership Map
 
-- workbook loading and type-repair utilities used to produce governed primate
-  derivatives
-- tree import, pruning, and correspondence checks
-- phylogenetic signal estimation and ancestral-state reporting
+The Bijux reference path calls public tree inspection and validation, numeric
+trait readiness and summary, Pagel-lambda estimation, and continuous ancestral
+reconstruction. It also uses owned comparative covariance, pruning, topology,
+tree-loading, and node-signature helpers to reproduce the registered lecture
+observations.
 
-What remains outside the checked-in parity claim:
+The important ownership distinction is:
 
-- lecture plotting choices that depend on presentation-specific R graphics
-  surfaces
-- plot-for-plot identity with the lecture visualization stack
+- the runtime owns its parsing, transformations, models, estimates, and
+  diagnostics;
+- the R path owns its independently executed reference observations;
+- the evidence bundle owns normalization, tolerance, comparison, and verdict;
 
-This directory exists so reviewers can distinguish the strong numerical PCM1
-parity record from the intentionally narrower plotting boundary.
+## Observation Contract
+
+| Observation family | Identity required before comparison | Comparison form |
+| --- | --- | --- |
+| prepared population | admitted taxa, excluded rows and ordering | exact structural comparison |
+| tree structure | tip population, rootedness and descendant-taxon signatures | exact or structural comparison |
+| Pagel lambda | trait, tree, likelihood convention and parameter bounds | tolerance-bounded scalar comparison |
+| lambda-zero test | null/alternative identities and likelihood convention | tolerance-bounded likelihood and test comparison |
+| continuous ancestors | tree, node signature, trait scale and model | node-keyed tolerance comparison |
+| branch changes | structurally keyed parent/child clades and sign convention | row-keyed tolerance comparison |
+
+Every scalar and row needs its observation key even when display order matches.
+The comparison table is the join between the independently executed paths;
+neither result JSON is allowed to redefine the other path's values.
+
+## Identity Requirements
+
+A rerun must preserve the lecture source identity, study-local input bytes,
+reference script bytes, Bijux revision, dependency versions, random seed where
+used, observation keys, and tolerance policy. Internal nodes are compared by
+descendant-taxon signature rather than transient numeric labels.
+
+If the parser, preparation rules, reference scripts, registered observation
+set, or tolerances change, regenerate the governed results and freshness
+record. Similar headline values from an unregistered run cannot replace the
+bundle observations.
+
+## Supported And Excluded Correspondence
+
+The current manifests support direct or tolerance-bounded correspondence for
+the registered preparation, tree, signal, and ancestral observations. They do
+not claim plot-for-plot identity for lecture graphics. Plot-only payloads are
+retained to show coverage and lineage while remaining outside the numerical
+parity denominator.
+
+When a registered observation is unavailable or not comparable, preserve that
+terminal state in the block payload and aggregate counts. Do not replace it
+with a nearby statistic, a plot inspection, or a value from a different
+preparation population.

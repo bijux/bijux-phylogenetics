@@ -4,87 +4,209 @@ audience: public
 type: how-to
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-21
 ---
 
 # Release Review Workflow
 
-Use this workflow when the question is whether one repository state looks
-publishable, not merely whether one command or one test lane passed.
+Release review reconstructs whether one identified revision can be published
+under the repository's package, interface, documentation, artifact, evidence,
+and governance contracts. The outcome is a retained decision packet, not a
+screenshot of green checks.
 
-## Start With Governed Repository Reports
+```mermaid
+flowchart LR
+    identify["Identify candidate"]
+    report["Generate governance reports"]
+    verify["Verify source and distributions"]
+    assure["Review tests, engines,<br/>benchmarks and evidence"]
+    compare["Compare public surfaces"]
+    enforce["Run enforcing gates"]
+    decide{"Ready or blocked?"}
+    retain["Retain candidate packet"]
 
-The repository already exposes governed readiness surfaces through root make
-targets:
+    identify --> report --> verify --> assure --> compare --> enforce --> decide --> retain
+```
+
+## Required Evidence Set
+
+| Surface | Minimum retained evidence |
+| --- | --- |
+| candidate | commit, resolved version, dependency lock, governed configuration, intended distributions |
+| source verification | exact test/lint/quality/security/docs/build/SBOM commands and outcomes |
+| distributions | wheel and sdist names, digests, metadata inspection, Twine result, clean-install smoke |
+| runtime and alias | imports, commands, versions, package resources, metadata, and ownership alignment |
+| contracts | Python/CLI tests, OpenAPI schema/hash, artifact producer/consumer compatibility |
+| scientific assurance | selected test and engine denominators, benchmark observations, parity cases, Evidence Book verdicts |
+| governance | configuration, artifact, execution-surface, package-boundary, package-bundle, evidence, and readiness reports |
+| public claims | README, package metadata, docs, examples, release notes, and evidence statements reviewed against owners |
+| decision | ready/blocked state, exact blockers, bounded limitations, reviewer, timestamp, packet location |
+
+## Establish Candidate Identity
+
+Before running a gate, record:
+
+```bash
+git rev-parse HEAD
+git status --short --branch
+bijux-phylogenetics --version
+```
+
+Also retain the lock digest, intended distribution versions, optional-engine
+selection, and governed configuration identity. Do not combine reports across
+commits or reuse a package proof after rebuilding the artifact.
+
+## Generate Reviewable Reports First
 
 ```bash
 make report-publish-readiness
-make check-publish-readiness
 make report-release-readiness
-make check-release-readiness
 ```
 
-Those commands write governed report artifacts under `artifacts/root/` and
-separate scorecard production from hard-gate enforcement.
+Review the generated records under `artifacts/root/` before enforcing them:
 
-## What Each Surface Answers
+| Record | Review focus |
+| --- | --- |
+| `config-ssot-audit.json` | required root configuration and forbidden package-local drift |
+| `evidence-book-validation.json` | registered study and bundle structure |
+| `evidence-completeness.json` | expected inputs, local artifacts, and missing bundle surfaces |
+| `artifact-governance.json` | output paths and generated-artifact discipline |
+| `execution-surfaces.json` | make, tox, workflow, native, and external ownership |
+| `package-boundaries.json` | runtime, alias, and maintainer dependency/export policy |
+| `package-bundles.json` and its directory | wheel/sdist target and content policy |
+| `publish-readiness.json` | blocker register, closure criteria, and overall status |
 
-- `report-publish-readiness`
-  Builds the repository publish-readiness scorecard without acting as the final
-  release gate.
-- `check-publish-readiness`
-  Fails when the repository still has unresolved publish-readiness issues.
-- `report-release-readiness`
-  Builds the broader release-readiness evidence and governance surface.
-- `check-release-readiness`
-  Enforces the full release-readiness gate.
+Report mode does not grant a waiver. It makes the complete finding set
+available before a hard-gate exit stops the workflow.
 
-Use the `report-*` surfaces when you are auditing or preparing. Use the
-`check-*` surfaces when the repository should already be held to the gate.
+## Verify Source And Built Artifacts
+
+Run the gate appropriate to the candidate and retain exact output:
+
+```bash
+make check
+make package-verify
+```
+
+Inspect built wheels and source distributions as release inputs in their own
+right. Confirm filenames, versions, dependencies, licenses, included package
+data, command entry points, canonical and alias imports, packaged examples,
+and structured output from clean installations. A source-tree import does not
+prove the wheel contains the same contract.
 
 ## Add The Runtime Truth Review
 
-When the release question includes full-suite test truth and real-engine test
-truth together with owned workflow outputs, run the governed CLI summary:
+When full-suite and real-engine JUnit records are part of the release argument,
+build the governed runtime-facing report:
 
 ```bash
+mkdir -p artifacts/release-review
 bijux-phylogenetics report release-truth \
   --test-report artifacts/pytest/full-suite.xml \
   --real-engine-test-report artifacts/pytest/real-engine.xml \
-  --out artifacts/release-truth-report.html \
-  --json
+  --stress-tier small \
+  --out artifacts/release-review/release-truth.html \
+  --json \
+  --manifest artifacts/release-review/manifest.json \
+  > artifacts/release-review/result.json
 ```
 
-That surface complements the repository readiness reports by reviewing the
-runtime and validation story in one place.
+The input reports must identify the candidate and expose selected, passed,
+failed, skipped, and deselected tests. A generated HTML page cannot repair
+missing test provenance or prove that an optional engine ran.
 
-## Read The Release Story In This Order
+## Review Scientific Assurance By Record Type
 
-For a serious release review, read:
+1. Reconstruct the selected denominator for tests, real engines, parity cases,
+   benchmark observations, and evidence bundles.
+2. Read failures, skips, unsupported cases, warnings, and non-comparable
+   verdicts before favorable aggregates.
+3. Confirm benchmark hardware, workload, instrument, models, seeds, and
+   tolerances.
+4. Validate all 43 Evidence Book bundle structures, inputs, checksums,
+   freshness, claim mappings, observations, and verdict distributions.
+5. Keep open resolution work separate from runtime, benchmark, parity, and
+   evidence status.
 
-1. public package and runtime docs
-2. package metadata and package roles
-3. publish-readiness and release-readiness reports
-4. release-truth workflow output when available
-5. evidence-book freshness, integrity, and coverage reports
+No assurance report should be summarized beyond its declared corpus and
+policy.
 
-That order makes it easier to catch contradiction before treating a green gate
-as enough.
+## Compare Reader-Facing Claims With Owners
 
-## Release Questions To Ask Explicitly
+Trace each material statement in README, package metadata, docs, examples, and
+release notes to an owning record:
 
-- do the README, package READMEs, and public docs describe the same runtime
-  truth
-- do metadata, maturity labels, and public links describe the same product
-  surface
-- do native workflow claims stay bounded by documented native contracts
-- do wrapper-backed surfaces remain labeled as wrappers
-- do evidence freshness and coverage reports support the public story being
-  told for this release
+- supported Python and CLI behavior to the installed distribution;
+- native methods to runtime source and numerical assurance;
+- MAFFT, trimAl, IQ-TREE2, FastTree, RAxML, MrBayes, and BEAST results to
+  external-engine manifests;
+- parity language to the selected registry and observation ledger;
+- study conclusions to exact Evidence Book claim and bundle IDs;
+- limitations to current freshness, coverage, and resolution records.
 
-## What This Workflow Does Not Replace
+Reject vague statements such as “fully validated” when the retained proof is a
+bounded fixture, one engine version, an expected assumption difference, or a
+`not_comparable` bundle.
 
-- it does not replace package build verification
-- it does not replace benchmark or parity review
-- it does not replace the evidence-book
-- it does not turn one green check into full scientific closure
+## Review Procedure
+
+1. Identify candidate revision, version, lock, configuration, distributions,
+   schemas, evidence state, and optional-engine denominator.
+2. Generate report-mode governance records and inspect every issue.
+3. Run source verification and package verification against the same candidate.
+4. Validate installed imports, commands, resources, metadata, licenses, and
+   structured results for runtime and alias distributions.
+5. Build docs strictly and run semantic documentation truth tests.
+6. Validate API hash and artifact compatibility.
+7. Review test, real-engine, benchmark, parity, and Evidence Book records with
+   denominators and limitations intact.
+8. Compare every material public statement with its owning contract.
+9. Run `make check-publish-readiness` and `make check-release-readiness`.
+10. Reconfirm candidate identity and clean intentional worktree state before
+    recording the decision.
+
+## Invalidate Stale Evidence
+
+Repeat affected review whenever any of these changes:
+
+- commit, version, lock, configuration, schema, or generated contract;
+- wheel, sdist, container, license, or registry metadata;
+- public import, CLI option, output schema, default, or failure behavior;
+- numerical implementation, tolerance, corpus, seed, or benchmark instrument;
+- external executable path/version or selected engine coverage;
+- evidence input, check, output, verdict, freshness, or public claim.
+
+Rerun only the unaffected report is not enough; rerun every downstream gate
+whose conclusion depended on the changed identity.
+
+## Release Questions To Answer Explicitly
+
+- Do source metadata and built artifacts identify the same version and package
+  roles?
+- Do canonical and alias clean installations execute documented imports and
+  commands?
+- Do examples use installed public surfaces and current syntax?
+- Are native and external computations attributed to their actual owners?
+- Do manifests preserve warnings, exclusions, partial state, and failed cases?
+- Do evidence statements match exact current verdicts and freshness?
+- Are skipped optional engines and unsupported comparisons visible?
+- Can a second reviewer reconstruct the conclusion without transient CI logs?
+
+## Release Blockers
+
+Stop publication when identity diverges, a built artifact fails clean
+installation, runtime and public contracts contradict, API or artifact
+compatibility is unresolved, expected readiness output is missing, scientific
+denominators are incomplete, evidence provenance or freshness fails, or a gate
+has been weakened or omitted.
+
+An explicit, fresh, governed `not_comparable` boundary can ship when policy
+permits it. An unacknowledged contradiction cannot.
+
+## Complete The Decision Packet
+
+Record ready or blocked, not merely the final process exit. Include candidate
+identity, artifact hashes, exact commands, report paths, denominator counts,
+blockers, bounded limitations, skipped optional lanes, reviewer, and timestamp.
+If publication proceeds, that packet must resolve to the exact artifacts sent
+to the registry.

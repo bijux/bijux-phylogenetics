@@ -254,9 +254,11 @@ def run_fasta_to_tree_workflow(
         f"trimal trimming mode: {trimming_mode}",
         f"iqtree random seed: {iqtree_seed}",
         f"iqtree threads: {iqtree_threads}",
-        "raw sequence type detection: "
-        f"{effective_input_validation.sequence_type_report.detected_type} "
-        f"({effective_input_validation.sequence_type_report.confidence})",
+        (
+            "raw sequence type detection: "
+            f"{effective_input_validation.sequence_type_report.detected_type} "
+            f"({effective_input_validation.sequence_type_report.confidence})"
+        ),
         effective_input_validation.sequence_type_report.note,
     ]
     if input_repair is not None:

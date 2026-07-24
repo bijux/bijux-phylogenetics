@@ -1,85 +1,120 @@
 # Cichlid Phylogenetic Generalized Linear Mixed Models
 
-This study captures PCM5, the Lund lecture on phylogenetic generalized linear
-mixed models for count data, binomial response data, repeated measures, and
-posterior-based phylogenetic signal calculations.
+This directory is the governed PCM5 design record for posterior phylogenetic
+signal, ancestral effects, Poisson counts, infection outcomes,
+probability-scale summaries, repeated observations, and variance partitioning
+in the cichlid study.
 
-The repository now carries a complete study dossier for this lecture family
-with governed parity evidence bundles for each lecture slice. That means
-the lecture sources, datasets, evidence decomposition, runtime boundaries, and
-bundle-local review artifacts are all explicit. It does not mean the
-repository already owns a governed `MCMCglmm`-equivalent PGLMM surface.
+It preserves nine claim boundaries and their scientific dependencies. It does
+not contain governed generalized mixed-model posterior evidence: every bundle
+is `not_comparable`, and every results manifest records zero governed primary
+outputs.
 
-## Study Metadata
+## Current Evidence State
 
-- study id: `cichlid-phylogenetic-generalized-linear-mixed-models`
-- lecture family: `PCM5_PGLMM`
-- deployment state: `governed_parity_bundle_program_deployed_with_external_posterior_boundary`
-- governed evidence ids: `evidence-001` through `evidence-009`
-- current runtime posture:
-  `generalized_phylogenetic_mixed_model_parity_open_with_partial_binary_regression_support`
-- evidence rule: isolate phylogenetic signal, ancestral-state extraction,
-  Poisson count models, multinomial infection models, probability-scale
-  back-transforms, and repeated-measure random effects into separate review
-  slices
-
-## Study Story
-
-PCM5 extends the cichlid mixed-model story in three directions:
-
-- phylogenetic signal becomes a posterior-derived quantity rather than a
-  likelihood-ratio or lambda-only estimate
-- ancestral-state reconstruction is expressed as posterior node effects
-- generalized models are fitted for Poisson counts and binomial-style
-  infection outcomes, including a repeated-measure species effect
-
-That combination makes PCM5 the most demanding comparative lecture family in
-the evidence book. It combines phylogeny, non-Gaussian likelihoods, posterior
-uncertainty, and repeated measures in one workflow.
-
-## Evidence Map
-
-| Evidence ID | Focus | Current repository state |
+| Record | Intended comparison | Verdict |
 | --- | --- | --- |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-001` | Fish workspace reload and repeated-measure data contract | Governed parity bundle deployed; posterior verdict still open |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-002` | Posterior-derived phylogenetic signal for the Gaussian mixed model | Governed parity bundle deployed; posterior verdict still open |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-003` | Ancestral-state posterior extraction and export rules | Governed parity bundle deployed; posterior verdict still open |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-004` | Tree-linked ancestral plotting contract | Governed parity bundle deployed; posterior verdict still open |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-005` | Poisson phylogenetic count model for parasite abundance | Governed parity bundle deployed; posterior verdict still open |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-006` | Multinomial infection model and logit-scale summaries | Governed parity bundle deployed; posterior verdict still open |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-007` | Probability-scale back-transformation for intercepts and slopes | Governed parity bundle deployed; posterior verdict still open |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-008` | Repeated-measure random effects for `species + treetip` | Governed parity bundle deployed; posterior verdict still open |
-| `cichlid-phylogenetic-generalized-linear-mixed-models/evidence-009` | Variance partition between phylogeny, species, and residual components | Governed parity bundle deployed; posterior verdict still open |
+| `evidence-001` | workspace reload and repeated-observation data contract | `not_comparable` |
+| `evidence-002` | Gaussian posterior phylogenetic signal | `not_comparable` |
+| `evidence-003` | ancestral-node posterior extraction | `not_comparable` |
+| `evidence-004` | tree-linked ancestral presentation | `not_comparable` |
+| `evidence-005` | Poisson phylogenetic count posterior | `not_comparable` |
+| `evidence-006` | infection model and latent/logit summaries | `not_comparable` |
+| `evidence-007` | draw-wise probability transformation | `not_comparable` |
+| `evidence-008` | repeated-measure species and phylogenetic random effects | `not_comparable` |
+| `evidence-009` | species, phylogenetic, and residual variance shares | `not_comparable` |
 
-## Ideal Comparative Checks
+The bundle-local scripts are executable contract wrappers. They identify
+inputs and intended outputs but do not execute the source `MCMCglmm` models,
+produce corresponding Bijux posteriors, or retain posterior draws and
+diagnostics.
 
-- Keep the Gaussian, Poisson, and multinomial workflows separate enough that
-  link-function changes remain visible.
-- Preserve the lecture's distinction between posterior summaries on the logit
-  scale and derived summaries on the probability scale.
-- Track repeated-measure handling as its own evidence slice instead of letting
-  it disappear inside one omnibus PGLMM run.
-- Record how phylogenetic signal is computed from posterior variance
-  components, including the different denominator used for binomial-style
-  models.
+## Posterior Dependency Graph
 
-## Elite Comparative Checks
+```mermaid
+flowchart LR
+    population["admitted repeated<br/>observations and tree"] --> models["Gaussian, Poisson,<br/>multinomial models"]
+    models --> draws["chain-indexed draws<br/>and diagnostics"]
+    draws --> signal["draw-wise<br/>signal ratios"]
+    draws --> nodes["ancestral node<br/>effects"]
+    draws --> probabilities["inverse-link<br/>probabilities"]
+    draws --> partitions["species / phylogeny /<br/>residual shares"]
+    signal --> claims["claim observations"]
+    nodes --> claims
+    probabilities --> claims
+    partitions --> claims
+```
 
-- Add governed ledgers for posterior node estimates, probability-scale slope
-  transforms, and variance partitions.
-- Compare observation-level and species-level models without silently changing
-  the phylogenetic denominator or the random-effect story.
-- Distinguish clearly between repository-owned binary comparative regression
-  approximations and the external-engine generalized mixed-model lecture path.
-- Keep the study readable to a reviewer who wants to understand the scientific
-  workflow without already knowing `MCMCglmm`.
+Every derived quantity depends on governed parent draws. A node table,
+probability curve, or variance partition cannot become primary evidence when
+the chain, parameter, scale, and model identities that produced it are absent.
 
-## Checked-In Study Inputs
+## Nested Denominators
 
-- [dataset catalog](./datasets/README.md)
-- [provenance guide](./provenance/README.md)
-- [runtime reference mapping](./reference/README.md)
-- governed parity bundles: `evidence-001` to `evidence-009`
-- checked-in lecture source copies:
-  `cichlid.csv`, `cichlidtree.nex`, `fishdata.RData`, `PCM5_PGLMM.R`, and
-  `PCM5_extra_code.R`
+PCM5 requires explicit accounting at several levels:
+
+- declared, admitted, excluded, missing, and repeated source observations;
+- represented species, matched/pruned tree tips, and random-effect order;
+- initialized, completed, failed, excluded, and retained chains;
+- generated, burn-in, thinned, non-finite, transformed, and retained draws;
+- expected, present, absent, aliased, and comparable parameters, nodes,
+  categories, and variance components;
+- selected, comparable, matched, mismatched, and non-comparable claim rows.
+
+Large draw counts cannot compensate for a missing chain, species, variance
+component, node identity, or eligible comparison row.
+
+## Preserve Parent And Derived Draws
+
+| Derived record | Required same-draw parents | Failure if only summaries remain |
+| --- | --- | --- |
+| phylogenetic signal ratio | phylogenetic and residual variance components | ratio of marginal means differs from mean of draw-wise ratios |
+| species/phylogeny/residual shares | every component in the complete denominator | omitted or unmatched components silently change the partition |
+| infection probability curve | paired coefficient draws and declared predictor values | inverse-link of mean coefficients understates transformation uncertainty |
+| ancestral-node interval | node-effect draws keyed to one tree and parameter | node identity and posterior dependence cannot be recovered |
+
+Primary posterior draws and derived rows are both required. Derived quantities
+cannot substitute for the parent chain, and parent draws do not prove that the
+declared transformation was applied correctly.
+
+## Model-Family Boundaries
+
+| Family | Identity required before comparison |
+| --- | --- |
+| Poisson count | link, offset/exposure, dispersion treatment, priors, count scale, random effects |
+| infection outcome | `multinomial2` state/category coding, latent residual convention, link, priors, random effects |
+| repeated observations | observation unit, species effect, phylogenetic effect, residual structure, covariance scaling |
+| ancestral effects | exact tree, node descendant set, parameter scale, chain/draw identity, summary rule |
+| probability summaries | paired coefficient draws, predictor values, inverse link, draw-wise transformation |
+| variance shares | complete same-draw numerator and denominator components, including family-specific residual term |
+
+`summarize_phylogenetic_logistic` and other nearby comparative tools do not
+instantiate these `MCMCglmm` model contracts. They are relevant adjacent
+capability, not substitute posterior evidence.
+
+## Record Authority
+
+The source scripts `reference/PCM5_PGLMM.R` and
+`reference/PCM5_extra_code.R` define the preserved model sequence. `datasets/`
+and provenance own source identity. Bundle manifests own claim status and
+freshness. Checks and results manifests expose the zero-primary-output state.
+The public guide explains interpretation and closure but does not own a
+scientific value.
+
+The two source scripts have different roles: `PCM5_PGLMM.R` defines the main
+model sequence, while `PCM5_extra_code.R` defines additional back-transforms
+and mixed-model variations. A result derived from the supplementary script
+must retain that source identity rather than inheriting the main-script label.
+
+## Reviewer Route
+
+1. Establish observation, species, tree, and source-script identity.
+2. Select the model family and read its claim manifest, source object, priors,
+   random effects, link/scale, and required outputs.
+3. Trace every derived quantity to its required same-draw parent components.
+4. Confirm that primary posterior outputs and claim observations remain absent.
+5. Preserve `not_comparable` until paired executions, complete denominators,
+   diagnostics, transformations, and comparison rules are retained.
+6. Continue with the public
+   [PCM5 guide](../../../docs/03-bijux-phylogenetics-evidence-book/pcm5-cichlid-phylogenetic-generalized-linear-mixed-models/index.md)
+   for model-specific closure requirements.

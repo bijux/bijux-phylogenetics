@@ -2,61 +2,192 @@
 title: Runtime and Evidence Boundary
 audience: public
 type: explanation
-status: active
+status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-22
 ---
 
 # Runtime And Evidence Boundary
 
-The runtime handbook and the evidence book answer different questions. Keeping
-them separate makes the public story more honest, not less complete.
+Runtime output becomes governed evidence only through an explicit claim
+contract. Executing a method can produce a complete, reproducible result
+without establishing a study claim; an Evidence Book bundle adds the source,
+claim identity, checks, acceptance rules, freshness, and verdict required for
+adjudication.
 
 ```mermaid
-flowchart TD
-    A[Reader question] --> B[How do I use this surface?]
-    A --> C[How much has this surface been checked?]
-    B --> D[Runtime handbook]
-    C --> E[Evidence book]
+flowchart LR
+    request["Validated scientific<br/>request"]
+    execution["Native method or<br/>external engine"]
+    result["Typed result and<br/>diagnostics"]
+    artifacts["Manifest and linked<br/>artifacts"]
+    mapping["Claim and source<br/>mapping"]
+    checks["Declared observations<br/>and acceptance rules"]
+    verdict["Claim-scoped verdict<br/>and freshness"]
+
+    request --> execution --> result --> artifacts
+    artifacts --> mapping --> checks --> verdict
 ```
 
-## The Runtime Handbook Answers
+## Runtime Result Contract
 
-- what the product surface is
-- how to run it
-- which commands, imports, and artifact families matter
-- where native ownership and wrapper orchestration differ
-- what operational limits apply
+A runtime result identifies the method owner, inputs, configuration, status,
+diagnostics, and outputs. It answers whether the requested computation
+executed under its declared operational contract. It may also carry numerical
+or integration-test support, but it does not inherit a scientific claim that
+was never mapped to it.
 
-## The Evidence Book Answers
+## Evidence Claim Contract
 
-- which course-derived study slices have governed evidence
-- where trust is bounded, partial, or still open
-- how repository behavior compares against explicit study or parity references
+An evidence claim binds a scientific statement to source provenance,
+identified inputs, an executable or externally bounded reference,
+observation-level checks, acceptance rules, artifacts, a verdict, and material
+dependency freshness. The claim is no broader than that binding.
 
-## Why The Boundary Matters
+## Promotion Requirements
 
-- a published feature can be usable before every scientific claim around it is
-  closed
-- a wrapper-backed workflow can be documented honestly without being disguised
-  as native
-- a narrower evidence surface does not make the runtime docs false, as long as
-  the narrower trust boundary stays explicit
+| Requirement | Runtime output alone | Governed evidence claim |
+| --- | :---: | :---: |
+| method and software identity | required | required |
+| input and configuration identity | required | required |
+| diagnostics and output inventory | required | required |
+| stable claim identifier | optional | required |
+| scientific source provenance | optional | required |
+| reference or closure boundary | optional | required |
+| declared observations and tolerances | optional | required |
+| claim-scoped verdict and freshness | no | required |
 
-## Reading Rule
+Copying a report into the Evidence Book does not satisfy these requirements.
+Promotion requires a registered bundle whose machine-readable records connect
+the claim to the exact runtime or external computation.
 
-If your question is "how do I use this feature?", stay in the runtime
-handbook. If your question is "how much has this feature been checked on named
-studies?", move to the evidence book.
+## Promotion Creates A Child Record
 
-Use the claim reading guide when you need the fuller vocabulary for runtime,
-native, wrapper, evidence, and release claims.
+Evidence promotion does not mutate a runtime result into a different kind of
+truth. It creates a claim record that consumes an immutable result and adds
+scientific source, comparison, adjudication, and freshness identities.
 
-## Boundary Examples
+```mermaid
+flowchart LR
+    result["Runtime result<br/>status and diagnostics"] --> artifact["Immutable artifact<br/>identity and inventory"]
+    artifact --> observation["Claim observation<br/>normalization and rule"]
+    observation --> verdict["Bounded verdict<br/>limitations and freshness"]
 
-- a native maximum-likelihood workflow belongs in the runtime handbook because
-  that is where usage, inputs, and outputs are documented
-- a PCM study parity bundle belongs in the evidence book because that is where
-  bounded trust, freshness, and study scope are documented
-- a benchmark difference belongs in quality guidance because it answers a
-  review question, not a basic usage question
+    artifact -. remains runtime-owned .-> artifact
+    verdict -. links, never rewrites .-> artifact
+```
+
+| Change after promotion | Required action |
+| --- | --- |
+| result bytes, schema, or diagnostics change | create a new result identity and reopen dependent observations |
+| normalization or tolerance changes | create a new comparison rule and adjudication record |
+| claim wording or population changes | register a new or revised claim dependency set |
+| only explanatory prose changes | preserve machine values, verdict, limitations, and links exactly |
+
+This child relationship preserves both histories: the runtime record explains
+what happened, while the Evidence Book explains which bounded statement may
+consume it. Editing one to resemble the other destroys the audit boundary.
+
+## Stop At The Strongest Record Actually Owned
+
+Evidence accumulates by adding specific records. It does not advance merely
+because a neighboring capability exists.
+
+```mermaid
+flowchart LR
+    capability["Executable capability"] --> result["Identified result"]
+    result --> reproducible["Reconstructable run"]
+    reproducible --> comparison["Registered comparison"]
+    comparison --> claim["Adjudicated claim"]
+
+    capability -. "valid stopping point" .-> capability
+    result -. "valid stopping point" .-> result
+    reproducible -. "valid stopping point" .-> reproducible
+    comparison -. "valid stopping point" .-> comparison
+```
+
+Each stop is useful when described honestly:
+
+| Strongest retained record | Defensible statement | Statement still unavailable |
+| --- | --- | --- |
+| executable capability | the method or adapter is available under its public contract | this study result was reproduced |
+| identified result | the named inputs and configuration produced this result and diagnostic state | an independent implementation agrees |
+| reconstructable run | the computation can be reconstructed from retained identities and artifacts | the scientific claim passes |
+| registered comparison | named observations were compared under a declared rule | neighboring outputs or parameterizations agree |
+| adjudicated claim | the bounded claim has the recorded verdict and freshness state | broader scientific validity or independent replication |
+
+A missing higher layer is neither erased by a lower-layer success nor evidence
+that the lower layer failed. It determines the strongest language the public
+record can support.
+
+## Evidence Record Anatomy
+
+A governed bundle separates facts that are often collapsed into one narrative:
+
+| Record | Owns | Review question |
+| --- | --- | --- |
+| `manifest.json` | bundle identity, ownership, summary, limitations, freshness, and verdict | What is the current bounded conclusion? |
+| `claims.json` | stable claim identifiers, source fragments, tags, and claim verdicts | Which statement is being adjudicated? |
+| `inputs.manifest.json` | exact input files, objects, roles, and checksums | Which analytical population and tree were used? |
+| `provenance.json` | source origin, retrieval or derivation, and reference identity | Where did the comparison basis come from? |
+| `checks.json` | required artifacts, primary outputs, comparison mode, and validation rules | What must exist before the verdict is reviewable? |
+| `results/` | governed observations, tables, summaries, and their inventory | What values and structural facts were actually retained? |
+| `report.md` | human interpretation of the same bounded record | Does the prose preserve the machine-readable status and limitations? |
+
+No single file substitutes for the bundle. A result table without input
+identity is ambiguous; a claim without primary outputs is unsupported; a
+report whose wording exceeds the manifest verdict is inconsistent.
+
+## Do Not Promote By Proximity
+
+```mermaid
+flowchart TB
+    capability["Nearby runtime capability"]
+    execution["Study-specific execution"]
+    observations["Retained reference and<br/>Bijux observations"]
+    checks["Declared comparison<br/>and acceptance rule"]
+    verdict["Claim-scoped verdict"]
+
+    capability -. does not imply .-> verdict
+    capability --> execution --> observations --> checks --> verdict
+```
+
+An implemented PGLS surface does not close a PGLS lecture claim until the
+study-specific design matrix, taxa, covariance, outputs, and checks are
+retained. A BEAST parser does not close an `MCMCglmm` posterior claim. A parity
+case for one parameterization does not transfer to another model carrying the
+same family name.
+
+## Changes That Reopen A Claim
+
+A previously favorable verdict requires freshness review when a material
+dependency changes:
+
+- the scientific algorithm, model parameterization, optimizer, or sampler;
+- parsing, normalization, tolerance, or comparison semantics;
+- datasets, tree topology, branch lengths, exclusions, or source provenance;
+- result schemas, serialization, or governed primary-output paths;
+- the reference executable, package version, or external-engine contract;
+- claim wording broad enough to exceed the retained observations.
+
+Presentation-only edits need not invalidate numerical evidence, but they must
+still preserve exact values, verdict vocabulary, and limitations. Freshness is
+an explicit dependency decision, not an assumption based on a recent file
+timestamp.
+
+## Valid Boundary States
+
+- A native method can be implemented and tested without a study bundle.
+- An adapter can be fully operational while the external algorithm remains the
+  computational owner.
+- A bundle can be structurally valid and current while its verdict is
+  `not_comparable`.
+- A matched study observation does not grant parity to neighboring models,
+  datasets, or package surfaces.
+- A released runtime does not make stale evidence current.
+
+Use the [claim reading guide](claim-reading-guide.md) to qualify public
+statements, [validation lanes](../quality/validation-lanes.md) to identify the
+proof family, and the
+[Evidence Book](../../03-bijux-phylogenetics-evidence-book/index.md) to inspect
+governed study verdicts.

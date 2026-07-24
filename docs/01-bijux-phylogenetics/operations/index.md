@@ -1,68 +1,184 @@
 ---
 title: Runtime Operations
 audience: public
-type: how-to
+type: index
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-22
 ---
 
 # Runtime Operations
 
-This section covers installation, local execution, and practical workflow use.
+Operating scientific software means preserving the reasoning around a run,
+not merely obtaining a zero exit status. These guides connect environment,
+inputs, method choice, execution, diagnostics, artifacts, and review.
 
-Use it when you want to get work done with the runtime rather than study the
-interface map or release posture.
+```mermaid
+flowchart LR
+    install["Install and identify<br/>versions"] --> prepare["Validate inputs<br/>and assumptions"]
+    prepare --> execute["Execute native method<br/>or adapter"]
+    execute --> inspect["Inspect diagnostics<br/>and sensitivity"]
+    inspect --> preserve["Preserve manifests<br/>and review artifacts"]
+```
 
-The operations docs should make the package feel runnable at real scale. That
-means they need to cover workflow-first usage, native-first usage, and
-review-first usage instead of pretending every reader follows one path.
+## Start By Outcome
 
-## Operational Reading Order
+| Outcome | Guide |
+| --- | --- |
+| create a reliable environment | [Installation and setup](installation-and-setup.md) |
+| move from input data to a reviewable result | [Common workflows](common-workflows.md) |
+| run raw sequences through alignment, trimming, inference and support | [Sequence-to-tree study](sequence-to-tree-study.md) |
+| fit comparative regression and reconstruct discrete history | [Comparative and ancestral study](comparative-and-ancestral-study.md) |
+| compare two tree topologies under an explicit population | [Topology comparison study](topology-comparison-study.md) |
+| hand structured analysis into a linked human review view | [Analysis report handoff](analysis-report-handoff.md) |
+| run owned maximum-likelihood inference | [Native maximum-likelihood workflows](native-maximum-likelihood-workflows.md) |
+| run a supported Bayesian DNA path | [Native Bayesian workflows](native-bayesian-workflows.md) |
+| interpret benchmark records | [Native benchmark review](native-benchmark-review.md) |
+| understand what automation cannot decide | [Operational boundaries](operational-boundaries.md) |
 
-1. [Installation and setup](installation-and-setup.md)
-2. [Common workflows](common-workflows.md)
-3. [Native maximum-likelihood workflows](native-maximum-likelihood-workflows.md)
-4. [Native Bayesian workflows](native-bayesian-workflows.md)
-5. [Native benchmark review](native-benchmark-review.md)
-6. [Operational boundaries](operational-boundaries.md)
+## Read A Guide At Three Levels
 
-This section explicitly includes native maximum-likelihood workflows, native
-Bayesian workflows, and native benchmark review so the flagship runtime
-surfaces are discoverable from the main operations landing page.
+Every operational guide separates three records that are easy to collapse:
 
-## What This Section Helps You Do
-
-- install the canonical runtime surface
-- run documented workflows without scattering local outputs
-- choose between workflow-oriented and native-oriented operating modes
-- understand when a workflow is operationally convenient but scientifically
-  review-heavy
-
-## Operational Modes
-
-| Mode | Best for | Representative guides |
+| Level | Owns | Completion question |
 | --- | --- | --- |
-| Workflow-first | end-to-end runs that should emit reviewable artifacts | installation, common workflows, artifact guides |
-| Native-first | direct use of owned maximum-likelihood or Bayesian contracts | native maximum-likelihood workflows, native Bayesian workflows |
-| Review-first | understanding performance posture and benchmark limits | native benchmark review, operational boundaries |
+| execution | programs, arguments, environment, process state, and native files | did the declared computation run as identified? |
+| scientific result | admitted population, estimand, model, diagnostics, exclusions, and structured values | is the result interpretable for the declared question? |
+| claim | bounded statement, observation population, comparison rule, verdict, and freshness | does governed evidence support the exact statement? |
 
-## What Readers Should Be Able To Do After This Section
+A complete execution can yield a scientifically rejected result. A valid
+scientific result can exist without a parity or Evidence Book claim. A claim
+can become stale while the historical execution remains reconstructable.
+Carry all three identities when the run will be cited; do not use one status
+as shorthand for the others.
 
-- install the canonical runtime without relying on local folklore
-- run an end-to-end artifact-producing workflow
-- switch from workflow use into lower-level native use when that is the right
-  contract
-- understand when an operationally valid run still needs careful scientific
-  reading
+## Establish The Run Identity First
 
-## Why This Section Has To Be Better Than A Command Dump
+Before selecting a model, record the input set and the runtime that will own
+the result:
 
-The runtime now publishes enough depth that operations cannot stop at
-`pip install` plus one toy command. These pages should help a reader operate:
+```bash
+bijux-phylogenetics --version
+bijux-phylogenetics env inspect --json
+bijux-phylogenetics inspect dataset/tree.nwk --json
+bijux-phylogenetics alignment validate-input dataset/alignment.fasta --json
+```
 
-- packaged examples
-- workflow APIs that write governed artifacts
-- native maximum-likelihood surfaces
-- supported native Bayesian surfaces
-- benchmark review paths that explain what a performance result really means
+The last two commands are independent intake checks; use only the objects
+present in the analysis. For trait work, validate the tree–table join and
+retain the reconciliation output before fitting a model. For external engines,
+capture executable discovery and version output before execution.
+
+## Follow The Operational State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> Intake
+    Intake --> Refused: invalid identity or assumptions
+    Intake --> Ready: validated inputs and configuration
+    Ready --> Running
+    Running --> Partial: some declared components unavailable
+    Running --> Failed: computation or infrastructure failure
+    Running --> Complete: required outputs and diagnostics present
+    Partial --> Review
+    Failed --> Review
+    Complete --> Review
+    Refused --> Review
+```
+
+`Review` does not mean success. It means that the terminal state, diagnostics,
+and output denominator are preserved well enough to understand what happened.
+
+## Select One Accepted Execution
+
+Retries, alternate models, and sensitivity runs form branches. They must not
+write into a shared result identity and later appear to be one uninterrupted
+successful execution.
+
+```mermaid
+flowchart LR
+    parent["Validated inputs<br/>and declared question"]
+    first["Execution A<br/>terminal record"]
+    retry["Execution B<br/>changed seed or recovery"]
+    alternate["Execution C<br/>changed model or data"]
+    decision["Acceptance decision<br/>selected scope and reason"]
+
+    parent --> first --> decision
+    parent --> retry --> decision
+    parent --> alternate --> decision
+```
+
+The acceptance decision identifies every candidate execution, the scientific
+differences among them, the selected record, the rule used to select it, and
+the conclusions excluded by failed or rejected candidates. A retry with
+identical identity may demonstrate recoverability; a changed seed, model,
+engine, tolerance, input, or incomplete-run policy is a new branch.
+
+Preserve non-selected branches when they affect failure rates, sensitivity,
+search coverage, or the credibility of the selection rule. Deleting an
+unfavorable attempt changes the denominator and is not operational cleanup.
+
+## The Operational Contract
+
+A defensible run records:
+
+- installed runtime and, where applicable, external-engine versions;
+- immutable or checksummed input identities;
+- taxon reconciliation and validation outcomes;
+- model, partition, search, sampling, and seed configuration;
+- warnings, convergence state, support, uncertainty, or sensitivity diagnostics;
+- a declared output inventory and the command or call that produced it.
+
+The exact fields vary by method. The invariant is that a reviewer should not
+have to guess which assumptions created the result.
+
+## Native And External Execution
+
+Native workflows fail within the Python runtime and can return rich diagnostic
+state directly. Adapter workflows add executable discovery, subprocess exit,
+captured stdout/stderr, output parsing, and engine-version provenance. Plan for
+those additional failure and reproducibility boundaries.
+
+## Reproducibility Levels
+
+| Level | What it establishes |
+| --- | --- |
+| command recorded | invocation can be inspected |
+| environment recorded | software identity is known |
+| inputs and configuration fixed | the run can be reconstructed |
+| deterministic or seeded replay passes | the declared execution reproduces within its contract |
+| reference or evidence checks pass | bounded comparison claims gain additional support |
+
+Do not collapse these levels into “reproducible.” State which one applies.
+
+## Before Interpretation
+
+Review validation warnings, optimizer or sampler diagnostics, support and
+uncertainty, missing-data behavior, taxon coverage, and sensitivity to material
+choices. A result object existing is an execution fact; it is not an automatic
+scientific verdict.
+
+Use a refusal or incomplete status as information. A taxon mismatch, missing
+engine, unconverged optimizer, low effective sample size, incomplete support
+replicates, or absent required artifact should stop the corresponding claim.
+Changing presentation or omitting the failed check does not make the run
+complete.
+
+## Minimum Handoff Record
+
+Preserve enough state for a second person to answer these questions without
+terminal history:
+
+- Which exact inputs and taxa were analyzed?
+- Which runtime and external-engine versions executed?
+- Which model, partitions, transformations, priors, costs, and seeds applied?
+- Which diagnostics passed, warned, failed, or remained unavailable?
+- Which files are canonical machine output and which are presentations?
+- Which comparison or Evidence Book claim, if any, supports interpretation?
+
+## Generated References
+
+The exhaustive [CLI surface](../interfaces/cli-surface.md) and generated parts
+of [common workflows](common-workflows.md) are lookup references. Use this
+operations section to decide *why* and *how* to run; use generated references
+to confirm exact arguments and available methods.

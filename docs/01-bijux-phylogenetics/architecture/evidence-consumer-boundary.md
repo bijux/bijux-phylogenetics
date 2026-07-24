@@ -2,51 +2,116 @@
 title: Evidence Consumer Boundary
 audience: public
 type: explanation
-status: active
+status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-04
+last_reviewed: 2026-07-22
 ---
 
 # Evidence Consumer Boundary
 
-The evidence-book uses runtime outputs, but it is not the runtime itself.
+Evidence governance is a downstream consumer of runtime artifacts. Ordinary
+analysis must not require a study dossier, claim registry, or evidence index;
+Evidence Book workflows may depend on stable runtime and artifact contracts to
+evaluate named claims.
 
-That separation helps readers avoid a common mistake: using runtime usage docs
-to answer trust questions, or using study dossiers to answer execution
-questions.
+## One Run, Three Acceptance Decisions
+
+| Decision | Owner | Accepts | Does not establish |
+| --- | --- | --- | --- |
+| execution acceptance | workflow or engine adapter | identified process state, required native outputs, and captured diagnostics | scientific suitability or correspondence |
+| result acceptance | scientific method and consumer | admitted population, model, structured values, uncertainty, exclusions, and intended use | agreement with a reference implementation |
+| claim acceptance | Evidence Book bundle | complete claim dependencies, comparison rules, verdict, limits, and freshness | broader runtime correctness or unobserved methods |
+
+These decisions may differ without contradiction. A complete execution can be
+scientifically rejected; a valid result can have no comparison claim; a
+structurally current bundle can retain `not_comparable`. Preserve the three
+statuses rather than replacing them with a single “validated” label.
 
 ```mermaid
-flowchart TD
-    A[What are you trying to learn?] --> B[How do I run this?]
-    A --> C[How much should I trust this claim?]
-    B --> D[Runtime handbook]
-    C --> E[Evidence Book]
+flowchart LR
+    runtime["Scientific runtime"]
+    result["Typed result"]
+    bundle["Artifact bundle"]
+    evidence["Evidence governance"]
+    indexes["Verdicts, freshness,<br/>coverage indexes"]
+
+    runtime --> result --> bundle --> evidence --> indexes
+    evidence -. must not control .-> runtime
 ```
 
-Use the runtime handbook when your question is operational. Use the
-evidence-book public guide when your question is about study reproduction,
-parity, freshness, or bounded trust.
+## Dependency Rule
 
-## Practical Reading Rule
+The runtime owns scientific objects, computation, typed diagnostics, and
+serialization. Evidence governance owns source mapping, claim identifiers,
+check definitions, acceptance rules, verdicts, and freshness. A dependency in
+the opposite direction would make ordinary execution depend on a selected
+study and would blur computation success with claim adjudication.
 
-Ask which question you are actually trying to answer:
+## Consumption Contract
 
-- runtime question
-  What can the package do, how do I run it, and what are the public API and CLI
-  contracts.
-- evidence question
-  Which claims are benchmarked, parity-reviewed, study-backed, stale, bounded,
-  or still open.
+| Evidence consumer needs | Runtime or artifact provider supplies |
+| --- | --- |
+| stable operation identity | documented method, workflow, engine, and version |
+| reproducible input scope | input hashes, taxa, reconciliation, partitions, transformations |
+| comparable configuration | model, priors, costs, search/sampling policy, seeds |
+| observation source | typed result fields and machine-readable ledgers |
+| diagnostic qualification | convergence, support, uncertainty, warnings, exclusions |
+| output integrity | manifest, schema version, inventory, checksums where governed |
 
-Keeping those questions separate is part of the public honesty model. The
-runtime can be broader than the currently closed evidence surface without that
-difference being hidden.
+Evidence tooling should reject or mark unresolved any claim whose required
+runtime field, artifact, source, or comparison owner is missing. It must not
+reconstruct critical scientific values by scraping prose or figures.
 
-## Why The Split Improves Clarity
+## Promotion Protocol
 
-- runtime docs can stay practical instead of trying to embed every dossier
-  detail
-- evidence pages can stay trust-focused instead of pretending to be the main
-  product manual
-- readers can move between usage, validation, and bounded trust without one
-  page trying to answer every question badly
+```mermaid
+flowchart LR
+    result["Typed runtime result"]
+    bundle["Complete artifact bundle"]
+    observation["Normalized and raw<br/>comparison observation"]
+    adjudication["Acceptance rule<br/>and verdict"]
+    publication["Fresh claim index"]
+
+    result --> bundle --> observation --> adjudication --> publication
+```
+
+Promotion is claim-specific. The evidence consumer must name the result field
+or artifact, the reference owner, any normalization, the tolerance or decision
+rule, and the claim that consumes the observation. Missing comparison data
+produces `not_comparable`; it does not become a runtime failure or an “open”
+verdict.
+
+The reverse implications are invalid:
+
+- a published verdict does not make the Evidence Book the runtime owner;
+- a matched claim does not validate fields the claim did not observe;
+- a fresh bundle does not imply a favorable verdict;
+- a complete runtime result does not imply a reference comparison exists.
+
+## Material Changes And Freshness
+
+A change to a consumed method, parameterization, input, dataset, external
+reference, parser, schema, or acceptance rule can invalidate the relationship
+between an old artifact and its claim. Freshness evaluation records that
+dependency change. It does not rewrite the historical result; it prevents the
+old verdict from being presented as current.
+
+Freshness must follow material dependencies rather than file timestamps alone.
+A prose-only clarification can leave a verdict current; a default, parser,
+dataset, tolerance, or reference-version change can require new observations
+even when the public function name is unchanged.
+
+## Valid Independence
+
+- Runtime capability can exceed Evidence Book coverage.
+- A complete runtime bundle can have no claim mapping.
+- A governed claim can remain `not_comparable` while its bundle is structurally
+  valid and current.
+- Evidence indexes can be regenerated without changing runtime behavior.
+- Runtime tests and benchmarks can support bounded assurance without becoming
+  study verdicts.
+
+See the [runtime and evidence boundary](../foundation/evidence-boundary.md) for
+promotion requirements and the
+[artifact consumption guide](../interfaces/artifact-consumption-guide.md) for
+reviewing a persisted run before claim adjudication.

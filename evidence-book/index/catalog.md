@@ -20,7 +20,7 @@ governed parity or parity-tracked bundle in the repository evidence-book.
 - owner package: `bijux-phylogenetics`
 - categories: `scientific-validation`
 - bundle count: `7`
-- summary: This study captures PCM4, the Lund lecture that moves from non-phylogenetic Gaussian regression into Bayesian linear mixed models and then into a phylogenetic random-effect formulation on cichlid parasite data.
+- summary: This directory is the governed PCM4 design record for the transition from a species-level Gaussian baseline to Bayesian regression and a phylogenetic mixed model on cichlid parasite observations. It preserves the lecture source, data and tree identity, seven claim boundaries, and the records required for a future posterior comparison.
 
 - `evidence-001` — Cichlid alignment and species summarization bundle (`not_comparable`)
   Path: `studies/cichlid-bayesian-linear-and-phylogenetic-mixed-models/evidence-001`
@@ -43,7 +43,7 @@ governed parity or parity-tracked bundle in the repository evidence-book.
 - owner package: `bijux-phylogenetics`
 - categories: `scientific-validation`
 - bundle count: `9`
-- summary: This study captures PCM5, the Lund lecture on phylogenetic generalized linear mixed models for count data, binomial response data, repeated measures, and posterior-based phylogenetic signal calculations.
+- summary: This directory is the governed PCM5 design record for posterior phylogenetic signal, ancestral effects, Poisson counts, infection outcomes, probability-scale summaries, repeated observations, and variance partitioning in the cichlid study.
 
 - `evidence-001` — Cichlid repeated-measure workspace contract bundle (`not_comparable`)
   Path: `studies/cichlid-phylogenetic-generalized-linear-mixed-models/evidence-001`
@@ -70,7 +70,7 @@ governed parity or parity-tracked bundle in the repository evidence-book.
 - owner package: `bijux-phylogenetics`
 - categories: `scientific-validation`
 - bundle count: `8`
-- summary: This study captures PCM3, the Lund lecture on multivariable comparative regression with continuous predictors, categorical predictors, interactions, and phylogenetically corrected regression.
+- summary: This directory is the governed PCM3 design record for multivariable primate regression with continuous predictors, categorical contrasts, interactions, transformations, and phylogenetic covariance. It defines eight bounded claims and the evidence needed to compare the lecture workflow with Bijux.
 
 - `evidence-001` — Primate source intake and workspace alignment bundle (`not_comparable`)
   Path: `studies/primate-continuous-and-categorical-regression/evidence-001`
@@ -95,7 +95,7 @@ governed parity or parity-tracked bundle in the repository evidence-book.
 - owner package: `bijux-phylogenetics`
 - categories: `teaching-study, migration-study`
 - bundle count: `9`
-- summary: This study turns the Lund `PCM1_plots_signal` lecture into a governed set of small evidence slices covering primate data intake, tree preparation, phylogenetic signal, and ancestral reconstruction.
+- summary: This study is the governed PCM1 record for primate data preparation, tree reconciliation, phylogenetic signal, and continuous ancestral reconstruction. It establishes the prepared primate population reused by later studies and keeps every population-changing operation visible before model output is interpreted.
 
 - `evidence-001` — Primate longevity signal parity bundle (`matched_with_tolerance`)
   Path: `studies/primate-longevity-signal/evidence-001`
@@ -122,7 +122,7 @@ governed parity or parity-tracked bundle in the repository evidence-book.
 - owner package: `bijux-phylogenetics`
 - categories: `teaching-study, migration-study`
 - bundle count: `10`
-- summary: This study turns the regression, transformed-tree, evolutionary-mode fit, likelihood-ratio, and ancestral sections of the Lund primate comparative lecture into governed evidence slices backed by checked-in R reference outputs and repository reproductions.
+- summary: This directory is the governed PCM2 record for baseline regression, Pagel-lambda PGLS, phylogenetic signal, tree transformations, evolutionary-mode fits, likelihood-ratio comparisons, residual review, and ancestral estimates on the prepared primate population.
 
 - `evidence-001` — Primate reload semantics bundle (`matched`)
   Path: `studies/primate-pgls-and-signal/evidence-001`

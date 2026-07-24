@@ -1,107 +1,263 @@
 ---
-title: API Surface
-audience: reader
+title: Programmatic API Surface
+audience: public
 type: reference
 status: canonical
 owner: bijux-phylogenetics-docs
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-21
 ---
 
-# API Surface
+# Programmatic API Surface
 
-The stable public API of this repository is deliberately small. Most users
-should treat the CLI, Python import surface, and checked-in evidence files as
-the main public contract. The HTTP-facing surface is frozen as a checked-in
-OpenAPI bundle, not as a live server promise.
+Bijux Phylogenetics publishes three programmatic contracts: a curated Python
+workflow API, named scientific modules for direct in-memory work, and a frozen
+OpenAPI read-model schema. They serve different consumers and do not imply one
+another. In particular, the checked-in OpenAPI description is not a promise of
+a hosted HTTP service.
 
-Use this page when the question is about integration boundaries. Use the
-[surface selection guide](surface-selection.md) when the question is which
-public surface should own the work in the first place.
+```mermaid
+flowchart TD
+    consumer["Notebook · application · service contract consumer"]
+    workflow["bijux_phylogenetics.api<br/>path-oriented composition"]
+    module["Documented scientific modules<br/>method-oriented computation"]
+    schema["OpenAPI v1<br/>frozen read models"]
+    typed["Typed runtime result"]
+    payload["Versioned wire payload"]
+    artifact["JSON · TSV · manifest · report"]
 
-## The Main Public Surfaces
+    consumer --> workflow --> typed --> artifact
+    consumer --> module --> typed
+    consumer --> schema --> payload
+```
 
-- the `bijux-phylogenetics` and `phylogenetic` console scripts
-- stable Python imports under `bijux_phylogenetics`
-- checked-in evidence studies under `evidence-book/studies/`
-- the frozen public API contract under `apis/bijux-phylogenetics/v1/`
+## Select The Contract From The Consumer
 
-## Python Workflow Entry Points
+| Consumer need | Contract | What it guarantees |
+| --- | --- | --- |
+| compose common file-to-result workflows | `bijux_phylogenetics.api` | curated functions, result types, and serialization behavior |
+| control a scientific method from validated in-memory state | documented domain module | method-specific parameters, diagnostics, and typed results |
+| bind health, package-ownership, or evidence-study read models | OpenAPI v1 bundle | frozen field shapes and meanings for the declared schema version |
+| execute from a scheduler or shell | command-line surface | installed arguments, exit behavior, structured output, and manifests |
 
-For notebook, script, and pipeline use, the stable workflow-oriented Python
-surface lives under `bijux_phylogenetics.api`.
+Do not design against an implementation submodule merely because it can be
+imported. Support begins at a curated export or an explicitly documented
+scientific surface.
 
-The named entry points are:
+## Cross Contracts By Meaning, Not Shape
 
-- `run_fasta_validation_workflow`
-- `run_alignment_workflow`
-- `run_trimming_workflow`
-- `run_tree_inference_workflow`
-- `run_support_workflow`
-- `run_sequence_to_tree_workflow`
-- `run_tree_comparison_workflow`
-- `run_comparative_model_workflow`
-- `run_ancestral_reconstruction_workflow`
-- `render_report_workflow`
-- `run_configured_phylo_workflow`
+Moving data between Python, CLI, artifacts, and the OpenAPI read models is an
+explicit projection. Similar field names or JSON shapes do not establish that
+two contracts have the same status vocabulary, completeness rules, or
+scientific meaning.
 
-These functions return typed workflow result objects:
+| Projection | Preserve | Re-establish at the target | Never infer |
+| --- | --- | --- | --- |
+| domain result → workflow result | computation owner, method state, typed status, diagnostics, warnings, and omissions | workflow input identity and serialization inventory | that every domain field has a stable workflow projection |
+| workflow result → artifact bundle | result type, field meanings, absent values, paths, and version | manifest links, checksums, expected outputs, and schema compatibility | completeness from a successful write call |
+| CLI JSON → application object | command and runtime identity, structured status, units, ordering, and denominator | consumer validation against the installed contract version | Python type equivalence from matching keys |
+| artifact bundle → read model | bundle and claim identity, current verdict, provenance, and explicit selected fields | read-model version and freshness at projection time | that the OpenAPI schema exposes the full runtime or evidence bundle |
 
-- `FastaValidationResult`
-- `AlignmentWorkflowResult`
-- `TrimmingWorkflowResult`
-- `InferenceWorkflowResult`
-- `SupportWorkflowResult`
-- `SequenceToTreeWorkflowResult`
-- `TreeComparisonWorkflowResult`
-- `ComparativeModelWorkflowResult`
-- `AncestralReconstructionWorkflowResult`
-- `ReportWorkflowResult`
-- `ConfiguredPhyloWorkflowResult`
+A consumer that needs information absent from the target contract must retain
+the owning record or refuse the projection. Adding an undocumented field in a
+local decoder is not a compatibility strategy.
 
-Each result object delegates the underlying CLI-grade runtime report through a
-`report` field and attribute passthrough, adds stable `write_json(...)`
-serialization, and provides `write_tsv(...)` for workflow summaries where a
-tabular export is meaningful.
+## Curated Workflow API
 
-## Native Runtime Entry Points
+Import workflows and their result types from `bijux_phylogenetics.api`:
 
-The public Python contract is no longer only workflow-shaped.
+| Workflow | Result type | Computation owner |
+| --- | --- | --- |
+| `run_fasta_validation_workflow` | `FastaValidationResult` | Bijux runtime |
+| `run_alignment_workflow` | `AlignmentWorkflowResult` | MAFFT through a Bijux adapter |
+| `run_trimming_workflow` | `TrimmingWorkflowResult` | trimAl through a Bijux adapter |
+| `run_tree_inference_workflow` | `InferenceWorkflowResult` | IQ-TREE2 through a Bijux adapter |
+| `run_support_workflow` | `SupportWorkflowResult` | IQ-TREE2 through a Bijux adapter |
+| `run_sequence_to_tree_workflow` | `SequenceToTreeWorkflowResult` | configured external engines through Bijux adapters |
+| `run_tree_comparison_workflow` | `TreeComparisonWorkflowResult` | Bijux runtime |
+| `run_comparative_model_workflow` | `ComparativeModelWorkflowResult` | Bijux runtime |
+| `run_ancestral_reconstruction_workflow` | `AncestralReconstructionWorkflowResult` | Bijux runtime |
+| `render_report_workflow` | `ReportWorkflowResult` | Bijux runtime; presentation is advisory |
+| `run_configured_phylo_workflow` | `ConfiguredPhyloWorkflowResult` | owners declared by the workflow configuration |
 
-The native runtime also exposes named import families for:
+The result wrapper preserves the underlying report as `.report` and forwards
+public report attributes for convenient inspection. JSON serialization has a
+stable envelope:
 
-- likelihood and tree-inference surfaces under `bijux_phylogenetics.phylo.likelihood`
-- Bayesian priors, proposal schedules, diagnostics, and public inference entry
-  points under `bijux_phylogenetics.bayesian`
-- benchmark contracts under `bijux_phylogenetics.benchmark`
+```json
+{
+  "result_type": "TreeComparisonWorkflowResult",
+  "report": {}
+}
+```
 
-Those are still narrower than the full internal module tree. If you need the
-native public contract, stay with the named surfaces that the public docs call
-out directly rather than assuming every helper in those packages is stable.
+`write_json(path)` creates parent directories and writes paths as strings,
+dataclasses as objects, tuples as arrays, and sorted JSON keys. Results with a
+defined row projection also expose `write_tsv(path)`; a `.csv` suffix selects
+comma-separated output. `ConfiguredPhyloWorkflowResult` deliberately has no
+generic table projection because a configured workflow can return different
+record shapes.
 
-## Frozen HTTP Contract
+## Compose And Persist A Native Workflow
 
-The checked-in OpenAPI bundle describes a future-compatible read surface for:
+```python
+from pathlib import Path
 
-- repository health and release identity
-- runtime package ownership summaries
-- evidence-study catalog access
-- evidence-study detail summaries for the governed PCM1 and PCM2 studies
+from bijux_phylogenetics.api import run_comparative_model_workflow
 
-The freeze bundle lives here:
+result = run_comparative_model_workflow(
+    Path("dataset/tree.nwk"),
+    Path("dataset/traits.tsv"),
+    formula="longevity ~ body_mass * habitat",
+    lambda_value="estimate",
+)
 
-- `apis/bijux-phylogenetics/v1/schema.yaml`
-- `apis/bijux-phylogenetics/v1/pinned_openapi.json`
-- `apis/bijux-phylogenetics/v1/schema.hash`
+for coefficient in result.coefficients:
+    print(coefficient.name, coefficient.estimate, coefficient.standard_error)
 
-## Practical Rule
+result.write_json(Path("artifacts/comparative/result.json"))
+result.write_tsv(Path("artifacts/comparative/coefficients.tsv"))
+```
 
-If you need an integration contract, start from the CLI, the named Python
-surface, or the frozen OpenAPI bundle. If an internal module or helper is not
-named in those surfaces, assume it can move.
+The convenience forwarding in `result.coefficients` does not erase the
+wrapper boundary: serialize the wrapper when preserving the public workflow
+record. Review reconciled taxa, design encoding, covariance state, warnings,
+exclusions, and fit diagnostics before interpreting coefficients.
 
-## Matching Practical Guides
+## Compose And Persist An External Workflow
 
-- [surface selection guide](surface-selection.md)
-- [native maximum-likelihood workflows](../operations/native-maximum-likelihood-workflows.md)
-- [native Bayesian workflows](../operations/native-bayesian-workflows.md)
-- [native benchmark review](../operations/native-benchmark-review.md)
+```python
+from pathlib import Path
+
+from bijux_phylogenetics.api import run_sequence_to_tree_workflow
+
+result = run_sequence_to_tree_workflow(
+    Path("dataset/sequences.fasta"),
+    out_dir=Path("artifacts/sequence-to-tree"),
+    mafft_executable="mafft",
+    trimal_executable="trimal",
+    iqtree_executable="iqtree2",
+    bootstrap_replicates=1000,
+    seed=17,
+    threads=4,
+    timeout_seconds=3600,
+    incomplete_run_policy="reject",
+)
+result.write_json(Path("artifacts/sequence-to-tree/workflow-result.json"))
+result.write_tsv(Path("artifacts/sequence-to-tree/workflow-summary.tsv"))
+```
+
+Python owns composition here, not the numerical algorithms in MAFFT, trimAl,
+or IQ-TREE2. Preserve executable versions, full invocations, captured output,
+native files, parser state, normalized records, and the workflow manifest.
+`resume=True` is governed identity reuse; it is not permission to accept an
+arbitrary pre-existing directory.
+
+## Native-Only Enforcement
+
+The API exports:
+
+- `NATIVE_MAXIMUM_LIKELIHOOD_ONLY_ENV_VAR`;
+- `native_maximum_likelihood_only_mode`;
+- `is_native_maximum_likelihood_only_mode_enabled`.
+
+Use the context manager when a test or application must fail if a
+wrapper-backed maximum-likelihood route is reached:
+
+```python
+from pathlib import Path
+
+from bijux_phylogenetics.api import (
+    native_maximum_likelihood_only_mode,
+    run_configured_phylo_workflow,
+)
+
+with native_maximum_likelihood_only_mode():
+    result = run_configured_phylo_workflow(Path("native-inference.json"))
+```
+
+This proves that the guarded path did not invoke an external maximum-likelihood
+engine. It does not prove convergence, correctness, parity, accuracy, or
+fitness for a dataset.
+
+## Direct Scientific Modules
+
+Use named module exports when the workflow API is too broad or does not expose
+the required scientific state:
+
+| Module family | Representative owned state |
+| --- | --- |
+| `bijux_phylogenetics.phylo.likelihood` | finite-state likelihood, model parameters, topology search, native maximum-likelihood results, bootstrap support |
+| `bijux_phylogenetics.bayesian` | priors, proposals, chains, checkpoints, posterior evaluation, convergence and effective sample size |
+| `bijux_phylogenetics.comparative` | covariance, PGLS, signal, trait models, diagnostics, sensitivity and model comparison |
+| `bijux_phylogenetics.ancestral` | continuous and discrete states, transition models, node mapping and uncertainty |
+| `bijux_phylogenetics.parsimony` | character costs, reconstruction, tree search, equal-best trees and resampling |
+| `bijux_phylogenetics.simulation` | generating parameters, random seeds, known histories and truth ledgers |
+| `bijux_phylogenetics.benchmark` | governed timing, memory, recovery and correspondence measurements |
+
+Direct use shifts more responsibility to the caller. The application must
+retain object identity, validate preconditions, preserve warnings and failed
+states, and choose an artifact representation that does not discard relevant
+method state.
+
+## Failure And Recovery Contract
+
+Catch an exception only at a layer that can add information or perform a safe
+recovery. Preserve the original exception, input identity, parameters, and any
+partial external run directory. A retry with a different seed, executable,
+model, tolerance, taxon set, or incomplete-run policy is a new execution
+identity and must not overwrite the first record.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Validating
+    Validating --> Refused: invalid or ambiguous input
+    Validating --> Executing: contract accepted
+    Executing --> Partial: computation or persistence failure
+    Executing --> Completed: result returned
+    Partial --> Retained: diagnostics and partial state preserved
+    Completed --> Reviewed: status and assumptions accepted
+    Completed --> Rejected: result scientifically unusable
+```
+
+Serialization success means that a record was written. It does not convert a
+partial, unconverged, unsupported, or assumption-violating result into a valid
+scientific conclusion.
+
+## Frozen OpenAPI Contract
+
+The versioned bundle contains:
+
+- `apis/bijux-phylogenetics/v1/schema.yaml` — authored OpenAPI 3.1 source;
+- `apis/bijux-phylogenetics/v1/pinned_openapi.json` — normalized pinned form;
+- `apis/bijux-phylogenetics/v1/schema.hash` — drift-detection identity.
+
+The schema defines read models for health, runtime package ownership, evidence
+study listing, and study detail. Its `EvidenceStudyId` enumeration covers the
+PCM1 and PCM2 primate studies. It is not complete HTTP coverage of every
+runtime capability or all five Evidence Book families.
+
+This is a freeze-only schema promise. Transport implementation,
+authentication, deployment, hosting, latency, and availability are outside
+the contract. A schema hash mismatch is contract drift; updating the hash
+without reviewing the semantic change defeats the freeze.
+
+## Compatibility Decisions
+
+- Python compatibility covers curated names, call signatures, result
+  semantics, and documented serialization.
+- OpenAPI compatibility covers the selected schema version, field presence,
+  type, and meaning.
+- Adding an optional field can be compatible when consumers tolerate it.
+- Removing a required field, changing units or status meaning, or reusing a
+  field for a different concept requires an explicit version decision.
+- JSON object order, interactive prose, HTML structure, private attributes,
+  and implementation module paths are not compatibility contracts.
+
+Before upgrading a long-lived consumer, fixture successful, refused, partial,
+and warning-bearing records. Compare meaning and failure behavior, not only
+whether the new payload parses.
+
+Continue with [Python surface](python-surface.md),
+[command-line surface](cli-surface.md), and
+[artifact contracts](artifact-contracts.md) for the matching execution and
+persistence boundaries.
