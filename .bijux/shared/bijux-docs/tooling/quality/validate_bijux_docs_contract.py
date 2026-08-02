@@ -220,7 +220,12 @@ if __name__ == "__main__":
 
     # Shared config defines shell policy; root config defines project identity.
     validate_shared_contract(shared_cfg, canonical_hub_links, "mkdocs.shared.yml")
-    validate_mkdocs_baseline(shared_cfg, mkdocs_baseline, "mkdocs.shared.yml")
+    effective_cfg = {**shared_cfg, **root_cfg}
+    validate_mkdocs_baseline(
+        effective_cfg,
+        mkdocs_baseline,
+        "effective MkDocs configuration",
+    )
 
     validate_root_contract(root_cfg, "mkdocs.yml")
 

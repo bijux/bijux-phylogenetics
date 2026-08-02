@@ -5,8 +5,8 @@ Required `mkdocs` contract for Bijux projects:
 `config/mkdocs-baseline.json` versions the shared theme, extension, asset, and
 execution semantics. Product `mkdocs.shared.yml` files may add plugins,
 redirects, exclusions, and other product behavior, but the validator requires
-the baseline settings to remain present. Product `mkdocs.yml` files continue to
-own identity, navigation, and content.
+the effective inherited configuration to retain the baseline settings. Product
+`mkdocs.yml` files continue to own identity, navigation, and content.
 
 ```yaml
 extra:
