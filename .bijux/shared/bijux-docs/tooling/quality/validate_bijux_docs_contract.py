@@ -126,6 +126,18 @@ def configured_names(values: list, config_name: str) -> set[str]:
     return names
 
 
+def merge_mappings(parent: dict, child: dict) -> dict:
+    """Merge inherited MkDocs mappings while treating lists as replacements."""
+    merged = dict(parent)
+    for key, child_value in child.items():
+        parent_value = merged.get(key)
+        if isinstance(parent_value, dict) and isinstance(child_value, dict):
+            merged[key] = merge_mappings(parent_value, child_value)
+        else:
+            merged[key] = child_value
+    return merged
+
+
 def validate_mkdocs_baseline(config: dict, baseline: dict, config_name: str) -> None:
     """Validate shared MkDocs semantics while allowing product-owned additions."""
     for key in ("strict", "use_directory_urls", "dev_addr", "copyright"):
@@ -220,7 +232,7 @@ if __name__ == "__main__":
 
     # Shared config defines shell policy; root config defines project identity.
     validate_shared_contract(shared_cfg, canonical_hub_links, "mkdocs.shared.yml")
-    effective_cfg = {**shared_cfg, **root_cfg}
+    effective_cfg = merge_mappings(shared_cfg, root_cfg)
     validate_mkdocs_baseline(
         effective_cfg,
         mkdocs_baseline,
