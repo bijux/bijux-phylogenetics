@@ -107,6 +107,73 @@ def load_canonical_hub_links(repo_root: Path) -> list[dict]:
     return links
 
 
+def load_mkdocs_baseline(repo_root: Path) -> dict:
+    path = shared_docs_root(repo_root) / "config/mkdocs-baseline.json"
+    baseline = json.loads(path.read_text(encoding="utf-8"))
+    require(baseline.get("version") == 1, f"{path}: unsupported baseline version")
+    return baseline
+
+
+def configured_names(values: list, config_name: str) -> set[str]:
+    names: set[str] = set()
+    for value in values:
+        if isinstance(value, str):
+            names.add(value)
+        elif isinstance(value, dict) and len(value) == 1:
+            names.add(next(iter(value)))
+        else:
+            raise RuntimeError(f"{config_name}: expected names or single-key mappings")
+    return names
+
+
+def validate_mkdocs_baseline(config: dict, baseline: dict, config_name: str) -> None:
+    """Validate shared MkDocs semantics while allowing product-owned additions."""
+    for key in ("strict", "use_directory_urls", "dev_addr", "copyright"):
+        require(
+            config.get(key) == baseline[key],
+            f"{config_name}: {key} must match the shared MkDocs baseline",
+        )
+
+    theme = config.get("theme") or {}
+    expected_theme = baseline["theme"]
+    for key in ("name", "language", "logo", "favicon", "font"):
+        require(
+            theme.get(key) == expected_theme[key],
+            f"{config_name}: theme.{key} must match the shared MkDocs baseline",
+        )
+    require(
+        (theme.get("icon") or {}).get("repo") == expected_theme["repository_icon"],
+        f"{config_name}: theme.icon.repo must match the shared MkDocs baseline",
+    )
+    features = set(theme.get("features") or [])
+    for feature in expected_theme["required_features"]:
+        require(
+            feature in features,
+            f"{config_name}: theme.features must include {feature}",
+        )
+
+    plugins = configured_names(config.get("plugins") or [], f"{config_name}: plugins")
+    extensions = configured_names(
+        config.get("markdown_extensions") or [],
+        f"{config_name}: markdown_extensions",
+    )
+    for plugin in baseline["required_plugins"]:
+        require(plugin in plugins, f"{config_name}: plugins must include {plugin}")
+    for extension in baseline["required_markdown_extensions"]:
+        require(
+            extension in extensions,
+            f"{config_name}: markdown_extensions must include {extension}",
+        )
+
+    for key in ("extra_css", "extra_javascript"):
+        configured = config.get(key) or []
+        for required_path in baseline[key]:
+            require(
+                required_path in configured,
+                f"{config_name}: {key} must include {required_path}",
+            )
+
+
 def validate_root_contract(config: dict, config_name: str) -> None:
     extra = config.get("extra") or {}
     bijux = extra.get("bijux") or {}
@@ -149,9 +216,11 @@ if __name__ == "__main__":
     shared_cfg = load_yaml(repo_root / "mkdocs.shared.yml")
     root_cfg = load_yaml(repo_root / "mkdocs.yml")
     canonical_hub_links = load_canonical_hub_links(repo_root)
+    mkdocs_baseline = load_mkdocs_baseline(repo_root)
 
     # Shared config defines shell policy; root config defines project identity.
     validate_shared_contract(shared_cfg, canonical_hub_links, "mkdocs.shared.yml")
+    validate_mkdocs_baseline(shared_cfg, mkdocs_baseline, "mkdocs.shared.yml")
 
     validate_root_contract(root_cfg, "mkdocs.yml")
 

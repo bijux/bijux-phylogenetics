@@ -16,7 +16,7 @@ BIJUX_STANDARD_REQUIRED_FILES ?= \
 	workflows/deploy-docs.yml \
 	required-status-checks.md \
 	rulesets/main-branch-protection.json
-BIJUX_PY_REQUIRED_FILES ?= api-contract.mk api-freeze.mk api-live-contract.mk api.mk bijux.mk package.mk package-catalog.mk ci/build.mk ci/docs.mk ci/help.mk ci/lint.mk ci/quality.mk ci/sbom.mk ci/security.mk ci/test.mk ci/util.mk repository/config-layout.mk repository/env.mk repository/make-layout.mk repository/publish.mk repository/root.mk root/docs.mk root/env.mk root/lifecycle.mk root/package-dispatch.mk
+BIJUX_PY_REQUIRED_FILES ?= api-contract.mk api-freeze.mk api-live-contract.mk api.mk bijux.mk package.mk package-catalog.mk ci/build.mk ci/docs.mk ci/help.mk ci/lint.mk ci/quality.mk ci/sbom.mk ci/security.mk ci/test.mk ci/util.mk config/python-baseline.toml repository/artifact_aliases.py repository/badge_renderer.py repository/configuration_baseline.py repository/config-layout.mk repository/env.mk repository/make-layout.mk repository/publish.mk repository/root.mk root/docs.mk root/env.mk root/lifecycle.mk root/package-dispatch.mk
 BIJUX_PY_OPTIONAL_FILES ?=
 
 .PHONY: check-bijux-standard bijux-standard-sync bijux-standard-check

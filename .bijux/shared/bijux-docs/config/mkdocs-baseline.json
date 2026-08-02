@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "strict": true,
+  "use_directory_urls": true,
+  "dev_addr": "127.0.0.1:8000",
+  "theme": {
+    "name": "material",
+    "language": "en",
+    "logo": "assets/bijux_logo_hq.png",
+    "favicon": "assets/site-icons/favicon.ico",
+    "font": false,
+    "repository_icon": "fontawesome/brands/github",
+    "required_features": [
+      "navigation.tabs",
+      "navigation.tabs.sticky",
+      "navigation.sections",
+      "navigation.indexes",
+      "navigation.path",
+      "navigation.tracking",
+      "navigation.instant",
+      "navigation.top",
+      "navigation.footer",
+      "toc.follow",
+      "search.suggest",
+      "search.highlight",
+      "content.tabs.link",
+      "content.code.annotate",
+      "content.code.copy",
+      "content.code.select",
+      "content.action.edit",
+      "content.action.view"
+    ]
+  },
+  "required_plugins": [
+    "search",
+    "autorefs"
+  ],
+  "required_markdown_extensions": [
+    "admonition",
+    "attr_list",
+    "def_list",
+    "footnotes",
+    "md_in_html",
+    "tables",
+    "toc",
+    "pymdownx.details",
+    "pymdownx.superfences",
+    "pymdownx.highlight",
+    "pymdownx.inlinehilite",
+    "pymdownx.snippets",
+    "pymdownx.tabbed",
+    "pymdownx.tasklist",
+    "pymdownx.emoji"
+  ],
+  "extra_css": [
+    "assets/styles/extra.css"
+  ],
+  "extra_javascript": [
+    "assets/javascripts/vendor/mermaid-11.6.0.min.js",
+    "assets/javascripts/mermaid-init.js",
+    "assets/javascripts/shell/theme-persistence.js",
+    "assets/javascripts/shell/viewport-profile.js",
+    "assets/javascripts/shell/nav-state.js",
+    "assets/javascripts/shell/detail-tabs.js",
+    "assets/javascripts/shell/nav-reveal.js",
+    "assets/javascripts/shell/bootstrap.js",
+    "assets/javascripts/navigation-sync.js",
+    "assets/javascripts/external-links.js"
+  ],
+  "copyright": "© 2026 Bijan Mousavi <bijan@bijux.io>"
+}
