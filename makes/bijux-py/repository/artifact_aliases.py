@@ -6,7 +6,6 @@ from __future__ import annotations
 import argparse
 import os
 from pathlib import Path
-import shutil
 import sys
 
 
@@ -24,35 +23,25 @@ PACKAGE_ALIAS_LAYOUT = {
     ".benchmarks": Path("artifacts/{package}/benchmarks"),
 }
 
+PRESERVED_LOCAL_DIRECTORY_ALIASES = frozenset(
+    {
+        ".venv",
+        ".tox",
+        ".hypothesis",
+        ".benchmarks",
+    }
+)
+
 
 def _relative_target(*, link_path: Path, target_path: Path) -> str:
     return os.path.relpath(target_path, start=link_path.parent)
 
 
-def _remove_conflicting_alias_path(*, link_path: Path) -> None:
-    if link_path.is_dir():
-        def _ignore_missing_file(
-            function: object,
-            path: str,
-            exception_info: tuple[type[BaseException], BaseException, object],
-        ) -> None:
-            del function, path
-            error = exception_info[1]
-            if isinstance(error, FileNotFoundError):
-                return
-            raise error
-
-        shutil.rmtree(link_path, onerror=_ignore_missing_file)
-        return
-    link_path.unlink()
+def _should_preserve_existing_directory(*, link_path: Path) -> bool:
+    return link_path.name in PRESERVED_LOCAL_DIRECTORY_ALIASES
 
 
-def _materialize_alias(
-    *,
-    link_path: Path,
-    target_path: Path,
-    replace_conflicting_path: bool = False,
-) -> None:
+def _materialize_alias(*, link_path: Path, target_path: Path) -> None:
     link_path.parent.mkdir(parents=True, exist_ok=True)
     target_path.mkdir(parents=True, exist_ok=True)
     expected_target = _relative_target(link_path=link_path, target_path=target_path)
@@ -63,9 +52,7 @@ def _materialize_alias(
             return
         link_path.unlink()
     elif link_path.exists():
-        if replace_conflicting_path:
-            _remove_conflicting_alias_path(link_path=link_path)
-            link_path.symlink_to(expected_target)
+        if link_path.is_dir() and _should_preserve_existing_directory(link_path=link_path):
             return
         raise RuntimeError(
             f"refusing to replace non-symlink path '{link_path}' with alias to "
@@ -80,7 +67,6 @@ def _materialize_root_aliases(*, repo_root: Path) -> None:
         _materialize_alias(
             link_path=repo_root / alias_name,
             target_path=repo_root / target_rel,
-            replace_conflicting_path=True,
         )
 
 
@@ -91,7 +77,6 @@ def _materialize_package_aliases(*, repo_root: Path, package_dir: Path) -> None:
         _materialize_alias(
             link_path=package_dir / alias_name,
             target_path=repo_root / target_rel,
-            replace_conflicting_path=alias_name != "artifacts",
         )
 
 

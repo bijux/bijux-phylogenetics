@@ -17,7 +17,6 @@ ARTIFACT_ALIAS_SCRIPT = (
     / "repository"
     / "artifact_aliases.py"
 )
-ROOT_ARTIFACT_ALIAS_WRAPPER = REPO_ROOT / "makes" / "repository_artifact_aliases.py"
 PACKAGE_ARTIFACT_LINKS = {
     "artifacts": "",
     ".venv": "venv",
@@ -108,7 +107,7 @@ def test_setup_materializes_governed_artifact_aliases(tmp_path: Path) -> None:
             )
 
 
-def test_root_setup_reconciles_disposable_root_alias_conflicts(tmp_path: Path) -> None:
+def test_root_setup_preserves_legacy_root_directories(tmp_path: Path) -> None:
     workspace = _workspace_metadata()
     repo_root = tmp_path / "repo"
     packages_dir = repo_root / "packages"
@@ -125,7 +124,7 @@ def test_root_setup_reconciles_disposable_root_alias_conflicts(tmp_path: Path) -
     completed = subprocess.run(
         [
             sys.executable,
-            str(ROOT_ARTIFACT_ALIAS_WRAPPER),
+            str(ARTIFACT_ALIAS_SCRIPT),
             "root",
             "--repo-root",
             str(repo_root),
@@ -139,10 +138,11 @@ def test_root_setup_reconciles_disposable_root_alias_conflicts(tmp_path: Path) -
 
     assert completed.returncode == 0
     assert completed.stderr == ""
-    _assert_symlink(
-        link_path=conflicting_root_venv,
-        expected_target=ROOT_ARTIFACT_LINKS[".venv"],
-    )
+    assert conflicting_root_venv.is_dir()
+    assert not conflicting_root_venv.is_symlink()
+    assert (conflicting_root_venv / "pyvenv.cfg").read_text(
+        encoding="utf-8"
+    ) == "home = /tmp/python\n"
     _assert_symlink(
         link_path=repo_root / ".hypothesis",
         expected_target=ROOT_ARTIFACT_LINKS[".hypothesis"],
