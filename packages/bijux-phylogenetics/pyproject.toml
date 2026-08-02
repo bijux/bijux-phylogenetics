@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "bijux-phylogenetics"
 description = "Comprehensive phylogenetics runtime for tree analysis, native inference, comparative models, parsimony, and evidence-linked reporting."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<4"
 license = { text = "Apache-2.0" }
 license-files = []
 authors = [

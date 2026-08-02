@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "bijux-phylogenetics-repository"
 description = "Repository workspace for native phylogenetic runtime, benchmarks, and evidence-linked workflows."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<4"
 dependencies = []
 dynamic = ["version"]
 
