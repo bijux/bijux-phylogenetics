@@ -7,6 +7,7 @@ import argparse
 import configparser
 from dataclasses import dataclass
 import json
+import os
 from pathlib import Path
 import re
 import sys
@@ -75,6 +76,24 @@ def iter_dependency_strings(value: Any) -> Iterable[str]:
             yield from iter_dependency_strings(item)
 
 
+def iter_pyprojects(repo_root: Path) -> Iterable[Path]:
+    """Yield project manifests without traversing generated or environment trees."""
+    excluded = {
+        ".git",
+        ".venv",
+        ".tox",
+        "artifacts",
+        "build",
+        "dist",
+        "node_modules",
+        "site",
+    }
+    for current_root, directories, files in os.walk(repo_root):
+        directories[:] = [name for name in directories if name not in excluded]
+        if "pyproject.toml" in files:
+            yield Path(current_root) / "pyproject.toml"
+
+
 class BaselineValidator:
     """Validate one repository without modifying repository-owned files."""
 
@@ -95,9 +114,7 @@ class BaselineValidator:
             for name, specifier in self.baseline["tools"].items()
             if name not in {"tox", "tox-gh-actions"}
         }
-        for path in sorted(self.repo_root.glob("**/pyproject.toml")):
-            if "artifacts" in path.parts:
-                continue
+        for path in sorted(iter_pyprojects(self.repo_root)):
             with path.open("rb") as handle:
                 document = tomllib.load(handle)
             project = document.get("project")
