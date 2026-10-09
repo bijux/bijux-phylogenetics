@@ -9,6 +9,18 @@ last_reviewed: 2026-07-22
 
 # Bijux Phylogenetics
 
+One repository connects three things that scientific software too often keeps
+apart: an executable phylogenetics runtime, study-level evidence for selected
+comparative claims, and publication controls that keep the two aligned.
+
+The runtime is broad; the available evidence is deliberately claim-specific.
+Implementation, contract tests, benchmarks, and governed studies therefore
+carry separate status instead of collapsing into a single maturity label.
+
+Start with the [Product handbook](01-bijux-phylogenetics/index.md)
+or the [Sequence-to-tree study](01-bijux-phylogenetics/operations/sequence-to-tree-study.md)
+to find the relevant interface and evidence boundaries.
+
 <!-- bijux-phylogenetics-badges:generated:start -->
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)](https://pypi.org/project/bijux-phylogenetics/)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-0F766E)](https://github.com/bijux/bijux-phylogenetics/blob/main/LICENSE)
@@ -30,14 +42,6 @@ last_reviewed: 2026-07-22
 [![bijux-phylogenetics docs](https://img.shields.io/badge/docs-bijux--phylogenetics-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
 [![phylogenetic docs](https://img.shields.io/badge/docs-phylogenetic-2563EB?logo=materialformkdocs&logoColor=white)](https://bijux.io/bijux-phylogenetics/01-bijux-phylogenetics/)
 <!-- bijux-phylogenetics-badges:generated:end -->
-
-One repository connects three things that scientific software too often keeps
-apart: an executable phylogenetics runtime, study-level evidence for selected
-comparative claims, and publication controls that keep the two aligned.
-
-The runtime is broad; the available evidence is deliberately claim-specific.
-Implementation, contract tests, benchmarks, and governed studies therefore
-carry separate status instead of collapsing into a single maturity label.
 
 ```mermaid
 flowchart LR
