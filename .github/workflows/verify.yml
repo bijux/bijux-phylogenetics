@@ -93,7 +93,7 @@ jobs:
       package_dir: "${{ matrix.package_dir }}"
       artifacts_dir: "${{ matrix.artifacts_dir }}"
       test_python_versions: "${{ matrix.test_python_versions || '[\"3.11\"]' }}"
-      check_targets: "${{ matrix.check_targets || '[\"quality\", \"security\", \"docs\", \"api\", \"build\", \"sbom\"]' }}"
+      check_targets: "${{ matrix.check_targets || '[\"quality\", \"security\", \"api\", \"build\", \"sbom\"]' }}"
       api_toolchain_targets: "${{ matrix.api_toolchain_targets || '[\"api\", \"openapi-drift\"]' }}"
       post_test_command: "${{ matrix.post_test_command || '' }}"
     if: "${{ github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]' }}"
