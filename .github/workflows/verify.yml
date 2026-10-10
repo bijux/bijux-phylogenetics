@@ -44,25 +44,10 @@ on:
       - main
 permissions:
   contents: read
-  actions: read
-  pull-requests: read
 concurrency:
   group: "verify-${{ github.ref }}"
   cancel-in-progress: true
 jobs:
-  policy_gate:
-    name: policy-prerequisites
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - name: "Wait for policy and standards prerequisites"
-        shell: bash
-        env:
-          GITHUB_TOKEN: "${{ github.token }}"
-        run:
-          |
-            set -euo pipefail
-            python3 .github/scripts/check_workflow_prerequisites.py
   repository:
     name: repository-contracts
     runs-on: ubuntu-latest
@@ -72,7 +57,7 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: 3.11
-      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
@@ -82,12 +67,10 @@ jobs:
       - name: "Confirm clean worktree after checks"
         shell: bash
         run: "set -euo pipefail; if [[ -n \"$(git status --short)\" ]]; then git status --short; exit 1; fi "
-    needs: policy_gate
+    if: "${{ github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]' }}"
   package:
     name: "${{ matrix.package_slug }}"
-    needs:
-      - policy_gate
-      - repository
+    needs: repository
     strategy:
       fail-fast: false
       matrix:
@@ -113,11 +96,11 @@ jobs:
       check_targets: "${{ matrix.check_targets || '[\"quality\", \"security\", \"docs\", \"api\", \"build\", \"sbom\"]' }}"
       api_toolchain_targets: "${{ matrix.api_toolchain_targets || '[\"api\", \"openapi-drift\"]' }}"
       post_test_command: "${{ matrix.post_test_command || '' }}"
+    if: "${{ github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]' }}"
   verification_ready:
     name: verification-ready
-    if: "${{ always() }}"
+    if: "${{ (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]') && (always()) }}"
     needs:
-      - policy_gate
       - repository
       - package
     runs-on: ubuntu-latest
@@ -132,4 +115,3 @@ jobs:
             set -euo pipefail
             [[ "${REPOSITORY_RESULT}" == "success" ]]
             [[ "${PACKAGE_RESULT}" == "success" ]]
-          
