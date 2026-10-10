@@ -38,7 +38,13 @@ def _load_shared_alias_module() -> ModuleType:
             f"unable to load shared artifact alias script: {script_path}"
         )
     module = module_from_spec(spec)
-    spec.loader.exec_module(module)
+    # Dataclass annotation resolution needs its owning module registered during import.
+    sys.modules[spec.name] = module
+    try:
+        spec.loader.exec_module(module)
+    except BaseException:
+        sys.modules.pop(spec.name, None)
+        raise
     return module
 
 
