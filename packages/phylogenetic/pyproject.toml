@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "phylogenetic"
 description = "Short install name for the full Bijux phylogenetics runtime, CLI, and comparative-analysis workflows."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<4"
 license = { text = "Apache-2.0" }
 license-files = []
 authors = [

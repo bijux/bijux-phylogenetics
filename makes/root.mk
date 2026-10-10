@@ -12,21 +12,6 @@ UV_SYNC := UV_PROJECT_ENVIRONMENT="$(ROOT_CHECK_VENV)" $(UV) sync --frozen --gro
 CLI := $(ROOT_CHECK_VENV)/bin/bijux-phylogenetics
 DEV_RUN = PYTHONPATH="$(ROOT_DEV_PYTHONPATH)$${PYTHONPATH:+:$$PYTHONPATH}" "$(ROOT_CHECK_PYTHON)"
 DOCS_RENDER_SERVE_CONFIG := 0
-ROOT_DISPOSABLE_ALIAS_PATHS := \
-	"$(CURDIR)/.venv" \
-	"$(CURDIR)/.tox" \
-	"$(CURDIR)/.hypothesis" \
-	"$(CURDIR)/.benchmarks"
-ROOT_CLEAN_ROOT_ARTIFACTS_COMMAND := @for path in $(ROOT_DISPOSABLE_ALIAS_PATHS); do \
-	if [ -L "$$path" ]; then \
-		rm -f "$$path"; \
-	elif [ -d "$$path" ]; then \
-		rm -rf "$$path"; \
-	elif [ -e "$$path" ]; then \
-		rm -f "$$path"; \
-	fi; \
-done; \
-rm -rf $(ROOT_FORBIDDEN_ARTIFACTS) || true
 ROOT_PACKAGE_TARGETS += test-all test-all-plus-run-time test-all-frozen
 ROOT_TARGET_GROUPS_test-all ?= check
 ROOT_TARGET_GROUPS_test-all-plus-run-time ?= check
