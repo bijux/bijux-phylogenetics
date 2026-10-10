@@ -8,6 +8,12 @@ release notes belong to each distribution under `packages/`.
 Use this changelog for workspace changes that affect multiple packages or
 change contributor and maintainer workflows across the repository.
 
+## Unreleased
+
+
+### Changed
+
+- Adopt trusted manual publication admission and accepted shared documentation policy ([#152](https://github.com/bijux/bijux-phylogenetics/pull/152)).
 ## 0.1.2 - 2026-07-05
 
 ### Changed
