@@ -8,7 +8,12 @@ repo_name: bijux/bijux-phylogenetics
 repo_url: https://github.com/bijux/bijux-phylogenetics
 edit_uri: edit/main/docs/
 docs_dir: docs
-exclude_docs: badges.md
+exclude_docs: |
+  badges.md
+  /overrides/
+  /hooks/
+  /assets/styles/README.md
+  /assets/javascripts/shell/README.md
 strict: true
 site_dir: artifacts/root/docs/site
 watch:
@@ -79,32 +84,6 @@ extra:
     docs_package: bijux-phylogenetics-dev
     nav_mode: default
     theme_key: bijux:theme
-    hub_links:
-      - key: bijux
-        label: Bijux
-        url: https://bijux.io/
-      - key: bijux-core
-        label: Core
-        url: https://bijux.io/bijux-core/
-      - key: bijux-proteomics
-        label: Proteomics
-        url: https://bijux.io/bijux-proteomics/
-      - key: bijux-pollenomics
-        label: Pollenomics
-        url: https://bijux.io/bijux-pollenomics/
-      - key: bijux-phylogenetics
-        label: Phylogenetics
-        url: https://bijux.io/bijux-phylogenetics/
-      - key: bijux-canon
-        label: Canon
-        url: https://bijux.io/bijux-canon/
-      - key: bijux-atlas
-        label: Atlas
-        url: https://bijux.io/bijux-atlas/
-      - key: bijux-masterclass
-        label: Masterclass
-        url: https://bijux.io/bijux-masterclass/
-
 not_in_nav: |
   assets/**
   report/**/*.html
@@ -243,3 +222,17 @@ nav:
           - Repository Operations: 05-bijux-phylogenetics-maintain/repository-operations/index.md
           - Artifact Hygiene: 05-bijux-phylogenetics-maintain/repository-operations/artifact-hygiene.md
           - Release Surface Alignment: 05-bijux-phylogenetics-maintain/repository-operations/release-surface-alignment.md
+
+extra_javascript:
+  - assets/javascripts/mermaid-init.js
+  - assets/javascripts/shell/theme-persistence.js
+  - assets/javascripts/shell/viewport-profile.js
+  - assets/javascripts/shell/nav-state.js
+  - assets/javascripts/shell/detail-tabs.js
+  - assets/javascripts/shell/nav-reveal.js
+  - assets/javascripts/shell/search-recovery.js
+  - assets/javascripts/shell/content-reflow.js
+  - assets/javascripts/external-links.js
+  - assets/javascripts/shell/bootstrap.js
+  - assets/javascripts/navigation-sync.js
+  - assets/javascripts/navigation/offsite-targets.js
