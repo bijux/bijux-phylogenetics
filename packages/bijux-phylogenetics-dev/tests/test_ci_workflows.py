@@ -23,6 +23,7 @@ EXPECTED_WORKFLOW_FILES = {
     "bijux-std.yml",
     "ci.yml",
     "deploy-docs.yml",
+    "dependency-notice.yml",
     "github-policy.yml",
     "pr-approval-policy.yml",
     "release-artifacts.yml",
@@ -117,3 +118,22 @@ def test_verify_workflow_checks_canonical_alias_and_dev_packages() -> None:
 def test_workflow_directory_matches_the_shared_python_repository_surface() -> None:
     found = {path.name for path in WORKFLOWS_DIR.glob("*.yml")}
     assert found == EXPECTED_WORKFLOW_FILES
+
+
+def test_dependency_proposals_have_only_a_read_only_owner_notice() -> None:
+    notice = _workflow(WORKFLOWS_DIR / "dependency-notice.yml")
+    assert set(_as_dict(notice.get("on"))) == {"pull_request_target"}
+    assert notice["permissions"] == {"contents": "read"}
+    assert set(notice["jobs"]) == {"notice"}
+    job = notice["jobs"]["notice"]
+    assert job["name"] == "dependency / owner review notice"
+    assert job["if"] == (
+        "${{ github.event.pull_request.user.login == 'dependabot[bot]' || "
+        "(github.event.pull_request.user.login == 'github-actions[bot]' && "
+        "github.event.pull_request.head.ref == 'automation/dependency-lock-refresh') "
+        "}}"
+    )
+    assert job["timeout-minutes"] == 1
+    assert all("uses" not in step for step in job["steps"])
+    retired = _workflow(WORKFLOWS_DIR / "automerge-pr.yml")
+    assert set(_as_dict(retired.get("on"))) == {"workflow_dispatch"}
