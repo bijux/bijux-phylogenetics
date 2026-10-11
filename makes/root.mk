@@ -288,3 +288,5 @@ help: ## Show generated repository commands from included make modules
 check-shared-bijux-py: ## Verify shared bijux-py make modules match across sibling repositories
 check-config-layout: ## Validate the repository config tree shape and required tool configs
 check-make-layout: ## Validate the repository make tree shape and required entrypoints
+
+include makes/docs-publication.mk

@@ -236,3 +236,6 @@ extra_javascript:
   - assets/javascripts/shell/bootstrap.js
   - assets/javascripts/navigation-sync.js
   - assets/javascripts/navigation/offsite-targets.js
+
+hooks:
+  - configs/docs/publish_site_assets.py
