@@ -10,6 +10,7 @@ edit_uri: edit/main/docs/
 docs_dir: docs
 exclude_docs: |
   badges.md
+  /test-all-evidence/*.log
   /overrides/
   /hooks/
   /assets/styles/README.md
