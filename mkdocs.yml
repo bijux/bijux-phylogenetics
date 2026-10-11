@@ -10,6 +10,7 @@ edit_uri: edit/main/docs/
 docs_dir: docs
 exclude_docs: |
   badges.md
+  /test-all-evidence/*.log
   /overrides/
   /hooks/
   /assets/styles/README.md
@@ -236,3 +237,6 @@ extra_javascript:
   - assets/javascripts/shell/bootstrap.js
   - assets/javascripts/navigation-sync.js
   - assets/javascripts/navigation/offsite-targets.js
+
+hooks:
+  - configs/docs/publish_site_assets.py
