@@ -17,7 +17,7 @@ def test_root_pyproject_uses_shared_workspace_build_contract() -> None:
     pyproject = _root_pyproject()
 
     assert pyproject["build-system"] == {
-        "requires": ["hatchling>=1.27.0,<1.32", "hatch-vcs>=0.4.0,<1.0"],
+        "requires": ["hatchling>=1.27.0,<1.33", "hatch-vcs>=0.4.0,<1.0"],
         "build-backend": "hatchling.build",
     }
 
@@ -60,7 +60,7 @@ def test_root_pyproject_declares_workspace_package_dirs_for_shared_make_tooling(
 ):
     pyproject = _root_pyproject()
     workspace_packages = set(pyproject["tool"][WORKSPACE_TOOL]["packages"])
-    package_dirs = pyproject["tool"]["bijux_canon"]["package_dirs"]
+    package_dirs = pyproject["tool"][WORKSPACE_TOOL]["package_dirs"]
 
     assert set(package_dirs) == workspace_packages
     assert all(

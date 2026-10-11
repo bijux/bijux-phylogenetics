@@ -1,12 +1,12 @@
 [build-system]
-requires = ["hatchling>=1.27.0,<1.32", "hatch-vcs>=0.4.0,<1.0"]
+requires = ["hatchling>=1.27.0,<1.33", "hatch-vcs>=0.4.0,<1.0"]
 build-backend = "hatchling.build"
 
 [project]
 name = "bijux-phylogenetics-repository"
 description = "Repository workspace for native phylogenetic runtime, benchmarks, and evidence-linked workflows."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<4"
 dependencies = []
 dynamic = ["version"]
 
@@ -24,7 +24,7 @@ dev = [
     "bijux-phylogenetics-dev[dev]",
     "mkdocs-redirects>=1.2.1,<2.0",
     "mkdocs-material==9.7.7",
-    "pymdown-extensions>=10.21.3",
+    "pymdown-extensions>=11.0.1",
     "PyYAML>=6.0,<7.0",
     "prance>=23.6.21.0",
     "openapi-spec-validator>=0.7.1",
@@ -39,18 +39,23 @@ tag_format = "v$version"
 update_changelog_on_bump = false
 
 [tool.bijux_phylogenetics]
+repository = "bijux-phylogenetics"
 api_dir = "apis"
 packages = [
     "bijux-phylogenetics",
     "phylogenetic",
     "bijux-phylogenetics-dev",
 ]
+badge_packages = [
+    "bijux-phylogenetics",
+    "phylogenetic",
+]
 docs_package = "bijux-phylogenetics-dev"
 config_dir = "configs"
 make_dir = "makes"
 
 # Shared workspace package index consumed by common Bijux make tooling.
-[tool.bijux_canon.package_dirs]
+[tool.bijux_phylogenetics.package_dirs]
 "bijux-phylogenetics" = "packages/bijux-phylogenetics"
 "phylogenetic" = "packages/phylogenetic"
 "bijux-phylogenetics-dev" = "packages/bijux-phylogenetics-dev"

@@ -88,26 +88,27 @@ Prefer the canonical artifact-owned paths directly when a maintainer command nee
 - benchmark scratch space: `artifacts/root/benchmarks/`
 - documentation site: `artifacts/root/docs/site/`
 
-Those are the durable contract paths. Root aliases exist only as disposable
-compatibility conveniences.
+Those are the durable contract paths. Root aliases are compatibility links;
+their targets remain the canonical locations.
 
 Commands may replace transient reports at canonical paths. A reviewer who
 needs to retain one decision must copy or archive the complete report packet
 through a governed process, including its revision and input identities; a
 screenshot or isolated JSON fragment is not sufficient.
 
-## Disposable Root Aliases
+## Root Compatibility Aliases
 
 The root `.venv`, `.tox`, `.hypothesis`, and `.benchmarks` paths should be
-treated as temporary alias links into `artifacts/root/`.
+symlink aliases into `artifacts/root/`.
 
-- `make setup` may recreate them
-- `make clean-root-artifacts` may remove them
+- `make setup` creates missing aliases and never deletes a real directory
+- `make clean-root-artifacts` preserves aliases and their canonical targets
 - maintainers should not depend on them as the only route to governed
   environments or caches
 
-If one alias becomes a real directory instead of a symlink, that is drift, not
-an acceptable steady state.
+If one alias is a real directory, inspect its contents and size before using
+the explicit artifact-alias migration command. Ordinary setup and cleanup must
+not replace or delete it.
 
 The governed audit also rejects root `.pytest_cache`, `.ruff_cache`, and
 `.mypy_cache` directories. Run `make check-artifact-governance` to verify root
@@ -115,8 +116,8 @@ aliases, forbidden caches, tox work location, and Make target output paths.
 
 ## Safe Cleanup
 
-Use `make clean-root-artifacts` for repository-owned disposable aliases. Treat
-cache and run-product removal as a separate, explicitly scoped operation.
+Use `make clean-root-artifacts` for ungoverned root caches. Treat cache and
+run-product removal as a separate, explicitly scoped operation.
 Before broader cleanup:
 
 1. resolve every target to an explicit path beneath this repository's

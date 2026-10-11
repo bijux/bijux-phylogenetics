@@ -107,9 +107,10 @@ def test_verify_workflow_checks_canonical_alias_and_dev_packages() -> None:
     assert package_inputs["test_python_versions"] == (
         "${{ matrix.test_python_versions || '[\"3.11\"]' }}"
     )
+    # Package profiles expose API/build checks; repository docs remain a root gate.
     assert package_inputs["check_targets"] == (
         '${{ matrix.check_targets || \'["quality", "security", '
-        '"docs", "api", "build", "sbom"]\' }}'
+        '"api", "build", "sbom"]\' }}'
     )
 
 

@@ -183,13 +183,13 @@ but before mutating inputs, reusing output paths, or discarding the result.
 ```mermaid
 flowchart LR
     inputs["Validated input objects"]
-    call["Public Python call"]
+    role_call["Public Python call"]
     result["Typed result<br/>status and diagnostics"]
     accept{"Accepted for the<br/>intended use?"}
     bundle["Structured artifacts<br/>and manifest"]
     refusal["Retained refusal or<br/>partial record"]
 
-    inputs --> call --> result --> accept
+    inputs --> role_call --> result --> accept
     accept -->|yes| bundle
     accept -->|no| refusal
 ```

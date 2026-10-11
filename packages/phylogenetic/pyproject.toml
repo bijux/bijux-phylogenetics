@@ -1,12 +1,12 @@
 [build-system]
-requires = ["hatchling>=1.27.0,<1.32", "hatch-vcs>=0.4.0,<1.0"]
+requires = ["hatchling>=1.27.0,<1.33", "hatch-vcs>=0.4.0,<1.0"]
 build-backend = "hatchling.build"
 
 [project]
 name = "phylogenetic"
 description = "Short install name for the full Bijux phylogenetics runtime, CLI, and comparative-analysis workflows."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<4"
 license = { text = "Apache-2.0" }
 license-files = []
 authors = [
@@ -84,7 +84,7 @@ dev = [
     "codespell>=2.4.1,<3.0",
     "pydocstyle>=6.3.0,<7.0",
     "radon>=6.0.1,<7.0",
-    "twine>=6.2.0,<7.0",
+    "twine>=6.2.0,<8.0",
 ]
 
 [project.scripts]
