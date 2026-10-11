@@ -2,12 +2,12 @@
 # Source of truth: bijux-std/.github/standards/repo-config.manifest.json and bijux-std/shared/bijux-gh/workflows/.
 # Do not edit this generated copy directly.
 
-name: "repo / verify"
-on:
-  push:
-    branches:
-      - main
-    paths:
+"name": "repo / verify"
+"on":
+  "pull_request":
+    "branches":
+      - "main"
+    "paths":
       - ".bijux/**"
       - ".github/**"
       - "apis/**"
@@ -15,103 +15,82 @@ on:
       - "docs/**"
       - "makes/**"
       - "packages/**"
-      - Makefile
-      - mkdocs.shared.yml
-      - mkdocs.yml
-      - pyproject.toml
-      - tox.ini
-      - uv.lock
-  pull_request:
-    branches:
-      - main
-    paths:
-      - ".bijux/**"
-      - ".github/**"
-      - "apis/**"
-      - "configs/**"
-      - "docs/**"
-      - "makes/**"
-      - "packages/**"
-      - Makefile
-      - mkdocs.shared.yml
-      - mkdocs.yml
-      - pyproject.toml
-      - tox.ini
-      - uv.lock
-  workflow_dispatch:
-  merge_group:
-    branches:
-      - main
-permissions:
-  contents: read
-concurrency:
-  group: "verify-${{ github.ref }}"
-  cancel-in-progress: true
-jobs:
-  repository:
-    name: repository-contracts
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
-        with:
-          python-version: 3.11
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7
-        with:
-          enable-cache: true
-          cache-dependency-glob: uv.lock
-      - name: "Run repository checks"
-        shell: bash
-        run: "set -euo pipefail; make check-shared-bijux-py check-config-layout check-make-layout help "
-      - name: "Confirm clean worktree after checks"
-        shell: bash
-        run: "set -euo pipefail; if [[ -n \"$(git status --short)\" ]]; then git status --short; exit 1; fi "
-    if: "${{ github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]' }}"
-  package:
-    name: "${{ matrix.package_slug }}"
-    needs: repository
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - package_slug: bijux-phylogenetics
-            package_dir: packages/bijux-phylogenetics
-            artifacts_dir: artifacts/bijux-phylogenetics
-            check_targets: "[\"quality\", \"security\", \"api\", \"openapi-drift\", \"build\", \"sbom\"]"
-          - package_slug: phylogenetic
-            package_dir: packages/phylogenetic
-            artifacts_dir: artifacts/phylogenetic
-            check_targets: "[\"quality\", \"security\", \"build\", \"sbom\"]"
-          - package_slug: bijux-phylogenetics-dev
-            package_dir: packages/bijux-phylogenetics-dev
-            artifacts_dir: artifacts/bijux-phylogenetics-dev
-            check_targets: "[\"quality\", \"security\", \"build\", \"sbom\"]"
-    uses: ./.github/workflows/ci.yml
-    with:
-      package_slug: "${{ matrix.package_slug }}"
-      package_dir: "${{ matrix.package_dir }}"
-      artifacts_dir: "${{ matrix.artifacts_dir }}"
-      test_python_versions: "${{ matrix.test_python_versions || '[\"3.11\"]' }}"
-      check_targets: "${{ matrix.check_targets || '[\"quality\", \"security\", \"api\", \"build\", \"sbom\"]' }}"
-      api_toolchain_targets: "${{ matrix.api_toolchain_targets || '[\"api\", \"openapi-drift\"]' }}"
-      post_test_command: "${{ matrix.post_test_command || '' }}"
-    if: "${{ github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]' }}"
-  verification_ready:
-    name: verification-ready
-    if: "${{ (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]') && (always()) }}"
-    needs:
-      - repository
-      - package
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Require repository and package verification success"
-        shell: bash
-        env:
-          REPOSITORY_RESULT: "${{ needs.repository.result }}"
-          PACKAGE_RESULT: "${{ needs.package.result }}"
-        run:
-          |
-            set -euo pipefail
-            [[ "${REPOSITORY_RESULT}" == "success" ]]
-            [[ "${PACKAGE_RESULT}" == "success" ]]
+      - "Makefile"
+      - "mkdocs.shared.yml"
+      - "mkdocs.yml"
+      - "pyproject.toml"
+      - "tox.ini"
+      - "uv.lock"
+  "workflow_dispatch": null
+  "merge_group":
+    "branches":
+      - "main"
+"permissions":
+  "contents": "read"
+"concurrency":
+  "group": "verify-${{ github.ref }}"
+  "cancel-in-progress": true
+"jobs":
+  "repository":
+    "name": "${{ (github.event.pull_request.user.login == 'dependabot[bot]' || (github.event.pull_request.user.login == 'github-actions[bot]' && github.event.pull_request.head.ref == 'automation/dependency-lock-refresh')) && 'unverified dependency / ' || '' }}repository-contracts"
+    "runs-on": "ubuntu-latest"
+    "timeout-minutes": 45
+    "steps":
+      - "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"
+      - "uses": "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97"
+        "with":
+          "python-version": 3.11
+      - "uses": "astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7"
+        "with":
+          "enable-cache": true
+          "cache-dependency-glob": "uv.lock"
+      - "name": "Run repository checks"
+        "shell": "bash"
+        "run": "set -euo pipefail; make check-shared-bijux-py check-config-layout check-make-layout help "
+      - "name": "Confirm clean worktree after checks"
+        "shell": "bash"
+        "run": "set -euo pipefail; if [[ -n \"$(git status --short)\" ]]; then git status --short; exit 1; fi "
+    "if": "${{ (github.event_name != 'pull_request' && github.event_name != 'pull_request_target' && github.event_name != 'pull_request_review') || (github.event.pull_request.user.login != 'dependabot[bot]' && (github.event.pull_request.user.login != 'github-actions[bot]' || github.event.pull_request.head.ref != 'automation/dependency-lock-refresh')) }}"
+  "package":
+    "name": "${{ (github.event.pull_request.user.login == 'dependabot[bot]' || (github.event.pull_request.user.login == 'github-actions[bot]' && github.event.pull_request.head.ref == 'automation/dependency-lock-refresh')) && 'unverified dependency / ' || '' }}${{ matrix.package_slug }}"
+    "needs": "repository"
+    "strategy":
+      "fail-fast": false
+      "matrix":
+        "include":
+          - "package_slug": "bijux-phylogenetics"
+            "package_dir": "packages/bijux-phylogenetics"
+            "artifacts_dir": "artifacts/bijux-phylogenetics"
+            "check_targets": "[\"quality\", \"security\", \"api\", \"openapi-drift\", \"build\", \"sbom\"]"
+          - "package_slug": "phylogenetic"
+            "package_dir": "packages/phylogenetic"
+            "artifacts_dir": "artifacts/phylogenetic"
+            "check_targets": "[\"quality\", \"security\", \"build\", \"sbom\"]"
+          - "package_slug": "bijux-phylogenetics-dev"
+            "package_dir": "packages/bijux-phylogenetics-dev"
+            "artifacts_dir": "artifacts/bijux-phylogenetics-dev"
+            "check_targets": "[\"quality\", \"security\", \"build\", \"sbom\"]"
+    "uses": "./.github/workflows/ci.yml"
+    "with":
+      "package_slug": "${{ matrix.package_slug }}"
+      "package_dir": "${{ matrix.package_dir }}"
+      "artifacts_dir": "${{ matrix.artifacts_dir }}"
+      "test_python_versions": "${{ matrix.test_python_versions || '[\"3.11\"]' }}"
+      "check_targets": "${{ matrix.check_targets || '[\"quality\", \"security\", \"api\", \"build\", \"sbom\"]' }}"
+      "api_toolchain_targets": "${{ matrix.api_toolchain_targets || '[\"api\", \"openapi-drift\"]' }}"
+      "post_test_command": "${{ matrix.post_test_command || '' }}"
+    "if": "${{ (github.event_name != 'pull_request' && github.event_name != 'pull_request_target' && github.event_name != 'pull_request_review') || (github.event.pull_request.user.login != 'dependabot[bot]' && (github.event.pull_request.user.login != 'github-actions[bot]' || github.event.pull_request.head.ref != 'automation/dependency-lock-refresh')) }}"
+  "verification_ready":
+    "name": "${{ (github.event.pull_request.user.login == 'dependabot[bot]' || (github.event.pull_request.user.login == 'github-actions[bot]' && github.event.pull_request.head.ref == 'automation/dependency-lock-refresh')) && 'unverified dependency / ' || '' }}verification-ready"
+    "if": "${{ ((github.event_name != 'pull_request' && github.event_name != 'pull_request_target' && github.event_name != 'pull_request_review') || (github.event.pull_request.user.login != 'dependabot[bot]' && (github.event.pull_request.user.login != 'github-actions[bot]' || github.event.pull_request.head.ref != 'automation/dependency-lock-refresh'))) && (always()) }}"
+    "needs":
+      - "repository"
+      - "package"
+    "runs-on": "ubuntu-latest"
+    "steps":
+      - "name": "Require repository and package verification success"
+        "shell": "bash"
+        "env":
+          "REPOSITORY_RESULT": "${{ needs.repository.result }}"
+          "PACKAGE_RESULT": "${{ needs.package.result }}"
+        "run": "set -euo pipefail\n[[ \"${REPOSITORY_RESULT}\" == \"success\" ]]\n[[ \"${PACKAGE_RESULT}\" == \"success\" ]]\n"
