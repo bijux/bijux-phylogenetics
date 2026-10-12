@@ -13,6 +13,8 @@ change contributor and maintainer workflows across the repository.
 
 ### Changed
 
+- Keep repository-link warnings within the documentation header while preserving their accessible descriptions ([#161](https://github.com/bijux/bijux-phylogenetics/pull/161)).
+
 - Bind native documentation dates to committed source, permit Bijux-owned workflow badges, and clarify publication verification ([#160](https://github.com/bijux/bijux-phylogenetics/pull/160)).
 
 - Adopt trusted manual publication admission and accepted shared documentation policy ([#152](https://github.com/bijux/bijux-phylogenetics/pull/152)).
