@@ -4,7 +4,7 @@
 # quality-gate interpreter selection used elsewhere in this repository.
 PYTHON_BIN ?= $(if $(wildcard $(MONOREPO_ROOT)/.venv/bin/python),$(abspath $(MONOREPO_ROOT)/.venv/bin/python),$(QUALITY_GATE_PYTHON))
 BIJUX_DOCS_SYNC_SCRIPT ?= .bijux/shared/bijux-docs/tooling/scripts/sync_bijux_docs.sh
-BIJUX_DOCS_SOT_GUARD ?= .bijux/shared/bijux-docs/tooling/scripts/verify_bijux_docs_source_of_truth.sh
+BIJUX_DOCS_SOT_GUARD ?= .bijux/shared/bijux-checks/scripts/verify-documentation-components.sh
 BIJUX_DOCS_CONTRACT_GUARD ?= .bijux/shared/bijux-docs/tooling/quality/validate_bijux_docs_contract.py
 
 .PHONY: bijux-docs-sync bijux-docs-check shell-sync shell-check

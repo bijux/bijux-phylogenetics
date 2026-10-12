@@ -13,6 +13,9 @@ change contributor and maintainer workflows across the repository.
 
 ### Changed
 
+- Bound manual documentation publication to the canonical 60-minute hosted budget and verify common governance independently from the retained documentation source ([#162](https://github.com/bijux/bijux-phylogenetics/pull/162)).
+
+
 - Keep repository-link warnings within the documentation header while preserving their accessible descriptions ([#161](https://github.com/bijux/bijux-phylogenetics/pull/161)).
 
 - Bind native documentation dates to committed source, permit Bijux-owned workflow badges, and clarify publication verification ([#160](https://github.com/bijux/bijux-phylogenetics/pull/160)).
