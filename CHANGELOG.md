@@ -13,6 +13,8 @@ change contributor and maintainer workflows across the repository.
 
 ### Changed
 
+- Bind native documentation dates to committed source, permit Bijux-owned workflow badges, and clarify publication verification ([#160](https://github.com/bijux/bijux-phylogenetics/pull/160)).
+
 - Adopt trusted manual publication admission and accepted shared documentation policy ([#152](https://github.com/bijux/bijux-phylogenetics/pull/152)).
 ## 0.1.2 - 2026-07-05
 
