@@ -13,6 +13,8 @@ change contributor and maintainer workflows across the repository.
 
 ### Changed
 
+- Adopt accepted reader preference recovery, inert native search, truthful clipboard feedback, patched publication dependencies and authenticated workflow actions ([#163](https://github.com/bijux/bijux-phylogenetics/pull/163)).
+
 - Bound manual documentation publication to the canonical 60-minute hosted budget and verify common governance independently from the retained documentation source ([#162](https://github.com/bijux/bijux-phylogenetics/pull/162)).
 
 
