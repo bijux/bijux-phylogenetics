@@ -13,6 +13,9 @@ change contributor and maintainer workflows across the repository.
 
 ### Changed
 
+- Qualify Hatchling 1.33 and Material 9.8, consume accepted workflow action pins,
+  and align OpenAPI tooling with the accepted Redocly and patched glob baseline.
+
 - Require patched Python tooling and Pillow dependencies, qualify OpenAPI
   tooling, and consume accepted documentation security and workflow action pins.
 
