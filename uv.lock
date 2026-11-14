@@ -10,7 +10,6 @@ resolution-markers = [
 members = [
     "bijux-phylogenetics",
     "bijux-phylogenetics-dev",
-    "bijux-phylogenetics-repository",
     "phylogenetic",
 ]
 constraints = [
@@ -21,6 +20,19 @@ constraints = [
     { name = "pillow", specifier = ">=13.0" },
     { name = "uv", specifier = ">=0.13.4" },
     { name = "virtualenv", specifier = ">=21.14.9" },
+]
+
+[manifest.dependency-groups]
+dev = [
+    { name = "bijux-phylogenetics", extras = ["dev", "docs"], editable = "packages/bijux-phylogenetics" },
+    { name = "bijux-phylogenetics-dev", extras = ["dev"], editable = "packages/bijux-phylogenetics-dev" },
+    { name = "mkdocs-material", specifier = "==9.8.0" },
+    { name = "mkdocs-redirects", specifier = ">=1.2.1,<2.0" },
+    { name = "openapi-spec-validator", specifier = ">=0.7.1" },
+    { name = "phylogenetic", extras = ["dev"], editable = "packages/phylogenetic" },
+    { name = "prance", specifier = ">=23.6.21.0" },
+    { name = "pymdown-extensions", specifier = ">=11.0.1" },
+    { name = "pyyaml", specifier = ">=6.0,<7.0" },
 ]
 
 [[package]]
@@ -335,38 +347,6 @@ requires-dist = [
     { name = "vulture", marker = "extra == 'dev'", specifier = ">=2.14,<3.0" },
 ]
 provides-extras = ["dev"]
-
-[[package]]
-name = "bijux-phylogenetics-repository"
-source = { editable = "." }
-
-[package.dev-dependencies]
-dev = [
-    { name = "bijux-phylogenetics", extra = ["dev", "docs"] },
-    { name = "bijux-phylogenetics-dev", extra = ["dev"] },
-    { name = "mkdocs-material" },
-    { name = "mkdocs-redirects" },
-    { name = "openapi-spec-validator" },
-    { name = "phylogenetic", extra = ["dev"] },
-    { name = "prance" },
-    { name = "pymdown-extensions" },
-    { name = "pyyaml" },
-]
-
-[package.metadata]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "bijux-phylogenetics", extras = ["dev", "docs"], editable = "packages/bijux-phylogenetics" },
-    { name = "bijux-phylogenetics-dev", extras = ["dev"], editable = "packages/bijux-phylogenetics-dev" },
-    { name = "mkdocs-material", specifier = "==9.8.0" },
-    { name = "mkdocs-redirects", specifier = ">=1.2.1,<2.0" },
-    { name = "openapi-spec-validator", specifier = ">=0.7.1" },
-    { name = "phylogenetic", extras = ["dev"], editable = "packages/phylogenetic" },
-    { name = "prance", specifier = ">=23.6.21.0" },
-    { name = "pymdown-extensions", specifier = ">=11.0.1" },
-    { name = "pyyaml", specifier = ">=6.0,<7.0" },
-]
 
 [[package]]
 name = "biopython"

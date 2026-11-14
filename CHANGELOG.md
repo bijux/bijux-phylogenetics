@@ -13,6 +13,10 @@ change contributor and maintainer workflows across the repository.
 
 ### Changed
 
+- Use a virtual workspace root so only the canonical and compatibility packages
+  under `packages/` define distribution identities; remove the artificial root
+  distribution while retaining locked registry dependencies.
+
 - Qualify Hatchling 1.33 and Material 9.8, consume accepted workflow action pins,
   and align OpenAPI tooling with the accepted Redocly and patched glob baseline.
 
