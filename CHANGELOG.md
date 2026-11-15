@@ -13,6 +13,16 @@ change contributor and maintainer workflows across the repository.
 
 ### Changed
 
+- Consolidate all unpublished workspace distribution changes and dependency proposals,
+  qualify Material 9.8.1, OpenAPI Generator 2.42.1 and Redocly 2.77.0, require patched
+  FTP tooling, and consume accepted workflow action standards and OpenAPI tooling
+  policy from Std [73bea158](https://github.com/bijux/bijux-std/commit/73bea158e6cc067a04c351938242491d59861a83)
+  while preserving the independent documentation source ([#193](https://github.com/bijux/bijux-phylogenetics/pull/193)).
+
+- Use a virtual workspace root so only the canonical and compatibility packages
+  under `packages/` define distribution identities; remove the artificial root
+  distribution while retaining locked registry dependencies.
+
 - Qualify Hatchling 1.33 and Material 9.8, consume accepted workflow action pins,
   and align OpenAPI tooling with the accepted Redocly and patched glob baseline.
 

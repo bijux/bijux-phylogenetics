@@ -1,29 +1,10 @@
-[build-system]
-requires = ["hatchling>=1.27.0,<1.34", "hatch-vcs>=0.4.0,<1.0"]
-build-backend = "hatchling.build"
-
-[project]
-name = "bijux-phylogenetics-repository"
-description = "Repository workspace for native phylogenetic runtime, benchmarks, and evidence-linked workflows."
-readme = "README.md"
-requires-python = ">=3.11,<4"
-dependencies = []
-dynamic = ["version"]
-
-[project.urls]
-Documentation = "https://bijux.io/bijux-phylogenetics/"
-Repository = "https://github.com/bijux/bijux-phylogenetics"
-Issues = "https://github.com/bijux/bijux-phylogenetics/issues"
-Changelog = "https://github.com/bijux/bijux-phylogenetics/blob/main/CHANGELOG.md"
-Security = "https://github.com/bijux/bijux-phylogenetics/blob/main/SECURITY.md"
-
 [dependency-groups]
 dev = [
     "bijux-phylogenetics[dev,docs]",
     "phylogenetic[dev]",
     "bijux-phylogenetics-dev[dev]",
     "mkdocs-redirects>=1.2.1,<2.0",
-    "mkdocs-material==9.8.0",
+    "mkdocs-material==9.8.1",
     "pymdown-extensions>=11.0.1",
     "PyYAML>=6.0,<7.0",
     "prance>=23.6.21.0",
@@ -86,12 +67,3 @@ color = true
 [tool.bandit]
 skips = ["B404", "B311"]
 exclude_dirs = [".venv", "tests", "artifacts", ".pytest_cache", ".ruff_cache"]
-
-[tool.hatch.version]
-source = "vcs"
-tag-pattern = "^v(?P<version>.*)$"
-fallback-version = "0.1.2"
-raw-options = { git_describe_command = "git describe --dirty --tags --long --match 'v*'", local_scheme = "dirty-tag", version_scheme = "guess-next-dev", root = ".", search_parent_directories = true }
-
-[tool.hatch.build.targets.wheel]
-bypass-selection = true
