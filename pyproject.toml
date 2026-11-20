@@ -7,7 +7,7 @@ dev = [
     "mkdocs-material==9.8.1",
     "pymdown-extensions>=11.0.1",
     "PyYAML>=6.0,<7.0",
-    "prance>=23.6.21.0",
+    "prance>=26.7.19.0",
     "openapi-spec-validator>=0.7.1",
 ]
 
